@@ -132,6 +132,7 @@
 <translation id="4700157086864140907">Google Chrome አሳሹ ላይ የሚተይቡትን ለGoogle አገልጋዮች በመላክ ይበልጥ አዋቂ የሆነ ፊደል አራሚ ሊያቀርብልዎት ይችላል፣ ይህም Google ፍለጋ የሚጠቀመውን ተመሳሳዩ የፊደል አራሚ ቴክኖሎጂ እንዲጠቀሙ ያስችልዎታል።</translation>
 <translation id="4728575227883772061">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። Google Chrome አሁን እያሄደ ከሆነ ፣ እባክዎ ይዝጉትና እንደገና ይሞክሩ።</translation>
 <translation id="4743926867934016338">ተቀበል እና ፈልግ</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ን ለማንቃት Chromeን ዳግም ያስጀምሩ</translation>
 <translation id="4751441238232965030">ይህ ኮምፒውተር በቅርቡ 32-ቢት የGoogle Chrome ዝማኔዎችን አይቀበልም። እባክዎን ወደ 64-ቢት Google Chrome ያሻሽሉ።</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
@@ -264,7 +265,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8290100596633877290">ኧረ ገዳይ! Google Chrome ተሰናክሏል። አሁን እንደገና ይጀመር?</translation>
 <translation id="8342675569599923794">ይህ ፋይል አደገኛ ስለሆነ Chrome አግዶታል።</translation>
 <translation id="8406086379114794905">Chrome የተሻለ እንዲሆን ያግዙ</translation>
-<translation id="8410645163819739900">Google Chrome OS ይህን ገጽ መክፈት አይችልም።</translation>
 <translation id="8455999171311319804">ከተፈለገ፦ የምርመራ እና የአጠቃቀም ውሂብ ወደ Google በራስ-ሰር በመላክ Chrome OS የተሻለ እንዲሆን ያግዙ።</translation>
 <translation id="853189717709780425">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በGoogle Chrome መገለጫዎ ላይ ቁጥጥር እየሰጡት ነው። እንደ መተግበሪያዎችዎ፣ ዕልባቶችዎ፣ ታሪክዎ፣ የይለፍ ቃላትዎ እና ሌሎች ቅንብሮችዎ ያሉ የGoogle Chrome ውሂብዎ እስከመጨረሻው ከ<ph name="USER_NAME" /> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች ዳሽቦርዱ አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም።</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Chromium 作業系統開放原始碼授權</translation>
 <translation id="2241627712206172106">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chromium。</translation>
 <translation id="225614027745146050">歡迎使用</translation>
-<translation id="2264142189334629813">Chromium 作業系統無法開啟這個網頁。</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="2347108572062610441">這個擴充功能已變更 Chromium 啟動時所顯示的網頁。</translation>
 <translation id="2372704305038231957">32 位元的 Chromium 已不適用於這種 Linux 系統，因此可能無法正常運作。請升級至 64 位元的 Chromium。</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">在 Chromium 中</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2486653164587200256">Chromium 已不適用於 Windows XP 或 Windows Vista，因此可能無法正常運作。</translation>
+<translation id="2527042973354814951">重新啟動 Chromium 即可啟用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">您的帳戶登入詳細資料尚未更新，因此 Chromium 作業系統無法同步處理您的資料。</translation>
 <translation id="2558641060352364164">我們即將停止支援這個網站使用的 Chromium 內嵌框架外掛程式。請解除安裝該外掛程式，並升級至新型瀏覽器。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

@@ -126,6 +126,7 @@ Vert</translation>
 <translation id="409800995205263688">MERK: I henhold til lokale retningslinjer er tilkobling tillatt bare mellom datamaskiner i nettverket ditt.</translation>
 <translation id="4155497795971509630">Det mangler noen nødvendige komponenter. Kontrollér at du kjører den nyeste versjonen av programvaren, og prøv på nytt.</translation>
 <translation id="4156740505453712750">For å beskytte tilgangen til denne datamaskinen må du velge en PIN-kode bestående av <ph name="BOLD_START" />minst seks tall<ph name="BOLD_END" />. Denne PIN-koden kreves når man kobler til fra en annen posisjon.</translation>
+<translation id="4156741816461781891">Pålogget som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Tilgangskode</translation>
 <translation id="4207623512727273241">Kjør installasjonsprogrammet før du fortsetter.</translation>
 <translation id="4227991223508142681">Verktøy for vertsidentitetshåndtering</translation>
@@ -208,10 +209,6 @@ skrivebord-vert</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Noe annet.</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
-<translation id="6408143143164565232">• Hør lyd fra Windows- eller Linux-datamaskiner.
-• Fjern uønskede tilkoblinger ved å trykke og holde på navnene til spesifikke datamaskiner.
-• Jevnere klyp-for-å-zoome-funksjonalitet og rulling med to fingre.
-• Nytt vindu for hjelp og tilbakemeldinger.</translation>
 <translation id="6441316101718669559">Denne plattformen har ikke støtte for skrivebordsintegrasjon. Du kan fortsatt bruke programmet, men brukeropplevelsen blir redusert.</translation>
 <translation id="652218476070540101">PIN-koden for denne datamaskinen oppdateres …</translation>
 <translation id="6527303717912515753">Del</translation>

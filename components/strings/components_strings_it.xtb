@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="106701514854093668">Preferiti desktop</translation>
 <translation id="1080116354587839789">Adatta in larghezza</translation>
-<translation id="1103124106085518534">Finito per ora</translation>
 <translation id="1103523840287552314">Traduci sempre <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Se questa opzione viene selezionata, Chrome memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="1111153019813902504">Preferiti aggiunti di recente</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prova a eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">I preferiti che visiti più spesso verranno visualizzati qui.</translation>
 <translation id="1821930232296380041">Richiesta o parametri della richiesta non validi</translation>
 <translation id="1838667051080421715">È visualizzata la sorgente di una pagina web.</translation>
 <translation id="1871208020102129563">L'impostazione del proxy prevede l'utilizzo di server proxy fissi, non di un URL script .pac.</translation>
@@ -358,7 +356,6 @@
 <translation id="4816492930507672669">Adatta alla pagina</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4880827082731008257">Cerca nella cronologia</translation>
-<translation id="4884656795097055129">Verranno visualizzati altri articoli al momento giusto.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{e un'altra pagina web}other{e altre # pagine web}}</translation>
 <translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE" /></translation>

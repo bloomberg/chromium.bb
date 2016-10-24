@@ -65,6 +65,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1643702317193804718">Käännetään sivua kielelle <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1647391597548383849">Kameran käyttöoikeus</translation>
+<translation id="1661474178782861119">Muita artikkeleita ilmestyy pian. Nauti illastasi.</translation>
 <translation id="169033420419426091">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui, koska SD-kortti puuttuu.</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1742134235943978220">Käännetty kielelle <ph name="TARGET_LANGUAGE" />.</translation>
@@ -382,7 +383,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="5512137114520586844">Tätä tiliä hallinnoi <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Chrome tarvitsee sijaintitietoja hakeakseen laitteita. <ph name="BEGIN_LINK1" />Päivitä käyttöoikeudet<ph name="END_LINK1" />. Sijaintitiedot on lisäksi <ph name="BEGIN_LINK2" />poistettu käytöstä tällä laitteella<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Sulje incognito-välilehdet</translation>
-<translation id="5538968846107343822">Bluetooth-laitteita ei löytynyt. <ph name="BEGIN_LINK" />Skannaa uudelleen<ph name="END_LINK" /></translation>
 <translation id="554327794654007401">Fyysinen web</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5565871407246142825">Luottokortit</translation>
@@ -418,6 +418,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="583891442612896534">Chrome ei saa yhteyttä Googlen palvelimiin tietojen pakkausta varten. Tietojen tallentaminen voi olla rajoitettua.</translation>
 <translation id="585027516397408832">Data Saver käytössä</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
+<translation id="5867027562311576691">Muita artikkeleita ilmestyy pian. Nauti aamustasi.</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
 <translation id="5899349522111170522">Luo uusi tiedosto.</translation>
 <translation id="5902828464777634901">Kaikki tämän sivuston tallentamat paikalliset tiedot (myös evästeet) poistetaan.</translation>
@@ -557,6 +558,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="7493994139787901920"><ph name="VERSION" /> (päivitettiin <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Odota…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Siinä kaikki toistaiseksi</translation>
 <translation id="7562080006725997899">Selaustietoja poistetaan</translation>
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
 <translation id="7588950540487816470">Fyysinen web</translation>
@@ -627,6 +629,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8275818695183729150">Salli (osoitepalkissa tehtäville hauille)</translation>
 <translation id="8283853025636624853">Synkronoidaan tietoja tilille <ph name="SYNC_ACCOUNT_USER_NAME" />.</translation>
 <translation id="8310344678080805313">Tavalliset välilehdet</translation>
+<translation id="8321376388213838985">Muita artikkeleita ilmestyy pian. Nauti iltapäivästäsi.</translation>
 <translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
 <translation id="8374821112118309944">TalkBack täytyy päivittää uudempaan versioon.</translation>
 <translation id="8396312449826231789">Vain hyväksytyt sivustot</translation>
@@ -702,7 +705,6 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="917685106653909562">Lähistöllä on Fyysisen webin sivuja.</translation>
 <translation id="9187199695613236444">Mobiililaitteille sopiva näkymä</translation>
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
-<translation id="9192643434065497760">Ota Bluetooth käyttöön <ph name="BEGIN_LINK" />laitteen asetuksissa<ph name="END_LINK" />, jotta laiteparin muodostus onnistuu.</translation>
 <translation id="9198708126133947749">Laitteen tiedot korvataan tilin <ph name="TO_ACCOUNT" /> tiedoilla. Voit palauttaa nykyiset tiedot kirjautumalla takaisin tilille <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Kuvat</translation>

@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="1119447706177454957">આંતરિક ભૂલ</translation>
 <translation id="153454903766751181">સેલ્યુલર મોડેમનો પ્રારંભ કરી રહ્યાં છે...</translation>
-<translation id="158849752021629804">હોમ નેટવર્કની આવશ્યકતા છે</translation>
-<translation id="1661867754829461514">PIN ખૂટે છે</translation>
-<translation id="1773212559869067373">પ્રમાણીકરણ પ્રમાણપત્રને સ્થાનિક રૂપે નકારવામાં આવ્યું છે</translation>
 <translation id="1829129547161959350">પેન્ગ્વિન</translation>
 <translation id="1850504506766569011">Wi-Fi બંધ છે.</translation>
 <translation id="2288278176040912387">રેકોર્ડ પ્લેયર</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
-<translation id="2544853746127077729">નેટવર્ક દ્વારા પ્રમાણીકરણ પ્રમાણપત્ર નકારવામાં આવ્યું</translation>
 <translation id="2563185590376525700">દેડકો</translation>
-<translation id="2563856802393254086">અભિનંદન! તમારી '<ph name="NAME" />' ડેટા સેવાને સક્રિય કરવામાં આવી છે અને આગળ વધવા માટે તૈયાર છે.</translation>
 <translation id="2649120831653069427">રેન્બોફીશ</translation>
-<translation id="2670531586141364277"><ph name="NAME" /> ના સક્રિયકરણને નેટવર્ક કનેક્શનની જરૂર છે.</translation>
 <translation id="277257480934873581"><ph name="NAME" /> થી ફરીથી કનેક્ટ કરી રહ્યાં છે</translation>
 <translation id="2894654529758326923">માહિતી</translation>
 <translation id="2951236788251446349">જેલીફીશ</translation>
-<translation id="2966449113954629791">તમે તમારા મોબાઇલ ડેટા ભથ્થાનો ઉપયોગ કર્યો હોઈ શકે છે. વધુ ડેટા ખરીદવા માટે <ph name="NAME" /> સક્રિયતા પોર્ટલની મુલાકાત લો.</translation>
 <translation id="3846575436967432996">કોઈ નેટવર્ક માહિતી ઉપલબ્ધ નથી</translation>
-<translation id="3871838685472846647">સેલ્યુલર સક્રિય કર્ય્રુ</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> થી કનેક્ટ કરી રહ્યું છે</translation>
 <translation id="3958548648197196644">કિવી</translation>
-<translation id="40400351611212369">નેટવર્ક સક્રિયકરણ ભૂલ</translation>
 <translation id="4118990158415604803">તમારા વ્યવસ્થાપક દ્વારા અન્ય નેટવર્ક્સને કનેક્ટ કરવાનું અક્ષમ કરેલ છે.</translation>
-<translation id="4237016987259239829">નેટવર્ક કનેક્શન ભૂલ</translation>
-<translation id="4274292172790327596">અપરિચિત ભૂલ</translation>
 <translation id="4326192123064055915">કૉફી</translation>
-<translation id="4387004326333427325">પ્રમાણીકરણ પ્રમાણપત્ર રિમોટલી નકારવામાં આવ્યું છે</translation>
-<translation id="4442424173763614572">DNS લુકઅપ નિષ્ફળ ગયું</translation>
 <translation id="4448844063988177157"> Wi-Fi નેટવર્ક્સ માટે શોધી રહ્યું છે... </translation>
 <translation id="4479639480957787382">ઇથરનેટ</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: કનેક્ટ કરી રહ્યું છે...</translation>
-<translation id="4508265954913339219">સક્રિયતા નિષ્ફળ</translation>
 <translation id="4559767610552730302">બૉકે</translation>
 <translation id="4935975195727477204">સૂર્યમુખીનું ફૂલ</translation>
-<translation id="5045550434625856497">ખોટો પાસવર્ડ</translation>
-<translation id="5097002363526479830">નેટવર્ક '<ph name="NAME" />' થી કનેક્ટ કરવામાં નિષ્ફળ: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">ચેસ</translation>
 <translation id="5257456363153333584">વાણિયો</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">DHCP લુકઅપ નિષ્ફળ</translation>
-<translation id="6232116551750539448"><ph name="NAME" /> થી કનેક્શન જતું રહ્યું છે</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: સક્રિય કરી રહ્યું છે...</translation>
-<translation id="6312403991423642364">અજ્ઞાત નેટવર્ક ભૂલ</translation>
-<translation id="6490455614072479501">'<ph name="NAME" />' થી કનેક્ટ કરવામાં નિષ્ફળ થયું: <ph name="DETAILS" />
-        સર્વર સંદેશ: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">કોઇ સેલ્યુલર નેટવર્ક ઉપલબ્ધ નથી</translation>
-<translation id="6732801395666424405">પ્રમાણપત્રો લોડ કર્યાં નથી</translation>
 <translation id="6857811139397017780">સક્રિય કરો <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">ઊલટું</translation>
-<translation id="6943836128787782965">HTTP નિષ્ફળ ગયું</translation>
 <translation id="7066646422045619941">આ નેટવર્ક તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલ છે.</translation>
-<translation id="7165320105431587207">નેટવર્ક ગોઠવવામાં નિષ્ફળ</translation>
-<translation id="7170041865419449892">પહોંચ બહાર</translation>
-<translation id="7229570126336867161">EVDO ની જરૂર છે</translation>
-<translation id="7256405249507348194">અજ્ઞાત ભૂલ: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">વપરાશકર્તાનામ/પાસવર્ડ ખોટો છે અથવા EAP-auth નિષ્ફળ થયું</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="7874779702599364982">સેલ્યુલર નેટવર્ક્સ માટે શોધી રહ્યું છે...</translation>
-<translation id="7925247922861151263">AAA તપાસ નિષ્ફળ</translation>
-<translation id="7973962044839454485">ખોટા વપરાશકર્તાનામ અથવા પાસવર્ડને કારણે PPP પ્રમાણીકરણ નિષ્ફળ થયું</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
 <translation id="8008366997883261463">કૂતરો</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> થી કનેક્ટેડ છે</translation>
-<translation id="8300849813060516376">OTASP નિષ્ફળ</translation>
-<translation id="8372369524088641025">ખરાબ WEP કી</translation>
 <translation id="8454013096329229812">Wi-Fi ચાલુ છે.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
-<translation id="8688591111840995413">ખોટો પાસવર્ડ</translation>
 <translation id="8714406895390098252">સાયકલ</translation>
 <translation id="8808686172382650546">બિલાડી</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">નેટવર્કથી કનેક્ટ કરવામાં નિષ્ફળ: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">કનેક્ટ કરવું નિષ્ફળ</translation>
 </translationbundle>

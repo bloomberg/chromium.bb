@@ -10,7 +10,6 @@
 <translation id="10614374240317010">ಉಳಿಸಿಯೇ ಇಲ್ಲ</translation>
 <translation id="106701514854093668">ಡೆಸ್ಕ್‌ಟಾಪ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="1080116354587839789">ಅಗಲಕ್ಕೆ ಹೊಂದಿಸಿ</translation>
-<translation id="1103124106085518534">ಇದೀಗ ಮುಗಿದಿದೆ</translation>
 <translation id="1103523840287552314">ಯಾವಾಗಲೂ ಅನುವಾದಿಸಿ <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">ಪರಿಶೀಲಿಸಿದರೆ, ವೇಗವಾಗಿ ಫಾರ್ಮ್ ಭರ್ತಿ ಮಾಡಲು Chrome ಈ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಪ್ರತಿಯನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ.</translation>
 <translation id="1111153019813902504">ಇತ್ತೀಚಿನ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows ನೆಟ್‌ವರ್ಕ್ ಡಯಾಗ್ನಾಸ್ಟಿಕ್ಸ್‌ ರನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ‌<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">ನೀವು ಇತ್ತೀಚಿಗೆ ಭೇಟಿ ನೀಡಿದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="1821930232296380041">ಅಮಾನ್ಯವಾದ ವಿನಂತಿ ಅಥವಾ ವಿನಂತಿ ಪ್ಯಾರಾಮೀಟರ್‌ಗಳು</translation>
 <translation id="1838667051080421715">ನೀವು ವೆಬ್ ಪುಟದ ಮೂಲವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="1871208020102129563">.pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅಲ್ಲದೆ, ನಿಗಧಿತ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸಲು ಪ್ರಾಕ್ಸಿಯನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
@@ -358,7 +356,6 @@
 <translation id="4816492930507672669">ಪುಟಕ್ಕೆ ಹೊಂದಿಸು</translation>
 <translation id="4850886885716139402">ವೀಕ್ಷಣೆ</translation>
 <translation id="4880827082731008257">ಹುಡುಕಾಟ ಇತಿಹಾಸ</translation>
-<translation id="4884656795097055129">ಸಮಯವು ಸರಿಯಾಗಿರುವಾಗ ಹೆಚ್ಚು ಲೇಖನಗಳು ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ಮತ್ತು 1 ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟ}one{ಮತ್ತು # ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟಗಳು}other{ಮತ್ತು # ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟಗಳು}}</translation>
 <translation id="4923417429809017348">ಗೊತ್ತಿಲ್ಲದ ಭಾಷೆಯಿಂದ <ph name="LANGUAGE_LANGUAGE" /> ಗೆ ಈ ಪುಟವನ್ನು ಭಾಷಾಂತರಿಸಲಾಗಿದೆ</translation>

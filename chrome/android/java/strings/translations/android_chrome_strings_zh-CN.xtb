@@ -382,7 +382,6 @@
 <translation id="5512137114520586844">该帐户由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
-<translation id="5538968846107343822">未找到任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" />。</translation>
 <translation id="554327794654007401">实物网</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5565871407246142825">信用卡</translation>
@@ -426,7 +425,7 @@
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5942872142862698679">使用 Google 进行搜索</translation>
-<translation id="6000066717592683814">默认使用 Google</translation>
+<translation id="6000066717592683814">继续使用 Google</translation>
 <translation id="6010869025736512584">正在存取视频输入</translation>
 <translation id="6012342843556706400">Chrome 需要具有位置信息使用权，才能批准此网站的分享请求。</translation>
 <translation id="6031101910111098835">已折叠 - 点击即可展开</translation>
@@ -444,7 +443,7 @@
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6177390657002841081">启用流量节省程序</translation>
-<translation id="617991007797131187">Chrome 可以使用搜狗在中国境内进行搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中更改此设置。</translation>
+<translation id="617991007797131187">Chrome 可以在中国使用搜狗进行搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中更改此设置。</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
@@ -702,7 +701,6 @@
 <translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>
 <translation id="9188680907066685419">退出受管理的帐户</translation>
-<translation id="9192643434065497760">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对。</translation>
 <translation id="9198708126133947749">系统会将此设备的数据替换为 <ph name="TO_ACCOUNT" /> 的数据。不过，您可以切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">图片</translation>

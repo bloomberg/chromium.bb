@@ -126,6 +126,7 @@ gazdagép</translation>
 <translation id="409800995205263688">MEGJEGYZÉS: az irányelv-beállítások a csatlakozást csak a saját hálózaton belül található számítógépek között teszik lehetővé.</translation>
 <translation id="4155497795971509630">Hiányzik néhány szükséges összetevő. Kérjük, ellenőrizze, hogy a szoftver legfrissebb verzióját telepítette-e, majd próbálja újra.</translation>
 <translation id="4156740505453712750">A számítógép hozzáférésének védelméhez válasszon egy <ph name="BOLD_START" />legalább hat számjegyből álló<ph name="BOLD_END" /> PIN kódot. Ezt a PIN kódot kéri a rendszer, ha más helyről kísérlik meg a kapcsolódást.</translation>
+<translation id="4156741816461781891">Bejelentkezve a következőként: <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Elérési kód</translation>
 <translation id="4207623512727273241">Kérjük, futtassa a telepítőt a folytatás előtt.</translation>
 <translation id="4227991223508142681">Gazdagép-ellátási segédprogram</translation>
@@ -208,10 +209,6 @@ gazdagép</translation>
 <translation id="6304318647555713317">Kliens</translation>
 <translation id="6381670701864002291">Valami más.</translation>
 <translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
-<translation id="6408143143164565232">• Audió hallgatása Windows vagy Linux rendszerű számítógépről.
-• A nem kívánt csatlakozások eltávolítása a számítógép nevének hosszan tartó lenyomásával.
-• Finomabb kétujjas nagyítás és görgetés.
-• Új képernyő a súgó és a visszajelzések számára.</translation>
 <translation id="6441316101718669559">Ez az operációs rendszer nem támogatja az asztali integrációt. Az alkalmazást használhatja, de a felhasználói élmény nem lesz teljes.</translation>
 <translation id="652218476070540101">A számítógéphez tartozó PIN-kód frissítése folyamatban...</translation>
 <translation id="6527303717912515753">Megosztás</translation>

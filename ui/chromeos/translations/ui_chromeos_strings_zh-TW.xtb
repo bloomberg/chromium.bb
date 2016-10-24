@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1119447706177454957">內部錯誤</translation>
 <translation id="153454903766751181">正在初始化行動數據機...</translation>
-<translation id="158849752021629804">需要家用網路</translation>
-<translation id="1661867754829461514">找不到 PIN</translation>
-<translation id="1773212559869067373">本機已拒絕驗證憑證</translation>
 <translation id="1829129547161959350">企鵝</translation>
 <translation id="1850504506766569011">Wi-Fi 已關閉。</translation>
 <translation id="2288278176040912387">唱機</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
-<translation id="2544853746127077729">網路已拒絕驗證憑證</translation>
 <translation id="2563185590376525700">青蛙</translation>
-<translation id="2563856802393254086">恭喜您！您的「<ph name="NAME" />」數據服務已啟用，隨時可供使用。</translation>
 <translation id="2649120831653069427">彩虹魚</translation>
-<translation id="2670531586141364277">必須連上網路才能啟用「<ph name="NAME" />」。</translation>
 <translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
 <translation id="2894654529758326923">資訊</translation>
 <translation id="2951236788251446349">水母</translation>
-<translation id="2966449113954629791">您可能已用盡行動數據配額。造訪 <ph name="NAME" /> 啟用入口網站即可購買更多數據量。</translation>
 <translation id="3846575436967432996">沒有可用的網路資訊</translation>
-<translation id="3871838685472846647">行動網路已啟用</translation>
 <translation id="3901991538546252627">正在連線至：<ph name="NAME" /></translation>
 <translation id="3958548648197196644">奇異果</translation>
-<translation id="40400351611212369">網路啟用錯誤</translation>
 <translation id="4118990158415604803">您的管理員已停用與其他網路的連線。</translation>
-<translation id="4237016987259239829">網路連線錯誤</translation>
-<translation id="4274292172790327596">不明錯誤</translation>
 <translation id="4326192123064055915">咖啡</translation>
-<translation id="4387004326333427325">遠端已拒絕驗證憑證</translation>
-<translation id="4442424173763614572">DNS 查詢失敗</translation>
 <translation id="4448844063988177157">正在搜尋 Wi-Fi 網路...</translation>
 <translation id="4479639480957787382">乙太網路</translation>
 <translation id="4508225577814909926"><ph name="NAME" />：正在連線...</translation>
-<translation id="4508265954913339219">啟用失敗</translation>
 <translation id="4559767610552730302">散景</translation>
 <translation id="4935975195727477204">勳章菊花</translation>
-<translation id="5045550434625856497">密碼不正確</translation>
-<translation id="5097002363526479830">無法連線至「<ph name="NAME" />」：<ph name="DETAILS" /></translation>
 <translation id="515594325917491223">西洋棋</translation>
 <translation id="5257456363153333584">蜻蜓</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">DHCP 查閱失敗</translation>
-<translation id="6232116551750539448">「<ph name="NAME" />」的連線已中斷</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在啟用...</translation>
-<translation id="6312403991423642364">不明的網路錯誤</translation>
-<translation id="6490455614072479501">無法連線至「<ph name="NAME" />」：<ph name="DETAILS" />
-        伺服器訊息：<ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">沒有可用的行動網路</translation>
-<translation id="6732801395666424405">未載入憑證</translation>
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">上下顛倒</translation>
-<translation id="6943836128787782965">HTTP 擷取失敗</translation>
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
-<translation id="7165320105431587207">無法設定網路</translation>
-<translation id="7170041865419449892">超出範圍</translation>
-<translation id="7229570126336867161">需要 EVDO</translation>
-<translation id="7256405249507348194">無法辨識的錯誤：<ph name="DESC" /></translation>
-<translation id="7297443947353982503">使用者名稱/密碼錯誤或 EAP 驗證失敗</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7874779702599364982">正在搜尋行動網路...</translation>
-<translation id="7925247922861151263">AAA 檢查失敗</translation>
-<translation id="7973962044839454485">使用者名稱或密碼錯誤，導致 PPP 驗證失敗</translation>
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="8008366997883261463">傑克羅素梗</translation>
 <translation id="8132793192354020517">已連線至 <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP 失敗</translation>
-<translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8454013096329229812">Wi-Fi 已開啟。</translation>
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新連線...</translation>
-<translation id="8688591111840995413">密碼錯誤</translation>
 <translation id="8714406895390098252">單車</translation>
 <translation id="8808686172382650546">貓咪</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">無法連線至網路：<ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">連線失敗</translation>
 </translationbundle>

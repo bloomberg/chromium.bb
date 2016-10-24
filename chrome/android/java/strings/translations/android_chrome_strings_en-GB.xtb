@@ -65,6 +65,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1643702317193804718">Translating page to <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1647391597548383849">Access your camera</translation>
+<translation id="1661474178782861119">More articles will appear soon. Enjoy your evening.</translation>
 <translation id="169033420419426091"><ph name="FILE_NAME" /> download failed due to missing SD Card.</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1742134235943978220">Translated to <ph name="TARGET_LANGUAGE" />.</translation>
@@ -382,7 +383,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5512137114520586844">This account is managed by <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK1" />Update permissions<ph name="END_LINK1" />. Location access is also <ph name="BEGIN_LINK2" />turned off for this device<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Close incognito tabs</translation>
-<translation id="5538968846107343822">No Bluetooth devices found. <ph name="BEGIN_LINK" />Re-scan<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">The Physical Web</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5565871407246142825">Credit cards</translation>
@@ -418,6 +418,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="583891442612896534">Chrome is unable to reach Google servers for data compression. Your data savings may be limited.</translation>
 <translation id="585027516397408832">Data Saver enabled</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="5867027562311576691">More articles will appear soon. Enjoy your morning.</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5899349522111170522">Create new file</translation>
 <translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
@@ -557,6 +558,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Please wait…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">That's all for now</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
 <translation id="7588950540487816470">Physical web</translation>
@@ -627,6 +629,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8275818695183729150">Allow (for address bar searches)</translation>
 <translation id="8283853025636624853">Syncing to <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standard tabs</translation>
+<translation id="8321376388213838985">More articles will appear soon. Enjoy your afternoon.</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8396312449826231789">Only approved sites</translation>
@@ -700,7 +703,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="917685106653909562">Physical Web pages nearby</translation>
 <translation id="9187199695613236444">Mobile-friendly view</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
-<translation id="9192643434065497760">Turn on Bluetooth in <ph name="BEGIN_LINK" />device settings<ph name="END_LINK" /> to allow pairing.</translation>
 <translation id="9198708126133947749">Replace this device’s data with <ph name="TO_ACCOUNT" />’s data. You can retrieve your existing data by switching back to <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Images</translation>

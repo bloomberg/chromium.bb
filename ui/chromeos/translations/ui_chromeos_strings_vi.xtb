@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1119447706177454957">Lỗi nội bộ</translation>
 <translation id="153454903766751181">Đang chạy modem di động...</translation>
-<translation id="158849752021629804">Cần mạng gia đình</translation>
-<translation id="1661867754829461514">Thiếu PIN</translation>
-<translation id="1773212559869067373">Chứng chỉ xác thực bị từ chối cục bộ</translation>
 <translation id="1829129547161959350">Chim cánh cụt</translation>
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
 <translation id="2288278176040912387">Máy quay đĩa hát</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Chứng chỉ xác thực bị mạng từ chối</translation>
 <translation id="2563185590376525700">Ếch</translation>
-<translation id="2563856802393254086">Xin chúc mừng! Dịch vụ dữ liệu '<ph name="NAME" />' của bạn đã được kích hoạt và sẵn sàng sử dụng.</translation>
 <translation id="2649120831653069427">Cá cầu vồng</translation>
-<translation id="2670531586141364277">Cần phải có kết nối mạng để kích hoạt '<ph name="NAME" />'</translation>
 <translation id="277257480934873581">Đang kết nối lại với <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Thông tin</translation>
 <translation id="2951236788251446349">Sứa</translation>
-<translation id="2966449113954629791">Bạn có thể đã sử dụng hết dung lượng dữ liệu di động cho phép. Hãy truy cập cổng kích hoạt <ph name="NAME" /> để mua thêm dữ liệu.</translation>
 <translation id="3846575436967432996">Không có thông tin mạng</translation>
-<translation id="3871838685472846647">Đã kích hoạt di động</translation>
 <translation id="3901991538546252627">Đang kết nối với <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Lỗi kích hoạt mạng</translation>
 <translation id="4118990158415604803">Quản trị viên của bạn đã tắt tính năng kết nối với các mạng khác.</translation>
-<translation id="4237016987259239829">Lỗi Kết nối Mạng</translation>
-<translation id="4274292172790327596">Lỗi chưa được xác định</translation>
 <translation id="4326192123064055915">Cà phê</translation>
-<translation id="4387004326333427325">Chứng chỉ xác thực bị từ chối từ xa</translation>
-<translation id="4442424173763614572">Tìm kiếm DNS không thành công</translation>
 <translation id="4448844063988177157">Đang tìm kiếm mạng Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Đang kết nối...</translation>
-<translation id="4508265954913339219">Kích hoạt không thành công</translation>
 <translation id="4559767610552730302">Hiệu ứng Bokeh</translation>
 <translation id="4935975195727477204">Hoa Gazania</translation>
-<translation id="5045550434625856497">Mật khẩu sai</translation>
-<translation id="5097002363526479830">Không thể kết nối với mạng '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Cờ vua</translation>
 <translation id="5257456363153333584">Chuồn chuồn</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">Không thể tra cứu DHCP</translation>
-<translation id="6232116551750539448">Đã mất kết nối với <ph name="NAME" /></translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Đang kích hoạt...</translation>
-<translation id="6312403991423642364">Lỗi mạng không xác định</translation>
-<translation id="6490455614072479501">Không kết nối được với '<ph name="NAME" />': <ph name="DETAILS" />
-        Thông báo máy chủ: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Không có mạng di động nào</translation>
-<translation id="6732801395666424405">Không tải được chứng chỉ</translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Lộn ngược</translation>
-<translation id="6943836128787782965">HTTP gặp lỗi</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
-<translation id="7165320105431587207">Không định cấu hình mạng được</translation>
-<translation id="7170041865419449892">Ngoài vùng phủ sóng</translation>
-<translation id="7229570126336867161">Cần có EVDO</translation>
-<translation id="7256405249507348194">Lỗi không xác định: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Tên người dùng/mật khẩu không đúng hoặc xác thực EAP không thành công</translation>
 <translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
 <translation id="7874779702599364982">Đang tìm kiếm mạng di động...</translation>
-<translation id="7925247922861151263">Không thể kiểm tra AAA</translation>
-<translation id="7973962044839454485">Xác thực PPP không thành công do tên người dùng hoặc mật khẩu không đúng</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="8008366997883261463">Chó</translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP không thành công</translation>
-<translation id="8372369524088641025">Khóa WEP sai</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Đang kết nối lại...</translation>
-<translation id="8688591111840995413">Mật khẩu yếu</translation>
 <translation id="8714406895390098252">Xe đạp</translation>
 <translation id="8808686172382650546">Mèo</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Không kết nối được với mạng: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Kết nối không thành công</translation>
 </translationbundle>

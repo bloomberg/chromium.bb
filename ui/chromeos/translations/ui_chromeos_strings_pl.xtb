@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="1119447706177454957">Błąd wewnętrzny</translation>
 <translation id="153454903766751181">Inicjuję modem komórkowy...</translation>
-<translation id="158849752021629804">Wymagana sieć macierzysta</translation>
-<translation id="1661867754829461514">Brak kodu PIN</translation>
-<translation id="1773212559869067373">Certyfikat uwierzytelniania został odrzucony lokalnie</translation>
 <translation id="1829129547161959350">Pingwin</translation>
 <translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
 <translation id="2288278176040912387">Gramofon</translation>
 <translation id="2354174487190027830">Aktywuję <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Certyfikat uwierzytelniania został odrzucony przez sieć</translation>
 <translation id="2563185590376525700">Żaba</translation>
-<translation id="2563856802393254086">Gratulacje! Usługa transmisji danych „<ph name="NAME" />” została aktywowana i można z niej korzystać.</translation>
 <translation id="2649120831653069427">Tęczanka</translation>
-<translation id="2670531586141364277">Aktywacja <ph name="NAME" /> wymaga połączenia z siecią.</translation>
 <translation id="277257480934873581">Ponownie łączę z: <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informacje</translation>
 <translation id="2951236788251446349">Meduza</translation>
-<translation id="2966449113954629791">Możliwe, że wykorzystałeś już limit transferu danych przez sieć komórkową. Odwiedź portal aktywacji <ph name="NAME" />, by zwiększyć limit.</translation>
 <translation id="3846575436967432996">Brak informacji o sieciach</translation>
-<translation id="3871838685472846647">Sieć komórkowa aktywna</translation>
 <translation id="3901991538546252627">Łączę z: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Błąd aktywacji sieci</translation>
 <translation id="4118990158415604803">Możliwość połączenia się z innymi sieciami została wyłączona przez administratora.</translation>
-<translation id="4237016987259239829">Błąd połączenia z siecią</translation>
-<translation id="4274292172790327596">Nierozpoznany błąd</translation>
 <translation id="4326192123064055915">Kawa</translation>
-<translation id="4387004326333427325">Certyfikat uwierzytelniania został odrzucony zdalnie</translation>
-<translation id="4442424173763614572">Wyszukiwanie DNS nie powiodło się.</translation>
 <translation id="4448844063988177157">Trwa wyszukiwanie sieci Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: łączę...</translation>
-<translation id="4508265954913339219">Aktywacja nie powiodła się</translation>
 <translation id="4559767610552730302">Boke</translation>
 <translation id="4935975195727477204">Kwiat gazanii</translation>
-<translation id="5045550434625856497">Nieprawidłowe hasło</translation>
-<translation id="5097002363526479830">Nie udało się połączyć z siecią „<ph name="NAME" />”: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Szachy</translation>
 <translation id="5257456363153333584">Ważka</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">Wyszukiwanie DHCP nie powiodło się</translation>
-<translation id="6232116551750539448">Połączenie z <ph name="NAME" /> zostało utracone</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktywuję...</translation>
-<translation id="6312403991423642364">Nieznany błąd sieci</translation>
-<translation id="6490455614072479501">Nie udało się połączyć z „<ph name="NAME" />”: <ph name="DETAILS" />
-Komunikat serwera: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Brak dostępnych sieci komórkowych</translation>
-<translation id="6732801395666424405">Certyfikaty nie zostały wczytane</translation>
 <translation id="6857811139397017780">Aktywuj usługę <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Do góry nogami</translation>
-<translation id="6943836128787782965">Wykonanie metody GET protokołu HTTP nie powiodło się.</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
-<translation id="7165320105431587207">Nie można skonfigurować sieci</translation>
-<translation id="7170041865419449892">Poza zasięgiem</translation>
-<translation id="7229570126336867161">Wymagana technologia EVDO</translation>
-<translation id="7256405249507348194">Nierozpoznany błąd: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Niepoprawna nazwa użytkownika lub hasło albo uwierzytelnianie EAP nie powiodło się</translation>
 <translation id="735745346212279324">VPN odłączona</translation>
 <translation id="7874779702599364982">Szukam sieci komórkowych...</translation>
-<translation id="7925247922861151263">Sprawdzenie AAA nie powiodło się</translation>
-<translation id="7973962044839454485">Uwierzytelnianie PPP nie powiodło się z powodu nieprawidłowej nazwy użytkownika lub hasła</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
 <translation id="8008366997883261463">Pies</translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Dostarczanie OTASP nie powiodło się</translation>
-<translation id="8372369524088641025">Błędny klucz WEP</translation>
 <translation id="8454013096329229812">Wi-Fi włączone.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
-<translation id="8688591111840995413">Nieprawidłowe hasło</translation>
 <translation id="8714406895390098252">Rower</translation>
 <translation id="8808686172382650546">Kot</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Nie udało się połączyć z siecią: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Łączenie nie powiodło się</translation>
 </translationbundle>

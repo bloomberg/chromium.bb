@@ -39,7 +39,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2158734852934720349">Open-sourcelicenties van Chromium OS</translation>
 <translation id="2241627712206172106">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chromium configureren zoals zij dat willen.</translation>
 <translation id="225614027745146050">Welkom</translation>
-<translation id="2264142189334629813">Chromium OS kan deze pagina niet openen.</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
 <translation id="2347108572062610441">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="2372704305038231957">De 32-bits versie van Chromium werkt mogelijk niet correct omdat deze niet meer wordt ondersteund op dit Linux-systeem. Upgrade naar de 64-bits versie van Chromium.</translation>
@@ -48,6 +47,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2483889755041906834">In Chromium</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2486653164587200256">Chromium werkt wellicht niet naar behoren omdat dit niet langer wordt ondersteund op Windows XP en Windows Vista.</translation>
+<translation id="2527042973354814951">Chromium opnieuw opstarten om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
 <translation id="2535480412977113886">Chromium OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="2558641060352364164">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en voer een upgrade naar een moderne browser uit.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

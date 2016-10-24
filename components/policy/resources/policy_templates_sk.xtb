@@ -289,6 +289,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak povolenie HardwareAccelerationModeEnabled nastavíte na možnosť False, povolenie Disable3DAPIs sa bude ignorovať a bude sa zhodovať s povolením Disable3DAPIs nastaveným na možnosť True.</translation>
 <translation id="2168397434410358693">Oneskorenie režimu nečinnosti pri používaní napájacieho zdroja</translation>
 <translation id="2170233653554726857">Povoliť optimalizáciu pomocou protokolu WPAD</translation>
+<translation id="2178899310296064282">Vynútiť aspoň stredný obmedzený režim v službe YouTube</translation>
 <translation id="2188979373208322108">Povoľuje v prehliadači <ph name="PRODUCT_NAME" /> panel so záložkami.
 
       Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> zobrazí panel so záložkami.
@@ -560,6 +561,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo povolíte alebo zakážete, používatelia ho pomocou nastavenia „Povoliť ochranu pred phishingom a škodlivým softvérom“ v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť.
 
       Ak toto pravidlo ponecháte nenastavené, funkcia bude povolená, ale používateľ to bude môcť zmeniť.</translation>
+<translation id="2787173078141616821">Nahlasovať informácie o stave Androidu</translation>
 <translation id="2801230735743888564">Povoľte používateľom hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline.
 
       Ak je toto pravidlo nastavené na hodnotu False, používatelia nebudú môcť hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline. Ak je toto pravidlo nastavené na hodnotu True, používatelia môžu hrať hru s dinosaurom. Ak toto pravidlo nie je nastavené, v zaregistrovanom systéme Chrome OS používatelia veľkonočnú hru s dinosaurom hrať nemôžu, ale za všetkých iných okolností ju hrať môžu.</translation>
@@ -668,9 +670,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo je voliteľné. Ak nie je nastavené, nedôjde k žiadnej výmene hľadaných výrazov.
 
           Toto pravidlo sa rešpektuje len vtedy, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
-<translation id="3067188277482006117">Ak je pravidlo nastavené na hodnotu True, používateľ môže používať hardvér zariadení Chrome na diaľkové overenie svojej identity pre autoritu CA ochrany údajov prostredníctvom metódy chrome.enterprise.platformKeysPrivate.challengeUserKey() rozhrania Enterprise Platform Keys API.
-
-          Ak je hodnota pravidla nastavená na možnosť False alebo pravidlo nie je nastavené vôbec, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="3069958900488014740">Umožňuje vypnúť optimalizáciu WPAD (Web Proxy Auto-Discovery) v prehliadači <ph name="PRODUCT_NAME" />.
 
       Ak je toto pravidlo nastavené na možnosť False, optimalizácia WPAD je zakázaná a prehliadač <ph name="PRODUCT_NAME" /> tak musí čakať dlhšie na servery WPAD založené na systéme DNS. Ak je toto pravidlo povolené alebo nie je nastavené, optimalizácia WPAD je aktívna.
@@ -794,6 +793,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
 
       Ak je toto pravidlo nastavené na hodnotu false, systém <ph name="PRODUCT_OS_NAME" /> nepovolí spustenie relácií hosťa.</translation>
+<translation id="3418871497193485241">Umožňuje vynútiť minimálny obmedzený režim v službe YouTube a zabrániť používateľom
+      vyberať menej obmedzený režim.
+
+      Ak toto nastavenie nakonfigurujete na možnosť Prísny, v službe YouTube bude vždy aktívny prísny obmedzený režim.
+
+      Ak toto nastavenie nakonfigurujete na možnosť Stredný, používatelia budú môcť v službe YouTube vybrať iba
+       stredný obmedzený režim a prísny obmedzený režim, ale nebudú môcť deaktivovať používanie obmedzeného režimu.
+
+      Ak toto nastavenie vypnete alebo nenastavíte žiadnu hodnotu, <ph name="PRODUCT_NAME" /> nebude vynucovať obmedzený režim v službe YouTube. Externé pravidlá (napríklad pravidlá služby YouTube) však môžu naďalej vynucovať obmedzený režim.</translation>
 <translation id="3428247105888806363">Povolenie predpovede siete</translation>
 <translation id="3449886121729668969">Nakonfiguruje nastavenia proxy servera pre prehliadač <ph name="PRODUCT_NAME" />. Tieto nastavenia proxy servera budú k dispozícii aj pre aplikácie s podporou ARC.
 
@@ -910,6 +918,12 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="384743459174066962">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré nemôžu otvárať kontextové okná.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPopupsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
+<translation id="3851039766298741586">Umožňuje nahlasovať informácie o aktívnej relácii režimu verejného terminálu, ako sú
+      identifikátor a verzia aplikácie.
+
+      Ak pravidlo nastavíte na možnosť False, informácie o relácii
+      sa nebudú nahlasovať. Ak ho nastavíte na možnosť True alebo ho nenastavíte,
+      informácie o relácii sa budú nahlasovať.</translation>
 <translation id="3859780406608282662">Pridá parameter k načítavaniu kanála Variácie systému <ph name="PRODUCT_OS_NAME" />.
 
       Ak je pravidlo určené, pridá k webovej adrese na načítanie kanála Variácie parameter dopytu s názvom „restrict". Hodnotou parametra bude hodnota, ktorá sa určí v tomto pravidle.
@@ -924,6 +938,13 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Toto pravidlo bude uplatnené len v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="3864818549971490907">Predvolené nastavenie doplnkov</translation>
+<translation id="386487026071140458">Podpora tohto pravidla bola ukončená, použite namiesto neho <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> a <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Ak nastavíte pravidlo <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> alebo <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (ktorého podpora bola ukončená), toto pravidlo bude ignorované.
+
+      Umožňuje vynútiť zadávanie dopytov vo Vyhľadávaní Google na webe iba v rámci Bezpečného vyhľadávania (nastaveného na možnosť Aktívne) a zabrániť používateľom toto nastavenie meniť. Tiež vynucuje stredný obmedzený režim v službe YouTube.
+
+      Ak toto nastavenie povolíte, Bezpečné vyhľadávanie vo Vyhľadávaní Google a stredný obmedzený režim v službe YouTube budú vždy aktívne.
+
+      Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Bezpečné vyhľadávanie vo Vyhľadávaní Google a obmedzený režim v službe YouTube nebudú vynucované.</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3866530186104388232">Ak je toto pravidlo nastavené na hodnotu pravda alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> na prihlasovacej obrazovke zobrazí existujúcich používateľov a umožní vybrať jedného z nich. Ak je pravidlo nastavené na hodnotu false, systém <ph name="PRODUCT_OS_NAME" /> použije pri prihlásení výzvu na zadanie používateľského mena a hesla.</translation>
 <translation id="3868347814555911633">Toto pravidlo je aktívne iba v režime predaja.
@@ -1008,6 +1029,17 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Ak ponecháte toto pravidlo nenastavené, použije sa pravidlo AllowCookies a používateľ ho bude môcť zmeniť.</translation>
 <translation id="4103289232974211388">Presmerovanie na poskytovateľa identity SAML po potvrdení používateľom</translation>
+<translation id="4103941930938018145">Podpora tohto pravidla bola ukončená. Na ovládanie dostupnosti doplnku Flash použite <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> a pomocou <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ovládajte, či by sa mali súbory PDF otvárať v integrovanom zobrazovači PDF.
+
+      Umožňuje určiť zoznam doplnkov, ktoré budú v prehliadači <ph name="PRODUCT_NAME" /> zakázané a tiež zabrániť používateľom toto nastavenie meniť.
+
+      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo chýbajúci znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
+
+      Ak toto nastavenie povolíte, špecifikovaný zoznam doplnkov sa v prehliadači <ph name="PRODUCT_NAME" /> nikdy nepoužije. Doplnky sú na adrese „about:plugins“ označené ako aktívne a používatelia ich nemôžu povoliť.
+
+      Upozorňujeme, že toto pravidlo môžu prepísať pravidlá EnabledPlugins a DisabledPluginsExceptions.
+
+      Ak toto nastavenie nenastavíte, používatelia môžu využívať akýkoľvek doplnok nainštalovaný v systéme okrem doplnkov, ktoré sú nekompatibilne zakódované, zastarané alebo nebezpečné.</translation>
 <translation id="410478022164847452">Určuje dobu nečinnosti používateľa, po ktorej systém vykoná príslušnú akciu nečinnosti pri používaní napájacieho zdroja.
 
           Ak je toto pravidlo nastavené, určuje dobu nečinnosti používateľa, po ktorej systém <ph name="PRODUCT_OS_NAME" /> vykoná príslušnú akciu, ktorú je možné nakonfigurovať samostatne.
@@ -1326,6 +1358,13 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce vyhľadávač importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="5423197884968724595">Názov obmedzenia Android WebView:</translation>
+<translation id="543559563129402336">Podpora tohto pravidla bola ukončená. Skúste použiť <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> – prepíše toto pravidlo a umožní podrobnejšie naladenie.
+
+      Umožňuje vynútiť stredný obmedzený režim v službe YouTube a zabrániť používateľom toto nastavenie meniť.
+
+      Ak toto nastavenie povolíte, v službe YouTube bude vždy vynútený aspoň stredný obmedzený režim.
+
+      Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, <ph name="PRODUCT_NAME" /> nebude vynucovať obmedzený režim v službe YouTube. Externé pravidlá (napríklad pravidlá služby YouTube) však môžu naďalej vynucovať obmedzený režim.</translation>
 <translation id="5447306928176905178">Povoliť nahlasovanie informácií o pamäti (veľkosť hromady kódu JavaScript) stránke (zamietnuté)</translation>
 <translation id="5457065417344056871">Povoliť v prehliadači režim pre hostí</translation>
 <translation id="5457924070961220141">Umožňuje konfigurovať vykresľovací modul HTML, keď je nainštalovaný doplnok <ph name="PRODUCT_FRAME_NAME" />.
@@ -1430,6 +1469,19 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
           Ak toto pravidlo nastavené nie je, použije sa predvolená doba.
 
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
+<translation id="5783595563813359339">Podpora tohto pravidla bola ukončená. Na ovládanie dostupnosti doplnku Flash použite <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> a pomocou <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ovládajte, či by sa mali súbory PDF otvárať v integrovanom zobrazovači PDF.
+
+      Umožňuje určiť zoznam doplnkov, ktoré môžu používatelia povoliť alebo zakázať v prehliadači <ph name="PRODUCT_NAME" />.
+
+      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo chýbajúci znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
+
+      Ak toto nastavenie povolíte, špecifikovaný zoznam doplnkov sa môže použiť v prehliadači <ph name="PRODUCT_NAME" />. Používatelia ich môžu povoliť alebo zakázať na adrese „about:plugins“, a to aj vtedy, keď sa zhodujú so vzorom v pravidle DisabledPlugins. Používatelia môžu tiež povoliť alebo zakázať doplnky, ktoré sa nezhodujú so žiadnym vzorom v pravidlách DisabledPlugins, DisabledPluginsExceptions a EnabledPlugins.
+
+      Cieľom tohto pravidla je umožniť povolenie prísneho pridávania doplnkov na zoznam zakázaných položiek, keď zoznam DisabledPlugins obsahuje vstupy so zástupnými znakmi (napríklad možnosť Zakázať všetky doplnky „*“ alebo zakázať všetky doplnky Java „*Java*“), ale správca chce povoliť určitú konkrétnu verziu, (napríklad „IcedTea Java 2.3“). Konkrétne verzie môžete určiť v rámci tohto pravidla.
+
+      Upozorňujeme, že výnimky musíte uvádzať ako názov doplnku spolu s názvom jeho skupiny. Jednotlivé skupiny doplnkov sa zobrazujú v samostatných častiach na adrese „about:plugins“, pričom každá časť môže mať jeden alebo viac doplnkov. Napríklad doplnok Shockwave Flash patrí do skupiny Adobe Flash Player, takže obidva názvy sa musia zhodovať s položkami uvedenými v zozname výnimiek, ak má byť príslušný doplnok výnimkou vynechanou zo zoznamu zakázaných položiek.
+
+      Ak toto pravidlo nenastavíte, všetky doplnky zhodujúce sa so vzormi uvedenými v zozname DisabledPlugins budú zablokované, zakázané a používatelia ich nebudú môcť povoliť.</translation>
 <translation id="5795001131770861387">Toto pravidlo povoľuje podporu protokolu HTTP/0.9 na portoch, ktoré nie sú predvolené</translation>
 <translation id="5809728392451418079">Nastaviť zobrazovaný názov pre miestne účty na zariadení</translation>
 <translation id="5814301096961727113">Nastaviť predvolený stav hlasovej odozvy na prihlasovacej obrazovke</translation>
@@ -1499,6 +1551,13 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu false, <ph name="PRODUCT_NAME" /> nebude v aplikácii <ph name="PRODUCT_NAME" /> verzie 19 alebo novšej vykonávať kontroly online odvolania.</translation>
 <translation id="5966615072639944554">Rozšírenia s povolením používať vzdialené overenie API</translation>
+<translation id="5974970919245996815">Prehľady informácií o stave Androidu sa odosielajú späť
+      na server.
+
+      Ak toto pravidlo nastavíte na možnosť False, informácie sa nebudú nahlasovať.
+      Ak ho nastavíte na možnosť True alebo ho ponecháte nenastavené, informácie sa budú nahlasovať.
+
+      Toto pravidlo platí iba vtedy, keď sú povolené aplikácie pre Android.</translation>
 <translation id="5983708779415553259">Predvolené správanie pre webové stránky, ktoré sa nenachádzajú v žiadnom obsahovom balíku</translation>
 <translation id="5997543603646547632">Používať v predvolenom nastavení 24-hodinový formát hodín</translation>
 <translation id="6009903244351574348">Umožňuje doplnku <ph name="PRODUCT_FRAME_NAME" /> spracovávať uvedené typy obsahu.
@@ -1529,6 +1588,17 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="6076099373507468537">Definuje zoznam zariadení USB, ktoré je možné odpojiť od ovládača jadra, aby sa dali použiť prostredníctvom rozhrania chrome.usb API priamo vo webovej aplikácii. Vstupné hodnoty sú páry identifikátor dodávateľa USB – identifikátor produktu na určenie konkrétneho hardvéru.
 
       Ak toto pravidlo nenakonfigurujete, zoznam odpojiteľných zariadení USB bude prázdny.</translation>
+<translation id="608377055310226486">Podpora tohto pravidla bola ukončená. Na ovládanie dostupnosti doplnku Flash použite <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> a pomocou <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ovládajte, či by sa mali súbory PDF otvárať v integrovanom zobrazovači PDF.
+
+      Umožňuje určiť zoznam doplnkov povolených v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť používateľov toto nastavenie meniť.
+
+      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo chýbajúci znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
+
+      Špecifikovaný zoznam doplnkov sa v prehliadači <ph name="PRODUCT_NAME" /> vždy použije, ak sú nainštalované. Tieto doplnky sú na adrese „about:plugins“ označené ako povolené a používatelia ich nemôžu zakázať.
+
+      Upozorňujeme, že toto pravidlo prepíše pravidlá DisabledPlugins aj DisabledPluginsExceptions.
+
+      Ak toto pravidlo nenastavíte, používatelia môžu zakázať ktorýkoľvek doplnok nainštalovaný v systéme.</translation>
 <translation id="6093156968240188330">Umožnite vzdialeným používateľom interagovať počas relácií vzdialenej pomoci s privilegovanými oknami</translation>
 <translation id="6095999036251797924">Stanovuje čas, počas ktorého nebol zadaný žiadny vstup používateľa, a po ktorého uplynutí sa pri používaní napájacieho zdroja alebo batérie uzamkne obrazovka.
           Ak je tento čas nastavený na hodnotu väčšiu ako nula, stanovuje, ako dlho musí byť používateľ nečinný, než systém <ph name="PRODUCT_OS_NAME" /> uzamkne obrazovku.
@@ -1761,6 +1831,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="6828905844648501476">Ak je toto pravidlo nastavené na možnosť True alebo nie je nakonfigurované, prehliadač <ph name="PRODUCT_NAME" /> povolí pridanie osoby prostredníctvom správcu používateľov.
 
       Ak je toto pravidlo nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> nepovolí vytvorenie nového profilu prostredníctvom správcu profilov.</translation>
+<translation id="685769593149966548">Vynútiť prísny obmedzený režim v službe YouTube</translation>
 <translation id="687046793986382807">Toto pravidlo sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 35.
 
       Bez ohľadu na hodnotu výberu sa stránke stále nahlasujú informácie o pamäti. Nahlasované veľkosti sú však z
@@ -1897,9 +1968,6 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7132877481099023201">Webové adresy, ktorým bude udelený prístup k zariadeniam na zaznamenávanie videa bez zobrazenia výzvy</translation>
 <translation id="7167436895080860385">Povoliť používateľom zobraziť heslá v Správcovi hesiel (podpora bola ukončená)</translation>
 <translation id="7173856672248996428">Efemérny profil</translation>
-<translation id="7187256234726597551">Ak je toto pravidlo nastavené na hodnotu true, pre zariadenia sa povolí vzdialené overenie a certifikát sa automaticky vygeneruje a odovzdá na server na správu zariadení.
-
-          Ak je pravidlo nastavené na hodnotu false alebo je nenastavené, nevygeneruje sa žiadny certifikát a volania rozhrania API rozšírenia enterprise.platformKeysPrivate zlyhajú.</translation>
 <translation id="718956142899066210">Typy pripojenia, pre ktoré sú povolené aktualizácie</translation>
 <translation id="7194407337890404814">Názov predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="7195064223823777550">Určuje, aká akcia sa má vykonať, keď používateľ zavrie veko.
@@ -2213,6 +2281,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Ak je pravidlo povolené, zariadenie bude používať 24-hodinový formát hodín. Ak je pravidlo zakázané, zariadenie použije 12-hodinový formát hodín.
 
       Ak pravidlo nenastavíte, zariadenie použije v predvolenom nastavení 24-hodinový formát hodín.</translation>
+<translation id="8114382167597081590">Nevynucovať obmedzený režim v službe YouTube</translation>
 <translation id="8118665053362250806">Nastaví veľkosť vyrovnávacej pamäte disku média</translation>
 <translation id="8135937294926049787">Určuje dobu nečinnosti používateľa, po ktorej sa obrazovka pri používaní napájacieho zdroja uzamkne.
 
@@ -2268,9 +2337,6 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
       Ak toto pravidlo ponecháte nenastavené, nebudú k dispozícii žiadne výnimky pre zoznam zakázaných adries uvedený v rámci pravidla URLBlacklist.</translation>
 <translation id="8176035528522326671">Povolí používateľovi v podnikovej sieti stať sa iba hlavným používateľom s viacerými profilmi (predvolené správanie pre používateľov spravovaných podnikom)</translation>
-<translation id="8197918588508433925">Toto pravidlo určuje, pre ktoré rozšírenia bude povolené vzdialené prihlásenie pomocou metódy chrome.enterprise.platformKeysPrivate.challengeUserKey() rozhrania Enterprise Platform Keys API. Aby mohli rozšírenia používať toto rozhranie API, musia byť pridané do tohto zoznamu.
-
-          Ak sa rozšírenie na zozname nenachádza alebo zoznam nie je vytvorený, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="8214600119442850823">Umožňuje konfiguráciu správcu hesiel.</translation>
 <translation id="8244525275280476362">Maximálne oneskorenie načítania po zrušení platnosti pravidla</translation>
 <translation id="8256688113167012935">Ovláda názov účtu, ktorý systém <ph name="PRODUCT_OS_NAME" /> zobrazí na obrazovke prihlásenia pre zodpovedajúci miestny účet na zariadení.
@@ -2412,6 +2478,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           Toto pravidlo sa vezme do úvahy len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="8731693562790917685">Nastavenia obsahu umožňujú určiť, akým spôsobom bude spracovávaný obsah určitého typu (napríklad súbory cookie, obrázky alebo kód JavaScript).</translation>
+<translation id="8736538322216687231">Vynútiť minimálny obmedzený režim v službe YouTube</translation>
 <translation id="8749370016497832113">Povolí v prehliadači <ph name="PRODUCT_NAME" /> odstránenie histórie prehliadača a sťahovania a zabraňuje používateľom toto nastavenie zmeniť.
 
       Aj keď je toto pravidlo zakázané, nedá sa zaručiť, že sa história prehliadania a sťahovania zachová: používatelia môžu súbory upravovať alebo odstraňovať priamo v databáze histórie a tiež prehliadač môže niektoré alebo všetky položky histórie kedykoľvek vymazať alebo uložiť do archívu.

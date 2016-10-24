@@ -126,6 +126,7 @@ Host</translation>
 <translation id="409800995205263688">NOTE: Policy settings permit connections only between computers within your network.</translation>
 <translation id="4155497795971509630">Some required components are missing. Please make sure that you have installed the latest version of the software and try again.</translation>
 <translation id="4156740505453712750">To protect access to this computer, please choose a PIN of <ph name="BOLD_START" />at least six digits<ph name="BOLD_END" />. This PIN will be required when connecting from another location.</translation>
+<translation id="4156741816461781891">Signed in as <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="4207623512727273241">Please run the installer before continuing.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
@@ -208,10 +209,6 @@ Desktop Host</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Something else.</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
-<translation id="6408143143164565232">• Listen to audio from Windows or Linux computers.
-• Remove unwanted connections by long-pressing on the computer name.
-• Smoother pinch-to-zoom and two-finger scrolling.
-• New Help &amp; Feedback screen.</translation>
 <translation id="6441316101718669559">Desktop integration is not supported on this platform. You can still use the application, but the user experience will be degraded.</translation>
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="6527303717912515753">Share</translation>

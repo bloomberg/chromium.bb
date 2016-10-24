@@ -131,6 +131,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4700157086864140907">Google Chrome có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
 <translation id="4728575227883772061">Không cài đặt được do lỗi chưa xác định. Nếu Google Chrome hiện đang chạy, vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="4743926867934016338">Chấp nhận và tìm kiếm</translation>
+<translation id="4750550185319565338">Khởi động lại Chrome để bật <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Máy tính này sắp ngừng nhận bản cập nhật Google Chrome 32 bit. Vui lòng nâng cấp lên Google Chrome 64 bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tệp này có thể nguy hiểm, do đó Chrome đã chặn tệp.</translation>
@@ -261,7 +262,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8290100596633877290">Chà! Google Chrome đã bị lỗi. Mở lại bây giờ không? </translation>
 <translation id="8342675569599923794">Tệp này nguy hiểm, do đó Chrome đã chặn tệp.</translation>
 <translation id="8406086379114794905">Giúp cải thiện Chrome tốt hơn</translation>
-<translation id="8410645163819739900">Google Chrome OS không mở được trang này.</translation>
 <translation id="8455999171311319804">Tùy chọn: Giúp cải thiện Chrome OS bằng cách tự động gửi dữ liệu chẩn đoán và dữ liệu sử dụng cho Google.</translation>
 <translation id="853189717709780425">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát hồ sơ Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn gắn với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

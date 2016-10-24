@@ -10,7 +10,6 @@
 <translation id="10614374240317010">எப்போதும் சேமிக்காதவை</translation>
 <translation id="106701514854093668">டெஸ்க்டாப் புக்மார்க்குகள்</translation>
 <translation id="1080116354587839789">அகலத்திற்குப் பொருத்து</translation>
-<translation id="1103124106085518534">இப்போது முடிந்தது</translation>
 <translation id="1103523840287552314">எப்போதும் இந்த மொழியை மொழிபெயர் <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">இது தேர்ந்தெடுக்கப்பட்டால், விரைவாக படிவங்களை நிரப்புவதற்காக, Chrome இந்த கார்டின் பிரதியை சாதனத்தில் சேமிக்கும்.</translation>
 <translation id="1111153019813902504">சமீபத்திய புக்மார்க்ஸ்</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows நெட்வொர்க் டயக்னஸ்டிக்ஸ் கருவியை இயக்கவும்<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">உங்களின் ஒத்திசை சொற்றொடரைப் புதுப்பிக்கவும்.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">நீங்கள் சமீபத்தில் பார்வையிட்ட புத்தகக்குறிகள் இங்கே தோன்றும்.</translation>
 <translation id="1821930232296380041">தவறான கோரிக்கை அல்லது கோரிக்கை அளவுருக்கள்</translation>
 <translation id="1838667051080421715">இணையப் பக்கத்தின் மூலத்தைப் பார்க்கிறீர்கள்.</translation>
 <translation id="1871208020102129563">நிலையான ப்ராக்ஸி சேவையகங்களைப் பயன்படுத்த ப்ராக்ஸி அமைக்கப்பட்டுள்ளது, .pac ஸ்கிரிப்ட் URL அல்ல.</translation>
@@ -358,7 +356,6 @@
 <translation id="4816492930507672669">பக்கத்தில் பொருத்து</translation>
 <translation id="4850886885716139402">காட்சி</translation>
 <translation id="4880827082731008257">வரலாற்றில் தேடு</translation>
-<translation id="4884656795097055129">சரியான நேரத்தில் அதிக கட்டுரைகள் காட்டப்படும்.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{மேலும் ஒரு இணையப் பக்கம்}other{மேலும் # இணையப் பக்கங்கள்}}</translation>
 <translation id="4923417429809017348">ஒரு அறியப்படாத மொழியிலிருந்து <ph name="LANGUAGE_LANGUAGE" /> -க்கு இந்தப் பக்கம் மொழிபெயர்க்கப்பட்டுள்ளது</translation>
@@ -390,7 +387,7 @@
 <translation id="5190835502935405962">புக்மார்க்குகள் பட்டி</translation>
 <translation id="5199729219167945352">சோதனைகள்</translation>
 <translation id="5251803541071282808">மேகக்கணி</translation>
-<translation id="5277279256032773186">பணியில் Chromeஐப் பயன்படுத்துகிறீர்களா? வணிகங்கள் தங்களின் பணியாளர்களுக்கான Chrome அமைப்புகளை நிர்வகிக்கலாம். மேலும் அறிக</translation>
+<translation id="5277279256032773186">பணியில் Chromeஐப் பயன்படுத்துகிறீர்களா? வணிக நிறுவனங்கள் தங்களின் பணியாளர்களுக்கான Chrome அமைப்புகளை நிர்வகிக்கலாம். மேலும் அறிக</translation>
 <translation id="5299298092464848405">கொள்கையை அலசுவதில் பிழை</translation>
 <translation id="5300589172476337783">காண்பி</translation>
 <translation id="5308689395849655368">செயலிழப்பு புகாரளித்தல் முடக்கப்பட்டுள்ளது.</translation>

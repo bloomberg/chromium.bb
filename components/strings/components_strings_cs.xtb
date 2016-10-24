@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Nikdy se neukládají</translation>
 <translation id="106701514854093668">Záložky v PC</translation>
 <translation id="1080116354587839789">Přizpůsobit na šířku</translation>
-<translation id="1103124106085518534">Prozatím hotovo</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Pokud je tato možnost zaškrtnuta, Chrome v tomto zařízení bude za účelem rychlejšího vyplňování formulářů uchovávat kopii vaší karty.</translation>
 <translation id="1111153019813902504">Záložky z nedávné doby</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku sítě systému Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Zde se zobrazí nedávno navštívené záložky.</translation>
 <translation id="1821930232296380041">Neplatný požadavek nebo parametry požadavku</translation>
 <translation id="1838667051080421715">Zobrazuje se vám zdrojový kód webové stránky.</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
@@ -357,7 +355,6 @@
 <translation id="4816492930507672669">Přizpůsobit na stránku</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
-<translation id="4884656795097055129">Ve správnou chvíli se zobrazí další články.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{a 1 další webová stránka}few{a # další webové stránky}many{a # další webové stránky}other{a # dalších webových stránek}}</translation>
 <translation id="4923417429809017348">Tato stránka byla přeložena z neznámého jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>

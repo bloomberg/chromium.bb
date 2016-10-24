@@ -126,6 +126,7 @@ Host</translation>
 <translation id="409800995205263688">OBS! Enligt policyinställningarna tillåts endast anslutning mellan datorer i ditt nätverk.</translation>
 <translation id="4155497795971509630">Vissa obligatoriska komponenter saknas. Kontrollera att du har installerat den senaste versionen av programvaran och försök igen.</translation>
 <translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en PIN-kod som består av <ph name="BOLD_START" />minst sex siffror<ph name="BOLD_END" />. PIN-koden krävs när du ansluter från en annan plats.</translation>
+<translation id="4156741816461781891">Inloggad som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Åtkomstkod</translation>
 <translation id="4207623512727273241">Kör installationsprogrammet innan du fortsätter.</translation>
 <translation id="4227991223508142681">Verktyg för värdprovisionering</translation>
@@ -208,10 +209,6 @@ Desktop Host</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Något annat.</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
-<translation id="6408143143164565232">• Lyssna på ljudet från Windows- eller Linux-datorer.
-• Ta bort oönskade anslutningar genom att trycka länge på datornamnet.
-• Jämnare effekt när du zoomar genom att nypa eller rullar med två fingrar.
-• Ny skärm för hjälp och feedback.</translation>
 <translation id="6441316101718669559">Integrering med skrivbordet stöds inte på den här plattformen. Du kan använda appen ändå, men användarupplevelsen försämras.</translation>
 <translation id="652218476070540101">PIN-koden för den här datorn uppdateras …</translation>
 <translation id="6527303717912515753">Dela</translation>

@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Llicències de programari lliure de Chromium OS</translation>
 <translation id="2241627712206172106">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chromium com vulguin.</translation>
 <translation id="225614027745146050">Benvingut</translation>
-<translation id="2264142189334629813">Chromium OS no pot obrir aquesta pàgina.</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
 <translation id="2347108572062610441">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="2372704305038231957">Pot ser que Chromium de 32 bits no funcioni correctament perquè ja no és compatible amb aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">A Chromium</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="2486653164587200256">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb Windows XP ni amb Windows Vista.</translation>
+<translation id="2527042973354814951">Reinicia Chromium per activar <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium OS no ha pogut sincronitzar les vostres dades perquè la informació d'inici de sessió del vostre compte no està actualitzada.</translation>
 <translation id="2558641060352364164">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i instal·leu un navegador més modern.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>

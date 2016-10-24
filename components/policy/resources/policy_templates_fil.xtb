@@ -296,6 +296,7 @@
       Kung nakatakda sa false ang HardwareAccelerationModeEnabled, babalewalain ag Disable3DAPIs at magiging katumbas nito ang pagkakatakda ng Disable3DAPIs sa true.</translation>
 <translation id="2168397434410358693">Idle delay kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="2170233653554726857">I-enable ang pag-optimize ng WPAD</translation>
+<translation id="2178899310296064282">Magpatupad ng kahit Moderate na Restricted Mode lang sa YouTube</translation>
 <translation id="2188979373208322108">Pinapagana ang bar ng bookmark sa <ph name="PRODUCT_NAME" />.
 
       Kung pinagana mo ang setting na ito, magpapakita ng isang bar ng bookmark ang <ph name="PRODUCT_NAME" />.
@@ -563,6 +564,7 @@
       Kung iyong i-enable o i-disable ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na "I-enable ang proteksyon sa phishing at malware" sa <ph name="PRODUCT_NAME" />.
 
       Kung iiwanang hindi nakatakda ang patakarang ito, ma-e-enable ito, ngunit mababago ito ng user.</translation>
+<translation id="2787173078141616821">Ulat ng impormasyon tungkol sa status ng Android</translation>
 <translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
 
       Kung itatakda sa False ang patakarang ito, kapag naka-offline ang device, hindi makakapaglaro ng dinosaur easter egg game ang mga user. Kung itatakda naman sa True ang setting na ito, makakapaglaro ng dinosaur game ang mga user. Kung hindi itatakda ang patakarang ito, hindi makakapaglaro ng dinosaur easter egg game ang mga user na naka-enroll sa Chrome OS, ngunit sa ibang mga pagkakataon, maaari itong malaro ng mga user.</translation>
@@ -671,9 +673,6 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, hindi magpapalit ng termino para sa paghahanap.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled.'</translation>
-<translation id="3067188277482006117">Kung true, magagamit ng user ang hardware sa mga Chrome device upang malayuang patunayan ang pagkakakilanlan nito sa CA ng privacy sa pamamagitan ng Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Kung nakatakda ito sa false, o kung hindi ito nakatakda, mabibigo ang mga pagtawag sa API nang may code ng error.</translation>
 <translation id="3069958900488014740">Pinapayagang i-off ang pag-optimize ng WPAD (Web Proxy Auto-Discovery) sa <ph name="PRODUCT_NAME" />.
 
       Kung nakatakda sa false ang patakarang ito, madi-disable ang pag-optimize ng WPAD na magsasanhi sa <ph name="PRODUCT_NAME" /> na maghintay nang mas matagal para sa mga DNS-based na WPAD server.  Kung hindi nakatakda o naka-enable ang patakarang ito, ie-enable ang pag-optimize ng WPAD.
@@ -797,6 +796,15 @@
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
       Kung nakatakda sa false ang patakarang ito, hindi papayagan ng <ph name="PRODUCT_OS_NAME" /> na masimulan ang mga session ng bisita.</translation>
+<translation id="3418871497193485241">Nagpapatupad ng minimum na Restricted Mode sa YouTube upang pigilan ang mga user na
+      pumili ng mas maluwag na mode kaysa rito.
+
+      Kung itatakda ang setting na ito sa Mahigpit, palaging aktibo ang Mahigpit na Restricted Mode sa YouTube.
+
+      Kung itatakda ang setting na ito sa Katamtaman, maaari lang piliin ng user ang Katamtamang Restricted Mode
+      at Mahigpit na Restricted Mode sa YouTube, ngunit hindi maaaring i-disable ang Restricted Mode.
+
+      Kung itatakda ang setting na ito sa Naka-off o wala kang itatakdang value, hindi ipapatupad ng <ph name="PRODUCT_NAME" /> ang Restricted Mode sa YouTube. Gayunpaman, ang Restricted Mode ay maaari pa ring ipatupad ng mga panlabas na patakaran gaya ng mga patakaran ng YouTube.</translation>
 <translation id="3428247105888806363">Paganahin ang paghula sa network</translation>
 <translation id="3449886121729668969">Nagko-configure sa mga setting ng proxy para sa <ph name="PRODUCT_NAME" />. Magiging available din ang mga setting ng proxy na ito para sa mga ARC app.
 
@@ -912,6 +920,12 @@
 <translation id="384743459174066962">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magbukas ng mga popup.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultPopupsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
+<translation id="3851039766298741586">Nag-uulat ng impormasyon tungkol sa aktibong session sa kiosk, gaya ng
+      application ID at bersyon.
+
+      Kung itatakda ang patakaran sa false, hindi iuulat ang impormasyon ng session sa
+      kiosk. Kung itatakda sa true o kung sadyang hindi itatakda, iuulat ang impormasyon ng session
+      sa kiosk.</translation>
 <translation id="3859780406608282662">Magdagdag ng parameter sa pagkuha ng seed ng Mga Variation sa <ph name="PRODUCT_OS_NAME" />.
 
       Kung tinukoy, magdaragdag ito ng parameter ng query na tinatawag na 'restrict' sa URL na ginagamit upang kunin ang seed ng Mga Variation. Ang value ng parameter ay ang value na tinukoy sa patakarang ito.
@@ -926,6 +940,13 @@
 
           Kikilalanin lang ang patakaran kung naka-enable ang patakaran na 'DefaultSearchProviderEnabled.'</translation>
 <translation id="3864818549971490907">Default na setting ng mga plugin</translation>
+<translation id="386487026071140458">Hindi na ginagamit ang patakarang ito, mangyaring <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> at <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> na lang ang gamitin. Babalewalain ang patakarang ito kung itatakda ang alinman sa mga patakarang <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> o ang (hindi na ginagamit na) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" />.
+
+      Pinupuwersang isagawa ang mga query sa Google Search Web nang nakatakda ang SafeSearch sa aktibo at pinipigilan ang mga user na baguhin ang setting na ito. Ipinapatupad din ng setting na ito ang Katamtamang Restricted Mode sa YouTube.
+
+      Kung ie-enable mo ang setting na ito, palaging aktibo ang SafeSearch sa Google Search at Katamtamang Restricted Mode sa YouTube.
+
+      Kung idi-disable mo ang setting na ito o hindi ka magtatakda ng value, hindi ipapatupad ang SafeSearch sa Google Search at Restricted Mode sa YouTube.</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="3866530186104388232">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME" /> ang mga umiiral nang user sa screen ng pag-login at papayag na pumili ng isa. Kung nakatakda sa false ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang prompt ng username/password para sa pag-login.</translation>
 <translation id="3868347814555911633">Sa retail mode lang aktibo ang patakarang ito.
@@ -1010,6 +1031,17 @@
 
           Kung hindi itatakda ang patakarang ito, gagamitin ang 'AllowCookies' at mababago ito ng user.</translation>
 <translation id="4103289232974211388">I-redirect sa SAML IdP pagkatapos ng kumpirmasyon ng user</translation>
+<translation id="4103941930938018145">Hindi na ginagamit ang patakarang ito. Pakigamit ang <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> upang kontrolin ang availability ng Flash plugin at ang <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> upang kontrolin kung dapat gamitin ang pinagsamang PDF viewer para sa pagbubukas ng mga PDF file.
+
+      Tumutukoy ng listahan ng mga plugin na naka-disable sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Ang mga wildcard character na '*' at '?' ay magagamit upang itugma ang ang pagkakasunud-sunod ng mga arbitrary na character. Tumutugma ang '*' sa isang arbitrary na numero ng mga character habang tinutukoy naman ng '?' ang isang opsyonal na iisang character, hal. tumutugma sa zero o isang mga character. Ang escape character ay '\', kaya upang itugma ang aktwal na '*', '?', o '\' na mga character, maaari kang maglagay ng '\' sa harap ng mga ito.
+
+      Kung ie-enable mo ang setting na ito, ang tinukoy na listahan ng mga plugin ay hindi kailanman gagamitin sa <ph name="PRODUCT_NAME" />. Minarkahan ang mga plugin bilang naka-disable sa 'about:plugins' at hindi mae-enable ng mga user ang mga ito.
+
+      Tandaan na maaaring i-override ng EnabledPlugins at DisabledPluginsExceptions ang patakarang ito.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, maaaring gamitin ng user ang anumang plugin na naka-install sa system maliban sa mga naka-hard-code na plugin na hindi tugma, luma o mapanganib.</translation>
 <translation id="410478022164847452">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay gagawa ng pagkilos kapag idle kapag tumatakbo habang nakasaksak sa kuryente.
 
           Kapag nakatakda ang patakarang ito, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago gawin ng <ph name="PRODUCT_OS_NAME" /> ang pagkilos kapag idle, na maaaring hiwalay na i-configure.
@@ -1324,6 +1356,13 @@
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="5423197884968724595">Pangalan ng paghihigpit sa WebView ng Android:</translation>
+<translation id="543559563129402336">Hindi na ginagamit ang patakarang ito. Pag-isipang gamitin ang <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, na io-override ang patakarang ito at magbibigay-daan sa mas mahusay na tuning.
+
+      Pinupuwersa ang Katamtamang Restricted Mode sa YouTube at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Kung ie-enable ang setting na ito, palaging hindi bababa sa Katamtaman ang ipapatupad na Restricted Mode sa YouTube.
+
+      Kung idi-disable ang setting na ito o wala kang itatakdang value, hindi ipapatupad ng <ph name="PRODUCT_NAME" /> ang Restricted Mode sa YouTube. Gayunpaman, ang Restricted Mode ay maaari pa ring ipatupad ng mga panlabas na patakaran gaya ng mga patakaran ng YouTube.</translation>
 <translation id="5447306928176905178">I-enable ang pag-uulat ng impormasyon ng memory (laki ng JS heap) sa pahina (hindi na ginagamit)</translation>
 <translation id="5457065417344056871">I-enable ang guest mode sa browser</translation>
 <translation id="5457924070961220141">Binibigyang-daan kang i-configure ang default na taga-render ng HTML kapag naka-install ang <ph name="PRODUCT_FRAME_NAME" />.
@@ -1431,6 +1470,19 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond.</translation>
+<translation id="5783595563813359339">Hindi na ginagamit ang patakarang ito. Pakigamit ang <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> upang kontrolin ang availability ng Flash plugin at ang <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> upang kontrolin kung dapat gamitin ang pinagsamang PDF viewer para sa pagbubukas ng mga PDF file.
+
+      Tumutukoy ng listahan ng mga plugin na maaaring i-enable o i-disable ng user sa <ph name="PRODUCT_NAME" />.
+
+      Ang mga wildcard character na '*' at '?' ay magagamit upang itugma ang pagkakasunud-sunod ng mga arbitrary na character. Tumutugma ang '*' sa isang arbitrary na numero ng mga character habang tinutukoy naman ng '?' ang isang opsyonal na iisang character, hal. tumutugma sa zero o isang mga character. Ang escape character ay '\', kaya upang itugma ang aktwal na '*', '?', o '\' na mga character, maaari kang maglagay ng '\' sa harap ng mga ito.
+
+      Kung ie-enable mo ang setting na ito, ang tinukoy na listahan ng mga plugin ay maaaring gamitin sa <ph name="PRODUCT_NAME" />. Maaari itong i-enable o i-disable ng mga user sa 'about:plugins', kahit na tumutugma rin ang plugin sa isang pattern sa DisabledPlugins. Maaari ding i-enable o i-disable ng mga user ang mga plugin na hindi tumutugma sa anumang pattern sa DisabledPlugins, DisabledPluginsExceptions at EnabledPlugins.
+
+      Nilalayon ng patakarang ito na payagan ang mahigpit na pagba-blacklist ng plugin kung saan ang 'DisabledPlugins' na listahan ay naglalaman ng mga entry na may wildcard tulad ng i-disable ang lahat ng plugin '*' o i-disable ang lahat ng Java plugin '*Java*' ngunit hinihiling ng administrator na i-enable ang ilang partikular na bersyon tulad ng 'IcedTea Java 2.3'. Maaaring tukuyin sa patakarang ito ang mga partikular na bersyong ito.
+
+      Tandaan na hindi dapat kasama ang parehong pangalan ng plugin at pangalan ng pangkat ng plugin. Ipinapakita ang bawat pangkat ng plugin sa isang hiwalay na seksyon sa about:plugins; maaaring may isa o higit pang mga plugin ang bawat seksyon. Halimbawa, nabibilang ang "Shockwave Flash" sa pangkat na "Adobe Flash Player" at kailangang may katugma ang parehong pangalan sa listahan ng mga exception kung hindi isasama ang mga plugin na iyon sa blacklist.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, ila-lock nang naka-disable ang anumang plugin na tumutugma sa mga pattern sa 'DisabledPlugins' at hindi iyon mae-enable ng user.</translation>
 <translation id="5795001131770861387">Ini-enable ang suporta sa HTTP/0.9 sa mga hindi default na port</translation>
 <translation id="5809728392451418079">Itakda ang display name para sa mga account na lokal sa device</translation>
 <translation id="5814301096961727113">Itakda ang default na katayuan ng isinalitang feedback sa screen sa pag-login</translation>
@@ -1500,6 +1552,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda sa false, ang <ph name="PRODUCT_NAME" /> ay hindi magsasagawa ng mga online na pagsusuri sa pagbawi sa <ph name="PRODUCT_NAME" /> 19 at mas bago.</translation>
 <translation id="5966615072639944554">Mga extension na pinapayagang gamitin ang API ng malayuang pagpapatotoo</translation>
+<translation id="5974970919245996815">Ang ulat ng impormasyon tungkol sa status ng Android ay ipapadala pabalik sa
+      server.
+
+      Kung itatakda ang patakaran sa false, hindi iuulat ang impormasyon.
+      Kung itatakda ito sa true o kung sadyang hindi itatakda, iuulat ang impormasyon.
+
+      Nalalapat lang ang patakarang ito kung naka-enable ang mga Android app.</translation>
 <translation id="5983708779415553259">Default na pagkilos para sa mga site na wala sa anumang pack ng nilalaman</translation>
 <translation id="5997543603646547632">Gamitin ang 24 na oras na orasan bilang default</translation>
 <translation id="6009903244351574348">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pangasiwaan ang mga nakalistang uri ng nilalaman.
@@ -1530,6 +1589,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6076099373507468537">Inilalarawan ang listahan ng mga USB device na pinahihintulutang i-detach mula sa kernel driver ng mga ito upang magamit sa chrome.usb API sa mismong web application. Ang mga entry ay mga pares ng Identifier ng USB Vendor at Identifier ng Produkto na magagamit sa pagtukoy ng isang partikular na hardware.
 
       Kung hindi mako-configure ang patakarang ito, hindi magkakaroon ng laman ang listahan ng mga nade-detach na USB device.</translation>
+<translation id="608377055310226486">Hindi na ginagamit ang patakarang ito. Pakigamit ang <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> upang kontrolin ang availability ng Flash plugin at ang <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> upang kontrolin kung dapat gamitin ang pinagsamang PDF viewer para sa pagbubukas ng mga PDF file.
+
+      Tumutukoy ng listahan ng mga plugin na naka-enable sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Ang mga wildcard character na '*' at '?' ay magagamit upang itugma ang pagkakasunud-sunod ng mga arbitrary na character. Tumutugma ang '*' sa isang arbitrary na numero ng mga character habang tinutukoy naman ng '?' ang isang opsyonal na iisang character, hal. tumutugma sa zero o isang mga character. Ang escape character ay '\', kaya upang itugma ang aktwal na '*', '?', o '\' na mga character, maaari kang maglagay ng '\' sa harap ng mga ito.
+
+      Ang tinukoy na listahan ng mga plugin ay palaging ginagamit sa <ph name="PRODUCT_NAME" /> kung naka-install ang mga ito. Minarkahan ang mga plugin bilang naka-enable sa 'about:plugins' at hindi ito maaaring i-disable ng mga user.
+
+      Tandaan na nao-override ng patakarang ito ang parehong DisabledPlugins at DisabledPluginsExceptions.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, maaaring i-disable ng user ang anumang plugin na naka-install sa system.</translation>
 <translation id="6093156968240188330">Binibigyang-daan ang mga remote na user na makipag-ugnayan sa mga elevated window sa mga session ng remote na tulong</translation>
 <translation id="6095999036251797924">Tinutukoy kung gaano katagal dapat na walang input mula sa user bago ma-lock ang screen kapag AC power o baterya ang ginagamit
 
@@ -1763,6 +1833,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6828905844648501476">Kung hindi itatakda ang patakarang ito sa true o hindi ito iko-configure, papayagan ng <ph name="PRODUCT_NAME" /> ang Magdagdag ng Tao mula sa user manager.
 
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> ang paggawa ng mga bagong profile mula sa profile manager.</translation>
+<translation id="685769593149966548">Ipatupad ang Mahigpit na Restricted Mode para sa YouTube</translation>
 <translation id="687046793986382807">Itinigil na ang patakarang ito simula noong bersyon 35 ng <ph name="PRODUCT_NAME" />.
 
       Iniuulat pa rin sa pahina ang impormasyon ng memory, ano pa man ang value ng opsyon, ngunit ang mga iniuulat na laki ay
@@ -1900,9 +1971,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7132877481099023201">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng video nang walang prompt.</translation>
 <translation id="7167436895080860385">Pinapayagan ang mga user na ipakita ang mga password sa Password Manager (hindi na ginagamit)</translation>
 <translation id="7173856672248996428">Ephemeral na profile</translation>
-<translation id="7187256234726597551">Kung true, pinapahintulutan ang remote na pagpapatotoo para sa device at awtomatikong mabubuo at maa-upload ang isang certificate sa Server ng Pamamahala sa Device.
-
-          Kung nakatakda sa false, o kung hindi ito nakatakda, walang certificate na bubuuin at mabibigo ang mga tawag sa enterprise.platformKeysPrivate extension API.</translation>
 <translation id="718956142899066210">Mga uri ng koneksyon na pinapayagan para sa mga update</translation>
 <translation id="7194407337890404814">Pangalan ng default na provider ng paghahanap</translation>
 <translation id="7195064223823777550">Tukuyin ang pagkilos na gagawin kapag isinara ng user ang takip.
@@ -2216,6 +2284,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung nakatakda ang patakaran sa true, gagamit ang device ng format ng orasan na 24 na oras. Kung nakatakda ang patakaran sa false, gagamit ang device ng format ng orasan na 12 oras.
 
       Kung hindi nakatakda ang patakarang ito, magde-default ang device sa format ng orasan na 24 na oras.</translation>
+<translation id="8114382167597081590">Huwag ipatupad ang Restricted Mode sa YouTube</translation>
 <translation id="8118665053362250806">Italkda ang laki ng cache ng media disk</translation>
 <translation id="8135937294926049787">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay i-o-off ang screen kapag tumatakbo habang nakasaksak sa kuryente.
 
@@ -2271,9 +2340,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda ang patakarang ito, hindi magkakaroon ng mga pagbubukod sa blacklist mula sa patakarang 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Payagan ang user ng enterprise na maging pangunahing multiprofile na user lang (Default na pag-uugali para sa mga user na pinamamahalaan ng enterprise)</translation>
-<translation id="8197918588508433925">Tinutukoy ng patakarang ito ang mga pinapayagang extension upang magamit ang Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() para sa malayuang pagpapatunay. Dapat magdagdag ng mga extension sa listahang ito upang magamit ang API.
-
-          Kung wala sa listahan ang isang extension, o hindi nakatakda ang listahan, mabibigo ang pagtawag sa API nang may code ng error.</translation>
 <translation id="8214600119442850823">Kino-configure ang password manager.</translation>
 <translation id="8244525275280476362">Maximum na pagkaantala ng pagkuha pagkatapos matukoy na di-wasto ang patakaran</translation>
 <translation id="8256688113167012935">Kinokontrol ang pangalan ng account na <ph name="PRODUCT_OS_NAME" /> na nakikita sa screen sa pag-login para sa katumbas na account na lokal sa device.
@@ -2429,6 +2495,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Isinasaalang-alang lamang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled'.</translation>
 <translation id="8731693562790917685">Pinapayagan ka ng Mga Setting ng Nilalaman na tukuyin kung paano pinamamahalaan ang mga nilalaman ng tukoy na uri (halimbawa Cookies, Mga Larawan o JavaScript).</translation>
+<translation id="8736538322216687231">Ipuwersa ang minimum na Restricted Mode sa Youtube</translation>
 <translation id="8749370016497832113">Pinapagana ang pagtatanggal ng kasaysayan ng browser at kasaysayan ng pag-download sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Tandaan na kahit hindi pinagana ang patakarang ito, walang garantiyang mapapanatili ang kasaysayan sa pagba-browse at pag-download: maaaring ma-edit o matanggal nang direkta ng mga user ang mga file ng database ng kasaysayan, at maaaring i-expire o i-archive ng mismong browser ang anuman o lahat ng item ng kasaysayan anumang oras.

@@ -291,6 +291,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Kipengee cha HardwareAccelerationModeEnabled kikiwekwa kuwa sivyo,  Disable3DAPIs hupuuzwa na ni sawa na Disable3DAPIs kuwekwa kuwa ndivyo.</translation>
 <translation id="2168397434410358693">Kutokuwa na shughuli kunachelewesha wakati wa kuendesha kwenye nishati ya AC</translation>
 <translation id="2170233653554726857">Washa uboreshaji wa WPAD</translation>
+<translation id="2178899310296064282">Tekeleza angalau Hali Yenye Mipaka kwenye YouTube</translation>
 <translation id="2188979373208322108">Inawezesha upau wa alamisho kwenye <ph name="PRODUCT_NAME" />.
 
       Ukiwezesha mpangilio huu, <ph name="PRODUCT_NAME" /> itaonyesha upau wa alamisho.
@@ -552,6 +553,7 @@ Kama utawasha mpangilio huu, Kuvinjari Salama kutatumika kila wakati.
 Kama utazima mpangilio huu, Kuvinjari Salama hakutatumika kamwe.
 Kama utawasha au kuzima mpangilio huu, watumiaji hawezi kubadilisha au kupuuza mpangilio wa "Washa ulinzi wa kuhadaa na programu hasidii" katika <ph name="PRODUCT_NAME" />. 
 Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</translation>
+<translation id="2787173078141616821">Ripoti maelezo kuhusu hali ya Android</translation>
 <translation id="2801230735743888564">Ruruhusu watumiaji wacheze mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao.
 
       Sera hii ikiwekwa kuwa Sivyo, watumiaji hawataweza kucheza mchezo mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao. Mipangilio hii ikiwekwa kuwa Ndivyo, watumiaji wanaruhusiwa kucheza mchezo wa dinosau. Sera hii isipowekwa, watumiaji hawaruhusiwi kucheza mchezo fiche wa dinosau kwenye Mfumo wa Uendeshaji wa Chrome uliosajiliwa, lakini wanaruhusiwa kuucheza chini ya hali nyingine.</translation>
@@ -660,9 +662,6 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
           Sera hii ni ya hiari. Isipowekwa, mabadiliko ya hoja ya utafutaji hayatatekelezwa.
 
           Sera hii inaheshimiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
-<translation id="3067188277482006117">Iwapo ni kweli, mtumiaji anaweza kutumia maunzi kwenye vifaa vya Chrome ili kudhibiti kwa umbali na kuthibitisha utambulisho wake katika CA ya faragha kupitia Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Iwapo imewekwa kwa isiyo kweli, au iwapo haijawekwa, simu katika API zitashindwa kwa msimbo wa hitilafu.</translation>
 <translation id="3069958900488014740">Huruhusu kuzima uboreshaji wa WPAD (Ugunduaji Kiotomatiki wa Seva Mbadala kwenye Wavuti) katika <ph name="PRODUCT_NAME" />.
 
       Sera hii ikiwekwa kuwa sivyo, uboreshaji wa WPAD utazimwa na kusababisha <ph name="PRODUCT_NAME" /> kusubiri muda mrefu zaidi kwa seva za WPAD zinazotegemea DNS. Sera hii isipowekwa au ikiwashwa, uboreshaji wa WPAD utawashwa.
@@ -787,6 +786,16 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 <translation id="3417418267404583991">Ikiwa sera hii itawekwa kwenye Ndivyo au haitasanidiwa, <ph name="PRODUCT_OS_NAME" /> haitawezesha uingiaji wa mgeni. Uingiaji wa mgeni ni vipindi visivyojulikana vya mtumiaji na havihitaji nenosiri..
 
       Ikiwa sera hii itawekwa kwenye Sivyo, <ph name="PRODUCT_OS_NAME" /> haitaruhusu vipindi vya mgeni kuanzishwa.</translation>
+<translation id="3418871497193485241">Hutekeleza kiwango cha chini cha Hali yenye Mipaka kwenye YouTube na huwazuia watumiaji
+      kuchagua hali ambayo haijawekewa mipaka mingi.
+
+      Mipangilio hii ikiwekwa kuwa ya Lazima, Hali yenye Mipaka ya Lazima kwenye YouTube 
+      inafanya kazi kila wakati.
+
+      Mipangilio hii ikiwekwa kuwa ya Wastani, mtumiaji anaweza kuchagua Hali yenye Mipaka ya Wastani pekee na Hali yenye Mipaka ya Lazima kwenye YouTube, 
+      lakini hawezi kuzima Hali yenye Mipaka.
+
+      Mipangilio hii ikiwekwa kuwa Imezimwa au hakuna thamani iliyowekwa, Hali yenye Mipaka kwenye YouTube haitatekelezwa na <ph name="PRODUCT_NAME" />. Sera za nje kama vile sera za YouTube bado zinaweza kutekeleza Hali yenye Mipaka.</translation>
 <translation id="3428247105888806363">Wezesha ubashiri wa mtandao</translation>
 <translation id="3449886121729668969">Huweka mipangilio ya seva mbadala ya <ph name="PRODUCT_NAME" />. Mipangilio hii ya seva mbadala pia itapatikana kwa programu za ARC.
 
@@ -909,6 +918,12 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="384743459174066962">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zisizoruhusiwa kufungua ibukizi.
 
           Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPopupeSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
+<translation id="3851039766298741586">Ripoti maelezo kuhusu kipindi cha skrini nzima kinachoendelea, kama vile
+      Kitambulisho na toleo la programu.
+
+      Sera ikiwekwa kuwa sivyo, maelezo ya kipindi cha skrini nzima
+       hayataripotiwa. Ikiwekwa kuwa ndivyo au ikiachwa bila kuwekwa, maelezo ya 
+       kipindi cha skrini nzima yataripotiwa.</translation>
 <translation id="3859780406608282662">Ongeza kigezo kwenye uletaji wa mbegu Tofauti katika <ph name="PRODUCT_OS_NAME" />.
 
       Iwapo imebainishwa, itaongeza kigezo cha hoja inayoitwa "zuia" kwenye URL inayotumiwa kuleta mbegu Tofauti. Thamani ya kigezo itakuwa thamani iliyobainishwa kwenye sera hii.
@@ -923,6 +938,13 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Sera hii inazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="3864818549971490907">Mpangilio chaguo-msingi wa programu jalizi</translation>
+<translation id="386487026071140458">Sera hii imeacha kuendesha huduma, tafadhali tumia <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> na <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> badala yake. Sera hii itapuuzwa iwapo sera za <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> au (iliyoacha kufanya kazi) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> zimewekwa.
+
+      Hulazimisha hoja katika Kutafuta kwenye Wavuti wa Google kufanywa huku SafeSearch ikiwa imewashwa na huzuia watumiaji kubadilisha mipangilio hii. Mipangilio hii pia hulazimisha Hali yenye Mipaka ya Wastani kwenye YouTube.
+
+      Ukiwasha mipangilio hii, SafeSearch katika Huduma ya Tafuta na Google na Hali yenye Mipaka ya Wastani kwenye YouTube hufanya kazi wakati wote.
+
+      Ukizima mipangilio hii au usipoweka thamani, SafeSearch katika Huduma ya Tafuta na Google na Hali yenye Mipaka ya Wastani kwenye YouTube haitatekelezwa.</translation>
 <translation id="3866249974567520381">Maelezo</translation>
 <translation id="3866530186104388232">Ikiwa sera hii imewekwa kwenye ndivyo au haijasanidiwa, <ph name="PRODUCT_OS_NAME" /> itaonyesha watumiaji waliopo kwenye skrini ya kuingia na kuruhusu kuchagua mmoja. Ikiwa sera hii imewekwa kuwa siyo Ndivyo, <ph name="PRODUCT_OS_NAME" /> itatumia kisituo cha jina la mtumiaji/nenosiri kwa kuingia.</translation>
 <translation id="3868347814555911633">Sera hii ni amilifu katika modi ya rejareja tu.
@@ -1004,6 +1026,17 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Sera hii ikiachwa bila kuwekwa, kipengee cha 'AllowCookies' kitatumiwa na mtumiaji ataweza kukibadilisha.</translation>
 <translation id="4103289232974211388">Elekeza kwenye SAML IdP baada ya uthibitishaji wa mtumiaji</translation>
+<translation id="4103941930938018145">Sera hii imeacha kuendesha huduma. Tafadhali tumia <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> ili kudhibiti upatikanaji wa programu-jalizi ya Flash na <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ili kudhibiti iwapo programu ya kusoma PDF iliyojumuishwa inapaswa kutumiwa kufungua faili za PDF.
+
+      Hubainisha orodha ya programu-jalizi ambazo zimezimwa katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mipangilio hii.
+
+      Herufi wakilishi '*' na '?' zinaweza kutumiwa kulinganisha mifuatano ya herufi dhahania. '*' hulinganisha nambari dhahania ya herufi ilhali '?' hubainisha herufi moja ya hiari, yaani hulinganisha sufuri au herufi moja. Herufi ya kuondoka ni '\', ili kulingana na herufi halisi '*', '?', au '\' , unaweza kuweka '\' mbele yake
+
+      Ukiwasha mipangilio hii, orodha ya programu-jalizi iliyobainishwa haitatumiwa katika <ph name="PRODUCT_NAME" />. Programu-jalizi huwekwa alama kuwa zimezimwa katika  'kuhusu:programu-jalizi' na watumiaji hawawezi kuziwasha.
+
+      Kumbuka kwamba sera hii inaweza kubatilishwa na EnabledPlugins na DisabledPluginsExceptions.
+
+      Sera hii ikiachwa bila kuwekwa mtumiaji anaweza kutumia programu-jalizi yoyote iliyosakinishwa kwenye mfumo isipokuwa programu-jalizi ambazo zimewekwa msimbo dhabiti ambazo hazioani, zilizokwisha muda au ni hatari.</translation>
 <translation id="410478022164847452">Hubainisha urefu wa muda bila mchango wa mtumiaji ambao baadaye hatua isiyo na shughuli huchukuliwa inapoendeshwa kwenye nishati ya AC.
 
           Sera hii inapowekwa, hubainisha urefu wa muda ambao lazima mtumiaji asalie bila shughuli kabla ya <ph name="PRODUCT_OS_NAME" /> kuchukua hatua ya kutokuwa na shughuli, kinachoweza kusanidiwa tofauti.
@@ -1313,6 +1346,13 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
 
       Ikiwa haitawekwa, mtumiaji anaweza kuomba aingize, au huenda ungizaji ukatendeka kiotomatiki.</translation>
 <translation id="5423197884968724595">Jina la vikwazo la Android WebView:</translation>
+<translation id="543559563129402336">Sera hii imeacha kuendesha huduma. Jaribu kutumia <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, inayofuta sera hii na kuruhusu kuweka masafa yenye usahihi zaidi.
+
+      Hulazimisha Hali yenye Mipaka ya Wastani kwenye YouTube na huzuia watumiaji kubadilisha mipangilio hii.
+
+      Mipangilio hii ikiwashwa, Hali yenye Mipaka kwenye YouTube hutekelezwa kila wakati ili iwe angalau Wastani.
+
+      Mipangilio hii ikizimwa au hakuna thamani iliyowekwa, Hali yenye Mipaka kwenye YouTube haitatekelezwa na <ph name="PRODUCT_NAME" />. Bado sera za nje kama vile sera za YouTube zinaweza kutekeleza Hali yenye Mipaka.</translation>
 <translation id="5447306928176905178">Washa kuripoti maelezo ya kumbukumbu (ukubwa wa kumbukumbu ya JS) kwenye ukurasa (haitumiki tena)</translation>
 <translation id="5457065417344056871">Washa matumizi ya wageni katika kivinjari</translation>
 <translation id="5457924070961220141">Inakuruhusu kusanidi kitoaji cha HTML chaguo-msingi wakati <ph name="PRODUCT_FRAME_NAME" /> imesakinishwa.
@@ -1419,6 +1459,19 @@ Sera ya RemoteAccessHostMatchUsername inapaswa kutumiwa pamoja na RemoteAccessHo
           Sera hii inapokuwa haijawekwa, urefu wa muda wa chaguo-msingi unatumiwa.
 
           Sera ya thamani inastahili kubainishwa kwa nukta. </translation>
+<translation id="5783595563813359339">Sera hii imeacha kuendesha huduma. Tafadhali tumia <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> ili kudhibiti upatikanaji wa programu-jalizi ya Flash na <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ili kudhibiti iwapo programu ya kusoma PDF iliyojumuishwa inapaswa kutumiwa kufungua faili za PDF.
+
+      Hubainisha orodha ya programu-jalizi ambazo watumiaji wanaweza kuwasha au kuzima katika <ph name="PRODUCT_NAME" />.
+
+      Herufi wakilishi '*' na '?' zinaweza kutumiwa kulinganisha mifuatano ya herufi dhahania. '*' hulinganisha nambari dhahania ya herufi ilhali '?' hubainisha herufi moja ya hiari, yaani hulinganisha sufuri au herufi moja. Herufi ya kuondoka ni '\', ili kulingana na herufi halisi '*', '?', au  '\' , unaweza kuweka '\' mbele yazo.
+
+      Ukiwasha mipangilio hii, orodha ya programu-jalizi iliyobainishwa inaweza kutumiwa katika <ph name="PRODUCT_NAME" />. Watumiaji wanaweza kuziwasha au kuzizima katika 'kuhusu:programu-jalizi', hata kama programu-jalizi inalingana na mchoro katika DisabledPlugins. Watumiaji wanaweza pia kuwasha na kuzima programu-jalizi ambazo hazilingani na mchoro wowote katika DisabledPlugins, DisabledPluginsExceptions na EnabledPlugins.
+
+      Sera hii inakusudiwa kuruhusu kuondolea idhini kwenye programu-jalizi ambapo orodha ya 'DisabledPlugins' ina maingizo ya herufi wakilishi kama vile kuzima programu-jalizi zote '*' au kuzima programu-jalizi zote za Java '*Java*' lakini msimamizi angependa kuwasha toleo fulani mahususi kama vile 'IcedTea Java 2.3'. Toleo hili mahususi linaweza kubainishwa katika sera hii.
+
+      Kumbuka kwamba jina na jina la kikundi cha programu-jalizi lazima viruhusiwe kutofuata kanuni. Kila kikundi cha programu-jalizi kinaonyeshwa katika sehemu tofauti kwenye kuhusu:programu-jalizi; kila sehemu inaweza kuwa na programu-jalizi moja au zaidi. Kwa mfano, programu-jalizi ya "Shockwave Flash" ni ya kikundi cha "Adobe Flash Player", na majina yote mawili yanalingana katika orodha ya vighairi ikiwa programu-jalizi hiyo inapaswa kuruhusiwa kutofuata kanuni kutoka kwenye programu zilizoondolewa idhini.
+
+      Sera hii ikiachwa bila kuwekwa programu-jalizi yoyote inayolingana na michoro katika 'DisabledPlugins' itafungwa au itazimwa na mtumiaji hataweza kuiwasha tena.</translation>
 <translation id="5795001131770861387">Huwasha matumizi ya HTTP/0.9 kwenye milango isiyo chaguo-msingi</translation>
 <translation id="5809728392451418079">Weka jina la onyesho kwa ajili ya akaunti za kifaa cha karibu</translation>
 <translation id="5814301096961727113">Weka hali chaguo-msingi ya maoni yanayotamkwa kwenye skrini ya kuingia katika akaunti</translation>
@@ -1484,6 +1537,13 @@ Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katik
 
       Ikiwa sera hii haitawekwa, au ikiwekwa kuwa sivyo, basi <ph name="PRODUCT_NAME" /> haitatekeleza ukaguzi wa ubatilishaji wa mtandaoni katika <ph name="PRODUCT_NAME" /> 19 na matoleo mapya zaidi.</translation>
 <translation id="5966615072639944554">Viendelezi vinaruhusiwa kutumia API ya usahihishaji wa mbali</translation>
+<translation id="5974970919245996815">Ripoti ya maelezo kuhusu hali ya Android imetumwa kwenye
+      seva.
+
+      Sera hii ikiwekwa kuwa sivyo, maelezo hayataripotiwa.
+      Ikiwekwa kuwa ndivyo au iachwe bila kuwekwa, maelezo yataripotiwa.
+
+      Sera hii inatumika tu iwapo progamu za Android zimewashwa.</translation>
 <translation id="5983708779415553259">Tabia chaguo-msingi ya tovuti zisizo katika furushi lolote la maudhui</translation>
 <translation id="5997543603646547632">Tumia saa ya saa 24 kwa chaguo-msingi</translation>
 <translation id="6009903244351574348">Ruhusu <ph name="PRODUCT_FRAME_NAME" /> kushughulikia aina zilizoorodheshwa za maudhui.
@@ -1514,6 +1574,17 @@ Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katik
 <translation id="6076099373507468537">Hufafanua orodha ya vifaa vya USB vinavyoruhusiwa kutenganishwa kwenye kiendeshaji chake ili vitumiwe kwenye API ya chrome.usb moja kwa moja ndani ya programu ya wavuti. Maingizo ni jozi za Kitambulisho cha Muuzaji cha USB na Kitambulisho cha Bidhaa za kutambua maunzi mahususi.
 
       Ikiwa sera hii haitawekwa, orodha ya vifaa vya USB vinavyoweza kutenganishwa itasalia tupu.</translation>
+<translation id="608377055310226486">Sera hii imeacha kuendesha huduma. Tafadhali tumia <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> ili kudhibiti upatikanaji wa programu-jalizi ya Flash na <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ili kudhibiti iwapo programu ya kusoma PDF iliyojumuishwa inapaswa kutumiwa kufungua faili za PDF.
+
+      Hubainisha orodha ya programu-jalizi ambazo zimewashwa katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mipangilio hii.
+
+      Herufi wakilishi '*' na '?' zinaweza kutumiwa kulinganisha mifuatano ya herufi dhahania. '*' hulinganisha nambari dhahania ya herufi ilhali '?' hubainisha herufi moja ya hiari, yaani hulinganisha sufuri au herufi moja. Herufi ya kuondoka ni '\', ili kulingana na herufi halisi '*', '?', au  '\' , unaweza kuweka '\' mbele yake.
+
+      Orodha ya programu-jalizi iliyobainishwa inatumika wakati wote katika <ph name="PRODUCT_NAME" /> iwapo zimesakinishwa. Programu-jalizi huwekewa alama kuwa zimewashwa katika 'kuhusu:programu-jalizi' na watumiaji hawawezi kuzizima.
+
+      Kumbuka kwamba sera hii inabatilisha DisabledPlugins na DisabledPluginsExceptions.
+
+      Sera hii ikiachwa bila kuwekwa mtumiaji anaweza kuzima programu-jalizi yoyote iliyosakinishwa kwenye mfumo.</translation>
 <translation id="6093156968240188330">Ruhusu watumiaji wa mbali kutumia madirisha yaliyoinuliwa katika vipindi vya usaidizi wa mbali</translation>
 <translation id="6095999036251797924">Hubainisha urefu wa muda bila ingizo la mtumiaji ambapo baada ya hapo skrini hufungwa inapoendeshwa kwa nishati ya AC au betri.
 
@@ -1743,6 +1814,7 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 <translation id="6828905844648501476">Sera hii ikiwekwa kuwa ndivyo au isisanidiwe <ph name="PRODUCT_NAME" /> itaruhusu kipengee cha Ongeza Mtu kutoka kwa msimamizi wa mtumiaji.
 
      Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> haitaruhusu kuunda wasifu mpya kutoka kwa msimamizi wa wasifu.</translation>
+<translation id="685769593149966548">Tekeleza Hali yenye Mipaka ya Lazima kwa YouTube</translation>
 <translation id="687046793986382807">Sera hii imeondolewa kuanzia toleo la 35 la <ph name="PRODUCT_NAME" />. 
 
 Hata hivyo, maelezo ya kumbukumbu huripotiwa kwa ukurasa, bila kujali nambari ya chaguo, lakini ukubwa wa maelezo ya kumbukumbu yanayoripotiwa 
@@ -1874,8 +1946,6 @@ Sera hii huathiri aina zote za vifaa vya kuingiza sauti na si tu maikrofoni iliy
 <translation id="7132877481099023201">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa video bila ushawishi</translation>
 <translation id="7167436895080860385">Waruhusu watumiaji kuonyesha manenosiri katika Kidhibiti cha Manenosiri (hakutumiki tena)</translation>
 <translation id="7173856672248996428">Mfumo wa Muda Mfupi</translation>
-<translation id="7187256234726597551">Kama ni kweli, ushuhuda wa mbali huruhusiwa kwa ajili ya kifaa na cheti kitazalishwa kiotomatiki na kupakiwa kwenye Seva ya Udhibiti wa Kifaa.
-           Kama imewekwa kuwa haitumiki, au kama haijawekwa, hakuna cheti kitakachozalishwa na kupiga simu kwenyeAPI ya Kiendelezi chaenterprise.platformKeysPrivate zitashindwa.</translation>
 <translation id="718956142899066210">Aina za miunganisho zinazoruhusiwa kwa visasisho</translation>
 <translation id="7194407337890404814">Kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="7195064223823777550">Bainisha hatua ya kuchukua mtumiaji anapofunga mfuniko.
@@ -2188,6 +2258,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Ikiwa sera itawekwa kuwa kweli, kifaa kitatumia muundo wa saa ya saa 24. Ikiwa sera hii itawekwa kuwa uongo, kifaa kitatumia muundo wa saa ya saa 12.
 
       Ikiwa sera hii haitawekwa, kifaa kitapuuza kuwa muundo wa saa ya saa 24.</translation>
+<translation id="8114382167597081590">Usitekeleze Hali yenye Mipaka kwenye YouTube</translation>
 <translation id="8118665053362250806">Weka ukubwa wa media ya akiba ya diski</translation>
 <translation id="8135937294926049787">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini huzimwa inapoendeshwa kwa nishati ya AC.
 
@@ -2239,9 +2310,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 
       Iwapo sera hii haijawekwa hakutakuwa na ruhusa katika orodha ya kuondoa idhini kutoka sera ya 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Ruhusu mtumiaji wa biashara kuwa mtumiaji wa kwanza wa multiprofile pekee (Tabia ya chaguo-msingi kwa watumiaji wanaosimamiwa kibiashara)</translation>
-<translation id="8197918588508433925">Sera hii inabainisha viendelezi vilivyoruhusiwa ili kutumia Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() kwa uthibitishaji wa mbali. Lazima viendelezi viongezwe kwenye orodha hii ili kutumia API.
-
-          Iwapo kiendelezi hakipo kwenye orodha, au orodha haijawekwa, upigaji simu katika API utashindwa kwa msimbo wa hitilafu.</translation>
 <translation id="8214600119442850823">Husanidi kidhibiti cha manenosiri.</translation>
 <translation id="8244525275280476362">Upeo wa juu wa ucheleweshaji wa kuleta baada ya kutothibitisha sera</translation>
 <translation id="8256688113167012935">Hudhibiti jina la akaunti <ph name="PRODUCT_OS_NAME" /> inayoonekana kwenye skrini ya kuingia kwa ajili ya akaunti ya kifaa cha karibu nawe inayolingana.
@@ -2306,9 +2374,9 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8369602308428138533">Kuchelewa kwa kuzima skirini wakati nishati ya AC inapotumika</translation>
 <translation id="8382184662529825177">Washa matumizi ya usahihishaji wa mbali wa kulinda maudhui ya kifaa</translation>
 <translation id="838870586332499308">Wezesha utumiaji wa data nje ya mtandao wako wa kawaida</translation>
-<translation id="8390049129576938611">Huzima programu ya mtazamaji wa ndani wa PDF katika <ph name="PRODUCT_NAME" />. Badala yake huichukulia kama kupakuliwa na huruhusu mtumiaji kufungua faili za PDF kwa kutumia programu chaguo-msingi.
+<translation id="8390049129576938611">Huzima programu ya ndani ya kusoma PDF katika <ph name="PRODUCT_NAME" />. Badala yake huichukulia kama kupakuliwa na huruhusu mtumiaji kufungua faili za PDF kwa kutumia programu chaguo-msingi.
 
-      Sera hii ikiachwa bila kuwekwa au ikizimwa programu-jalizi ya PDF itatumiwa kufungua faili za PDF isipokuwa mtumiaji awe ameizima.</translation>
+      Sera hii ikiachwa bila kuwekwa au ikizimwa, programu-jalizi ya PDF itatumiwa kufungua faili za PDF isipokuwa mtumiaji awe ameizima.</translation>
 <translation id="8402079500086185021">Fungulia faili za PDF nje kila wakati</translation>
 <translation id="8412312801707973447">Ikiwa ukaguzi wa mtandaoni wa OCSP/CRL umeatekelezwa</translation>
 <translation id="8413348101535146315">Huwasha kipengele cha kutamatisha shughuli katika Kidhibiti cha Shughuli kwenye <ph name="PRODUCT_NAME" />.
@@ -2380,6 +2448,7 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 
           Sera hii inazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
 <translation id="8731693562790917685">Mipangilio ya Maudhui inakuruhusu kubainisha namna maudhui ya aina maalum (kwa mfano Vidakuzi, Picha au JavaScript) yanavyoshughulikiwa.</translation>
+<translation id="8736538322216687231">Lazimisha Kiwango cha chini cha Hali yenye Mipaka kwenye YouTube</translation>
 <translation id="8749370016497832113">Huwasha ufutaji wa historia ya kivinjari na historia ya upakuaji katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji wasibadilishe mpangilio huu.
 
       Kumbuka kuwa hata na sera hii kuzimwa, historia ya kuvinjari na upakuaji haina uhakika wa kubakishwa: watumiaji wanaweza kubadilisha au kufuta faili za hifadhidata ya historia moja kwa moja, na kivinjari chenyewe kinaweza kupitwa na wakati au kiweke vipengee vyote vya historia kwenye kumbukumbu wakati wowote.

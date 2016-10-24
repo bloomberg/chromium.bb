@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Åpen kildekode-lisenser for Chromium OS</translation>
 <translation id="2241627712206172106">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chromium akkurat slik de vil.</translation>
 <translation id="225614027745146050">Velkommen</translation>
-<translation id="2264142189334629813">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="2372704305038231957">Det kan hende 32-bit-versjonen av Chromium ikke fungerer skikkelig, fordi den ikke støttes på dette Linux-systemet lenger. Oppgrader til 64-bit-versjonen av Chromium.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">I Chromium</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="2486653164587200256">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Windows XP eller Windows Vista.</translation>
+<translation id="2527042973354814951">Start Chromium på nytt for å slå på <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="2558641060352364164">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og oppgradere til en nyere nettleser.</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>

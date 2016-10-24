@@ -128,12 +128,13 @@
 <translation id="4700157086864140907">Google Chrome ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されているスペルチェック テクノロジーを活用できます。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4743926867934016338">承諾して検索</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> を有効にするには Chrome を再起動してください</translation>
 <translation id="4751441238232965030">このパソコンはまもなく 32 ビットの Google Chrome アップデートの受信を停止します。64 ビットの Google Chrome にアップグレードしてください。</translation>
 <translation id="4754614261631455953">Google Chrome Canary（mDNS インバウンド）</translation>
 <translation id="4771048833395599659">このファイルは危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
 <translation id="4794050651896644714">Chrome で詳細を保存する</translation>
 <translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
-<translation id="4901390485477164536">Google Chrome は既定のブラウザです。</translation>
+<translation id="4901390485477164536">既定のブラウザは Google Chrome です。</translation>
 <translation id="4921569541910214635">共有パソコンにするなど、Chrome をお好みの方法で設定できるようになりました。</translation>
 <translation id="4925019873400497719">Chrome で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが無効でした。</translation>
 <translation id="4953650215774548573">Google Chrome を既定のブラウザとして設定する</translation>
@@ -256,7 +257,6 @@
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>
 <translation id="8342675569599923794">このファイルは危険なファイルであるため、Chrome でブロックしました。</translation>
 <translation id="8406086379114794905">Chrome の品質向上にご協力ください</translation>
-<translation id="8410645163819739900">Google Chrome OS ではこのページを開けません。</translation>
 <translation id="8455999171311319804">オプション: 診断と使用状況のデータを Google に自動送信して Chrome OS の機能向上に役立てる。</translation>
 <translation id="853189717709780425">現在、管理対象アカウントでログインし、管理者に Google Chrome プロフィールの管理を委ねています。アプリ、ブックマーク、履歴、パスワード、その他の設定などの Chrome データは <ph name="USER_NAME" /> に永続的に関連付けられます。このデータは、Google アカウントのダッシュボードで削除できますが、別のアカウントに関連付けることはできません。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -382,7 +382,6 @@
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
-<translation id="5538968846107343822">‏לא נמצאו מכשירי Bluetooth.‏ <ph name="BEGIN_LINK" />סרוק מחדש<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">האינטרנט הווירטופיזי</translation>
 <translation id="5556459405103347317">טען שוב</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
@@ -476,7 +475,7 @@
 <translation id="654446541061731451">בחר כרטיסייה להעברת התוכן שלה</translation>
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
-<translation id="6560414384669816528">‏השתמש ב-Sogou לחפוש</translation>
+<translation id="6560414384669816528">‏השתמש ב-Sogou לחיפוש</translation>
 <translation id="656628257199996201">תרגם <ph name="SOURCE_LANGUAGE" /> תמיד</translation>
 <translation id="6571070086367343653">ערוך כרטיס אשראי</translation>
 <translation id="6573431926118603307">‏כרטיסיות שפתחת ב-Chrome במכשירים האחרים שלך יופיעו כאן.</translation>
@@ -700,7 +699,6 @@
 <translation id="917685106653909562">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="9187199695613236444">תצוגה מותאמת למכשירים ניידים</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
-<translation id="9192643434065497760">‏הפעל את Bluetooth ב<ph name="BEGIN_LINK" />הגדרות המכשיר<ph name="END_LINK" /> כדי לאפשר התאמה.</translation>
 <translation id="9198708126133947749">החלף את נתוני המכשיר הזה בנתונים של <ph name="TO_ACCOUNT" />. תוכל לאחזר את הנתונים הקיימים שלך על-ידי חזרה אל <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">א</translation>
 <translation id="9219103736887031265">תמונות</translation>

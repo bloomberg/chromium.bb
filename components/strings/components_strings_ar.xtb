@@ -10,7 +10,6 @@
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
 <translation id="106701514854093668">الإشارات المرجعية على سطح المكتب</translation>
 <translation id="1080116354587839789">ملاءمة مع العرض</translation>
-<translation id="1103124106085518534">ليس هناك محتوى جديد</translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
 <translation id="1107591249535594099">‏إذا تم وضع علامة على هذا الخيار، سيخزّن Chrome نسخة من هذه البطاقة على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="1111153019813902504">الإشارات الجديدة</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />تجربة تشغيل بيانات التشخيص لشبكة Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">ستظهر هنا الإشارات المرجعية التي زرتها مؤخرًا.</translation>
 <translation id="1821930232296380041">طلب غير صالح، أو معلمات طلب غير صالحة</translation>
 <translation id="1838667051080421715">أنت تعرض مصدر صفحة ويب.</translation>
 <translation id="1871208020102129563">‏تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">احتواء ضمن الصفحة</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4880827082731008257">سجلّ البحث</translation>
-<translation id="4884656795097055129">ستظهر المزيد من المقالات في الوقت المناسب.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{وصفحة ويب واحدة إضافية}zero{و# صفحة ويب إضافية}two{وصفحتا ويب (#) إضافيتان}few{و# صفحات ويب إضافية}many{و# صفحة ويب إضافية}other{و# صفحة ويب إضافية}}</translation>
 <translation id="4923417429809017348">تمت ترجمة هذه الصفحة من لغة غير معروفة إلى اللغة <ph name="LANGUAGE_LANGUAGE" /></translation>

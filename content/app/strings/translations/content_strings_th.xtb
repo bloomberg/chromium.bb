@@ -40,6 +40,7 @@
 <translation id="2507943997699731163">โปรดกรอกฟิลด์นี้</translation>
 <translation id="2508569020611168319">รายการแท็บ</translation>
 <translation id="2548326553472216322">ไม่พบการค้นหาล่าสุด</translation>
+<translation id="2561842179657104141">แสดงส่วนควบคุมสื่อเพิ่มเติม</translation>
 <translation id="2572483411312390101">เล่น</translation>
 <translation id="2613802280814924224">โปรดป้อนค่าที่ถูกต้อง ค่าใกล้เคียงที่สุดที่ถูกต้องคือ <ph name="VALID_VALUE" /></translation>
 <translation id="2653659639078652383">ส่ง</translation>
@@ -113,6 +114,7 @@
 <translation id="561939826962581046">เวลา</translation>
 <translation id="5641012560118721995">หยุดเล่นชั่วคราว</translation>
 <translation id="5643186887447432888">ปุ่ม</translation>
+<translation id="5677946354068040947">ตัวเลือกเพิ่มเติม</translation>
 <translation id="57838592816432529">ปิดเสียง</translation>
 <translation id="583281660410589416">ไม่รู้จัก</translation>
 <translation id="5843503607508392247">อื่นๆ...</translation>
@@ -147,6 +149,7 @@
 <translation id="6853785296079745596">ซ่อนคำอธิบายภาพ</translation>
 <translation id="6885760532393684712">ไดเรกทอรี</translation>
 <translation id="6934078000481955284">ข้อความที่ยกมา</translation>
+<translation id="6941933287844615239">ดาวน์โหลดสื่อ</translation>
 <translation id="7057186640035488495">เวลาของภาพยนตร์</translation>
 <translation id="709897737746224366">โปรดจับคู่รูปแบบที่ร้องขอ</translation>
 <translation id="7223624360433298498">เวลาที่ผ่านไป</translation>

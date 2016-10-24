@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="1119447706177454957">Errore interno</translation>
 <translation id="153454903766751181">Inizializzazione del modem per cellulari...</translation>
-<translation id="158849752021629804">Occorre una rete domestica</translation>
-<translation id="1661867754829461514">PIN mancante</translation>
-<translation id="1773212559869067373">Certificato di autenticazione rifiutato localmente</translation>
 <translation id="1829129547161959350">Pinguino</translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
 <translation id="2288278176040912387">Giradischi</translation>
 <translation id="2354174487190027830">Attivazione di <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Certificato di autenticazione rifiutato dalla rete</translation>
 <translation id="2563185590376525700">Rana</translation>
-<translation id="2563856802393254086">Complimenti, il tuo servizio dati "<ph name="NAME" />" è stato attivato ed è pronto all'uso.</translation>
 <translation id="2649120831653069427">Pesce arcobaleno</translation>
-<translation id="2670531586141364277">L'attivazione di "<ph name="NAME" />" richiede una connessione di rete.</translation>
 <translation id="277257480934873581">Riconnessione a <ph name="NAME" /> in corso</translation>
 <translation id="2894654529758326923">Informazioni</translation>
 <translation id="2951236788251446349">Medusa</translation>
-<translation id="2966449113954629791">Potresti avere esaurito la tua quota di dati mobili. Visita il portale di attivazione <ph name="NAME" /> per acquistare altri dati.</translation>
 <translation id="3846575436967432996">Nessuna informazione di rete disponibile</translation>
-<translation id="3871838685472846647">Attivata tramite rete cellulare</translation>
 <translation id="3901991538546252627">Connessione a: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Errore di attivazione della rete</translation>
 <translation id="4118990158415604803">La connessione ad altre reti è stata disattivata dall'amministratore.</translation>
-<translation id="4237016987259239829">Errore di connessione di rete</translation>
-<translation id="4274292172790327596">Errore non riconosciuto</translation>
 <translation id="4326192123064055915">Caffè</translation>
-<translation id="4387004326333427325">Certificato di autenticazione rifiutato da remoto</translation>
-<translation id="4442424173763614572">Ricerca DNS non riuscita</translation>
 <translation id="4448844063988177157">Ricerca di reti Wi-Fi in corso...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: connessione...</translation>
-<translation id="4508265954913339219">Attivazione non riuscita</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Gazania</translation>
-<translation id="5045550434625856497">Password non corretta</translation>
-<translation id="5097002363526479830">Connessione alla rete "<ph name="NAME" />" non riuscita: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Scacchi</translation>
 <translation id="5257456363153333584">Libellula</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">Ricerca DHCP non riuscita</translation>
-<translation id="6232116551750539448">Connection a <ph name="NAME" /> interrotta</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: attivazione in corso...</translation>
-<translation id="6312403991423642364">Errore di rete sconosciuto</translation>
-<translation id="6490455614072479501">Impossibile collegarsi a "<ph name="NAME" />": <ph name="DETAILS" />
-        Messaggio del server: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Nessuna rete cellulare disponibile</translation>
-<translation id="6732801395666424405">Certificati non caricati</translation>
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Capovolta</translation>
-<translation id="6943836128787782965">Recupero HTTP non riuscito</translation>
 <translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
-<translation id="7165320105431587207">Impossibile configurare la rete</translation>
-<translation id="7170041865419449892">Fuori dal raggio d'azione</translation>
-<translation id="7229570126336867161">Occorre EVDO</translation>
-<translation id="7256405249507348194">Errore non riconosciuto: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Nome utente/password errati o autenticazione EAP non riuscita</translation>
 <translation id="735745346212279324">VPN scollegata</translation>
 <translation id="7874779702599364982">Ricerca reti cellulari...</translation>
-<translation id="7925247922861151263">Controllo AAA non riuscito</translation>
-<translation id="7973962044839454485">Autenticazione PPP non riuscita a causa di un nome utente o una password sbagliati</translation>
 <translation id="8000066093800657092">Nessuna rete</translation>
 <translation id="8008366997883261463">Cane</translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP non riuscito</translation>
-<translation id="8372369524088641025">Chiave WEP non valida</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: riconnessione in corso...</translation>
-<translation id="8688591111840995413">Password non valida</translation>
 <translation id="8714406895390098252">Bicicletta</translation>
 <translation id="8808686172382650546">Gatto</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Connessione alla rete non riuscita: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Connessione non riuscita</translation>
 </translationbundle>

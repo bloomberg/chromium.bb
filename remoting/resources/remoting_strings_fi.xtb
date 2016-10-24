@@ -126,6 +126,7 @@ isäntä</translation>
 <translation id="409800995205263688">HUOMAA: käytäntöasetusten vuoksi vain verkossasi olevien tietokoneiden väliset yhteydet sallitaan.</translation>
 <translation id="4155497795971509630">Joitakin vaadittavia komponentteja puuttuu. Varmista, että olet asentanut ohjelmiston uusimman version, ja yritä uudelleen.</translation>
 <translation id="4156740505453712750">Suojaa tämän tietokoneen käyttöä valitsemalla <ph name="BOLD_START" />vähintään kuusinumeroinen<ph name="BOLD_END" /> PIN-koodi. Tarvitset PIN-koodin muodostaessasi yhteyden toiselta koneelta.</translation>
+<translation id="4156741816461781891">Kirjautunut osoitteella <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4176825807642096119">Käyttökoodi</translation>
 <translation id="4207623512727273241">Suorita asennusohjelma ennen kuin jatkat.</translation>
 <translation id="4227991223508142681">Isäntien hallintatyökalu</translation>
@@ -208,10 +209,6 @@ isäntä</translation>
 <translation id="6304318647555713317">Asiakas</translation>
 <translation id="6381670701864002291">Jokin muu syy.</translation>
 <translation id="6398765197997659313">Poistu koko näytön tilasta</translation>
-<translation id="6408143143164565232">• Kuuntele äänisisältöä Windows- tai Linux-tietokoneilta
-• Poista ei-toivotut yhteydet koskettamalla tietokoneen nimeä pitkään
-• Zoomaus nipistämällä ja vieritys kahdella sormella toimivat sujuvammin
-• Uusi Ohje ja palaute -näyttö</translation>
 <translation id="6441316101718669559">Tämä alusta ei tue työpöydän integraatiota. Voit silti käyttää sovellusta, mutta käyttökokemus on heikompi.</translation>
 <translation id="652218476070540101">Tietokoneen PIN-koodia päivitetään…</translation>
 <translation id="6527303717912515753">Jaa</translation>

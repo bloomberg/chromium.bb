@@ -39,7 +39,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2158734852934720349">Licenser för öppen källkod för Chromium OS</translation>
 <translation id="2241627712206172106">Om du delar en dator med vänner och familj kan de konfigurera Chromium precis som de vill och surfa separat.</translation>
 <translation id="225614027745146050">Välkommen</translation>
-<translation id="2264142189334629813">Det går inte att öppna den här sidan i Chromium OS.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="2347108572062610441">Det här tillägget har ändrat vilken sida som visas när du startar Chromium.</translation>
 <translation id="2372704305038231957">32-bitarsversionen av Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på det här Linux-systemet. Uppgradera till 64-bitarsversionen av Chromium.</translation>
@@ -48,6 +47,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2483889755041906834">I Chromium</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2486653164587200256">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Windows XP och Windows Vista.</translation>
+<translation id="2527042973354814951">Starta om Chromium om du vill aktivera <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Det gick inte att synkronisera data med Chromium eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="2558641060352364164">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och uppgradera till en modern webbläsare.</translation>
 <translation id="2572494885440352020">Hjälp för Chromium</translation>

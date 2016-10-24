@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<translation id="1119447706177454957">অভ্যন্তরীণ ত্রুটি</translation>
 <translation id="153454903766751181">সেলুলার মোডেম আরম্ভ করা হচ্ছে...</translation>
-<translation id="158849752021629804">হোম নেটওয়ার্কের প্রয়োজন</translation>
-<translation id="1661867754829461514">পিন হারিয়েছে</translation>
-<translation id="1773212559869067373">স্থানীয়ভাবে প্রমাণীকরণ শংসাপত্র প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="1829129547161959350">পেঙ্গুইন</translation>
 <translation id="1850504506766569011">ওয়াই-ফাই বন্ধ আছে৷</translation>
 <translation id="2288278176040912387">রেকর্ড প্লেয়ার</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
-<translation id="2544853746127077729">নেটওয়ার্কের দ্বারা প্রমাণীকরণ শংসাপত্র প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="2563185590376525700">ব্যাঙ</translation>
-<translation id="2563856802393254086">অভিনন্দন! আপনার '<ph name="NAME" />' ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং ব্যবহার করার জন্য প্রস্তুত৷</translation>
 <translation id="2649120831653069427">রেনবোফিশ</translation>
-<translation id="2670531586141364277">'<ph name="NAME" />' এর সক্রিয়করণের জন্য একটি নেটওয়ার্ক সংযোগের প্রয়োজন৷</translation>
 <translation id="277257480934873581"><ph name="NAME" /> এ পুনরায় সংযোগ করছে</translation>
 <translation id="2894654529758326923">তথ্য</translation>
 <translation id="2951236788251446349">জেলিফিশ</translation>
-<translation id="2966449113954629791">আপনি হয়তো আপনার মোবাইল ডেটার প্রদত্ত পরিমান ব্যবহার করে ফেলেছেন৷ আরো ডেটা কিনতে <ph name="NAME" /> সক্রিয়করণ পোর্টালে যান৷</translation>
 <translation id="3846575436967432996">কোনো নেটওয়ার্ক সংক্রান্ত তথ্য উপলব্ধ নেই</translation>
-<translation id="3871838685472846647">সেলুলার সক্রিয় করা হয়েছে</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
 <translation id="3958548648197196644">কিউই</translation>
-<translation id="40400351611212369">নেটওয়ার্ক সক্রিয়করণে ত্রুটি</translation>
 <translation id="4118990158415604803">অন্যান্য নেটওয়ার্কে সংযোগ স্থাপন আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে।</translation>
-<translation id="4237016987259239829">নেটওয়ার্ক  সংযোগ ত্রুটি</translation>
-<translation id="4274292172790327596">অস্বীকৃত ত্রুটি</translation>
 <translation id="4326192123064055915">কফি</translation>
-<translation id="4387004326333427325">দূরবর্তী অবস্থান থেকে প্রমাণীকরণ শংসাপত্র প্রত্যাখ্যান করা হয়েছে</translation>
-<translation id="4442424173763614572">DNS খোঁজ ব্যর্থ হয়েছে</translation>
 <translation id="4448844063988177157">ওয়াই-ফাই নেটওয়ার্কগুলির জন্য অনুসন্ধান করুন...</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: সংযুক্ত হচ্ছে...</translation>
-<translation id="4508265954913339219">সক্রিয়করণ ব্যর্থ</translation>
 <translation id="4559767610552730302">বোকে</translation>
 <translation id="4935975195727477204">গাজানিয়া ফুল</translation>
-<translation id="5045550434625856497">ভুল পাসওয়ার্ড</translation>
-<translation id="5097002363526479830">'<ph name="NAME" />': <ph name="DETAILS" /> নেটওয়ার্কে সংযোগ করা গেল না </translation>
 <translation id="515594325917491223">দাবা</translation>
 <translation id="5257456363153333584">ফড়িং</translation>
-<translation id="5431825016875453137">VPN / L2TP খুলুন</translation>
-<translation id="5864471791310927901">DHCP লুকআপ ব্যর্থ</translation>
-<translation id="6232116551750539448"><ph name="NAME" /> এর সাথে সংযোগ বিচ্ছিন্ন হয়েছে</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
-<translation id="6312403991423642364">অজানা নেটওয়ার্ক ত্রুটি</translation>
-<translation id="6490455614072479501">'<ph name="NAME" />' এর সাথে সংযোগ করা ব্যর্থ হয়েছে: <ph name="DETAILS" />
-        সার্ভার বার্তা: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">কোনো সেলুলার নেটওয়ার্ক উপলব্ধ নেই</translation>
-<translation id="6732801395666424405">শংসাপত্র লোড হয়নি</translation>
 <translation id="6857811139397017780">সক্রিয় করুন <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">ওলট পালট</translation>
-<translation id="6943836128787782965">HTTP ব্যর্থ হয়েছে</translation>
 <translation id="7066646422045619941">এই নেটওয়ার্কটি আপনার প্রশাসকের দ্বারা অক্ষম করা হয়েছে৷</translation>
-<translation id="7165320105431587207">নেটওয়ার্ক কনফিগার করা যায়নি</translation>
-<translation id="7170041865419449892">সীমার বাইরে</translation>
-<translation id="7229570126336867161">EVDO এর প্রয়োজন</translation>
-<translation id="7256405249507348194">অস্বীকৃত ত্রুটি: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">ব্যবহারকারীর নাম/পাসওয়ার্ড ভুল অথবা EAP-প্রমাণীকরণ ব্যর্থ হয়েছে</translation>
 <translation id="735745346212279324">VPN সংযোগ বিচ্ছিন্ন করা হয়েছে</translation>
 <translation id="7874779702599364982">সেলুলার নেটওয়ার্কগুলির জন্য অনুসন্ধান করছে...</translation>
-<translation id="7925247922861151263">AAA যাচাই ব্যর্থ</translation>
-<translation id="7973962044839454485">একটি ভুল ব্যবহারকারী নাম বা পাসওয়ার্ডের কারণে PPP প্রমাণীকরণ ব্যর্থ হয়েছে৷</translation>
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="8008366997883261463">জ্যাক রাসেল ক্ষুদ্রকায় কুকুর</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> তে সংযুক্ত</translation>
-<translation id="8300849813060516376">OTASP ব্যর্থ</translation>
-<translation id="8372369524088641025">খারাপ WEP কী</translation>
 <translation id="8454013096329229812">ওয়াই-ফাই চালু আছে৷</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: পুনরায় সংযোগ করছে...</translation>
-<translation id="8688591111840995413">খারাপ পাসওয়ার্ড</translation>
 <translation id="8714406895390098252">সাইকেল</translation>
 <translation id="8808686172382650546">বিড়াল</translation>
 <translation id="8814190375133053267">ওয়াই-ফাই</translation>
-<translation id="9044646465488564462">নেটওয়ার্কের সাথে সংযোগ করতে ব্যর্থ: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">সংযোগ ব্যর্থ হয়েছে</translation>
 </translationbundle>

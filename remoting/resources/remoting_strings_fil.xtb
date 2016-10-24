@@ -126,6 +126,7 @@ Host</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>
 <translation id="4155497795971509630">Nawawala ang ilang bahagi na kinakailangan. Pakitiyak na na-install mo ang pinakabagong bersyon ng software at subukang muli.</translation>
 <translation id="4156740505453712750">Upang protektahan ang access sa computer na ito, mangyaring pumili ng PIN na may <ph name="BOLD_START" />hindi bababa sa anim na digit<ph name="BOLD_END" />. Kakailanganin ang PIN na ito kapag kumokonekta mula sa isa pang lokasyon.</translation>
+<translation id="4156741816461781891">Naka-sign in bilang <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="4207623512727273241">Mangyaring patakbuhin ang installer bago magpatuloy.</translation>
 <translation id="4227991223508142681">Host na Provisioning Utility</translation>
@@ -208,10 +209,6 @@ Desktop ng Chrome</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Iba pang bagay.</translation>
 <translation id="6398765197997659313">Lumabas sa buong screen</translation>
-<translation id="6408143143164565232">• Makinig sa audio mula sa mga Windows o Linux computer.
-• Mag-alis ng mga hindi gustong koneksyon sa pamamagitan ng pagpindot nang matagal sa pangalan ng computer.
-• Pinahusay na pag-pinch upang mag-zoom at pag-ii-scroll gamit ang dalawang daliri.
-• Bagong screen ng Tulong at Feedback.</translation>
 <translation id="6441316101718669559">Hindi sinusuportahan sa platform na ito ang pagsasama sa desktop. Maaari mo pa ring gamitin ang application, ngunit hindi magiging maganda ang karanasan ng user.</translation>
 <translation id="652218476070540101">Ina-update ang PIN para sa computer na ito…</translation>
 <translation id="6527303717912515753">Ibahagi</translation>

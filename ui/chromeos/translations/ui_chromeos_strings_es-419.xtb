@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="1119447706177454957">Error interno</translation>
 <translation id="153454903766751181">Iniciando módem celular...</translation>
-<translation id="158849752021629804">Se necesita red local</translation>
-<translation id="1661867754829461514">Falta el número de PIN </translation>
-<translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
 <translation id="1829129547161959350">Pingüino</translation>
 <translation id="1850504506766569011">Wi-Fi desactivada</translation>
 <translation id="2288278176040912387">Tocadiscos</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
 <translation id="2563185590376525700">Rana</translation>
-<translation id="2563856802393254086">Se activó tu servicio de datos "<ph name="NAME" />" y está listo para que lo uses.</translation>
 <translation id="2649120831653069427">Pez arco iris</translation>
-<translation id="2670531586141364277">Para activar "<ph name="NAME" />", es necesaria una conexión de red.</translation>
 <translation id="277257480934873581">Restableciendo conexión con <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2951236788251446349">Medusa</translation>
-<translation id="2966449113954629791">Es posible que hayas agotado los datos móviles. Accede al portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
 <translation id="3846575436967432996">No hay información de red disponible.</translation>
-<translation id="3871838685472846647">Celular activado</translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Error de activación de red</translation>
 <translation id="4118990158415604803">El administrador inhabilitó la conexión a otras redes.</translation>
-<translation id="4237016987259239829">Error de conexión de red</translation>
-<translation id="4274292172790327596">Error no reconocido</translation>
 <translation id="4326192123064055915">Café</translation>
-<translation id="4387004326333427325">Certificado de autenticación rechazado de forma remota</translation>
-<translation id="4442424173763614572">Error al buscar DNS</translation>
 <translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Conectando...</translation>
-<translation id="4508265954913339219">Falló la activación</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Gazania</translation>
-<translation id="5045550434625856497">Contraseña incorrecta</translation>
-<translation id="5097002363526479830">Error al conectar a la red "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Ajedrez</translation>
 <translation id="5257456363153333584">Libélula</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">Falló la búsqueda de DHCP</translation>
-<translation id="6232116551750539448">Se perdió la conexión a <ph name="NAME" />.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
-<translation id="6312403991423642364">Error de red desconocido</translation>
-<translation id="6490455614072479501">Error al establecer conexión con "<ph name="NAME" />": <ph name="DETAILS" />
-        Mensaje del servidor: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">No hay redes celulares disponibles.</translation>
-<translation id="6732801395666424405">No se cargaron los certificados.</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Cabeza abajo</translation>
-<translation id="6943836128787782965">Error al obtener HTTP</translation>
 <translation id="7066646422045619941">El administrador inhabilitó esta red.</translation>
-<translation id="7165320105431587207">Error al configurar la red</translation>
-<translation id="7170041865419449892">Fuera de alcance</translation>
-<translation id="7229570126336867161">Se necesita EVDO</translation>
-<translation id="7256405249507348194">Error desconocido: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Nombre de usuario o contraseña incorrectos o error de autenticación EAP</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7874779702599364982">Buscando redes para celulares...</translation>
-<translation id="7925247922861151263">Falló la verificación de AAA</translation>
-<translation id="7973962044839454485">Falló la autenticación de PPP debido a un nombre de usuario o una contraseña incorrectos.</translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="8008366997883261463">Perro</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP falló</translation>
-<translation id="8372369524088641025">Clave de WEP no válida</translation>
 <translation id="8454013096329229812">Wi-Fi activada</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Restableciendo conexión…</translation>
-<translation id="8688591111840995413">Contraseña incorrecta</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8808686172382650546">Gato</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Error al establecer conexión con la red: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">No se pudo conectar</translation>
 </translationbundle>

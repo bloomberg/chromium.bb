@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Giấy phép nguồn mở Chromium OS</translation>
 <translation id="2241627712206172106">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chromium theo ý của họ.</translation>
 <translation id="225614027745146050">Chào mừng</translation>
-<translation id="2264142189334629813">Chromium OS không mở được trang này.</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="2347108572062610441">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32 bit có thể không hoạt động đúng do không được hỗ trợ trên hệ thống Linux này nữa. Vui lòng nâng cấp lên Chromium 64 bit.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">Trong Chromium</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2486653164587200256">Chromium có thể không hoạt động chính xác do không được hỗ trợ trên Windows XP hoặc Windows Vista nữa.</translation>
+<translation id="2527042973354814951">Khởi động lại Chromium để bật <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium OS không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>
 <translation id="2558641060352364164">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và nâng cấp lên một trình duyệt hiện đại.</translation>
 <translation id="2572494885440352020">Trình trợ giúp của Chromium</translation>

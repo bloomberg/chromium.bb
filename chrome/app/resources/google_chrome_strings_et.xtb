@@ -130,6 +130,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="4700157086864140907">Google Chrome võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
 <translation id="4743926867934016338">Nõustun, otsi</translation>
+<translation id="4750550185319565338">Taaskäivitage pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks Chrome</translation>
 <translation id="4751441238232965030">See arvuti ei saa peagi enam 32-bitise Google Chrome'i värskendusi. Viige Google Chrome üle 64-bitisele versioonile.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome blokeeris faili, kuna see võib olla ohtlik.</translation>
@@ -260,7 +261,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8290100596633877290">Tohoh! Google Chrome jooksis kokku. Kas soovite kohe taaskäivitada?</translation>
 <translation id="8342675569599923794">Chrome blokeeris faili, kuna see on ohtlik.</translation>
 <translation id="8406086379114794905">Aidake Chrome'i täiustada</translation>
-<translation id="8410645163819739900">Google Chrome OS ei saa lehte avada.</translation>
 <translation id="8455999171311319804">Valikuline: aitate Chrome OS-i täiustada, kui lubate diagnostika- ja kasutusandmete automaatse saatmise Google'ile.</translation>
 <translation id="853189717709780425">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, nagu rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded, jäävad püsivalt seotuks kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid andmeid seostada teise kontoga.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

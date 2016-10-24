@@ -132,6 +132,7 @@
 <translation id="4700157086864140907">Chrome은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내어 Google 검색에서 사용하는 기술과 동일한 맞춤법 검사 기술을 사용할 수 있게 함으로써 더욱 뛰어난 맞춤법 검사 기능을 제공할 수 있습니다.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" />을(를) 사용하려면 Chrome을 다시 시작하세요.</translation>
 <translation id="4751441238232965030">이 컴퓨터에서 32비트 Chrome 업데이트가 곧 중단됩니다. 64비트 Chrome으로 업그레이드하세요.</translation>
 <translation id="4754614261631455953">Chrome Canary(mDNS-In)</translation>
 <translation id="4771048833395599659">이 파일은 위험할 수있으므로 Chrome에서 차단했습니다.</translation>
@@ -264,7 +265,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8290100596633877290">Chrome이 다운되었습니다. 다시 시작하시겠습니까?</translation>
 <translation id="8342675569599923794">이 파일은 위험하므로 Chrome에서 차단했습니다.</translation>
 <translation id="8406086379114794905">더 나은 Chrome을 만들 수 있도록 도와주세요.</translation>
-<translation id="8410645163819739900">Chrome OS에서 이 페이지를 열 수 없음</translation>
 <translation id="8455999171311319804">선택사항: 진단 및 사용 데이터가 Google로 자동 전송되도록 선택하면 Chrome OS 개선에 도움이 됩니다.</translation>
 <translation id="853189717709780425">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 이렇게 하면 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" />에 영구적으로 연결됩니다. Google 계정 대시보드를 통해 이 데이터를 삭제할 수 있지만 다른 계정에 연결할 수는 없습니다.</translation>
 <translation id="8540666473246803645">Chrome</translation>

@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">OBSERVAÇÃO: as configurações da política permitem conexão apenas entre computadores em sua rede.</translation>
 <translation id="4155497795971509630">Alguns componentes obrigatórios não foram encontrados. Certifique-se de que você esteja executando a última versão do software e tente novamente.</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, selecione um PIN de <ph name="BOLD_START" />pelo menos seis dígitos<ph name="BOLD_END" />. Este PIN será necessário para estabelecer conexão a partir de outro local.</translation>
+<translation id="4156741816461781891">Conectado como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="4207623512727273241">Execute o instalador antes de continuar.</translation>
 <translation id="4227991223508142681">Utilitário de aprovisionamento de host</translation>
@@ -208,10 +209,6 @@ remota do Google Chrome</translation>
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Outro.</translation>
 <translation id="6398765197997659313">Sair do modo tela cheia</translation>
-<translation id="6408143143164565232">• Ouça áudios de computadores Windows ou Linux.
-• Remova conexões indesejadas mantendo o nome do computador pressionado.
-• Maior suavidade no gesto de pinça para aplicar zoom e na rolagem com dois dedos.
-• Nova tela de Ajuda e feedback.</translation>
 <translation id="6441316101718669559">A integração da área de trabalho não é compatível com esta plataforma. Você ainda pode usar o aplicativo, mas sua experiência de usuário será reduzida.</translation>
 <translation id="652218476070540101">O PIN para este computador está sendo atualizado...</translation>
 <translation id="6527303717912515753">Compartilhar</translation>

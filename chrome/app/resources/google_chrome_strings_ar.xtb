@@ -130,12 +130,13 @@
 <translation id="4700157086864140907">‏يمكن أن يقدم Google Chrome تدقيقًا إملائيًا أكثر دقة من خلال إرسال ما تكتبه في المتصفح إلى خوادم Google، مما يتيح لك استخدام تقنية التدقيق الإملائي ذاتها المستخدمة في بحث Google.</translation>
 <translation id="4728575227883772061">‏فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
 <translation id="4743926867934016338">موافقة وبحث</translation>
+<translation id="4750550185319565338">‏إعادة تشغيل Chrome لتمكين <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقِّي تحديثات Google Chrome إصدار 32 بت. الرجاء الترقية إلى Google Chrome إصدار 64 بت.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
-<translation id="4901390485477164536">‏Google Chrome هو متصفحك الافتراضي. مع أطيب التمنيات.</translation>
+<translation id="4901390485477164536">‏Google Chrome هو متصفحك الافتراضي.</translation>
 <translation id="4921569541910214635">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chrome بالطريقة التي تعجبك تمامًا.</translation>
 <translation id="4925019873400497719">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكنها غير صالحة.</translation>
 <translation id="4953650215774548573">‏تعيين Google Chrome المتصفح الافتراضي</translation>
@@ -260,7 +261,6 @@
 <translation id="8290100596633877290">‏للأسف! تعطل Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8342675569599923794">‏هذا الملف ضار، لذلك فقد حظره Chrome.</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
-<translation id="8410645163819739900">‏يتعذر على نظام تشغيل Google Chrome فتح هذه الصفحة.</translation>
 <translation id="8455999171311319804">‏اختياري: ساعد في تحسين نظام التشغيل Chrome عن طريق إرسال بيانات التشخيص والاستخدام إلى Google تلقائيًا.</translation>
 <translation id="853189717709780425">‏أنت تسجل الدخول بحساب يخضع لإدارة شخص آخر وتمنح مشرفه إمكانية التحكم في ملفك الشخصي في Google Chrome. سيتم ربط بياناتك في Chrome دائمًا بالحساب <ph name="USER_NAME" /> مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

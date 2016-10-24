@@ -10,7 +10,6 @@
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
 <translation id="1080116354587839789">符合視窗寬度</translation>
-<translation id="1103124106085518534">暫時沒有最新內容</translation>
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">勾選後，Chrome 會在這個裝置上儲存您的信用卡複本，以便更快填寫資訊。</translation>
 <translation id="1111153019813902504">最新的書籤</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網路診斷<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">請更新您的同步通關密語。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">這裡會顯示你最近造訪過的書籤。</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
 <translation id="1838667051080421715">目前顯示的是網頁原始碼。</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4880827082731008257">搜尋紀錄</translation>
-<translation id="4884656795097055129">系統會適時顯示更多文章。</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />，<ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{還有另外 1 個網頁}other{還有另外 # 個網頁}}</translation>
 <translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE" /></translation>

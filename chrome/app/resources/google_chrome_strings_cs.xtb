@@ -132,6 +132,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="4700157086864140907">Google Chrome může poskytovat lepší kontrolu pravopisu tím, že text zadaný do prohlížeče odešle na servery Google. Umožňuje vám tak používat stejnou technologii kontroly pravopisu, jakou používá Vyhledávání Google.</translation>
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="4743926867934016338">Přijmout a vyhledat</translation>
+<translation id="4750550185319565338">Chcete-li aktivovat plugin <ph name="PLUGIN_NAME" />, restartujte Chrome</translation>
 <translation id="4751441238232965030">Tento počítač brzy přestane dostávat aktualizace pro 32bitovou verzi prohlížeče Google Chrome. Nainstalujte prosím 64bitovou verzi Chromu.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tento soubor může být nebezpečný, proto jej Chrome zablokoval.</translation>
@@ -264,7 +265,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="8290100596633877290">Ouha! Prohlížeč Google Chrome spadl. Restartovat?</translation>
 <translation id="8342675569599923794">Tento soubor je nebezpečný, proto jej Chrome zablokoval.</translation>
 <translation id="8406086379114794905">Pomozte nám Chrome zlepšit</translation>
-<translation id="8410645163819739900">Google Chrome OS tuto stránku nedokáže otevřít.</translation>
 <translation id="8455999171311319804">Volitelné: Pomozte zlepšit operační systém Chrome OS tím, že budete společnosti Google automaticky zasílat diagnostické údaje a údaje o využití.</translation>
 <translation id="853189717709780425">Přihlašujete se pomocí spravovaného účtu, jehož administrátorovi tak dáváte kontrolu nad vaším profilem Google Chrome. Vaše data prohlížeče Chrome (například aplikace, záložky, historie, hesla a další nastavení) budou trvale propojena s účtem <ph name="USER_NAME" />. Tato data budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci propojit s jiným účtem.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

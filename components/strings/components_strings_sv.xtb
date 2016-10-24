@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="106701514854093668">Bokmärken på skrivbordet</translation>
 <translation id="1080116354587839789">Anpassa till fönstrets bredd</translation>
-<translation id="1103124106085518534">Klar för tillfället</translation>
 <translation id="1103523840287552314">Översätt alltid <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Om alternativet är markerat sparas en kopia av kortet på enheten så att det går snabbare att fylla i formulär.</translation>
 <translation id="1111153019813902504">Nya bokmärken</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Testa att köra nätverksdiagnostik för Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Uppdatera lösenfrasen för synkroniseringen.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Här visas dina senast besökta bokmärken.</translation>
 <translation id="1821930232296380041">Begäran eller parametrar i begäran var ogiltiga</translation>
 <translation id="1838667051080421715">Du tittar på källkoden till en webbsida.</translation>
 <translation id="1871208020102129563">Proxyn är inställd på att använda fasta proxyservrar, inte en webbadress med PAC-skript.</translation>
@@ -347,7 +345,7 @@
 <translation id="4670097147947922288">En tilläggssida visas.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Anslutningen avbröts</translation>
-<translation id="4722547256916164131"><ph name="BEGIN_LINK" />att köra nätverksdiagnostik för Windows<ph name="END_LINK" /></translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" /> köra nätverksdiagnostik för Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Läs in policyer på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4744603770635761495">Sökväg till körbar fil</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Anpassa till sida</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4880827082731008257">Sök i historiken</translation>
-<translation id="4884656795097055129">Fler artiklar visas så småningom.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{och en till webbsida}other{och # till webbsidor}}</translation>
 <translation id="4923417429809017348">Sidan har översatts från ett okänt språk till <ph name="LANGUAGE_LANGUAGE" /></translation>

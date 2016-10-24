@@ -290,6 +290,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis HardwareAccelerationModeEnabled er angivet til Falsk, ignoreres Disable3DAPIs, og det svarer til, at Disable3DAPIs er angivet til Sand.</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
+<translation id="2178899310296064282">Gennemtving som minimum Moderat begrænset tilstand på YouTube</translation>
 <translation id="2188979373208322108">Aktiverer bogmærkelinjen i <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, viser <ph name="PRODUCT_NAME" /> en bogmærkelinje. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se bogmærkelinjen. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte det i <ph name="PRODUCT_NAME" />. Hvis denne indstilling ikke angives, kan brugeren vælge at bruge denne funktion eller ej.</translation>
 <translation id="2201555246697292490">Konfigurer hvidlisten for indbyggede beskedhosts</translation>
 <translation id="2204753382813641270">Administrer, hvornår hylden skjules automatisk</translation>
@@ -533,6 +534,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen "Aktivér phishing og malwarebeskyttelse" i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik ikke indstilles, vil den blive aktiveret, men brugeren vil være i stand til at ændre den.</translation>
+<translation id="2787173078141616821">Rapportér oplysninger om status for Android</translation>
 <translation id="2801230735743888564">Giv brugerne mulighed for at spille det ekstra dinosaurspil, når enheden er offline.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke spille det ekstra dinosaurspil, når enheden er offline. Hvis indstillingen er angivet til Sand, kan brugerne spille dinosaurspillet. Hvis politikken ikke er angivet, kan brugerne ikke spille det ekstra dinosaurspil på tilmeldte Chrome OS-systemer, men de kan spille det under andre omstændigheder.</translation>
@@ -639,9 +641,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
 
           Denne politik respekteres kun, hvis politikken 'DefaultSearchProviderEnabled' aktiveres.</translation>
-<translation id="3067188277482006117">Hvis denne er angivet til sand, kan brugeren benytte hardwaren på Chrome-enheder til at fjernbekræfte sin identitet over for privacy CA via Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Hvis den er angivet til falsk, eller hvis den ikke er indstillet, vil kald til API'en mislykkes eller returnere en fejlkode.</translation>
 <translation id="3069958900488014740">Tillader deaktivering af WPAD-optimering (Web Proxy Auto-Discovery) i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik angives som Falsk, deaktiveres WPAD-optimering, så <ph name="PRODUCT_NAME" /> skal vente længere på DNS-baserede WPAD-servere. Hvis politikken ikke er indstillet, eller hvis den er aktiveret, er WPAD-optimering aktiveret.
@@ -762,6 +761,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
       Hvis denne politik er angivet til falsk, vil <ph name="PRODUCT_OS_NAME" /> ikke tillade, at der startes gæstesessioner.</translation>
+<translation id="3418871497193485241">Gennemtvinger som minimum Begrænset tilstand på YouTube og forhindrer brugere i
+      at vælge en mindre begrænset tilstand.
+
+      Hvis denne indstilling er angivet som Streng, er Strengt begrænset tilstand på YouTube altid aktiveret.
+
+      Hvis denne indstilling er angivet som Moderat, kan brugerne kun vælge
+      Moderat begrænset tilstand og Strengt begrænset tilstand på YouTube, men Begrænset tilstand kan ikke deaktiveres.
+
+      Hvis denne indstilling er angivet som Fra, eller der ikke er angivet nogen værdi, gennemtvinges Begrænset tilstand på YouTube ikke af <ph name="PRODUCT_NAME" />. Eksterne politikker, som f.eks. YouTubes politikker, kan dog stadig gennemtvinge Begrænset tilstand.</translation>
 <translation id="3428247105888806363">Aktivér forudsigelse af netværk</translation>
 <translation id="3449886121729668969">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME" />. Disse proxyindstillinger vil også være tilgængelige for ARC-apps.
 
@@ -881,6 +889,12 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Som standard sættes alle indbyggede beskedhosts på hvidlisten, men hvis alle indbyggede beskedhosts er blevet sat på spærrelisten via en politik, kan hvidlisten bruges til at tilsidesætte denne politik.</translation>
 <translation id="384743459174066962">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som ikke må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPopupsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
+<translation id="3851039766298741586">Rapportér oplysninger om aktive terminalsessioner, f.eks.
+      app-id og -version.
+
+      Hvis politikken er angivet som falsk, rapporteres terminaloplysningerne
+      ikke. Hvis den angives som sand eller ikke angives, rapporteres
+      terminaloplysningerne.</translation>
 <translation id="3859780406608282662">Føj en parameter til hentning af variationsbasistallet i <ph name="PRODUCT_OS_NAME" />.
 
       Hvis denne politik er angivet, føjes en forespørgsel kaldet "restrict" til den webadresse, der bruges til at hente variationsbasistallet. Værdien for parameteren er den værdi, der er angivet i denne politik.
@@ -895,6 +909,13 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="3864818549971490907">Standardindstillinger for plugins</translation>
+<translation id="386487026071140458">Denne politik er udfaset. Brug <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> og <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> i stedet. Denne politik ignoreres, hvis enten <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> eller den (udfasede) politik <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> er angivet.
+
+      Gennemtvinger forespørgsler i Google Websøgning til at blive foretaget, mens Beskyttet søgning er aktiveret, og forhindrer brugere i at ændre denne indstilling. Denne indstilling gennemtvinger også Moderat begrænset tilstand på YouTube.
+
+      Hvis du aktiverer denne indstilling, er Beskyttet søgning i Google Søgning og Moderat begrænset tilstand på YouTube altid aktiveret.
+
+      Hvis du deaktiverer denne indstilling eller ikke angiver en værdi, gennemtvinges Beskyttet søgning i Google Søgning og Moderat begrænset tilstand på YouTube ikke.</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3866530186104388232">Hvis denne politik er angivet til sand eller ikke er konfigureret, vil <ph name="PRODUCT_OS_NAME" /> vise eksisterende brugere på loginskærmen og gøre det muligt at vælge en af dem. Hvis denne politik er angivet til falsk, vil <ph name="PRODUCT_OS_NAME" /> bruge meddelelsen brugernavn/adgangskode til login.</translation>
 <translation id="3868347814555911633">Denne politik er aktiv i detailtilstand.
@@ -971,6 +992,17 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Hvis denne politik ikke angives, anvendes "AllowCookies", og brugeren kan ændre dette.</translation>
 <translation id="4103289232974211388">Omdiriger til SAML IdP efter brugerbekræftelse</translation>
+<translation id="4103941930938018145">Denne politik er udfaset. Brug <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> til at kontrollere tilgængeligheden af Flash-pluginnet og <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> til at kontrollere, om det integrerede PDF-visningsprogram skal bruges til at åbne PDF-filer.
+
+      Angiver en liste over plugins, der er deaktiveret i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre denne indstilling.
+
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\" kan du indsætte "\" foran dem.
+
+      Hvis du aktiverer denne indstilling, anvendes den angivne liste over plugins aldrig i <ph name="PRODUCT_NAME" />. Plugins er markeret som deaktiverede i "about:plugins", og brugerne kan ikke aktivere dem.
+
+      Bemærk, at denne politik kan tilsidesættes af EnabledPlugins og DisabledPluginsExceptions.
+
+      Hvis denne politik ikke angives, kan brugerne anvende alle de plugins, der er installeret i systemet, med undtagelse af inkompatible, forældede eller farlige plugins med fikserede koder.</translation>
 <translation id="410478022164847452">Angiver den tid uden brugerinput, der udløser inaktivitetshandlingen, når strømforsyningen er tilsluttet.
 
           Hvis denne politik indstilles, angives den tid, som brugeren skal være inaktiv, før <ph name="PRODUCT_OS_NAME" /> udløser inaktivitetshandlingen, hvilket kan konfigureres separat.
@@ -1256,6 +1288,13 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Hvis denne indstilling deaktiveres eller ikke angives, kan både lokale brugere og fjernbrugere interagere med en host, når den deles.</translation>
 <translation id="5423001109873148185">Denne politik tvinger import af søgemaskiner fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis standardsøgemaskinen er deaktiveret, bliver den ikke importeret. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrænsning:</translation>
+<translation id="543559563129402336">Denne politik er udfaset. Du bør overveje at bruge <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, som tilsidesætter denne politik og giver dig mulighed for større finjustering.
+
+      Gennemtvinger Moderat begrænset tilstand på YouTube og forhindrer brugere i at ændre denne indstilling.
+
+      Hvis denne indstilling er aktiveret, gennemtvinges Moderat begrænset tilstand som minimum altid på YouTube.
+
+      Hvis denne indstilling er deaktiveret, eller der ikke er angivet nogen værdi, gennemtvinges Begrænset tilstand på YouTube ikke af <ph name="PRODUCT_NAME" />. Eksterne politikker, som f.eks. YouTubes politikker, kan dog stadig gennemtvinge Begrænset tilstand.</translation>
 <translation id="5447306928176905178">Aktiver rapportering af hukommelsesoplysninger (størrelse på JavaScript-heap) til siden. (Udfaset)</translation>
 <translation id="5457065417344056871">Aktivér delefunktion i browseren</translation>
 <translation id="5457924070961220141">Giver dig mulighed for at konfigurere standard-HTML-gengivelse, når <ph name="PRODUCT_FRAME_NAME" /> er installeret. Den standardindstilling, der anvendes, når denne politik ikke er angivet, er at lade værtsbrowseren foretage gengivelsen, men du kan vælge at tilsidesætte dette og få <ph name="PRODUCT_FRAME_NAME" /> til at gengive HTML-sider som standard.</translation>
@@ -1357,6 +1396,20 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Hvis denne politik ikke indstilles, anvendes standardindstillingen.
 
           Politikkens værdi skal angives i millisekunder.</translation>
+<translation id="5783595563813359339">Denne politik er udfaset. Brug <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> til at kontrollere tilgængeligheden af Flash-pluginnet og <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> til at kontrollere, om det integrerede PDF-visningsprogram skal bruges til at åbne PDF-filer.
+
+      Angiver en liste over plugins, som brugerne kan aktivere eller deaktivere i <ph name="PRODUCT_NAME" />.
+
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så for at angive de reelle tegn "*", "?" eller "\" kan du indsætte "\" foran dem.
+
+
+      Hvis du aktiverer denne indstilling, kan den angivne liste over plugins anvendes i <ph name="PRODUCT_NAME" />. Brugerne kan aktivere eller deaktivere dem i "about:plugins", selvom pluginnet også svarer til et mønster i DisabledPlugins. Brugerne kan aktivere og deaktivere plugins, som ikke svarer til noget mønster i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
+
+      Denne politik har til formål at tillade strenge sortlister over plugins, hvis listen over "DisabledPlugins" indeholder indtastninger med jokertegn, såsom deaktiver alle plugins "*" eller deaktiver alle Java-plugins "Java", men administratoren vil aktivere en bestemt version af "IcedTea Java 2.3". Den pågældende version kan specificeres i denne politik.
+
+      Bemærk, at både pluginnavnet og gruppenavnet for pluginnet skal fritages. De enkelte plugingrupper er angivet i en særskilt sektion i about:plugins, og hver enkel sektion kan indeholde ét eller flere plugins. Pluginnet "Shockwave Flash" tilhører f.eks. gruppen "Adobe Flash Player", og begge navne skal matche en angivelse på listen over fritagelser, hvis det pågældende plugin skal fritages fra sortlisten.
+
+      Hvis denne politik ikke er angivet, vil de plugins, der matcher mønstrene i "DisabledPlugins", blive låst som deaktiveret, og brugerne vil ikke kunne aktivere dem.</translation>
 <translation id="5795001131770861387">Aktiverer understøttelse af HTTP/0.9 på ikke-standard-porte</translation>
 <translation id="5809728392451418079">Indstil det viste navn for enhedslokale konti</translation>
 <translation id="5814301096961727113">Indstil standardtilstanden for talefeedback på loginskærmen</translation>
@@ -1420,6 +1473,12 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontroller på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
 <translation id="5966615072639944554">Udvidelser har tilladelse til at bruge Remote Attestation API.</translation>
+<translation id="5974970919245996815">Rapportoplysninger om status for Android sendes tilbage til serveren.
+
+      Hvis politikken er angivet som falsk, rapporteres oplysningerne ikke.
+      Hvis den angives som sand eller ikke angives, rapporteres oplysningerne.
+
+      Denne politik gælder kun, hvis Android-apps er aktiveret.</translation>
 <translation id="5983708779415553259">Standardadfærd for websites, der ikke findes i en indholdspakke</translation>
 <translation id="5997543603646547632">Brug 24-timers ur som standard</translation>
 <translation id="6009903244351574348">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> kan håndtere de angivne indholdstyper. Hvis denne politik ikke er angivet, anvendes standardgengiveren for alle websites som angivet i politikken "ChromeFrameRendererSettings".</translation>
@@ -1448,6 +1507,17 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 <translation id="6076099373507468537">Definerer listen over USB-enheder, der gerne må frigøres fra deres kernedriver, så de kan bruges via chrome.usb API direkte i en webapplikation. Poster er par bestående af et USB-leverandør-id og et produkt-id til identifikation af en bestemt hardware.
 
       Hvis denne politik ikke konfigureres, er listen over USB-enheder, der kan frigøres, tom.</translation>
+<translation id="608377055310226486">Denne politik er udfaset. Brug <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> til at kontrollere tilgængeligheden af Flash-pluginnet og <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> til at kontrollere, om det integrerede PDF-visningsprogram skal bruges til at åbne PDF-filer.
+
+      Angiver en liste over plugins, der er aktiveret i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre denne indstilling.
+
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så for at angive de faktiske tegn "*", "?" eller "\" kan du indsætte "\" foran dem.
+
+      Den angivne liste over plugins anvendes altid i <ph name="PRODUCT_NAME" />, hvis de er installeret. Plugins er markeret som aktiveret i "about:plugins", og brugerne kan ikke deaktivere dem.
+
+      Bemærk, at denne politik tilsidesætter både DisabledPlugins og DisabledPluginsExceptions.
+
+      Hvis denne politik ikke er angivet, kan brugerne deaktivere alle plugins, der er installeret i systemet.</translation>
 <translation id="6093156968240188330">Giv eksterne brugere tilladelse til at interagere med vinduer med administratorrettigheder i eksterne hjælpesessioner</translation>
 <translation id="6095999036251797924">Angiver det tidsrum uden input fra brugeren, der går, før skærmen låses, når enheden kører på strømforsyning eller batteri.
 
@@ -1660,6 +1730,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6828905844648501476">Hvis denne politik er angivet til sand eller ikke konfigureres, tillader <ph name="PRODUCT_NAME" /> Tilføj person fra brugeradministration.
 
       Hvis denne politik er angivet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke oprettelse af nye profiler fra profiladministratoren.</translation>
+<translation id="685769593149966548">Gennemtving Strengt begrænset tilstand på YouTube</translation>
 <translation id="687046793986382807">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 35.
 
       Hukommelsesoplysninger rapporteres dog stadigvæk til siden uanset indstillingsværdien, men de rapporterede
@@ -1783,9 +1854,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7132877481099023201">Webadresser, der får adgang til videooptagelsesenheder, uden at du skal give tilladelse hertil.</translation>
 <translation id="7167436895080860385">Tillad, at brugerne kan se adgangskoder i adgangskodeadministratoren</translation>
 <translation id="7173856672248996428">Efemerisk profil</translation>
-<translation id="7187256234726597551">Hvis den er indstillet til sand, er fjernattestering tilladt for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
-
-          Hvis den er indstillet til falsk, eller hvis den ikke er indstillet, genereres der ikke noget certifikat, og kald til enterprise.platformKeysPrivate extension API mislykkes.</translation>
 <translation id="718956142899066210">Forbindelsestyper, der tillades til opdateringer</translation>
 <translation id="7194407337890404814">Standardsøgemaskinens navn</translation>
 <translation id="7195064223823777550">Angiv, hvad der skal ske, når brugeren slår skærmen ned.
@@ -2085,6 +2153,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik er indstillet til sand, bruger enheden et 24-timers urformat. Hvis politikken er indstillet til falsk, bruger enheden et 12-timers urformat.
 
       Hvis denne politik ikke indstilles, bruger enheden som standard et 24-timers urformat.</translation>
+<translation id="8114382167597081590">Gennemtving ikke Begrænset tilstand på YouTube</translation>
 <translation id="8118665053362250806">Angiv størrelse på mediediskcache</translation>
 <translation id="8135937294926049787">Angiver den tid uden brugerinput, der udløser skærmsluk, når strømforsyningen er tilsluttet.
 
@@ -2132,9 +2201,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke angives, vil der ikke være nogen undtagelser til sortlisten fra politikken "URLBlacklist".</translation>
 <translation id="8176035528522326671">Tillad, at kun virksomhedsbrugeren er primær multiprofilbruger (standardadfærd for virksomhedsadministrerede brugere)</translation>
-<translation id="8197918588508433925">Denne politik angiver de tilladte udvidelser til brug af Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() til fjernattestering. Udvidelser skal føjes til denne liste for at kunne anvende API'en
-
-          Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, mislykkes kaldet til API'en med en fejlkode.</translation>
 <translation id="8214600119442850823">Konfigurerer adgangskodeadministratoren.</translation>
 <translation id="8244525275280476362">Maksimal henteforsinkelse efter ugyldiggørelse af en politik</translation>
 <translation id="8256688113167012935">Styrer det kontonavn, som <ph name="PRODUCT_OS_NAME" /> viser på loginskærmen for den tilsvarende enhedslokale konto.
@@ -2277,6 +2343,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8704831857353097849">Liste over deaktiverede plugins</translation>
 <translation id="8711086062295757690">Angiver det nøgleord, som er den genvej, der bruges i omnifeltet til at udløse søgningen for denne udbyder. Denne politik er valgfri. Hvis den ikke angives, vil ingen søgeord aktivere søgemaskinen. Denne politik tages kun i betragtning, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="8731693562790917685">Indstillinger for indhold giver dig mulighed for at angive, hvordan en bestemt type indhold (for eksempel cookies, billeder eller JavaScript) skal behandles.</translation>
+<translation id="8736538322216687231">Gennemtving som minimum Begrænset tilstand på YouTube</translation>
 <translation id="8749370016497832113">Aktiverer sletning af browserhistorik og downloadhistorik i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
 
       Bemærk, at selv når denne politik er deaktiveret, er det ikke sikkert, at browser- og downloadhistorik gemmes. Brugerne kan muligvis redigere eller slette historikfilerne direkte, og browseren kan til enhver tid udløbe eller arkivere alle historikelementer.

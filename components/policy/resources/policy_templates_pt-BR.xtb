@@ -286,6 +286,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se HardwareAccelerationModeEnabled é definida como "false", Disable3DAPIs é ignorada. Isso equivale a definir Disable3DAPIs como "true".</translation>
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
+<translation id="2178899310296064282">Aplicar pelo menos o Modo restrito moderado no YouTube</translation>
 <translation id="2188979373208322108">Ativa a barra de favoritos em <ph name="PRODUCT_NAME" />. Se você ativar esta configuração, <ph name="PRODUCT_NAME" /> exibirá uma barra de favoritos. Se desativar essa configuração, os usuários não visualizarão a barra de favoritos. Se ativar ou desativar esta configuração, os usuários não podem alterá-la ou substituí-la em <ph name="PRODUCT_NAME" />. Se esta configuração for deixada sem definição, o usuário pode decidir utilizá-la ou não.</translation>
 <translation id="2201555246697292490">Configurar a lista de permissões de mensagens nativas</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da estante</translation>
@@ -525,6 +526,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se você ativar ou desativar essa configuração, os usuários não poderão alterar ou substituir a configuração "Ativar proteção contra phishing e malware" no <ph name="PRODUCT_NAME" />.
 
       Se essa política não for definida, ficará ativada, mas o usuário poderá alterá-la.</translation>
+<translation id="2787173078141616821">Informações de relatório sobre o status do Android</translation>
 <translation id="2801230735743888564">Permite que os usuários joguem o easter egg de dinossauro quando o dispositivo estiver off-line.
 
       Se esta política for configurada como "False", não será possível jogar o easter egg de dinossauro quando o dispositivo estiver off-line. Se esta configuração for definida como "True", os usuários estarão autorizados a jogar o easter egg de dinossauro. Se esta política não for configurada, os usuários não terão autorização para jogar o easter egg de dinossauro em Chrome OS registrados, mas poderão jogá-lo em outras circunstâncias.</translation>
@@ -631,9 +633,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Esta política é opcional. Se não for definida, não ocorrerá substituição do termo de pesquisa.
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
-<translation id="3067188277482006117">Se definida como verdadeira, o usuário pode usar o hardware em dispositivos Chrome para atestar remotamente sua identidade para a Privacy CA pela API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Quando definida como falsa ou não definida, as chamadas para a API falham com um código de erro.</translation>
 <translation id="3069958900488014740">Permite desativar a otimização da descoberta automática de proxies da Web (WPAD, na sigla em inglês) no <ph name="PRODUCT_NAME" />.
 
       Se esta política for definida como "false", a otimização de WPAD será desativada, fazendo com que o <ph name="PRODUCT_NAME" /> tenha que esperar mais tempo por servidores de WPAD baseados em DNS. Se a política não estiver definida ou estiver ativada, a otimização de WPAD será ativada.
@@ -748,6 +747,15 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se essa política for definida como false ou não for configurada, o usuário pode usar o navegador sem fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de visitantes.</translation>
+<translation id="3418871497193485241">Aplica um Modo restrito mínimo no YouTube e impede que os usuários
+      escolham um modo menos restrito.
+
+      Se esta configuração for definida como "Rigoroso", o Modo restrito rigoroso no YouTube sempre estará ativado.
+
+      Se esta configuração for definida como "Moderado", o usuário só poderá escolher o Modo restrito moderado
+      e o Modo restrito rigoroso no YouTube, mas não poderá desativar o Modo restrito.
+
+      Se esta configuração for definida como "Desativado" ou se nenhum valor for definido, o Modo restrito no YouTube não será aplicado pelo <ph name="PRODUCT_NAME" />. No entanto, políticas externas, como políticas do YouTube, ainda poderão aplicar o modo restrito.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
 <translation id="3449886121729668969">Define as configurações de proxy para <ph name="PRODUCT_NAME" />. Essas configurações de proxy também ficarão disponíveis para apps ARC.
 
@@ -861,6 +869,12 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Por padrão, todos os hosts de mensagens nativas estão incluídos na lista de permissões. No entanto, se todos os hosts de mensagens nativas tiverem sido adicionados à lista negra pela política, a lista de permissões poderá ser usada para substituir essa política.</translation>
 <translation id="384743459174066962">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPopupsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="3851039766298741586">Informações de relatório sobre a sessão de quiosque ativa, como a
+      versão e o código do aplicativo.
+
+      Se a política for definida como "false", as informações da sessão de quiosque não serão
+      comunicadas. Se definida como "true" ou não configurada, as informações da sessão de quiosque serão
+      comunicadas.</translation>
 <translation id="3859780406608282662">Adicionar um parâmetro para a busca do termo-semente "Variações" no <ph name="PRODUCT_OS_NAME" />.
 
       Se especificada, adiciona um parâmetro de consulta chamado "restrict" ao URL usado para buscar o termo-semente "Variações". O valor do parâmetro é o valor especificado nesta politica.
@@ -875,6 +889,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" está ativada.</translation>
 <translation id="3864818549971490907">Configuração padrão de plug-ins</translation>
+<translation id="386487026071140458">O uso desta política foi suspenso, use <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> e <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> em vez dela. Esta política será ignorada se a política <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> ou <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (uso suspenso) for configurada.
+
+      Força consultas na Google Web Search a serem realizadas com o SafeSearch ativado e impede que os usuários alterem esta configuração. Esta configuração também força o Modo restrito moderado no YouTube.
+
+      Se você ativar esta configuração, o SafeSearch na Pesquisa Google e o Modo restrito moderado no YouTube estarão sempre ativos.
+
+      Se você desativar esta configuração ou não definir um valor, o SafeSearch na Pesquisa Google e o Modo restrito no YouTube não serão aplicados.</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3866530186104388232">Se esta política for configurada como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> mostrará os usuários existentes na tela de login e permitirá a escolha de um deles. Se a política for configurada como false, o <ph name="PRODUCT_OS_NAME" /> usará o prompt de nome de usuário/senha no login.</translation>
 <translation id="3868347814555911633">Esta política só fica ativada em modo de varejo.
@@ -950,6 +971,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se esta política não é configurada, "AllowCookies" é usada, e o usuário pode alterá-la.</translation>
 <translation id="4103289232974211388">Redireciona para IdP de SAML após confirmação do usuário</translation>
+<translation id="4103941930938018145">O uso desta política foi suspenso. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> para controlar a disponibilidade do plug-in do Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> para controlar se o visualizador de PDF integrado deve ser usado para abrir arquivos em PDF.
+
+      Especifica uma lista de plug-ins que ficam desativados no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
+
+      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" corresponde a um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, corresponde aos caracteres zero ou um. O caractere de escape é "\". Assim, para corresponder aos caracteres reais "*", "?" ou "\", você pode colocar um "\" na frente deles.
+
+      Se você ativa esta configuração, a lista de plug-ins especificada nunca é usada no <ph name="PRODUCT_NAME" />. Os plug-ins são marcados como desativados em "about:plugins" e os usuários não podem ativá-los.
+
+      Não é possível substituir esta política por EnabledPlugins e DisabledPluginsExceptions.
+
+      Se esta política for deixada sem definição, o usuário poderá usar qualquer plug-in instalado no sistema, exceto plug-ins codificados incompatíveis, desatualizados ou perigosos.</translation>
 <translation id="410478022164847452">Especifica depois de quanto tempo de inatividade do usuário é executada a ação de inatividade no funcionamento com alimentação CA.
 
           Quando esta política está definida, ela especifica por quanto tempo o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> execute a ação de inatividade, que pode ser configurada separadamente.
@@ -1221,6 +1253,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5395271912574071439">Ativa as cortinas de hosts de acesso remoto enquanto uma conexão está em andamento. Se essa configuração for ativada, os dispositivos de entrada e saída físicas dos hosts serão desativados enquanto houver uma conexão remota em andamento. Se essa configuração for desativada ou não estiver definida, os usuários locais e remotos poderão interagir com o host quando ele estiver sendo compartilhado.</translation>
 <translation id="5423001109873148185">Caso ativada, esta política força mecanismos de pesquisa a serem importados do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Caso seja desativada, o mecanismo de pesquisa padrão não é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5423197884968724595">Nome de restrição do Android WebView:</translation>
+<translation id="543559563129402336">O uso desta política foi suspenso. Recomendamos que você use <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, que substitui esta política e permite um ajuste mais refinado.
+
+      Força o Modo restrito moderado do YouTube e impede que os usuários alterem esta configuração.
+
+      Se esta configuração estiver ativada, o Modo restrito no YouTube sempre será aplicado como, pelo menos, Moderado.
+
+      Se esta configuração estiver desativada ou se nenhum valor for definido, o Modo restrito no YouTube não será aplicado pelo <ph name="PRODUCT_NAME" />. No entanto, as políticas externas, como as políticas do YouTube ainda podem aplicar o Modo restrito.</translation>
 <translation id="5447306928176905178">Ativar relatórios de informação de memória (JS tamanho da pilha) para a página (obsoleta)</translation>
 <translation id="5457065417344056871">Ativar o modo visitante no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador HTML padrão quando <ph name="PRODUCT_FRAME_NAME" /> estiver instalado. A configuração padrão utilizada quando esta política é deixada sem definição é permitir que o navegador host faça o processamento, mas você pode, opcionalmente, substituí-la para que <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por padrão.</translation>
@@ -1324,6 +1363,19 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Quando esta política não está definida, é usado um período padrão.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="5783595563813359339">O uso desta política foi suspenso. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> para controlar a disponibilidade do plug-in do Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> para controlar se o visualizador de PDF integrado deve ser usado para abrir arquivos em PDF.
+
+      Especifica uma lista de plug-ins que o usuário pode ativar ou desativar no <ph name="PRODUCT_NAME" />.
+
+      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" corresponde a um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, corresponde aos caracteres zero ou um. O caractere de escape é "\". Assim, para corresponder aos caracteres reais "*", "?" ou "\",  você pode colocar um "\" na frente deles.
+
+      Se você ativa esta configuração, a lista especificada de plug-ins pode ser usada no <ph name="PRODUCT_NAME" />. Os usuários podem ativá-los ou desativá-los em "about:plugins", mesmo se o plug-in também corresponder a um padrão em DisabledPlugins. Os usuários também podem ativar e desativar plug-ins que não correspondem a nenhum padrão em DisabledPlugins, DisabledPluginsExceptions e EnabledPlugins.
+
+      Esta política possibilita a adição restritiva de plug-ins à lista negra, em que a lista "DisabledPlugins" contém entradas com caracteres curinga, como "desativar todos os plug-ins '*'" ou "desativar todos os plug-ins 'Java*'", mas o administrador deseja ativar alguma versão particular, como "IcedTea Java 2.3". Essas versões particulares podem ser especificadas nesta política.
+
+      Tanto o nome do plug-in como o nome do grupo de plug-ins devem ser isentados. Cada grupo de plug-in é exibido em uma seção separada em "about:plugins". Cada seção pode ter um ou mais plug-ins. Por exemplo, o plug-in "Shockwave Flash" pertence ao grupo "Adobe Flash Player", e os dois nomes deverão ter uma correspondência na lista de exceções, se esse plug-in tiver que ser isentado da lista negra.
+
+      Se esta política não for definida, qualquer plug-in que corresponder aos padrões em "DisabledPlugins" será mantido desativado, e o usuário não poderá ativá-lo.</translation>
 <translation id="5795001131770861387">Ativa a compatibilidade com HTTP/0.9 em portas não padrão</translation>
 <translation id="5809728392451418079">Definir o nome de exibição das contas locais de dispositivo</translation>
 <translation id="5814301096961727113">Definir estado padrão do feedback falado na tela de login</translation>
@@ -1387,6 +1439,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se a política não é definida ou é definida como "false", o <ph name="PRODUCT_NAME" /> não realiza verificações de revogação on-line no <ph name="PRODUCT_NAME" /> 19 e versões posteriores.</translation>
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
+<translation id="5974970919245996815">As informações de relatório sobre o status do Android são enviadas de volta para
+      o servidor.
+
+      Se a política for definida como "false", as informações não serão enviadas.
+      Se definida como "true" ou deixada sem definição, as informações serão enviadas.
+
+      Esta política só se aplica se apps Android estiverem ativados.</translation>
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
 <translation id="6009903244351574348">Permitir que <ph name="PRODUCT_FRAME_NAME" /> administre os tipos de conteúdo listado. Se esta política não estiver definida, o renderizador padrão será usado para todos os sites conforme o especificado pela política "ChromeFrameRendererSettings".</translation>
@@ -1415,6 +1474,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a serem removidos do driver de kernel deles para uso pela API chrome.usb diretamente dentro de um app da Web. As entradas são pares de um identificador de fornecedor e um identificador do produto USB para identificar um hardware específico.
 
       Se esta política não for configurada, a lista de dispositivos USB removíveis ficará vazia.</translation>
+<translation id="608377055310226486">O uso desta política foi suspenso. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> para controlar a disponibilidade do plug-in do Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> para controlar se o visualizador de PDF integrado deve ser usado para abrir arquivos em PDF.
+
+      Especifica uma lista de plug-ins que ficam ativados no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
+
+      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" corresponde a um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, corresponde aos caracteres zero ou um. O caractere de escape é "\". Assim, para corresponder aos caracteres reais "*", "?" ou "\", você pode colocar um "\" na frente deles.
+
+      A lista especificada de plug-ins sempre é usada no <ph name="PRODUCT_NAME" /> se eles estiverem instalados. Os plug-ins são marcados como ativados em "about:plugins", e os usuários não podem desativá-los.
+
+      Esta política substitui DisabledPlugins e DisabledPluginsExceptions.
+
+      Se esta política não for configurada, o usuário poderá desativar qualquer plug-in instalado no sistema.</translation>
 <translation id="6093156968240188330">Permitir que usuários remotos interajam com janelas elevadas em sessões de assistência remota</translation>
 <translation id="6095999036251797924">Especifica o período de tempo de inatividade após o qual a tela deve ser bloqueada, quando o dispositivo é executado em energia AC ou bateria.
 
@@ -1630,6 +1700,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="6828905844648501476">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> permite o recurso "Adicionar pessoa" a partir do gerenciador de usuários.
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite a criação de novos perfis a partir do gerenciador de perfis.</translation>
+<translation id="685769593149966548">Aplicar Modo restrito rigoroso para o YouTube</translation>
 <translation id="687046793986382807">Esta política foi desativada a partir da versão 35 do <ph name="PRODUCT_NAME" />.
 
       De alguma forma, as informações da memória são reportadas à página, independentemente do valor da opção. No entanto, os tamanhos reportados são
@@ -1752,9 +1823,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7132877481099023201">URLs que terão acesso a dispositivos de captura de vídeo sem solicitação</translation>
 <translation id="7167436895080860385">Permitir que os usuários exibam senhas no gerenciador de senhas (uso suspenso)</translation>
 <translation id="7173856672248996428">Perfil temporário</translation>
-<translation id="7187256234726597551">Se for definida como "verdadeira", a declaração remota será permitida para o dispositivo e um certificado será gerado automaticamente e enviado ao Servidor de gerenciamento de dispositivos.
-
-          Se for definida como "falsa" ou se não for definida, nenhum certificado será gerado e ocorrerá falha nas chamadas para a API da extensão enterprise.platformKeysPrivate.</translation>
 <translation id="718956142899066210">Tipos de conexão permitidos para atualizações</translation>
 <translation id="7194407337890404814">Nome do provedor de pesquisa padrão</translation>
 <translation id="7195064223823777550">Especifica a ação a ser executada quando o usuário fecha a tampa.
@@ -2050,6 +2118,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se a política é definida como "true", o dispositivo usa um formato de hora de 24 horas. Se a política é definida como "false", o dispositivo usa um formato de hora de 12 horas.
 
       Se essa política não é definida, o dispositivo usa o padrão do formato de hora de 24 horas.</translation>
+<translation id="8114382167597081590">Não aplicar o Modo restrito no YouTube</translation>
 <translation id="8118665053362250806">Definir tamanho do cache de disco da mídia</translation>
 <translation id="8135937294926049787">Especifica o período de inatividade do usuário após o qual a tela é desligada no funcionamento com alimentação CA.
 
@@ -2097,9 +2166,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política não for definida, não haverá exceções para a lista negra na política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permitir que o usuário empresarial seja o usuário principal de diversos perfis (comportamento padrão para usuários gerenciados por empresa)</translation>
-<translation id="8197918588508433925">Esta política especifica as extensões que podem usar a API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() para declaração remota. As extensões devem ser adicionadas a esta lista para usar a API.
-
-          Se uma extensão não estiver na lista ou se a lista não estiver definida, a chamada para a API falhará com um código de erro.</translation>
 <translation id="8214600119442850823">Configura o gerenciador de senhas.</translation>
 <translation id="8244525275280476362">Atraso máximo de busca após a invalidação de uma política</translation>
 <translation id="8256688113167012935">Controla o nome da conta que o <ph name="PRODUCT_OS_NAME" /> mostra na tela de login para a conta local de dispositivo correspondente.
@@ -2241,6 +2307,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave, que é o atalho utilizado na omnibox para acionar a pesquisa por este provedor. Esta política é opcional. Se não estiver definida, palavra-chave alguma ativará o mecanismo de pesquisa. Esta política só é considerada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="8731693562790917685">As configurações de conteúdo permitem que você especifique como o conteúdo de um tipo específico (por exemplo cookies, imagens ou JavaScript) é tratado.</translation>
+<translation id="8736538322216687231">Aplicar o Modo restrito mínimo do YouTube</translation>
 <translation id="8749370016497832113">Permite excluir o histórico do navegador e o histórico de download no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
 
       Mesmo com esta política desativada, não há garantia de que o histórico de navegação e de download serão mantidos: os usuários podem editar ou excluir diretamente os arquivos do banco de dados do histórico, e o navegador em si pode expirar ou arquivar todos ou alguns itens a qualquer momento.

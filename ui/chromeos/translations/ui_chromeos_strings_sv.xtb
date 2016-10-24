@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1119447706177454957">Internt fel</translation>
 <translation id="153454903766751181">Mobilt modem initieras ...</translation>
-<translation id="158849752021629804">Behöver hemnätverk</translation>
-<translation id="1661867754829461514">PIN saknas</translation>
-<translation id="1773212559869067373">Autentiseringscertifikatet godkändes inte lokalt</translation>
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="1850504506766569011">Wi-Fi är inaktiverat.</translation>
 <translation id="2288278176040912387">Skivspelare</translation>
 <translation id="2354174487190027830">Aktiverar <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Autentiseringscertifikatet godkändes inte av nätverket</translation>
 <translation id="2563185590376525700">Groda</translation>
-<translation id="2563856802393254086">Grattis! Datatjänsten <ph name="NAME" /> har aktiverats och är klar att använda.</translation>
 <translation id="2649120831653069427">Regnbågsfisk</translation>
-<translation id="2670531586141364277">Aktivering av <ph name="NAME" /> kräver en nätverksanslutning.</translation>
 <translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2951236788251446349">Manet</translation>
-<translation id="2966449113954629791">Du kan ha använt din tillåtna mängd mobildata. Besök aktiveringsportalen <ph name="NAME" /> om du vill köpa mer data.</translation>
 <translation id="3846575436967432996">Det finns ingen nätverksinformation</translation>
-<translation id="3871838685472846647">Mobil aktiverad</translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Fel vid nätverksaktivering</translation>
 <translation id="4118990158415604803">Administratören har inaktiverat anslutning till andra nätverk.</translation>
-<translation id="4237016987259239829">Fel vid nätverksanslutning</translation>
-<translation id="4274292172790327596">Okänt fel</translation>
 <translation id="4326192123064055915">Kaffe</translation>
-<translation id="4387004326333427325">Autentiseringscertifikatet godkändes inte av fjärrvärden</translation>
-<translation id="4442424173763614572">DNS-sökning misslyckades</translation>
 <translation id="4448844063988177157">Söker efter Wi-Fi-nätverk...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: ansluter ...</translation>
-<translation id="4508265954913339219">Aktiveringen misslyckades</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Gazaniablomma</translation>
-<translation id="5045550434625856497">Felaktigt lösenord</translation>
-<translation id="5097002363526479830">Det gick inte att ansluta till nätverket <ph name="NAME" />: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Schack</translation>
 <translation id="5257456363153333584">Trollslända</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">DHCP-förfrågan misslyckades</translation>
-<translation id="6232116551750539448">Anslutningen till <ph name="NAME" /> har brutits</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiverar ...</translation>
-<translation id="6312403991423642364">Okänt nätverksfel</translation>
-<translation id="6490455614072479501">Det gick inte att ansluta till <ph name="NAME" />: <ph name="DETAILS" />
-       Meddelande från servern: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Det finns inget tillgängligt mobilt nätverk</translation>
-<translation id="6732801395666424405">Certifikaten har inte lästs in</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Uppochned</translation>
-<translation id="6943836128787782965">HTTP GET misslyckades</translation>
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
-<translation id="7165320105431587207">Det gick inte att konfigurera nätverket</translation>
-<translation id="7170041865419449892">Utanför intervallet</translation>
-<translation id="7229570126336867161">Behöver EVDO</translation>
-<translation id="7256405249507348194">Okänt fel: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Användarnamnet eller lösenordet är felaktigt, eller så misslyckades EAP-auktoriseringen</translation>
 <translation id="735745346212279324">VPN frånkopplat</translation>
 <translation id="7874779702599364982">Söker efter mobilnätverk ...</translation>
-<translation id="7925247922861151263">Kontroll med AAA misslyckades</translation>
-<translation id="7973962044839454485">PPP-autentisering misslyckades på grund av felaktigt användarnamn eller lösenord</translation>
 <translation id="8000066093800657092">Inget nätverk</translation>
 <translation id="8008366997883261463">Hund</translation>
 <translation id="8132793192354020517">Ansluten till <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Det gick inte att etablera tjänsten over-the-air.</translation>
-<translation id="8372369524088641025">Felaktig WEP-nyckel</translation>
 <translation id="8454013096329229812">Wi-Fi är aktiverat.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
-<translation id="8688591111840995413">Felaktigt lösenord</translation>
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8808686172382650546">Katt</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Det gick inte att ansluta till nätverket: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Kunde inte ansluta</translation>
 </translationbundle>

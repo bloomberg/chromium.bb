@@ -39,7 +39,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2158734852934720349">Odprtokodne licence za Chromium OS</translation>
 <translation id="2241627712206172106">Če računalnik souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chromium tako, kot ga želijo.</translation>
 <translation id="225614027745146050">Pozdravljeni</translation>
-<translation id="2264142189334629813">OS Chromium ne more odpreti te strani.</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="2347108572062610441">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko zaženete Chromium.</translation>
 <translation id="2372704305038231957">32-bitna različica Chromiuma morda ne bo delovala pravilno, ker ni več podprta v tem sistemu Linux. Nadgradite Chromium na 64-bitno različico.</translation>
@@ -48,6 +47,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2483889755041906834">V Chromiumu</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
 <translation id="2486653164587200256">Chromium morda ne bo deloval pravilno, ker ni več podprt v sistemu Windows XP ali Windows Vista.</translation>
+<translation id="2527042973354814951">Znova zaženite Chromium, če želite omogočiti <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="2558641060352364164">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>

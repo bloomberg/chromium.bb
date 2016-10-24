@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="106701514854093668">Desktop-Lesezeichen</translation>
 <translation id="1080116354587839789">An Breite anpassen</translation>
-<translation id="1103124106085518534">Fertig</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
 <translation id="1107591249535594099">Bei Aktivierung speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="1111153019813902504">Vor Kurzem gespeicherte Lesezeichen</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Versuchen Sie, die Windows-Netzwerkdiagnose auszuführen.<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Synchronisierungs-Passphrase aktualisieren</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Hier werden Ihre kürzlich aufgerufenen Lesezeichen angezeigt.</translation>
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
 <translation id="1838667051080421715">Dies ist die Quelle einer Webseite.</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
@@ -360,7 +358,6 @@
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
-<translation id="4884656795097055129">Weitere Artikel werden zu gegebener Zeit erscheinen.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{und 1 weitere Webseite}other{und # weitere Webseiten}}</translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>

@@ -40,6 +40,7 @@
 <translation id="2507943997699731163">このフィールドを入力してください。</translation>
 <translation id="2508569020611168319">タブリスト</translation>
 <translation id="2548326553472216322">最近の検索はありません</translation>
+<translation id="2561842179657104141">その他のメディア コントロールを表示</translation>
 <translation id="2572483411312390101">再生</translation>
 <translation id="2613802280814924224">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE" /> です。</translation>
 <translation id="2653659639078652383">送信</translation>
@@ -113,6 +114,7 @@
 <translation id="561939826962581046">日時</translation>
 <translation id="5641012560118721995">再生を一時停止</translation>
 <translation id="5643186887447432888">ボタン</translation>
+<translation id="5677946354068040947">その他のオプション</translation>
 <translation id="57838592816432529">ミュート</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5843503607508392247">その他...</translation>
@@ -147,6 +149,7 @@
 <translation id="6853785296079745596">クローズド キャプションを非表示</translation>
 <translation id="6885760532393684712">ディレクトリ</translation>
 <translation id="6934078000481955284">引用</translation>
+<translation id="6941933287844615239">メディアをダウンロード</translation>
 <translation id="7057186640035488495">上映時間</translation>
 <translation id="709897737746224366">指定されている形式で入力してください。</translation>
 <translation id="7223624360433298498">経過時間</translation>

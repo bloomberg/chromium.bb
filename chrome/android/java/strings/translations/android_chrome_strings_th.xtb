@@ -65,6 +65,7 @@
 <translation id="1643702317193804718">กำลังแปลหน้าเป็นภาษา<ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="1647391597548383849">เข้าถึงกล้องถ่ายรูป</translation>
+<translation id="1661474178782861119">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามค่ำ</translation>
 <translation id="169033420419426091">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะไม่มีการ์ด SD</translation>
 <translation id="1709438864123551175">โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="1742134235943978220">แปลเป็นภาษา<ph name="TARGET_LANGUAGE" />แล้ว</translation>
@@ -382,7 +383,6 @@
 <translation id="5512137114520586844">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME" /></translation>
 <translation id="5527082711130173040">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK1" />อัปเดตสิทธิ์<ph name="END_LINK1" /> การเข้าถึงตำแหน่ง<ph name="BEGIN_LINK2" />สำหรับอุปกรณ์เครื่องนี้ยังปิดอยู่<ph name="END_LINK2" /></translation>
 <translation id="5530766185686772672">ปิดแท็บที่ไม่ระบุตัวตน</translation>
-<translation id="5538968846107343822">ไม่พบอุปกรณ์บลูทูธ <ph name="BEGIN_LINK" />สแกนอีกครั้ง<ph name="END_LINK" /></translation>
 <translation id="554327794654007401">Physical Web</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5565871407246142825">บัตรเครดิต</translation>
@@ -418,6 +418,7 @@
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
 <translation id="585027516397408832">เปิดใช้โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="5860033963881614850">ปิด</translation>
+<translation id="5867027562311576691">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามเช้า</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5899349522111170522">สร้างไฟล์ใหม่</translation>
 <translation id="5902828464777634901">ระบบจะลบข้อมูลในเครื่องทั้งหมดที่เว็บไซต์นี้จัดเก็บ รวมถึงคุกกี้</translation>
@@ -557,6 +558,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (อัปเดตเมื่อ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">โปรดรอสักครู่…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">เสร็จเรียบร้อย</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
 <translation id="7588950540487816470">Physical Web</translation>
@@ -627,6 +629,7 @@
 <translation id="8275818695183729150">อนุญาต (สำหรับการค้นหาในแถบที่อยู่เว็บ)</translation>
 <translation id="8283853025636624853">กำลังซิงค์กับ <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">แท็บมาตรฐาน</translation>
+<translation id="8321376388213838985">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามบ่าย</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
 <translation id="8396312449826231789">เฉพาะไซต์ที่อนุมัติ</translation>
@@ -702,7 +705,6 @@
 <translation id="917685106653909562">มีหน้า Physical Web อยู่ใกล้เคียง</translation>
 <translation id="9187199695613236444">มุมมองสำหรับอุปกรณ์เคลื่อนที่</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
-<translation id="9192643434065497760">เปิดบลูทูธใน<ph name="BEGIN_LINK" />การตั้งค่าอุปกรณ์<ph name="END_LINK" />เพื่อให้จับคู่กันได้</translation>
 <translation id="9198708126133947749">แทนที่ข้อมูลของอุปกรณ์นี้ด้วยข้อมูลของ <ph name="TO_ACCOUNT" /> คุณสามารถดึงข้อมูลเดิมที่มีอยู่โดยเปลี่ยนกลับไปยัง <ph name="FROM_ACCOUNT" /></translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">ภาพ</translation>

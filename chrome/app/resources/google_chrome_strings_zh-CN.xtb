@@ -134,7 +134,7 @@
 <translation id="4771048833395599659">此文件可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
-<translation id="4901390485477164536">太棒了！Google Chrome 已设为您的默认浏览器。</translation>
+<translation id="4901390485477164536">太棒了！Google Chrome 现已成为您的默认浏览器。</translation>
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
 <translation id="4925019873400497719">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但这些信息无效。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
@@ -257,7 +257,6 @@
 <translation id="8290100596633877290">哎呀！Google Chrome 浏览器崩溃了。是否立即重新启动？</translation>
 <translation id="8342675569599923794">此文件存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="8406086379114794905">帮助我们改进Chrome</translation>
-<translation id="8410645163819739900">Google Chrome 操作系统无法打开此网页。</translation>
 <translation id="8455999171311319804">可选：将诊断数据和使用情况数据自动发送给 Google，协助我们改进 Chrome 操作系统。</translation>
 <translation id="853189717709780425">您目前是以托管帐户登录，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永久绑定到 <ph name="USER_NAME" />。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据关联到其他帐户。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

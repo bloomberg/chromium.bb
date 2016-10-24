@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">CATATAN: Setelan kebijakan hanya mengizinkan sambungan antar-komputer dalam jaringan Anda.</translation>
 <translation id="4155497795971509630">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda memasang perangkat lunak versi terbaru dan coba lagi.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses ke komputer ini, gunakan PIN <ph name="BOLD_START" />setidaknya enam digit<ph name="BOLD_END" />. PIN ini akan diperlukan saat menyambung dari lokasi lainnya.</translation>
+<translation id="4156741816461781891">Masuk sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Kode akses</translation>
 <translation id="4207623512727273241">Jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="4227991223508142681">Utilitas Penyediaan Host</translation>
@@ -208,10 +209,6 @@ Desktop Jarak Jauh</translation>
 <translation id="6304318647555713317">Klien</translation>
 <translation id="6381670701864002291">Lainnya.</translation>
 <translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
-<translation id="6408143143164565232">• Mendengarkan audio dari komputer Windows atau Linux.
-• Menghapus sambungan tak diinginkan dengan menekan lama nama komputer.
-• Fitur cubit untuk memperbesar/memperkecil dan gulir dua jari yang lebih halus.
-• Layar Bantuan &amp; Masukan baru.</translation>
 <translation id="6441316101718669559">Penggabungan desktop tidak didukung pada platform ini. Anda masih dapat menggunakan aplikasi, namun pengalaman pengguna akan terdegradasi.</translation>
 <translation id="652218476070540101">PIN untuk komputer ini sedang diperbarui...</translation>
 <translation id="6527303717912515753">Bagikan</translation>

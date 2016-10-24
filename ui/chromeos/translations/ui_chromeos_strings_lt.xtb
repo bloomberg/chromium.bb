@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="1119447706177454957">Vidinė klaida</translation>
 <translation id="153454903766751181">Inicijuojamas mobiliojo ryšio modemas...</translation>
-<translation id="158849752021629804">Reikalingas namų tinklas</translation>
-<translation id="1661867754829461514">Trūksta PIN kodo</translation>
-<translation id="1773212559869067373">Autentifikavimo sertifikatas atmestas vietiniu mastu</translation>
 <translation id="1829129547161959350">Pingvinas</translation>
 <translation id="1850504506766569011">„Wi-Fi“ ryšys išjungtas.</translation>
 <translation id="2288278176040912387">Grotuvas</translation>
 <translation id="2354174487190027830">Aktyvinamas „<ph name="NAME" />“</translation>
-<translation id="2544853746127077729">Autentifikavimo sertifikatą atmetė tinklas</translation>
 <translation id="2563185590376525700">Varlė</translation>
-<translation id="2563856802393254086">Sveikiname! Jūsų „<ph name="NAME" />“ duomenų paslauga buvo suaktyvinta ir yra paruošta naudoti.</translation>
 <translation id="2649120831653069427">Vaivorykštinė žuvis</translation>
-<translation id="2670531586141364277">Norint suaktyvinti „<ph name="NAME" />“ būtinas tinklo ryšys.</translation>
 <translation id="277257480934873581">Iš naujo prisijungiama prie „<ph name="NAME" />“</translation>
 <translation id="2894654529758326923">Informacija</translation>
 <translation id="2951236788251446349">Medūza</translation>
-<translation id="2966449113954629791">Gali būti, kad pasiekėte mobiliojo ryšio duomenų apribojimą. Apsilankykite „<ph name="NAME" />“ suaktyvinimo portale, kad įsigytumėte daugiau duomenų.</translation>
 <translation id="3846575436967432996">Nėra tinklo informacijos</translation>
-<translation id="3871838685472846647">Suaktyvintas korinis ryšys</translation>
 <translation id="3901991538546252627">Jungiamasi prie „<ph name="NAME" />“</translation>
 <translation id="3958548648197196644">Kivis</translation>
-<translation id="40400351611212369">Tinklo aktyvinimo klaida</translation>
 <translation id="4118990158415604803">Prisijungimo prie kitų tinklų funkciją išjungė jūsų administratorius.</translation>
-<translation id="4237016987259239829">Tinklo ryšio klaida</translation>
-<translation id="4274292172790327596">Neatpažįstama klaida</translation>
 <translation id="4326192123064055915">Kava</translation>
-<translation id="4387004326333427325">Autentifikavimo sertifikatas atmestas nuotoliniu būdu</translation>
-<translation id="4442424173763614572">Įvyko DNS paieškos klaida</translation>
 <translation id="4448844063988177157">Ieškoma „Wi-Fi“ tinklų...</translation>
 <translation id="4479639480957787382">Eternetas</translation>
 <translation id="4508225577814909926">„<ph name="NAME" />“: jungiamasi...</translation>
-<translation id="4508265954913339219">Nepavyko suaktyvinti</translation>
 <translation id="4559767610552730302">„Bokeh“ efektas</translation>
 <translation id="4935975195727477204">Gėlė</translation>
-<translation id="5045550434625856497">Neteisingas slaptažodis</translation>
-<translation id="5097002363526479830">Nepavyko prisijungti prie tinklo „<ph name="NAME" />“: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Šachmatai</translation>
 <translation id="5257456363153333584">Laumžirgis</translation>
-<translation id="5431825016875453137">„OpenVPN“ / L2TP</translation>
-<translation id="5864471791310927901">DHCP paieška nepavyko</translation>
-<translation id="6232116551750539448">Ryšys su „<ph name="NAME" />“ nutrūko</translation>
 <translation id="6267036997247669271">„<ph name="NAME" />“: aktyvinama...</translation>
-<translation id="6312403991423642364">Nežinoma tinklo klaida</translation>
-<translation id="6490455614072479501">Nepavyko prisijungti prie „<ph name="NAME" />“: <ph name="DETAILS" />
-        Serverio pranešimas: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
-<translation id="6732801395666424405">Sertifikatai neįkelti</translation>
 <translation id="6857811139397017780">Suaktyvinti „<ph name="NETWORKSERVICE" />“</translation>
 <translation id="6935521024859866267">Aukštyn kojomis</translation>
-<translation id="6943836128787782965">Įvyko HTTP klaida</translation>
 <translation id="7066646422045619941">Šį tinklą išjungė jūsų administratorius.</translation>
-<translation id="7165320105431587207">Nepavyko sukonfigūruoti tinklo</translation>
-<translation id="7170041865419449892">Nepasiekiama</translation>
-<translation id="7229570126336867161">Reikia EVDO</translation>
-<translation id="7256405249507348194">Neatpažinta klaida: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Naudotojo vardas / slaptažodis netinkamas arba EAP autentifikavimas nepavyko</translation>
 <translation id="735745346212279324">VPN atjungtas</translation>
 <translation id="7874779702599364982">Ieškoma mobiliojo ryšio tinklų...</translation>
-<translation id="7925247922861151263">AAA patikra nepavyko</translation>
-<translation id="7973962044839454485">Nepavyko autentifikuoti PGP dėl netinkamo naudotojo vardo ar slaptažodžio</translation>
 <translation id="8000066093800657092">Tinklo nėra</translation>
 <translation id="8008366997883261463">Džeko Raselo terjeras</translation>
 <translation id="8132793192354020517">Prisijungta prie „<ph name="NAME" />“</translation>
-<translation id="8300849813060516376">OTASP nepavyko</translation>
-<translation id="8372369524088641025">Netinkamas WEP raktas</translation>
 <translation id="8454013096329229812">„Wi-Fi“ ryšys įjungtas.</translation>
 <translation id="8484916590211895857">„<ph name="NAME" />“: prisijungiama iš naujo...</translation>
-<translation id="8688591111840995413">Netinkamas slaptažodis</translation>
 <translation id="8714406895390098252">Dviratis</translation>
 <translation id="8808686172382650546">Katė</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
-<translation id="9044646465488564462">Nepavyko prisijungti prie tinklo: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Nepavyko prisijungti</translation>
 </translationbundle>

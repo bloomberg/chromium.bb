@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
 <translation id="106701514854093668">Zakładki na komputerze</translation>
 <translation id="1080116354587839789">Dopasuj do szerokości</translation>
-<translation id="1103124106085518534">Na razie to wszystko</translation>
 <translation id="1103523840287552314">Zawsze tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Po zaznaczeniu tej opcji Chrome będzie zapisywać kopię danych karty na tym urządzeniu, by szybciej wypełniać formularze.</translation>
 <translation id="1111153019813902504">Ostatnie zakładki</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Uruchom Diagnostykę sieci systemu Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Zaktualizuj swoje hasło synchronizacji.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Tu pojawią się ostatnio otwierane zakładki.</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
 <translation id="1838667051080421715">Przeglądasz źródło strony internetowej.</translation>
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
@@ -358,10 +356,9 @@
 <translation id="4782449893814226250">Zapytałeś rodziców, czy możesz wejść na tę stronę.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
-<translation id="4816492930507672669">Dopasuj do strony.</translation>
+<translation id="4816492930507672669">Dopasuj do strony</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4880827082731008257">Przeszukaj historię</translation>
-<translation id="4884656795097055129">Więcej artykułów pojawi się w odpowiednim czasie.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i jeszcze 1 strona}few{i jeszcze # strony}many{i jeszcze # stron}other{i jeszcze # strony}}</translation>
 <translation id="4923417429809017348">Ta strona została przetłumaczona z nieznanego języka na język <ph name="LANGUAGE_LANGUAGE" /></translation>

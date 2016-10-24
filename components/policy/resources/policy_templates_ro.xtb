@@ -295,6 +295,7 @@
       Dacă HardwareAccelerationModeEnabled este dezactivat, Disable3DAPIs este ignorat, fiind echivalent cu activarea Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2170233653554726857">Activați optimizarea pentru WPAD</translation>
+<translation id="2178899310296064282">Impune cel puțin Modul restricționat moderat pe YouTube</translation>
 <translation id="2188979373208322108">Activează bara de marcaje în <ph name="PRODUCT_NAME" />. Dacă activați această setare, <ph name="PRODUCT_NAME" /> va afișa o bară de marcaje. Dacă dezactivați această setare, utilizatorii nu vor vedea niciodată bara de marcaje. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă această setare este lăsată nesetată, utilizatorul poate decide să folosească sau nu această funcție.</translation>
 <translation id="2201555246697292490">Configurați lista albă a mesageriei native</translation>
 <translation id="2204753382813641270">Controlați ascunderea automată a raftului</translation>
@@ -540,6 +541,7 @@
       Dacă activați sau dezactivați această setare, utilizatorii nu pot modifica sau ignora setarea „Activați protecția pentru phishing și malware” din <ph name="PRODUCT_NAME" />.
 
       Dacă politica nu este configurată, această opțiune va fi activată, dar utilizatorul va putea să o modifice.</translation>
+<translation id="2787173078141616821">Raportează informații despre starea Android</translation>
 <translation id="2801230735743888564">Permite utilizatorilor să joace jocul ascuns cu dinozaurul când dispozitivul este offline.
 
       Dacă această politică este dezactivată, utilizatorii nu vor putea să joace jocul ascuns cu dinozaurul când dispozitivul este offline. Dacă această politică este activată, utilizatorii pot să joace jocul cu dinozaurul. Dacă această politică nu este configurată, utilizatorii nu pot să joace jocul ascuns cu dinozaurul pe un dispozitiv înregistrat, cu sistem de operare Chrome, însă pot să îl joace în alte circumstanțe.</translation>
@@ -646,9 +648,6 @@
           Această politică este opțională. Dacă nu este setată, nu se va efectua înlocuirea termenilor de căutare.
 
           Această politică este respectată doar dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
-<translation id="3067188277482006117">Dacă este activată, utilizatorul poate folosi hardware-ul de pe dispozitivele Chrome pentru a-și atesta la distanță identitatea către autoritatea de certificare pentru confidențialitate prin intermediul API-ului Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Dacă este dezactivată sau dacă nu este configurată, apelurile către API nu vor reuși și vor genera un cod de eroare.</translation>
 <translation id="3069958900488014740">Îți permite să dezactivezi optimizarea pentru WPAD (Web Proxy Auto-Discovery) în <ph name="PRODUCT_NAME" />.
 
       Dacă această politică este dezactivată, optimizarea pentru WPAD este, de asemenea, dezactivată, iar <ph name="PRODUCT_NAME" /> va aștepta mai mult timp un răspuns de la serverele WPAD bazate pe DNS. Dacă politica nu este configurată sau este activată, optimizarea pentru WPAD este activată.
@@ -765,6 +764,15 @@
 <translation id="3417418267404583991">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va permite invitaților să se conecteze. Conectările invitaților sunt sesiuni de utilizator anonime și nu necesită o parolă.
 
       Dacă această politică nu este activată, <ph name="PRODUCT_OS_NAME" /> nu va permite începerea unor sesiuni pentru invitați.</translation>
+<translation id="3418871497193485241">Impune un Mod restricționat minim pe YouTube și împiedică utilizatorii
+      să aleagă un mod mai puțin restricționat.
+
+      Dacă setarea are valoarea Strict, Modul restricționat strict pe YouTube este întotdeauna activat.
+
+      Dacă setarea are valoarea Moderat, utilizatorul poate alege numai Modul restricționat moderat
+      și Modul restricționat strict pe YouTube, dar nu poate dezactiva Modul restricționat.
+
+      Dacă setarea are valoarea Dezactivat sau nu este configurată nicio valoare, Modul restricționat pe YouTube nu este impus de <ph name="PRODUCT_NAME" />. Totuși, este posibil ca politicile externe, cum ar fi politicile YouTube, să impună Modul restricționat.</translation>
 <translation id="3428247105888806363">Activați predicția rețelei</translation>
 <translation id="3449886121729668969">Configurează setările de proxy pentru <ph name="PRODUCT_NAME" />. Aceste setări de proxy vor fi disponibile și pentru aplicațiile ARC.
 
@@ -884,6 +892,12 @@
 
           În mod prestabilit, toate gazdele de mesagerie nativă sunt trecute în lista albă, dar dacă toate gazdele de mesagerie nativă au fost trecute în lista neagră prin această politică, lista albă poate fi folosită pentru a înlocui politica.</translation>
 <translation id="384743459174066962">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce nu au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică este lăsată nesetată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
+<translation id="3851039766298741586">Raportează informații privind sesiunea chioșc activă, cum ar fi
+      ID-ul și versiunea aplicației.
+
+      Dacă politica este dezactivată, informațiile privind sesiunea chioșc nu vor fi
+      raportate. Dacă politica este activată sau nu este configurată, informațiile privind sesiunea chioșc vor fi
+      raportate.</translation>
 <translation id="3859780406608282662">Adăugați un parametru la preluarea valorii inițiale Variante din <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este activată, se va adăuga un parametru de interogare numit „restrict” la adresa URL utilizată pentru preluarea valorii inițiale Variante. Valoarea parametrului va fi cea specificată în această politică.
@@ -898,6 +912,13 @@
 
           Această politică este urmată numai dacă politica „DefaultSearchProviderEnabled” este activată.</translation>
 <translation id="3864818549971490907">Setare prestabilită pentru pluginuri</translation>
+<translation id="386487026071140458">Această politică este învechită. Folosește <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> și <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Această politică este ignorată dacă sunt configurate politicile <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> sau <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (învechită).
+
+      Forțează activarea Căutării sigure pentru interogările de pe Căutarea Google pe web și împiedică utilizatorii să modifice această setare. De asemenea, această setare impune Modul restricționat moderat pe YouTube.
+
+      Dacă activezi această setare, Căutarea sigură în Căutarea Google și Modul restricționat pe YouTube vor fi întotdeauna active.
+
+      Dacă dezactivezi această setare sau nu configurezi nicio valoare, Căutarea sigură în Căutarea Google și Modul restricționat pe YouTube nu vor fi impuse.</translation>
 <translation id="3866249974567520381">Descriere</translation>
 <translation id="3866530186104388232">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va afișa utilizatorii existenți pe ecranul de conectare și va permite alegerea unuia. Dacă această politică nu este configurată, <ph name="PRODUCT_OS_NAME" /> va utiliza pentru conectare un ecran pentru nume de utilizator/parolă.</translation>
 <translation id="3868347814555911633">Această politică este activă numai în modul Vânzare.
@@ -974,6 +995,17 @@
 
           Dacă politica nu este configurată, va fi folosită politica „AllowCookies”, iar utilizatorul o va putea schimba.</translation>
 <translation id="4103289232974211388">Redirecționează către furnizorul de identitate SAML după confirmarea utilizatorului</translation>
+<translation id="4103941930938018145">Această politică este învechită. Folosește <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> ca să controlezi disponibilitatea pluginului Flash și <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ca să controlezi dacă vizualizatorul PDF integrat trebuie folosit pentru deschiderea fișierelor PDF.
+
+      Specifică o listă de pluginuri care sunt dezactivate în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
+
+      Metacaracterele „*” și „?” pot fi folosite pentru a corespunde unor secvențe de caractere arbitrare. „*” corespunde unui număr arbitrar de caractere, iar „?” corespunde unui singur caracter opțional, adică unui caracter sau niciunuia. Pentru a folosi chiar caracterele „*”, „?” sau „\”, poți insera un caracter „\” în fața lor, numit și caracter escape.
+
+      Dacă activezi setarea, pluginurile din lista specificată nu sunt folosite niciodată în <ph name="PRODUCT_NAME" />. Pluginurile sunt marcate ca dezactivate în „about:plugins”, iar utilizatorii nu le pot activa.
+
+      Reține că această politică poate fi înlocuită de EnabledPlugins și DisabledPluginsExceptions.
+
+      Dacă politica nu este configurată, utilizatorul poate folosi orice plugin instalat în sistem, cu excepția pluginurilor codificate incompatibile, învechite sau periculoase.</translation>
 <translation id="410478022164847452">Specifică intervalul de timp fără intervenția utilizatorului după care se ia măsura pentru inactivitate la funcționarea pe c.a.
 
           Dacă politica este setată, aceasta specifică intervalul de timp în care utilizatorul trebuie să rămână inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să ia măsura pentru inactivitate, care poate fi configurată separat.
@@ -1258,6 +1290,13 @@
           Dacă această setare este dezactivată sau neconfigurată, atunci atât utilizatorii locali, cât și cei de la distanță pot interacționa cu gazda când se permite accesul la aceasta.</translation>
 <translation id="5423001109873148185">Dacă este activată, această politică forțează importarea motoarelor de căutare din browserul prestabilit. Dacă este activată, politica afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, motorul de căutare prestabilit nu este importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5423197884968724595">Numele restricției Android WebView:</translation>
+<translation id="543559563129402336">Această politică este învechită. Îți recomandăm să folosești <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, care înlocuiește această politică și permite ajustări mai exacte.
+
+      Impune Modul restricționat moderat pe YouTube și împiedică utilizatorii să modifice această setare.
+
+      Dacă setarea este activată, Modul restricționat pe YouTube este impus întotdeauna, cu valoarea minimă Moderat.
+
+      Dacă setarea este dezactivată sau nu este configurată nicio valoare, Modul restricționat pe YouTube nu este impus de <ph name="PRODUCT_NAME" />. Totuși, este posibil ca politicile externe, cum ar fi politicile YouTube, să impună Modul restricționat.</translation>
 <translation id="5447306928176905178">Activați raportarea informațiilor privind memoria (dimensiunea de heap JavaScript) în pagină (s-a renunțat la dezvoltare)</translation>
 <translation id="5457065417344056871">Activează modul pentru invitați în browser</translation>
 <translation id="5457924070961220141">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>
@@ -1361,6 +1400,19 @@
           Dacă politica nu este setată, se utilizează un interval de timp prestabilit.
 
           Valoarea politicii trebuie să fie specificată în milisecunde.</translation>
+<translation id="5783595563813359339">Această politică este învechită. Folosește <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> ca să controlezi disponibilitatea pluginului Flash și <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ca să controlezi dacă vizualizatorul PDF integrat trebuie folosit pentru deschiderea fișierelor PDF.
+
+      Specifică o listă de pluginuri pe care utilizatorul le poate activa sau dezactiva în <ph name="PRODUCT_NAME" />.
+
+      Metacaracterele „*” și „?” pot fi folosite pentru a corespunde unor secvențe de caractere arbitrare. „*” corespunde unui număr arbitrar de caractere, iar „?” corespunde unui singur caracter opțional, adică unui caracter sau niciunuia. Pentru a folosi chiar caracterele „*”, „?” sau „\”, poți insera un caracter „\” în fața lor, numit și caracter escape.
+
+      Dacă activezi setarea, pluginurile din lista specificată pot fi folosite în <ph name="PRODUCT_NAME" />. Utilizatorii pot activa sau dezactiva pluginurile în „about:plugins”, chiar dacă pluginul corespunde și unui șablon din DisabledPlugins. De asemenea, utilizatorii pot activa și dezactiva pluginurile care nu corespund niciunui șablon din DisabledPlugins, DisabledPluginsExceptions și EnabledPlugins.
+
+      Scopul acestei politici este să permită trecerea strictă a pluginurilor în lista neagră, în cazul în care lista „DisabledPlugins” conține intrări cu metacaractere, cum ar fi „*” pentru dezactivarea tuturor pluginurilor sau „*Java*” pentru dezactivarea tuturor pluginurilor Java, dar administratorul dorește să activeze anumite versiuni, cum ar fi „IcedTea Java 2.3”. Aceste versiuni pot fi specificate în această politică.
+
+      Reține că atât numele pluginului, cât și numele grupului de pluginuri trebuie să fie excluse. Fiecare grup de pluginuri este afișat într-o secțiune separată în about:plugins; fiecare secțiune poate avea unul sau mai multe pluginuri. De exemplu, pluginul „Shockwave Flash” aparține grupului „Adobe Flash Player” și ambele nume trebuie să corespundă cu intrări din lista de excepții, dacă acel plugin trebuie exclus din lista neagră.
+
+      Dacă politica nu este configurată, pluginurile care corespund șabloanelor din „DisabledPlugins” vor fi dezactivate și blocate, iar utilizatorul nu le va putea activa.</translation>
 <translation id="5795001131770861387">Activează compatibilitatea cu HTTP/0.9 pentru porturile care nu sunt prestabilite</translation>
 <translation id="5809728392451418079">Setați numele afișat pentru conturile locale de pe gadget</translation>
 <translation id="5814301096961727113">Setați starea prestabilită de feedback vocal pe ecranul de conectare.</translation>
@@ -1424,6 +1476,13 @@
 
       Dacă politica nu este configurată sau este dezactivată, <ph name="PRODUCT_NAME" /> nu va efectua verificări de revocare online în <ph name="PRODUCT_NAME" /> versiunea 19 și în versiunile ulterioare.</translation>
 <translation id="5966615072639944554">Extensii cărora li se permite să utilizeze API-ul de atestare la distanță</translation>
+<translation id="5974970919245996815">Raportează informații despre starea Android, informații care sunt trimise înapoi
+      la server.
+
+      Dacă politica este dezactivată, informațiile nu vor fi raportate.
+      Dacă politica este activată sau nu este configurată, informațiile vor fi raportate.
+
+      Politica se aplică numai dacă sunt activate aplicațiile Android.</translation>
 <translation id="5983708779415553259">Comportamentul prestabilit pentru site-urile care nu sunt incluse în niciun pachet de conținut</translation>
 <translation id="5997543603646547632">Utilizați în mod prestabilit formatul de 24 de ore</translation>
 <translation id="6009903244351574348">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze tipurile de conținut enumerate. Dacă această politică nu este setată, programul de redare prestabilit va fi folosit pentru toate site-urile așa cum se specifică în politica „ChromeFrameRendererSettings”.</translation>
@@ -1452,6 +1511,17 @@
 <translation id="6076099373507468537">Definește lista de dispozitive USB care pot fi detașate de driverul kernel pentru a fi folosite prin API-ul chrome.usb direct într-o aplicație web. Pentru a se identifica un anumit hardware, intrările sunt perechi formate din Identificatorul furnizorului USB și Identificatorul produsului USB.
 
       Dacă această politică nu este configurată, lista de dispozitive USB detașabile este necompletată.</translation>
+<translation id="608377055310226486">Această politică este învechită. Folosește <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />  ca să controlezi disponibilitatea pluginului Flash și <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ca să controlezi dacă vizualizatorul PDF integrat trebuie folosit pentru deschiderea fișierelor PDF.
+
+      Specifică o listă de pluginuri care sunt activate în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
+
+      Metacaracterele „*” și „?” pot fi folosite pentru a corespunde unor secvențe de caractere arbitrare. „*” corespunde unui număr arbitrar de caractere, iar „?” corespunde unui singur caracter opțional, adică unui caracter sau niciunuia. Pentru a folosi chiar caracterele „*”, „?” sau „\”, poți insera un caracter „\” în fața lor, numit și caracter escape.
+
+      Pluginurile din lista specificată sunt folosite întotdeauna în <ph name="PRODUCT_NAME" /> dacă acestea sunt instalate. Pluginurile sunt marcate ca activate în „about:plugins”, iar utilizatorii nu le pot dezactiva.
+
+      Reține că această politică înlocuiește DisabledPlugins și DisabledPluginsExceptions.
+
+      Dacă politica nu este configurată, utilizatorul poate dezactiva oricare plugin instalat în sistem.</translation>
 <translation id="6093156968240188330">Permite utilizatorilor la distanță să interacționeze cu ferestrele cu privilegii superioare din sesiunile de asistență la distanță</translation>
 <translation id="6095999036251797924">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este blocat atunci când dispozitivul funcționează pe c.a. sau pe baterie.
 
@@ -1669,6 +1739,7 @@
 <translation id="6828905844648501476">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite utilizarea funcției Adaugă o persoană din managerul de utilizatori.
 
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea unor noi profiluri din managerul de profiluri.</translation>
+<translation id="685769593149966548">Impune Modul restricționat strict pentru YouTube</translation>
 <translation id="687046793986382807">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 35.
 
       Informațiile privind memoria sunt raportate oricum în pagină, indiferent de valoarea opțiunii, dar dimensiunile raportate sunt
@@ -1793,9 +1864,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7132877481099023201">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului video</translation>
 <translation id="7167436895080860385">Permite utilizatorilor să afișeze parolele în managerul de parole (s-a renunțat la dezvoltare)</translation>
 <translation id="7173856672248996428">Profil efemer</translation>
-<translation id="7187256234726597551">Dacă această politică este activată, atestarea la distanță este permisă pentru dispozitiv. De asemenea, un certificat va fi generat și încărcat în mod automat pe Serverul de gestionare a dispozitivelor.
-
-          Dacă această politică nu este activată sau configurată, nu se va genera niciun certificat și apelurile către API-ul pentru extensia enterprise.platformKeysPrivate nu vor reuși.</translation>
 <translation id="718956142899066210">Tipuri de conexiune permise pentru actualizări</translation>
 <translation id="7194407337890404814">Numele furnizorului de căutare prestabilit</translation>
 <translation id="7195064223823777550">Specificați ce se întâmplă atunci când utilizatorul închide capacul.
@@ -2093,6 +2161,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este activată, dispozitivul va utiliza un format de ceas cu 24 de ore. Dacă politica este dezactivată, dispozitivul va utiliza formatul de ceas cu 12 ore.
 
       Dacă politica nu este configurată, dispozitivul va utiliza formatul prestabilit al ceasului cu 24 de ore.</translation>
+<translation id="8114382167597081590">Nu impune Modul restricționat pe YouTube</translation>
 <translation id="8118665053362250806">Setați dimensiunea pentru memorare în cache pe disc pentru media</translation>
 <translation id="8135937294926049787">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este oprit atunci când dispozitivul funcționează pe c.a.
 
@@ -2140,9 +2209,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă această politică nu este setată, nu vor exista excepții de la lista neagră din politica „URLBlacklist”.</translation>
 <translation id="8176035528522326671">Permiteți ca utilizatorul din companie să fie doar utilizatorul principal într-o sesiune cu mai multe profiluri (comportamentul prestabilit pentru utilizatorii gestionați de companie)</translation>
-<translation id="8197918588508433925">Această politică specifică extensiile cărora li se permite să utilizeze API-ul Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() pentru atestarea la distanță. Extensiile trebuie să fie adăugate în această listă pentru a utiliza API-ul.
-
-          Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
 <translation id="8214600119442850823">Configurează managerul de parole.</translation>
 <translation id="8244525275280476362">Întârzierea maximă la preluare după invalidarea unei politici</translation>
 <translation id="8256688113167012935">Controlează numele de cont afișat de <ph name="PRODUCT_OS_NAME" /> pe ecranul de pornire pentru contul local corespondent de pe gadget.
@@ -2286,6 +2352,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8704831857353097849">Lista pluginurilor dezactivate</translation>
 <translation id="8711086062295757690">Specifică cuvântul cheie care este comanda rapidă utilizată în caseta polivalentă pentru a declanșa căutarea pentru acest furnizor. Această politică este opțională. Dacă nu este setată, niciun cuvânt cheie nu va activa furnizorul de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="8731693562790917685">Folosind Setările privind conținutul, poți să specifici modul în care este gestionat conținutul de un anumit tip (de ex., cookie-uri, imagini sau JavaScript).</translation>
+<translation id="8736538322216687231">Forțează Modul restricționat minim pe YouTube</translation>
 <translation id="8749370016497832113">Permite ștergerea istoricului browserului și a istoricului descărcărilor din <ph name="PRODUCT_NAME" /> și îi împiedică pe utilizatori să modifice această setare.
 
       Rețineți că, și după dezactivarea acestei politici, nu se garantează păstrarea istoricului navigării și a istoricului descărcărilor: utilizatorii pot edita sau șterge în mod direct fișierele din baza de date a istoricului, iar browserul poate oricând să termine sau să arhiveze oricare dintre elementele din istoric sau pe toate acestea.

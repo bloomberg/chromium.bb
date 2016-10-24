@@ -128,6 +128,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="4700157086864140907">Google Chrome može pružiti bolju provjeru pravopisa slanjem teksta unesenog u preglednik Googleovim poslužiteljima te vam na taj način omogućuje upotrebu iste tehnologije provjere pravopisa kojom se služi Google pretraživanje.</translation>
 <translation id="4728575227883772061">Instalacija nije uspjela zbog nepoznate pogreške. Ako je program Google Chrome trenutno otvoren, zatvorite ga i pokušajte ponovno.</translation>
 <translation id="4743926867934016338">Prihvati i traži</translation>
+<translation id="4750550185319565338">Ponovo pokrenite Chrome da biste omogućili dodatak <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Ovo računalo uskoro više neće primati ažuriranja za 32-bitni Google Chrome. Nadogradite na 64-bitni Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Datoteka je možda opasna i Chrome ju je blokirao.</translation>
@@ -256,7 +257,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="8290100596633877290">Opa! Google Chrome je pao. Ponovo pokrenuti sada?</translation>
 <translation id="8342675569599923794">Datoteka je opasna i Chrome ju je blokirao.</translation>
 <translation id="8406086379114794905">Pomozite nam da poboljšamo Chrome</translation>
-<translation id="8410645163819739900">OS Google Chrome ne može otvoriti ovu stranicu.</translation>
 <translation id="8455999171311319804">Dodatno: automatskim slanjem podataka o upotrebi i dijagnostici Googleu pomognite nam da poboljšamo OS Chrome.</translation>
 <translation id="853189717709780425">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

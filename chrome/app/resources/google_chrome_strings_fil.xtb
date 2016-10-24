@@ -132,6 +132,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4700157086864140907">Maaaring magbigay ng mas mahusay na pagsusuri ng pagbabaybay ang Google Chrome sa pamamagitan ng pagpapadala sa mga server ng Google kung ano ang iyong tina-type sa browser, na nagbibigay-daan sa iyong gamitin ang parehong teknolohiya ng pagsusuri ng pagbabaybay na ginagamit ng paghahanap sa Google.</translation>
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
 <translation id="4743926867934016338">Tanggapin at Maghanap</translation>
+<translation id="4750550185319565338">I-restart ang Chrome upang ma-enable ang <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Malapit nang huminto sa pagtanggap ang computer na ito ng mga update sa 32-bit na Google Chrome. Mangyaring mag-upgrade sa 64-bit na Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Maaaring mapanganib ang file na ito, kaya na-block ito ng Chrome.</translation>
@@ -264,7 +265,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8290100596633877290">Whoa! Nag-crash ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="8342675569599923794">Mapanganib ang file na ito, kaya na-block ito ng Chrome.</translation>
 <translation id="8406086379114794905">Tulungang pahusayin ang Chrome</translation>
-<translation id="8410645163819739900">Hindi mabubuksan ng Google Chrome OS ang page na ito.</translation>
 <translation id="8455999171311319804">Opsyonal: Tulungang mas pahusayin ang Chrome OS sa pamamagitan ng awtomatikong pagpapadala ng data ng diagnostic at paggamit sa Google.</translation>
 <translation id="853189717709780425">Nagsa-sign in ka gamit ang isang pinamamahalaang account at ibinibigay mo ang kontrol ng administrator nito sa iyong profile sa Google Chrome. Permanenteng mauugnay sa <ph name="USER_NAME" /> ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, mga password, at iba pang mga setting. Matatanggal mo ang data na ito sa pamamagitan ng Dashboard ng Mga Google Account, ngunit hindi mo maiuugnay ang data na ito sa isa pang account.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

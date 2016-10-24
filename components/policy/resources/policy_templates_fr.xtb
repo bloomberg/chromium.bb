@@ -302,6 +302,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si la règle HardwareAccelerationModeEnabled est définie sur "False", la règle Disable3DAPIs est ignorée, ce qui équivaut à définir Disable3DAPIs sur "True".</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
+<translation id="2178899310296064282">Appliquer au moins le mode restreint modéré sur YouTube</translation>
 <translation id="2188979373208322108">Active la barre des favoris sur <ph name="PRODUCT_NAME" />. 
 
 Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> affiche une barre de favoris. 
@@ -571,6 +572,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas modifier ni ignorer le paramètre "Activer la protection contre le phishing et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
 
       Si vous ne définissez pas cette règle, la navigation sécurisée est activée, mais les utilisateurs peuvent la modifier.</translation>
+<translation id="2787173078141616821">Transmettre des informations sur l'état d'Android</translation>
 <translation id="2801230735743888564">Autoriser les utilisateurs à jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté.
 
 Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté. Si ce paramètre est défini sur "True", les utilisateurs sont autorisés à jouer au jeu des dinosaures. Si cette règle n'est pas définie, les utilisateurs ne sont pas autorisés à jouer au jeu Easter Egg du dinosaure sur les appareils équipés de Chrome OS et enregistrés, mais ils peuvent y jouer dans d'autres circonstances.</translation>
@@ -679,9 +681,6 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
           Cette règle est facultative. Si vous ne la définissez pas, aucun remplacement des termes de recherche n'est effectué.
 
           Cette règle ne s'applique que si la règle 'DefaultSearchProviderEnabled' est activée.</translation>
-<translation id="3067188277482006117">Si la valeur est définie sur "true", l'utilisateur peut utiliser le matériel sur des appareils Chrome afin d'attester, à distance, de son identité auprès de l'autorité de certification de la confidentialité par le biais de l'API Enterprise Platform Keys "chrome.enterprise.platformKeysPrivate.challengeUserKey()".
-
-          Si la valeur est définie sur "false", ou si elle n'est pas définie, les appels vers l'API échouent, et un code d'erreur est renvoyé.</translation>
 <translation id="3069958900488014740">Permet la désactivation de l'optimisation WPAD (Web Proxy Auto-Discovery) dans <ph name="PRODUCT_NAME" />.
 
       Si cette règle est définie sur "False", l'optimisation WPAD est désactivée. Par conséquent, l'attente est plus longue dans <ph name="PRODUCT_NAME" /> pour obtenir une réponse des serveurs WPAD basés sur le DNS. Si la règle n'est pas configurée ou si elle est activée, l'optimisation WPAD est activée.
@@ -806,6 +805,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
 
        Si cette règle est définie sur "false", <ph name="PRODUCT_OS_NAME" /> n'autorise pas les sessions en mode invité.</translation>
+<translation id="3418871497193485241">Applique un mode restreint minimal sur YouTube et empêche l'utilisateur
+      de choisir un mode moins restrictif.
+
+      Si ce paramètre est défini sur "Strict", le mode restreint strict sur YouTube est toujours activé.
+
+      Si ce paramètre est défini sur "Modéré", l'utilisateur peut choisir le mode restreint modéré
+      ou le mode restreint strict sur YouTube, mais il ne peut pas désactiver le mode restreint.
+
+      Si ce paramètre est défini sur "Désactivé" ou si aucune valeur n'est définie, <ph name="PRODUCT_NAME" /> n'applique pas le mode restreint sur YouTube. Toutefois, des règles externes comme les règles de YouTube peuvent toujours appliquer le mode restreint.</translation>
 <translation id="3428247105888806363">Activer la prédiction réseau</translation>
 <translation id="3449886121729668969">Permet de configurer les paramètres de proxy pour <ph name="PRODUCT_NAME" />. Ces paramètres de proxy sont également disponibles pour les applications ARC.
 
@@ -927,6 +935,12 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="384743459174066962">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à ouvrir des pop-ups. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPopupsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
+<translation id="3851039766298741586">Cette règle permet de transmettre des informations sur la session kiosque active,
+      telles que l'ID et la version de l'application.
+
+      Si la règle est définie sur "False", les informations sur la session kiosque
+      ne sont pas transmises. Si elle est définie sur "True" ou si elle n'est pas
+      configurée, les informations sur la session sont transmises.</translation>
 <translation id="3859780406608282662">Permet d'ajouter un paramètre à la récupération de la valeur de départ des variantes dans <ph name="PRODUCT_OS_NAME" />.
 
       Si cette option est spécifiée, un paramètre de requête appelé "restrict" est ajouté à l'URL utilisée pour récupérer la valeur de départ des variantes. La valeur du paramètre est celle indiquée dans cette règle.
@@ -941,6 +955,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="3864818549971490907">Paramètre de plug-ins par défaut</translation>
+<translation id="386487026071140458">Cette règle étant abandonnée, veuillez utiliser à la place les règles <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> et <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Elle est ignorée si l'une ou l'autre des règles <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> ou <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (laquelle est également abandonnée) est définie.
+
+      Cette règle impose l'activation de SafeSearch pour les recherches sur le Web Google, et empêche les utilisateurs de modifier ce paramètre. Elle impose également l'activation du mode restreint modéré sur YouTube.
+
+      Si vous activez ce paramètre, SafeSearch est toujours activé dans la recherche Google et en mode restreint modéré sur YouTube.
+
+      Si vous désactivez ce paramètre ou si vous ne définissez aucune valeur, SafeSearch n'est pas activé dans la recherche Google et en mode restreint sur YouTube.</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3866530186104388232">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> affiche les utilisateurs existants sur l'écran de connexion et permet d'en choisir un. Si cette règle est définie sur "false", <ph name="PRODUCT_OS_NAME" /> affiche une boîte de dialogue demandant le nom d'utilisateur et le mot de passe pour se connecter.</translation>
 <translation id="3868347814555911633">Cette règle n'est active qu'en mode "point de vente".
@@ -1027,6 +1048,17 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 
           Si cette règle n'est pas définie, la règle AllowCookies sera activée, et l'utilisateur sera autorisé à la modifier.</translation>
 <translation id="4103289232974211388">Rediriger vers le fournisseur d'identité SAML après confirmation de l'utilisateur</translation>
+<translation id="4103941930938018145">Cette règle étant abandonnée, veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
+
+      Cette règle définit une liste des plug-ins désactivés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
+
+      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. Ce dernier correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
+
+      Si vous activez ce paramètre, la liste de plug-ins définie n'est jamais utilisée dans <ph name="PRODUCT_NAME" />. Les plug-ins sont marqués comme désactivés dans "about:plugins", et les utilisateurs n'ont pas la possibilité de les activer.
+
+      Notez que cette règle peut être remplacée par EnabledPlugins et DisabledPluginsExceptions.
+
+      Si cette règle n'est pas configurée, les utilisateurs peuvent employer n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins périmés ou dangereux.</translation>
 <translation id="410478022164847452">Indiquer le délai d'inactivité au terme duquel l'action d'inactivité est appliquée en cas d'utilisation de l'alimentation secteur
 
                       Lorsque cette règle est définie, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> applique l'action d'inactivité, configurable séparément.
@@ -1348,6 +1380,13 @@ Si elle est désactivée, le moteur de recherche par défaut n'est pas importé.
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5423197884968724595">Nom de la restriction Android WebView :</translation>
+<translation id="543559563129402336">Cette règle étant abandonnée, utilisez à la place la règle <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, qui est plus précise.
+
+      Cette règle impose le mode restreint modéré sur YouTube et empêche les utilisateurs de modifier ce paramètre.
+
+      Si ce paramètre est activé, le mode restreint sur YouTube est au moins au niveau modéré.
+
+      Si ce paramètre est désactivé ou si aucune valeur n'est définie, <ph name="PRODUCT_NAME" /> n'applique pas le mode restreint sur YouTube. Toutefois, des règles externes comme les règles de YouTube peuvent toujours appliquer le mode restreint.</translation>
 <translation id="5447306928176905178">Activer l'envoi d'informations sur la mémoire (taille du tas JS) à la page (obsolète)</translation>
 <translation id="5457065417344056871">Activer le mode Invité dans le navigateur</translation>
 <translation id="5457924070961220141">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé. 
@@ -1455,6 +1494,19 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
                       Si cette règle n'est pas définie, une durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
+<translation id="5783595563813359339">Cette règle étant abandonnée, veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
+
+      Cette règle définit une liste des plug-ins que les utilisateurs peuvent activer ou désactiver dans <ph name="PRODUCT_NAME" />.
+
+      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. Ce dernier correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
+
+      Si vous activez ce paramètre, la liste de plug-ins définie peut être utilisée dans <ph name="PRODUCT_NAME" />. Les utilisateurs peuvent activer ou désactiver ces plug-ins dans "about:plugins", même si ces derniers sont répertoriés dans DisabledPlugins. Ils peuvent également activer et désactiver les plug-ins non répertoriés dans DisabledPlugins, DisabledPluginsExceptions et EnabledPlugins.
+
+      Cette règle permet à l'administrateur de définir des exceptions pour les plug-ins répertoriés dans la liste "DisabledPlugins" lorsque les entrées correspondantes contiennent des caractères génériques (par exemple, "*" qui permet de désactiver tous les plug-ins ou "*Java*" qui permet de désactiver tous les plug-ins Java. Si l'administrateur souhaite activer des versions spécifiques de ces plug-ins ("IcedTea Java 2.3", par exemple), cette règle le permet.
+
+      Sachez que le nom du plug-in et son nom de groupe doivent être exemptés. Chaque groupe de plug-ins s'affiche dans une section séparée dans "about:plugins", et chaque section peut contenir un plug-in ou plus. Par exemple, le plug-in "Shockwave Flash" fait partie du groupe "Adobe Flash Player". Ces deux noms doivent donc être indiqués dans la liste d'exceptions pour que le plug-in soit exclu de la liste noire.
+
+      Si cette règle n'est pas configurée, tous les plug-ins qui sont répertoriés dans "DisabledPlugins" sont verrouillés/désactivés, et les utilisateurs ne sont pas en mesure de les activer.</translation>
 <translation id="5795001131770861387">Active la compatibilité avec HTTP 0.9 sur les ports non utilisés par défaut</translation>
 <translation id="5809728392451418079">Définir le nom à afficher pour les comptes locaux des appareils</translation>
 <translation id="5814301096961727113">Définir l'état par défaut des commentaires audio sur l'écran de connexion</translation>
@@ -1524,6 +1576,13 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", aucun contrôle de révocation en ligne n'est effectué par <ph name="PRODUCT_NAME" /> dans <ph name="PRODUCT_NAME" /> 19 ou version ultérieure.</translation>
 <translation id="5966615072639944554">Extensions autorisées à utiliser l'API d'attestation à distance</translation>
+<translation id="5974970919245996815">Cette règle renvoie au serveur des informations sur l'état d'Android.
+      
+
+      Si cette règle est définie sur "False", les informations ne sont pas transmises.
+      Si cette règle est définie sur "True" ou si elle n'est pas configurée, les informations sont transmises.
+
+      Cette règle ne s'applique que si les applications Android sont activées.</translation>
 <translation id="5983708779415553259">Comportement par défaut des sites ne figurant dans aucun pack de contenu</translation>
 <translation id="5997543603646547632">Utiliser le format d'horloge 24 h par défaut</translation>
 <translation id="6009903244351574348">Autorisez <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu répertoriés. 
@@ -1554,6 +1613,17 @@ Si cette règle n'est pas configurée, le moteur de rendu par défaut est utilis
 <translation id="6076099373507468537">Définit la liste des appareils USB autorisés à être dissociés de leur pilote de noyau afin d'être utilisés directement au sein d'une application Web via l'API chrome.usb. Les entrées sont des paires composées d'un identifiant de fournisseur USB et d'un identifiant produit associé à un appareil spécifique.
 
       Si cette règle n'est pas configurée, la liste des appareils USB amovibles est vide.</translation>
+<translation id="608377055310226486">Cette règle étant abandonnée, veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
+
+      Cette règle définit une liste des plug-ins activés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramétrage.
+
+      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. Ce dernier correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
+
+      La liste des plug-ins définie est toujours utilisée dans <ph name="PRODUCT_NAME" /> si ceux-ci sont installés. Les plug-ins sont marqués comme activés dans "about:plugins", et les utilisateurs ne peuvent pas les désactiver.
+
+      Notez que cette règle remplace à la fois DisabledPlugins et DisabledPluginsExceptions.
+
+      Si cette règle n'est pas configurée, les utilisateurs peuvent désactiver n'importe quel plug-in installé sur le système.</translation>
 <translation id="6093156968240188330">Permettre aux utilisateurs distants d'interagir avec des fenêtres élevées dans les sessions d'assistance à distance</translation>
 <translation id="6095999036251797924">Indique la période sans activité de la part de l'utilisateur à l'issue de laquelle l'écran est verrouillé lorsque l'appareil est branché sur une prise de courant alternatif ou fonctionne sur batterie.
 
@@ -1784,6 +1854,7 @@ Si vous désactivez cette option ou si vous ne la définissez pas, l'outil de re
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
 <translation id="6828905844648501476">Si cette règle est définie sur "True" ou n'est pas définie, <ph name="PRODUCT_NAME" /> permettra d'ajouter une personne à partir du gestionnaire d'utilisateurs.
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de nouveaux profils à partir du gestionnaire d'utilisateurs.</translation>
+<translation id="685769593149966548">Appliquer le mode restreint strict sur YouTube</translation>
 <translation id="687046793986382807">Cette règle a été supprimée de la version 35 de <ph name="PRODUCT_NAME" />.
 
       Les informations relatives à la mémoire sont tout de même consignées sur cette page, quelle que soit l'option retenue, mais les tailles indiquées sont
@@ -1921,9 +1992,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="7132877481099023201">URL autorisées à accéder aux appareils de capture vidéo sans avis préalable</translation>
 <translation id="7167436895080860385">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe (obsolète).</translation>
 <translation id="7173856672248996428">Profil éphémère</translation>
-<translation id="7187256234726597551">Si cette règle est définie sur "True", l'attestation à distance est autorisée pour l'appareil, et un certificat est automatiquement généré et importé sur le serveur de gestion des appareils.
-
-          Si la règle est définie sur "False", ou si vous ne l'avez pas définie, aucun certificat n'est généré et les appels vers l'API d'extension enterprise.platformKeysPrivate échouent.</translation>
 <translation id="718956142899066210">Types de connexion autorisés pour les mises à jour</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
 <translation id="7195064223823777550">Indiquer l'action à effectuer lorsque l'utilisateur ferme le couvercle
@@ -2239,6 +2307,7 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
       Si la règle est définie sur la valeur "true", le format 24 heures est utilisé sur l'appareil. Si elle est définie sur la valeur "false", le format 12 heures est utilisé.
 
       Si cette règle n'est pas définie, le format 24 heures est utilisé par défaut sur l'appareil.</translation>
+<translation id="8114382167597081590">Ne pas appliquer le mode restreint sur YouTube</translation>
 <translation id="8118665053362250806">Définir la taille du cache disque de support</translation>
 <translation id="8135937294926049787">Indiquer le délai d'inactivité au terme duquel l'écran s'éteint en cas d'utilisation de l'alimentation secteur.
 
@@ -2294,9 +2363,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 
       Si vous ne définissez pas cette règle, il n'y a pas d'exceptions à la liste noire définie par la règle "URLBlacklist".</translation>
 <translation id="8176035528522326671">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement (comportement par défaut pour les utilisateurs gérés par une entreprise)</translation>
-<translation id="8197918588508433925">Cette règle définit les extensions autorisées à utiliser l'API Enterprise Platform Keys "chrome.enterprise.platformKeysPrivate.challengeUserKey()" pour l'attestation à distance. Pour pouvoir utiliser l'API, les extensions doivent être ajoutées à cette liste.
-
-          Si une extension ne figure pas dans la liste, ou si la liste n'est pas définie, l'appel vers l'API échoue, et un code d'erreur est renvoyé.</translation>
 <translation id="8214600119442850823">Configure le gestionnaire de mot de passe.</translation>
 <translation id="8244525275280476362">Délai maximal de récupération après le rejet d'une règle</translation>
 <translation id="8256688113167012935">Définit quel nom de compte s'affiche sur l'écran de connexion de <ph name="PRODUCT_OS_NAME" /> pour le compte local de l'appareil correspondant.
@@ -2447,6 +2513,7 @@ Cette règle est facultative. Si elle n'est pas configurée, aucun mot clé n'ac
 
 Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="8731693562790917685">L'option "Paramètres de contenu" permet d'indiquer la manière dont le contenu d'un type spécifique (par exemple, Cookies, Images ou JavaScript) est géré.</translation>
+<translation id="8736538322216687231">Appliquer un mode restreint minimal sur YouTube</translation>
 <translation id="8749370016497832113">Permet la suppression de l'historique du navigateur et de l'historique des téléchargements dans <ph name="PRODUCT_NAME" /> sans permettre à l'utilisateur de modifier ce paramètre.
 
       Sachez que, même si cette règle est désactivée, il n'est pas garanti que l'historique du navigateur et l'historique des téléchargements soient conservés. Les utilisateurs peuvent, dans certains cas, modifier ou supprimer directement les fichiers de base de données de ces historiques. De même, le navigateur peut expirer ou archiver à tout moment des éléments de l'historique.

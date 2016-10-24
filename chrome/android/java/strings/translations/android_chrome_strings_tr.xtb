@@ -382,7 +382,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
 <translation id="5527082711130173040">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. <ph name="BEGIN_LINK1" />İzinleri güncelleyin<ph name="END_LINK1" />. Ayrıca, konum bilgilerine erişim <ph name="BEGIN_LINK2" />bu cihaz için kapalı<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Gizli sekmeleri kapat</translation>
-<translation id="5538968846107343822">Bluetooth cihazı bulunamadı. <ph name="BEGIN_LINK" />Yeniden tarayın<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">Fiziksel Web</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="5565871407246142825">Kredi kartları</translation>
@@ -702,7 +701,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="917685106653909562">Yakınlardaki Fiziksel Web sayfaları</translation>
 <translation id="9187199695613236444">Mobil uyumlu görünüm</translation>
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
-<translation id="9192643434065497760">Eşlemeye izin vermek için Bluetooth'u <ph name="BEGIN_LINK" />cihaz ayarlarında<ph name="END_LINK" /> açın.</translation>
 <translation id="9198708126133947749">Bu cihazın verilerini, <ph name="TO_ACCOUNT" /> hesabının verileriyle değiştirin. Mevcut verilerinizi tekrar <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Resimler</translation>

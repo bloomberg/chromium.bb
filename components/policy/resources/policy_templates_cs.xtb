@@ -268,6 +268,7 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 <translation id="2166715102875984646">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
 <translation id="2168397434410358693">Prodleva nečinnosti při napájení ze sítě</translation>
 <translation id="2170233653554726857">Povolení optimalizace WPAD</translation>
+<translation id="2178899310296064282">Vynutit na YouTube alespoň střední nastavení omezeného režimu</translation>
 <translation id="2188979373208322108">Aktivuje v aplikaci <ph name="PRODUCT_NAME" /> panel záložek.
 
       Pokud toto nastavení aktivujete, zobrazí aplikace <ph name="PRODUCT_NAME" /> panel záložek.
@@ -534,6 +535,7 @@ Pokud toto nastavení deaktivujete, Bezpečné prohlížení nebude nikdy aktivn
 Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé nebudou moci v prohlížeči <ph name="PRODUCT_NAME" /> změnit ani přepsat nastavení Povolit ochranu proti phishingu a malwaru.
 
 Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována, ale uživatelé budou moci nastavení změnit.</translation>
+<translation id="2787173078141616821">Hlásit informace o stavu systému Android</translation>
 <translation id="2801230735743888564">Povolit uživatelům hrát hru s dinosaurem, když je zařízení offline.
 
       Je-li tato zásada nastavena na hodnotu False, uživatelé nemohou hrát hru s dinosaurem, když je zařízení offline. Pokud je tato zásada nastavena na hodnotu True, uživatelé hru s dinosaurem hrát mohou. Pokud tato zásada není nastavena, v zaregistrovaném systému Chrome OS uživatelé hru s dinosaurem hrát nemohou, ale za všech jiných okolností ji hrát mohou.</translation>
@@ -642,9 +644,6 @@ Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověř
           Tato zásada je volitelná. Pokud není nastavena, nebudou prováděna žádná nahrazení vyhledávacích dotazů.
 
           Tato zásada je zohledňována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
-<translation id="3067188277482006117">Pokud má hodnotu true, uživatel může pomocí hardwaru, který je součástí zařízení Chrome, vzdáleně sdělit svou identitu funkci Privacy CA prostřednictvím rozhraní Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Pokud má tato zásada hodnotu false nebo není nastavena, volání rozhraní API se nezdaří a zobrazí se kód chyby.</translation>
 <translation id="3069958900488014740">Umožňuje vypnout v prohlížeči <ph name="PRODUCT_NAME" /> optimalizaci WPAD (Web Proxy Auto-Discovery).
 
       Je-li tato zásada nastavena na hodnotu false, je optimalizace WPAD zakázána, a <ph name="PRODUCT_NAME" /> proto bude na servery WPAD založené na DNS čekat déle. Pokud tato zásada není nastavena, je optimalizace WPAD povolena.
@@ -769,6 +768,13 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3417418267404583991">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, povolí systém <ph name="PRODUCT_OS_NAME" /> přihlášení hosta. Přihlášení hosta jsou anonymní uživatelské relace a nevyžadují heslo.
 
       Je-li tato zásada nastavena na hodnotu False, systém <ph name="PRODUCT_OS_NAME" /> spuštění relací hosta nepovolí.</translation>
+<translation id="3418871497193485241">Vynutí minimální nastavení omezeného režimu na YouTube a znemožní uživatelům vybrat méně omezený režim.
+
+      Je-li tato zásada nastavena na hodnotu Přísný, bude na YouTube vždy aktivní přísný omezený režim.
+
+      Je-li tato zásada nastavena na hodnotu Střední, uživatel na YouTube bude moci vybrat pouze střední nebo přísný omezený režim, ale nebude moci omezený režim deaktivovat.
+
+      Pokud je tato zásada nastavena na hodnotu Vypnuto nebo není nastavena žádná hodnota, prohlížeč <ph name="PRODUCT_NAME" /> na YouTube omezený režim vynucovat nebude. Omezený režim však může být vynucován externími zásadami, například zásadami služby YouTube.</translation>
 <translation id="3428247105888806363">Aktivovat předvídání akcí sítě</translation>
 <translation id="3449886121729668969">Konfiguruje nastavení proxy serveru pro prohlížeč <ph name="PRODUCT_NAME" />. Tato nastavení proxy serveru budou k dispozici i aplikacím ARC.
 
@@ -890,6 +896,9 @@ Pokud je toto nastavení ponecháno nenakonfigurované, nebudou ohledně přijat
 <translation id="384743459174066962">Umožňuje nastavit seznam vzorů adres URL stránek, které nemají povoleno otevírat vyskakovací okna.
 
            Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultPopupsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
+<translation id="3851039766298741586">Hlášení informací o aktivní relaci veřejného terminálu, jako je ID a verze aplikace.
+
+      Je-li tato zásada nastavena na hodnotu False, informace o relaci veřejného terminálu se hlásit nebudou. Pokud je nastavena na hodnotu True nebo nastavena není, informace o relaci veřejného terminálu se hlásit budou.</translation>
 <translation id="3859780406608282662">Přidá parametr k načítání počátečních hodnot variant v systému <ph name="PRODUCT_OS_NAME" />.
 
       Pokud je tato zásada nastavena, přidá se k adrese URL, která slouží k načítání počáteční hodnoty variant, parametr s názvem „restrict“. Hodnota parametru bude odpovídat hodnotě určené touto zásadou.
@@ -904,6 +913,13 @@ Pokud je toto nastavení ponecháno nenakonfigurované, nebudou ohledně přijat
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="3864818549971490907">Výchozí nastavení pluginů</translation>
+<translation id="386487026071140458">Podpora této zásady byla ukončena. Použijte místo ní zásady <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> a <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Pokud je nastavena zásada <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> nebo <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (podpora ukončena), je tato zásada ignorována.
+
+      Vynutí, aby při použití Vyhledávání Google bylo vždy aktivováno Bezpečné vyhledávání, a zabrání uživatelům toto nastavení změnit. Toto nastavení také vynutí střední omezený režim na YouTube.
+
+      Pokud zapnete toto nastavení, bude ve Vyhledávání Google vždy aktivováno Bezpečné vyhledávání a na YouTube bude vždy aktivován střední omezený režim.
+
+      Pokud toto nastavení vypnete nebo nenastavíte žádnou hodnotu, Bezpečné vyhledávání ve Vyhledávání Google a omezený režim na YouTube nebudou vynucovány.</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3866530186104388232">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, zobrazí systém <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce existující uživatele a umožní vybrat jednoho z nich. Je-li tato zásada nastavena na hodnotu False, zobrazí systém <ph name="PRODUCT_OS_NAME" /> výzvu k zadání uživatelského jména a hesla.</translation>
 <translation id="3868347814555911633">Tato zásada je aktivní pouze v režimu prodeje.
@@ -978,6 +994,17 @@ Pokud je tato zásada nastavena na možnost Uchovat soubory cookie po dobu trvá
 
 Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji budou moci změnit.</translation>
 <translation id="4103289232974211388">Po potvrzení uživatele přesměrovat na poskytovatele identity SAML</translation>
+<translation id="4103941930938018145">Podpora této zásady byla ukončena. K určení dostupnosti pluginu Flash použijte zásadu <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> a k určení, zda se mají soubory PDF otevírat v integrovaném prohlížeči souborů PDF, použijte zásadu <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />.
+
+      Určuje seznam pluginů, které jsou v prohlížeči <ph name="PRODUCT_NAME" /> zakázány, a brání uživatelům toto nastavení změnit.
+
+      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu znaků a znak „?“ určuje jeden volitelný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
+
+      Pokud toto nastavení aktivujete, pluginy uvedené v tomto seznamu v prohlížeči <ph name="PRODUCT_NAME" /> nebudou používány. Příslušné pluginy budou na stránce about:plugins označeny jako zakázané a uživatelé je nebudou moci aktivovat.
+
+      Tuto zásadu lze přepsat zásadami EnabledPlugins a DisabledPluginsExceptions.
+
+      Je-li tato zásada ponechána nenastavená, může uživatel použít libovolný plugin nainstalovaný v systému, s výjimkou pevně zakódovaných nekompatibilních, zastaralých nebo nebezpečných pluginů.</translation>
 <translation id="410478022164847452">Udává dobu nečinnosti uživatele, po které bude při napájení ze sítě provedena úsporná akce.
 
           Pokud je tato zásada nastavena, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> provede úspornou akci. Tuto akci lze nakonfigurovat samostatně.
@@ -1290,6 +1317,13 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 
      Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí vyhledávač importovat, nebo může import probíhat automaticky.</translation>
 <translation id="5423197884968724595">Název omezení Android WebView:</translation>
+<translation id="543559563129402336">Podpora této zásady byla ukončena. Zvažte použití zásady <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, která tuto zásadu přepisuje a umožňuje přesnější vyladění.
+
+      Vynucuje střední nastavení omezeného režimu na YouTube a brání uživatelům ve změně tohoto nastavení.
+
+      Je-li toto nastavení aktivováno, bude vynucováno nastavení omezeného režimu YouTube alespoň na možnost Střední.
+
+      Pokud je toto nastavení zakázáno nebo není nastavena žádná hodnota, prohlížeč <ph name="PRODUCT_NAME" /> na YouTube omezený režim vynucovat nebude. Omezený režim však může být vynucován externími zásadami, například zásadami služby YouTube.</translation>
 <translation id="5447306928176905178">Povolit hlášení informací o paměti (velikost haldy JavaScriptu) stránce (podpora byla ukončena)</translation>
 <translation id="5457065417344056871">Povolit v prohlížeči režim hosta</translation>
 <translation id="5457924070961220141">Umožňuje nakonfigurovat výchozí modul vykreslování obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME" />.
@@ -1394,6 +1428,19 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
           Není-li tato zásada nastavena, bude použita výchozí doba.
 
           Hodnotu zásady zadávejte v milisekundách.</translation>
+<translation id="5783595563813359339">Podpora této zásady byla ukončena. K určení dostupnosti pluginu Flash použijte zásadu <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> a k určení, zda se mají soubory PDF otevírat v integrovaném prohlížeči souborů PDF, použijte zásadu <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />.
+
+      Určuje seznam pluginů, které uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může povolit nebo zakázat.
+
+      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu znaků a znak „?“ určuje jeden volitelný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
+
+      Pokud toto nastavení aktivujete, pluginy uvedené v tomto seznamu bude možné v prohlížeči <ph name="PRODUCT_NAME" /> použít. Uživatelé je na stránce about:plugins budou moci aktivovat nebo deaktivovat i v případě, že odpovídají vzoru v seznamu DisabledPlugins. Uživatelé mohou také aktivovat a deaktivovat pluginy, které neodpovídají žádnému vzoru v seznamu DisabledPlugins, DisabledPluginsExceptions ani EnabledPlugins.
+
+      Táto zásada umožňuje striktně pluginy zakázat pomocí zástupných znaků v zásadě DisabledPlugins – například zakázat všechny pluginy („*“) nebo zakázat všechny pluginy Java („*Java*“) – ale přitom povolit konkrétní verzi (například „IcedTea Java 2.3“). Tuto konkrétní verzi lze určit v této zásadě.
+
+      Upozorňujeme, že je třeba zadat výjimku pro název pluginu i pro název skupiny pluginů. Jednotlivé skupiny pluginů se na stránce about:plugins zobrazují v samostatných sekcích a každá sekce může obsahovat jeden nebo více pluginů. Plugin Shockwave Flash například patří do skupiny Adobe Flash Player. Pokud má být ze seznamu zakázaných pluginů vyňat, musí být v seznamu výjimek uvedeny oba názvy.
+
+      Pokud tato zásada není nastavena, bude jakýkoliv plugin, který odpovídá vzoru v seznamu DisabledPlugins, uzamčen jako deaktivovaný a uživatelé jej nebudou moci aktivovat.</translation>
 <translation id="5795001131770861387">Povolí podporu protokolu HTTP/0.9 na jiných než výchozích portech</translation>
 <translation id="5809728392451418079">Nastavit viditelný název pro místní účty v zařízení</translation>
 <translation id="5814301096961727113">Nastavení výchozího stavu hlasové odezvy na přihlašovací obrazovce</translation>
@@ -1462,6 +1509,12 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nebude u verzí <ph name="PRODUCT_NAME" /> 19 a novějších provádět online kontroly zamítnutých certifikátů.</translation>
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
+<translation id="5974970919245996815">Přehledy informací o stavu systému Android se odesílají zpět na server.
+
+      Pokud je tato zásada nastavena na hodnotu False, informace nebudou hlášeny.
+      Pokud je nastavena na hodnotu True nebo je ponechána nenastavená, informace budou hlášeny.
+
+      Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro Android.</translation>
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>
 <translation id="6009903244351574348">Umožňuje pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu. 
@@ -1492,6 +1545,17 @@ Pokud je zásada nastavena na hodnotu false, hardwarová akcelerace bude zakáz�
 <translation id="6076099373507468537">Definuje seznam zařízení USB, která lze odpojit od ovladače jádra a použít přímo ve webové aplikaci prostřednictvím rozhraní chrome.usb API. Hodnotami jsou páry identifikátorů (dodavatel a produkt), které určují konkrétní hardwarové zařízení.
 
       Pokud tato zásada není nastavena, seznam odpojitelných zařízení USB je prázdný.</translation>
+<translation id="608377055310226486">Podpora této zásady byla ukončena. K určení dostupnosti pluginu Flash použijte zásadu <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> a k určení, zda se mají soubory PDF otevírat v integrovaném prohlížeči souborů PDF, použijte zásadu <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />.
+
+      Určuje seznam pluginů, které jsou v prohlížeči <ph name="PRODUCT_NAME" /> povoleny a brání uživatelům ve změně tohoto nastavení.
+
+      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu znaků a znak „?“ určuje jeden volitelný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
+
+      Pokud jsou pluginy ze zadaného seznamu nainstalovány, vždy se v prohlížeči <ph name="PRODUCT_NAME" /> použijí. Příslušné pluginy jsou na stránce about:plugins označeny jako povolené a uživatelé je nemohou zakázat.
+
+      Tato zásada přepisuje zásady DisabledPlugins a DisabledPluginsExceptions.
+
+      Je-li tato zásada ponechána nenastavená, uživatel může libovolný plugin nainstalovaný v počítači zakázat.</translation>
 <translation id="6093156968240188330">Při relacích vzdálené pomoci vzdáleným uživatelům povolit interakci s okny, která vyžadují zvýšená oprávnění</translation>
 <translation id="6095999036251797924">Udává dobu bez interakce uživatele, po jejímž uplynutí se při napájení ze sítě nebo z baterie uzamkne obrazovka.
 
@@ -1719,6 +1783,7 @@ Hodnota této zásady se zadává v sekundách.</translation>
 <translation id="6828905844648501476">Pokud je tato zásada nastavena na hodnotu True nebo nastavena není, <ph name="PRODUCT_NAME" /> povolí přidávání osob ze správce uživatelů.
 
 Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nepovolí vytváření nových profilů ze správce profilů</translation>
+<translation id="685769593149966548">Vynutit přísný omezený režim pro YouTube</translation>
 <translation id="687046793986382807">V prohlížečích <ph name="PRODUCT_NAME" /> verze 35 a novějších byla tato zásada zrušena.
 
       Informace o paměti jsou stránce hlášeny bez ohledu na nastavení této možnosti. Velikosti jsou však hlášeny jen po určitých přírůstcích a frekvence aktualizací je z bezpečnostních důvodů omezena. Chcete-li získat přesná data v reálném čase, použijte prosím nástroje, jako je Telemetry.</translation>
@@ -1848,9 +1913,6 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 <translation id="7132877481099023201">Adresy URL, kterým bude udělen přístup pro záznam videa bez zobrazení výzvy</translation>
 <translation id="7167436895080860385">Umožnit uživatelům zobrazit hesla ve Správci hesel (podpora ukončena)</translation>
 <translation id="7173856672248996428">Dočasný profil</translation>
-<translation id="7187256234726597551">Pokud je tato zásada nastavena na hodnotu true, bude pro zařízení povolena vzdálená atestace a bude automaticky vygenerován certifikát, který se nahraje na server správy zařízení.
-
-Pokud je tato zásada nastavena na hodnotu false nebo není nakonfigurována, nebude vygenerován žádný certifikát a volání rozhraní API enterprise.platformKeysPrivate se nezdaří.</translation>
 <translation id="718956142899066210">Typy připojení, pro které jsou povoleny aktualizace</translation>
 <translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
 <translation id="7195064223823777550">Určuje akci, která bude provedena při zavření víka.
@@ -2159,6 +2221,7 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 
       Pokud zásadu nastavíte na hodnotu True, zařízení použije 24hodinový formát hodin. Pokud zásadu nastavíte na hodnotu False, zařízení použije 12hodinový formát hodin.
       Pokud zásadu nenastavíte, zařízení ve výchozím nastavení použije 24hodinový formát hodin.</translation>
+<translation id="8114382167597081590">Nevynucovat na YouTube omezený režim</translation>
 <translation id="8118665053362250806">Nastaví velikost mezipaměti médií na disku</translation>
 <translation id="8135937294926049787">Udává dobu nečinnosti uživatele, po které bude obrazovka při napájení ze sítě vypnuta.
 
@@ -2214,9 +2277,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
       Není-li zásada nastavena, nebudou ze zásady URLBlacklist učiněny žádné výjimky.</translation>
 <translation id="8176035528522326671">Povolit firemnímu uživateli být pouze primárním uživatelem s více profily (výchozí chování pro uživatele spravované firmou)</translation>
-<translation id="8197918588508433925">Tato zásada určuje povolená rozšíření, která mohou ke vzdálenému ověření identity použít rozhraní Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey(). Rozšíření oprávněná používat rozhraní API musí být přidána do tohoto seznamu.
-
-          Pokud rozšíření není na seznamu nebo seznam není nastaven, volání rozhraní API se nezdaří a zobrazí se kód chyby.</translation>
 <translation id="8214600119442850823">Konfiguruje správce hesel.</translation>
 <translation id="8244525275280476362">Maximální zpoždění načítání po zneplatnění zásady</translation>
 <translation id="8256688113167012935">Řídí, jaký název účtu systém <ph name="PRODUCT_OS_NAME" /> zobrazí na přihlašovací obrazovce pro odpovídající místní účet v zařízení.
@@ -2340,6 +2400,7 @@ Tato zásada není k dispozici v relacích Windows, které nejsou připojené 
 
           Tato zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="8731693562790917685">Nastavení obsahu umožňují určit, jakým způsobem bude zpracováván obsah určitého typu (například soubory cookie, obrázky nebo JavaScript).</translation>
+<translation id="8736538322216687231">Vynutit minimální nastavení omezeného režimu na YouTube</translation>
 <translation id="8749370016497832113">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> mazání historie procházení a stahování a zabraňuje uživatelům, aby toto nastavení změnili.
 
      I když je tato zásada deaktivována, nelze zaručit, že bude historie procházení a stahování uchována: uživatelé mohou soubory upravovat nebo smazat přímo v databázi historie a také prohlížeč může některé nebo všechny položky historie kdykoliv smazat nebo archivovat.

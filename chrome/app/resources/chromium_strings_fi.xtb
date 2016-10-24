@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Chromium-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
 <translation id="2241627712206172106">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromiumista juuri itselleen sopivan.</translation>
 <translation id="225614027745146050">Tervetuloa</translation>
-<translation id="2264142189334629813">Chromium-käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="2347108572062610441">Tämä laajennus on vaihtanut Chromiumin aloitussivun.</translation>
 <translation id="2372704305038231957">32-bittinen Chromium ei ehkä toimi oikein, koska sen käyttöä tällä Linux-järjestelmällä ei enää tueta. Päivitä Chromium 64-bittiseen versioon.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">Chromiumissa</translation>
 <translation id="2485422356828889247">Poista</translation>
 <translation id="2486653164587200256">Chromium ei välttämättä toimi oikein, koska se ei enää tue Windows XP:tä tai Windows Vistaa.</translation>
+<translation id="2527042973354814951">Käynnistä Chromium uudelleen, jotta <ph name="PLUGIN_NAME" /> voidaan ottaa käyttöön.</translation>
 <translation id="2535480412977113886">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

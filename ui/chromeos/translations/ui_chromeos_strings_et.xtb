@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
-<translation id="1119447706177454957">Sisemine viga</translation>
 <translation id="153454903766751181">Mobiilimodemi lähtestamine ...</translation>
-<translation id="158849752021629804">Vajalik koduvõrk</translation>
-<translation id="1661867754829461514">PIN-kood puudub</translation>
-<translation id="1773212559869067373">Autentimissertifikaat lükati kohalikult tagasi</translation>
 <translation id="1829129547161959350">Pingviin</translation>
 <translation id="1850504506766569011">WiFi on välja lülitatud.</translation>
 <translation id="2288278176040912387">Grammofon</translation>
 <translation id="2354174487190027830">Võrgu <ph name="NAME" /> aktiveerimine</translation>
-<translation id="2544853746127077729">Võrk lükkas autentimissertifikaadi tagasi</translation>
 <translation id="2563185590376525700">Konn</translation>
-<translation id="2563856802393254086">Õnnitleme! Teie võrgu „<ph name="NAME" />” andmeteenus on aktiveeritud ja kasutamiseks valmis.</translation>
 <translation id="2649120831653069427">Vikerkaarekala</translation>
-<translation id="2670531586141364277">Võrgu „<ph name="NAME" />” aktiveerimine nõuab võrguühendust.</translation>
 <translation id="277257480934873581">Võrguga <ph name="NAME" /> uuesti ühendamine</translation>
 <translation id="2894654529758326923">Teave</translation>
 <translation id="2951236788251446349">Millimallikas</translation>
-<translation id="2966449113954629791">Võimalik, et olete oma mobiilse andmeside ära kasutanud. Andmesidet saate juurde osta aktiveerimisportaalis <ph name="NAME" />.</translation>
 <translation id="3846575436967432996">Võrguteave ei ole saadaval</translation>
-<translation id="3871838685472846647">Mobiil on aktiveeritud</translation>
 <translation id="3901991538546252627">Võrguga <ph name="NAME" /> ühenduse loomine</translation>
 <translation id="3958548648197196644">Kiivi</translation>
-<translation id="40400351611212369">Võrgu aktiveerimise viga</translation>
 <translation id="4118990158415604803">Administraator on muude võrkudega ühenduse loomise keelanud.</translation>
-<translation id="4237016987259239829">Võrguühenduse viga</translation>
-<translation id="4274292172790327596">Tundmatu viga</translation>
 <translation id="4326192123064055915">Kohv</translation>
-<translation id="4387004326333427325">Autentimissertifikaat lükati kaugühenduse kaudu tagasi</translation>
-<translation id="4442424173763614572">DNS-i otsing nurjus</translation>
 <translation id="4448844063988177157">WiFi võrkude otsimine ...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: ühendamine ...</translation>
-<translation id="4508265954913339219">Aktiveerimine nurjus</translation>
 <translation id="4559767610552730302">Bokeh-efekt</translation>
 <translation id="4935975195727477204">Karikakar</translation>
-<translation id="5045550434625856497">Vale salasõna</translation>
-<translation id="5097002363526479830">Võrguga „<ph name="NAME" />” ühenduse loomine ebaõnnestus: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Male</translation>
 <translation id="5257456363153333584">Kiil</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">DHCP otsing nurjus</translation>
-<translation id="6232116551750539448">Ühendus üksusega <ph name="NAME" /> katkes</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiveerimine ...</translation>
-<translation id="6312403991423642364">Tundmatu võrguviga</translation>
-<translation id="6490455614072479501">Võrguga „<ph name="NAME" />” ühenduse loomine ebaõnnestus: <ph name="DETAILS" />
-        Serveri teade: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Mobiilivõrk pole saadaval</translation>
-<translation id="6732801395666424405">Sertifikaate ei laaditud</translation>
 <translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Tagurpidi</translation>
-<translation id="6943836128787782965">HTTP hankimine nurjus</translation>
 <translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
-<translation id="7165320105431587207">Võrgu seadistamine ebaõnnestus</translation>
-<translation id="7170041865419449892">Vahemikust väljas</translation>
-<translation id="7229570126336867161">Vajalik EVDO</translation>
-<translation id="7256405249507348194">Tundmatu viga: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Kasutajanimi/parool on vale või EAP-autentimine ebaõnnestus</translation>
 <translation id="735745346212279324">VPN-i ühendus on katkestatud</translation>
 <translation id="7874779702599364982">Mobiilsidevõrkude otsimine ...</translation>
-<translation id="7925247922861151263">AAA kontrollimine nurjus</translation>
-<translation id="7973962044839454485">PPP autentimine ebaõnnestus vale kasutajanime või parooli tõttu</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
 <translation id="8008366997883261463">Jack Russelli terjer</translation>
 <translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
-<translation id="8300849813060516376">OTASP nurjus</translation>
-<translation id="8372369524088641025">Halb WEP-võti</translation>
 <translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: uuesti ühendamine …</translation>
-<translation id="8688591111840995413">Sobimatu parool</translation>
 <translation id="8714406895390098252">Jalgratas</translation>
 <translation id="8808686172382650546">Kass</translation>
 <translation id="8814190375133053267">WiFi</translation>
-<translation id="9044646465488564462">Võrguga ühenduse loomine ebaõnnestus: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Ühendamine nurjus</translation>
 </translationbundle>

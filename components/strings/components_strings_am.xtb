@@ -10,7 +10,6 @@
 <translation id="10614374240317010">በጭራሽ አልተቀመጠም</translation>
 <translation id="106701514854093668">የዴስክቶፕ ዕልባቶች</translation>
 <translation id="1080116354587839789">ከስፋቱ ጋር አመጣጥን</translation>
-<translation id="1103124106085518534">ለአሁን ተከናውኗል</translation>
 <translation id="1103523840287552314">ሁልጊዜ <ph name="LANGUAGE" />ን መተርጎም</translation>
 <translation id="1107591249535594099">ምልክት ከተደረገበት፣ Chrome ለተሻለ ፈጣን የቅጽ አሞላል የካርድዎን ቅጂ በዚህ መሣሪያ ላይ ያከማቻል።</translation>
 <translation id="1111153019813902504">የቅርብ ጊዜ ዕልባቶች</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />የWindows አውታረ መረብ መመርመሪያውን ለማሄድ ይሞክሩ<ph name="END_LINK" />።</translation>
 <translation id="1783075131180517613">እባክዎ የማመሳሰል ይለፍ ሐረግዎን ያዘምኑ።</translation>
 <translation id="1791429645902722292">Google ዘመናዊ ቁልፍ</translation>
-<translation id="1815084229389833348">በቅርብ ጊዜ የጎበኟቸው ዕልባቶችዎ እዚህ ላይ ይታያሉ።</translation>
 <translation id="1821930232296380041">ልክ ያልሆነ ጥያቄ ወይም የጥያቄ ልኬቶች</translation>
 <translation id="1838667051080421715">የአንድ ድረ-ገጽ ምንጭን እየተመለከቱ ነው።</translation>
 <translation id="1871208020102129563">የ.pac ስክሪፕት ዩአርኤል ሳይሆን ተኪ አገልጋዮችን እንዲጠቀም ነው ተኪ የተዋቀረው።</translation>
@@ -360,7 +358,6 @@
 <translation id="4816492930507672669">ገጹን አመጣጥን</translation>
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="4880827082731008257">የፍለጋ ታሪክ</translation>
-<translation id="4884656795097055129">ጊዜው ትክክል ሲሆን ተጨማሪ ጽሑፎች ይታያሉ።</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />፣ <ph name="TYPE_2" />፣, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{እና 1 ተጨማሪ ድረ-ገጽ}one{እና # ተጨማሪ ድረ-ገጾች}other{እና # ተጨማሪ ድረ-ገጾች}}</translation>
 <translation id="4923417429809017348">ገጹ ከማይታወቅ ቋንቋ ወደ <ph name="LANGUAGE_LANGUAGE" /> ተተርጉሟል</translation>

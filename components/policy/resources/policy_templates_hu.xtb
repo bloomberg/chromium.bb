@@ -290,6 +290,7 @@
       Ha a HardwareAccelerationModeEnabled értéke false (hamis), a rendszer figyelmen kívül hagyja a Disable3DAPIs értékét, ami megegyezik azzal, mintha a Disable3DAPIs értéke true (igaz) lenne.</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
+<translation id="2178899310296064282">Legalább mérsékelt Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="2188979373208322108">Elérhetővé teszi a könyvjelzősávot a(z) <ph name="PRODUCT_NAME" /> szolgáltatásban. Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> megjeleníti a könyvjelzősávot. Ha letiltja ezt a beállítást, a felhasználók soha nem látják a könyvjelzősávot. Ha engedélyezi vagy letiltja a beállítást, a felhasználók nem módosíthatják és nem írhatják felül a(z) <ph name="PRODUCT_NAME" /> ezen beállítását. Ha a beállítás konfigurálatlanul marad, a felhasználó dönthet a funkció használatával kapcsolatban.</translation>
 <translation id="2201555246697292490">Natív üzenetkezelő engedélyezőlista konfigurálása</translation>
 <translation id="2204753382813641270">Polc automatikus elrejtésének szabályozása</translation>
@@ -533,6 +534,7 @@
       Amennyiben engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és bírálhatják felül a(z <ph name="PRODUCT_NAME" /> „Adathalászat és rosszindulatú programok elleni védelem bekapcsolása” beállítását.
 
       Ha a házirend nincs beállítva, akkor a beállítás engedélyezett lesz, ám a felhasználók módosíthatják azt.</translation>
+<translation id="2787173078141616821">Az Android állapotával kapcsolatos információk jelentése</translation>
 <translation id="2801230735743888564">A felhasználók játszhatnak a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van.
 
       Ha a házirend értéke hamis, akkor a felhasználók nem tudnak játszani a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van. Ha a házirend értéke igaz, akkor a felhasználók játszhatnak a játékkal. Ha nincs beállítva, akkor a regisztrált vállalati Chrome OS-t használók nem játszhatnak a játékkal, más körülmények között azonban játszhatnak vele a felhasználók.</translation>
@@ -639,9 +641,6 @@
           Ez a házirend opcionális. Ha nincs beállítva, a keresési kifejezéseket a rendszer nem cseréli le.
 
           Ezt a házirendet csak akkor veszi figyelembe a rendszer, ha a „DefaultSearchProviderEnabled” házirend engedélyezett.</translation>
-<translation id="3067188277482006117">Ha igaz, a felhasználó a Chrome-eszközök hardverei segítségével távolról tanúsíthatja azonosságát az adatvédelmi CA-nál az Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() paraméterén keresztül.
-
-          Ha hamis, illetve nincs beállítva, akkor az API hívásai sikertelenek lesznek, és hibakódot adnak vissza.</translation>
 <translation id="3069958900488014740">Lehetővé teszi a WPAD (Web Proxy Auto-Discovery) optimalizálásának kikapcsolását a <ph name="PRODUCT_NAME" /> termékben.
 
       Ha a házirend értéke hamis, a WPAD-optimalizálás inaktív lesz, így a <ph name="PRODUCT_NAME" /> hosszabb ideig várakozik a DNS-alapú WPAD-szerverek esetében. Ha nem állítja be, vagy ha engedélyezi a házirendet, akkor a WPAD-optimalizálás aktív lesz.
@@ -758,6 +757,13 @@
 <translation id="3417418267404583991">Ha a házirend beállítása igaz, vagy nincs megadva az értéke, akkor a(z) <ph name="PRODUCT_OS_NAME" /> engedélyezi a Vendég módban való bejelentkezéseket. A vendégbejelentkezések névtelen felhasználói munkamenetek, amelyek nem kérik jelszó magadását.
 
       Ha a házirend értéke hamis, akkor a(z) <ph name="PRODUCT_OS_NAME" /> nem engedélyezi a vendégmunkamenetek indítását.</translation>
+<translation id="3418871497193485241">Minimális Korlátozott módot kényszerít a YouTube-on, és megakadályozza, hogy a felhasználók kevésbé korlátozott módot válasszanak.
+
+      Ha a beállítás szigorú, akkor a YouTube-on mindig aktív a szigorú Korlátozott mód.
+
+      Ha a beállítás mérsékelt, a felhasználó csak a mérsékelt Korlátozott módot és a szigorú Korlátozott módot választhatja a YouTube-on, de nem kapcsolhatja ki a Korlátozott módot.
+
+      Ha a beállítás ki van kapcsolva vagy nincs megadva, a(z) <ph name="PRODUCT_NAME" /> nem kényszeríti a Korlátozott módot a YouTube-on. Külső házirendek, például YouTube-házirendek azonban továbbra is kényszeríthetik a Korlátozott módot.</translation>
 <translation id="3428247105888806363">Hálózati előrejelzés engedélyezése</translation>
 <translation id="3449886121729668969">Konfigurálja a <ph name="PRODUCT_NAME" /> proxybeállításait. Ezek a proxybeállítások az ARC-alkalmazások számára is rendelkezésre állnak majd.
 
@@ -871,6 +877,9 @@
 
           Alapértelmezés szerint minden natív üzenetkezelő gazdagép szerepel a engedélyezőlistán, ám ha a házirend segítségével minden natív üzenetkezelő gazdagép tiltólistára kerül, az engedélyezőlistával felülbírálható a házirend.</translation>
 <translation id="384743459174066962">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem nyithatnak meg felugró ablakot. Ha a házirend konfigurálatlanul marad, akkor a rendszer a "DefaultPopupsSetting" házirend globális alapértelmezett értékét használja (ha az be van állítva), vagy egyéb esetben a felhasználó saját személyes beállítását.</translation>
+<translation id="3851039766298741586">Információk (például alkalmazásazonosító és -verzió) jelentése az aktív kioszkmunkamenetről.
+
+Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet információit. Ha igaz, illetve ha nincs beállítva, a böngésző jelenti ezeket az információkat.</translation>
 <translation id="3859780406608282662">Hozzáad egy paramétert a <ph name="PRODUCT_OS_NAME" /> rendszer változatainak lekéréséhez.
 
       Ha meg van határozva, akkor egy „restrict” lekérdezésparamétert ad a változatok seedjének lekéréséhez használt URL-hez. A paraméter értéke a jelen házirendben meghatározott érték lesz.
@@ -885,6 +894,13 @@
 
           Ez a házirend csak akkor teljesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="3864818549971490907">Alapértelmezett bővítménybeállítások</translation>
+<translation id="386487026071140458">Ez a házirend elavult, kérjük, használja helyette a(z) <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> és a(z) <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> házirendet. Ha a <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, a(z) <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> vagy az (elavult) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> van beállítva, akkor ezt a házirendet figyelmen kívül hagyja a böngésző.
+
+      Hatására a Google Internetes Kereső bekapcsolt Biztonságos Keresés mellett végez lekérdezéseket, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást. Ezenkívül a YouTube-on is kényszeríti a mérsékelt Korlátozott módot.
+
+      Ha engedélyezi a beállítást, akkor a Biztonságos Keresés a Google Keresésben és a mérsékelt Korlátozott mód a YouTube-on mindig aktív.
+
+      Ha letiltja ezt a beállítást, vagy nem állít be hozzá értéket, akkor a böngésző nem kényszeríti sem a Biztonságos Keresést a Google Keresésben, sem a Korlátozott módot a YouTube-on.</translation>
 <translation id="3866249974567520381">Leírás</translation>
 <translation id="3866530186104388232">Ha ez igazra van állítva vagy nincs beállítva, akkor a(z) <ph name="PRODUCT_OS_NAME" /> megjeleníti a meglévő felhasználókat a bejelentkezési képernyőn, és lehetővé teszi, hogy a felhasználó kiválassza a saját nevét. Ha beállítása hamis, akkor a(z) <ph name="PRODUCT_OS_NAME" /> felhasználónevet/jelszót kérő ablakot jelenít meg a bejelentkezésnél.</translation>
 <translation id="3868347814555911633">Ez a házirend csak kiállító módban aktív.
@@ -961,6 +977,17 @@
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző az „AllowCookies” beállítást fogja használni, amelyet a felhasználó módosíthat.</translation>
 <translation id="4103289232974211388">A felhasználó megerősítését követően átirányítás a SAML IdP-hez</translation>
+<translation id="4103941930938018145">Ez a házirend már elavult. Kérjük, a(z) <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, a(z) <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> segítségével pedig azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
+
+      Megadja a(z) <ph name="PRODUCT_NAME" /> számára tiltott beépülő modulok listáját, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
+
+      A „*” és a „?” helyettesítő karakterek használata megengedett tetszőleges karaktersorozatok helyettesítésére. A „*” tetszőleges számú karakterrel egyezik meg, míg a „?” egyetlen opcionális karaktert határoz meg, azaz nulla vagy egy karaktert. Az escape karakter a „\”, így a tényleges „*”, „?” vagy „\” karakterekkel való egyezéshez „\” karaktert kell tenni eléjük.
+
+      Ha engedélyezi ezt a beállítást, a megadott listán szereplő beépülő modult a(z) <ph name="PRODUCT_NAME" /> sosem fogja használni. A beépülő modulok kikapcsolt állapotúnak vannak jelölve az „about: plugins” részben, és a felhasználók nem tudják bekapcsolni őket.
+
+      Ne feledje, hogy ezt a szabályt az EnabledPlugins és a DisabledPluginsExceptions felülírhatják
+
+      Ha a házirend beállítatlanul marad, a felhasználó a nem változtatható inkompatibilis, elavult vagy veszélyes beépülő modulok kivételével a rendszerre telepített valamennyi beépülő modult használhatja.</translation>
 <translation id="410478022164847452">Meghatározza azt a felhasználói bevitel nélkül eltelt időtartamot, amely után a rendszer tétlen állapotba kerül, ha hálózati áramról működik.
 
           Ha a házirend be van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a(z) <ph name="PRODUCT_OS_NAME" /> aktiválja a tétlen állapotra vonatkozó műveletet, amely külön konfigurálható.
@@ -1241,6 +1268,13 @@
           Ha le van tiltva vagy nincs beállítva ez a beállítás, akkor a gazdagéppel mind helyi, mind távoli felhasználók interakcióba léphetnek, miközben az meg van osztva.</translation>
 <translation id="5423001109873148185">Bekapcsolása esetén a házirend kikényszeríti a keresőmotorok importálását az alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha ki van kapcsolva, akkor a rendszer nem importálja az alapértelmezett keresőt. Ha nincs beállítva, akkor a rendszer a felhasználótól kérdezheti meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="5423197884968724595">Android WebView-korlátozás neve:</translation>
+<translation id="543559563129402336">A házirend elavult. Fontolja meg a(z) <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> használatát, amely felülírja ezt a házirendet, és finomabb hangolást tesz lehetővé.
+
+      Kényszeríti a YouTube-on a mérsékelt Korlátozott módot, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
+
+      Ha a beállítás engedélyezve van, a YouTube Korlátozott módját a rendszer mindig legalább mérsékelt beállításra kényszeríti.
+
+      Ha a beállítás ki van kapcsolva vagy nincs megadva, a(z) <ph name="PRODUCT_NAME" /> nem kényszeríti a Korlátozott módot a YouTube-on. Külső házirendek, például YouTube-házirendek azonban továbbra is kényszeríthetik a Korlátozott módot.</translation>
 <translation id="5447306928176905178">A memóriával kapcsolatos információk jelentésének engedélyezése (JS-halomméret) az oldal számára (elavult)</translation>
 <translation id="5457065417344056871">Vendég mód engedélyezése a böngészőben</translation>
 <translation id="5457924070961220141">Lehetővé teszi az alapértelmezett HTML-megjelenítő konfigurálását, ha a(z) <ph name="PRODUCT_FRAME_NAME" /> telepítve van. Ha a házirend beállítatlanul marad, akkor az alapértelmezett beállítás az, hogy a gazdagép böngészője végzi a megjelenítést, de a felhasználó ezt opcionálisan felülbírálhatja, és megjelenítheti a HTML oldalakat alapértelmezés szerint a(z) <ph name="PRODUCT_FRAME_NAME" /> segítségével.</translation>
@@ -1344,6 +1378,19 @@
           Ha a házirend nincs beállítva, a rendszer az alapértelmezett időtartamot használja.
 
           A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="5783595563813359339">Ez a házirend már elavult. Kérjük, a(z) <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, a(z) <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> segítségével pedig azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
+
+      Megadja a(z) <ph name="PRODUCT_NAME" /> azon beépülő modulok listáját, amelyeket a felhasználók engedélyezhetnek vagy letilthatnak.
+
+      A „*” és a „?” helyettesítő karakterek használata megengedett tetszőleges karaktersorozatok helyettesítésére. A „*” tetszőleges számú karakterrel egyezik meg, míg a „?” egyetlen opcionális karaktert határoz meg, azaz nulla vagy egy karaktert. Az escape karakter a „\”, így a tényleges „*”, „?” vagy „\” karakterekkel való egyezéshez „\” karaktert kell tenni eléjük.
+
+      Ha engedélyezi ezt a beállítást, a megadott beépülőmodul-lista használható lesz a(z) <ph name="PRODUCT_NAME" /> számára. A felhasználók be- és kikapcsolhatják őket az "about:plugins" részben még akkor is, ha a beépülő modul megegyezik a DisabledPluginsben szereplő egyik mintával. A felhasználók be- és kikapcsolhatnak a DisabledPlugins, DisabledPluginsExceptions és EnabledPlugins listákban lévő mintákkal nem egyező beépülő modulokat is.
+
+      Ez a házirend a beépülő modulok tiltólistájának szigorú alkalmazására szolgál olyan esetekben, amikor a „DisabledPlugins” lista behelyettesített elemeket tartalmaz, például valamennyi beépülő modul letiltásánál a „*” karaktert vagy valamennyi Java beépülő modul letiltásánál a „*Java*” értéket, de a rendszergazda bizonyos meghatározott verziókat – például az „IcedTea Java 2.3” verziót – engedélyezni kíván.
+
+      Felhívjuk figyelmét, hogy mind a beépülő modul nevét, mind a beépülő modul csoportjának nevét fel kell venni a kivételek közé. Az egyes beépülőmodul-csoportok az about:plugins oldal külön szakaszaiban láthatók; minden szakaszban egy vagy több beépülő modul szerepelhet. A „Shockwave Flash” beépülő modul például az „Adobe Flash Player” csoportba tartozik, és mindkét névnek szerepelnie kell a kivétellistán, ha a beépülő modul kivételt képez a tiltott lista elemei között.
+
+      Ha a házirend nincs beállítva, akkor a „DisabledPlugins” mintáinak megfelelő összes beépülő modul le lesz tiltva, és a felhasználó nem engedélyezheti őket.</translation>
 <translation id="5795001131770861387">Engedélyezi a HTTP/0.9 támogatást a nem alapértelmezett portokon</translation>
 <translation id="5809728392451418079">Az eszközön található helyi fiókok megjelenített nevének beállítása</translation>
 <translation id="5814301096961727113">A hangos visszajelzés alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
@@ -1407,6 +1454,12 @@
 
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> nem végez online visszavonási ellenőrzéseket a <ph name="PRODUCT_NAME" /> 19-es és újabb verzióiban.</translation>
 <translation id="5966615072639944554">A távoli tanúsítási API használatára engedélyezett bővítmények</translation>
+<translation id="5974970919245996815">Jelentési információk küldése az Android állapotáról a szervernek.
+
+      Ha az irányelv beállítása hamis, akkor az adatokról nem készül jelentés.
+      Ha a beállítás igaz vagy nincs megadva, az adatokról jelentés készül.
+
+      Az irányelv csak akkor van érvényben, ha engedélyezve vannak az Android-alkalmazások.</translation>
 <translation id="5983708779415553259">Alapértelmezett viselkedés a tartalomcsomagban nem lévő webhelyek esetében</translation>
 <translation id="5997543603646547632">24 órás formátum használata alapértelmezés szerint</translation>
 <translation id="6009903244351574348">Engedélyezi, hogy a(z) <ph name="PRODUCT_FRAME_NAME" /> kezelje a felsorolt tartalomtípusokat. Ha nincs konfigurálva ez a házirend, akkor a rendszer a "ChromeFrameRendererSettings" házirend által meghatározott alapértelmezett megjelenítőt használja valamennyi webhely esetében.</translation>
@@ -1435,6 +1488,17 @@
 <translation id="6076099373507468537">Azoknak az USB-eszközöknek a listáját határozza meg, amelyeknek megengedett a kernelmódú illesztőprogramjukról való leválasztása annak érdekében, hogy a chrome.usb API-n keresztül, közvetlenül valamilyen internetes alkalmazásban lehessen használni őket. A bejegyzéseket az adott hardver azonosítására szolgáló, az USB-gyártóazonosítóból és az USB-termékazonosítóból álló párok alkotják.
 
       Ha a házirend nincs beállítva, akkor a leválasztható USB-eszközök listája üres.</translation>
+<translation id="608377055310226486">Ez a házirend már elavult. Kérjük, a(z) <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, a(z) <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> segítségével pedig azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
+
+      Megadja a(z) <ph name="PRODUCT_NAME" /> számára engedélyezett beépülő modulok listáját, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
+
+      A „*” és a „?” helyettesítő karakterek használata megengedett tetszőleges karaktersorozatok helyettesítésére. A „*” tetszőleges számú karakterrel egyezik meg, míg a „?” egyetlen opcionális karaktert határoz meg, azaz nulla vagy egy karaktert. Az escape karakter a „\”, így a tényleges „*”, „?” vagy „\” karakterekkel való egyezéshez „\” karaktert kell tenni eléjük.
+
+      A(z) <ph name="PRODUCT_NAME" /> mindig használja a megadott beépülőmodul-listát, ha telepítve van. A beépülő modulok bekapcsolt állapotúnak vannak jelölve az "about: plugins" részben, és a felhasználók nem tudják kikapcsolni őket.
+
+      Ne feledje, hogy ez a házirend felülírja a DisabledPlugins és DisabledPluginsExceptions értékeket.
+
+      Ha ez a házirend beállítatlanul marad, a felhasználó a rendszerre telepített valamennyi beépülő modult le tudja tiltani.</translation>
 <translation id="6093156968240188330">Annak engedélyezése, hogy a felhasználók interakcióba lépjenek a kiemelt ablakokkal a távoli segítség munkamenetei során</translation>
 <translation id="6095999036251797924">Megadja azt az időtartamot, amely után a képernyő zárolása megtörténik hálózati áramforrás vagy akkumulátor használata esetén.
 
@@ -1652,6 +1716,7 @@
 <translation id="6828905844648501476">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> lehetővé teszi személyek hozzáadását a felhasználókezelőből.
 
       Ha a házirend értéke hamis, akkor a <ph name="PRODUCT_NAME" /> nem teszi lehetővé új profilok létrehozását a profilkezelőben.</translation>
+<translation id="685769593149966548">Szigorú Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="687046793986382807">Ez a házirend a(z) <ph name="PRODUCT_NAME" /> 35-ös verziójától kezdve megszűnt.
 
       A memóriainformációkat tartalmazó jelentéseket a beállítás értékétől függetlenül megkapja az oldal, de a jelentett méretek
@@ -1775,9 +1840,6 @@
 <translation id="7132877481099023201">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a videorögzítő eszközökhöz</translation>
 <translation id="7167436895080860385">Lehetővé teszi, hogy a felhasználók megjelenítsék a jelszavakat a Jelszókezelőben (megszüntetve)</translation>
 <translation id="7173856672248996428">Ideiglenes profil</translation>
-<translation id="7187256234726597551">Ha igaz, akkor az eszköz használhatja a távoli tanúsítást, és a rendszer automatikusan létrehoz és feltölt egy tanúsítványt az eszközkezelő szerverre.
-
-          Ha hamis, vagy ha nincs beállítva, akkor nem jön létre tanúsítvány, és nem sikerülnek az enterprise.platformKeysPrivate extension API-hoz irányuló hívások.</translation>
 <translation id="718956142899066210">Frissítésekhez engedélyezett csatlakozási típusok</translation>
 <translation id="7194407337890404814">Az alapértelmezett keresési szolgáltató neve</translation>
 <translation id="7195064223823777550">Meghatározza az elvégzendő műveletet, ha a felhasználó lecsukja a fedelet.
@@ -2073,6 +2135,7 @@
       Ha a házirend értéke „true”, akkor az eszköz a 24 órás óraformátumot használja, ha pedig „false”, akkor a 12 órás óraformátumot.
 
       Ha a házirend nincs beállítva, akkor az eszköz alapértelmezés szerint a 24 órás formátumot használja.</translation>
+<translation id="8114382167597081590">A Korlátozott mód kényszerítésének leállítása a YouTube-on</translation>
 <translation id="8118665053362250806">A médialemez gyorsítótárméretének beállítása</translation>
 <translation id="8135937294926049787">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer kikapcsolja a képernyőt, ha hálózati áramról működik.
 
@@ -2120,9 +2183,6 @@
 
       Ha nincs beállítva, nem lesz kivétel az „URLBlacklist” házirend alól.</translation>
 <translation id="8176035528522326671">A vállalati felhasználók csak elsődleges többprofilú felhasználók lehetnek (alapértelmezett működés vállalati kezelésű felhasználók esetén)</translation>
-<translation id="8197918588508433925">Ez a házirend adja meg, hogy mely bővítmények számára engedélyezett az Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() paraméterének használata a távoli tanúsításhoz. Az API használatához fel kell venni a bővítményeket erre a listára.
-
-          Ha egy bővítmény nincs a listán, vagy a lista nincs beállítva, akkor az API hívása hibakóddal leáll.</translation>
 <translation id="8214600119442850823">A jelszókezelőt konfigurálja</translation>
 <translation id="8244525275280476362">Maximális lehívási késleltetés házirend-érvénytelenítés után</translation>
 <translation id="8256688113167012935">A(z) <ph name="PRODUCT_OS_NAME" /> által az eszköz megfelelő helyi fiókjának a bejelentkezési képernyőn megjelenített fióknevét szabályozza.
@@ -2271,6 +2331,7 @@
 <translation id="8704831857353097849">Tiltott bővítmények listája</translation>
 <translation id="8711086062295757690">Megadja a kulcsszót, amely az ezzel a szolgáltatóval való keresés gyors elérésére használatos a cím- és keresősávban. Nem kötelező házirend. Ha nincs beállítva, kulcsszóval nem lehet aktiválni a keresési szolgáltatót. A házirend csak akkor érvényesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="8731693562790917685">A tartalmi beállítások lehetővé teszik az adott típusú tartalmak (pl. cookie-k, képek vagy JavaScriptek) kezelésének meghatározását.</translation>
+<translation id="8736538322216687231">Minimális Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="8749370016497832113">Lehetővé teszi a böngészési és letöltési előzmények törlését a <ph name="PRODUCT_NAME" /> termékben, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
 
       Felhívjuk figyelmét, hogy még ha ki is van kapcsolva ez a házirend, a böngészési és letöltési előzmények megőrzése nem garantált: a felhasználók közvetlenül módosíthatják vagy törölhetik az előzmények adatbázisának fájljait, illetve a böngésző maga is bármikor lejárttá teheti vagy archiválhatja bármely vagy az összes előzményelemet.

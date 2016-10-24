@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">UWAGA: ustawienia zasad zezwalają wyłącznie na połączenia między komputerami w Twojej sieci.</translation>
 <translation id="4155497795971509630">Brak niektórych wymaganych komponentów. Upewnij się, że masz zainstalowaną najnowszą wersję oprogramowania, i spróbuj ponownie.</translation>
 <translation id="4156740505453712750">Aby zabezpieczyć dostęp do tego komputera, wybierz PIN złożony z <ph name="BOLD_START" />co najmniej sześciu cyfr<ph name="BOLD_END" />. Będzie on wymagany przy łączeniu się z innej lokalizacji.</translation>
+<translation id="4156741816461781891">Zalogowano jako <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Kod dostępu</translation>
 <translation id="4207623512727273241">Najpierw uruchom instalatora.</translation>
 <translation id="4227991223508142681">Narzędzie konfiguracji hosta</translation>
@@ -208,10 +209,6 @@ zdalnego Chrome</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Inny problem.</translation>
 <translation id="6398765197997659313">Zamknij pełny ekran</translation>
-<translation id="6408143143164565232">• Odtwarzanie dźwięku z komputerów z systemem Windows lub Linux.
-• Usuwanie niechcianych połączeń naciśnięciem i przytrzymaniem nazwy komputera.
-• Płynniejsze powiększanie ściąganiem i rozsuwaniem palców oraz przewijanie dwoma palcami.
-• Nowy ekran pomocy i opinii.</translation>
 <translation id="6441316101718669559">Integracja pulpitu jest niedostępna na tej platformie. Wciąż możesz używać aplikacji, jednak praca będzie mniej wygodna.</translation>
 <translation id="652218476070540101">Aktualizuję PIN tego komputera…</translation>
 <translation id="6527303717912515753">Udostępnij</translation>

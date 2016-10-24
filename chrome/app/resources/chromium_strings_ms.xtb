@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Lesen sumber terbuka Chromium OS</translation>
 <translation id="2241627712206172106">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chromium sebagaimana yang mereka mahukan.</translation>
 <translation id="225614027745146050">Selamat datang</translation>
-<translation id="2264142189334629813">OS Chromium tidak boleh membuka laman ini.</translation>
 <translation id="2316129865977710310">Tidak, terima kasih</translation>
 <translation id="2347108572062610441">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32 bit mungkin tidak akan berfungsi dengan betul kerana tidak disokong pada sistem Linux ini lagi. Sila tingkatkan kepada Chromium 64 bit.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">Dalam Chromium</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2486653164587200256">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Windows XP atau Windows Vista.</translation>
+<translation id="2527042973354814951">Mulakan semula Chromium untuk mendayakan <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">OS Chromium tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="2558641060352364164">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan naik taraf kepada penyemak imbas moden.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
@@ -76,7 +76,7 @@
 <translation id="3258596308407688501">Chromium tidak dapat membaca atau menulis pada direktori datanya:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3264279740686075150">Kromium adalah penyemak imbas lalai anda. Bergembiralah!</translation>
+<translation id="3264279740686075150">Chromium ialah penyemak imbas lalai anda. Bergembiralah!</translation>
 <translation id="328888136576916638">Kunci API Google tiada. Sesetengah fungsi Chromium akan dilumpuhkan.</translation>
 <translation id="3289635842886789612">Chromium sudah usang.</translation>
 <translation id="3296368748942286671">Terus menjalankan apl latar belakang apabila Chromium ditutup</translation>

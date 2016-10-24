@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
-<translation id="1119447706177454957">Interna pogreška</translation>
 <translation id="153454903766751181">Inicijaliziranje modema mobilne mreže...</translation>
-<translation id="158849752021629804">Potrebna je matična mreža</translation>
-<translation id="1661867754829461514">Nedostaje PIN</translation>
-<translation id="1773212559869067373">Certifikat za autentifikaciju odbijen je lokalno</translation>
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="1850504506766569011">Wi-Fi je isključen.</translation>
 <translation id="2288278176040912387">Gramofon</translation>
 <translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Mreža je odbila certifikat za autentifikaciju</translation>
 <translation id="2563185590376525700">Žaba</translation>
-<translation id="2563856802393254086">Čestitamo! Podatkovna usluga "<ph name="NAME" />" aktivirana je i spremna za pokret.</translation>
 <translation id="2649120831653069427">Dugina riba</translation>
-<translation id="2670531586141364277">Za aktivaciju mreže "<ph name="NAME" />" potrebna je mrežna veza.</translation>
 <translation id="277257480934873581">Ponovno povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="2951236788251446349">Meduza</translation>
-<translation id="2966449113954629791">Vjerojatno ste potrošili dopuštenu količinu mobilnih podataka. Posjetite aktivacijski portal <ph name="NAME" /> kako biste kupili još podataka.</translation>
 <translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
-<translation id="3871838685472846647">Mobilni je telefon aktiviran</translation>
 <translation id="3901991538546252627">Povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kivi</translation>
-<translation id="40400351611212369">Pogreška aktivacije mreže</translation>
 <translation id="4118990158415604803">Povezivanje s drugim mrežama onemogućio je administrator.</translation>
-<translation id="4237016987259239829">Pogreška mrežne veze</translation>
-<translation id="4274292172790327596">Neprepoznata pogreška</translation>
 <translation id="4326192123064055915">Kava</translation>
-<translation id="4387004326333427325">Certifikat za autentifikaciju odbijen je daljinski</translation>
-<translation id="4442424173763614572">Nije uspjelo pretraživanje DNS poslužitelja</translation>
 <translation id="4448844063988177157">Traženje Wi-Fi mreža...</translation>
 <translation id="4479639480957787382">Eternet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: povezivanje...</translation>
-<translation id="4508265954913339219">Aktivacija nije uspjela</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Cvijet gazanije</translation>
-<translation id="5045550434625856497">Pogrešna zaporka</translation>
-<translation id="5097002363526479830">Neuspješno povezivanje s mrežom "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Šah</translation>
 <translation id="5257456363153333584">Vilin konjic</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">DHCP pretraživanje nije uspjelo</translation>
-<translation id="6232116551750539448">Prekinuta je veza s mrežom <ph name="NAME" /></translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiviranje...</translation>
-<translation id="6312403991423642364">Nepoznata mrežna pogreška</translation>
-<translation id="6490455614072479501">Povezivanje s mrežom "<ph name="NAME" />" nije uspjelo: <ph name="DETAILS" />
-        Poruka poslužitelja: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Mobilne mreže nisu dostupne</translation>
-<translation id="6732801395666424405">Certifikati se nisu učitali</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Naopako</translation>
-<translation id="6943836128787782965">HTTP GET neuspješan</translation>
 <translation id="7066646422045619941">Tu mrežu onemogućio je vaš administrator.</translation>
-<translation id="7165320105431587207">Konfiguriranje mreže nije uspjelo</translation>
-<translation id="7170041865419449892">Izvan raspona</translation>
-<translation id="7229570126336867161">Potreban je EVDO</translation>
-<translation id="7256405249507348194">Neprepoznata pogreška: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Netočno korisničko ime/zaporka ili neuspjela EAP autentifikacija</translation>
 <translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
 <translation id="7874779702599364982">Traženje mobilnih mreža...</translation>
-<translation id="7925247922861151263">Provjera AAA nije uspjela</translation>
-<translation id="7973962044839454485">PPP autentifikacija nije uspjela zbog netočnog korisničkog imena ili zaporke</translation>
 <translation id="8000066093800657092">Nema mreže</translation>
 <translation id="8008366997883261463">Jack Russell terijer</translation>
 <translation id="8132793192354020517">Povezano s <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP nije uspio</translation>
-<translation id="8372369524088641025">Neispravan WEP ključ</translation>
 <translation id="8454013096329229812">Wi-Fi je uključen.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponovno povezivanje...</translation>
-<translation id="8688591111840995413">Pogrešna zaporka</translation>
 <translation id="8714406895390098252">Bicikl</translation>
 <translation id="8808686172382650546">Mačka</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Povezivanje s mrežom nije uspjelo: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Neuspjelo povezivanje</translation>
 </translationbundle>

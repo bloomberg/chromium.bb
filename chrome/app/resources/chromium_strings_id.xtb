@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Lisensi sumber terbuka Chromium OS</translation>
 <translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginannya.</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
-<translation id="2264142189334629813">Chromium OS tidak dapat membuka laman ini.</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="2347108572062610441">Ekstensi ini telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32-bit mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di sistem Linux ini. Tingkatkan versi ke Chromium 64-bit.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">Di Chromium</translation>
 <translation id="2485422356828889247">Copot pemasangan</translation>
 <translation id="2486653164587200256">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di Windows XP atau Windows Vista.</translation>
+<translation id="2527042973354814951">Muat ulang Chromium untuk mengaktifkan <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium OS tidak dapat menyinkronkan data karena detail ID masuk Anda belum diperbarui.</translation>
 <translation id="2558641060352364164">Situs ini menggunakan plugin Chromium Frame yang akan segera tidak didukung. Copot pemasangannya dan tingkatkan versi ke browser modern.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>

@@ -287,6 +287,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si HardwareAccelerationModeEnabled s'estableix en false, Disable3DAPIs s'ignora i equival a establir Disable3DAPIs en true.</translation>
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2170233653554726857">Activa l'optimització WPAD</translation>
+<translation id="2178899310296064282">Aplica almenys el mode restringit moderat a YouTube</translation>
 <translation id="2188979373208322108">Activa la barra d'adreces d'interès a <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> mostrarà una barra d'adreces d'interès. Si el desactiveu, els usuaris no veuran mai la barra d'adreces d'interès. Si l'activeu o el desactiveu, els usuaris no podran canviar-lo ni substituir-lo a <ph name="PRODUCT_NAME" />. Si no es defineix aquest paràmetre, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="2201555246697292490">Configura la llista blanca de missatgeria nativa</translation>
 <translation id="2204753382813641270">Controla l'opció d'amagar el prestatge automàticament</translation>
@@ -530,6 +531,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si activeu o desactiveu aquesta configuració, els usuaris no podran canviar ni ignorar la configuració "Activa la protecció contra contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
 
       Si no s'estableix aquesta política, aquesta configuració s'activarà, però l'usuari podrà canviar-la.</translation>
+<translation id="2787173078141616821">Ofereix informació sobre l'estat d'Android</translation>
 <translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
 
        Si aquesta política s'estableix en "false", els usuaris no podran jugar-hi quan el dispositiu estigui sense connexió. En canvi, si s'estableix en "true", els usuaris podran jugar-hi. Si es deixa sense establir, els usuaris no podran jugar a aquest joc en un dispositiu Chrome OS inscrit, però sí que ho podran fer en altres circumstàncies.</translation>
@@ -636,9 +638,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Aquesta política és opcional. Si no es defineix, no es produirà cap substitució dels termes de cerca.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
-<translation id="3067188277482006117">Si es defineix com a vertadera, l'usuari pot fer servir el maquinari dels dispositius Chrome per donar fe de la seva identitat de manera remota de cara a l'entitat emissora de certificats de privadesa a través de l'API de claus de plataformes empresarials chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Si es defineix com a falsa o si no es defineix, les crides a l'API fallaran i tornaran un codi d'error.</translation>
 <translation id="3069958900488014740">Permet desactivar l'optimització WPAD (detecció automàtica de servidors intermediaris web) a <ph name="PRODUCT_NAME" />.
 
       Si aquesta política s'estableix en "false", l'optimització WPAD es desactiva i <ph name="PRODUCT_NAME" /> ha d'esperar més temps els servidors WPAD basats en DNS. Si la política no s'estableix o està activada, l'optimització WPAD s'activa.
@@ -756,6 +755,13 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
       Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME" /> no permetrà que s'iniciïn les sessions de convidat.</translation>
+<translation id="3418871497193485241">Aplica com a mínim el mode restringit a YouTube i impedeix que els usuaris en triïn un de més permissiu.
+
+      Si aquesta opció de configuració s'estableix en Estricte, el mode restringit estricte està sempre actiu a YouTube.
+
+      Si s'estableix en Moderat, l'usuari només pot triar el mode restringit moderat o estricte a YouTube, però no el pot desactivar.
+
+      Si s'estableix en Desactivat o no s'estableix cap valor, <ph name="PRODUCT_NAME" /> no aplica el mode restringit a YouTube. Tot i així, les polítiques externes, com ara les de YouTube, poden continuar aplicant el mode restringit.</translation>
 <translation id="3428247105888806363">Activa la predicció de xarxa</translation>
 <translation id="3449886121729668969">Configura el servidor intermediari per a <ph name="PRODUCT_NAME" />. Aquesta configuració del servidor també estarà disponible per a les aplicacions ARC.
 
@@ -869,6 +875,10 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           De manera predeterminada, tots els amfitrions de missatgeria nativa apareixen a la llista blanca; tanmateix, si una política els ha afegit tots a la llista negra, es pot fer servir la llista blanca per substituir la política.</translation>
 <translation id="384743459174066962">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès obrir finestres emergents. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPopupsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
+<translation id="3851039766298741586">Ofereix informació sobre la sessió de quiosc activa, com ara l'identificador i la versió de l'aplicació.
+
+
+      Si la política s'estableix en "false", no s'ofereix informació de la sessió. Si s'estableix en "true" o no s'hi estableix cap valor, s'ofereix informació de la sessió.</translation>
 <translation id="3859780406608282662">Afegeix un paràmetre a l'obtenció de la propagació de variacions a <ph name="PRODUCT_OS_NAME" />.
 
       Si s'especifica, s'afegirà un paràmetre de consulta anomenat "restrict" a l'URL utilitzar per obtenir la propagació de variacions. El valor del paràmetre serà el valor especificat en aquesta política.
@@ -883,6 +893,13 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Aquesta política només es respecta si la política DefaultSearchProviderEnabled està activada.</translation>
 <translation id="3864818549971490907">Configuració de connectors predeterminada</translation>
+<translation id="386487026071140458">Aquesta política està obsoleta; substitueix-la per <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> i <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. S'ignorarà si s'estableixen <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> o <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (obsoleta).
+
+      Força que les consultes de la Cerca web de Google es facin amb la funció SafeSearch activada i impedeix que els usuaris canviïn aquesta opció de configuració. Aquesta opció també força el mode restringit moderat a YouTube.
+
+      Si actives aquesta opció, la funció SafeSearch està sempre activada a la Cerca de Google i al mode restringit moderat de YouTube.
+
+      Si la desactives o no hi estableixes cap valor, SafeSearch no s'aplica a la Cerca de Google ni al mode restringit de YouTube.</translation>
 <translation id="3866249974567520381">Descripció</translation>
 <translation id="3866530186104388232">Si aquesta política es defineix a «true» (cert) o ​​es deixa sense configurar, <ph name="PRODUCT_OS_NAME" /> mostrarà els usuaris existents a la pantalla d'inici de sessió i deixarà triar-ne un. Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME" /> farà servir la petició de nom d'usuari i de contrasenya per iniciar la sessió.</translation>
 <translation id="3868347814555911633">Aquesta política només està activa en mode de venda.
@@ -958,6 +975,17 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Si aquesta política no s'estableix, s'utilitzarà "AllowCookies" i l'usuari podrà canviar-la.</translation>
 <translation id="4103289232974211388">Redirigeix al proveïdor d'identitat SAML després de la confirmació de l'usuari</translation>
+<translation id="4103941930938018145">Aquesta política està obsoleta. Fes servir <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> per controlar la disponibilitat del connector Flash i <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> per controlar si cal utilitzar el lector de PDF integrat per obrir aquest format de fitxer.
+
+      Especifica una llista de connectors que estan desactivats a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
+
+      Els caràcters comodí "*" i "?" es poden utilitzar per cercar coincidències de seqüències de caràcters arbitraris. "*" especifica un nombre arbitrari de caràcters, mentre que "?" especifica un sol caràcter opcional o cap. Col·loca un caràcter d'escapada ("\") al davant de "*", "?" o "\" per incloure instàncies reals d'aquests caràcters.
+
+      Si actives aquesta opció de configuració, la llista de connectors especificada no s'utilitza mai a <ph name="PRODUCT_NAME" />. Els connectors es marquen com a desactivats a "about:plugins" i els usuaris no els poden activar.
+
+      Tingues en compte que aquesta política es pot substituir per EnabledPlugins i DisabledPluginsExceptions.
+
+      Si aquesta política es deixa sense establir, l'usuari pot utilitzar qualsevol connector instal·lat al sistema, excepte els connectors codificats incompatibles, obsolets o perillosos.</translation>
 <translation id="410478022164847452">Indica el temps sense activitat per part de l'usuari després del qual es duu a terme l'acció d'inactivitat quan el dispositiu funciona amb alimentació.
 
           Quan aquesta política es defineix, indica el temps que l'usuari ha de romandre inactiu abans <ph name="PRODUCT_OS_NAME" /> no iniciï l'acció d'inactivitat, que es pot configurar per separat.
@@ -1236,6 +1264,13 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquest paràmetre està desactivat o no està definit, tant els usuaris remots com els locals poden interactuar amb l'amfitrió mentre sigui compartit.</translation>
 <translation id="5423001109873148185">Si està activada, aquesta política fa que els motors de cerca s'importin des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, el motor de cerca predeterminat no s'importarà. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5423197884968724595">Nom de la restricció de WebView per a Android:</translation>
+<translation id="543559563129402336">Aquesta política està obsoleta; substitueix-la per <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, que anul·la l'anterior i permet fer ajustos més precisos.
+
+      Força el mode restringit moderat de YouTube i impedeix que els usuaris canviïn aquesta opció de configuració.
+
+      Si aquesta opció està activada, s'aplica com a mínim el valor Moderat al mode restringit de YouTube.
+
+      Si està desactivada o no s'hi estableix cap valor, <ph name="PRODUCT_NAME" /> no aplica el mode restringit a YouTube. Tot i així, les polítiques externes, com ara les de YouTube, poden continuar aplicant el mode restringit.</translation>
 <translation id="5447306928176905178">Activa els informes d'informació de memòria (mida de pila JS) a la pàgina (no disponible)</translation>
 <translation id="5457065417344056871">Activa el mode de convidat al navegador</translation>
 <translation id="5457924070961220141">Us permet configurar el processador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME" /> està instal·lat. La configuració predeterminada que s'utilitza quan no es defineix aquesta política és permetre que el navegador amfitrió dugui a terme la renderització, però si ho desitgeu podeu modificar-ho i fer que <ph name="PRODUCT_FRAME_NAME" /> renderitzi de manera predeterminada les pàgines HTML.</translation>
@@ -1337,6 +1372,19 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
+<translation id="5783595563813359339">Aquesta política està obsoleta. Fes servir <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> per controlar la disponibilitat del connector Flash i <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> per controlar si cal utilitzar el lector de PDF integrat per obrir aquest format de fitxer.
+
+      Especifica una llista de connectors que l'usuari pot activar o desactivar a <ph name="PRODUCT_NAME" />.
+
+      Els caràcters comodí "*" i "?" es poden utilitzar per cercar coincidències de seqüències de caràcters arbitraris. "*" especifica un nombre arbitrari de caràcters, mentre que "?" especifica un sol caràcter opcional o cap. Col·loca un caràcter d'escapada ("\") al davant de "*", "?" o "\" per incloure instàncies reals d'aquests caràcters.
+
+      Si actives aquesta opció de configuració, els connectors de la llista especificada es poden utilitzar a <ph name="PRODUCT_NAME" />. Els usuaris els poden activar o desactivar a "about:plugins", tot i que el connector també coincideixi amb un patró de DisabledPlugins. Els usuaris també poden activar i desactivar els connectors que no coincideixin amb cap patró de DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
+
+      Aquesta política permet crear llistes negres estrictes de connectors en què la llista "DisabledPlugins" conté entrades amb comodins (com ara "*" per desactivar tots els connectors o "*Java*" per desactivar tots els connectors Java) però l'administrador vol activar-ne una versió concreta, com ara "IcedTea Java 2.3". Aquestes versions concretes es poden especificar en aquesta política.
+
+      Tingues en compte que cal eximir tant el nom del connector com el nom del grup del connector. Cada grup de connectors es mostra en una secció independent a "about:plugins", i cada secció pot tenir un o més connectors. Per exemple, el connector "Shockwave Flash" pertany al grup "Adobe Flash Player" i tots dos noms han de tenir una coincidència a la llista d'excepcions si cal eximir el connector de la llista negra.
+
+      Si aquesta política es deixa sense establir, els connectors que coincideixin amb els patrons de "DisabledPlugins" es bloquejaran i es desactivaran, de manera que l'usuari no podrà activar-los.</translation>
 <translation id="5795001131770861387">Activa la compatibilitat amb HTTP/0.9 als ports no predeterminats</translation>
 <translation id="5809728392451418079">Defineix el nom de visualització per als comptes locals del dispositiu</translation>
 <translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris per veu a la pantalla d'inici de sessió</translation>
@@ -1400,6 +1448,12 @@ Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca d
 
       Si la política no s'estableix o si s'estableix en false, <ph name="PRODUCT_NAME" /> no realitzarà cap comprovació de revocació en línia a <ph name="PRODUCT_NAME" /> 19 ni versions posteriors.</translation>
 <translation id="5966615072639944554">Autoritza les extensions a utilitzar l'API de testimoni remot.</translation>
+<translation id="5974970919245996815">Envia al servidor informació sobre l'estat d'Android.
+
+      Si la política s'estableix en "false", la informació no s'envia.
+      Si s'estableix en "true" o es deixa sense establir, la informació s'envia.
+
+      Aquesta política només s'aplica si les aplicacions per a Android estan activades.</translation>
 <translation id="5983708779415553259">Comportament predeterminat per a llocs no inclosos en paquets de contingut</translation>
 <translation id="5997543603646547632">Ús del rellotge de 24 hores de manera predeterminada</translation>
 <translation id="6009903244351574348">Permeteu que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut de la llista. Si no es defineix aquesta política, el processador predeterminat s'utilitzarà per a tots els llocs tal com s'especifica a la política "ChromeFrameRendererSettings".</translation>
@@ -1428,6 +1482,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6076099373507468537">Defineix la llista de dispositius USB que està permès separar del controlador de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells formats per l'identificador del producte i l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
 
       Si aquesta política no està configurada, la llista de dispositius USB que es poden separar està buida.</translation>
+<translation id="608377055310226486">Aquesta política està obsoleta. Fes servir <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> per controlar la disponibilitat del connector Flash i <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> per controlar si cal utilitzar el lector de PDF integrat per obrir aquest format de fitxer.
+
+      Especifica una llista de connectors que estan activats a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
+
+      Els caràcters comodí "*" i "?" es poden utilitzar per cercar coincidències de seqüències de caràcters arbitraris. "*" especifica un nombre arbitrari de caràcters, mentre que "?" especifica un sol caràcter opcional o cap. Col·loca un caràcter d'escapada ("\") al davant de "*", "?" o "\" per incloure instàncies reals d'aquests caràcters.
+
+      Si els connectors de la llista especificada estan instal·lats, s'utilitzen sempre a <ph name="PRODUCT_NAME" />. Es marquen com a activats a "about:plugins" i els usuaris no els poden desactivar.
+
+      Tingues en compte que aquesta política substitueix DisabledPlugins i DisabledPluginsExceptions.
+
+      Si aquesta política es deixa sense establir, l'usuari pot desactivar qualsevol connector instal·lat al sistema.</translation>
 <translation id="6093156968240188330">Permet que els usuaris remots interaccionin amb les finestres amb privilegis restringits en sessions d'assistència remota</translation>
 <translation id="6095999036251797924">Especifica la quantitat de temps que ha de passar sense cap interacció de l'usuari abans que la pantalla no es bloquegi quan s'utilitza amb connexió a la corrent CA o amb una bateria.
 
@@ -1645,6 +1710,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6828905844648501476">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà que s'utilitzi l'opció Afegeix una persona des de l'administrador d'usuaris.
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà crear perfils des del gestor de perfils.</translation>
+<translation id="685769593149966548">Aplica el mode restringit estricte a YouTube</translation>
 <translation id="687046793986382807">Aquesta política s'ha retirat a partir de la versió 35 de <ph name="PRODUCT_NAME" />.
 
       De tota manera, la informació de la memòria es notifica sense importar el valor de l'opció, però les mides de les quals s'envia la notificació es
@@ -1765,9 +1831,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7132877481099023201">URL als quals els dispositius de captura de vídeo podran accedir sense confirmació.</translation>
 <translation id="7167436895080860385">Permet que els usuaris mostrin les contrasenyes al gestor de contrasenyes (política obsoleta)</translation>
 <translation id="7173856672248996428">Perfil efímer</translation>
-<translation id="7187256234726597551">Si s'estableix el valor com a vertader, es permetrà el testimoni remot per al dispositiu i automàticament es crearà i es penjarà un certificat al servidor de gestió de dispositius.
-
-          Si s'estableix el valor com a fals o si no està definit, no es crearà cap certificat i les trucades a l'API de l'extensió platformKeysPrivate de l'empresa fallaran.</translation>
 <translation id="718956142899066210">Tipus de connexions permesos per a actualitzacions</translation>
 <translation id="7194407337890404814">Nom del proveïdor de cerca predeterminat</translation>
 <translation id="7195064223823777550">Indica l'acció que cal dur a terme quan l'usuari tanca la tapa.
@@ -2063,6 +2126,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si la política es defineix com a certa, el dispositiu farà servir un format de rellotge de 24 hores. Si es defineix com a falsa, el dispositiu farà servir un format de rellotge de 12 hores.
 
       Si aquesta política no es defineix, el dispositiu farà servir de manera predeterminada un format de rellotge de 24 hores.</translation>
+<translation id="8114382167597081590">No apliquis el mode restringit a YouTube</translation>
 <translation id="8118665053362250806">Defineix la mida de la memòria cau del disc multimèdia</translation>
 <translation id="8135937294926049787">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es desactiva quan el dispositiu funciona amb alimentació.
 
@@ -2111,9 +2175,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no es defineix aquesta política, no es faran excepcions a la llista negra de la política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permet que un usuari empresarial només sigui un usuari multiperfil principal (comportament predeterminat per a usuaris gestionats per l'empresa)</translation>
-<translation id="8197918588508433925">Aquesta política especifica les extensions permeses per utilitzar l'API de claus de plataformes empresarials chrome.enterprise.platformKeysPrivate.challengeUserKey() per als testimonis remots. Les extensions s'han d'afegir a aquesta llista perquè utilitzin l'API.
-
-          Si alguna extensió no s'inclou a la llista o si no es defineix la llista, les crides a l'API fallaran i tornaran un codi d'error.</translation>
 <translation id="8214600119442850823">Configura el gestor de contrasenyes.</translation>
 <translation id="8244525275280476362">Retard màxim en l'obtenció després de la invalidació d'una política</translation>
 <translation id="8256688113167012935">Controla el nom del compte que <ph name="PRODUCT_OS_NAME" /> mostra a la pantalla d'inici de sessió per al compte local del dispositiu corresponent.
@@ -2261,6 +2322,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8704831857353097849">Llista de connectors desactivats</translation>
 <translation id="8711086062295757690">Especifica la paraula clau, que és la drecera utilitzada a la barra d'adreces per activar la cerca d'aquest proveïdor. Aquesta política és opcional. Si no es defineix, no hi haurà cap paraula clau que activi el proveïdor de cerca. Aquesta política només es té en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="8731693562790917685">Configuració del contingut us permet especificar la manera com es tracta el contingut d'un tipus determinat (per exemple, Galetes, Imatges o JavaScript).</translation>
+<translation id="8736538322216687231">Aplica com a mínim el mode restringit a YouTube</translation>
 <translation id="8749370016497832113">Permet suprimir l'historial del navegador i de baixades de <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta configuració.
 
       Tingueu en compte que, fins i tot si aquesta política està desactivada, no es garanteix que es conservi l'historial de navegació i de baixades: els usuaris podrien editar o suprimir els fitxers de la base de dades de l'historial directament i el navegador podria fer caducar o arxivar qualsevol dels elements de l'historial o tot l'historial en qualsevol moment.

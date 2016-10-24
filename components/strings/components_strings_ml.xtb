@@ -10,7 +10,6 @@
 <translation id="10614374240317010">ഒരിക്കലും സംരക്ഷിച്ചില്ല</translation>
 <translation id="106701514854093668">ഡെസ്‌ക്‌ടോപ്പ് ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="1080116354587839789">അനുയോജ്യമായ വീതിയിലാക്കുക</translation>
-<translation id="1103124106085518534">ഇപ്പോഴത്തേക്ക് പൂർത്തിയാക്കി</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> എല്ലായ്പ്പോഴും വിവര്‍ത്തനം ചെയ്യുക </translation>
 <translation id="1107591249535594099">പരിശോധിച്ചെങ്കിൽ, വേഗതേറിയ ഫോം പൂരിപ്പിക്കലിനായി ഈ ഉപകരണത്തിൽ നിങ്ങളുടെ കാർഡിന്റെ ഒരു പകർപ്പ് Chrome സംഭരിക്കും.</translation>
 <translation id="1111153019813902504">സമീപകാലത്തെ ബുക്‌മാര്‍ക്കുകള്‍</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows നെറ്റ്‌വർക്ക് ഡയഗണോസ്‌റ്റിക്‌സ് റൺ ചെയ്‌തുനോക്കൂ<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രേസ് ദയവായി അപ്‌ഡേറ്റ് ചെയ്യുക.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">നിങ്ങളുടെ അടുത്തിടെ സന്ദർശിച്ച ബുക്ക്‌മാർക്കുകൾ ഇവിടെ ദൃശ്യമാകും.</translation>
 <translation id="1821930232296380041">അഭ്യർത്ഥന അല്ലെങ്കിൽ അഭ്യർത്ഥന പാരാമീറ്ററുകൾ അസാധുവാണ്</translation>
 <translation id="1838667051080421715">നിങ്ങൾ ഒരു വെബ് പേജിന്റെ ഉറവിടമാണ് കാണുന്നത്.</translation>
 <translation id="1871208020102129563">സ്ഥിരമായ പ്രോക്‌സി സെർവറുകൾ ഉപയോഗിക്കുന്നതിനായി പ്രോക്‌സി സജ്ജീകരിച്ചിരിക്കുന്നു, ഒരു .pac സ്‌ക്രിപ്റ്റ് URL ഉപയോഗിക്കുന്നതിനല്ല.</translation>
@@ -360,7 +358,6 @@
 <translation id="4816492930507672669">പേജിന് യുക്തമാക്കുക</translation>
 <translation id="4850886885716139402">കാണുക</translation>
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
-<translation id="4884656795097055129">ആവശ്യമുള്ള സമയത്ത് കൂടുതൽ ലേഖനങ്ങൾ ദൃശ്യമാകും.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ഒരു വെബ്‌പേജ് കൂടിയുണ്ട്}other{# വെബ്‌പേജുകൾ കൂടിയുണ്ട്}}</translation>
 <translation id="4923417429809017348">ഈ പേജിനെ അറിയപ്പെടാത്ത ഒരു ഭാഷയില്‍‌ നിന്നും <ph name="LANGUAGE_LANGUAGE" /> എന്നതിലേക്ക് വിവര്‍‌ത്തനം ചെയ്തു</translation>

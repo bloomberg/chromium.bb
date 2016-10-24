@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">NOTA: la configuración de la política solo permite establecer conexiones entre ordenadores de tu misma red.</translation>
 <translation id="4155497795971509630">Faltan algunos componentes requeridos. Asegúrate de haber instalado la última versión del software y vuelve a intentarlo.</translation>
 <translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START" />al menos seis dígitos<ph name="BOLD_END" /> para proteger el acceso a este ordenador. Se solicitará ese PIN cada vez que se establezca conexión con ese ordenador desde otra ubicación.</translation>
+<translation id="4156741816461781891">Has iniciado sesión como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Código de acceso</translation>
 <translation id="4207623512727273241">Ejecuta el archivo de instalación antes de continuar.</translation>
 <translation id="4227991223508142681">Utilidad de asignación de host</translation>
@@ -208,10 +209,6 @@ remoto de Chrome</translation>
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Otro problema.</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
-<translation id="6408143143164565232">• Escucha audio en ordenadores Windows o Linux.
-• Elimina conexiones no deseadas manteniendo pulsado el nombre del ordenador.
-• Movimiento más suave al pellizcar la pantalla para hacer zoom y al desplazarte con dos dedos.
-• Nueva pantalla de Ayuda y sugerencias.</translation>
 <translation id="6441316101718669559">La integración del escritorio no se admite en esta plataforma. Puedes seguir utilizando la aplicación, pero la experiencia de usuario se verá afectada.</translation>
 <translation id="652218476070540101">Se está actualizando el PIN de este ordenador...</translation>
 <translation id="6527303717912515753">Compartir</translation>

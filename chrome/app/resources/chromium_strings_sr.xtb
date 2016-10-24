@@ -39,7 +39,6 @@
 <translation id="2158734852934720349">Лиценце отвореног кода за Chromium ОС</translation>
 <translation id="2241627712206172106">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chromium баш онако како желе.</translation>
 <translation id="225614027745146050">Добро дошли</translation>
-<translation id="2264142189334629813">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="2316129865977710310">Не, хвала</translation>
 <translation id="2347108572062610441">Овај додатак је променио страницу која се приказује када покренете Chromium.</translation>
 <translation id="2372704305038231957">32-битни Chromium неће исправно функционисати зато што више није подржан на овом Linux систему. Надоградите Chromium на 64-битну верзију.</translation>
@@ -48,6 +47,7 @@
 <translation id="2483889755041906834">У Chromium-у</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2486653164587200256">Chromium можда неће исправно функционисати зато што више није подржан на Windows XP-у или Windows Vista-и.</translation>
+<translation id="2527042973354814951">Поново покрените Chromium да бисте омогућили <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="2558641060352364164">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и надоградите на модеран прегледач.</translation>
 <translation id="2572494885440352020">Chromium помагач</translation>

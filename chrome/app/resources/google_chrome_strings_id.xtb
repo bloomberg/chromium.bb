@@ -128,6 +128,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="4700157086864140907">Google Chrome dapat memberikan periksa-ejaan yang lebih pintar dengan mengirimkan apa yang Anda ketik di browser ke server Google sehingga memungkinkan Anda menggunakan teknologi periksa-ejaan yang sama seperti yang digunakan oleh Google penelusuran.</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena kesalahan yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
+<translation id="4750550185319565338">Muat ulang Chrome untuk mengaktifkan <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Komputer ini akan segera berhenti menerima pembaruan Google Chrome 32-bit. Tingkatkan versi ke Google Chrome 64-bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">File ini mungkin berbahaya, jadi Chrome telah memblokirnya.</translation>
@@ -256,7 +257,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>
 <translation id="8342675569599923794">File ini berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="8406086379114794905">Bantu kami membuat Chrome jadi lebih baik</translation>
-<translation id="8410645163819739900">Google Chrome OS tidak dapat membuka laman ini.</translation>
 <translation id="8455999171311319804">Opsional: Bantu Chrome OS menjadi lebih baik dengan mengirimkan data diagnostik dan penggunaan secara otomatis ke Google.</translation>
 <translation id="853189717709780425">Anda masuk dengan akun yang dikelola dan memberikan administratornya kendali atas profil Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

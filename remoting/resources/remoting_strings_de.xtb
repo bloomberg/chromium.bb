@@ -126,6 +126,7 @@ Host</translation>
 <translation id="409800995205263688">Hinweis: Die Richtlinieneinstellungen erlauben nur Verbindungen zwischen Computern in Ihrem Netzwerk.</translation>
 <translation id="4155497795971509630">Es fehlen einige erforderliche Komponenten. Überprüfen Sie, ob Sie die neueste Version der Software installiert haben, und versuchen Sie es erneut.</translation>
 <translation id="4156740505453712750">Um den Zugriff auf diesen Computer zu schützen, wählen Sie eine PIN mit <ph name="BOLD_START" />mindestens 6 Ziffern<ph name="BOLD_END" /> aus. Die Eingabe dieser PIN ist erforderlich, wenn eine Verbindung von einem anderen Ort aus hergestellt wird.</translation>
+<translation id="4156741816461781891">Angemeldet als <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Zugriffscode</translation>
 <translation id="4207623512727273241">Führen Sie das Installationsprogramm aus, bevor Sie fortfahren.</translation>
 <translation id="4227991223508142681">Host Provisioning-Dienstprogramm</translation>
@@ -208,10 +209,6 @@ Desktop Host</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Sonstige</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
-<translation id="6408143143164565232">• Audio über Windows- oder Linux-Computer abspielen
-• Unerwünschte Verbindungen durch Gedrückthalten des Computernamens entfernen
-• Reibungsloseres Zoomen durch Auseinander- oder Zusammenziehen der Finger sowie einfaches Scrollen mit zwei Fingern
-• Neuer Hilfe- und Feedbackbildschirm</translation>
 <translation id="6441316101718669559">Die Desktop-Integration wird auf dieser Plattform nicht unterstützt. Sie können die App weiterhin verwenden, allerdings ist die Benutzerfreundlichkeit beeinträchtigt.</translation>
 <translation id="652218476070540101">Die PIN für diesen Computer wird aktualisiert…</translation>
 <translation id="6527303717912515753">Teilen</translation>

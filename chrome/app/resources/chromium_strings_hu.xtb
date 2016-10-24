@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
 <translation id="2241627712206172106">Ha megoszt egy számítógépet, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chromiumot.</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
-<translation id="2264142189334629813">A Chromium OS nem tudja megnyitni ezt az oldalt.</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="2347108572062610441">Ez a bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
 <translation id="2372704305038231957">Előfordulhat, hogy a 32 bites Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja ezt a Linux rendszert. Kérjük, frissítsen a Chromium 64 bites változatára.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">A Chromiumban</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
 <translation id="2486653164587200256">Előfordulhat, hogy a Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja a következő rendszereket: Windows XP és Windows Vista.</translation>
+<translation id="2527042973354814951">A Chromium újraindítása a(z) <ph name="PLUGIN_NAME" /> engedélyezéséhez</translation>
 <translation id="2535480412977113886">A Chromium OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="2558641060352364164">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

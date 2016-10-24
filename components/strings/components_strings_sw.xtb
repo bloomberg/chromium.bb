@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Haijahifadhiwa kamwe</translation>
 <translation id="106701514854093668">Alamisho za Eneokazi</translation>
 <translation id="1080116354587839789">Fanya itoshe kwenye upana</translation>
-<translation id="1103124106085518534">Umekamilisha kwa sasa</translation>
 <translation id="1103523840287552314">Tafsiri <ph name="LANGUAGE" /> kila wakati</translation>
 <translation id="1107591249535594099">Ikiteuliwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka.</translation>
 <translation id="1111153019813902504">Alamisho za hivi karibuni</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Jaribu kutumia zana ya Kuchunguza Mtandao wa Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Tafadhali sasisha kaulisiri yako iliyolandanishwa.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Alamisho ulizotembelea hivi majuzi zitaonekana hapa.</translation>
 <translation id="1821930232296380041">Ombi au vigezo vya ombi batili</translation>
 <translation id="1838667051080421715">Unaangalia chanzo cha ukurasa wa wavuti.</translation>
 <translation id="1871208020102129563">Proksi imewekwa ili kutumia seva za proksi thabiti, siyo URL ya hati .pac.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Sawazisha kwenye ukurasa</translation>
 <translation id="4850886885716139402">Mwonekano</translation>
 <translation id="4880827082731008257">Tafuta katika historia</translation>
-<translation id="4884656795097055129">Makala zaidi yataonekana muda ukifika.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{na ukurasa 1 zaidi wa wavuti}other{na kurasa # zaidi za wavuti}}</translation>
 <translation id="4923417429809017348">Ukurasa huu umetafsiriwa kutoka katika lugha ambayo haijulikani hadi <ph name="LANGUAGE_LANGUAGE" /></translation>

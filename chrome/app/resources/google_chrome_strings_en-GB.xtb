@@ -132,6 +132,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4700157086864140907">Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4743926867934016338">Accept &amp; Search</translation>
+<translation id="4750550185319565338">Restart Chrome to enable <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">This computer will soon stop receiving 32-bit Google Chrome updates. Please upgrade to 64-bit Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">This file may be dangerous, so Chrome has blocked it.</translation>
@@ -264,7 +265,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8290100596633877290">Whoa! Google Chrome has crashed. Relaunch now?</translation>
 <translation id="8342675569599923794">This file is dangerous, so Chrome has blocked it.</translation>
 <translation id="8406086379114794905">Help make Chrome better</translation>
-<translation id="8410645163819739900">Google Chrome OS cannot open this page.</translation>
 <translation id="8455999171311319804">Optional: Help make Chrome OS better by automatically sending diagnostic and usage data to Google.</translation>
 <translation id="853189717709780425">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

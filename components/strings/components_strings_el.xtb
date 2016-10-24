@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Δεν έχει αποθηκευθεί ποτέ</translation>
 <translation id="106701514854093668">Σελιδοδείκτες επιτραπέζιου υπολογιστή</translation>
 <translation id="1080116354587839789">Προσαρμογή στο πλάτος</translation>
-<translation id="1103124106085518534">Τέλος προς το παρόν</translation>
 <translation id="1103523840287552314">Να μεταφράζονται πάντα τα <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Εάν επιλεγεί, το Chrome θα αποθηκεύει ένα αντίγραφο της κάρτας σας σε αυτήν τη συσκευή για ταχύτερη συμπλήρωση φορμών.</translation>
 <translation id="1111153019813902504">Πρόσφατοι σελιδοδείκτες</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Δοκιμάστε να εκτελέσετε τον Διαγνωστικό έλεγχο δικτύου των Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Ενημερώστε την κωδική φράση πρόσβασης συγχρονισμού.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Οι σελιδοδείκτες που επισκεφτήκατε πρόσφατα θα εμφανίζονται εδώ.</translation>
 <translation id="1821930232296380041">Μη έγκυρο αίτημα ή παράμετροι αιτήματος</translation>
 <translation id="1838667051080421715">Βλέπετε την πηγή μιας ιστοσελίδας.</translation>
 <translation id="1871208020102129563">Ο διακομιστής μεσολάβησης έχει ρυθμιστεί να χρησιμοποιεί διακομιστές μεσολάβησης και όχι μια διεύθυνση URL σεναρίου .pac.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Προσαρμογή στη σελίδα</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="4880827082731008257">Ιστορικό αναζήτησης</translation>
-<translation id="4884656795097055129">Θα εμφανιστούν περισσότερα άρθρα την κατάλληλη στιγμή.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{και 1 ακόμη ιστοσελίδα}other{και # ακόμη ιστοσελίδες}}</translation>
 <translation id="4923417429809017348">Αυτή η σελίδα έχει μεταφραστεί από μια άγνωστη γλώσσας στα <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -682,7 +679,7 @@
 <translation id="8740359287975076522">Δεν ήταν δυνατός ο εντοπισμός της &lt;abbr id="dnsDefinition"&gt;διεύθυνσης DNS&lt;/abbr&gt; του κεντρικού υπολογιστή <ph name="HOST_NAME" />. Γίνεται διάγνωση του προβλήματος.</translation>
 <translation id="8790007591277257123">&amp;Επανάληψη διαγραφής</translation>
 <translation id="8798099450830957504">Προεπιλογή</translation>
-<translation id="8804164990146287819">Πολιτική Απορρήτου</translation>
+<translation id="8804164990146287819">Πολιτική απορρήτου</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
 <translation id="8834246243508017242">Ενεργοποίηση Αυτόματης συμπλήρωσης χρησιμοποιώντας τις Επαφές…</translation>
 <translation id="883848425547221593">Άλλοι σελιδοδείκτες</translation>

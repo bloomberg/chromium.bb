@@ -40,6 +40,7 @@
 <translation id="2507943997699731163">Täytä tämä kenttä.</translation>
 <translation id="2508569020611168319">välilehtiluettelo</translation>
 <translation id="2548326553472216322">Ei viimeisimpiä hakuja</translation>
+<translation id="2561842179657104141">näytä lisää mediaohjaimia</translation>
 <translation id="2572483411312390101">toista</translation>
 <translation id="2613802280814924224">Syötä kelvollinen arvo. Lähin kelvollinen arvo on <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
@@ -113,6 +114,7 @@
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">keskeytä toisto</translation>
 <translation id="5643186887447432888">painike</translation>
+<translation id="5677946354068040947">lisäasetukset</translation>
 <translation id="57838592816432529">Mykistä</translation>
 <translation id="583281660410589416">Tuntematon</translation>
 <translation id="5843503607508392247">Muu...</translation>
@@ -147,6 +149,7 @@
 <translation id="6853785296079745596">piilota tekstitykset</translation>
 <translation id="6885760532393684712">hakemisto</translation>
 <translation id="6934078000481955284">muotoiltu lainaus</translation>
+<translation id="6941933287844615239">lataa media</translation>
 <translation id="7057186640035488495">elokuvan aikajana</translation>
 <translation id="709897737746224366">Käytä pyydettyä muotoilua.</translation>
 <translation id="7223624360433298498">kulunut aika</translation>

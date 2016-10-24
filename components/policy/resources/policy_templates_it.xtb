@@ -269,6 +269,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se la norma HardwareAccelerationModeEnabled è impostata su false, la norma Disable3DAPIs viene ignorata ed equivale all'impostazione su true della norma Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
+<translation id="2178899310296064282">Imponi almeno il Livello medio della Modalità con restrizioni su YouTube</translation>
 <translation id="2188979373208322108">Consente di attivare la barra dei Preferiti in <ph name="PRODUCT_NAME" />. Se attivi questa impostazione verrà visualizzata una barra dei Preferiti in <ph name="PRODUCT_NAME" />. Se disattivi questa impostazione, gli utenti non potranno mai visualizzare la barra dei Preferiti. Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se questa impostazione non viene impostata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
 <translation id="2201555246697292490">Configura whitelist messaggi nativi</translation>
 <translation id="2204753382813641270">Controlla la visualizzazione automatica dello shelf</translation>
@@ -512,6 +513,7 @@ Se l'impostazione viene disattivata, la funzione Navigazione sicura non è mai a
 Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" di <ph name="PRODUCT_NAME" />.
 
 Se la norma non viene impostata l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
+<translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
 <translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
 
       Se questa norma viene impostata su False, gli utenti non potranno giocare al gioco del dinosauro quando il dispositivo è offline. Se viene impostata su True, gli utenti potranno giocare. Se la norma non viene impostata, gli utenti non potranno giocare al gioco del dinosauro su sistemi Chrome OS registrati, ma potranno giocarvi in altre circostanze.</translation>
@@ -618,9 +620,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
-<translation id="3067188277482006117">Se la norma è impostata su True, l'utente può utilizzare l'hardware su dispositivi Chrome per attestare da remoto la propria identità presso l'Autorità di certificazione della privacy tramite chrome.enterprise.platformKeysPrivate.challengeUserKey() dell'API Enterprise Platform Keys.
-
-          Se la norma è impostata su False o non è impostata, le chiamate all'API non riusciranno e genereranno un codice di errore.</translation>
 <translation id="3069958900488014740">Consente di disattivare l'ottimizzazione WPAD (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 
       Se questa norma è impostata su false, l'ottimizzazione WPAD viene disattivata, aumentando così i tempi di attesa da parte di <ph name="PRODUCT_NAME" /> dei server WPAD basati su DNS. Se questa norma non è impostata oppure se è attiva, l'ottimizzazione WPAD è abilitata.
@@ -737,6 +736,13 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="3417418267404583991">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_OS_NAME" /> verranno attivati gli accessi come ospite. Gli accessi come ospite sono sessioni utente anonime che non richiedono password.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_OS_NAME" /> non sarà possibile avviare sessioni Ospite.</translation>
+<translation id="3418871497193485241">Consente di imporre su YouTube un livello minimo della Modalità con restrizioni e di impedire agli utenti di scegliere un livello inferiore.
+
+      Se questa impostazione viene impostata su Livello massimo, su YouTube sarà sempre attivo questo livello della Modalità con restrizioni.
+
+      Se questa impostazione viene impostata su Livello medio, l'utente può scegliere il Livello medio o massimo della Modalità con restrizioni su YouTube, ma non può disattivare la modalità.
+
+      Se questa impostazione viene disattivata o non viene impostato alcun valore, la Modalità con restrizioni di YouTube non viene imposta da <ph name="PRODUCT_NAME" />. La Modalità con restrizioni potrebbe essere comunque imposta da norme esterne, ad esempio dalle norme di YouTube.</translation>
 <translation id="3428247105888806363">Attiva previsione di rete</translation>
 <translation id="3449886121729668969">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME" />. Le impostazioni proxy saranno disponibili anche per le app ARC.
 
@@ -850,6 +856,9 @@ Il valore della lista nera * indica che tutti gli host di messaggi nativi non so
 
 Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi ma, se tutti gli host sono stati aggiunti alla lista nera secondo la norma, è possibile utilizzare la whitelist per ignorare la norma.</translation>
 <translation id="384743459174066962">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'apertura dei popup. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPopupsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
+<translation id="3851039766298741586">Consente di segnalare informazioni sulla sessione kiosk attiva, ad esempio l'ID e la versione dell'applicazione.
+
+      Se la norma viene impostata su false, le informazioni relative alla sessione non verranno segnalate. Se viene impostata su true o non viene impostata, tali informazioni verranno segnalate.</translation>
 <translation id="3859780406608282662">Consente di aggiungere un parametro al recupero del numero di inizializzazione delle varianti in <ph name="PRODUCT_OS_NAME" />.
 
       Se la norma è specificata, verrà aggiunto un parametro query chiamato "restrict" all'URL utilizzato per recuperare il numero di inizializzazione delle varianti. Il valore del parametro sarà il valore specificato in questa norma.
@@ -864,6 +873,13 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
           Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="3864818549971490907">Impostazione plug-in predefiniti</translation>
+<translation id="386487026071140458">Questa norma è obsoleta, pertanto è necessario utilizzare le norme <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> e <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Questa norma viene ignorata se vengono impostate le norme <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> o <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (obsoleta).
+
+      Consente di imporre l'esecuzione di query nella Ricerca Google con la funzione SafeSearch attiva e di impedire agli utenti di modificare l'impostazione. Questa impostazione consente di imporre anche il Livello medio della Modalità con restrizioni su YouTube.
+
+      Se questa impostazione viene attivata, la funzione SafeSearch della Ricerca Google e il Livello medio della Modalità con restrizioni di YouTube saranno sempre attivi.
+
+      Se questa impostazione viene disattivata o non viene impostato un valore, la funzione SafeSearch della Ricerca Google e la Modalità con restrizioni di YouTube non verranno imposte.</translation>
 <translation id="3866249974567520381">Descrizione</translation>
 <translation id="3866530186104388232">Se questa norma viene impostata su true o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente. Se la norma viene impostata su false, per accedere a <ph name="PRODUCT_OS_NAME" /> verranno richiesti nome utente e password.</translation>
 <translation id="3868347814555911633">Questa norma è attiva soltanto in modalità retail.
@@ -932,6 +948,17 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
           Se questa norma non viene impostata, verrà utilizzata la norma "AllowCookies", che potrà essere modificata dall'utente.</translation>
 <translation id="4103289232974211388">Reindirizza a IdP SAML dopo la conferma dell'utente</translation>
+<translation id="4103941930938018145">Questa norma è obsoleta. Utilizzare la norma <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> per stabilire la disponibilità del plug-in Flash e la norma <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> per stabilire se è necessario utilizzare il visualizzatore di PDF integrato per aprire i file PDF.
+
+      Consente di specificare un elenco di plug-in disattivati in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
+
+      È possibile utilizzare i caratteri jolly "*" e "?" per trovare corrispondenze di sequenze di caratteri arbitrari. "*" corrisponde a un numero arbitrario di caratteri, mentre "?" rappresenta un singolo carattere facoltativo, cioè corrisponde a zero caratteri o a uno solo. Il carattere di escape è "\", quindi per trovare corrispondenze dei caratteri effettivi "*", "?" o "\" puoi inserire davanti un carattere "\".
+
+      Se questa impostazione viene attivata, l'elenco di plug-in specificato non verrà mai utilizzato in <ph name="PRODUCT_NAME" />. I plug-in vengono contrassegnati come disattivati in "about:plugins" e gli utenti non possono attivarli.
+
+      È opportuno tenere presente che questa norma può essere sostituita dalle norme EnabledPlugins e DisabledPluginsExceptions.
+
+      Se questa norma non viene impostata, l'utente può utilizzare qualsiasi plug-in installato sul sistema, ad eccezione dei plug-in pericolosi, obsoleti e incompatibili hard-coded.</translation>
 <translation id="410478022164847452">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene utilizzata la corrente alternata.
 
 Se questa norma viene impostata, consente di specificare il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> compia l'azione di inattività, che può essere configurata separatamente.
@@ -1203,6 +1230,13 @@ Se questa impostazione viene attivata, i dispositivi di input e output fisici de
 Se questa impostazione viene disattivata o non viene impostata, sia gli utenti locali che remoti potranno interagire con l'host quando viene condiviso.</translation>
 <translation id="5423001109873148185">Se è attiva, questa norma impone l'importazione dei motori di ricerca dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, il motore di ricerca predefinito non viene importato. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5423197884968724595">Nome della limitazione di Android WebView:</translation>
+<translation id="543559563129402336">Questa norma è obsoleta. È possibile utilizzare la norma <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, che sostituisce questa norma e consente un perfezionamento più preciso.
+
+      Consente di imporre il Livello medio della Modalità con restrizioni di YouTube e di impedire agli utenti di modificare l'impostazione.
+
+      Se questa impostazione viene attivata, verrà sempre imposto almeno il Livello medio della Modalità con restrizioni su YouTube.
+
+      Se questa impostazione viene disattivata o non viene impostato alcun valore, la Modalità con restrizioni su YouTube non verrà imposta da <ph name="PRODUCT_NAME" />. La Modalità con restrizioni potrebbe essere comunque imposta da norme esterne, ad esempio dalle norme di YouTube.</translation>
 <translation id="5447306928176905178">Attiva le informazioni relative ai rapporti sulla memoria (dimensioni heap JS) per la pagina (obsoleto)</translation>
 <translation id="5457065417344056871">Attiva modalità ospite nel browser</translation>
 <translation id="5457924070961220141">Consente di configurare il renderer HTML predefinito se <ph name="PRODUCT_FRAME_NAME" /> è installato. Se questa norma non viene impostata, per impostazione predefinita il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -1304,6 +1338,19 @@ Se questa norma viene impostata, consente di specificare il periodo di tempo per
 Se questa norma non viene impostata, viene utilizzato un periodo di tempo predefinito.
 
 Il valore della norma deve essere specificato in millisecondi.</translation>
+<translation id="5783595563813359339">Questa norma è obsoleta. Utilizzare la norma <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> per stabilire la disponibilità del plug-in Flash e la norma <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> per stabilire se è necessario utilizzare il visualizzatore di PDF integrato per aprire i file PDF.
+
+      Consente di specificare un elenco di plug-in che l'utente può attivare o disattivare in <ph name="PRODUCT_NAME" />.
+
+      È possibile utilizzare i caratteri jolly "*" e "?" per trovare corrispondenze di sequenze di caratteri arbitrari. "*" corrisponde a un numero arbitrario di caratteri, mentre "?" rappresenta un singolo carattere facoltativo, cioè corrisponde a zero caratteri o a uno solo. Il carattere di escape è "\", quindi per trovare corrispondenze dei caratteri effettivi "*", "?" o "\" puoi inserire davanti un carattere "\".
+
+      Se questa impostazione viene attivata, l'elenco di plug-in specificato potrà essere utilizzato in <ph name="PRODUCT_NAME" />. Gli utenti possono attivare o disattivare i plug-in in "about:plugins", anche se i plug-in corrispondono anche a uno schema in DisabledPlugins. Gli utenti possono attivare e disattivare anche i plug-in che non corrispondono ad alcuno schema in DisabledPlugins, DisabledPluginsExceptions ed EnabledPlugins.
+
+      Questa norma è studiata per consentire un inserimento rigoroso dei plug-in nella blacklist, dove l'elenco "DisabledPlugins" contiene voci con caratteri jolly, ad esempio per disattivare tutti i plug-in "*" o per disattivare tutti i plug-in Java "*Java*", ma consentire all'amministratore di attivare qualche versione particolare come "IcedTea Java 2.3". Tali versioni particolari possono essere specificate in questa norma.
+
+      È opportuno tenere presente che sia il nome del plug-in sia il nome del gruppo del plug-in devono essere esclusi. Ogni gruppo di plug-in viene mostrato in una sezione separata di about:plugins; ogni sezione può contenere uno o più plug-in. Ad esempio, il plug-in "Shockwave Flash" appartiene al gruppo "Adobe Flash Player" ed entrambi i nomi devono avere una corrispondenza nell'elenco di eccezioni se il plug-in in questione deve essere escluso dalla blacklist.
+
+      Se questa norma non viene impostata, tutti i plug-in corrispondenti agli schemi in "DisabledPlugins" verranno disattivati e bloccati e l'utente non potrà attivarli.</translation>
 <translation id="5795001131770861387">Consente di attivare il supporto HTTP/0.9 sulle porte non predefinite</translation>
 <translation id="5809728392451418079">Imposta il nome visualizzato per gli account del dispositivo</translation>
 <translation id="5814301096961727113">Impostazione stato predefinito della lettura vocale nella schermata di accesso</translation>
@@ -1366,6 +1413,12 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 
       Se la norma non viene impostata o viene impostata su false, <ph name="PRODUCT_NAME" /> non effettuerà controlli della revoca online in <ph name="PRODUCT_NAME" /> 19 e nelle versioni successive.</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
+<translation id="5974970919245996815">Le informazioni sullo stato di Android segnalate vengono rimandate al server.
+
+      Se la norma viene impostata su false, le informazioni non verranno segnalate.
+      Se la norma viene impostata su true o non viene impostata, le informazioni verranno segnalate.
+
+      Questa norma viene applicata soltanto se le app Android sono attive.</translation>
 <translation id="5983708779415553259">Comportamento predefinito per i siti non presenti in pacchetti di contenuti</translation>
 <translation id="5997543603646547632">Utilizza orologio di 24 ore per impostazione predefinita</translation>
 <translation id="6009903244351574348">Consente di permettere a <ph name="PRODUCT_FRAME_NAME" /> di gestire i tipi di contenuti elencati. Se questa norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".</translation>
@@ -1394,6 +1447,17 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="6076099373507468537">Definisce l'elenco di dispositivi USB che possono essere scollegati dal driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'applicazione web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
 
       Se la norma non è configurata, l'elenco di dispositivi USB scollegabili è vuoto.</translation>
+<translation id="608377055310226486">Questa norma è obsoleta. Utilizzare la norma <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> per stabilire la disponibilità del plug-in Flash e la norma <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> per stabilire se è necessario utilizzare il visualizzatore di PDF integrato per aprire i file PDF.
+
+      Consente di specificare un elenco di plug-in attivi in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
+
+      È possibile utilizzare i caratteri jolly "*" e "?" per trovare corrispondenze di sequenze di caratteri arbitrari. "*" corrisponde a un numero arbitrario di caratteri, mentre "?" rappresenta un singolo carattere facoltativo, cioè corrisponde a zero caratteri o a uno solo. Il carattere di escape è "\", quindi per trovare corrispondenze dei caratteri effettivi "*", "?" o "\" puoi inserire davanti un carattere "\".
+
+      L'elenco specificato di plug-in verrà utilizzato sempre in <ph name="PRODUCT_NAME" /> se i plug-in vengono installati. I plug-in vengono contrassegnati come attivi in "about:plugins" e gli utenti non possono disattivarli.
+
+      È opportuno tenere presente che questa norma sostituisce entrambe le norme DisabledPlugins e DisabledPluginsExceptions.
+
+      Se questa norma non viene impostata, l'utente potrà disattivare qualsiasi plug-in installato sul sistema.</translation>
 <translation id="6093156968240188330">Consente agli utenti remoti di interagire con finestre con privilegi più elevati nelle sessioni di assistenza remota</translation>
 <translation id="6095999036251797924">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato durante l'utilizzo di alimentazione CA o batteria.
 
@@ -1602,6 +1666,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6828905844648501476">Se questa norma viene impostata su true o non viene configurata, su <ph name="PRODUCT_NAME" /> sarà possibile aggiungere persone con la funzione Aggiungi persona di Gestione utenti.
 
       Se questa norma viene impostata su false, su <ph name="PRODUCT_NAME" /> non sarà possibile creare nuovi profili da Profile Manager.</translation>
+<translation id="685769593149966548">Imponi Livello massimo della Modalità con restrizioni per YouTube</translation>
 <translation id="687046793986382807">Questa norma è stata ritirata a partire dalla versione 35 di <ph name="PRODUCT_NAME" />.
 
       Le informazioni sulla memoria sono comunque riportate sulla pagina, indipendentemente dal valore opzione, ma le dimensioni segnalate presentano
@@ -1721,9 +1786,6 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
 <translation id="7167436895080860385">Consenti agli utenti di mostrare le password in Gestione password (ritirata)</translation>
 <translation id="7173856672248996428">Profilo temporaneo</translation>
-<translation id="7187256234726597551">Se la norma viene impostata su true, l'attestazione da remoto viene consentita per il dispositivo e viene generato automaticamente un certificato che viene caricato sul Server di gestione del dispositivo.
-
-Se la norma viene impostata su false o non viene impostata, non verrà generato alcun certificato e le chiamate all'API di estensione enterprise.platformKeysPrivate non andranno a buon fine.</translation>
 <translation id="718956142899066210">Tipi di connessioni consentiti per gli aggiornamenti</translation>
 <translation id="7194407337890404814">Nome del provider di ricerca predefinito</translation>
 <translation id="7195064223823777550">Consente di specificare l'azione da compiere quando l'utente chiude il coperchio.
@@ -2017,6 +2079,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Se la norma viene impostata su true, sul dispositivo viene utilizzato il formato di 24 ore, se viene impostata su false viene utilizzato il formato di 12 ore.
 
       Se questa norma non viene impostata, sul dispositivo viene utilizzato il formato predefinito di 24 ore.</translation>
+<translation id="8114382167597081590">Non imporre la Modalità con restrizioni su YouTube</translation>
 <translation id="8118665053362250806">Imposta le dimensioni della cache su disco di supporto</translation>
 <translation id="8135937294926049787">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene utilizzata la corrente alternata.
 
@@ -2062,9 +2125,6 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
 
       Se questa norma non viene impostata, non ci saranno eccezioni alla blacklist dalla norma "URLBlacklist".</translation>
 <translation id="8176035528522326671">Consenti all'utente aziendale di essere solo l'utente multiprofilo principale (comportamento predefinito per gli utenti gestiti dall'azienda)</translation>
-<translation id="8197918588508433925">Questa norma specifica le estensioni autorizzate a utilizzare chrome.enterprise.platformKeysPrivate.challengeUserKey() dell'API Enterprise Platform Keys per l'attestazione da remoto. Le estensioni devono essere aggiunte a questo elenco per utilizzare l'API.
-
-          Se un'estensione non è presente nell'elenco o l'elenco non è impostato, la chiamata all'API non riuscirà e verrà generato un codice di errore.</translation>
 <translation id="8214600119442850823">Consente di configurare Gestione password.</translation>
 <translation id="8244525275280476362">Ritardo di recupero massimo dopo l'invalidazione di una norma</translation>
 <translation id="8256688113167012935">Controlla il nome account visualizzato da <ph name="PRODUCT_OS_NAME" /> nella schermata di accesso per il corrispondente account del dispositivo.
@@ -2191,6 +2251,7 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8704831857353097849">Elenco dei plug-in disattivati</translation>
 <translation id="8711086062295757690">Consente di specificare la parola chiave, che è la scorciatoia utilizzata nella omnibox per attivare la ricerca con il provider. Questa norma è facoltativa. Se non viene impostata, nessuna parola chiave attiverà il provider di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="8731693562790917685">Le Impostazioni contenuti consentono di specificare la modalità di gestione di determinati tipi di contenuto (ad esempio Cookie, Immagini o JavaScript).</translation>
+<translation id="8736538322216687231">Imponi livello minimo della Modalità con restrizioni di YouTube</translation>
 <translation id="8749370016497832113">Consente di eliminare la cronologia del browser e la cronologia dei download in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
       Tieni presente che anche quando questa norma è disattivata, non è garantita la memorizzazione della cronologia di navigazione e della cronologia dei download: gli utenti potrebbero essere in grado di modificare o eliminare direttamente i file dei database delle cronologie e il browser stesso potrebbe far scadere o archiviare alcuni o tutti gli elementi della cronologia in qualsiasi momento.

@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="106701514854093668">Masaüstü Yer İşaretleri</translation>
 <translation id="1080116354587839789">Genişliğe sığdır</translation>
-<translation id="1103124106085518534">Şimdilik bitti</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> dilini daima çevir</translation>
 <translation id="1107591249535594099">İşaretlenirse Chrome, formları daha hızlı doldurma amacıyla kartınızın bir kopyasını bu cihazda depolar.</translation>
 <translation id="1111153019813902504">Son yer işaretleri</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows Ağ Teşhislerini çalıştırmayı deneyin<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Lütfen senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Son ziyaret ettiğiniz yer işaretleri burada görünecek.</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
 <translation id="1838667051080421715">Bir web sayfasının kaynak kodunu görüyorsunuz.</translation>
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Sayfaya sığdır</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
 <translation id="4880827082731008257">Geçmişte ara</translation>
-<translation id="4884656795097055129">Zamanı geldiğinde daha fazla haber gösterilecek.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ve 1 web sayfası daha}other{ve # web sayfası daha}}</translation>
 <translation id="4923417429809017348">Bu sayfa, bilinmeyen bir dilden <ph name="LANGUAGE_LANGUAGE" /> diline çevrildi</translation>

@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">NOTA: as definições da política permitem ligações apenas entre computadores da sua rede.</translation>
 <translation id="4155497795971509630">Faltam alguns componentes necessários. Certifique-se de que tem a versão mais recente do software instalada e tente novamente.</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, escolha um PIN de <ph name="BOLD_START" />pelo menos seis dígitos<ph name="BOLD_END" />. Este PIN será necessário quando ligar a partir de outra localização.</translation>
+<translation id="4156741816461781891">Com sessão iniciada como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="4207623512727273241">Execute o ficheiro de instalação antes de continuar.</translation>
 <translation id="4227991223508142681">Utilitário de administração de anfitriões</translation>
@@ -208,10 +209,6 @@ Remoto do Chrome</translation>
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Outro.</translation>
 <translation id="6398765197997659313">Sair do modo de ecrã inteiro</translation>
-<translation id="6408143143164565232">• Ouça áudio a partir de computadores com Windows ou Linux.
-• Remova ligações indesejadas ao premir sem soltar o nome do computador.
-• Funcionalidades de juntar os dedos para aumentar/diminuir o zoom e de deslocamento com dois dedos mais estáveis.
-• Novo ecrã de Ajuda e comentários.</translation>
 <translation id="6441316101718669559">A integração do ambiente de trabalho não é suportada nesta plataforma. Pode continuar a utilizar a aplicação, mas a experiência de utilizador não é a ideal.</translation>
 <translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
 <translation id="6527303717912515753">Partilhar</translation>

@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Neuložené</translation>
 <translation id="106701514854093668">Záložky plochy</translation>
 <translation id="1080116354587839789">Prispôsobiť šírke</translation>
-<translation id="1103124106085518534">Zatiaľ hotovo</translation>
 <translation id="1103523840287552314">Vždy preložiť nasledujúci jazyk: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Ak je toto nastavenie začiarknuté, Chrome uloží kópiu karty na toto zariadenie, aby ste mohli vypĺňať formuláre rýchlejšie.</translation>
 <translation id="1111153019813902504">Posledné záložky</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Skúste spustiť nástroj Diagnostika siete systému Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Aktualizujte prístupovú frázu na synchronizáciu.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Tu sa objavia vaše nedávno navštívené záložky.</translation>
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
 <translation id="1838667051080421715">Zobrazuje sa vám zdroj webovej stránky.</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
@@ -357,7 +355,6 @@
 <translation id="4816492930507672669">Prispôsobiť stránke</translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4880827082731008257">Hľadať v histórii</translation>
-<translation id="4884656795097055129">Keď nastane správny čas, zobrazia sa ďalšie články.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{a 1 ďalšia webová stránka}few{a # ďalšie webové stránky}many{a # ďalšej webovej stránky}other{a # ďalších webových stránok}}</translation>
 <translation id="4923417429809017348">Táto stránka bola preložená z neznámeho jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>

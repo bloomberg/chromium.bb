@@ -126,6 +126,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>
 <translation id="4155497795971509630">必要なコンポーネントが見つかりません。インストールしているソフトウェアのバージョンが最新であることを確認し、もう一度お試しください。</translation>
 <translation id="4156740505453712750">このパソコンへのアクセスを保護するには、<ph name="BOLD_START" />6 桁以上<ph name="BOLD_END" />の PIN を選択してください。この PIN は別の場所から接続するときに必要となります。</translation>
+<translation id="4156741816461781891"><ph name="EMAIL_ADDRESS" /> としてログインしています。</translation>
 <translation id="4176825807642096119">アクセス コード</translation>
 <translation id="4207623512727273241">続行する前にインストーラを実行してください。</translation>
 <translation id="4227991223508142681">ユーティリティ プロビジョニングをホストします</translation>
@@ -208,10 +209,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6304318647555713317">クライアント</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
-<translation id="6408143143164565232">• Windows や Linux パソコンからの音声を聞き取る。
-• パソコン名を押し続けて不要な接続を削除。
-• ピンチしてズーム、2 本指スクロールの滑らかさが向上。
-• ヘルプとフィードバック画面の更新。</translation>
 <translation id="6441316101718669559">このプラットフォームでデスクトップの統合はサポートされていません。アプリケーションは引き続き使用できますが、ユーザー エクスペリエンスは低下します。</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="6527303717912515753">共有</translation>

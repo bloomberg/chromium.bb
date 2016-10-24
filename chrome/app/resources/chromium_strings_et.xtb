@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Chromium OS-i avatud lähtekoodi litsentsid</translation>
 <translation id="2241627712206172106">Kui jagate arvutit, saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chromiumi just nii, nagu neile meeldib.</translation>
 <translation id="225614027745146050">Tere tulemast</translation>
-<translation id="2264142189334629813">Chromium OS ei saa lehte avada.</translation>
 <translation id="2316129865977710310">Ei, aitäh</translation>
 <translation id="2347108572062610441">See laiendus muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
 <translation id="2372704305038231957">32-bitine Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis. Viige Chromium üle 64-bitisele versioonile.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">Chromiumis</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2486653164587200256">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam Windows XP-s ega Windows Vistas.</translation>
+<translation id="2527042973354814951">Taaskäivitage pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks Chromium</translation>
 <translation id="2535480412977113886">Chromium OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="2558641060352364164">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>

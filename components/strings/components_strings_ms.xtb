@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Tidak pernah disimpan</translation>
 <translation id="106701514854093668">Penanda Halaman Desktop</translation>
 <translation id="1080116354587839789">Muat ikut lebar</translation>
-<translation id="1103124106085518534">Selesai buat masa ini</translation>
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Jika ditandai, Chrome akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="1111153019813902504">Penanda halaman terbaharu</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Cuba jalankan Diagnostik Rangkaian Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Sila kemas kini frasa laluan segerak anda.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Penanda halaman anda yang terbaharu dilawati dipaparkan di sini.</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak sah</translation>
 <translation id="1838667051080421715">Anda sedang melihat sumber halaman web.</translation>
 <translation id="1871208020102129563">Proksi ditetapkan untuk menggunakan pelayan proksi tetap, bukannya URL skrip .pac.</translation>
@@ -362,7 +360,6 @@
 <translation id="4816492930507672669">Muat halaman</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4880827082731008257">Sejarah carian</translation>
-<translation id="4884656795097055129">Lebih banyak artikel akan muncul apabila tiba masa yang sesuai.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{dan 1 lagi halaman web}other{dan # lagi halaman web}}</translation>
 <translation id="4923417429809017348">Halaman ini diterjemahkan dari bahasa yang tidak diketahui ke <ph name="LANGUAGE_LANGUAGE" /></translation>

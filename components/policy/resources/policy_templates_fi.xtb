@@ -286,6 +286,7 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos käytännön HardwareAccelerationModeEnabled arvoksi asetetaan Epätosi, Disable3DAPIs ohitetaan, jolloin lopputulos vastaa Disable3DAPIs-käytännön arvoa Tosi.</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
+<translation id="2178899310296064282">Pakota vähintään keskitason rajoitettu tila YouTubessa</translation>
 <translation id="2188979373208322108">Ottaa käyttöön kirjanmerkkipalkin tuotteessa <ph name="PRODUCT_NAME" />. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> näyttää kirjanmerkkipalkin. Jos poistat asetuksen käytöstä, kirjanmerkkipalkkia ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos asetusta ei ole määritetty, käyttäjä voi käyttää toimintoa halutessaan.</translation>
 <translation id="2201555246697292490">Määritä sallittujen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="2204753382813641270">Hallinnoi hyllyn automaattista piilottamista</translation>
@@ -529,6 +530,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos otat tämän asetuksen käyttöön tai poistat sen käytöstä, käyttäjät eivät voi muuttaa tai ohittaa tuotteen <ph name="PRODUCT_NAME" /> Aktivoi tietojenkalastelu- ja haittaohjelmasuojaus -asetusta.
 
       Jos tätä käytäntöä ei määritetä, ominaisuus ei ole käytössä, mutta käyttäjä voi muuttaa sen itse.</translation>
+<translation id="2787173078141616821">Raportoi tietoja Androidin tilasta</translation>
 <translation id="2801230735743888564">Anna käyttäjien pelata dinosauruspeliä laitteen ollessa offline-tilassa.
 
       Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi pelata dinosauruspeliä laitteen ollessa offline-tilassa. Jos asetuksen arvo on tosi, käyttäjät voivat pelata peliä. Jos käytännön arvoa ei ole määritetty, käyttäjät eivät voi pelata dinosauruspeliä käyttöön otetulla Chrome-käyttöjärjestelmälaitteella, mutta voivat pelata peliä muissa olosuhteissa.</translation>
@@ -635,9 +637,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
           Tämä on valinnainen käytäntö. Jos sitä ei määritetä, hakutermejä ei korvata.
 
           Tätä käytäntöä noudatetaan vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
-<translation id="3067188277482006117">Jos arvo on tosi, käyttäjä voi käyttää Chrome-laitteistoa todentaakseen henkilöllisyytensä yksityisyysvarmenteen myöntäjälle Enterprise Platform Keys -sovellusliittymällä chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Jos arvo on epätosi tai jos sitä ei ole asetettu, sovellusliittymän kutsu epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="3069958900488014740">Määrittää, käyttääkö <ph name="PRODUCT_NAME" /> WPAD-optimointia (Web Proxy Auto-Discovery).
 
       Jos tämän käytännön arvo on Epätosi, WPAD-optimointi poistetaan käytöstä, jolloin <ph name="PRODUCT_NAME" /> odottaa nimipalveluun perustuvia WPAD-palvelimia kauemmin. Jos käytäntöä ei aseteta tai sen arvo on Tosi, WPAD-optimointia käytetään.
@@ -754,6 +753,15 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
 
       Jos tälle käytännölle asetetaan epätosi-arvo, <ph name="PRODUCT_OS_NAME" /> ei salli vieraskirjautumista.</translation>
+<translation id="3418871497193485241">Pakota vähimmäistason rajoitettu tila YouTubessa ja estä käyttäjiä
+      valitsemasta vähemmän rajoitettua tilaa.
+
+      Jos tämä asetus on tiukka, tiukka rajoitettu tila YouTubessa on aina aktiivinen.
+
+      Jos tämä asetus on keskitaso, käyttäjä voi valita vain keskitason rajoitetun tilan
+      tai tiukan rajoitetun tilan YouTubessa, mutta ei voi poistaa käytöstä rajoitettua tilaa.
+
+      Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> ei pakota rajoitettua tilaa YouTubessa. Ulkoiset käytännöt, esim. YouTuben omat käytännöt, voivat silti pakottaa rajoitetun tilan.</translation>
 <translation id="3428247105888806363">Ota verkkojen esilataus käyttöön</translation>
 <translation id="3449886121729668969">Tämä käytäntö määrittää välityspalvelinasetukset, joita <ph name="PRODUCT_NAME" /> käyttää. Myös ARC-sovellukset voivat käyttää näitä välityspalvelinasetuksia.
 
@@ -867,6 +875,12 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Kaikki laitteen omaa viestijärjestelmää käyttävät isännät ovat oletuksena sallittujen luettelossa. Jos kaikki laitteen omaa viestijärjestelmää käyttävät isännät on lisätty kiellettyjen luetteloon käytännön kautta, käytäntö voidaan ohittaa sallittujen luettelon kautta.</translation>
 <translation id="384743459174066962">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
+<translation id="3851039766298741586">Raportoi aktiivisen kioskikäyttökerran tietoja, kuten
+      sovellustunnus ja ‑versio.
+
+      Jos käytännön arvo on Epätosi, käyttökertatietoja ei
+      raportoida. Jos arvo on Tosi tai sitä ei aseteta, käyttökertatiedot
+      raportoidaan.</translation>
 <translation id="3859780406608282662">Lisää parametri muunnelmasiemenarvon noutamiseen tuotteessa <ph name="PRODUCT_OS_NAME" />.
 
       Jos tämä arvo on määritetty, muunnelmasiemenarvon nouto-osoitteeseen lisätään kyselyparametri "restrict". Parametrin arvona käytetään tässä käytännössä määritettyä arvoa.
@@ -881,6 +895,13 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Tämä käytäntö toteutetaan vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="3864818549971490907">Laajennuksien oletusasetus</translation>
+<translation id="386487026071140458">Tämä käytäntö on poistettu käytöstä, käytä sen sijaan seuraavia: <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> ja <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Tätä käytäntöä ei oteta huomioon, jos <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> tai (käytöstä poistettu) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> on käytössä.
+
+      Pakottaa tekemään Google-verkkohaun kyselyt niin, että SafeSearch on aktiivinen, ja estää käyttäjiä muuttamasta tätä asetusta. Asetus myös pakottaa rajoitetun tilan käyttöönoton YouTubessa.
+
+      Jos otat tämän asetuksen käyttöön, Google-haun SafeSearch YouTuben keskitason rajoitettu tila ovat aina aktiivisia.
+
+      Jos poistat tämän asetuksen käytöstä tai et määritä sille arvoa, Google-haun SafeSearchia tai YouTuben rajoitettua tilaa ei pakoteta.</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
 <translation id="3866530186104388232">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> näyttää määritetyt käyttäjät valittavissa kirjautumisruudulla. Jos tälle käytännölle asetetaan epätosi-arvo, <ph name="PRODUCT_OS_NAME" /> näyttää kirjautumisruudulla käyttäjänimen ja salasanan kehotteen.</translation>
 <translation id="3868347814555911633">Tämä käytäntö toimii vain myyntitilassa.
@@ -957,6 +978,17 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos tätä käytäntöä ei aseteta, sen sijaan käytetään AllowCookies-käytäntöä ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="4103289232974211388">Uudelleenohjaa SAML IdP:hen käyttäjän todennuksen jälkeen.</translation>
+<translation id="4103941930938018145">Tämä käytäntö on poistettu käytöstä. Käytännön <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> avulla voit hallinnoida Flash-laajennusta ja käytännön <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> avulla sitä, käytetäänkö PDF-lukuohjelmaa PDF-tiedostojen avaamiseen.
+
+      Määrittää laajennukset, joita ei saa käyttää tuotteessa <ph name="PRODUCT_NAME" />, ja estää käyttäjiä muuttamasta tätä asetusta.
+
+      Jokerimerkeillä * ja ? voidaan korvata mitä tahansa merkkejä. * korvaa rajoittamattoman määrän merkkejä, kun taas ? korvaa yksittäisen valinnaisen merkin, eli nolla merkkiä tai yhden merkin. Vaihtomerkki on \, joten jos haluat käyttää merkkejä *, ? tai \ ilman niiden jokerimerkkimerkitystä, lisää niiden eteen merkki \.
+
+      Jos otat tämän asetuksen käyttöön, luettelossa olevia laajennuksia ei käytetä tuotteessa <ph name="PRODUCT_NAME" />. Laajennukset merkitään käytöstä poistetuiksi kohdassa about:plugins, eivätkä käyttäjät voi ottaa niitä käyttöön. 
+
+      Huomaa, että tämä käytäntö ohittaa sekä käytännön EnabledPlugins että DisabledPluginsExceptions.
+
+      Jos tätä käytäntöä ei ole määritetty, käyttäjä voi käyttää mitä tahansa laajennusta paitsi laajennuksia, jotka ovat koodiltaan yhteensopmattomia, vanhentuneita tai vaarallisia.</translation>
 <translation id="410478022164847452">Määrittää käyttämättömyysajan, jonka kuluttua suoritetaan käyttämättömyystoimenpide, kun laitetta käytetään verkkovirralla.
 
           Kun tämä käytäntö on asetettu, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME" /> suorittaa käyttämättömyystoimenpiteen, joka voidaan määrittää erikseen.
@@ -1238,6 +1270,13 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, paikalliset ja etäkäyttäjät voivat olla vuorovaikutuksessa isännän kanssa, kun se jaetaan.</translation>
 <translation id="5423001109873148185">Tämä käytäntö pakottaa hakukoneiden tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, oletushakukonetta ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda hakukoneen, tai hakukone voidaan tuoda automaattisesti.</translation>
 <translation id="5423197884968724595">Android WebView -rajoituksen nimi:</translation>
+<translation id="543559563129402336">Tämä käytäntö on poistettu käytöstä. Harkitse sen sijaan käytäntöä <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, joka ohittaa tämän käytännön ja sallii tarkemmat asetukset.
+
+      Pakottaa YouTuben keskitason rajoitetun tilan ja estää käyttäjiä muuttamasta tätä asetusta.
+
+      Jos tämä asetus on käytössä, YouTuben rajoitettu tila on aina vähintään keskitaso.
+
+      Jos tämä asetus on poistettu käytöstä tai arvoa ei ole määritetty, <ph name="PRODUCT_NAME" /> ei pakota YouTuben rajoitettua tilaa. Ulkoiset käytännöt, esim. YouTuben omat käytännöt, voivat silti pakottaa rajoitetun tilan.</translation>
 <translation id="5447306928176905178">Ota käyttöön muistitietojen ilmoittaminen (JS-pinon koko) sivulle (vanhentunut)</translation>
 <translation id="5457065417344056871">Ota vierastila käyttöön selaimessa</translation>
 <translation id="5457924070961220141">Voit määrittää oletus-HTML-hahmontajan, kun <ph name="PRODUCT_FRAME_NAME" /> on asennettu. Oletusasetusta käytetään, jos tätä käytäntöä ei ole määritetty. Tällöin isäntäselain suorittaa hahmonnuksen, mutta voit ohittaa asetuksen ja asettaa tuotteen <ph name="PRODUCT_FRAME_NAME" /> hahmontamaan HTML-sivut oletuksena.</translation>
@@ -1341,6 +1380,19 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
           Kun tälle käytännölle ei ole asetettu arvoa, se käyttää ajan oletusarvoa.
 
           Tämän käytännön arvo täytyy määrittää millisekunteina.</translation>
+<translation id="5783595563813359339">Tämä käytäntö on poistettu käytöstä. Käytännön <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> avulla voit hallinnoida Flash-laajennusta ja käytännön <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> avulla sitä, käytetäänkö PDF-lukuohjelmaa PDF-tiedostojen avaamiseen.
+
+      Määrittää laajennukset, jotka voi ottaa käyttöön tai poistaa käytöstä tuotteessa <ph name="PRODUCT_NAME" />.
+
+      Jokerimerkeillä * ja ? voidaan korvata mitä tahansa merkkejä. * korvaa rajoittamattoman määrän merkkejä, kun taas ? korvaa yksittäisen valinnaisen merkin, eli nolla merkkiä tai yhden merkin. Vaihtomerkki on \, joten jos haluat käyttää merkkejä *, ? tai \ ilman niiden jokerimerkkimerkitystä, lisää niiden eteen merkki \.
+
+      Jos otat tämän asetuksen käyttöön, luettelossa olevia laajennuksia ei käytetä tuotteessa <ph name="PRODUCT_NAME" />. Käyttäjät voivat ottaa niitä käyttöön tai poistaa käytöstä kohdassa about:plugins, vaikka laajennus vastaisi DisabledPlugins-käytännön malleja. Käyttäjät voivat myös ottaa käyttöön ja poistaa käytöstä laajennuksia, jotka eivät vastaa mitään käytäntöjen DisabledPlugins, DisabledPluginsExceptions ja EnabledPlugins malleja.
+
+      Tämän käytännön tarkoitus on sallia tiukka laajennuksien estäminen, jolloin DisabledPlugins-luettelo sisältää jokerimerkkikohteita kuten *, jolloin kaikki laajennukset poistetaan käytöstä, tai *Java*, jolloin kaikki Java-laajennukset poistetaan käytöstä, mutta järjestelmänvalvoja haluaa ottaa käyttöön joitakin versioita, kuten "IcedTea Java 2.3". Käytettävät versiot voidaan määrittää tämän käytännön avulla.
+
+      Huomaa, että sekä laajennuksen että laajennuksen ryhmän nimi täytyy lisätä poikkeusluetteloon. Kaikki laajennusryhmät näkyvät erillisissä osioissa sivulla about:plugins, ja kussakin osiossa voi olla yksi tai useampia laajennuksia. Esimerkiksi Shockwave Flash ‑laajennus kuuluu Adobe Flash Player ‑ryhmään, ja molemmat nimet täytyy lisätä poikkeusluetteloon, jos haluat sallia kyseisen laajennuksen käytön.
+
+      Jos tätä käytäntöä ei ole määritetty, mitään DisabledPlugins-luettelon malleja vastaavia laajennuksia ei voi käyttää eikä käyttäjä voi muuttaa asetusta.</translation>
 <translation id="5795001131770861387">Sallii HTTP/0.9-tuen muilla kuin oletusarvoisilla porteilla.</translation>
 <translation id="5809728392451418079">Määritä laitteeseen lisättyjen tilien näyttönimi</translation>
 <translation id="5814301096961727113">Aseta äänipalautteen oletustila kirjautumisnäytössä</translation>
@@ -1404,6 +1456,12 @@ Jos tämä asetus ei ole käytössä tai jos sitä ei määritetä, SafeSearchia
 
       Jos tätä käytäntöä ei aseteta tai jos sen arvoksi on asetettu epätosi, <ph name="PRODUCT_NAME" /> ei suorita näitä tarkistuksia tuotteen <ph name="PRODUCT_NAME" /> versiossa 19 ja myöhemmissä.</translation>
 <translation id="5966615072639944554">Laajennukset, joille sallitaan etätodennussovellusliittymän käyttö</translation>
+<translation id="5974970919245996815">Androidin tilan raportointitiedot lähetetään takaisin palvelimelle.
+
+      Jos käytännön arvoksi on määritetty epätosi, tietoja ei raportoida.
+      Jos sen arvoksi on määritety tosi tai sitä ei ole määritetty ollenkaan, tiedot raportoidaan.
+
+      Tätä käytäntöä sovelletaan vain, jos Android-sovellukset on otettu käyttöön.</translation>
 <translation id="5983708779415553259">Mihinkään sisältöpakettiin kuulumattomien sivustojen oletustoiminta</translation>
 <translation id="5997543603646547632">Käytä oletuksena 24 tunnin kelloa</translation>
 <translation id="6009903244351574348">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä lueteltuja sisältötyyppejä. Jos tätä käytäntöä ei ole määritetty, kaikki sivustot hahmonnetaan ChromeFrameRendererSettings-käytännön oletushahmonnusmäärityksien mukaan.</translation>
@@ -1432,6 +1490,17 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6076099373507468537">Tämä käytäntö määrittää USB-laitteet, joita voidaan irrottaa kernel-ajurista ja käyttää suoraan verkkosovelluksessa chrome.usb-sovellusliittymän kautta. Kukin merkintä sisältää USB-toimittajan tunnuksen ja tuotetunnuksen, joita käytetään laitteiden tunnistamiseen.
 
       Jos tätä käytäntöä ei määritetä, irrotettavien USB-laitteiden luettelo on tyhjä.</translation>
+<translation id="608377055310226486">Tämä käytäntö on poistettu käytöstä. Käytännön <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> avulla voit hallinnoida Flash-laajennusta ja käytännön <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> avulla sitä, käytetäänkö PDF-lukuohjelmaa PDF-tiedostojen avaamiseen.
+
+      Määrittää laajennukset, joita ei saa käyttää tuotteessa <ph name="PRODUCT_NAME" />, ja estää käyttäjiä muuttamasta tätä asetusta.
+
+      Jokerimerkeillä * ja ? voidaan korvata mitä tahansa merkkejä. * korvaa rajoittamattoman määrän merkkejä, kun taas ? korvaa yksittäisen valinnaisen merkin, eli nolla merkkiä tai yhden merkin. Vaihtomerkki on \, joten jos haluat käyttää merkkejä *, ? tai \ ilman niiden jokerimerkkimerkitystä, lisää niiden eteen merkki \.
+
+      Luettelossa olevia laajennuksia käytetään aina tuotteessa  <ph name="PRODUCT_NAME" />, jos ne on asennettu. Laajennukset merkitään käytössä oleviksi kohdassa about:plugins, eivätkä käyttäjät voi poistaa niitä käytöstä.
+
+      Huomaa, että tämä käytäntö ohittaa sekä käytännön DisabledPlugins että DisabledPluginsExceptions.
+
+      Jos tätä käytäntöä ei ole määritetty, käyttäjä voi poistaa käytöstä minkä tahansa järjestelmään asennetun laajennuksen.</translation>
 <translation id="6093156968240188330">Salli etätukea antavien etäkäyttäjien käyttää järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita</translation>
 <translation id="6095999036251797924">Määrittää ajan, jonka jälkeen näyttö lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
 
@@ -1649,6 +1718,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6828905844648501476">Jos tämän käytännön arvo on Tosi tai sitä ei määritetä, <ph name="PRODUCT_NAME" /> sallii uusien profiilien luomisen käyttäjäprofiilien hallinnassa.
 
       Jos tämän käytännön arvo on Epätosi, <ph name="PRODUCT_NAME" /> ei salli uusien profiilien luomista käyttäjäprofiilien hallinnassa.</translation>
+<translation id="685769593149966548">Pakota rajoitettu tila YouTubessa</translation>
 <translation id="687046793986382807">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 35 alkaen.
 
       Muistitiedot ilmoitetaan sivulle huolimatta valitusta arvosta, mutta ilmoitetut koot pyöristetään ja päivitystiheyttä rajoitetaan turvallisuussyistä. Jos haluat tarkkoja reaaliaikaisia tietoja, käytä esimerkiksi Telemetry-työkalua.</translation>
@@ -1770,9 +1840,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7132877481099023201">URL-osoitteet, joille sallitaan pääsy videon kaappauslaitteisiin erikseen lupaa kysymättä</translation>
 <translation id="7167436895080860385">Anna käyttäjien katsella salasanoja salasanan hallinnassa (vanhentunut)</translation>
 <translation id="7173856672248996428">Lyhytkestoinen profiili</translation>
-<translation id="7187256234726597551">Jos arvo on tosi, etätodennus on sallittu laitteelle ja varmenne luodaan automaattisesti ja lähetetään laitteenhallintapalvelimelle.
-
-          Jos arvo on epätosi tai sitä ei ole määritetty, varmennetta ei luoda ja kutsut enterprise.platformKeysPrivate-laajennussovellusliittymään epäonnistuvat.</translation>
 <translation id="718956142899066210">Päivityksille sallitut yhteystyypit</translation>
 <translation id="7194407337890404814">Oletushakupalvelun nimi</translation>
 <translation id="7195064223823777550">Määritä toiminto, joka suoritetaan, kun laitteen kansi suljetaan.
@@ -2068,6 +2135,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytännön arvoksi asetetaan true, laite käyttää 24 tunnin kelloa. Jos käytännön arvoksi asetetaan false, laite käyttää 12 tunnin kelloa.
 
       Jos käytännön arvoa ei aseteta, laite käyttää oletuksena 24 tunnin kelloa.</translation>
+<translation id="8114382167597081590">Älä pakota rajoitettua tilaa YouTubessa</translation>
 <translation id="8118665053362250806">Aseta medialevyn välimuistin koko</translation>
 <translation id="8135937294926049787">Määrittää käyttämättömyysajan, jonka kuluttua ruutu sammutetaan, kun laitetta käytetään verkkovirralla.
 
@@ -2115,9 +2183,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos tätä käytäntöä ei ole määritetty, URLBlacklist-käytännön luettelossa oleviin kiellettyihin osoitteisiin ei tehdä poikkeuksia.</translation>
 <translation id="8176035528522326671">Anna yrityskäyttäjän olla vain ensisijainen käyttäjä usean profiilin käyttökerralla (oletuskäyttäytyminen yrityksen hallinnoimille käyttäjille)</translation>
-<translation id="8197918588508433925">Tämä käytäntö määrittää sovellukset, jotka voivat käyttää Enterprise Platform Keys -sovellusliittymää chrome.enterprise.platformKeysPrivate.challengeUserKey() etätodennukseen. Vain tähän luetteloon lisätyt sovellukset voivat käyttää sovellusliittymää.
-
-          Jos laajennusta ei ole lisätty luetteloon tai luetteloa ei ole määritetty, sen sovellusliittymäkutsu epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="8214600119442850823">Määrittää salasanan hallinnan.</translation>
 <translation id="8244525275280476362">Noudon enimmäisviive käytännön kumoamisen jälkeen</translation>
 <translation id="8256688113167012935">Hallinnoi tilin nimeä, jonka <ph name="PRODUCT_OS_NAME" /> näyttää kunkin laitteeseen lisätyn tilin kirjautumisruudussa.
@@ -2265,6 +2330,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8704831857353097849">Luettelo käytöstä poistetuista laajennuksista</translation>
 <translation id="8711086062295757690">Määrittää avainsanan, joka käynnistää omniboxissa tämän hakupalvelun haun. Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, mikään avainsana ei käynnistä tätä hakupalvelua. Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="8731693562790917685">Sisältöasetuksien avulla voit määrittää, miten tietyn tyyppistä sisältöä (kuten evästeitä, kuvia tai JavaScriptiä) käsitellään.</translation>
+<translation id="8736538322216687231">Pakota YouTuben vähimmäistason rajoitettu tila</translation>
 <translation id="8749370016497832113">Estää tuotteen <ph name="PRODUCT_NAME" /> selaus- ja lataushistorian poistamisen ja estää käyttäjiä muuttamasta asetusta.
 
       Huomaathan, että vaikka käytäntöä ei otettaisi käyttöön, selaus- ja lataushistoriaa ei välttämättä säilytetä: käyttäjät saattavat pystyä muokkaamaan tai poistamaan historiatietokannan tiedostoja käsin, ja selain voi itse poistaa tai arkistoida vanhoja kohteita koska tahansa.

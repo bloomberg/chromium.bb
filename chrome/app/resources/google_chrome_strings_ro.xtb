@@ -128,6 +128,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4700157086864140907">Google Chrome poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-vă să utilizați aceeași tehnologie de verificare a ortografiei utilizată de Căutare Google.</translation>
 <translation id="4728575227883772061">Instalarea nu a reușit din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închide-l și încearcă din nou.</translation>
 <translation id="4743926867934016338">Acceptă și caută</translation>
+<translation id="4750550185319565338">Repornește Chrome pentru a activa <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">În curând, acest computer nu va mai primi actualizări pentru Google Chrome pe 32 de biți. Fă upgrade la Google Chrome pe 64 de biți.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Este posibil ca fișierul să fie periculos, așadar Chrome l-a blocat.</translation>
@@ -256,7 +257,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8290100596633877290">Hopa! Google Chrome s-a blocat. Repornești acum?</translation>
 <translation id="8342675569599923794">Fișierul este periculos, așadar Chrome l-a blocat.</translation>
 <translation id="8406086379114794905">Contribuie la îmbunătățirea Chrome</translation>
-<translation id="8410645163819739900">Sistemul de operare Google Chrome nu poate deschide pagina.</translation>
 <translation id="8455999171311319804">Opțional: contribuie la îmbunătățirea sistemului de operare Chrome trimițând automat date de diagnosticare și de utilizare la Google.</translation>
 <translation id="853189717709780425">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele dvs. Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

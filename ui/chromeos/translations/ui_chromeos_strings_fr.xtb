@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
-<translation id="1119447706177454957">Erreur interne.</translation>
 <translation id="153454903766751181">Initialisation du modem cellulaire en cours…</translation>
-<translation id="158849752021629804">Réseau domestique requis</translation>
-<translation id="1661867754829461514">Code secret manquant</translation>
-<translation id="1773212559869067373">Certificat d'authentification rejeté en local.</translation>
 <translation id="1829129547161959350">Pingouin</translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="2288278176040912387">Tourne-disque</translation>
 <translation id="2354174487190027830">Activation du réseau <ph name="NAME" /> en cours…</translation>
-<translation id="2544853746127077729">Certificat d'authentification rejeté par le réseau.</translation>
 <translation id="2563185590376525700">Grenouille</translation>
-<translation id="2563856802393254086">Félicitations ! Votre service de données "<ph name="NAME" />" a été activé et est prêt à être utilisé.</translation>
 <translation id="2649120831653069427">Poisson arc-en-ciel</translation>
-<translation id="2670531586141364277">L'activation de "<ph name="NAME" />" nécessite une connexion réseau.</translation>
 <translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
 <translation id="2894654529758326923">Informations</translation>
 <translation id="2951236788251446349">Méduse</translation>
-<translation id="2966449113954629791">Il semble que vous ayez utilisé l'intégralité de votre quota de données mobiles. Accédez au portail d'activation <ph name="NAME" /> pour acheter des données supplémentaires.</translation>
 <translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
-<translation id="3871838685472846647">Cellulaire activé</translation>
 <translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Erreur d'activation réseau</translation>
 <translation id="4118990158415604803">Votre administrateur a désactivé la connexion à d'autres réseaux.</translation>
-<translation id="4237016987259239829">Erreur de connexion réseau</translation>
-<translation id="4274292172790327596">Erreur non reconnue</translation>
 <translation id="4326192123064055915">Café</translation>
-<translation id="4387004326333427325">Certificat d'authentification rejeté à distance.</translation>
-<translation id="4442424173763614572">Échec de la résolution DNS.</translation>
 <translation id="4448844063988177157">Recherche de réseaux Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet </translation>
 <translation id="4508225577814909926"><ph name="NAME" /> : Connexion en cours…</translation>
-<translation id="4508265954913339219">Échec de l'activation</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Fleur de gazania</translation>
-<translation id="5045550434625856497">Mot de passe incorrect</translation>
-<translation id="5097002363526479830">Échec de la connexion au réseau "<ph name="NAME" />" : <ph name="DETAILS" />.</translation>
 <translation id="515594325917491223">Échecs</translation>
 <translation id="5257456363153333584">Libellule</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">Échec de la vérification DHCP</translation>
-<translation id="6232116551750539448">La connexion à "<ph name="NAME" />" a été interrompue.</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> : activation en cours…</translation>
-<translation id="6312403991423642364">Erreur de réseau inconnue.</translation>
-<translation id="6490455614072479501">Échec de la connexion à "<ph name="NAME" />" : <ph name="DETAILS" />.
-        Message du serveur : <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Aucun réseau mobile disponible</translation>
-<translation id="6732801395666424405">Certificats non importés.</translation>
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">À l'envers</translation>
-<translation id="6943836128787782965">Échec de l'obtention HTTP.</translation>
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
-<translation id="7165320105431587207">Échec de la configuration du réseau.</translation>
-<translation id="7170041865419449892">Hors de portée</translation>
-<translation id="7229570126336867161">Technologie EvDo requise</translation>
-<translation id="7256405249507348194">Erreur non reconnue : <ph name="DESC" />.</translation>
-<translation id="7297443947353982503">Nom d'utilisateur/mot de passe incorrect ou échec de l'authentification EAP.</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7874779702599364982">Recherche de réseaux cellulaires en cours…</translation>
-<translation id="7925247922861151263">Échec de la vérification AAA</translation>
-<translation id="7973962044839454485">Échec de l'authentification PPP en raison de la saisie d'un nom d'utilisateur ou d'un mot de passe erronés.</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Échec de l'opération OTASP</translation>
-<translation id="8372369524088641025">Clé WEP incorrecte</translation>
 <translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
 <translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
-<translation id="8688591111840995413">Mot de passe incorrect.</translation>
 <translation id="8714406895390098252">Vélo</translation>
 <translation id="8808686172382650546">Chat</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
-<translation id="9044646465488564462">Échec de la connexion au réseau : <ph name="DETAILS" />.</translation>
-<translation id="9046895021617826162">Échec de la connexion</translation>
 </translationbundle>

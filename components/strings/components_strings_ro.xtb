@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="106701514854093668">Marcaje desktop</translation>
 <translation id="1080116354587839789">Încadrează pe lățime</translation>
-<translation id="1103124106085518534">Gata pentru moment</translation>
 <translation id="1103523840287552314">Tradu întotdeauna din <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Dacă este bifată opțiunea, Chrome va stoca o copie a cardului pe dispozitiv pentru a completa formularul mai rapid.</translation>
 <translation id="1111153019813902504">Marcaje recente</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualizează expresia de acces pentru sincronizare.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Marcajele accesate recent vor apărea aici.</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
 <translation id="1838667051080421715">Se afișează sursa unei pagini web.</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Încadrați în pagină</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4880827082731008257">Caută în istoric</translation>
-<translation id="4884656795097055129">La momentul potrivit vor apărea mai multe articole.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{și încă 1 pagină web}few{și încă # pagini web}other{și încă # de pagini web}}</translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE" /></translation>

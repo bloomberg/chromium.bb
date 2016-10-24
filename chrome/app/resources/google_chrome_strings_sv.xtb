@@ -132,6 +132,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4700157086864140907">Google Chrome kan ge smartare stavningskontroll genom att skicka det som du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="4743926867934016338">Acceptera och sök</translation>
+<translation id="4750550185319565338">Starta om Chrome om du vill aktivera <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Den här datorn får snart inte längre uppdateringar för 32-bitarsversionen av Google Chrome. Uppgradera till Google Chrome med 64 bitar.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Filen kan vara farlig och har blockerats av Chrome.</translation>
@@ -264,7 +265,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8290100596633877290">Hoppsan! Google Chrome har kraschat. Vill du starta om nu?</translation>
 <translation id="8342675569599923794">Filen är farlig och har blockerats av Chrome.</translation>
 <translation id="8406086379114794905">Hjälp till att göra Chrome bättre</translation>
-<translation id="8410645163819739900">Det går inte att öppna den här sidan i Google Chrome OS.</translation>
 <translation id="8455999171311319804">Valfritt: Hjälp oss att göra Chrome bättre genom att automatiskt skicka diagnostik- och användningsdata till Google.</translation>
 <translation id="853189717709780425">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din profil i Google Chrome. Dina uppgifter i Chrome, till exempel appar, bokmärken, historik, lösenord och andra inställningar, kopplas permanent till <ph name="USER_NAME" />. Du kan ta bort dessa uppgifter i översikten för ditt Google-konto, men du kan inte koppla dem till något annat konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

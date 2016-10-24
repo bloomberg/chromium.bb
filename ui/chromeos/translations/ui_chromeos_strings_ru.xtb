@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
-<translation id="1119447706177454957">Внутренняя ошибка</translation>
 <translation id="153454903766751181">Инициализация сотового модема…</translation>
-<translation id="158849752021629804">Необходима домашняя сеть</translation>
-<translation id="1661867754829461514">PIN-код отсутствует</translation>
-<translation id="1773212559869067373">Сертификат аутентификации отклонен локально</translation>
 <translation id="1829129547161959350">Пингвин</translation>
 <translation id="1850504506766569011">Wi-Fi отключен</translation>
 <translation id="2288278176040912387">Патефон</translation>
 <translation id="2354174487190027830">Активация <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Сертификат аутентификации отклонен сетью</translation>
 <translation id="2563185590376525700">Лягушка</translation>
-<translation id="2563856802393254086">Поздравляем! Служба передачи данных "<ph name="NAME" />" активирована и готова к работе.</translation>
 <translation id="2649120831653069427">Рыбка</translation>
-<translation id="2670531586141364277">Для активации "<ph name="NAME" />" требуется подключение к сети.</translation>
 <translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
 <translation id="2894654529758326923">Подробные сведения</translation>
 <translation id="2951236788251446349">Медуза</translation>
-<translation id="2966449113954629791">Возможно, вы использовали свой лимит мобильных данных. Зайдите на портал активации <ph name="NAME" />, чтобы приобрести дополнительный объем данных.</translation>
 <translation id="3846575436967432996">Информация о сетях недоступна</translation>
-<translation id="3871838685472846647">Включена сотовая связь</translation>
 <translation id="3901991538546252627">Подключение к <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Киви</translation>
-<translation id="40400351611212369">Ошибка активации сети</translation>
 <translation id="4118990158415604803">Ваш администратор запретил подключение к другим сетям.</translation>
-<translation id="4237016987259239829">Ошибка сетевого подключения</translation>
-<translation id="4274292172790327596">Нераспознанная ошибка</translation>
 <translation id="4326192123064055915">Кофе</translation>
-<translation id="4387004326333427325">Сертификат аутентификации отклонен удаленно</translation>
-<translation id="4442424173763614572">Произошла ошибка при поиске сервера DNS</translation>
 <translation id="4448844063988177157">Поиск сетей Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: соединение...</translation>
-<translation id="4508265954913339219">Активация завершилась со сбоем</translation>
 <translation id="4559767610552730302">Боке</translation>
 <translation id="4935975195727477204">Гацания</translation>
-<translation id="5045550434625856497">Неправильный пароль</translation>
-<translation id="5097002363526479830">Не удалось подключиться к сети <ph name="NAME" />: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Шахматы</translation>
 <translation id="5257456363153333584">Стрекоза</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">Поиск DHCP завершен со сбоем</translation>
-<translation id="6232116551750539448">Соединение с <ph name="NAME" /> прервано</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: выполняется активация...</translation>
-<translation id="6312403991423642364">Неизвестная ошибка сети</translation>
-<translation id="6490455614072479501">Не удалось подключиться к сети "<ph name="NAME" />": <ph name="DETAILS" />
-        Сообщение сервера: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Сеть не найдена</translation>
-<translation id="6732801395666424405">Сертификаты не загружены</translation>
 <translation id="6857811139397017780">Активировать <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Вверх ногами</translation>
-<translation id="6943836128787782965">Произошла ошибка запроса HTTP GET</translation>
 <translation id="7066646422045619941">Эта сеть отключена администратором.</translation>
-<translation id="7165320105431587207">Не удалось настроить сеть</translation>
-<translation id="7170041865419449892">Выход за рамки диапазона</translation>
-<translation id="7229570126336867161">Необходимо наличие EV-DO</translation>
-<translation id="7256405249507348194">Неопознанная ошибка: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Либо вы ввели неверное имя пользователя или пароль, либо не удалось выполнить аутентификацию по протоколу EAP</translation>
 <translation id="735745346212279324">VPN-соединение прервано</translation>
 <translation id="7874779702599364982">Поиск сетей мобильной связи...</translation>
-<translation id="7925247922861151263">Сбой при проверке AAA</translation>
-<translation id="7973962044839454485">Не удалось выполнить аутентификацию PPP: неверное имя пользователя или пароль</translation>
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8008366997883261463">Собака</translation>
 <translation id="8132793192354020517">Подключено к сети <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Сбой OTASP</translation>
-<translation id="8372369524088641025">Недопустимый ключ WEP</translation>
 <translation id="8454013096329229812">Wi-Fi включен</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: повторное подключение...</translation>
-<translation id="8688591111840995413">Неверный пароль</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8808686172382650546">Кот</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Не удалось подключиться к сети: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Сбой подключения</translation>
 </translationbundle>

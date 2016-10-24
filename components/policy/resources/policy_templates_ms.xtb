@@ -303,6 +303,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika HardwareAccelerationModeEnabled ditetapkan kepada palsu, Disable3DAPIs diabaikan dan keadaan itu sama seperti Disable3DAPIs ditetapkan kepada benar.</translation>
 <translation id="2168397434410358693">Kelewatan melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
+<translation id="2178899310296064282">Kuatkuasakan sekurang-kurangnya Mod Sekatan Sederhana di YouTube</translation>
 <translation id="2188979373208322108">Mendayakan bar penanda halaman pada <ph name="PRODUCT_NAME" />.
 
       Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan memaparkan bar penanda halaman.
@@ -568,6 +569,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan "Dayakan perlindungan pancingan data dan perlindungan perisian hasad" dalam <ph name="PRODUCT_NAME" />.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan tetapi pengguna akan dapat mengubahnya.</translation>
+<translation id="2787173078141616821">Laporkan maklumat tentang status Android</translation>
 <translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
 
       Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat bermain permainan telur easter dinosaur apabila peranti di luar talian. Jika tetapan ini ditetapkan kepada Benar, pengguna dibenarkan bermain permainan dinosaur. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan bermain permainan telur easter dinosaur pada OS Chrome berdaftar, tetapi dibenarkan bermain menurut keadaan lain.</translation>
@@ -676,10 +678,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Dasar ini tidak wajib. Jika tidak ditetapkan, tiada penggantian istilah carian akan dilaksanakan.
 
           Dasar ini dihormati hanya jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
-<translation id="3067188277482006117">Jika benar, pengguna boleh menggunakan perkakasan pada peranti Chrome untuk membuktikan identitinya dari jauh pada CA privasi melalui API Enterprise Platform Keys
-chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Jika ditetapkan kepada palsu atau jika tidak ditetapkan, panggilan ke API akan gagal dengan kod ralat.</translation>
 <translation id="3069958900488014740">Membolehkan pengoptimuman WPAD (Penemuan Auto Proksi Web) dimatikan dalam <ph name="PRODUCT_NAME" />. 
 
       Jika dasar ini ditetapkan kepada palsu, pengoptimuman WPAD dilumpuhkan menyebabkan <ph name="PRODUCT_NAME" /> menunggu lebih lama untuk pelayan WPAD berasaskan DNS. Jika dasar ini tidak ditetapkan atau didayakan, pengoptimuman WPAD didayakan.
@@ -804,6 +802,15 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> tidak akan membenarkan sesi tetamu dimulakan.</translation>
+<translation id="3418871497193485241">Menguatkuasakan sekurang-kurangnya Mod Sekatan di YouTube dan menghalang pengguna daripada
+      memilih mod sekatan yang kurang ketat.
+
+      Jika tetapan ini ditetapkan pada Ketat, Mod Sekatan Ketat di YouTube akan sentiasa aktif.
+
+      Jika tetapan ini ditetapkan pada Sederhana, pengguna hanya boleh memilih Mod Sekatan Sederhana
+      dan Mod Sekatan Ketat di YouTube, tetapi tidak boleh melumpuhkan Mod Sekatan.
+
+      Jika tetapan ini ditetapkan pada Mati atau tiada nilai ditetapkan, Mod Sekatan di YouTube tidak dikuatkuasakan oleh <ph name="PRODUCT_NAME" />. Walau bagaimanapun, dasar luar seperti dasar YouTube, mungkin masih menguatkuasakan Mod Sekatan.</translation>
 <translation id="3428247105888806363">Dayakan ramalan rangkaian</translation>
 <translation id="3449886121729668969">Mengkonfigurasikan tetapan proksi untuk <ph name="PRODUCT_NAME" />. Tetapan proksi ini turut tersedia untuk apl ARC.
 
@@ -924,6 +931,12 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="384743459174066962">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk membuka pop timbul.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPopupsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
+<translation id="3851039766298741586">Laporkan maklumat tentang sesi kios yang aktif, seperti ID
+      dan versi aplikasi.
+
+      Jika dasar ini ditetapkan kepada palsu, maklumat sesi kios tidak
+      akan dilaporkan. Jika ditetapkan kepada benar atau dibiarkan
+      tanpa ditetapkan, maklumat sesi kios akan dilaporkan.</translation>
 <translation id="3859780406608282662">Tambahkan parameter untuk pengambilan benih Variasi dalam <ph name="PRODUCT_OS_NAME" />.
 
       Jika ditetapkan, akan menambahkan parameter pertanyaan yang dipanggil 'sekat' pada URL yang digunakan untuk mengambil benih Variasi. Nilai parameter tersebut ialah nilai yang ditetapkan dalam dasar ini.
@@ -938,6 +951,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Dasar ini hanya akan diambil kira jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="3864818549971490907">Tetapan pemalam lalai</translation>
+<translation id="386487026071140458">Dasar ini sudah ditamatkan, sebaliknya, sila gunakan <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> dan <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Dasar ini diabaikan jika dasar <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> atau <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (yang ditamatkan) ditetapkan.
+
+      Memaksa pertanyaan dalam Carian Web Google dilakukan dengan SafeSearch yang ditetapkan pada aktif dan menghalang pengguna daripada menukar tetapan ini. Tetapan ini turut menguatkuasakan Mod Sekatan Sederhana di YouTube.
+
+      Jika anda mendayakan tetapan ini, SafeSearch dalam Carian Google dan Mod Sekatan Sederhana YouTube akan sentiasa aktif.
+
+      Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, SafeSearch dalam Carian Google dan Mod Sekatan dalam YouTube tidak akan dikuatkuasakan.</translation>
 <translation id="3866249974567520381">Huraian</translation>
 <translation id="3866530186104388232">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pengguna sedia ada pada skrin log masuk dan membenarkan untuk memiilih satu. Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> akan menggunakan gesaan nama pengguna/kata laluan untuk log masuk.</translation>
 <translation id="3868347814555911633">Dasar ini aktif dalam mod runcit sahaja.
@@ -1022,6 +1042,17 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowCookies' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="4103289232974211388">Ubah hala ke SAML IdP selepas pengesahan pengguna</translation>
+<translation id="4103941930938018145">Dasar ini sudah ditamatkan. Sila gunakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> untuk mengawal ketersediaan pemalam Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> untuk mengawal sama ada pemapar PDF bersepadu harus digunakan untuk membuka fail PDF.
+
+      Menentukan senarai pemalam yang dilumpuhkan dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
+
+      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara arbitrari. '*' memadankan bilangan aksara arbitrari manakala '?' menetapkan aksara tunggal pilihan, iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', maka untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
+
+      Jika anda mendayakan tetapan ini, senarai pemalam yang ditentukan tidak akan digunakan dalam <ph name="PRODUCT_NAME" />. Pemalam ditandai sebagai dilumpuhkan dalam 'about:plugins' dan pengguna tidak tidak boleh mendayakannya.
+
+      Sila ambil perhatian bahawa dasar ini boleh diatasi oleh EnabledPlugins dan DisabledPluginsExceptions.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh menggunakan mana-mana pemalam yang dipasang pada sistem kecuali pemalam berkod keras yang tidak serasi, sudah lapuk atau berbahaya.</translation>
 <translation id="410478022164847452">Menyatakan panjang masa tanpa input pengguna dan tindakan melahu akan dilaksanakan selepas tamat masa tersebut apabila dijalan dengan kuasa AC.
 
           Apabila dasar ini ditetapkan, ia menyatakan panjang masa pengguna melahu sebelum <ph name="PRODUCT_OS_NAME" /> melaksanakan tindakan melahu, yang boleh dikonfigurasi secara berasingan.
@@ -1337,6 +1368,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada untuk mengimport atau tidak, atau pengimportan mungkin berlaku secara automatik.</translation>
 <translation id="5423197884968724595">Nama sekatan Android WebView:</translation>
+<translation id="543559563129402336">Dasar ini sudah ditamatkan. Pertimbangkan untuk menggunakan <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, yang mengatasi dasar ini dan membenarkan pelarasan yang lebih halus.
+
+      Memaksa Mod Sekatan Sederhana YouTube dan menghalang pengguna daripada menukar tetapan ini.
+
+      Jika tetapan ini didayakan, Mod Sekatan di YouTube akan sentiasa dikuatkuasakan pada sekurang-kurangnya Sederhana.
+
+      Jika tetapan ini dilumpuhkan atau tiada nilai ditetapkan, Mod Sekatan di YouTube tidak dikuatkuasakan oleh <ph name="PRODUCT_NAME" />. Walau bagaimanapun, dasar luar seperti dasar YouTube, mungkin masih menguatkuasakan Mod Sekatan.</translation>
 <translation id="5447306928176905178">Dayakan maklumat pelaporan memori (saiz timbunan JS) pada halaman (lapuk)</translation>
 <translation id="5457065417344056871">Dayakan mod tetamu dalam penyemak imbas</translation>
 <translation id="5457924070961220141">Membenarkan anda mengkonfigurasi pemapar HTML lalai apabila <ph name="PRODUCT_FRAME_NAME" /> dipasang.
@@ -1443,6 +1481,20 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Apabila dasar ini tidak ditetapkan, panjang masa lalai digunakan.
 
           Nilai dasar harus dinyatakan dalam milisaat.</translation>
+<translation id="5783595563813359339">Dasar ini sudah ditamatkan. Sila gunakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> untuk mengawal ketersediaan pemalam Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> untuk mengawal sama ada pemapar PDF bersepadu harus digunakan untuk membuka fail PDF.
+
+      Menentukan senarai pemalam yang boleh didayakan atau dilumpuhkan pengguna dalam <ph name="PRODUCT_NAME" />.
+
+      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara arbitrari. '*' memadankan bilangan aksara arbitrari manakala '?' menetapkan aksara tunggal pilihan, iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', maka untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
+
+      Jika anda mendayakan tetapan ini, senarai pemalam yang ditentukan boleh digunakan dalam <ph name="PRODUCT_NAME" />. Pengguna boleh mendayakan atau melumpuhkan pemalam dalam 'about:plugins', walaupun pemalam tersebut sepadan dengan corak dalam
+DisabledPlugins. Pengguna turut boleh mendayakan dan melumpuhkan pemalam yang tidak sepadan dengan sebarang corak dalam DisabledPlugins, DisabledPluginsExceptions dan EnabledPlugins.
+
+      Dasar ini bertujuan untuk membenarkan penyenaraian hitam yang ketat bagi pemalam policy dengan senarai 'DisabledPlugins' yang menganddungi masukan kad bebas, seperti lumpuhkan semua pemalam '*' atau lumpuhkan semua pemalam Java '*Java*' tetapi pentadbir ingin mendayakan beberapa versi tertentu seperti 'IcedTea Java 2.3'. Versi khusus ini boleh ditetapkan dalam dasar ini.
+
+      Sila ambil perhatian bahawa nama pemalam dan juga nama kumpulan pemalam perlu dikecualikan. Setiap kumpulan pemalam dipaparkan di bahagian yang berasingan dalam about:plugins; setiap bahagian mungkin mempunyai satu atau beberapa pemalam. Contohnya, pemalam "Shockwave Flash" terkandung dalam kumpulan "Adobe Flash Player" dan kedua-dua nama perlu mempunyai padanan dalam senarai pengecualian jika pemalam tersebut mahu dikecualikan daripada senarai hitam.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, mana-mana pemalam yang sepadan dengan corak dalam 'DisabledPlugins' akan dikunci pada lumpuh dan pengguna tidak akan dapat mendayakannya.</translation>
 <translation id="5795001131770861387">Mendayakan sokongan HTTP/0.9 pada port bukan lalai</translation>
 <translation id="5809728392451418079">Tetapkan nama paparan untuk akaun setempat peranti</translation>
 <translation id="5814301096961727113">Tetapkan keadaan lalai maklum balas pertuturan pada skrin log masuk</translation>
@@ -1512,6 +1564,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> tidak akan melaksanakan semakan pembatalan dalam talian dalam <ph name="PRODUCT_NAME" /> 19 dan yang lebih baharu.</translation>
 <translation id="5966615072639944554">Sambungan dibenarkan untuk mengguna API pembuktian jauh</translation>
+<translation id="5974970919245996815">Laporkan maklumat tentang status Android dihantar kembali ke
+      pelayan.
+
+      Jika dasar ini ditetapkan kepada palsu, maklumat tidak akan dilaporkan.
+      Jika ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, maklumat akan dilaporkan.
+
+      Dasar ini hanya dikenakan jika apl Android didayakan.</translation>
 <translation id="5983708779415553259">Gelagat lalai untuk tapak yang tidak didapati dalam mana-mana pek kandungan</translation>
 <translation id="5997543603646547632">Gunakan jam 24 jam secara lalai</translation>
 <translation id="6009903244351574348">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan yang disenaraikan.
@@ -1542,6 +1601,17 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="6076099373507468537">Menentukan senarai peranti USB yang dibenarkan untuk ditanggalkan daripada pemacu inti peranti tersebut untuk digunakan menerusi API chrome.usb terus dalam aplikasi web. Entri ialah pasangan Pengecam Vendor USB dan Pengecam Produk untuk mengenal pasti perkakasan khusus.
 
       Jika dasar ini tidak dikonfigurasikan, senarai peranti USB yang boleh ditanggalkan ditetapkan sebagai kosong.</translation>
+<translation id="608377055310226486">Dasar ini sudah ditamatkan. Sila gunakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> untuk mengawal ketersediaan pemalam Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> untuk mengawal sama ada pemapar PDF bersepadu harus digunakan untuk membuka fail PDF.
+
+      Menentukan senarai pemalam yang didayakan dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
+
+      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara arbitrari. '*' memadankan bilangan aksara arbitrari manakala '?' menetapkan aksara tunggal pilihan, iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', maka untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
+
+      Senarai pemalam yang ditentukan sentiasa digunakan dalam <ph name="PRODUCT_NAME" /> jika pemalam tersebut dipasang. Pemalam ini ditandai sebagai didayakan dalam 'about:plugins' dan pengguna tidak boleh melumpuhkannya.
+
+      Sila ambil perhatian bahawa dasar ini mengatasi DisabledPlugins dan juga DisabledPluginsExceptions.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh melumpuhkan sebarang pemalam yang dipasang pada sistem.</translation>
 <translation id="6093156968240188330">Benarkan pengguna jauh berinteraksi dengan tetingkap ternaik dalam sesi bantuan jauh</translation>
 <translation id="6095999036251797924">Menyatakan tempoh masa tanpa input pengguna yang selepas itu skrin dikunci semasa berfungsi dengan kuasa AC atau bateri.
 
@@ -1777,6 +1847,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6828905844648501476">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan membolehkan Tambah Orang daripada pengurus pengguna.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan penghasilan profil baharu daripada pengurus profil.</translation>
+<translation id="685769593149966548">Kuatkuasakan Mod Sekatan Ketat untuk YouTube</translation>
 <translation id="687046793986382807">Dasar ini telah ditamatkan bermula <ph name="PRODUCT_NAME" /> versi 35.
 
       Walau bagaimanapun, maklumat memori tetap dilaporkan pada halaman, tanpa mengira nilai pilihan tetapi saiz yang dilaporkan adalah anggaran dan kadar kemas kini dihadkan atas tujuan keselamatan. Untuk mendapatkan data masa nyata yang tepat, sila gunakan alatan seperti Telemetri.</translation>
@@ -1914,9 +1985,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7132877481099023201">URL yang akan diberikan akses kepada peranti tangkapan video tanpa gesaan</translation>
 <translation id="7167436895080860385">Benarkan pengguna menunjukkan kata laluan dalam Pengurus Kata Laluan (ditamatkan)</translation>
 <translation id="7173856672248996428">Profil tidak kekal</translation>
-<translation id="7187256234726597551">Jika benar, pembuktian jauh dibenarkan untuk peranti dan sijil akan dihasilkan secara automatik dan dimuat naik ke Pelayan Pengurusan Peranti.
-
-          Jika ia ditetapkan kepada palsu, atau jika tidak ditetapkan, sijil tidak akan dihasilkan dan panggilan kepada API sambungan enterprise.platformKeysPrivate akan gagal.</translation>
 <translation id="718956142899066210">Jenis sambungan yang dibenarkan untuk kemas kini</translation>
 <translation id="7194407337890404814">Nama pembekal carian lalai</translation>
 <translation id="7195064223823777550">Menyatakan tindakan yang perlu diambil apabila pengguna menutup penutup.
@@ -2231,6 +2299,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ditetapkan kepada benar, peranti akan menggunakan format 24 jam. Jika dasar ditetapkan kepada salah, peranti anda menggunakan format 12 jam.
 
       Jika dasar ini tidak ditetapkan, peranti akan menggunakan format lalai 24 jam.</translation>
+<translation id="8114382167597081590">Jangan kuatkuasakan Mod Sekatan di YouTube</translation>
 <translation id="8118665053362250806">Tetapkan saiz cache cakera media</translation>
 <translation id="8135937294926049787">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimatikan selepas masa ini tamat apabila dijalankan dengan kuasa AC.
 
@@ -2286,9 +2355,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini tidak ditetapkan, tiada pengecualian untuk senarai hitam daripada dasar 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Membenarkan pengguna perusahaan untuk menjadi pengguna berbilang profil utama sahaja (Tingkah laku lalai untuk pengguna perusahaan yang dikendalikan)</translation>
-<translation id="8197918588508433925">Dasar ini menentukan sambungan yang dibenarkan menggunakan API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() untuk pembuktian jauh. Sambungan hendaklah ditambahkan pada senarai ini untuk penggunakan API tersebut.
-
-          Jika sambungan tidak terdapat dalam senarai atau senarai tidak ditetapkan, panggilan kepada API tersebut akan gagal dengan kod ralat.</translation>
 <translation id="8214600119442850823">Mengkonfigurasi pengurus kata laluan.</translation>
 <translation id="8244525275280476362">Kelewatan pengambilan maksimum selepas pentaksahan dasar</translation>
 <translation id="8256688113167012935">Mengawal nama akaun yang <ph name="PRODUCT_OS_NAME" /> paparkan pada skrin log masuk untuk akaun setempat peranti yang sepadan.
@@ -2359,7 +2425,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8369602308428138533">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa AC</translation>
 <translation id="8382184662529825177">Dayakan penggunaan pembuktian jauh untuk perlindungan kandungan bagi peranti</translation>
 <translation id="838870586332499308">Dayakan perayauan data</translation>
-<translation id="8390049129576938611">Melumpuhkan pemapar PDF dalam <ph name="PRODUCT_NAME" />. Sebaliknya, dasar ini menganggapnya sebagai muat turun dan membenarkan pengguna untuk membuka fail PDF dengan aplikasi lalai.
+<translation id="8390049129576938611">Melumpuhkan pemapar PDF dalaman dalam <ph name="PRODUCT_NAME" />. Sebaliknya, dasar ini menganggapnya sebagai muat turun dan membenarkan pengguna membuka fail PDF dengan aplikasi lalai.
 
       Jika dasar ini dibiarkan tanpa ditetapkan atau dilumpuhkan, pemalam PDF akan digunakan untuk membuka fail PDF melainkan pengguna melumpuhkannya.</translation>
 <translation id="8402079500086185021">Sentiasa buka fail PDF dari luar</translation>
@@ -2440,6 +2506,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Dasar ini hanya dipertimbangkan jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="8731693562790917685">Tetapan Kandungan membenarkan anda untuk menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
+<translation id="8736538322216687231">Paksa Mod Sekatan YouTube minimum</translation>
 <translation id="8749370016497832113">Mendayakan pemadaman sejarah penyemak imbas dan sejarah muat turun dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
       Harap maklum bahawa walaupun dasar ini dilumpuhkan, sejarah penyemakan imbas dan muat turun tidak dijamin akan dikekalkan: pengguna mungkin boleh mengedit atau memadamkan terus fail pangkalan data sejarah, dan penyemak imbas itu sendiri boleh tamat tempoh atau mengarkibkan mana-mana atau semua item sejarah pada bila-bila masa.

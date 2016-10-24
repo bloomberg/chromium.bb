@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Nikoli shranjeno</translation>
 <translation id="106701514854093668">Zaznamki namizja</translation>
 <translation id="1080116354587839789">Prilagoditev prikaza širini</translation>
-<translation id="1103124106085518534">Končano za zdaj</translation>
 <translation id="1103523840287552314">Vedno prevedi ta jezik: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Če je izbrana ta možnost, bo shranil kopijo kartice v tej napravi za hitrejše izpolnjevanje obrazcev.</translation>
 <translation id="1111153019813902504">Nedavni zaznamki</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Poskušajte zagnati orodje Omrežna diagnostika Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Posodobite geslo za sinhronizacijo.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Tu bodo prikazani nedavno obiskani zaznamki</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
 <translation id="1838667051080421715">Ogledujete si vir spletne strani.</translation>
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Prilagodi strani</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4880827082731008257">Zgodovina iskanja</translation>
-<translation id="4884656795097055129">Ob pravem času bo prikazanih več člankov.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{in še 1 spletna stran}one{in še # spletna stran}two{in še # spletni strani}few{in še # spletne strani}other{in še # spletnih strani}}</translation>
 <translation id="4923417429809017348">Stran je bila iz neznanega jezika prevedena v jezik »<ph name="LANGUAGE_LANGUAGE" />«</translation>

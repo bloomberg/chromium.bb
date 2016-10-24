@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Niekada neišsaugota</translation>
 <translation id="106701514854093668">Žymės staliniame kompiuteryje</translation>
 <translation id="1080116354587839789">Pritaikyti pagal plotį</translation>
-<translation id="1103124106085518534">Atlikta</translation>
 <translation id="1103523840287552314">Visada versti <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Jei pažymėta, „Chrome“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
 <translation id="1111153019813902504">Naujausios žymos</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Pabandykite paleisti „Windows Network Diagnostics“<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Čia bus rodomos žymės, kurias naudojote pastaruoju metu.</translation>
 <translation id="1821930232296380041">Netinkama užklausa arba jos parametrai</translation>
 <translation id="1838667051080421715">Peržiūrite tinklalapio šaltinį.</translation>
 <translation id="1871208020102129563">Įgaliotasis serveris nustatytas naudoti fiksuotų įgaliotųjų serverių, o ne .pac scenarijaus URL.</translation>
@@ -362,7 +360,6 @@
 <translation id="4816492930507672669">Pritaikyti pagal puslapį</translation>
 <translation id="4850886885716139402">Žiūrėti</translation>
 <translation id="4880827082731008257">Ieškoti istorijoje</translation>
-<translation id="4884656795097055129">Tinkamu metu bus rodoma daugiau straipsnių.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ir dar 1 tinklalapis}one{ir dar # tinklalapis}few{ir dar # tinklalapiai}many{ir dar # tinklalapio}other{ir dar # tinklalapių}}</translation>
 <translation id="4923417429809017348">Šis puslapis išverstas iš nežinomos kalbos į <ph name="LANGUAGE_LANGUAGE" /> k.</translation>

@@ -126,6 +126,7 @@ Hostiteľ</translation>
 <translation id="409800995205263688">Poznámka: Nastavenia pravidiel umožňujú pripojenie len medzi počítačmi v rámci vašej siete.</translation>
 <translation id="4155497795971509630">Niektoré potrebné komponenty chýbajú. Uistite sa, že máte nainštalovanú najnovšiu verziu príslušného softvéru a skúste to znova.</translation>
 <translation id="4156740505453712750">Ak chcete ochrániť tento počítač pred neautorizovaným prístupom, nastavte si kód PIN obsahujúci <ph name="BOLD_START" />najmenej šesť číslic<ph name="BOLD_END" />. Tento kód PIN budete musieť zadať pri pokuse o pripojenie z iného miesta.</translation>
+<translation id="4156741816461781891">Prihlásený/-á ako <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Prístupový kód</translation>
 <translation id="4207623512727273241">Pred pokračovaním spustite inštalátor.</translation>
 <translation id="4227991223508142681">Pomôcka na poskytovanie hostiteľských služieb</translation>
@@ -208,10 +209,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Niečo iné.</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
-<translation id="6408143143164565232">• Podpora zvuku z počítačov so systémom Windows alebo Linux
-• Odstránenie nechcených pripojení dlhým stlačením názvu počítača
-• Plynulejšie priblíženie stiahnutím prstov a posúvanie dvoma prstami
-• Nová obrazovka Pomocník a spätná väzba</translation>
 <translation id="6441316101718669559">Táto platforma nepodporuje integráciu stolných počítačov. Aplikáciu môžete stále používať, avšak používateľské prostredie bude znehodnotené.</translation>
 <translation id="652218476070540101">Prebieha aktualizácia kódu PIN pre tento počítač...</translation>
 <translation id="6527303717912515753">Zdieľať</translation>

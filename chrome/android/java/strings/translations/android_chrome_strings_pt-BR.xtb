@@ -65,6 +65,7 @@
 <translation id="1643702317193804718">Traduzindo página para <ph name="SOURCE_LANGUAGE" />...</translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1647391597548383849">Acessar sua câmera</translation>
+<translation id="1661474178782861119">Mais artigos serão exibidos em breve. Aproveite o fim do dia.</translation>
 <translation id="169033420419426091">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de cartão SD.</translation>
 <translation id="1709438864123551175">Economia de dados</translation>
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE" />.</translation>
@@ -381,7 +382,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5512137114520586844">Esta conta é gerenciada por <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">O Chrome precisa ter acesso ao local para procurar dispositivos. <ph name="BEGIN_LINK1" />Atualize as permissões<ph name="END_LINK1" />. O acesso ao local também está <ph name="BEGIN_LINK2" />desativado neste dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Fechar guias anônimas</translation>
-<translation id="5538968846107343822">Nenhum dispositivo Bluetooth encontrado. <ph name="BEGIN_LINK" />Verificar novamente<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">A Web física</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
@@ -416,6 +416,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="583891442612896534">Não foi possível acessar os servidores do Google para realizar a compactação de dados a partir do Google Chrome. Seu espaço para salvar dados pode estar limitado.</translation>
 <translation id="585027516397408832">Economia de dados ativada</translation>
 <translation id="5860033963881614850">Desativado</translation>
+<translation id="5867027562311576691">Mais artigos serão exibidos em breve. Aproveite a manhã.</translation>
 <translation id="5869522115854928033">Senhas salvas</translation>
 <translation id="5899349522111170522">Criar novo arquivo</translation>
 <translation id="5902828464777634901">Os dados locais armazenados por este site serão excluídos, inclusive os cookies.</translation>
@@ -555,6 +556,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Isso é tudo por enquanto</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>
 <translation id="7588950540487816470">Web física</translation>
@@ -625,6 +627,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8275818695183729150">Permitir (para pesquisas na barra de endereço)</translation>
 <translation id="8283853025636624853">Sincronizando com <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Guias padrão</translation>
+<translation id="8321376388213838985">Mais artigos serão exibidos em breve. Aproveite a tarde.</translation>
 <translation id="8372893542064058268">Permite a sincronização em segundo plano para um site específico.</translation>
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
 <translation id="8396312449826231789">Somente sites aprovados</translation>
@@ -699,7 +702,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="917685106653909562">Páginas da Web física nas proximidades</translation>
 <translation id="9187199695613236444">Visualização p/ disp. móveis</translation>
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
-<translation id="9192643434065497760">Ativar o Bluetooth nas <ph name="BEGIN_LINK" />configurações do dispositivo<ph name="END_LINK" /> para permitir o pareamento.</translation>
 <translation id="9198708126133947749">Substitui os dados deste dispositivo com os dados da conta <ph name="TO_ACCOUNT" />. É possível recuperar os dados já existentes voltando para a conta <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagens</translation>

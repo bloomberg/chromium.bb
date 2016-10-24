@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="106701514854093668">Marcadores de escritorio</translation>
 <translation id="1080116354587839789">Ajustar al ancho</translation>
-<translation id="1103124106085518534">Listo por ahora</translation>
 <translation id="1103523840287552314">Siempre traducir <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si marcas esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para completar más rápidamente los formularios.</translation>
 <translation id="1111153019813902504">Marcadores recientes</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de red de Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Los marcadores que visitaste recientemente aparecerán aquí.</translation>
 <translation id="1821930232296380041">Solicitud o parámetros de solicitud no válidos</translation>
 <translation id="1838667051080421715">Estás viendo la fuente de una página web.</translation>
 <translation id="1871208020102129563">El proxy está configurado para usar servidores proxy fijos, no una URL de script .pac.</translation>
@@ -362,7 +360,6 @@
 <translation id="4816492930507672669">Ajustar a la página</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4880827082731008257">Buscar historial</translation>
-<translation id="4884656795097055129">Se mostrarán más artículos en el momento adecuado.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{y 1 página web más}other{y # páginas web más}}</translation>
 <translation id="4923417429809017348">Esta página ha sido traducida desde un idioma desconocido a <ph name="LANGUAGE_LANGUAGE" /></translation>

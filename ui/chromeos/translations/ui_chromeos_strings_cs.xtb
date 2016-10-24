@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="1119447706177454957">Interní chyba</translation>
 <translation id="153454903766751181">Inicializace mobilního modemu...</translation>
-<translation id="158849752021629804">Je potřeba domácí síť</translation>
-<translation id="1661867754829461514">Chybí kód PIN</translation>
-<translation id="1773212559869067373">Ověřovací certifikát byl místně odmítnut</translation>
 <translation id="1829129547161959350">Tučňák</translation>
 <translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
 <translation id="2288278176040912387">Gramofon</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Ověřovací certifikát byl sítí odmítnut</translation>
 <translation id="2563185590376525700">Žába</translation>
-<translation id="2563856802393254086">Blahopřejeme! Datová služba <ph name="NAME" /> byla aktivována a je připravena k použití.</translation>
 <translation id="2649120831653069427">Duhovka</translation>
-<translation id="2670531586141364277">Aktivace služby <ph name="NAME" /> vyžaduje připojení k síti.</translation>
 <translation id="277257480934873581">Obnovování připojení k síti <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informace</translation>
 <translation id="2951236788251446349">Medúza</translation>
-<translation id="2966449113954629791">Pravděpodobně jste vyčerpali povolený objem mobilních datových přenosů. Chcete-li koupit více dat, navštivte aktivační portál <ph name="NAME" />.</translation>
 <translation id="3846575436967432996">Informace o síti nejsou k dispozici</translation>
-<translation id="3871838685472846647">Mobil aktivován</translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Chyba aktivace sítě</translation>
 <translation id="4118990158415604803">Připojení k jiným sítím je administrátorem zakázáno.</translation>
-<translation id="4237016987259239829">Chyba připojení k síti</translation>
-<translation id="4274292172790327596">Neznámá chyba</translation>
 <translation id="4326192123064055915">Káva</translation>
-<translation id="4387004326333427325">Ověřovací certifikát byl vzdáleně odmítnut</translation>
-<translation id="4442424173763614572">Nepodařilo se nalézt server DNS.</translation>
 <translation id="4448844063988177157">Vyhledávání sítí Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Připojování...</translation>
-<translation id="4508265954913339219">Aktivace se nezdařila</translation>
 <translation id="4559767610552730302">Rozostření</translation>
 <translation id="4935975195727477204">Květina gazánie</translation>
-<translation id="5045550434625856497">Nesprávné heslo</translation>
-<translation id="5097002363526479830">Připojení k síti <ph name="NAME" /> se nezdařilo: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Šachy</translation>
 <translation id="5257456363153333584">Vážka</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">Vyhledávání serveru DHCP selhalo.</translation>
-<translation id="6232116551750539448">Připojení k síti <ph name="NAME" /> bylo ztraceno</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Probíhá aktivace...</translation>
-<translation id="6312403991423642364">Neznámá chyba sítě</translation>
-<translation id="6490455614072479501">Připojení k položce <ph name="NAME" /> se nezdařilo: <ph name="DETAILS" />
-Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Není k dispozici žádná mobilní síť.</translation>
-<translation id="6732801395666424405">Certifikáty nebyly načteny</translation>
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Vzhůru nohama</translation>
-<translation id="6943836128787782965">Příkaz GET protokolu HTTP se nezdařil.</translation>
 <translation id="7066646422045619941">Tato síť je zakázána vaším administrátorem.</translation>
-<translation id="7165320105431587207">Konfigurace sítě se nezdařila</translation>
-<translation id="7170041865419449892">Mimo dosah</translation>
-<translation id="7229570126336867161">Je zapotřebí technologie EVDO.</translation>
-<translation id="7256405249507348194">Neznámá chyba: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Neplatné uživatelské jméno/heslo nebo neúspěšná autorizace EAP</translation>
 <translation id="735745346212279324">Síť VPN je odpojena</translation>
 <translation id="7874779702599364982">Vyhledávání mobilních sítí...</translation>
-<translation id="7925247922861151263">Selhala bezpečnostní kontrola AAA</translation>
-<translation id="7973962044839454485">Ověření PPP se nezdařilo kvůli nesprávnému uživatelskému jménu nebo heslu</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
 <translation id="8008366997883261463">Jack Russell teriér</translation>
 <translation id="8132793192354020517">Připojeno k síti <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Selhání OTASP</translation>
-<translation id="8372369524088641025">Chybný klíč WEP</translation>
 <translation id="8454013096329229812">Připojení Wi-Fi je zapnuto.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Obnovování připojení...</translation>
-<translation id="8688591111840995413">Nesprávné heslo</translation>
 <translation id="8714406895390098252">Kolo</translation>
 <translation id="8808686172382650546">Kočka</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Připojení k síti se nezdařilo: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Připojení selhalo</translation>
 </translationbundle>

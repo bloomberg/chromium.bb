@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Ліцензії ОС Chromium із відкритим кодом</translation>
 <translation id="2241627712206172106">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chromium на свій смак.</translation>
 <translation id="225614027745146050">Вітаємо!</translation>
-<translation id="2264142189334629813">Неможливо відкрити цю сторінку в ОС Chromium.</translation>
 <translation id="2316129865977710310">Ні, дякую</translation>
 <translation id="2347108572062610441">Це розширення змінило сторінку, яка відкривається під час запуску Chromium.</translation>
 <translation id="2372704305038231957">32-розрядна версія Chromium може працювати неналежним чином, оскільки ця система Linux більше не підтримується. Установіть 64-розрядну версію Chromium.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">У Chromium</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2486653164587200256">Chromium може працювати неналежним чином, оскільки Windows XP та Windows Vista більше не підтримуються.</translation>
+<translation id="2527042973354814951">Перезавантажте Chromium, щоб увімкнути плагін "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="2535480412977113886">ОС Chromium не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="2558641060352364164">Цей сайт використовує Chromium Frame. Ми припиняємо підтримку цього плагіна. Видаліть його та встановіть сучасний веб-переглядач.</translation>
 <translation id="2572494885440352020">Помічник Chromium</translation>
@@ -76,7 +76,7 @@
 <translation id="3258596308407688501">Chromium не може читати та писати дані у свій каталог даних:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3264279740686075150">Chromium установлено веб-переглядачем за умовчанням.</translation>
+<translation id="3264279740686075150">Chromium ваш веб-переглядач за умовчанням.</translation>
 <translation id="328888136576916638">Ключі API Google відсутні. Деякі функції Chromium буде вимкнено.</translation>
 <translation id="3289635842886789612">Версія Chromium застаріла.</translation>
 <translation id="3296368748942286671">Продовжувати роботу фонових програм, коли Chromium закрито</translation>

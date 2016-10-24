@@ -38,7 +38,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
 <translation id="2241627712206172106">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chromium comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="225614027745146050">Bienvenue</translation>
-<translation id="2264142189334629813">Impossible d'ouvrir cette page dans Chromium OS</translation>
 <translation id="2316129865977710310">Non merci</translation>
 <translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32 bits risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur ce système Linux. Veuillez passer à Chromium 64 bits.</translation>
@@ -47,6 +46,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2483889755041906834">Dans Chromium</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2486653164587200256">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista.</translation>
+<translation id="2527042973354814951">Redémarrer Chromium pour activer <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Impossible de synchroniser vos données dans Chromium OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="2558641060352364164">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis passer à un navigateur récent.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

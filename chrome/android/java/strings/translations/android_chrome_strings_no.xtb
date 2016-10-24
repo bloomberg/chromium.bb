@@ -65,6 +65,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1643702317193804718">Oversetter siden til <ph name="SOURCE_LANGUAGE" /> …</translation>
 <translation id="1644574205037202324">Logg</translation>
 <translation id="1647391597548383849">Tilgang til kameraet ditt</translation>
+<translation id="1661474178782861119">Flere artikler kommer snart. Ha en fin kveld.</translation>
 <translation id="169033420419426091">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt fordi du ikke har noe SD-kort installert.</translation>
 <translation id="1709438864123551175">Datasparing</translation>
 <translation id="1742134235943978220">Oversatt til <ph name="TARGET_LANGUAGE" />.</translation>
@@ -382,7 +383,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5512137114520586844">Denne kontoen er administrert av <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK1" />Oppdater tillatelsene<ph name="END_LINK1" />. Posisjonstilgang er også <ph name="BEGIN_LINK2" />slått av for denne enheten<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Lukk inkognitofaner</translation>
-<translation id="5538968846107343822">Finner ingen Bluetooth-enheter. <ph name="BEGIN_LINK" />Skann på nytt<ph name="END_LINK" /> .</translation>
 <translation id="554327794654007401">Fysisk nett</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5565871407246142825">Kredittkort</translation>
@@ -418,6 +418,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
 <translation id="585027516397408832">Datasparing er slått på</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="5867027562311576691">Flere artikler kommer snart. Ha en fin morgen.</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5899349522111170522">Opprett en ny fil</translation>
 <translation id="5902828464777634901">Alle data som er lagret lokalt av dette nettstedet, inkludert informasjonskapsler, blir slettet.</translation>
@@ -557,6 +558,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vent litt</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Det var alt for denne gangen.</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
 <translation id="7588950540487816470">Fysisk nett</translation>
@@ -627,6 +629,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8275818695183729150">Tillat (for søk fra adressefeltet)</translation>
 <translation id="8283853025636624853">Synkroniserer til <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardfaner</translation>
+<translation id="8321376388213838985">Flere artikler kommer snart. Ha en fin ettermiddag.</translation>
 <translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
 <translation id="8396312449826231789">Bare godkjente nettsteder</translation>
@@ -702,7 +705,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="917685106653909562">Fysisk nett-sider i nærheten</translation>
 <translation id="9187199695613236444">Mobilvennlig visning</translation>
 <translation id="9188680907066685419">Logg av administrert konto</translation>
-<translation id="9192643434065497760">Slå på Bluetooth i <ph name="BEGIN_LINK" />enhetsinnstillingene<ph name="END_LINK" /> for å tillate sammenkobling.</translation>
 <translation id="9198708126133947749">Erstatt dataene på denne enheten med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente ut de eksisterende dataene dine ved å bytte tilbake til <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>

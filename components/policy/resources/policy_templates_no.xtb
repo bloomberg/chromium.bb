@@ -296,6 +296,7 @@
       Hvis HardwareAccelerationModeEnabled settes til false (usann), ignoreres Disable3DAPIs, og det gir samme effekt som å sette Disable3DAPIs til true (sann).</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
+<translation id="2178899310296064282">Fremtving bruk av minst Moderat begrenset innhold-modus på YouTube</translation>
 <translation id="2188979373208322108">Aktiverer bokmerkeraden i <ph name="PRODUCT_NAME" />.
 
       Hvis du aktiverer denne innstillingen, viser <ph name="PRODUCT_NAME" /> en bokmerkerad.
@@ -554,6 +555,7 @@
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukere endre eller overstyre innstillingen for å aktivere beskyttelse mot nettfisking og skadelig programvare i <ph name="PRODUCT_NAME" />.
 
       Hvis innstillingen ikke angis, aktiveres dette, men brukeren kan endre det.</translation>
+<translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
 <translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
 
       Hvis denne regelen er satt til false (usann), kan ikke brukerne spille dinosaurspillet når enheten ikke er koblet til. Hvis regelen er satt til true (sann), kan brukerne spille dinosaurspillet. Hvis denne regelen ikke er angitt, kan ikke brukerne spille dinosaurspillet på registrerte Chrome OS-installasjoner, men de kan spille det i andre situasjoner.</translation>
@@ -662,9 +664,6 @@
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er angitt.</translation>
-<translation id="3067188277482006117">Hvis denne har verdien «true», kan brukeren eksternt attestere identiteten sin til personvern-CA med maskinvaren på Chrome-enheter via Enterprise Platform Keys API-en chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Hvis den har verdien «false» eller ikke er angitt, vil kall til API-en returnere en feilkode.</translation>
 <translation id="3069958900488014740">Gjør det mulig å slå av WPAD-optimalisering (automatisk oppdagelse av nettproxyer) i <ph name="PRODUCT_NAME" />.
 
       Hvis denne regelen er satt til false (usann), er WPAD-optimalisering slått av, noe som fører til at <ph name="PRODUCT_NAME" /> må vente lenger på DNS-baserte WPAD-tjenere. Hvis denne regelen er slått på, eller hvis du ikke har spesifisert den, er WPAD-optimalisering slått på.
@@ -779,6 +778,17 @@
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME" /> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
       Hvis denne retningslinjen er angitt som Usann, tillater ikke <ph name="PRODUCT_OS_NAME" /> at gjesteøkter startes.</translation>
+<translation id="3418871497193485241">Fremtvinger bruk av et minimumsnivå for Begrenset innhold-modusen på YouTube og hindrer brukerne
+      i å velge en mindre begrenset modus.
+
+      Hvis denne innstillingen er angitt som Streng, er Begrenset innhold-modusen på YouTube alltid
+      aktiv.
+
+      Hvis denne innstillingen er angitt som Moderat, kan brukerne bare velge mellom
+      Moderat begrenset innhold-modus og Streng begrenset innhold-modus på YouTube, men
+      de kan ikke slå av Begrenset innhold-modusen.
+
+      Hvis denne innstillingen er angitt som av, eller hvis ingen verdi er angitt, fremtvinger ikke <ph name="PRODUCT_NAME" /> bruk av Begrenset innhold-modusen. Eksterne regler, for eksempel YouTube-regler, kan imidlertid fortsatt fremtvinge bruk av Begrenset innhold-modusen.</translation>
 <translation id="3428247105888806363">Slå på nettverksforutsigelse</translation>
 <translation id="3449886121729668969">Konfigurerer innstillingene for proxy-tjenere for <ph name="PRODUCT_NAME" />. Disse er også tilgjengelige for ARC-apper.
 
@@ -892,6 +902,11 @@
 
           Som standard er alle innebygde meldingsverter godkjente, men hvis alle meldingsverter har blitt svartelistet av retningslinjene, kan godkjenningslisten brukes for å overkjøre dem.</translation>
 <translation id="384743459174066962">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får åpne forgrunnsvinduer. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultPopupsSetting hvis denne er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
+<translation id="3851039766298741586">Rapportér informasjon om den aktive kioskøkten, for eksempel
+      app-ID og -versjon.
+
+      Hvis regelen settes til false (usann), rapporteres ikke informasjonen om kioskøkten.
+      Hvis den settes til true (sann) eller ikke angis, rapporteres informasjonen om kioskøkten.</translation>
 <translation id="3859780406608282662">Legg til en parameter i hentingen av Variasjoner-utgangsverdien i <ph name="PRODUCT_OS_NAME" />.
 
       Hvis dette er angitt, legges en søkeordsparameter kalt «restrict» til i nettadressen som blir brukt til Variasjoner-utgangsverdien. Verdien for parameteren er den samme som er angitt i denne regelen.
@@ -906,6 +921,13 @@
 
           Denne regelen gjelder bare hvis regelen DefaultSearchProviderEnabledpolicy er slått på.</translation>
 <translation id="3864818549971490907">Standardinnstilling for programtillegg</translation>
+<translation id="386487026071140458">Denne regelen er avviklet. Bruk <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> og <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> i stedet. Denne regelen ignoreres hvis <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />-, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />- eller (den avviklede) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" />-regelen er angitt.
+
+      Fremtvinger at søk i Google Nettsøk gjøres med Sikkert Søk aktivert, og hindrer brukere i å endre denne innstillingen. Denne innstillingen fremtvinger også bruk av Moderat begrenset innhold-modus på YouTube.
+
+      Hvis du slår på denne innstillingen, er alltid Sikkert Søk i Google Søk og Moderat begrenset innhold-modus på YouTube aktivert.
+
+      Hvis du slår av denne innstillingen eller ikke angir noen verdi, blir verken Sikkert Søk i Google Søk eller Begrenset innhold-modus på YouTube tvunget brukt.</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3866530186104388232">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brukere på påloggingssiden og tillate valg av én. Hvis denne retningslinjen er angitt som Usann, ber <ph name="PRODUCT_OS_NAME" /> om brukernavn og passord ved pålogging.</translation>
 <translation id="3868347814555911633">Denne retningslinjen er aktiv bare i detaljistmodus.
@@ -985,6 +1007,17 @@
 
           Hvis denne regelen ikke spesifiseres, brukes «AllowCookies», og brukeren kan endre innstillingen.</translation>
 <translation id="4103289232974211388">Viderekoble til SAML IdP etter at brukeren har bekreftet</translation>
+<translation id="4103941930938018145">Denne regelen er avviklet. Bruk <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> for å kontrollere tilgjengeligheten av Flash-programtillegget og <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> for å kontrollere om det integrerte PDF-visningsprogrammet skal brukes til å åpne PDF-filer.
+
+      Spesifiserer en liste over programtillegg som er slått av i <ph name="PRODUCT_NAME" />, og hindrer brukere i å endre denne innstillingen.
+
+      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser med vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir et valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\», kan du sette «\»-tegnet foran dem.
+
+      Hvis du slår på denne innstillingen, blir aldri den angitte listen over programtillegg brukt i <ph name="PRODUCT_NAME" />. Programtilleggene merkes som slått av i «about:plugins», og brukerne kan ikke slå dem på.
+
+      Vær oppmerksom på at denne regelen kan overstyres av både EnabledPlugins og DisabledPluginsExceptions.
+
+      Hvis denne regelen ikke angis, kan brukerne bruke et hvilket som helst programtillegg, bortsett fra hardkodede programtillegg som ikke er kompatible, utdaterte eller farlige.</translation>
 <translation id="410478022164847452">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på vekselstrøm.
 
           Når denne innstillingen er konfigurert, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> utfører inaktivitetshandlingen, som kan konfigureres separat.
@@ -1291,6 +1324,13 @@
 
       Hvis den ikke er angitt, kan det hende at brukeren blir spurt om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrensning:</translation>
+<translation id="543559563129402336">Denne regelen er avviklet. Du kan bruke <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, som overstyrer denne regelen og tillater mer detaljert justering.
+
+      Fremtvinger bruk av Moderat begrenset innhold-modusen på YouTube og hindrer brukere i å endre denne innstillingen.
+
+      Hvis denne innstillingen er slått på, blir Begrenset innhold-modusen på YouTube tvunget til alltid å være minst Moderat.
+
+      Hvis denne innstillingen er slått av eller ingen verdi er angitt, fremtvinger ikke <ph name="PRODUCT_NAME" /> bruk av Begrenset innhold-modusen på YouTube. Eksterne regler, for eksempel YouTube-regler, kan imidlertid fortsatt fremtvinge bruk av Begrenset innhold-modusen.</translation>
 <translation id="5447306928176905178">Slå på rapportering av minneinformasjon (heap-størrelse for JavaScript) til siden (avviklet)</translation>
 <translation id="5457065417344056871">Slå på gjestemodus i nettleseren</translation>
 <translation id="5457924070961220141">Gjør at du kan konfigurere standard HTML-gjengivelsen når <ph name="PRODUCT_FRAME_NAME" /> er installert.
@@ -1397,6 +1437,19 @@
           Når innstillingen ikke er konfigurert, brukes standard tidslengde.
 
           Innstillingsverdien må angis i millisekunder.</translation>
+<translation id="5783595563813359339">Denne regelen er avviklet. Bruk <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> for å kontrollere tilgjengeligheten av Flash-programtillegget og <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> for å kontrollere om det integrerte PDF-visningsprogrammet skal brukes til å åpne PDF-filer.
+
+      Spesifiserer en liste over programtillegg brukerne kan slå av eller på i <ph name="PRODUCT_NAME" />.
+
+      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser av vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir et valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\», kan du sette «\»-tegnet foran dem.
+
+      Hvis du slår på denne innstillingen, kan den spesifiserte listen over programtillegg bli brukt i <ph name="PRODUCT_NAME" />. Brukerne kan slå dem av eller på i «about:plugins» – selv for programtillegg som også stemmer overens med et mønster i DisabledPlugins. Brukerne kan også slå av og på programtillegg som ikke stemmer overens med mønstre i DisabledPlugins, DisabledPluginsExceptions eller EnabledPlugins.
+
+      Denne regelen er laget for å muliggjøre streng svartelisting av programtillegg i tilfeller der DisabledPlugins-listen inneholder oppføringer med jokertegn – eksempelvis slå av alle programtillegg (*) eller slå av alle Java-programtillegg (*Java*), men der administratoren vil slå på en bestemt versjon, for eksempel IcedTea Java 2.3. Slike spesifikke versjoner kan angis i denne retningslinjen.
+
+      Vær oppmerksom på at både navnet på og gruppenavnet for et programtillegg må fritas. Hver gruppe for programtillegg vises i en egen del i about:plugins, og hver del kan ha ett eller flere programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Flash Player-gruppen, og begge navnene må få treff på unntakslisten for at det aktuelle programtillegget skal fritas fra svartelisten.
+
+      Hvis denne regelen ikke angis, blir alle programtillegg som stemmer overens med mønstrene i DisabledPlugins, låst som slått av, og brukerne kan ikke slå dem på.</translation>
 <translation id="5795001131770861387">Slår på støtte for HTTP/0.9 for andre porter enn standardportene</translation>
 <translation id="5809728392451418079">Angi skjermnavn for lokale kontoer på enheten</translation>
 <translation id="5814301096961727113">Angi standard tilstand for muntlig tilbakemelding på påloggingssiden</translation>
@@ -1466,6 +1519,13 @@
 
       Hvis regelen ikke spesifiseres eller settes til false (usann), utfører ikke <ph name="PRODUCT_NAME" /> nettbaserte opphevelsekontroller i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
 <translation id="5966615072639944554">Utvidelser kan bruke API-et for ekstern attestasjon</translation>
+<translation id="5974970919245996815">Rapportinformasjon om Android-statusen sendes tilbake
+      til tjeneren.
+
+      Hvis regelen angis som «false» (usann), rapporteres informasjonen.
+      Hvis regelen angis som «true» (sann) eller ikke angis, rapporteres ikke informasjonen.
+
+      Denne regelen gjelder bare hvis Android-apper er slått på.</translation>
 <translation id="5983708779415553259">Standard atferd for nettsteder som ikke inngår i noen innholdspakker.</translation>
 <translation id="5997543603646547632">Bruk 24-timersklokken som standard</translation>
 <translation id="6009903244351574348">La <ph name="PRODUCT_FRAME_NAME" /> håndtere de oppførte innholdstypene.
@@ -1496,6 +1556,17 @@
 <translation id="6076099373507468537">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er parvise leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
+<translation id="608377055310226486">Denne regelen er avviklet. Bruk <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> for å kontrollere tilgjengeligheten for Flash-programtillegget og <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> for å kontrollere om det integrerte PDF-visningsprogrammet skal brukes til å åpne PDF-filer.
+
+      Spesifiserer en liste over programtillegg som er slått på i <ph name="PRODUCT_NAME" />, og hindrer brukere i å endre denne innstillingen.
+
+      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser av vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir et valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\», kan du sette «\»-tegnet foran dem.
+
+      Den spesifiserte listen over programtillegg brukes alltid i <ph name="PRODUCT_NAME" /> hvis de er installert. Programtilleggene merkes som slått på i «about:plugins», og brukerne kan ikke slå dem av.
+
+      Vær oppmerksom på at denne regelen kan overstyres av både DisabledPlugins og DisabledPluginsExceptions.
+
+      Hvis regelen ikke angis, kan brukerne slå av et hvilket som helst programtillegg som er installert på systemet.</translation>
 <translation id="6093156968240188330">Tillat at eksterne brukere kommuniserer via uthevede vinduer i fjernhjelpøkter.</translation>
 <translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
 
@@ -1728,6 +1799,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6828905844648501476">Hvis denne regelen settes til true (sann) eller ikke konfigureres, tillater <ph name="PRODUCT_NAME" /> «Legg til person» fra brukerbehandlingen.
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> opprettelse av nye profiler fra profilbehandlingen.</translation>
+<translation id="685769593149966548">Fremtvinger bruk av Streng begrenset innhold-modus for YouTube</translation>
 <translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME" />.
 
 Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
@@ -1856,9 +1928,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7132877481099023201">Nettadresser som uten forespørsel blir gitt tilgang til enheter med videoopptak</translation>
 <translation id="7167436895080860385">Gi brukere tillatelse til å se passord i passordbehandlingen (avviklet)</translation>
 <translation id="7173856672248996428">Midlertidig profil</translation>
-<translation id="7187256234726597551">Hvis angitt til «true», tillates ekstern bekreftelse for enheten, og et sertifikat genereres automatisk og lastes opp til administreringstjeneren for enheten.
-
-          Hvis angitt til «false», eller hvis det ikke angis noe, genereres ikke noe sertifikat, og anrop til utvidelses-API-et for enterprise.platformKeysPrivate mislykkes.</translation>
 <translation id="718956142899066210">Tilkoblingstyper som tillates for oppdateringer</translation>
 <translation id="7194407337890404814">Navn for standard søkeleverandør</translation>
 <translation id="7195064223823777550">Angi handlingen som skal utføres når brukere lukker lokket på enheten.
@@ -2166,6 +2235,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis innstillingen er «true», bruker enheten 24-timers klokkeformat. Hvis innstillingen er «false», bruker enheten 12-timers klokkeformat.
 
       Hvis innstillingen ikke er angitt, bruker enheten 24-timers klokkeformat som standard.</translation>
+<translation id="8114382167597081590">Fremtvinger ikke bruk av Begrenset innhold-modusen på YouTube</translation>
 <translation id="8118665053362250806">Angi størrelse på mediediskbuffer</translation>
 <translation id="8135937294926049787">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
@@ -2221,9 +2291,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillat at bedriftsbrukeren bare er primær flerprofilbruker (standardatferd for bedriftsadministrerte brukere)</translation>
-<translation id="8197918588508433925">Denne innstillingen angir hvilke utvidelser som har tillatelse til å bruke Enterprise Platform Keys API-en chrome.enterprise.platformKeysPrivate.challengeUserKey() for ekstern attestering. Utvidelser må legges til på listen for å bruke API-en.
-
-          Hvis en utvidelse ikke er på listen, eller listen ikke er angitt, vil kall av API-en returnere en feilkode.</translation>
 <translation id="8214600119442850823">Konfigurerer passordbehandlingen.</translation>
 <translation id="8244525275280476362">Maksimal innlastingsforsinkelse etter ugyldiggjøring av en innstilling</translation>
 <translation id="8256688113167012935">Kontrollerer hvilket kontonavn <ph name="PRODUCT_OS_NAME" /> viser på påloggingsskjermen for enhetens tilhørende lokale konto.
@@ -2296,7 +2363,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
-<translation id="8390049129576938611">Slår av den interne appen for visning av PDF-filer på <ph name="PRODUCT_NAME" />. PDF-filer blir i stedet lastet ned, og brukeren kan åpne dem med standardappen.
+<translation id="8390049129576938611">Slår av den interne appen for visning av PDF-filer i <ph name="PRODUCT_NAME" />. PDF-filer blir i stedet lastet ned, og brukeren kan åpne dem med standardappen.
     Hvis disse retningslinjene slås av eller ikke angis, åpnes PDF-filer i PDF-programtillegget frem til brukeren eventuelt slår det av.</translation>
 <translation id="8402079500086185021">Åpne alltid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
@@ -2377,6 +2444,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="8731693562790917685">Innholdsinnstillinger lar deg angi hvordan innholdet for spesifikke elementer (f.eks. informasjonskapsler, bilder eller JavaScript) skal håndteres.</translation>
+<translation id="8736538322216687231">Fremtvinger bruk av et minimumsnivå for Begrenset innhold-modusen på YouTube</translation>
 <translation id="8749370016497832113">Gjør det mulig å slette nettleser- og nedlastingsloggen i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre denne innstillingen.
 
       Vær oppmerksom på at hvis denne innstillingen er deaktivert, er det ikke sikkert at nettleser- og nedlastingsloggen bevares. Brukere kan redigere eller slette filer fra loggdatabasen direkte, og nettleseren kan slette eller lagre alle loggelementene når som helst.

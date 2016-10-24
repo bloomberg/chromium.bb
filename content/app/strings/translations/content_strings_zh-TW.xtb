@@ -40,6 +40,7 @@
 <translation id="2507943997699731163">請填寫這個欄位。</translation>
 <translation id="2508569020611168319">分頁清單</translation>
 <translation id="2548326553472216322">沒有近期的搜尋</translation>
+<translation id="2561842179657104141">顯示更多媒體控制項</translation>
 <translation id="2572483411312390101">播放</translation>
 <translation id="2613802280814924224">請輸入有效值。最接近的有效值是 <ph name="VALID_VALUE" />。</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -113,6 +114,7 @@
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">暫停播放</translation>
 <translation id="5643186887447432888">按鈕</translation>
+<translation id="5677946354068040947">更多選項</translation>
 <translation id="57838592816432529">靜音</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="5843503607508392247">其他...</translation>
@@ -147,6 +149,7 @@
 <translation id="6853785296079745596">不顯示字幕</translation>
 <translation id="6885760532393684712">目錄</translation>
 <translation id="6934078000481955284">引用標記</translation>
+<translation id="6941933287844615239">下載媒體</translation>
 <translation id="7057186640035488495">電影時間</translation>
 <translation id="709897737746224366">請符合要求的格式。</translation>
 <translation id="7223624360433298498">已播放時間</translation>

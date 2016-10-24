@@ -128,6 +128,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="4700157086864140907">Perquè el corrector ortogràfic sigui més útil, Google Chrome envia als servidors de Google el text que escriviu al navegador i, així, poder fer servir la mateixa tecnologia de correcció ortogràfica de la cerca de Google.</translation>
 <translation id="4728575227883772061">S'ha produït un error no especificat durant la instal·lació. Si Google Chrome s'està executant en aquests moments, tanca'l i torna-ho a provar.</translation>
 <translation id="4743926867934016338">Accepta i cerca</translation>
+<translation id="4750550185319565338">Reinicia Chrome per activar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome de 32 bits. Feu l'actualització a Google Chrome de 64 bits.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome ha bloquejat aquest fitxer perquè pot ser perillós.</translation>
@@ -256,7 +257,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8290100596633877290">Google Chrome s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
 <translation id="8342675569599923794">Chrome ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8406086379114794905">Ajudeu a millorar Chrome</translation>
-<translation id="8410645163819739900">Google Chrome OS no pot obrir aquesta pàgina.</translation>
 <translation id="8455999171311319804">Opcional: ajuda'ns a millorar Chrome OS enviant automàticament dades de diagnòstic i d'ús a Google.</translation>
 <translation id="853189717709780425">Esteu iniciant la sessió amb un compte gestionat i atorgant el control del vostre perfil de Google Chrome a l'administrador corresponent. Les dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Aquestes dades es podran suprimir a través del tauler de control de comptes de Google, però no es podran associar amb un altre compte.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

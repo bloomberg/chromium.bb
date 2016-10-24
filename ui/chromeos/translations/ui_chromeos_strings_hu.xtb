@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="1119447706177454957">Belső hiba</translation>
 <translation id="153454903766751181">Mobilmodem inicializálása...</translation>
-<translation id="158849752021629804">Otthoni hálózat szükséges</translation>
-<translation id="1661867754829461514">Hiányzó PIN-kód</translation>
-<translation id="1773212559869067373">A hitelesítési tanúsítvány helyileg elutasítva</translation>
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="1850504506766569011">Wi-Fi kikapcsolva.</translation>
 <translation id="2288278176040912387">Lemezjátszó</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktiválása</translation>
-<translation id="2544853746127077729">A hálózat elutasította a hitelesítési tanúsítványt</translation>
 <translation id="2563185590376525700">Béka</translation>
-<translation id="2563856802393254086">Gratulálunk! „<ph name="NAME" />” adatszolgáltatása aktív, és készen áll a használatra.</translation>
 <translation id="2649120831653069427">Szivárványhal</translation>
-<translation id="2670531586141364277">A(z) „<ph name="NAME" />” aktiválásához hálózati kapcsolatra van szükség.</translation>
 <translation id="277257480934873581">Újracsatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Információ</translation>
 <translation id="2951236788251446349">Medúza</translation>
-<translation id="2966449113954629791">Valószínűleg elérte a mobiladat-használatra vonatkozó korlátozást. További adatforgalom vásárlásához keresse fel a(z) <ph name="NAME" /> aktiválási portált.</translation>
 <translation id="3846575436967432996">Nem áll rendelkezésre hálózati információ</translation>
-<translation id="3871838685472846647">Mobil aktiválva</translation>
 <translation id="3901991538546252627">Csatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Hálózati aktivációs hiba</translation>
 <translation id="4118990158415604803">A rendszergazda nem teszi lehetővé a csatlakozást más hálózatokhoz.</translation>
-<translation id="4237016987259239829">Hálózati kapcsolat hibája</translation>
-<translation id="4274292172790327596">Azonosítatlan hiba</translation>
 <translation id="4326192123064055915">Kávé</translation>
-<translation id="4387004326333427325">A hitelesítési tanúsítvány távolról elutasítva</translation>
-<translation id="4442424173763614572">A DNS keresése sikertelen</translation>
 <translation id="4448844063988177157">Wi-Fi hálózatok keresése...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: csatlakozás...</translation>
-<translation id="4508265954913339219">Aktiválás sikertelen</translation>
 <translation id="4559767610552730302">Elmosódott</translation>
 <translation id="4935975195727477204">Záporvirág</translation>
-<translation id="5045550434625856497">Helytelen jelszó</translation>
-<translation id="5097002363526479830">Nem sikerült csatlakozni a(z) <ph name="NAME" /> hálózathoz: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Sakk</translation>
 <translation id="5257456363153333584">Szitakötő</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">DHCP-keresés sikertelen</translation>
-<translation id="6232116551750539448">Megszűnt a kapcsolat a következővel: <ph name="NAME" /></translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiválás...</translation>
-<translation id="6312403991423642364">Ismeretlen hálózati hiba</translation>
-<translation id="6490455614072479501">Nem sikerült a csatlakozás a következőhöz: „<ph name="NAME" />”: <ph name="DETAILS" />
-       Szerverüzenet: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Nem érhető el mobilhálózat</translation>
-<translation id="6732801395666424405">A tanúsítványok betöltése nem történt meg</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
 <translation id="6935521024859866267">Fejjel lefelé</translation>
-<translation id="6943836128787782965">A HTTP-lekérés nem sikerült</translation>
 <translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
-<translation id="7165320105431587207">Nem sikerült konfigurálni a hálózatot</translation>
-<translation id="7170041865419449892">Tartományon kívül</translation>
-<translation id="7229570126336867161">EVDO szükséges</translation>
-<translation id="7256405249507348194">Ismeretlen hiba: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Helytelen a felhasználónév vagy a jelszó, vagy nem sikerült az EAP-hitelesítés</translation>
 <translation id="735745346212279324">A VPN nincs csatlakoztatva</translation>
 <translation id="7874779702599364982">Mobilhálózatok keresése...</translation>
-<translation id="7925247922861151263">AAA-ellenőrzés sikertelen</translation>
-<translation id="7973962044839454485">Nem sikerült a PPP-hitelesítés helytelen felhasználónév vagy jelszó miatt</translation>
 <translation id="8000066093800657092">Nincs hálózat</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
 <translation id="8132793192354020517">Csatlakozás a következőhöz megtörtént: <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP sikertelen</translation>
-<translation id="8372369524088641025">Hibás WEP kulcs</translation>
 <translation id="8454013096329229812">Wi-Fi bekapcsolva.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Újracsatlakozás…</translation>
-<translation id="8688591111840995413">Helytelen jelszó</translation>
 <translation id="8714406895390098252">Kerékpár</translation>
 <translation id="8808686172382650546">Macska</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Nem sikerült csatlakozni a hálózathoz: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Csatlakozás sikertelen</translation>
 </translationbundle>

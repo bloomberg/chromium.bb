@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
-<translation id="1119447706177454957">Interná chyba</translation>
 <translation id="153454903766751181">Inicializácia mobilného modemu...</translation>
-<translation id="158849752021629804">Je potrebná domáca sieť</translation>
-<translation id="1661867754829461514">Chýba kód PIN</translation>
-<translation id="1773212559869067373">Certifikát na overenie totožnosti bol zamietnutý miestne</translation>
 <translation id="1829129547161959350">Tučniak</translation>
 <translation id="1850504506766569011">Pripojenie Wi-Fi je vypnuté.</translation>
 <translation id="2288278176040912387">Gramofón</translation>
 <translation id="2354174487190027830">Aktivujte sa sieť <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Certifikát na overenie totožnosti bol zamietnutý sieťou</translation>
 <translation id="2563185590376525700">Žaba</translation>
-<translation id="2563856802393254086">Gratulujeme! Dátová služba <ph name="NAME" /> sa aktivovala a je pripravená na použitie.</translation>
 <translation id="2649120831653069427">Dúhovka</translation>
-<translation id="2670531586141364277">Aktivácia služby <ph name="NAME" /> vyžaduje sieťové pripojenie.</translation>
 <translation id="277257480934873581">Prebieha opätovné pripájanie k sieti <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informácie</translation>
 <translation id="2951236788251446349">Medúza</translation>
-<translation id="2966449113954629791">Možno ste dosiahli povolený limit mobilných dát. Ďalšie údaje si môžete zakúpiť na aktivačnom portáli <ph name="NAME" />.</translation>
 <translation id="3846575436967432996">Informácie o sieti nie sú k dispozícii</translation>
-<translation id="3871838685472846647">Mobilná sieť sa aktivovala</translation>
 <translation id="3901991538546252627">Pripája sa k sieti <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Chyba aktivácie siete</translation>
 <translation id="4118990158415604803">Pripojenie k iným sieťam je zakázané vaším správcom.</translation>
-<translation id="4237016987259239829">Chyba sieťového pripojenia</translation>
-<translation id="4274292172790327596">Nerozpoznaná chyba</translation>
 <translation id="4326192123064055915">Káva</translation>
-<translation id="4387004326333427325">Certifikát na overenie totožnosti bol zamietnutý na diaľku</translation>
-<translation id="4442424173763614572">Vyhľadanie DNS zlyhalo</translation>
 <translation id="4448844063988177157">Prebieha vyhľadávanie sietí Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: pripája sa...</translation>
-<translation id="4508265954913339219">Aktivácia zlyhala</translation>
 <translation id="4559767610552730302">Rozostrenie</translation>
 <translation id="4935975195727477204">Kvet gazánie</translation>
-<translation id="5045550434625856497">Nesprávne heslo</translation>
-<translation id="5097002363526479830">K sieti „<ph name="NAME" />“ sa nepodarilo pripojiť: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Šach</translation>
 <translation id="5257456363153333584">Vážka</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">Vyhľadanie servera DHCP zlyhalo</translation>
-<translation id="6232116551750539448">Pripojenie k sieti <ph name="NAME" /> bolo prerušené</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktivuje sa...</translation>
-<translation id="6312403991423642364">Neznáma chyba siete</translation>
-<translation id="6490455614072479501">Nepodarilo sa pripojiť k sieti <ph name="NAME" />: <ph name="DETAILS" />
-        Správa zo servera: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">K dispozícii nie je žiadna mobilná sieť</translation>
-<translation id="6732801395666424405">Certifikáty neboli načítané</translation>
 <translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Hore nohami</translation>
-<translation id="6943836128787782965">Príkaz get protokolu HTTP zlyhal</translation>
 <translation id="7066646422045619941">Táto sieť je zakázaná správcom.</translation>
-<translation id="7165320105431587207">Sieť sa nepodarilo nakonfigurovať</translation>
-<translation id="7170041865419449892">Mimo rozsah</translation>
-<translation id="7229570126336867161">Je potrebné pripojenie EVDO</translation>
-<translation id="7256405249507348194">Nerozpoznaná chyba: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Používateľské meno alebo heslo je nesprávne alebo zlyhalo overenie EAP-auth</translation>
 <translation id="735745346212279324">Sieť VPN je odpojená</translation>
 <translation id="7874779702599364982">Prebieha vyhľadávanie mobilných sietí...</translation>
-<translation id="7925247922861151263">Kontrola AAA zlyhala</translation>
-<translation id="7973962044839454485">Overenie PKS zlyhalo z dôvodu nesprávneho používateľského mena alebo hesla</translation>
 <translation id="8000066093800657092">Žiadna sieť</translation>
 <translation id="8008366997883261463">Jack Russell teriér</translation>
 <translation id="8132793192354020517">Pripojené k stránke <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Zlyhanie služby OTASP</translation>
-<translation id="8372369524088641025">Zlý kľúč WEP</translation>
 <translation id="8454013096329229812">Pripojenie Wi-Fi je zapnuté.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Opätovné pripájanie...</translation>
-<translation id="8688591111840995413">Nesprávne heslo</translation>
 <translation id="8714406895390098252">Bicykel</translation>
 <translation id="8808686172382650546">Mačka</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Nepodarilo sa pripojiť k sieti: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Zlyhanie pripojenia</translation>
 </translationbundle>

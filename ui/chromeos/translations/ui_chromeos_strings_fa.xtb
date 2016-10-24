@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1119447706177454957">خطای داخلی</translation>
 <translation id="153454903766751181">در حال راه‌اندازی مودم سلولی...</translation>
-<translation id="158849752021629804">شبکه خانگی مورد نیاز است</translation>
-<translation id="1661867754829461514">پین جا افتاده</translation>
-<translation id="1773212559869067373">گواهینامه راستی‌آزمایی به صورت محلی رد شد</translation>
 <translation id="1829129547161959350">پنگوئن</translation>
 <translation id="1850504506766569011">‏Wi-Fi خاموش است.</translation>
 <translation id="2288278176040912387">ضبط صوت</translation>
 <translation id="2354174487190027830">فعال‌سازی <ph name="NAME" /></translation>
-<translation id="2544853746127077729">گواهینامه راستی‌آزمایی توسط شبکه رد شد</translation>
 <translation id="2563185590376525700">قورباغه</translation>
-<translation id="2563856802393254086">تبریک می‌گوییم! خدمات داده «<ph name="NAME" />» شما فعال شده است و آماده استفاده است.</translation>
 <translation id="2649120831653069427">ماهی رنگین‌مکان</translation>
-<translation id="2670531586141364277">فعال‌سازی «<ph name="NAME" />» به اتصال شبکه نیاز دارد.</translation>
 <translation id="277257480934873581">اتصال مجدد به <ph name="NAME" /></translation>
 <translation id="2894654529758326923">اطلاعات</translation>
 <translation id="2951236788251446349">عروس دریایی</translation>
-<translation id="2966449113954629791">ممکن است کلیه میزان مجاز داده‌‌های دستگاه همراهتان را مصرف کرده باشید. برای خرید داده بیشتر از پورتال فعال‌سازی <ph name="NAME" /> بازدید کنید.</translation>
 <translation id="3846575436967432996">اطلاعات شبکه در دسترس نیست</translation>
-<translation id="3871838685472846647">شبکه تلفن همراه فعال شد</translation>
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="3958548648197196644">کیوی</translation>
-<translation id="40400351611212369">خطا در فعال‌سازی شبکه</translation>
 <translation id="4118990158415604803">اتصال به شبکه‌های دیگر توسط سرپرست شما غیرفعال شده است.</translation>
-<translation id="4237016987259239829">خطای اتصال شبکه</translation>
-<translation id="4274292172790327596">خطای ناشناس</translation>
 <translation id="4326192123064055915">قهوه</translation>
-<translation id="4387004326333427325">گواهینامه راستی‌آزمایی، از راه دور، رد شد</translation>
-<translation id="4442424173763614572">‏جستجوی DNS انجام نشد</translation>
 <translation id="4448844063988177157">‏در حال جستجوی شبکه‌های Wi-Fi...</translation>
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: در حال اتصال...</translation>
-<translation id="4508265954913339219">فعالسازی انجام نشد</translation>
 <translation id="4559767610552730302">بوکه</translation>
 <translation id="4935975195727477204">گل میخک</translation>
-<translation id="5045550434625856497">گذرواژه نادرست</translation>
-<translation id="5097002363526479830">اتصال ناموفق به شبکه "<ph name="NAME" />":<ph name="DETAILS" /></translation>
 <translation id="515594325917491223">شطرنج</translation>
 <translation id="5257456363153333584">سنجاقک</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">‏بررسی DHCP انجام نشد</translation>
-<translation id="6232116551750539448">اتصال به <ph name="NAME" /> قطع شده است</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
-<translation id="6312403991423642364">خطای شبکه ناشناس</translation>
-<translation id="6490455614072479501">اتصال به «<ph name="NAME" />» انجام نشد: <ph name="DETAILS" />
-        پیام سرور: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">هیچ شبکه سلولی در دسترس نیست</translation>
-<translation id="6732801395666424405">گواهی‌ها بارگیری نشدند</translation>
 <translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">وارونه</translation>
-<translation id="6943836128787782965">‏HTTP با خطا مواجه شد</translation>
 <translation id="7066646422045619941">این شبکه توسط سرپرست شما غیرفعال شده است.</translation>
-<translation id="7165320105431587207">پیکربندی شبکه انجام نشد</translation>
-<translation id="7170041865419449892">خارج از محدوده</translation>
-<translation id="7229570126336867161">‏EVDO مورد نیاز است</translation>
-<translation id="7256405249507348194">خطای نامشخص: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">‏نام کاربری/گذرواژه نادرست است یا احراز هویت EAP ناموفق بود</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
 <translation id="7874779702599364982">جستجو برای شبکه‌های تلفن همراه ...</translation>
-<translation id="7925247922861151263">‏بررسی AAA انجام نشد</translation>
-<translation id="7973962044839454485">‏احراز هویت PPP به دلیل نام کاربری یا گذرواژه نادرست انجام نشد</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8008366997883261463">جک راسل تریر</translation>
 <translation id="8132793192354020517">متصل به <ph name="NAME" /></translation>
-<translation id="8300849813060516376">‏OTASP انجام نشد</translation>
-<translation id="8372369524088641025">‏کلید WEP نادرست</translation>
 <translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: درحال اتصال مجدد...</translation>
-<translation id="8688591111840995413">گذرواژه بد</translation>
 <translation id="8714406895390098252">دوچرخه</translation>
 <translation id="8808686172382650546">گربه</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">اتصال به شبکه انجام نشد: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">اتصال برقرار نشد</translation>
 </translationbundle>

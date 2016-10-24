@@ -127,6 +127,7 @@ Chromoting</translation>
 <translation id="409800995205263688">POZNÁMKA: Nastavení zásad umožňují spojení pouze mezi počítači v rámci vaší sítě.</translation>
 <translation id="4155497795971509630">Chybí některé povinné komponenty. Zkontrolujte, zda máte nainstalovanou nejnovější verzi softwaru, a zkuste to znovu.</translation>
 <translation id="4156740505453712750">Pokud chcete přístup k tomuto počítači zabezpečit, zvolte prosím kód PIN v délce <ph name="BOLD_START" />alespoň šesti číslic<ph name="BOLD_END" />. Tento kód PIN bude vyžadován při připojení z jiného místa.</translation>
+<translation id="4156741816461781891">Jste přihlášeni pomocí účtu <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Přístupový kód</translation>
 <translation id="4207623512727273241">Před pokračováním prosím spusťte stažený instalační program.</translation>
 <translation id="4227991223508142681">Nástroj pro správu hostitele</translation>
@@ -209,10 +210,6 @@ plochy Chrome</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Něco jiného</translation>
 <translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
-<translation id="6408143143164565232">• Poslech zvuku z počítačů se systémem Windows nebo Linux
-• Odstranění nechtěných připojení dlouhým stisknutím názvu počítače
-• Plynulejší změna velikosti zobrazení stažením či roztažením prstů a posouvání dvěma prsty
-• Nová obrazovka s nápovědou a zpětnou vazbou</translation>
 <translation id="6441316101718669559">Integrace počítače na této platformě není podporována. Aplikaci můžete nadále používat, ale uživatelský dojem bude horší.</translation>
 <translation id="652218476070540101">Aktualizace kódu PIN pro tento počítač…</translation>
 <translation id="6527303717912515753">Sdílet</translation>

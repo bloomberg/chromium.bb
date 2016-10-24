@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">NOTA: Tetapan dasar membenarkan sambungan antara komputer dalam rangkaian anda sahaja.</translation>
 <translation id="4155497795971509630">Sesetengah komponen yang diperlukan hilang. Sila pastikan anda telah memasang versi terkini perisian dan cuba lagi.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses kepada komputer ini, sila pilih PIN <ph name="BOLD_START" />sekurang-kurangnya enam digit<ph name="BOLD_END" />. PIN ini akan diperlukan apabila menyambung dari lokasi lain.</translation>
+<translation id="4156741816461781891">Log masuk sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Kod akses</translation>
 <translation id="4207623512727273241">Sila jalankan pemasang sebelum meneruskan.</translation>
 <translation id="4227991223508142681">Utiliti Peruntukan Hos</translation>
@@ -208,10 +209,6 @@ Jauh Chrome</translation>
 <translation id="6304318647555713317">Klien</translation>
 <translation id="6381670701864002291">Sesuatu yang lain.</translation>
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
-<translation id="6408143143164565232">• Dengar audio daripada komputer Windows atau Linux.
-• Alih keluar sambungan yang tidak dikehendaki dengan menekan lama pada nama komputer.
-• Ciri cubit untuk mengezum dan menatal menggunakan dua jari yang lebih lancar.
-• Skrin Bantuan &amp; Maklum Balas baharu.</translation>
 <translation id="6441316101718669559">Integrasi desktop tidak disokong pada platform ini. Anda masih boleh menggunakan aplikasi, tetapi pengalaman pengguna akan diturun taraf.</translation>
 <translation id="652218476070540101">PIN untuk komputer ini sedang dikemas kini…</translation>
 <translation id="6527303717912515753">Kongsi</translation>

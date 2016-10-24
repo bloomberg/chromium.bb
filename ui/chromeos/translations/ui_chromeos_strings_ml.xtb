@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
-<translation id="1119447706177454957">ആന്തരിക പിശക്</translation>
 <translation id="153454903766751181">സെല്ലുലാർ മോഡം സമാരംഭിക്കുന്നു...</translation>
-<translation id="158849752021629804">ഹോം നെറ്റ്‍വര്‍ക്ക് ആവശ്യമുണ്ട്</translation>
-<translation id="1661867754829461514">PIN കാണാനില്ല</translation>
-<translation id="1773212559869067373">പ്രാമാണീകരണ സർട്ടിഫിക്കറ്റ് പ്രാദേശികമായി നിരസിച്ചു</translation>
 <translation id="1829129547161959350">പെൻഗ്വിൻ</translation>
 <translation id="1850504506766569011">Wi-Fi ഓഫുചെയ്‌തു.</translation>
 <translation id="2288278176040912387">റെക്കോർഡ് പ്ലേയർ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> സജീവമാക്കുന്നു</translation>
-<translation id="2544853746127077729">നെറ്റ്‌വർക്ക്, പ്രാമാണീകരണ സർട്ടിഫിക്കറ്റ് നിരസിച്ചു</translation>
 <translation id="2563185590376525700">തവള</translation>
-<translation id="2563856802393254086">അഭിനന്ദനങ്ങൾ! നിങ്ങളുടെ '<ph name="NAME" />' ഡാറ്റ സേവനം സജീവമായി, ഇത് പ്രവർത്തിക്കാൻ തയ്യാറാണ്.</translation>
 <translation id="2649120831653069427">റെയിൻബോഫിഷ്</translation>
-<translation id="2670531586141364277">'<ph name="NAME" />' സജീവമാക്കുന്നതിന് ഒരു നെറ്റ്‌വർക്ക് കണക്ഷൻ ആവശ്യമാണ്.</translation>
 <translation id="277257480934873581"><ph name="NAME" /> നെറ്റ്‌വർക്കിലേക്ക് വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="2894654529758326923">വിവരം</translation>
 <translation id="2951236788251446349">ജെല്ലിഫിഷ്</translation>
-<translation id="2966449113954629791">നിങ്ങളുടെ മൊബൈൽ ഡാറ്റ അലവൻസ് പരമാവധി ഉപയോഗിച്ചിരിക്കാനിടയുണ്ട്. കൂടുതൽ ഡാറ്റ വാങ്ങാൻ <ph name="NAME" /> സജീവമാക്കൽ പോർട്ടൽ സന്ദർശിക്കുക.</translation>
 <translation id="3846575436967432996">നെറ്റ്‌വർക്ക് വിവരങ്ങളൊന്നും ലഭ്യമല്ല</translation>
-<translation id="3871838685472846647">സെല്ലുലാർ സജീവമാക്കി</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> എന്നതിലേക്ക് കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="3958548648197196644">കിവി</translation>
-<translation id="40400351611212369">നെറ്റ്‌വർക്ക് സജീവമാക്കൽ പിശക്</translation>
 <translation id="4118990158415604803">അഡ്‌മിനിസ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്ന മറ്റ് നെറ്റ്‌വർക്കുകളിലേക്ക് കണക്റ്റുചെയ്യുന്നു.</translation>
-<translation id="4237016987259239829">നെറ്റ്വര്‍ക്ക് കണക്ഷന്‍ പിശക്</translation>
-<translation id="4274292172790327596">തിരിച്ചറിയാത്ത പിശക്</translation>
 <translation id="4326192123064055915">കോഫി</translation>
-<translation id="4387004326333427325">പ്രാമാണീകരണ സർട്ടിഫിക്കറ്റ് വിദൂരമായി നിരസിച്ചു</translation>
-<translation id="4442424173763614572">DNS തിരയൽ പരാജയപ്പെട്ടു</translation>
 <translation id="4448844063988177157">Wi-Fi ശൃംഖലകള്‍ക്കായി തിരയുന്നു...</translation>
 <translation id="4479639480957787382">എതെര്‍‌നെറ്റ്</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: കണക്റ്റുചെയ്യുന്നു...</translation>
-<translation id="4508265954913339219">സജീവമാക്കല്‍ പരാജയപ്പെട്ടു</translation>
 <translation id="4559767610552730302">ബൊക്കെ</translation>
 <translation id="4935975195727477204">ഗസാനിയ പുഷ്‌പം</translation>
-<translation id="5045550434625856497">ശരിയല്ലാത്ത രഹസ്യവാക്ക്</translation>
-<translation id="5097002363526479830">'<ph name="NAME" />' നെറ്റ്‌വര്‍‌ക്കിലേക്ക് ബന്ധിപ്പിക്കുന്നതിൽ പരാജയപ്പെട്ടു: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">ചെസ്സ്</translation>
 <translation id="5257456363153333584">തുമ്പി</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">DHCP തിരയൽ പരാജയപ്പെട്ടു</translation>
-<translation id="6232116551750539448"><ph name="NAME" /> എന്നതിലേക്കുള്ള കണക്ഷൻ നഷ്‌ടമായി</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: സജീവമാക്കുന്നു...</translation>
-<translation id="6312403991423642364">അറിയാത്ത നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
-<translation id="6490455614072479501">'<ph name="NAME" />' എന്നതിലേക്ക് കണക്റ്റുചെയ്യുന്നതിന് പരാജയപ്പെട്ടു: <ph name="DETAILS" />
-        സെർവർ സന്ദേശം: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">സെല്ലുലാർ നെറ്റ്‌വർക്കൊന്നും ലഭ്യമല്ല</translation>
-<translation id="6732801395666424405">സർട്ടിഫിക്കറ്റുകൾ ലോഡുചെയ്‌തില്ല</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> സജീവമാക്കുക</translation>
 <translation id="6935521024859866267">അപ്‌സൈഡ് ഡൗൺ</translation>
-<translation id="6943836128787782965">HTTP പരാജയപ്പെട്ടു</translation>
 <translation id="7066646422045619941">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഈ നെറ്റ്‌വർക്ക് പ്രവർത്തനരഹിതമാക്കി.</translation>
-<translation id="7165320105431587207">നെറ്റ്‌വർക്ക് കോൺഫിഗർ ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
-<translation id="7170041865419449892">പരിധിയ്ക്ക് പുറത്താണ്</translation>
-<translation id="7229570126336867161">EVDO ആവശ്യമുണ്ട്</translation>
-<translation id="7256405249507348194">തിരിച്ചറിയാനാകാത്ത പിശക്: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">ഉപയോക്തൃനാമം/പാസ്‌വേഡ് ശരിയല്ല അല്ലെങ്കിൽ EAP-പ്രാമാണീകരണം പരാജയപ്പെട്ടു</translation>
 <translation id="735745346212279324">VPN വിച്ഛേദിച്ചു</translation>
 <translation id="7874779702599364982">സെല്ലുലാർ നെറ്റ്‌വർക്കുകൾക്കായി തിരയുന്നു...</translation>
-<translation id="7925247922861151263">AAA പരിശോധന പരാജയപ്പെട്ടു</translation>
-<translation id="7973962044839454485">തെറ്റായ ഉപയോക്തൃനാമമോ പാസ്‌വേഡോ കാരണം PPP പ്രാമാണീകരണം പരാജയപ്പെട്ടു</translation>
 <translation id="8000066093800657092">നെറ്റ്‍വര്‍ക്ക് ഇല്ല</translation>
 <translation id="8008366997883261463">ജാക്ക് റസ്സൽ ടെറിയർ</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> എന്നതിലേക്ക് ബന്ധിപ്പിച്ചു</translation>
-<translation id="8300849813060516376">OTASP പരാജയപ്പെട്ടു</translation>
-<translation id="8372369524088641025">മോശം WEP കീ</translation>
 <translation id="8454013096329229812">Wi-Fi ഓൺ ചെയ്‌തു.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു...</translation>
-<translation id="8688591111840995413">പാസ്‌വേഡ് മോശമാണ്</translation>
 <translation id="8714406895390098252">സൈക്കിള്‍</translation>
 <translation id="8808686172382650546">പൂച്ച</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">നെറ്റ്‌വര്‍‌ക്കിലേക്ക് കണക്റ്റുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">ബന്ധിപ്പിക്കല്‍ പരാജയപ്പെട്ടു</translation>
 </translationbundle>

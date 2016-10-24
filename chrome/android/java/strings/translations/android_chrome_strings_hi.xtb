@@ -65,6 +65,7 @@
 <translation id="1643702317193804718">पृष्‍ठ का <ph name="SOURCE_LANGUAGE" /> में अनुवाद हो रहा है…</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1647391597548383849">अपना कैमरा एक्सेस करें</translation>
+<translation id="1661474178782861119">जल्द ही अधिक लेख दिखाई देंगे. अपनी शाम का आनंद लें.</translation>
 <translation id="169033420419426091">अनुपलब्‍ध SD कार्ड के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="1709438864123551175">डेटा बचाने का साधन</translation>
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE" /> में अनुवाद किया गया.</translation>
@@ -382,7 +383,6 @@
 <translation id="5512137114520586844">यह खाता <ph name="PARENT_NAME" /> द्वारा प्रबंधित है.</translation>
 <translation id="5527082711130173040">डिवाइस स्कैन करने के लिए Chrome को स्थान एक्सेस की आवश्यकता होती है. <ph name="BEGIN_LINK1" />अनुमतियां अपडेट करें<ph name="END_LINK1" />. स्थान एक्सेस <ph name="BEGIN_LINK2" />इस डिवाइस के लिए भी बंद<ph name="END_LINK2" /> है.</translation>
 <translation id="5530766185686772672">गुप्त टैब बंद करें</translation>
-<translation id="5538968846107343822">कोई ब्‍लूटूथ डिवाइस नहीं मिला. <ph name="BEGIN_LINK" />फिर से स्कैन करें<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">जीता-जागता वेब</translation>
 <translation id="5556459405103347317">पुन: लोड करें</translation>
 <translation id="5565871407246142825">क्रेडिट कार्ड</translation>
@@ -418,6 +418,7 @@
 <translation id="583891442612896534">Chrome डेटा संपीड़न के लिए Google के सर्वर तक नहीं पहुंच पा रहा है. आपकी डेटा की बचत सीमित हो सकती हैं.</translation>
 <translation id="585027516397408832">डेटा बचाने का साधन सक्षम किया गया है</translation>
 <translation id="5860033963881614850">बंद</translation>
+<translation id="5867027562311576691">जल्द ही अधिक लेख दिखाई देंगे. अपनी सुबह का आनंद लें.</translation>
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
 <translation id="5899349522111170522">नई फ़ाइल बनाएं</translation>
 <translation id="5902828464777634901">कुकी सहित, इस वेबसाइट द्वारा संग्रहीत किया गया सभी डेटा हटा दिया जाएगा.</translation>
@@ -557,6 +558,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> अपडेट किया गया)</translation>
 <translation id="7498271377022651285">कृपया प्रतीक्षा करें...</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">अभी के लिए बस इतना ही</translation>
 <translation id="7562080006725997899">ब्राउज़िंग डेटा साफ़ हो रहा है</translation>
 <translation id="756809126120519699">साफ़ किया गया Chrome डेटा</translation>
 <translation id="7588950540487816470">जीता-जागता वेब</translation>
@@ -627,6 +629,7 @@
 <translation id="8275818695183729150">अनुमति दें (पता बार खोजों के लिए)</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> से समन्वयित हो रहा है</translation>
 <translation id="8310344678080805313">मानक टैब</translation>
+<translation id="8321376388213838985">जल्द ही अधिक लेख दिखाई देंगे. अपनी दोपहर का आनंद लें.</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
 <translation id="8396312449826231789">केवल स्‍वीकृत साइटें</translation>
@@ -702,7 +705,6 @@
 <translation id="917685106653909562">आस-पास के जीते-जागते वेब पृष्ठ</translation>
 <translation id="9187199695613236444">मोबाइल के अनुकूल दृश्‍य</translation>
 <translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
-<translation id="9192643434065497760">युग्‍मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />डिवाइस सेटिंग<ph name="END_LINK" /> में ब्‍लूटूथ चालू करें.</translation>
 <translation id="9198708126133947749">इस डिवाइस के डेटा को <ph name="TO_ACCOUNT" /> के डेटा से बदलें. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर अपना मौजूदा डेटा पुनः प्राप्त कर सकते हैं.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">चित्र</translation>

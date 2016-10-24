@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">REMARQUE : Les paramètres des règles n'autorisent que les connexions entre les ordinateurs de votre réseau.</translation>
 <translation id="4155497795971509630">Certains composants nécessaires sont introuvables. Veuillez vous assurer que vous utilisez la dernière version du logiciel, puis réessayer.</translation>
 <translation id="4156740505453712750">Pour protéger l'accès à cet ordinateur, veuillez choisir un code d'accès d'<ph name="BOLD_START" />au moins six chiffres<ph name="BOLD_END" />. Ce code d'accès sera demandé lors d'une connexion depuis un autre appareil.</translation>
+<translation id="4156741816461781891">Connecté en tant que <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Code d'accès</translation>
 <translation id="4207623512727273241">Veuillez lancer le programme d'installation avant de continuer.</translation>
 <translation id="4227991223508142681">Utilitaire de provisionnement de l'hôte</translation>
@@ -208,10 +209,6 @@ Google Chrome</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Autre</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
-<translation id="6408143143164565232">• Écoutez des contenus audio issus d'ordinateurs Windows ou Linux.
-• Supprimez les connexions dont vous n'avez pas besoin en appuyant de manière prolongée sur le nom de l'ordinateur en question.
-• Amélioration de la fonctionnalité "Pincer pour zoomer" et du défilement à deux doigts.
-• Nouvel écran "Aide et commentaires".</translation>
 <translation id="6441316101718669559">L'intégration du Bureau est impossible sur cette plate-forme. Vous pouvez toujours utiliser l'application, mais avec une expérience utilisateur de moindre qualité.</translation>
 <translation id="652218476070540101">Mise à jour du code d'accès pour cet ordinateur en cours…</translation>
 <translation id="6527303717912515753">Partager</translation>

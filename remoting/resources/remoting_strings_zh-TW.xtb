@@ -126,6 +126,7 @@
 <translation id="409800995205263688">注意：政策設定僅允許您網路中的電腦相互連線。</translation>
 <translation id="4155497795971509630">找不到部分必要元件。請確認您已安裝最新版本的軟體，然後再試一次。</translation>
 <translation id="4156740505453712750">如要保護這台電腦，避免不明人士入侵，請選擇一個<ph name="BOLD_START" />至少 6 位數<ph name="BOLD_END" />的 PIN。當使用者從其他位置連線時，必須先輸入這個 PIN 驗證身分。</translation>
+<translation id="4156741816461781891">目前登入的帳戶是 <ph name="EMAIL_ADDRESS" />。</translation>
 <translation id="4176825807642096119">存取碼</translation>
 <translation id="4207623512727273241">請先執行安裝程式，然後再繼續操作。</translation>
 <translation id="4227991223508142681">主機帳戶管理公用程式</translation>
@@ -208,10 +209,6 @@
 <translation id="6304318647555713317">用戶端</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
-<translation id="6408143143164565232">• 聽取 Windows 或 Linux 電腦的音訊。
-• 長按特定電腦名稱即可移除不需要的連線。
-• 雙指撥動縮放與雙指捲動操作更順暢。
-• 更新「說明與意見回饋」畫面。</translation>
 <translation id="6441316101718669559">這個平台不支援桌面整合。您仍然可以使用該應用程式，但使用者體驗可能不如預期。</translation>
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="6527303717912515753">分享</translation>

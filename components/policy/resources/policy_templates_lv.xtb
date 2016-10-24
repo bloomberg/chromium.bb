@@ -301,6 +301,7 @@
       Ja politikai HardwareAccelerationModeEnabled ir iestatīta vērtība Nepatiesa, politika Disable3DAPIs tiek ignorēta un ir spēkā tādi paši iestatījumi kā tad, ja politikai Disable3DAPIs būtu iestatīta vērtība Patiesa.</translation>
 <translation id="2168397434410358693">Aizkave līdz dīkstāvei, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2170233653554726857">WPAD optimizācijas iespējošana</translation>
+<translation id="2178899310296064282">Ieslēgt vismaz vidēji ierobežoto režīmu pakalpojumā YouTube</translation>
 <translation id="2188979373208322108">Iespējo <ph name="PRODUCT_NAME" /> grāmatzīmju joslu.
 
       Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> grāmatzīmju josla tiks rādīta.
@@ -570,6 +571,7 @@
       Ja iespējojat vai atspējojat šo iestatījumu, lietotāji nevar mainīt vai ignorēt <ph name="PRODUCT_NAME" /> iestatījumu “Iespējot aizsardzību pret pikšķerēšanu un ļaunprātīgu programmatūru”.
 
       Ja šī politika nav iestatīta, funkcija tiks iespējota, bet lietotāji varēs to mainīt.</translation>
+<translation id="2787173078141616821">Sniegt informāciju par Android statusu</translation>
 <translation id="2801230735743888564">Ļaujiet lietotājiem spēlēt dinozauru spēli, kad ierīce ir bezsaistē.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevarēs spēlēt dinozauru spēli, kad ierīce būs bezsaistē. Ja iestatījums ir Patiesa, lietotāji varēs spēlēt dinozauru spēli. Ja politika nav iestatīta, lietotāji nevarēs spēlēt dinozauru spēli reģistrētās Chrome OS ierīcēs, taču varēs spēlēt visos citos gadījumos.</translation>
@@ -678,9 +680,6 @@
           Šī politika nav jāiestata obligāti. Ja tā nebūs iestatīta, meklēšanas vienumu aizstāšana nenotiks.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
-<translation id="3067188277482006117">Ja ir iestatīta vērtība “true”, lietotājs var izmantot aparatūru Chrome ierīcēs, lai attālināti apstiprinātu tās identitāti konfidencialitātes sertificēšanas CA, izmantojot uzņēmumu platformu atslēgu (Enterprise Platform Keys) API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Ja ir iestatīta vērtība “false” vai ja politika nav iestatīta, API izsaukumi neizdosies un tiks rādīts kļūdas kods.</translation>
 <translation id="3069958900488014740">Pārlūkā <ph name="PRODUCT_NAME" /> tiek atļauta WPAD (Web Proxy Auto-Discovery — tīmekļa starpniekservera automātiskā atklāšana) optimizācijas izslēgšana.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, WPAD optimizācija ir atspējota, tādējādi pārlūkā <ph name="PRODUCT_NAME" /> tiek ilgāk gaidīts uz DNS WPAD serveriem. Ja politika nav iestatīta vai ir iespējota, WPAD optimizācija ir iespējota.
@@ -805,6 +804,13 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
 
       Ja šī politika ir iestatīta uz Aplama, produkts <ph name="PRODUCT_OS_NAME" /> neļauj sākt viesu sesijas.</translation>
+<translation id="3418871497193485241">Ieslēdz minimāli ierobežoto režīmu pakalpojumā YouTube un neļauj lietotājiem izvēlēties mazākas ierobežotības režīmu.
+
+Ja šim iestatījumam ir izvēlēta vērtība “Stingri”, stingri ierobežotais režīms pakalpojumā YouTube ir vienmēr aktīvs.
+
+Ja šim iestatījumam ir izvēlēta vērtība “Vidēji”, lietotājs var izvēlēties tikai vidēji un stingri ierobežoto režīmu pakalpojumā YouTube, taču nevar atspējot ierobežoto režīmu.
+
+Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav iestatīta, ierobežotais režīms pakalpojumā YouTube nav ieslēgts pārlūkā <ph name="PRODUCT_NAME" />. Tomēr ar ārējām politikām, piemēram, YouTube politikām, joprojām var ieslēgt ierobežoto režīmu.</translation>
 <translation id="3428247105888806363">Iespējo tīkla paredzēšanu</translation>
 <translation id="3449886121729668969">Konfigurē pakalpojuma <ph name="PRODUCT_NAME" /> un ARC lietotņu starpniekservera iestatījumus. Šie starpniekservera iestatījumi būs pieejami arī ARC lietotnēm.
 
@@ -926,6 +932,9 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 <translation id="384743459174066962">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts atvērt uznirstošos logus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
+<translation id="3851039766298741586">Tiek sniegta informācija par aktīvo kioska režīma sesiju, piemēram, lietojumprogrammas ID un versija.
+
+Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta informācija par sesiju. Ja ir iestatīta vērtība “Patiesa” vai nav iestatīta nekāda vērtība, informācija tiek sniegta.</translation>
 <translation id="3859780406608282662">Pievienot parametru variantu sēkas ienešanai operētājsistēmā <ph name="PRODUCT_OS_NAME" />.
 
       Ja norādīts, variantu sēkas ienešanai izmantotajam URL tiks pievienots vaicājuma parametrs “restrict” (“ierobežot”). Parametra vērtība būs šajā politikā norādītā vērtība.
@@ -940,6 +949,13 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="3864818549971490907">Noklusējuma spraudņu iestatījums</translation>
+<translation id="386487026071140458">Šī politika ir novecojusi. Tās vietā izmantojiet: <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> un <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Šī politika tiek ignorēta, ja ir iestatīta politika <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> vai <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (novecojusi politika).
+
+Šis iestatījums piespiedu kārtā nosaka, ka Google meklēšanas tīmeklī vaicājumi tiek veikti ar aktivizētu drošo meklēšanu, un neļauj lietotājiem mainīt šo iestatījumu. Šis iestatījums arī piespiedu kārtā ieslēdz vidēji ierobežoto režīmu pakalpojumā YouTube.
+
+Ja šis iestatījums ir iespējots, drošā meklēšana pakalpojumā Google meklēšana un vidēji ierobežotais režīms pakalpojumā YouTube vienmēr ir aktīvs.
+
+Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, drošā meklēšanas režīms pakalpojumā Google meklēšana un ierobežotais režīms pakalpojumā YouTube nav ieslēgts.</translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="3866530186104388232">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> rāda esošos lietotājus pieteikšanās ekrānā un ļauj kādu izvēlēties. Ja politika ir iestatīta uz Aplama, produkts <ph name="PRODUCT_OS_NAME" /> pieteikšanās sesijai izmanto lietotājvārda/paroles uzvedni.</translation>
 <translation id="3868347814555911633">Šī politika darbojas tikai mazumtirdzniecības režīmā.
@@ -1015,6 +1031,17 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 
           Ja šī politika nav iestatīta, tiek izmantota politika AllowCookies, un lietotājs var to mainīt.</translation>
 <translation id="4103289232974211388">Pēc lietotāja apstiprinājuma saņemšanas novirzīt uz SAML identitātes nodrošinātāju</translation>
+<translation id="4103941930938018145">Šī politika ir novecojusi. Lūdzu, izmantojiet politiku <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, lai kontrolētu Flash spraudņa pieejamību, un politiku <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, lai kontrolētu, vai izmantot integrēto PDF skatīšanas programmu PDF failu skatīšanai.
+
+Norāda spraudņu sarakstu, kas ir iespējoti pārlūkā <ph name="PRODUCT_NAME" />, un neļauj lietotājiem mainīt šo iestatījumu.
+
+Aizstājējzīmes “*” un “?” var izmantot, lai veidotu atbilstību mainīgu rakstzīmju virknēm. “*” atbilst mainīgu rakstzīmju virknei, bet “?” norāda vienu noteiktu rakstzīmi, piemēram, atbilst nullei vai vienai rakstzīmei. Atsoļa rakstzīme ir “\”, tādēļ, lai veidotu atbilstību faktiskajām rakstzīmēm “*”, “?” un “\”, to sākumā var ievadīt “\”.
+
+Ja šis iestatījums ir iespējots, pārlūkā <ph name="PRODUCT_NAME" /> nekad netiek lietoti norādītā saraksta spraudņi. Politikā about:plugins norādītie spraudņi ir atzīmēti kā atspējoti, un lietotāji tos nevar iespējot.
+
+Ņemiet vērā, ka šī politika var tikt ignorēta ar politikām EnabledPlugins un DisabledPluginsExceptions.
+
+Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru sistēmā instalēto spraudni, izņemot nesaderīgus, novecojušus vai bīstamus spraudņus.</translation>
 <translation id="410478022164847452">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā rodas dīkstāve (ja ierīce darbojas ar maiņstrāvu).
 
           Ja šī politika ir iestatīta, tā norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā rodas operētājsistēmas <ph name="PRODUCT_OS_NAME" /> dīkstāve, ko var konfigurēt atsevišķi.
@@ -1333,6 +1360,13 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="5423197884968724595">Android WebView ierobežojuma nosaukums:</translation>
+<translation id="543559563129402336">Šī politika ir novecojusi. Apsveriet iespēju izmantot politiku <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, ar kuru tiek ignorēta šī politika un tiek atļauta detalizētāka uzlabošana.
+
+Piespiedu kārtā ieslēdz YouTube vidēji ierobežoto režīmu, un lietotāji nevar mainīt šo iestatījumu.
+
+Ja šis iestatījums ir iespējots, pakalpojumā YouTube vienmēr ir ieslēgts vismaz vidēji ierobežotais režīms.
+
+Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, pārlūkā <ph name="PRODUCT_NAME" /> netiek ieslēgts YouTube ierobežotais režīms. Tomēr ar ārējām politikām, piemēram, YouTube politikām, joprojām var ieslēgt ierobežoto režīmu.</translation>
 <translation id="5447306928176905178">Lapas patērētās atmiņas uzskaites (JS kaudzes izmērs) iespējošana (izmantošana pārtraukta)</translation>
 <translation id="5457065417344056871">Viesa režīma iespējošana pārlūkā</translation>
 <translation id="5457924070961220141">Ļauj konfigurēt noklusējuma HTML renderētāju, ja ir instalēts <ph name="PRODUCT_FRAME_NAME" />.
@@ -1439,6 +1473,19 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
+<translation id="5783595563813359339">Šī politika ir novecojusi. Lūdzu, izmantojiet politiku <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, lai kontrolētu Flash spraudņa pieejamību, un politiku <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, lai kontrolētu, vai izmantot integrēto PDF skatīšanas programmu PDF failu atvēršanai.
+
+Norāda to spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot pārlūkā <ph name="PRODUCT_NAME" />.
+
+Var izmantot aizstājējzīmes “*” un “?”, lai veidotu atbilstību mainīgām rakstzīmēm. “*” atbilst mainīgu rakstzīmju virknei, bet “?” norāda vienu noteiktu rakstzīmi, piemēram, atbilst nullei vai vienai rakstzīmei. Atsoļa rakstzīme ir “\”, tādēļ, lai veidotu atbilstību faktiskajām rakstzīmēm “*”, “?” un “\”, to sākumā var ievadīt “\”.
+
+Ja šis iestatījums ir iespējots, pārlūkā <ph name="PRODUCT_NAME" /> vienmēr var tikt izmantoti norādītā saraksta spraudņi. Lietotāji tos var iespējot vai atspējot politikā about:plugins arī tad, ja spraudnis struktūrai, kas norādīta politikā DisabledPlugins. Lietotāji var iespējot vai atspējot arī spraudņus, kas neatbilst nevienai struktūrai, kas norādīta politikās DisabledPlugins, DisabledPluginsExceptions un EnabledPlugins.
+
+Šī politika ir paredzēta, lai nodrošinātu stingru spraudņu uzraudzību ar melnā saraksta palīdzību, iekļaujot DisabledPlugins sarakstā aizstājējzīmju ierakstus, piemēram, lai atspējotu visus spraudņus (*) vai visus Java spraudņus (*Java*), kamēr administrators vēlas iespējot kādu konkrētu versiju, piemēram, IcedTea Java 2.3. Šīs konkrētās versijas var tikt norādītas šajā politikā.
+
+Ņemiet vērā, ka ir jāizslēdz gan spraudņa nosaukums, gan spraudņa grupas nosaukums. Katra spraudņu grupa tiek attēlota atsevišķā about:plugins sadaļā. Katrā sadaļā var būt viens vai vairāki spraudņi. Piemēram, spraudnis Shockwave Flash ir ietverts grupā Adobe Flash Player, tāpēc, lai šis spraudnis tiktu izņemts no melnā saraksta, abiem nosaukumiem ir jāatbilst ierakstiem izņēmumu sarakstā.
+
+Ja šī politika nav iestatīta, jebkurš spraudnis, kas atbilst politikā DisabledPlugins norādītajām struktūrām, tiek atspējots un lietotājs nevar to iespējot.</translation>
 <translation id="5795001131770861387">Iespējo HTTP/0.9 atbalstu portos, kas nav noklusējuma porti</translation>
 <translation id="5809728392451418079">Ierīces lokālo kontu parādāmā vārda iestatīšana</translation>
 <translation id="5814301096961727113">Mutisko atsauksmju noklusējuma statusa iestatīšana pieteikšanās ekrānā</translation>
@@ -1508,6 +1555,12 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība Nepatiesa, pārlūks <ph name="PRODUCT_NAME" /> neveic atsaukšanas pārbaudes tiešsaistē pārlūkā <ph name="PRODUCT_NAME" /> 19 vai jaunākā versijā.</translation>
 <translation id="5966615072639944554">Paplašinājumi, kuriem atļauts izmantot attālinātās apstiprināšanas API.</translation>
+<translation id="5974970919245996815">Ziņojumu informācija par Android statusu tiek sūtīta atpakaļ uz serveri.
+
+Ja politikai ir iestatīta vērtība “Nepatiesa”, informācija netiek sūtīta.
+Ja ir iestatīta vērtība “Patiesa” vai nav iestatīta nekāda vērtība, informācija netiek sūtīta.
+
+Šī politika ir spēkā tikai tad, ja ir iespējotas Android lietotnes.</translation>
 <translation id="5983708779415553259">Noklusējuma darbība vietnēm, kas nav iekļautas nevienā satura pakotnē</translation>
 <translation id="5997543603646547632">Pēc noklusējuma izmantot 24 stundu pulksteni</translation>
 <translation id="6009903244351574348">Ļauj sarakstā iekļauto satura veidu apstrādi veikt produktam <ph name="PRODUCT_FRAME_NAME" />.
@@ -1538,6 +1591,17 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 <translation id="6076099373507468537">Definē USB ierīces, kuras ir atļauts atvienot no kodola draiveriem, lai tās izmantotu ar chrome.usb API tieši tīmekļa lietojumprogrammā. Katru ierakstu veido USB pakalpojumu sniedzēja identifikators un produkta identifikators, kas identificē aparatūru.
 
       Ja šī politika netiek konfigurēta, atvienojamo USB ierīču saraksts ir tukšs.</translation>
+<translation id="608377055310226486">Šī politika ir novecojusi. Lūdzu, izmantojiet politiku <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, lai kontrolētu Flash spraudņa pieejamību, un politiku <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, lai kontrolētu, vai izmantot integrēto PDF skatīšanas programmu PDF failu atvēršanai.
+
+Norāda spraudņu sarakstu, kas ir iespējoti pārlūkā <ph name="PRODUCT_NAME" />, un neļauj lietotājiem mainīt šo iestatījumu.
+
+Var izmantot aizstājējzīmes “*” un “?”, lai veidotu atbilstību mainīgām rakstzīmēm. “*” atbilst mainīgu rakstzīmju virknei, bet “?” norāda vienu noteiktu rakstzīmi, piemēram, atbilst nullei vai vienai rakstzīmei. Atsoļa rakstzīme ir “\”, tādēļ, lai veidotu atbilstību faktiskajām rakstzīmēm “*”, “?” un “\”, to sākumā var ievadīt “\”.
+
+Norādītais spraudņu saraksts vienmēr tiek izmantots pārlūkā <ph name="PRODUCT_NAME" />, ja tas ir instalēts. Spraudņi ir atzīmēti kā iespējoti politikā about:plugins, un lietotāji nevar tos atspējot.
+
+Ņemiet vērā, ka ar šo politiku tiek ignorētas politikas DisabledPlugins un DisabledPluginsExceptions.
+
+Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā instalēto spraudni.</translation>
 <translation id="6093156968240188330">Atļaut attālajiem lietotājiem veikt darbības ar privileģētajiem logiem attālās palīdzības sesijās</translation>
 <translation id="6095999036251797924">Norāda lietotāja neaktivitātes laiku, pēc kura ekrāns tiek bloķēts, kad ierīce darbojas ar maiņstrāvas barošanu vai akumulatoru.
 
@@ -1767,6 +1831,7 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 <translation id="6828905844648501476">Ja šai politikai ir iestatīta vērtība Patiesa vai ja politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārzinī ir iespējota funkcija “Pievienot personu”.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārzinī nevar izveidot jaunus profilus.</translation>
+<translation id="685769593149966548">Ieslēgt stingri ierobežoto režīmu pakalpojumā YouTube</translation>
 <translation id="687046793986382807">Šī politika kopš <ph name="PRODUCT_NAME" /> versijas 35 vairs netiek izmantota.
 
       Neatkarīgi no opcijas vērtības joprojām tiek sniegta informācija par katras lapas patērēto atmiņu, taču informācijas daudzums tiek
@@ -1904,9 +1969,6 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 <translation id="7132877481099023201">Vietrāži URL, kuriem tiks nodrošināta piekļuve video tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="7167436895080860385">Atļauj rādīt paroles paroļu pārvaldniekā (atspējota)</translation>
 <translation id="7173856672248996428">Īslaicīgs profils</translation>
-<translation id="7187256234726597551">Ja politika ir iestatīta uz “true”, ierīcei ir atļauta attālā apstiprināšana un tiks automātiski izveidots sertifikāts, kas tiks augšupielādēts ierīču pārvaldības serverī.
-
-          Ja politika ir iestatīta uz “false” vai nav iestatīta, netiks izveidots sertifikāts un neizdosies zvani uz paplašinājuma enterprise.platformKeysPrivate saskarni API.</translation>
 <translation id="718956142899066210">Savienojumu veidi, kuru laikā ir atļauts veikt atjaunināšanu</translation>
 <translation id="7194407337890404814">Noklusējuma meklētājprogrammas nosaukums</translation>
 <translation id="7195064223823777550">Tiek norādīta darbība, kas jāveic pēc vāka aizvēršanas.
@@ -2221,6 +2283,7 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
       Ja politikas iestatījums ir “True”, ierīcē tiks izmantots 24 stundu pulksteņa formāts. Ja politikas iestatījums ir “False”, ierīcē tiks izmantots 12 stundu pulksteņa formāts.
 
       Ja šī politika nav iestatīta, ierīcē pēc noklusējuma tiks izmantots 24 stundu pulksteņa formāts.</translation>
+<translation id="8114382167597081590">Neieslēgt ierobežoto režīmu pakalpojumā YouTube</translation>
 <translation id="8118665053362250806">Iestatīt diska kešatmiņas lielumu</translation>
 <translation id="8135937294926049787">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek izslēgts, ja ierīce darbojas ar maiņstrāvu.
 
@@ -2276,9 +2339,6 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 
       Ja šī politika nav iestatīta, netiek lietots neviens politikas URLBlacklist melnā saraksta izņēmums.</translation>
 <translation id="8176035528522326671">Atļaut korporatīvajam lietotājam būt tikai primārajam vairākprofilu lietotājam (noklusējuma rīcība attiecībā uz uzņēmuma pārvaldītiem lietotājiem)</translation>
-<translation id="8197918588508433925">Šajā politikā ir norādīti paplašinājumi, kuros atļauts attālinātajai apstiprināšanai izmantot uzņēmumu platformu atslēgu (Enterprise Platform Keys) API chrome.enterprise.platformKeysPrivate.challengeUserKey(). Lai izmantotu šo API, paplašinājumiem ir jābūt pievienotiem šajā sarakstā.
-
-          Ja paplašinājums nav iekļauts sarakstā vai ja saraksts nav iestatīts, API izsaukumi neizdosies un tiks rādīts kļūdas kods.</translation>
 <translation id="8214600119442850823">Konfigurē paroļu pārvaldnieku.</translation>
 <translation id="8244525275280476362">Maksimāla ieneses aizkave pēc politikas atzīšanas par nederīgu</translation>
 <translation id="8256688113167012935">Kontrolējiet konta nosaukumu, kas tiek rādīts <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā attiecīgajam ierīces lokālajam kontam.
@@ -2429,6 +2489,7 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="8731693562790917685">Satura iestatījumi ļauj norādīt, kā jārīkojas ar noteikta veida saturu (piem., sīkfailiem, attēliem vai JavaScript).</translation>
+<translation id="8736538322216687231">Ieslēgt YouTube minimāli ierobežoto režīmu piespiedu kārtā</translation>
 <translation id="8749370016497832113">Iespējo pārlūka un lejupielādes vēstures dzēšanu pārlūkā <ph name="PRODUCT_NAME" /> un liedz lietotājiem mainīt šo iestatījumu.
 
       Pat ja šī politika ir atspējota, pārlūkošanas un lejupielādes vēstures saglabāšana netiek garantēta: iespējams, lietotāji varēs tieši rediģēt vai dzēst vēstures datubāzes failus, un pastāv arī iespēja, ka jebkurā brīdī beigsies pārlūka derīguma termiņš vai pārlūks arhivēs visus vēstures vienumus.

@@ -65,6 +65,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1643702317193804718">Traduzione della pagina in <ph name="SOURCE_LANGUAGE" /> in corso...</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="1647391597548383849">Accesso alla videocamera</translation>
+<translation id="1661474178782861119">A breve verranno visualizzati altri articoli. Buona serata.</translation>
 <translation id="169033420419426091">Download di <ph name="FILE_NAME" /> non riuscito a causa dell'assenza di scheda SD.</translation>
 <translation id="1709438864123551175">Risparmio dati</translation>
 <translation id="1742134235943978220">Tradotto in <ph name="TARGET_LANGUAGE" />.</translation>
@@ -382,7 +383,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5512137114520586844">Questo account è gestito da <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Chrome ha bisogno dell'accesso alla posizione per cercare dispositivi. <ph name="BEGIN_LINK1" />Aggiorna le autorizzazioni<ph name="END_LINK1" />. L'accesso alla posizione è <ph name="BEGIN_LINK2" />disattivato su questo dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Chiudi schede in incognito</translation>
-<translation id="5538968846107343822">Nessun dispositivo Bluetooth trovato. <ph name="BEGIN_LINK" />Esegui di nuovo la scansione<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">Il Physical Web</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5565871407246142825">Carte di credito</translation>
@@ -418,6 +418,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="583891442612896534">Chrome non riesce a contattare i server di Google per la compressione dei dati. I salvataggi di dati potrebbero essere limitati.</translation>
 <translation id="585027516397408832">Funzione Risparmio dati attivata</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="5867027562311576691">A breve verranno visualizzati altri articoli. Buona giornata.</translation>
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5899349522111170522">Crea nuovo file</translation>
 <translation id="5902828464777634901">Tutti i dati locali memorizzati da questo sito web, inclusi i cookie, verranno eliminati.</translation>
@@ -557,6 +558,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Attendi…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Per il momento è tutto</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
 <translation id="7588950540487816470">Physical Web</translation>
@@ -627,6 +629,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8275818695183729150">Consenti (per ricerche nella barra degli indirizzi)</translation>
 <translation id="8283853025636624853">Sincronizzazione con <ph name="SYNC_ACCOUNT_USER_NAME" /> in corso</translation>
 <translation id="8310344678080805313">Schede standard</translation>
+<translation id="8321376388213838985">A breve verranno visualizzati altri articoli. Buon pomeriggio.</translation>
 <translation id="8372893542064058268">Consenti la sincronizzazione in background per un sito specifico.</translation>
 <translation id="8374821112118309944">Aggiorna TalkBack a una versione più recente.</translation>
 <translation id="8396312449826231789">Solo siti approvati</translation>
@@ -702,7 +705,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="917685106653909562">Pagine Physical Web nelle vicinanze</translation>
 <translation id="9187199695613236444">Visualizzazione ottimizzata per dispositivi mobili</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
-<translation id="9192643434065497760">Per consentire l'accoppiamento, attiva il Bluetooth nelle <ph name="BEGIN_LINK" />impostazioni del dispositivo<ph name="END_LINK" />.</translation>
 <translation id="9198708126133947749">Sostituisci i dati di questo dispositivo con i dati dell'account <ph name="TO_ACCOUNT" />. Puoi recuperare i tuoi dati esistenti tornando all'account <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Immagini</translation>

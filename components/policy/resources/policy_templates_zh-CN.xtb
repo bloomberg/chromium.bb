@@ -613,9 +613,6 @@
           此为可选政策。如果未设置此政策，系统将不会替换搜索字词。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
-<translation id="3067188277482006117">如果将此政策设为 true，那么用户可以使用 Chrome 设备上的硬件，通过 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 远程向隐私认证中心 (Privacy CA) 认证自己的身份。
-
-          如果将此政策设为 false 或未进行设置，则会导致无法调用 API，并返回错误代码。</translation>
 <translation id="3069958900488014740">允许停用 <ph name="PRODUCT_NAME" /> 中的 WPAD（网络代理自动发现）优化设置。
 
       如果此政策设置为 false，那么 WPAD 优化将处于停用状态，这会延长 <ph name="PRODUCT_NAME" /> 等待基于 DNS 的 WPAD 服务器响应的时间。如果未设置或已启用此政策，那么 WPAD 优化设置将处于启用状态。
@@ -1720,9 +1717,6 @@
 <translation id="7132877481099023201">无需提示用户即可使用视频捕获设备的网址</translation>
 <translation id="7167436895080860385">允许用户在密码管理器中显示密码（已弃用）</translation>
 <translation id="7173856672248996428">临时个人资料</translation>
-<translation id="7187256234726597551">如果此政策的值为 True，则系统将允许此设备进行远程认证，然后自动生成证书并将其上传到设备管理服务器。
-
-          如果此政策的值设为 False 或未设置，则不会生成证书，也无法调用 enterprise.platformKeysPrivate 扩展程序 API。</translation>
 <translation id="718956142899066210">允许用于更新的连接类型</translation>
 <translation id="7194407337890404814">默认搜索服务提供商名称</translation>
 <translation id="7195064223823777550">指定在用户合上屏幕时执行的操作。
@@ -2064,9 +2058,6 @@
 
       如果未设置此策略，来自“URLBlacklist”策略的黑名单就不存在任何例外情况。</translation>
 <translation id="8176035528522326671">只允许企业用户以主用户的身份登录多个人资料会话（企业托管用户的默认行为）</translation>
-<translation id="8197918588508433925">此政策指定了允许使用 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 进行远程认证的扩展程序。只有添加到此列表中的扩展程序才能使用该 API。
-
-          如果扩展程序不在此列表中，或者未设置此列表，则会导致无法调用 API，并返回错误代码。</translation>
 <translation id="8214600119442850823">配置密码管理器。</translation>
 <translation id="8244525275280476362">政策失效后的最大提取延迟</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME" />在登录屏幕上为相应的设备本地帐户显示的帐户名。
@@ -2127,7 +2118,7 @@
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
-<translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。否则，Google Chrome 会将其视为下载内容并允许用户使用默认应用打开 PDF 文件。
+<translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。改为将此 PDF 查看器视为下载项，并允许用户使用此默认应用打开 PDF 文件。
 
       如果此政策未设置或已停用，系统将使用 PDF 插件打开 PDF 文件，除非用户已停用此插件。</translation>
 <translation id="8402079500086185021">始终使用外部应用打开 PDF 文件</translation>

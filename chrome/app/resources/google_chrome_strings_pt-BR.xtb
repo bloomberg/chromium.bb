@@ -129,6 +129,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="4700157086864140907">O Google Chrome pode oferecer verificação ortográfica mais inteligente, enviando as informações que você digita no navegador para os servidores do Google. Isto permite que você utilize a mesma tecnologia de verificação ortográfica utilizada pela pesquisa do Google.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
+<translation id="4750550185319565338">Reiniciar o Chrome para ativar o plug-in <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Em breve, este computador não receberá mais atualizações do Google Chrome de 32 bits. Faça upgrade para o Google Chrome de 64 bits.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Esse arquivo pode ser perigoso, por isso ele foi bloqueado pelo Chrome.</translation>
@@ -257,7 +258,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="8290100596633877290">Nossa! Houve uma falha no Google Chrome. Reiniciar agora?</translation>
 <translation id="8342675569599923794">Esse arquivo é perigoso, por isso ele foi bloqueado pelo Chrome.</translation>
 <translation id="8406086379114794905">Ajudar a melhorar o Google Chrome</translation>
-<translation id="8410645163819739900">O Google Chrome OS não pode abrir esta página.</translation>
 <translation id="8455999171311319804">Opcional: Ajude a melhorar o Chrome OS enviando automaticamente dados de uso e diagnóstico ao Google.</translation>
 <translation id="853189717709780425">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associar esses dados a outra conta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

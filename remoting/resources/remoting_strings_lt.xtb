@@ -126,6 +126,7 @@ priegloba</translation>
 <translation id="409800995205263688">PASTABA: pagal politikos nustatymus leidžiama užmegzti ryšį tik tarp tinkle esančių kompiuterių.</translation>
 <translation id="4155497795971509630">Trūksta kai kurių būtinų komponentų. Įsitikinkite, kad įdiegėte naujausios versijos programinę įrangą, ir bandykite dar kartą.</translation>
 <translation id="4156740505453712750">Jei norite apsaugoti prieigą prie šio kompiuterio, pasirinkite <ph name="BOLD_START" />bent šešių skaitmenų<ph name="BOLD_END" /> PIN kodą. Šio PIN kodo reikės prisijungiant iš kitos vietos.</translation>
+<translation id="4156741816461781891">Prisijungta kaip <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Prieigos kodas</translation>
 <translation id="4207623512727273241">Paleiskite diegimo programą prieš tęsdami.</translation>
 <translation id="4227991223508142681">Prieglobos aprūpinimo paslaugų programa</translation>
@@ -208,10 +209,6 @@ valdymo priegloba</translation>
 <translation id="6304318647555713317">Klientas</translation>
 <translation id="6381670701864002291">Kažkas kita.</translation>
 <translation id="6398765197997659313">Išeiti iš viso ekrano režimo</translation>
-<translation id="6408143143164565232">• Klausykitės garso įrašų „Windows“ arba „Linux“ kompiuteriais.
-• Pašalinkite nepageidaujamus prijungtus įrenginius paspausdami ir ilgai palaikydami kompiuterio pavadinimą.
-• Sklandžiau veikia mastelio keitimo suėmus pirštais ir slinkimo dviem pirštais funkcijos.
-• Nauji pagalbos ir atsiliepimų ekranai.</translation>
 <translation id="6441316101718669559">Kompiuterio integravimas nepalaikomas šioje platformoje. Vis tiek galite naudoti programą, bet bus teikiamos ne visos funkcijos.</translation>
 <translation id="652218476070540101">Šio kompiuterio PIN kodas atnaujinamas…</translation>
 <translation id="6527303717912515753">Bendrinti</translation>

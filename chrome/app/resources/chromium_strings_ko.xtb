@@ -39,7 +39,6 @@
 <translation id="2158734852934720349">Chromium OS 오픈소스 라이선스</translation>
 <translation id="2241627712206172106">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="225614027745146050">환영합니다.</translation>
-<translation id="2264142189334629813">Chromium OS에서 이 페이지를 열 수 없음</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="2347108572062610441">Chromium을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2372704305038231957">이 Linux 시스템에서 더 이상 32비트 Chromium이 지원되지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다. 64비트 Chromium으로 업그레이드하세요.</translation>
@@ -48,6 +47,7 @@
 <translation id="2483889755041906834">Chromium에서</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2486653164587200256">Windows XP 또는 Windows Vista에서 더 이상 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
+<translation id="2527042973354814951"><ph name="PLUGIN_NAME" />을(를) 사용하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="2535480412977113886">계정의 로그인 세부정보가 오래되어 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2558641060352364164">이 사이트에서 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용하고 있습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>

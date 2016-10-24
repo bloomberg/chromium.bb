@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Licențe open source pentru sistemul de operare Chromium</translation>
 <translation id="2241627712206172106">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chromium cum doresc.</translation>
 <translation id="225614027745146050">Bun venit</translation>
-<translation id="2264142189334629813">Sistemul de operare Chromium nu poate deschide pagina.</translation>
 <translation id="2316129865977710310">Nu, mulțumesc</translation>
 <translation id="2347108572062610441">Această extensie a modificat ce pagină se afișează când pornești Chromium.</translation>
 <translation id="2372704305038231957">Este posibil ca Chromium pe 32 de biți să nu funcționeze corespunzător, deoarece nu mai este acceptat pe acest sistem Linux. Fă upgrade la Chromium pe 64 de biți.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">În Chromium</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
 <translation id="2486653164587200256">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe Windows XP sau Windows Vista.</translation>
+<translation id="2527042973354814951">Repornește Chromium pentru a activa <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="2558641060352364164">Acest site folosește pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalează-l și fă upgrade la un browser modern.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

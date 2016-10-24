@@ -128,6 +128,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="4700157086864140907">Google Chrome kan anvende smartere stavekontrol ved at sende dine indtastninger i browseren til Googles servere, så du kan bruge den samme teknologi til stavekontrol, som der anvendes i Google-søgninger.</translation>
 <translation id="4728575227883772061">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Google Chrome kører, bedes du lukke programmet og prøve igen.</translation>
 <translation id="4743926867934016338">Acceptér, og søg</translation>
+<translation id="4750550185319565338">Genstart Chrome for at aktivere <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Denne computer holder snart op med at modtage 32-bit Google Chrome-opdateringer. Opgrader til 64-bit Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Denne fil kan være farlig, så Chrome har blokeret den.</translation>
@@ -256,7 +257,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="8290100596633877290">Hovsa! Google Chrome er gået ned. Vil du genstarte nu?</translation>
 <translation id="8342675569599923794">Denne fil er farlig, så Chrome har blokeret den.</translation>
 <translation id="8406086379114794905">Hjælp med at forbedre Chrome</translation>
-<translation id="8410645163819739900">Google Chrome OS kan ikke åbne denne side.</translation>
 <translation id="8455999171311319804">Valgfrit: Hjælp med at gøre Chrome OS bedre ved automatisk at sende diagnostik og brugsdata til Google.</translation>
 <translation id="853189717709780425">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din Google Chrome-profil. Dine Chrome-data, som f.eks. dine apps, bogmærker, historik, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via Betjeningspanelet for Google Konti, men du kan ikke knytte disse data sammen med en anden konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

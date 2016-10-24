@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1119447706177454957">Εσωτερικό σφάλμα</translation>
 <translation id="153454903766751181">Εκκίνηση μόντεμ δικτύου κινητής τηλεφωνίας…</translation>
-<translation id="158849752021629804">Απαιτείται εγχώριο δίκτυο</translation>
-<translation id="1661867754829461514">Απουσιάζει το PIN </translation>
-<translation id="1773212559869067373">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε τοπικά</translation>
 <translation id="1829129547161959350">Πιγκουίνος</translation>
 <translation id="1850504506766569011">Το Wi-Fi έχει απενεργοποιηθεί.</translation>
 <translation id="2288278176040912387">Πικάπ</translation>
 <translation id="2354174487190027830">Ενεργοποίηση <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε από το δίκτυο</translation>
 <translation id="2563185590376525700">Βάτραχος</translation>
-<translation id="2563856802393254086">Συγχαρητήρια! Η υπηρεσία δεδομένων "<ph name="NAME" />" έχει ενεργοποιηθεί και είναι έτοιμη για χρήση.</translation>
 <translation id="2649120831653069427">Πέστροφες</translation>
-<translation id="2670531586141364277">Η ενεργοποίηση του "<ph name="NAME" />" απαιτεί σύνδεση δικτύου.</translation>
 <translation id="277257480934873581">Επανασύνδεση στο δίκτυο <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Πληροφορίες</translation>
 <translation id="2951236788251446349">Μέδουσα</translation>
-<translation id="2966449113954629791">Ενδέχεται να έχετε εξαντλήσει τα διαθέσιμα δεδομένα κινητής τηλεφωνίας. Επισκεφτείτε την πύλη ενεργοποίησης <ph name="NAME" />, για να αγοράσετε περισσότερα δεδομένα.</translation>
 <translation id="3846575436967432996">Δεν υπάρχουν διαθέσιμες πληροφορίες δικτύου</translation>
-<translation id="3871838685472846647">Το κινητό ενεργοποιήθηκε</translation>
 <translation id="3901991538546252627">Σύνδεση με <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Ακτινίδιο</translation>
-<translation id="40400351611212369">Σφάλμα ενεργοποίησης συστήματος</translation>
 <translation id="4118990158415604803">Η σύνδεση με άλλα δίκτυα έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
-<translation id="4237016987259239829">Σφάλμα σύνδεσης δικτύου</translation>
-<translation id="4274292172790327596">Μη αναγνωρίσιμο σφάλμα</translation>
 <translation id="4326192123064055915">Καφές</translation>
-<translation id="4387004326333427325">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε απομακρυσμένα</translation>
-<translation id="4442424173763614572">Η αναζήτηση DNS απέτυχε</translation>
 <translation id="4448844063988177157">Αναζήτηση για δίκτυα Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Σύνδεση…</translation>
-<translation id="4508265954913339219">Η ενεργοποίηση απέτυχε</translation>
 <translation id="4559767610552730302">Εφέ Bokeh</translation>
 <translation id="4935975195727477204">Φυτό γκαζάνια</translation>
-<translation id="5045550434625856497">Λανθασμένος κωδικός πρόσβασης</translation>
-<translation id="5097002363526479830">Δεν ήταν δυνατή η σύνδεση στο δίκτυο '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Σκάκι</translation>
 <translation id="5257456363153333584">Λιβελλούλη</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">Αποτυχία αναζήτησης DHCP</translation>
-<translation id="6232116551750539448">Η σύνδεση με το <ph name="NAME" /> χάθηκε</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ενεργοποίηση…</translation>
-<translation id="6312403991423642364">Άγνωστο σφάλμα δικτύου</translation>
-<translation id="6490455614072479501">Αποτυχία σύνδεσης στο δίκτυο "<ph name="NAME" />": <ph name="DETAILS" />
-        Μήνυμα διακομιστή: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Δεν υπάρχει διαθέσιμο δίκτυο κινητής τηλεφωνίας</translation>
-<translation id="6732801395666424405">Δεν έχουν φορτωθεί τα πιστοποιητικά</translation>
 <translation id="6857811139397017780">Ενεργοποίηση <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Ανάποδα</translation>
-<translation id="6943836128787782965">Η λήψη HTTP απέτυχε</translation>
 <translation id="7066646422045619941">Το δίκτυο αυτό έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
-<translation id="7165320105431587207">Αποτυχία διαμόρφωσης δικτύου</translation>
-<translation id="7170041865419449892">Εκτός εύρους τιμών</translation>
-<translation id="7229570126336867161">Απαιτείται EVDO</translation>
-<translation id="7256405249507348194">Μη αναγνωρίσιμο σφάλμα: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Εσφαλμένο όνομα χρήστη/κωδικός πρόσβασης ή αποτυχία EAP-auth</translation>
 <translation id="735745346212279324">Το VPN αποσυνδέθηκε</translation>
 <translation id="7874779702599364982">Αναζήτηση για δίκτυα κινητής τηλεφωνίας…</translation>
-<translation id="7925247922861151263">Ο έλεγχος ΑΑΑ απέτυχε</translation>
-<translation id="7973962044839454485">Αποτυχία ελέγχου ταυτότητας PPP λόγω εσφαλμένου ονόματος χρήστη ή κωδικού πρόσβασης</translation>
 <translation id="8000066093800657092">Κανένα δίκτυο</translation>
 <translation id="8008366997883261463">Τεριέ Τζακ Ράσελ</translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Αποτυχία OTASP</translation>
-<translation id="8372369524088641025">Εσφαλμένο κλειδί WEP</translation>
 <translation id="8454013096329229812">Το Wi-Fi έχει ενεργοποιηθεί.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Επανασύνδεση…</translation>
-<translation id="8688591111840995413">Μη αποδεκτός κωδικός πρόσβασης</translation>
 <translation id="8714406895390098252">Ποδήλατο</translation>
 <translation id="8808686172382650546">Γάτα</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Η σύνδεση στο δίκτυο απέτυχε: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Η σύνδεση απέτυχε</translation>
 </translationbundle>

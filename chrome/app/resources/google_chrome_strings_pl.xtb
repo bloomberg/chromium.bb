@@ -129,6 +129,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="4700157086864140907">Google Chrome może lepiej sprawdzać pisownię, przesyłając do serwerów Google tekst, który wpisujesz w przeglądarce. Dzięki temu możesz korzystać z technologii sprawdzania pisowni używanej przez wyszukiwarkę Google.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
 <translation id="4743926867934016338">Zaakceptuj i szukaj</translation>
+<translation id="4750550185319565338">Uruchom ponownie Chrome, by włączyć wtyczkę <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Ten komputer wkrótce przestanie otrzymywać aktualizacje Google Chrome w wersji 32-bitowej. Uaktualnij Chrome do wersji 64-bitowej.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ten plik może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
@@ -257,7 +258,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8290100596633877290">O kurczę! Przeglądarka Google Chrome uległa awarii. Uruchomić ją teraz ponownie?</translation>
 <translation id="8342675569599923794">Ten plik jest niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="8406086379114794905">Pomóż ulepszać Chrome</translation>
-<translation id="8410645163819739900">System operacyjny Google Chrome nie może otworzyć tej strony.</translation>
 <translation id="8455999171311319804">Opcjonalnie: pomóż ulepszyć system operacyjny Chrome OS, automatycznie wysyłając do Google dane diagnostyczne i informacje o użytkowaniu.</translation>
 <translation id="853189717709780425">Logujesz się na konto zarządzane i przyznajesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie je można usunąć w sekcji kont Panelu Google, ale nie będzie można powiązać ich z innym kontem.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -126,6 +126,7 @@ host</translation>
 <translation id="409800995205263688">BEMÆRK! Politikindstillingerne tillader kun forbindelser mellem computere inden for dit netværk.</translation>
 <translation id="4155497795971509630">Nogle obligatoriske komponenter mangler. Kontrollér, at du har installeret den nyeste version af softwaren, og prøv igen.</translation>
 <translation id="4156740505453712750">Beskyt adgangen til denne computer ved at vælge en pinkode på <ph name="BOLD_START" />mindst seks cifre<ph name="BOLD_END" />. Denne pinkode skal indtastes, når du opretter forbindelse fra et andet sted.</translation>
+<translation id="4156741816461781891">Logget ind som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Adgangskode</translation>
 <translation id="4207623512727273241">Kør installationsprogrammet, før du fortsætter.</translation>
 <translation id="4227991223508142681">Host-værktøj til oprettelse</translation>
@@ -208,10 +209,6 @@ Fjernskrivebord</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Noget andet.</translation>
 <translation id="6398765197997659313">Afslut fuld skærm</translation>
-<translation id="6408143143164565232">• Hør lyd fra Windows- eller Linux-computere.
-• Fjern uønskede forbindelser med langt tryk på computerens navn.
-• Knib for at zoome og rulning med to fingre er blevet nemmere.
-• Ny Hjælp og feedback-skærm.</translation>
 <translation id="6441316101718669559">Skrivebordsintegration understøttes ikke på denne platform. Du kan fortsat bruge denne applikation, men brugeroplevelsen vil være forringet.</translation>
 <translation id="652218476070540101">Pinkoden for denne computer opdateres…</translation>
 <translation id="6527303717912515753">Del</translation>

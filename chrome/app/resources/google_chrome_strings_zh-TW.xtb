@@ -128,6 +128,7 @@
 <translation id="4700157086864140907">Google Chrome 可將您在瀏覽器中輸入的字詞傳送給 Google 伺服器，並透過 Google 搜尋所使用的拼字檢查技術，為您提供更好用的拼字檢查功能。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="4743926867934016338">接受並搜尋</translation>
+<translation id="4750550185319565338">重新啟動 Chrome 即可啟用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">這台電腦將不會再收到 32 位元的 Google Chrome 更新，請升級至 64 位元的 Google Chrome。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">這個檔案可能不安全，因此遭到 Chrome 封鎖。</translation>
@@ -258,7 +259,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>
 <translation id="8342675569599923794">這個檔案並不安全，因此遭到 Chrome 封鎖。</translation>
 <translation id="8406086379114794905">協助改善 Chrome 的服務品質</translation>
-<translation id="8410645163819739900">Google Chrome 作業系統無法開啟這個網頁。</translation>
 <translation id="8455999171311319804">選擇性：自動將診斷資料和使用情況資料傳送給 Google，協助我們讓 Chrome 作業系統更臻完善。</translation>
 <translation id="853189717709780425">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

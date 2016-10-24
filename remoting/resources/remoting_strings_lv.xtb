@@ -126,6 +126,7 @@ saimniekdators</translation>
 <translation id="409800995205263688">PIEZĪME. Saskaņā ar politikas iestatījumiem savienojumus ir atļauts veidot tikai starp jūsu tīkla datoriem.</translation>
 <translation id="4155497795971509630">Trūkst dažu nepieciešamo komponentu. Pārbaudiet, vai ir instalēta programmatūras jaunākā versija, un mēģiniet vēlreiz.</translation>
 <translation id="4156740505453712750">Lai izveidotu drošu savienojumu ar šo datoru, lūdzu, izvēlieties tādu PIN, kura garums ir <ph name="BOLD_START" />vismaz seši cipari<ph name="BOLD_END" />. Šis PIN būs nepieciešams, lai izveidotu savienojumu no citas atrašanās vietas.</translation>
+<translation id="4156741816461781891">Pierakstījies kā <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Piekļuves kods</translation>
 <translation id="4207623512727273241">Lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
 <translation id="4227991223508142681">Resursdatora nodrošināšanas utilīta</translation>
@@ -208,10 +209,6 @@ darbvirsmas saimniekdators</translation>
 <translation id="6304318647555713317">Klients</translation>
 <translation id="6381670701864002291">Cita problēma.</translation>
 <translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
-<translation id="6408143143164565232">• Audio atskaņošana no Windows vai Linux datora.
-• Nevēlamu savienojumu noņemšana, turot nospiestu datora savienojuma nosaukumu.
-• Ērtāka savilkšana tālummaiņai un ritināšana ar diviem pirkstiem.
-• Jauns palīdzības un atsauksmju ekrāns.</translation>
 <translation id="6441316101718669559">Šajā platformā netiek atbalstīta darbvirsmas integrācija. Jūs joprojām varat izmantot lietojumprogrammu, taču lietotāja pieredze nebūs pietiekami laba.</translation>
 <translation id="652218476070540101">Notiek šī datora PIN atjaunināšana…</translation>
 <translation id="6527303717912515753">Kopīgot</translation>

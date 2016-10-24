@@ -10,7 +10,6 @@
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="106701514854093668">桌面书签</translation>
 <translation id="1080116354587839789">适合窗口宽度</translation>
-<translation id="1103124106085518534">暂时没有新内容</translation>
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">选中后，Chrome 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="1111153019813902504">最近用过的书签</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />尝试运行 Windows 网络诊断<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">请更新您的同步密码。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">您最近访问过的书签将显示在此处。</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1838667051080421715">您正在查看网页的源代码。</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
@@ -358,7 +356,6 @@
 <translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
-<translation id="4884656795097055129">系统会适时显示更多文章。</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{和另外 1 个网页}other{和另外 # 个网页}}</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>

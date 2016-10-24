@@ -128,6 +128,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="4700157086864140907">A Google Chrome pontosabb helyesírás-ellenőrzést tud biztosítani azáltal, hogy a böngészőbe beírt szöveget elküldi a Google szervereinek, ami lehetővé teszi, hogy ugyanazt a helyesírás-ellenőrző technológiát használja, amelyet a Google-keresés is.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4743926867934016338">Elfogadás és keresés</translation>
+<translation id="4750550185319565338">A Chrome újraindítása a(z) <ph name="PLUGIN_NAME" /> engedélyezéséhez</translation>
 <translation id="4751441238232965030">Ez a számítógép hamarosan nem kap további frissítéseket a Google Chrome 32 bites változatához. Kérjük, frissítsen a Google Chrome 64 bites változatára.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ez a fájl veszélyes lehet, ezért a Chrome letiltotta.</translation>
@@ -256,7 +257,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="8290100596633877290">Hmm. A Google Chrome összeomlott. Újraindítja most?</translation>
 <translation id="8342675569599923794">Ez a fájl veszélyes, ezért a Chrome letiltotta.</translation>
 <translation id="8406086379114794905">Segítsen a Chrome tökéletesítésében</translation>
-<translation id="8410645163819739900">A Google Chrome OS nem tudja megnyitni ezt az oldalt.</translation>
 <translation id="8455999171311319804">Nem kötelező: Segítse a Chrome OS fejlesztését azzal, hogy automatikusan elküldi a diagnosztikai és használati adatokat a Google-nak.</translation>
 <translation id="853189717709780425">Felügyelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, ám más fiókhoz nem társíthatja őket.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

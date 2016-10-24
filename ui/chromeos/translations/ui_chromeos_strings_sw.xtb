@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
-<translation id="1119447706177454957">Hitilafu ya ndani</translation>
 <translation id="153454903766751181">Inaanzisha modemu ya simu za mkononi...</translation>
-<translation id="158849752021629804">Inahitaji mtandao wa nyumbani</translation>
-<translation id="1661867754829461514">PIN inakosekana</translation>
-<translation id="1773212559869067373">Cheti cha uthibitishaji kimekataliwa kindani</translation>
 <translation id="1829129547161959350">Ngwini</translation>
 <translation id="1850504506766569011">Wi-Fi imezimwa.</translation>
 <translation id="2288278176040912387">Kicheza rekodi</translation>
 <translation id="2354174487190027830">Inaanza kutumia <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Cheti cha uthibitishaji kimekataliwa na mtandao</translation>
 <translation id="2563185590376525700">Chura</translation>
-<translation id="2563856802393254086">Hongera! Huduma yako ya data ya '<ph name="NAME" />' imeanza kutumika na iko tayari kwa matumizi.</translation>
 <translation id="2649120831653069427">Samakiupinde</translation>
-<translation id="2670531586141364277">Kuanza kutumia '<ph name="NAME" />' kunahitaji muunganisho kwa mtandao.</translation>
 <translation id="277257480934873581">Inaunganisha upya kwenye <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Maelezo</translation>
 <translation id="2951236788251446349">Kiwavi wa baharini</translation>
-<translation id="2966449113954629791">Huenda ulitumia kiwango chako chote cha data. Tembelea <ph name="NAME" /> kituo cha uwezeshaji ili ununue data zaidi.</translation>
 <translation id="3846575436967432996">Hakuna maelezo ya mtandao yanayopatikana</translation>
-<translation id="3871838685472846647">Simu ya Mkononi Imewashwa</translation>
 <translation id="3901991538546252627">Inaunganisha kwenye <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Hitilafu ya Kuanza Kutumia Mtandao</translation>
 <translation id="4118990158415604803">Kuunganisha kwenye mitandao mingine kumezimwa na msimamizi wako.</translation>
-<translation id="4237016987259239829">Hitilafu ya Muunganisho wa Mtandao</translation>
-<translation id="4274292172790327596">Hitilafu Isiyotambulika</translation>
 <translation id="4326192123064055915">Kahawa</translation>
-<translation id="4387004326333427325">Cheti cha uthibitishaji kimekataliwa kwa mbali</translation>
-<translation id="4442424173763614572">Mwonekano wa DNS umeshindikana</translation>
 <translation id="4448844063988177157">Inatafuta mitandao ya Wi-Fi…</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Inaunganisha...</translation>
-<translation id="4508265954913339219">Uamilisho umeshindikana</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Ua la Gazania</translation>
-<translation id="5045550434625856497">Nenosiri lisilo sahihi</translation>
-<translation id="5097002363526479830">Imeshindwa kuunganisha kwenye mtandao '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Sataranji</translation>
 <translation id="5257456363153333584">Kereng'ende</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">Mwonekano wa DHCP umeshindikana</translation>
-<translation id="6232116551750539448">Muunganisho kwenye <ph name="NAME" /> umepotea</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Inaanza kutumia...</translation>
-<translation id="6312403991423642364">Hitilafu isiyojulikana ya mtandao</translation>
-<translation id="6490455614072479501">Haikuunganisha kwenye '<ph name="NAME" />': <ph name="DETAILS" />
-        Ujumbe wa seva: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Hakuna mtandao wa simu za mkononi unaopatikana</translation>
-<translation id="6732801395666424405">Vyeti havijapakiwa</translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Juu Chini</translation>
-<translation id="6943836128787782965">HTTP imeshindikana</translation>
 <translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
-<translation id="7165320105431587207">Ilishindwa kusanidi mtandao</translation>
-<translation id="7170041865419449892">Nje ya eneo</translation>
-<translation id="7229570126336867161">Inahitaji EVDO</translation>
-<translation id="7256405249507348194">Hitilafu isiyotambulika: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Jina la mtumiaji/nenosiri sio sahihi au EAP-auth imeshindwa</translation>
 <translation id="735745346212279324">VPN imekatwa muunganisho</translation>
 <translation id="7874779702599364982">Inatafuta mitandao ya simu za mkononi...</translation>
-<translation id="7925247922861151263">Ukaguzi wa AAA umeshindikana</translation>
-<translation id="7973962044839454485">Uthibitishaji wa PPP ulishindwa kutokana na jina la mtumiaji na nenosiri lisilo sahihi</translation>
 <translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="8008366997883261463">Mbwa</translation>
 <translation id="8132793192354020517">Imeunganishwa kwenye <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP imeshindikana</translation>
-<translation id="8372369524088641025">Kitufe kibovu cha WEP</translation>
 <translation id="8454013096329229812">Wi-Fi imewashwa.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Inaunganisha upya...</translation>
-<translation id="8688591111840995413">Nenosiri lisilo sahihi</translation>
 <translation id="8714406895390098252">Baiskeli</translation>
 <translation id="8808686172382650546">Paka</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Imeshindwa kuunganisha kwenye mtandao: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Muunganisho umeshindikana</translation>
 </translationbundle>

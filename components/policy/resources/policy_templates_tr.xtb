@@ -680,9 +680,6 @@
           Bu politika isteğe bağlıdır. Ayarlanmadan bırakılırsa, hiçbir arama terimi değişikliği yapılmaz.
 
           Bu politika ancak 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
-<translation id="3067188277482006117">Doğru olarak ayarlanırsa, kullanıcı, chrome.enterprise.platformKeysPrivate.challengeUserKey() Kurumsal Platform Anahtarlar API'sı üzerinden cihaz kimliğini gizlilik CA'sına uzaktan doğrulatmak için Chrome cihazlarındaki donanımı kullanabilir.
-
-          Yanlış seçeneğine ayarlanırsa veya hiç ayarlanmazsa, API'ya yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> ürününde WPAD (Otomatik Web Proxy Keşfi) optimizasyonunu kapatmanıza olanak verir.
 
       Bu politika yanlış seçeneğine ayarlanırsa WPAD optimizasyonu devre dışı kalır ve <ph name="PRODUCT_NAME" /> ürününün DNS tabanlı WPAD sunucuları için daha uzun süre beklemesine neden olur. Politika ayarlanmazsa veya etkinleştirilirse WPAD optimizasyonu etkinleştirilir.
@@ -1912,9 +1909,6 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="7132877481099023201">Soru sorulmadan video yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="7167436895080860385">Kullanıcıların şifreleri Şifre Yöneticisi'nde görüntülemelerine izin ver (kullanımdan kalktı)</translation>
 <translation id="7173856672248996428">Geçici profil</translation>
-<translation id="7187256234726597551">True (doğru) olduğunda, cihaz için uzaktan doğrulamaya izin verilir, otomatik olarak bir sertifika oluşturulup Cihaz Yönetim Sunucusuna yüklenir.
-
-          False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika oluşturulmaz ve enterprise.platformKeysPrivate API'sına yapılan çağrılar başarısız olur.</translation>
 <translation id="718956142899066210">Güncellemeler için izin verilen bağlantı türleri</translation>
 <translation id="7194407337890404814">Varsayılan arama sağlayıcının adı</translation>
 <translation id="7195064223823777550">Kullanıcı kapağı kapattığında uygulanacak işlemi belirtin.
@@ -2279,9 +2273,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Bu politika ayarlanmazsa, kara listenin 'URLBlacklist' politikasına göre hiçbir istisnası olmaz.</translation>
 <translation id="8176035528522326671">Kurumsal kullanıcının sadece birincil çok profilli kullanıcı olmasına izin ver (Kurumsal olarak yönetilen kullanıcılar için varsayılan çalışma biçimidir)</translation>
-<translation id="8197918588508433925">Bu politika, uzaktan doğrulama için chrome.enterprise.platformKeysPrivate.challengeUserKey() Kurumsal Platform Anahtarları API'sını kullanmasına izin verilen uzantıları belirtir. API'yı kullanmak için uzantılar bu listeye eklenmelidir.
-
-          Bir uzantı listede yoksa veya liste ayarlanmamışsa, API'ya yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
 <translation id="8214600119442850823">Şifre yöneticisini yapılandırır.</translation>
 <translation id="8244525275280476362">Bir politika iptal edildikten sonra maksimum getirme gecikmesi</translation>
 <translation id="8256688113167012935">Hesap adının (<ph name="PRODUCT_OS_NAME" />) ilgili cihaz-yerel hesap için giriş ekranında görüntülenip görüntülenmeyeceğini kontrol eder.

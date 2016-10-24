@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Licenças de código aberto do Chromium OS</translation>
 <translation id="2241627712206172106">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Chromium da maneira que desejarem.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
-<translation id="2264142189334629813">O Chromium OS não pode abrir essa página.</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="2372704305038231957">É possível que o Chromium de 32 bits não funcione corretamente, porque ele não é mais compatível com esse sistema Linux. Faça upgrade para o Chromium de 64 bits.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">No Chromium</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2486653164587200256">É possível que o Chromium não funcione corretamente, porque ele não é mais compatível com o Windows XP ou Windows Vista.</translation>
+<translation id="2527042973354814951">Reiniciar o Chromium para ativar o plug-in <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">O Chromium OS não pôde sincronizar seus dados porque os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="2558641060352364164">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça upgrade para um navegador moderno.</translation>
 <translation id="2572494885440352020">Assistente do Chromium</translation>

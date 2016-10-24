@@ -40,6 +40,7 @@
 <translation id="2507943997699731163">Please fill in this field.</translation>
 <translation id="2508569020611168319">tab list</translation>
 <translation id="2548326553472216322">No recent searches</translation>
+<translation id="2561842179657104141">show more media controls</translation>
 <translation id="2572483411312390101">play</translation>
 <translation id="2613802280814924224">Please enter a valid value. The nearest valid value is <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Submit</translation>
@@ -113,6 +114,7 @@
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">pause playback</translation>
 <translation id="5643186887447432888">button</translation>
+<translation id="5677946354068040947">more options</translation>
 <translation id="57838592816432529">Mute</translation>
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5843503607508392247">Other...</translation>
@@ -147,6 +149,7 @@
 <translation id="6853785296079745596">hide closed captions</translation>
 <translation id="6885760532393684712">directory</translation>
 <translation id="6934078000481955284">blockquote</translation>
+<translation id="6941933287844615239">download media</translation>
 <translation id="7057186640035488495">film time</translation>
 <translation id="709897737746224366">Please match the format requested.</translation>
 <translation id="7223624360433298498">elapsed time</translation>

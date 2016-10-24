@@ -126,6 +126,7 @@ Host</translation>
 <translation id="409800995205263688">MÄRKUS: reegli seaded lubavad luua ühenduse ainult teie võrku kuuluvate arvutite vahel.</translation>
 <translation id="4155497795971509630">Mõned vajalikud komponendid on puudu. Veenduge, et installitud oleks tarkvara uusim versioon, ja proovige uuesti.</translation>
 <translation id="4156740505453712750">Arvuti kaitsmiseks valige PIN-kood, mis koosneb <ph name="BOLD_START" />vähemalt kuuest numbrist<ph name="BOLD_END" />. PIN-kood tuleb sisestada muust asukohast ühenduse loomisel.</translation>
+<translation id="4156741816461781891">Sisse logitud kasutajana <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Pääsukood</translation>
 <translation id="4207623512727273241">Enne jätkamist käitage installerit.</translation>
 <translation id="4227991223508142681">Hosti ettevalmistamise utiliit</translation>
@@ -208,10 +209,6 @@ Desktopi host</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Midagi muud.</translation>
 <translation id="6398765197997659313">Välju täisekraanilt</translation>
-<translation id="6408143143164565232">• Kuulake heli Windowsi või Linuxi arvutitest.
-• Eemaldage soovimatud ühendused, vajutades pikalt arvuti nimel.
-• Sõrmede kokku-lahku liigutamisega suumimine ja kahe sõrmega kerimine on sujuvam.
-• Uus abi ja tagasiside kuva.</translation>
 <translation id="6441316101718669559">Sellel platvormil ei toetata töölaua integreerimist. Saate rakendust kasutada, kuid kasutuskogemus on kehvem.</translation>
 <translation id="652218476070540101">Selle arvuti PIN-koodi värskendatakse ...</translation>
 <translation id="6527303717912515753">Jaga</translation>

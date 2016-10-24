@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Netiek saglabātas</translation>
 <translation id="106701514854093668">Datora grāmatzīmes</translation>
 <translation id="1080116354587839789">Ietilpināt pēc platuma</translation>
-<translation id="1103124106085518534">Pagaidām gatavs!</translation>
 <translation id="1103523840287552314">Vienmēr tulkot <ph name="LANGUAGE" /> valodas saturu</translation>
 <translation id="1107591249535594099">Ja šī izvēles rūtiņa ir atzīmēta, pārlūks Chrome saglabās jūsu kartes kopiju šajā ierīcē, lai nodrošinātu ātrāku veidlapu aizpildi.</translation>
 <translation id="1111153019813902504">Nesenas grāmatzīmes</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Mēģiniet palaist Windows tīkla diagnostiku<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Šeit tiks parādītas nesen izmantotās grāmatzīmes.</translation>
 <translation id="1821930232296380041">Pieprasījums vai tā parametri nebija derīgi.</translation>
 <translation id="1838667051080421715">Jūs skatāt tīmekļa lapas avotu.</translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
@@ -360,7 +358,6 @@
 <translation id="4816492930507672669">Ietilpināt lapā</translation>
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="4880827082731008257">Meklēšanas vēsture</translation>
-<translation id="4884656795097055129">Citi raksti tiks parādīti piemērotā brīdī.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{un vēl 1 tīmekļa lapa}zero{un vēl # tīmekļa lapas}one{un vēl # tīmekļa lapa}other{un vēl # tīmekļa lapas}}</translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE" /></translation>

@@ -126,6 +126,7 @@ Host</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>
 <translation id="4155497795971509630">Falten alguns components necessaris. Assegureu-vos que hàgiu instal·lat la versió més recent del programari i torneu-ho a provar.</translation>
 <translation id="4156740505453712750">Per protegir l'accés a aquest ordinador, trieu un PIN de <ph name="BOLD_START" />sis dígits com a mínim<ph name="BOLD_END" />. Necessitareu aquest PIN per connectar-vos a aquest ordinador des d'una altra ubicació.</translation>
+<translation id="4156741816461781891">Has iniciat la sessió com a <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Codi d'accés</translation>
 <translation id="4207623512727273241">Executeu l'instal·lador abans de continuar.</translation>
 <translation id="4227991223508142681">Utilitat de l'administració de l'amfitrió</translation>
@@ -208,10 +209,6 @@ remot de Chrome</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Altres motius.</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
-<translation id="6408143143164565232">• Escolteu àudio des d'ordinadors Windows o Linux.
-• Suprimiu les connexions que no vulgueu mantenint premut el nom d'un ordinador.
-• Les opcions de pessigar per fer zoom i desplaçar-se amb dos dits s'han optimitzat.
-• Nova pantalla d'Ajuda i suggeriments.</translation>
 <translation id="6441316101718669559">Aquesta plataforma no admet la integració de l'escriptori. Podeu continuar utilitzant l'aplicació, però l'experiència de l'usuari no serà tan bona.</translation>
 <translation id="652218476070540101">S'està actualitzant el PIN d'aquest ordinador...</translation>
 <translation id="6527303717912515753">Comparteix</translation>

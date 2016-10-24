@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Never saved</translation>
 <translation id="106701514854093668">Desktop Bookmarks</translation>
 <translation id="1080116354587839789">Fit to width</translation>
-<translation id="1103124106085518534">Finished for now</translation>
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">If ticked, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="1111153019813902504">Recent bookmarks</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Try running Windows Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Your recently visited bookmarks will appear here.</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1838667051080421715">You are viewing the source of a web page.</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Fit to page</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4880827082731008257">Search history</translation>
-<translation id="4884656795097055129">More articles will appear when the time is right.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{and 1 more web page}other{and # more web pages}}</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>

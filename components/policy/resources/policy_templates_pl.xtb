@@ -291,6 +291,7 @@
       Jeśli zasada HardwareAccelerationModeEnabled jest wyłączona, zasada Disable3DAPIs jest ignorowana, a włączona jest zasada równoważna wobec Disable3DAPI.</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
+<translation id="2178899310296064282">Wymuś co najmniej umiarkowany tryb ograniczonego dostępu w YouTube</translation>
 <translation id="2188979373208322108">Włącza pasek zakładek w przeglądarce <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie pokazywany pasek zakładek. W przypadku wyłączenia ustawienia pasek nie będzie wyświetlany. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tego ustawienia użytkownik może zdecydować, czy chce używać tej funkcji.</translation>
 <translation id="2201555246697292490">Skonfiguruj białą listę wiadomości natywnych</translation>
 <translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
@@ -537,6 +538,7 @@
       Gdy włączysz lub wyłączysz ustawienie, użytkownicy nie mogą zmienić ani zastąpić ustawienia „Włącz ochronę przed wyłudzaniem danych (phishingiem) i złośliwym oprogramowaniem” w <ph name="PRODUCT_NAME" />.
 
       Jeśli zasada pozostanie nieustawiona, funkcja jest włączona, ale użytkownik może to zmienić.</translation>
+<translation id="2787173078141616821">Przesyłaj informacje o stanie Androida</translation>
 <translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
 
       Jeśli ta zasada jest wyłączona, użytkownicy nie mają dostępu do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline. Jeśli jest włączona, użytkownicy mogą grać w tę grę. Jeśli zasada nie jest ustawiona, użytkownicy nie mają dostępu do gry na zarejestrowanych urządzeniach z Chrome OS, a w innych przypadkach mogą w nią grać.</translation>
@@ -643,9 +645,6 @@
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, nie zachodzi zamiana wyszukiwanego hasła.
 
           Ta zasada jest uwzględniania tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
-<translation id="3067188277482006117">Jeśli ustawiono wartość Prawda, użytkownik może używać modułu sprzętowego w urządzeniach z Chrome do zdalnego poświadczania tożsamości przez wywołanie funkcji chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys.
-
-          Jeśli wartość ustawiono na Fałsz lub nie jest ona określona, wywołania kierowane do interfejsu API zakończą się błędem.</translation>
 <translation id="3069958900488014740">Umożliwia wyłączenie optymalizacji WPAD (Web Proxy Auto-Discovery) w <ph name="PRODUCT_NAME" />.
 
       Jeśli ta zasada jest wyłączona, optymalizacja WPAD jest wyłączona. <ph name="PRODUCT_NAME" /> musi wtedy dłużej oczekiwać na serwery WPAD oparte na DNS. Jeśli zasada jest włączona lub nie jest skonfigurowana, optymalizacja WPAD jest włączona.
@@ -762,6 +761,15 @@
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
       W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> nie będzie zezwalać na uruchamianie sesji gościa.</translation>
+<translation id="3418871497193485241">Wymusza minimalny tryb ograniczonego dostępu w YouTube i uniemożliwia 
+      użytkownikom wybór trybu z mniejszymi ograniczeniami.
+
+      Jeśli wybierzesz ustawienie „Ścisły”, ścisły tryb ograniczony będzie zawsze aktywny w YouTube.
+
+      Jeśli wybierzesz ustawienie „Umiarkowany”, użytkownik może wybrać tylko umiarkowany
+      lub ścisły tryb ograniczonego dostępu w YouTube i nie może go wyłączyć.
+
+      Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowanie trybu ograniczonego dostępu w YouTube nie będzie wymuszane przez przeglądarkę <ph name="PRODUCT_NAME" />. Zewnętrzne zasady, np. zasady YouTube, mogą jednak nadal wymuszać stosowanie trybu ograniczonego dostępu.</translation>
 <translation id="3428247105888806363">Włącz przewidywanie działań sieciowych</translation>
 <translation id="3449886121729668969">Konfiguruje ustawienia serwera proxy dla <ph name="PRODUCT_NAME" />. Będą one też dostępne dla aplikacji ARC.
 
@@ -875,6 +883,12 @@
 
           Domyślnie wszystkie hosty wiadomości natywnych są umieszczane na białej liście, ale jeśli wszystkie hosty wiadomości natywnych zostały umieszczone na czarnej liście na skutek działania zasad, biała lista może posłużyć do zastąpienia tych zasad.</translation>
 <translation id="384743459174066962">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="3851039766298741586">Przesyłaj informacje o aktywnej sesji publicznej,
+      np. dotyczące identyfikatora i wersji aplikacji.
+
+      Jeśli ta zasada jest wyłączona, informacje o sesji nie będą
+      przesyłane. Jeśli zasada jest włączona lub nieustawiona, informacje o sesji
+      będą przesyłane.</translation>
 <translation id="3859780406608282662">Dodaj parametr do pobierania odmian referencyjnych w <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada jest ustalona, zostanie dodany parametr zapytania „z ograniczeniem” do adresu URL używanego do pobierania odmian referencyjnych. Wartością parametru będzie wartość tej zasady.
@@ -889,6 +903,13 @@
 
           Ta zasada jest egzekwowana tylko wtedy, gdy jest włączona zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="3864818549971490907">Domyślne ustawienie wtyczek</translation>
+<translation id="386487026071140458">Ta zasada została wycofana. Zamiast niej użyj tych: <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> lub <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Zasada zostanie zignorowana, jeśli ustawiona zostanie któraś z tych zasad: <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> lub <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (wycofana).
+
+      Wymusza realizację zapytań w wyszukiwarce Google przy użyciu filtra SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia. To ustawienie wymusza też włączenie umiarkowanego trybu ograniczonego dostępu w YouTube.
+
+      Jeśli włączysz to ustawienie, filtr SafeSearch w wyszukiwarce Google i umiarkowany tryb ograniczonego dostępu w YouTube będą zawsze aktywne.
+
+      Jeśli je wyłączysz albo nie podasz wartości, stosowanie filtra SafeSearch w wyszukiwarce Google i trybu ograniczonego dostępu w YouTube nie będzie wymuszane.</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał wybranie nazwy użytkownika spośród zarejestrowanych nazw wyświetlanych na ekranie logowania. W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> będzie prosił o podanie nazwy użytkownika i hasła.</translation>
 <translation id="3868347814555911633">Ta zasada jest aktywna tylko w trybie sklepu.
@@ -967,6 +988,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli ta zasada pozostanie nieskonfigurowana, będzie używane ustawienie AllowCookies, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="4103289232974211388">Przekieruj do dostawcy tożsamości SAML po potwierdzeniu przez użytkownika</translation>
+<translation id="4103941930938018145">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF ma być używana do otwierania plików PDF.
+
+      Pozwala określić listę wtyczek wyłączonych w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
+
+      Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w przeglądarce <ph name="PRODUCT_NAME" />. Wtyczki będą oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie będą mogli ich włączyć.
+
+      Pamiętaj, że ta zasada może być zastąpiona przez zasady EnabledPlugins i DisabledPluginsExceptions.
+
+      Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
 <translation id="410478022164847452">Określa, po jakim czasie nieaktywności użytkownika podejmowane jest działanie po bezczynności przy zasilaniu z sieci.
 
           Jeśli ta zasada jest ustawiona, określa czas, przez który użytkownik musi pozostać nieaktywny, zanim <ph name="PRODUCT_OS_NAME" /> wykona działanie związane z bezczynnością (można skonfigurować je osobno).
@@ -1247,6 +1279,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli to ustawienie będzie wyłączone lub nieustawione, zarówno zdalni, jak i lokalni użytkownicy będą mogli korzystać z udostępnianego hosta.</translation>
 <translation id="5423001109873148185">Po włączeniu tej zasady wymuszany jest import wyszukiwarek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia wyszukiwarka domyślna nie jest importowana. Jeśli zasada nie zostanie skonfigurowana, użytkownik może zobaczyć pytanie o zaimportowanie wyszukiwarki lub importowanie odbędzie się automatycznie.</translation>
 <translation id="5423197884968724595">Nazwa ograniczenia w Android WebView:</translation>
+<translation id="543559563129402336">Ta zasada została wycofana. Zamiast niej możesz użyć tej zasady: <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Zastępuje ona wycofaną zasadę i umożliwia dokładniejszą konfigurację.
+
+      Wymusza umiarkowany tryb ograniczonego dostępu w YouTube i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Jeśli to ustawienia jest włączone, tryb ograniczonego dostępu w YouTube będzie zawsze ustawiony co najmniej na poziom „Umiarkowany”.
+
+      Jeśli je wyłączysz lub nie podasz wartości, stosowanie trybu ograniczonego dostępu w YouTube nie będzie wymuszane przez przeglądarkę <ph name="PRODUCT_NAME" />. Zewnętrzne zasady, np. zasady YouTube, mogą jednak nadal wymuszać stosowanie trybu ograniczonego dostępu.</translation>
 <translation id="5447306928176905178">Włącz raportowanie informacji o pamięci (rozmiar stosu pamięci JS) do strony (opcja wycofana)</translation>
 <translation id="5457065417344056871">Włącz tryb gościa w przeglądarce</translation>
 <translation id="5457924070961220141">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME" />. Ustawieniem domyślnym, stosowanym w przypadku nieskonfigurowania tej zasady, jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -1350,6 +1389,19 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
+<translation id="5783595563813359339">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF ma być używana do otwierania plików PDF.
+
+      Pozwala określić listę wtyczek, które użytkownik może włączyć lub wyłączyć w przeglądarce <ph name="PRODUCT_NAME" />.
+
+      Możesz użyć symboli wieloznacznych „*” i „?”, aby dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
+
+      Jeśli włączysz to ustawienie, wtyczek wymienionych na liście będzie można używać w przeglądarce <ph name="PRODUCT_NAME" />. Użytkownicy będą mogli je włączyć lub wyłączyć na stronie „about:plugins”, nawet jeśli wtyczka będzie pasować także do wzorca wprowadzonego w zasadzie DisabledPlugins. Użytkownicy będą mogli również włączyć lub wyłączyć wtyczki, które nie pasują do żadnych wzorców wprowadzonych w zasadach DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
+
+      Ta zasada ma umożliwić ścisłą kontrolę uruchamiania wtyczek, gdy lista „DisabledPlugins” zawiera pozycje z symbolami wieloznacznymi (na przykład wyłączenie wszystkich wtyczek – „*” lub wyłączenie wszystkich wtyczek Java – „*Java*”), a administrator chce włączyć tylko konkretną wersję – na przykład „IcedTea Java 2.3”. Te konkretne wersje można określić w tej zasadzie.
+
+      Pamiętaj, że musisz wykluczyć zarówno nazwę wtyczki, jak i nazwę grupy wtyczek. Każdą grupę wtyczek widać w oddzielnej sekcji na stronie about:plugins, a do każdej sekcji może należeć co najmniej jedna wtyczka. Na przykład wtyczka „Shockwave Flash” należy do grupy „Adobe Flash Player” i jeśli ma być wykluczona z czarnej listy, obie te nazwy muszą mieć swoje odpowiedniki na liście wyjątków.
+
+      Jeśli ta zasada nie zostanie ustawiona, każda wtyczka zgodna ze wzorcem na liście „DisabledPlugins” zostanie wyłączona i zablokowana, a użytkownik nie będzie mógł jej włączyć.</translation>
 <translation id="5795001131770861387">Włącza obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="5814301096961727113">Ustaw domyślny stan potwierdzeń głosowych na ekranie logowania</translation>
@@ -1413,6 +1465,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli nie ustawisz tej zasady w <ph name="PRODUCT_NAME" /> lub wybierzesz wartość fałsz, <ph name="PRODUCT_NAME" /> 19 i nowsze wersje nie sprawdzają online, czy certyfikat nie został unieważniony.</translation>
 <translation id="5966615072639944554">Rozszerzenia mają pozwolenie na używanie interfejsu API zaświadczania zdalnego</translation>
+<translation id="5974970919245996815">Informacje o stanie Androida są wysyłane z powrotem
+      na serwer.
+
+      Jeśli ta zasada jest wyłączona, informacje nie będą przesyłane.
+      Jeśli zasada jest włączona lub nieustawiona, informacje będą przesyłane.
+
+      Ta zasada ma zastosowanie tylko wtedy, gdy są włączone aplikacje na Androida.</translation>
 <translation id="5983708779415553259">Domyślne zachowanie dla witryn nie jest zawarte w żadnym pakiecie treści</translation>
 <translation id="5997543603646547632">Domyślnie używaj zegara 24-godzinnego</translation>
 <translation id="6009903244351574348">Pozwól <ph name="PRODUCT_FRAME_NAME" /> obsługiwać wymienione typy treści. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używany domyślny mechanizm renderujący określony przez zasadę „ChromeFrameRendererSettings”.</translation>
@@ -1441,6 +1500,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6076099373507468537">Definiuje listę urządzeń USB, które można odłączać od sterownika jądra i stosować za pomocą interfejsu chrome.usb API bezpośrednio w aplikacji internetowej. W celu wskazania konkretnego urządzenia lista obejmuje pary identyfikatora dostawcy urządzenia USB i identyfikatora produktu.
 
       Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie pusta.</translation>
+<translation id="608377055310226486">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF ma być używana do otwierania plików PDF.
+
+      Pozwala określić listę wtyczek włączonych w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Możesz użyć symboli wieloznacznych „*” i „?”, aby dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
+
+      Wtyczki wymienione na liście są zawsze używane w przeglądarce <ph name="PRODUCT_NAME" />, pod warunkiem, że zostały zainstalowane. Wtyczki są oznaczone jako włączone na stronie „about:plugins”, a użytkownicy nie mogą ich wyłączyć.
+
+      Pamiętaj, że ta zasada może być zastąpiona przez zasady DisabledPlugins i DisabledPluginsExceptions.
+
+      Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą wtyczkę zainstalowaną w systemie.</translation>
 <translation id="6093156968240188330">Umożliwia użytkownikom zdalnym używanie okien z podwyższonym poziomem uprawnień w sesjach pomocy zdalnej</translation>
 <translation id="6095999036251797924">Określa czas, po jakim ekran jest blokowany przy pracy na zasilaniu sieciowym lub bateryjnym, jeśli użytkownik jest nieaktywny.
 
@@ -1658,6 +1728,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6828905844648501476">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie zezwalać na dodawanie osób w menedżerze użytkowników.
 
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie będzie zezwalać na tworzenie nowych profili w menedżerze profili.</translation>
+<translation id="685769593149966548">Wymuszaj ścisły tryb ograniczonego dostępu w YouTube</translation>
 <translation id="687046793986382807">Począwszy od wersji 35 usługi <ph name="PRODUCT_NAME" />, te zasady są wycofane.
 
       Informacje o pamięci są raportowane do strony niezależnie od ustawionej opcji, jednak wysyłane dane są kwantyzowane, a częstotliwość ich aktualizacji jest ograniczona ze względów bezpieczeństwa. Aby uzyskać precyzyjne dane w czasie rzeczywistym, użyj narzędzi telemetrycznych.</translation>
@@ -1771,9 +1842,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7132877481099023201">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania filmów</translation>
 <translation id="7167436895080860385">Zezwalaj użytkownikom na pokazywanie haseł w menedżerze haseł (wycofane)</translation>
 <translation id="7173856672248996428">Profil tymczasowy</translation>
-<translation id="7187256234726597551">Jeśli zasada ma wartość „prawda”, zdalne poświadczanie na potrzeby urządzenia jest dozwolone, a certyfikat jest automatycznie generowany i przesyłany na serwer zarządzania urządzeniami.
-
-          Jeśli ma ona wartość „fałsz” lub nie jest ustawiona, certyfikat nie jest generowany, a wywołania interfejsu API rozszerzenia enterprise.platformKeysPrivate extension kończą się niepowodzeniem.</translation>
 <translation id="718956142899066210">Typy połączeń dozwolone dla aktualizacji</translation>
 <translation id="7194407337890404814">Nazwa domyślnego dostawcy wyszukiwania</translation>
 <translation id="7195064223823777550">Określa, jakie działanie ma zostać wykonane po zamknięciu pokrywy przez użytkownika.
@@ -2069,6 +2137,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Jeśli ustawisz w tej zasadzie wartość prawda, urządzenie będzie korzystało z zegara 24-godzinnego. Jeśli ustawisz wartość fałsz, będzie ono korzystało z zegara 12-godzinnego.
 
       Jeśli nie skonfigurujesz tej zasady, urządzenie będzie domyślnie korzystało z zegara 24-godzinnego.</translation>
+<translation id="8114382167597081590">Nie wymuszaj trybu ograniczonego dostępu w YouTube</translation>
 <translation id="8118665053362250806">Ustaw rozmiar dyskowej pamięci podręcznej</translation>
 <translation id="8135937294926049787">Określa, po jakim czasie nieaktywności użytkownika wyłączany jest ekran przy zasilaniu z sieci.
 
@@ -2116,9 +2185,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
       W przypadku nieskonfigurowania tej zasady nie będzie wyjątków w zasadzie „URLBlacklist”.</translation>
 <translation id="8176035528522326671">Zezwól, by użytkownik korporacyjny był tylko głównym użytkownikiem korzystającym z wielu profili (domyślne zachowanie w przypadku użytkowników zarządzanych przez przedsiębiorstwo)</translation>
-<translation id="8197918588508433925">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją  chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys do zdalnego poświadczania. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
-
-          Jeśli rozszerzenie nie znajduje się na liście, lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
 <translation id="8214600119442850823">Pozwala skonfigurować menedżera haseł.</translation>
 <translation id="8244525275280476362">Maksymalne opóźnienie pobrania po unieważnieniu zasady</translation>
 <translation id="8256688113167012935">Określa nazwę konta, którą <ph name="PRODUCT_OS_NAME" /> pokazuje na ekranie logowania dla danego lokalnego konta na urządzeniu.
@@ -2267,6 +2333,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8704831857353097849">Lista wyłączonych wtyczek</translation>
 <translation id="8711086062295757690">Pozwala określić słowo kluczowe będące skrótem umożliwiającym wywołanie w omniboksie usługi wyszukiwania od tego dostawcy. Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, żadne słowo kluczowe nie będzie aktywować dostawcy wyszukiwania. Ta zasada jest uwzględniana tylko po włączeniu zasady „DefaultSearchProviderEnabled”.</translation>
 <translation id="8731693562790917685">Ustawienia treści umożliwiają określenie sposobu obsługi treści danego typu (na przykład plików cookie, grafik czy kodu JavaScript).</translation>
+<translation id="8736538322216687231">Wymuszaj minimalny tryb ograniczonego dostępu w YouTube</translation>
 <translation id="8749370016497832113">Włącza usuwanie historii przeglądarki i pobierania w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
       Nawet gdy ta zasada jest wyłączona, nie można zagwarantować zachowania historii przeglądarki i pobierania. Użytkownicy mogą mieć możliwość bezpośredniego edytowania lub usuwania plików bazy danych historii, a niektóre lub wszystkie elementy mogą w każdej chwili utracić ważność lub zostać zarchiwizowane.

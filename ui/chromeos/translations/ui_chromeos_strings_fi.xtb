@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
-<translation id="1119447706177454957">Sisäinen virhe</translation>
 <translation id="153454903766751181">Alustetaan matkapuhelinmodeemia…</translation>
-<translation id="158849752021629804">Kotiverkko tarvitaan</translation>
-<translation id="1661867754829461514">PIN-koodi puuttuu</translation>
-<translation id="1773212559869067373">Todennusvarmenne on hylätty paikallisesti</translation>
 <translation id="1829129547161959350">Pingviini</translation>
 <translation id="1850504506766569011">Wi-Fi ei ole käytössä.</translation>
 <translation id="2288278176040912387">Levysoitin</translation>
 <translation id="2354174487190027830">Aktivoidaan <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Verkko on hylännyt todennusvarmenteen</translation>
 <translation id="2563185590376525700">Sammakko</translation>
-<translation id="2563856802393254086">Onnittelut! Tiedonsiirtopalvelusi <ph name="NAME" /> on aktivoitu ja käyttövalmis.</translation>
 <translation id="2649120831653069427">Kala</translation>
-<translation id="2670531586141364277">Verkon <ph name="NAME" /> aktivointi vaatii verkkoyhteyden.</translation>
 <translation id="277257480934873581">Yhdistetään uudelleen verkkoon <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Tiedot</translation>
 <translation id="2951236788251446349">Meduusa</translation>
-<translation id="2966449113954629791">Olet saattanut käyttää tiedonsiirtosaldosi loppuun. Käy <ph name="NAME" />-aktivointiportaalissa ostamassa lisää saldoa.</translation>
 <translation id="3846575436967432996">Verkon tietoja ei saatavilla</translation>
-<translation id="3871838685472846647">Matkapuhelin aktivoitu</translation>
 <translation id="3901991538546252627">Yhdistetään verkkoon <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiivi</translation>
-<translation id="40400351611212369">Verkon aktivointivirhe</translation>
 <translation id="4118990158415604803">Järjestelmänvalvoja on estänyt yhteyden muodostamisen muihin verkkoihin.</translation>
-<translation id="4237016987259239829">Verkon yhteysvirhe</translation>
-<translation id="4274292172790327596">Tunnistamaton virhe</translation>
 <translation id="4326192123064055915">Kahvi</translation>
-<translation id="4387004326333427325">Todennusvarmenne on hylätty etäyhteyden kautta</translation>
-<translation id="4442424173763614572">DNS-haku epäonnistui</translation>
 <translation id="4448844063988177157">Haetaan Wi-Fi-verkkoja...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Yhdistetään…</translation>
-<translation id="4508265954913339219">Aktivointi epäonnistui</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Kukka</translation>
-<translation id="5045550434625856497">Väärä salasana</translation>
-<translation id="5097002363526479830">Yhteyden muodostaminen verkkoon "<ph name="NAME" />" epäonnistui: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Shakki</translation>
 <translation id="5257456363153333584">Sudenkorento</translation>
-<translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
-<translation id="6232116551750539448">Yhteys kohteeseen <ph name="NAME" /> on katkennut.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktivoidaan…</translation>
-<translation id="6312403991423642364">Tuntematon verkkovirhe</translation>
-<translation id="6490455614072479501">Yhteyden muodostaminen kohteeseen <ph name="NAME" /> ei onnistu: <ph name="DETAILS" />
-        Palvelimen viesti: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Matkapuhelinverkkoja ei ole käytettävissä</translation>
-<translation id="6732801395666424405">Varmenteita ei ole ladattu</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Ylösalaisin</translation>
-<translation id="6943836128787782965">HTTP get -toiminto epäonnistui</translation>
 <translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
-<translation id="7165320105431587207">Verkon asetuksien määrittäminen epäonnistui</translation>
-<translation id="7170041865419449892">Katvealueella</translation>
-<translation id="7229570126336867161">EVDO tarvitaan</translation>
-<translation id="7256405249507348194">Tunnistamaton virhe: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Käyttäjätunnus/salasana on virheellinen tai EAP-todennus epäonnistui</translation>
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7874779702599364982">Haetaan matkapuhelinverkkoja…</translation>
-<translation id="7925247922861151263">AAA-testi epäonnistui</translation>
-<translation id="7973962044839454485">PPP-todennus epäonnistui virheellisen käyttäjänimen tai salasanan vuoksi</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="8008366997883261463">Jackrussellinterrieri</translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME" /></translation>
-<translation id="8300849813060516376">OTASP epäonnistui</translation>
-<translation id="8372369524088641025">Väärä WEP-avain</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yhdistetään uudelleen…</translation>
-<translation id="8688591111840995413">Virheellinen salasana</translation>
 <translation id="8714406895390098252">Polkupyörä</translation>
 <translation id="8808686172382650546">Kissa</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Yhteyden muodostaminen verkkoon epäonnistui: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Yhdistäminen epäonnistui</translation>
 </translationbundle>

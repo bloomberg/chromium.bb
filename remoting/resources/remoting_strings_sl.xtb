@@ -126,6 +126,7 @@ povezovanje s Chromom</translation>
 <translation id="409800995205263688">OPOMBA: Nastavitve na podlagi pravilnika dovoljujejo povezave samo med računalniki v vašem omrežju.</translation>
 <translation id="4155497795971509630">Ni nekaterih zahtevanih delov. Preverite, ali imate najnovejšo različico programske opreme in poskusite znova.</translation>
 <translation id="4156740505453712750">Če želite zaščititi dostop do tega računalnika, izberite vsaj <ph name="BOLD_START" />šestmestni<ph name="BOLD_END" /> PIN. Ta bo zahtevan pri povezovanju z drugega mesta.</translation>
+<translation id="4156741816461781891">Prijavljen kot <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Koda za dostop</translation>
 <translation id="4207623512727273241">Zaženite namestitveni program, preden nadaljujete.</translation>
 <translation id="4227991223508142681">Orodje za pripravljanje gostitelja</translation>
@@ -208,10 +209,6 @@ namizje za Chrome</translation>
 <translation id="6304318647555713317">Odjemalec</translation>
 <translation id="6381670701864002291">Nekaj drugega.</translation>
 <translation id="6398765197997659313">Izhod iz celozaslonskega načina</translation>
-<translation id="6408143143164565232">• Poslušanje zvoka iz računalnikov s sistemom Windows ali Linux.
-• Odstranjevanje neželenih povezav z dolgim pritiskom imena računalnika.
-• Učinkovitejša povečava/pomanjšava z vlečenjem s prsti in pomikanje z dvema prstoma.
-• Novi zaslon za pomoč in povratne informacije.</translation>
 <translation id="6441316101718669559">Integracija namizja v tem okolju ni podprta. Aplikacijo lahko še vedno uporabljate, vendar bo uporabniška izkušnja okrnjena.</translation>
 <translation id="652218476070540101">PIN za ta računalnik se posodablja ...</translation>
 <translation id="6527303717912515753">Skupna raba</translation>

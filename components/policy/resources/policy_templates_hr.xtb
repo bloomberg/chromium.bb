@@ -290,6 +290,7 @@
       Ako se pravilo HardwareAccelerationModeEnabled postavi na "netočno", Disable3DAPIs se zanemaruje i to je isto kao da se Disable3DAPIs postavi na "točno".</translation>
 <translation id="2168397434410358693">Odgoda neaktivnosti za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="2170233653554726857">Omogući WPAD optimizaciju</translation>
+<translation id="2178899310296064282">Primijeni barem umjereni Ograničeni način rada na YouTubeu</translation>
 <translation id="2188979373208322108">Omogućuje traku oznaka u proizvodu <ph name="PRODUCT_NAME" />. Ako omogućite ovu postavku, usluga <ph name="PRODUCT_NAME" /> prikazivat će traku oznaka. Ako onemogućite ovu postavku, korisnicima nikad neće biti prikazana traka oznaka. Ako omogućite ili onemogućite ovu postavku, korisnici ju neće moći promijeniti niti poništiti u proizvodu <ph name="PRODUCT_NAME" />. Ako ova postavka nije postavljena, korisnici mogu odlučiti žele li upotrebljavati tu funkciju.</translation>
 <translation id="2201555246697292490">Konfiguriraj popis dopuštenih za lokalno slanje poruka</translation>
 <translation id="2204753382813641270">Kontroliraj automatsko skrivanje police</translation>
@@ -533,6 +534,7 @@
       Ako omogućite ili onemogućite tu postavku, korisnici ne mogu promijeniti ili premostiti postavku "Omogući zaštitu od krađe identiteta i zlonamjernog softvera" na usluzi <ph name="PRODUCT_NAME" />.
 
       Ako se to pravilo ne postavi, ta će postavka biti omogućena, ali će je korisnici moći promijeniti.</translation>
+<translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
       Ako se to pravilo postavi na "False", korisnici neće moći igrati skrivenu igru s dinosaurom kada uređaj nije povezan s mrežom. Ako se ta postavka postavi na "True", korisnici će moći igrati igru s dinosaurom. Ako se to pravilo ne postavi, korisnici neće moći igrati skrivenu igru s dinosaurom u prijavljenom OS-u Chrome, ali će je moći igrati u drugim okolnostima.</translation>
@@ -639,9 +641,6 @@
           Pravilo nije obavezno. Ako nije postavljeno, neće se vršiti zamjena pojma za pretraživanje.
 
           Pravilo se primjenjuje samo ako je pravilo "DefaultSearchProviderEnabled" omogućeno.</translation>
-<translation id="3067188277482006117">Ako je postavljeno na točno, korisnik može upotrebljavati hardver na uređajima Chrome za daljinsko atestiranje identiteta pri agenciji za certifikat privatnosti putem API-ja Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Ako je postavljeno na netočno ili ako nije postavljeno, pozivi API-ju vraćat će kôd pogreške.</translation>
 <translation id="3069958900488014740">Omogućuje isključivanje optimizacije WPAD-a (automatskog otkrivanja web-proxyja) u pregledniku <ph name="PRODUCT_NAME" />.
 
       Ako se to pravilo postavi na "False", optimizacija WPAD-a nije omogućena, pa <ph name="PRODUCT_NAME" /> dulje čeka WPAD poslužitelje temeljene na DNS-u. Ako se pravilo ne postavi ili ako se omogući, optimizacija WPAD-a omogućena je.
@@ -754,6 +753,16 @@
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
       Ako je to pravilo postavljeno na "lažno", sustav <ph name="PRODUCT_OS_NAME" /> neće dopustiti pokretanje gostujućih sesija.</translation>
+<translation id="3418871497193485241">Primjenjuje minimalni Ograničeni način rada na YouTubeu i sprječava korisnike
+      da odaberu način rada s manje ograničenja.
+
+      Ako se ova postavka postavi na Strogo, strogi Ograničeni način rada na YouTubeu bit će uvijek aktivan.
+
+      Ako se postavi na Umjereno, korisnik će samo moći odabrati umjereni
+      ili strogi Ograničeni način rada na YouTubeu, ali neće moći onemogućiti
+      Ograničeni način rada.
+
+      Ako se ta postavka isključi ili se ne postavi neka vrijednost, <ph name="PRODUCT_NAME" /> neće primjenjivati Ograničeni način rada na YouTubeu. No vanjska pravila, primjerice YouTubeova pravila, i dalje mogu nametati Ograničeni način rada.</translation>
 <translation id="3428247105888806363">Omogućavanje predviđanja mreže</translation>
 <translation id="3449886121729668969">Konfigurira postavke proxyja za <ph name="PRODUCT_NAME" />. Te postavke proxyja bit će dostupne i za ARC aplikacije.
 
@@ -867,6 +876,12 @@
 
           Prema zadanim postavkama svi su hostovi za lokalno slanje poruka dopušteni, ali ako su svi hostovi za lokalno slanje poruka prema pravilima zabranjeni, popis dopuštenih može se upotrijebiti za nadjačavanje tog pravila.</translation>
 <translation id="384743459174066962">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju otvarati skočne prozore. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPopupsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
+<translation id="3851039766298741586">Prijavljuje informacije o aktivnoj sesiji kioska, primjerice
+      ID i verziju aplikacije.
+
+      Ako se pravilo postavi na "false", informacije sesije kioska neće se
+      prijavljivati. Ako se postavi na "true" ili se ne postavi, prijavljivat će se
+      informacije sesije kioska.</translation>
 <translation id="3859780406608282662">Dodaje parametar dohvaćanju početne vrijednosti Varijacija u proizvodu <ph name="PRODUCT_OS_NAME" />.
 
       Ako je navedeno, dodat će parametar upita zvan "restrict" URL-u koji se upotrebljava za dohvaćanje početne vrijednosti Varijacije. Vrijednost parametra bit će vrijednost navedena u tom pravilu.
@@ -881,6 +896,13 @@
 
           To će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="3864818549971490907">Zadana postavka dodataka</translation>
+<translation id="386487026071140458">Ovo je pravilo obustavljeno, pa umjesto njega upotrijebite <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> i <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Pravilo se zanemaruje ako se postave pravila <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> ili <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (obustavljeno).
+
+      Nameće da se upiti na Google pretraživanju weba provode uz aktivirano Sigurno pretraživanje i sprječava korisnike da promijene tu postavku. Ta postavka nameće i Siguran način rada na YouTubeu.
+
+      Ako omogućite tu postavku, Sigurno pretraživanje na Google pretraživanju i umjereni Ograničeni način rada na YouTubeu bit će uvijek aktivni.
+
+      Ako onemogućite tu postavku ili ne postavite neku vrijednost, Sigurno pretraživanje na Google pretraživanju i Ograničeni način rada na YouTubeu neće se primjenjivati.</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> prikazat će postojeće korisnike na zaslonu prijave i dopustiti biranje jednog korisnika. Ako je to pravilo postavljeno na "lažno", sustav <ph name="PRODUCT_OS_NAME" /> upotrebljavat će korisničko ime i zaporku za prijavu.</translation>
 <translation id="3868347814555911633">To je pravilo aktivno samo u prodajnom načinu.
@@ -957,6 +979,17 @@
 
           Ako se to pravilo ne postavi, koristit će se pravilo "AllowCookies" i korisnik će ga moći promijeniti.</translation>
 <translation id="4103289232974211388">Preusmjeri na SAML IdP nakon korisnikove potvrde</translation>
+<translation id="4103941930938018145">Ovo je pravilo obustavljeno. Upotrijebite pravilo <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za upravljanje dostupnošću dodatka Flash i pravilo <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> da biste odredili trebaju li se PDF datoteke otvarati u integriranom pregledniku za PDF.
+
+      Određuje popis dodataka koji su onemogućeni u pregledniku <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
+
+      Za podudaranje nizova proizvoljnih znakova mogu se koristiti zamjenski znakovi "*" i "?". "*" odgovara proizvoljnom broju znakova, a "?" određuje opcijski pojedinačni znak, odnosno odgovara znakovima nula ili jedan. "\" je prespojni znak, tako da za podudaranje s pravim znakovima "*", "?" ili "\" možete ispred njih staviti znak "\".
+
+      Ako omogućite tu postavku, navedeni se popis dodataka nikad neće upotrebljavati u pregledniku <ph name="PRODUCT_NAME" />. Dodaci su označeni kao onemogućeni na stranici "about:plugins" i korisnici ih ne mogu omogućiti.
+
+      Ovo pravilo mogu nadjačati pravila EnabledPlugins i DisabledPluginsExceptions.
+
+      Ako se pravilo ne postavi, korisnik može upotrijebiti bilo koji dodatak koji je instaliran na sustavu osim nekompatibilnih, zastarjelih ili opasnih dodataka koji su ovisni o programskom kodu.</translation>
 <translation id="410478022164847452">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se izvršila radnja neaktivnosti tijekom napajanja izmjeničnom strujom.
 
           Kada je pravilo postavljeno, određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME" /> pokrene radnju neaktivnosti, što se može konfigurirati zasebno.
@@ -1242,6 +1275,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako je ta postavka onemogućena ili nije postavljena, tada u interakciju s hostom mogu stupati lokalni i udaljeni korisnici kada se on dijeli.</translation>
 <translation id="5423001109873148185">Ako je omogućeno, ovo pravilo prisilno uvozi tražilice iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, zadana se tražilica ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti tražilicu ili do uvoza može doći automatski.</translation>
 <translation id="5423197884968724595">Naziv ograničenja za Android WebView:</translation>
+<translation id="543559563129402336">Ovo je pravilo obustavljeno i umjesto njega možete upotrijebiti pravilo <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> koje ga nadjačava i koje omogućuje preciznije prilagođavanje.
+
+      Nameće umjereni Ograničeni način rada na YouTubeu i sprječava korisnike da promijene tu postavku.
+
+      Ako se omogući ta postavka, uvijek će se primjenjivati barem umjereni Ograničeni način rada na YouTubeu.
+
+      Ako se ta postavka onemogući ili se ne postavi neka vrijednost, <ph name="PRODUCT_NAME" /> neće primjenjivati Ograničeni način rada na YouTubeu. No vanjska pravila, primjerice YouTubeova pravila, i dalje mogu nametati Ograničeni način rada.</translation>
 <translation id="5447306928176905178">Omogući prijavljivanje informacija o memoriji (ukupna veličina JS-a) na stranici (zastarjelo)</translation>
 <translation id="5457065417344056871">Omogućivanje načina rada za goste u pregledniku</translation>
 <translation id="5457924070961220141">Omogućuje konfiguriranje zadanog HTML prikazivača kada je instaliran okvir <ph name="PRODUCT_FRAME_NAME" />. Ako ovo pravilo nije postavljeno, zadana je postavka da prikazivanje obavlja preglednik hosta, ali to po izboru možete poništiti i postaviti da okvir <ph name="PRODUCT_FRAME_NAME" /> prikazuje HTML stranice prema zadanim postavkama.</translation>
@@ -1345,6 +1385,19 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
+<translation id="5783595563813359339">Ovo je pravilo obustavljeno. Upotrijebite pravilo <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za upravljanje dostupnošću dodatka Flash i pravilo <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> da biste odredili trebaju li se PDF datoteke otvarati u integriranom pregledniku za PDF.
+
+      Određuje popis dodataka koje korisnik može omogućiti ili onemogućiti u pregledniku <ph name="PRODUCT_NAME" />.
+
+      Za podudaranje nizova proizvoljnih znakova mogu se koristiti zamjenski znakovi "*" i "?". "*" odgovara proizvoljnom broju znakova, a "?" određuje opcijski pojedinačni znak, odnosno odgovara znakovima nula ili jedan. "\" je prespojni znak, tako da za podudaranje s pravim znakovima "*", "?" ili "\" možete ispred njih staviti znak "\".
+
+      Ako omogućite tu postavku, navedeni će se popis dodataka moći upotrebljavati u pregledniku <ph name="PRODUCT_NAME" />. Korisnici ih mogu omogućiti ili onemogućiti na stranici "about:plugins", čak i ako se dodatak podudara s obrascem na popisu DisabledPlugins. Korisnici također mogu omogućiti i onemogućiti dodatke koji se ne podudaraju ni s jednim obrascem na popisima DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
+
+      Ovo pravilo omogućuje strogo određivanje nedopuštenih dodataka u slučajevima u kojima popis "DisabledPlugins" sadrži stavke sa zamjenskim znakovima, primjerice onemogućivanje svih dodataka "*" ili onemogućivanje svih Java dodataka "*Java*", a administrator želi omogućiti određenu verziju kao što je "IcedTea Java 2.3". Ta se određena verzija može navesti u ovom pravilu.
+
+      Pritom je potrebno izuzeti i naziv dodatka i naziv grupe dodatka. Svaka grupa dodataka prikazuje se u zasebnom odjeljku na stranici "about:plugins", a svaki odjeljak može imati jedan ili više dodataka. Na primjer, dodatak "Shockwave Flash" pripada grupi "Adobe Flash Player", tako da ako se taj dodatak treba izuzeti s popisa nedopuštenih, na popisu iznimaka moraju se nalaziti oba naziva.
+
+      Ako se pravilo ne postavi, svi dodaci koji odgovaraju obrascima na popisu "DisabledPlugins" trajno će se blokirati i korisnik ih neće moći omogućiti.</translation>
 <translation id="5795001131770861387">Omogućuje podršku za HTTP/0.9 na priključcima koji nisu zadani</translation>
 <translation id="5809728392451418079">Postavlja naziv za prikaz za lokalne račune uređaja</translation>
 <translation id="5814301096961727113">Postavljanje zadanog stanja izgovaranja povratnih informacija na zaslonu za prijavu</translation>
@@ -1408,6 +1461,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako to pravilo nije postavljeno ili je postavljeno na netočno, <ph name="PRODUCT_NAME" /> neće vršiti mrežne provjere opoziva u pregledniku <ph name="PRODUCT_NAME" /> 19 i novijim verzijama.</translation>
 <translation id="5966615072639944554">Proširenja koja smiju upotrebljavati API za daljinsku ovjeru</translation>
+<translation id="5974970919245996815">Prijavljene informacije o statusu Androida šalju se
+      poslužitelju.
+
+      Ako se pravilo postavi na "false", informacije se neće prijavljivati.
+      Ako se postavi na "true" ili se ne postavi, informacije će se prijavljivati.
+
+      Ovo se pravilo primjenjuje samo ako su omogućene Androidove aplikacije.</translation>
 <translation id="5983708779415553259">Zadano ponašanje za web-lokacije koje nisu ni u jednom paketu sadržaja</translation>
 <translation id="5997543603646547632">Upotrijebi sat s 24-satnim prikazom prema zadanim postavkama</translation>
 <translation id="6009903244351574348">Dopustite proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje navedenim vrstama sadržaja. Ako ovo pravilo nije postavljeno, upotrebljavat će se zadani prikazivač za sve web-lokacije kao što je navedeno u pravilu "ChromeFrameRendererSettings".</translation>
@@ -1436,6 +1496,17 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6076099373507468537">Definira popis USB uređaja za koje je dopušteno odvajanje od upravljačkog programa jezgre radi upotrebe putem API-ja chrome.usb izravno unutar web-aplikacije. Unosi su parovi identifikatora dobavljača i identifikatora proizvoda USB uređaja, a služe za prepoznavanje određenog hardvera.
 
       Ako se pravilo ne konfigurira, popis uklonjivih USB uređaja ostaje prazan.</translation>
+<translation id="608377055310226486">Ovo je pravilo obustavljeno. Upotrijebite pravilo <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za upravljanje dostupnošću dodatka Flash i pravilo <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> da biste odredili trebaju li se PDF datoteke otvarati u integriranom pregledniku za PDF.
+
+      Određuje popis dodataka koji su omogućeni u pregledniku <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
+
+      Za podudaranje nizova proizvoljnih znakova mogu se koristiti zamjenski znakovi "*" i "?". "*" odgovara proizvoljnom broju znakova, a "?" određuje opcijski pojedinačni znak, odnosno odgovara znakovima nula ili jedan. "\" je prespojni znak, tako da za podudaranje s pravim znakovima "*", "?" ili "\" možete ispred njih staviti znak "\".
+
+      Navedeni se popis dodataka uvijek upotrebljava u pregledniku <ph name="PRODUCT_NAME" /> ako su dodaci instalirani. Dodaci su označeni kao omogućeni na stranici "about:plugins" i korisnici ih ne mogu onemogućiti.
+
+      Ovo pravilo nadjačava pravila DisabledPlugins i DisabledPluginsExceptions.
+
+      Ako se pravilo ne postavi, korisnik može onemogućiti bilo koji dodatak koji je instaliran na sustavu.</translation>
 <translation id="6093156968240188330">Dopusti udaljenim korisnicima da interakciju s privilegiranim prozorima u sesijama daljinske pomoći</translation>
 <translation id="6095999036251797924">Navodi koliko vremena treba proteći od posljednjeg korisničkog unosa da bi se zaslon zaključao dok radi na izmjeničnom napajanju ili bateriji.
 
@@ -1652,6 +1723,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6828905844648501476">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
 
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti izradu novih profila iz upravitelja profila.</translation>
+<translation id="685769593149966548">Primijeni strogi Ograničeni način rada za YouTube</translation>
 <translation id="687046793986382807">To se pravilo više ne primjenjuje od verzije 35 proizvoda <ph name="PRODUCT_NAME" />.
 
       Neovisno o vrijednosti opcije, informacije o memoriji prijavljuju se za stranicu, ali se prijavljene veličine kvantiziraju, a stopa ažuriranja ograničena je iz sigurnosnih razloga. Za dobivanje preciznih podataka u stvarnom vremenu upotrijebite alate kao što je Telemetrija.</translation>
@@ -1771,9 +1843,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7132877481099023201">URL-ovi koji će dobiti pristup uređajima za videosnimanje bez postavljanja upita</translation>
 <translation id="7167436895080860385">Omogući korisnicima prikazivanje zaporki u upravitelju zaporki (zastarjelo)</translation>
 <translation id="7173856672248996428">Kratkotrajni profil</translation>
-<translation id="7187256234726597551">Ako je točno, daljinsko atestiranje dopušteno je za uređaj i certifikat će se automatski generirati i prenijeti na poslužitelj za upravljanje uređajem.
-
-          Ako se postavi na netočno ili se ne postavi, certifikat se neće generirati i pozivi API-ju proširenja enterprise.platformKeysPrivate neće uspjeti.</translation>
 <translation id="718956142899066210">Dopuštene vrste veza za ažuriranja</translation>
 <translation id="7194407337890404814">Naziv zadanog davatelja usluge pretraživanja</translation>
 <translation id="7195064223823777550">Određuje radnju koja će se izvršiti kada korisnik spusti poklopac.
@@ -2069,6 +2138,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo postavi na istinito, uređaj će upotrebljavati 24-satni oblik. Ako se postavi na neistinito, uređaj će upotrebljavati 12-satni oblik.
 
       Ako se to pravilo ne postavi, uređaj će prema zadanom upotrebljavati 24-satni oblik sata.</translation>
+<translation id="8114382167597081590">Ne primjenjuj Ograničeni način rada na YouTubeu</translation>
 <translation id="8118665053362250806">Postavi veličinu predmemorije medijskog diska</translation>
 <translation id="8135937294926049787">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon isključio tijekom napajanja izmjeničnom strujom.
 
@@ -2116,9 +2186,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako to pravilo nije postavljeno, na popisu nedopuštenih stavki u pravilu 'URLBlacklist' neće biti iznimaka.</translation>
 <translation id="8176035528522326671">Dopuštanje poslovnom korisniku da bude samo primarni korisnik višestrukih profila (zadano ponašanje za korisnike kojima upravlja tvrtka)</translation>
-<translation id="8197918588508433925">To pravilo određuje dopuštena proširenja za upotrebu API-ja Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() za daljinsko atestiranje. Proširenja se moraju dodati na taj popis da bi upotrebljavala taj API.
-
-          Ako proširenje nije na popisu ili ako popis nije postavljen, poziv API-ju vratit će kôd pogreške.</translation>
 <translation id="8214600119442850823">Konfigurira upravitelja zaporki.</translation>
 <translation id="8244525275280476362">Maksimalna odgoda dohvaćanja nakon poništavanja valjanosti pravila</translation>
 <translation id="8256688113167012935">Kontrolira naziv računa koji prikazuje proizvod <ph name="PRODUCT_OS_NAME" /> na zaslonu prijave za odgovarajući lokalni račun na uređaju.
@@ -2264,6 +2331,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8704831857353097849">Popis onemogućenih dodataka</translation>
 <translation id="8711086062295757690">Određuje ključnu riječ koja je prečac u višenamjenskom okviru za pokretanje usluge pretraživanja ovog davatelja usluga. Ovo je pravilo izborno. Ako nije postavljeno, nijedna ključna riječ neće aktivirati davatelja usluga pretraživanja. Ovo se pravilo uzima u obzir samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="8731693562790917685">Postavke sadržaja omogućuju određivanje načina postupanja s određenim vrstama sadržaja (kao što su Kolačići, Slike i JavaScript).</translation>
+<translation id="8736538322216687231">Primijeni minimalni Ograničeni način rada na YouTubeu</translation>
 <translation id="8749370016497832113">Omogućuje brisanje povijesti preglednika i preuzimanja u pregledniku <ph name="PRODUCT_NAME" /> te sprječava korisnike da promijene tu postavku.
 
       Uzmite u obzir da čak i kada je onemogućeno ovo pravilo, čuvanje povijesti pregledavanja i preuzimanja nije zajamčeno: korisnici možda mogu izravno urediti ili izbrisati datoteke baze podataka povijesti, a preglednik također može u bilo kojem trenutku arhivirati neke ili sve stavke povijesti ili im ukinuti rok trajanja.

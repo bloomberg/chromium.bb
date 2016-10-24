@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Aldrig gemt</translation>
 <translation id="106701514854093668">Bogmærker på pc</translation>
 <translation id="1080116354587839789">Tilpas til bredden</translation>
-<translation id="1103124106085518534">Færdig indtil videre</translation>
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Hvis dette felt er markeret, gemmer Chrome en kopi af dit kort på denne enhed, så formularer hurtigere kan udfyldes fremover.</translation>
 <translation id="1111153019813902504">Seneste bogmærker</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prøv at køre Windows Netværksdiagnosticering<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Opdater din adgangssætning til synkronisering.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">De bogmærker, du har besøgt for nylig, vises her.</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1838667051080421715">Du får vist kilden for en webside.</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Tilpas til siden</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
-<translation id="4884656795097055129">Der vises flere artikler, når det er relevant.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{og 1 anden webside}one{og # anden webside}other{og # andre websider}}</translation>
 <translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE" /></translation>

@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
 <translation id="2241627712206172106">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chromium على النحو الذي يريدونه.</translation>
 <translation id="225614027745146050">مرحبًا</translation>
-<translation id="2264142189334629813">‏يتعذر على نظام التشغيل Chromium فتح هذه الصفحة.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="2372704305038231957">‏قد لا يعمل Chromium إصدار 32 بت على نحو صحيح لأنه لم يعد مدعومًا على نظام Linux هذا. الرجاء الترقية إلى Chromium إصدار 64 بت.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">‏في Chromium</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2486653164587200256">‏ربما لن يعمل Chromium بشكل صحيح لأنه لم يعد مدعومًا على أنظمة Windows XP أو Windows Vista.</translation>
+<translation id="2527042973354814951">‏إعادة تشغيل Chromium لتمكين <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="2558641060352364164">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
 <translation id="2572494885440352020">‏أداة مساعدة Chromium</translation>

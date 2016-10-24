@@ -126,6 +126,7 @@ trên Chrome</translation>
 <translation id="409800995205263688">LƯU Ý: Cài đặt chính sách chỉ cho phép kết nối giữa các máy tính trong mạng của bạn.</translation>
 <translation id="4155497795971509630">Thiếu một số thành phần bắt buộc. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất của phần mềm và thử lại.</translation>
 <translation id="4156740505453712750">Để bảo vệ quyền truy cập vào máy tính này, vui lòng chọn một mã PIN <ph name="BOLD_START" />ít nhất sáu chữ số<ph name="BOLD_END" />. Mã PIN này sẽ được yêu cầu khi kết nối từ một vị trí khác.</translation>
+<translation id="4156741816461781891">Đăng nhập bằng địa chỉ <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Mã truy cập</translation>
 <translation id="4207623512727273241">Vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
 <translation id="4227991223508142681">Tiện ích cấp phép máy chủ</translation>
@@ -208,10 +209,6 @@ Remote Desktop</translation>
 <translation id="6304318647555713317">Ứng dụng khách</translation>
 <translation id="6381670701864002291">Vấn đề khác.</translation>
 <translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
-<translation id="6408143143164565232">• Nghe âm thanh từ máy tính Windows hoặc Linux.
-• Xóa kết nối không mong muốn bằng cách nhấn và giữ vào tên máy tính.
-• Cuộn bằng hai ngón tay và chụm để thu phóng dễ dàng hơn.
-• Màn hình Trợ giúp và phản hồi mới.</translation>
 <translation id="6441316101718669559">Tích hợp máy tính để bàn không được hỗ trợ trên nền tảng này. Bạn sẽ vẫn có thể sử dụng ứng dụng nhưng trải nghiệm người dùng sẽ bị giảm.</translation>
 <translation id="652218476070540101">Mã PIN cho máy tính này đang được cập nhật…</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>

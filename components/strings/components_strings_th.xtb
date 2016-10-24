@@ -10,7 +10,6 @@
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="106701514854093668">บุ๊กมาร์กบนเดสก์ท็อป</translation>
 <translation id="1080116354587839789">พอดีกับความกว้าง</translation>
-<translation id="1103124106085518534">เรียบร้อยแล้ว</translation>
 <translation id="1103523840287552314">แปลภาษา<ph name="LANGUAGE" />ทุกครั้ง</translation>
 <translation id="1107591249535594099">หากเลือก Chrome จะจัดเก็บสำเนาของบัตรบนอุปกรณ์นี้เพื่อการกรอกข้อมูลแบบฟอร์มอย่างรวดเร็ว</translation>
 <translation id="1111153019813902504">บุ๊กมาร์กล่าสุด</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยเครือข่ายของ Windows<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">โปรดอัปเดตข้อความรหัสผ่านที่ซิงค์ของคุณ</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">บุ๊กมาร์กที่คุณเข้าชมล่าสุดจะปรากฏที่นี่</translation>
 <translation id="1821930232296380041">คำขอหรือพารามิเตอร์คำขอไม่ถูกต้อง</translation>
 <translation id="1838667051080421715">คุณกำลังดูแหล่งที่มาของหน้าเว็บ</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">พอดีกับหน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4880827082731008257">ค้นประวัติการเข้าชม</translation>
-<translation id="4884656795097055129">บทความอื่นๆ จะปรากฏขึ้นเมื่อถึงเวลาที่เหมาะสม</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> และ <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{และหน้าเว็บอีก 1 หน้า}other{และหน้าเว็บอีก # หน้า}}</translation>
 <translation id="4923417429809017348">หน้านี้แปลจากภาษาที่ไม่รู้จักเป็นภาษา <ph name="LANGUAGE_LANGUAGE" /></translation>

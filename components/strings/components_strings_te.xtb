@@ -10,7 +10,6 @@
 <translation id="10614374240317010">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
 <translation id="106701514854093668">డెస్క్‌టాప్‌ బుక్‌మార్క్‌లు</translation>
 <translation id="1080116354587839789">వెడల్పు సరిపోయేలా అమర్చు</translation>
-<translation id="1103124106085518534">ప్రస్తుతానికి పూర్తయింది</translation>
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE" />ను అనువదించు</translation>
 <translation id="1107591249535594099">ఎంచుకున్నట్లయితే, Chrome వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
 <translation id="1111153019813902504">ఇటీవల బుక్‌మార్క్‌లు</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం ప్రయత్నించండి<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">దయచేసి మీ సమకాలీకరణ పాస్‌ఫ్రేజ్‌ను నవీకరించండి.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">మీరు ఇటీవల సందర్శించిన బుక్‌మార్క్‌లు ఇక్కడ కనిపిస్తాయి.</translation>
 <translation id="1821930232296380041">చెల్లని అభ్యర్థన లేదా అభ్యర్థన పరామితులు</translation>
 <translation id="1838667051080421715">మీరు వెబ్ పేజీ యొక్క సోర్స్‌ను వీక్షిస్తున్నారు.</translation>
 <translation id="1871208020102129563">ప్రాక్సీ స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించడానికి సెట్ చేయబడింది, .pac స్క్రిప్ట్ URLను కాదు.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">పేజీకి తగినట్లు అమర్చు</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="4880827082731008257">శోధన చరిత్ర</translation>
-<translation id="4884656795097055129">సమయం ఆసన్నమైనప్పుడు మరిన్ని కథనాలు కనిపిస్తాయి.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{మరియు మరో 1 వెబ్ పేజీ}other{మరియు మరో # వెబ్ పేజీలు}}</translation>
 <translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE" />కు అనువదించబడింది</translation>

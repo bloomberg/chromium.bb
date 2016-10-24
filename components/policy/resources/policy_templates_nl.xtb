@@ -296,6 +296,7 @@
       Als 'HardwareAccelerationModeEnabled' op 'onwaar' wordt ingesteld, wordt 'Disable3DAPIs' genegeerd. Dit is hetzelfde als 'Disable3DAPIs' instellen op 'waar'.</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
+<translation id="2178899310296064282">Minimaal de gemiddelde 'Beperkte modus' op YouTube afdwingen</translation>
 <translation id="2188979373208322108">Hiermee wordt de bladwijzerbalk ingeschakeld in <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, geeft <ph name="PRODUCT_NAME" /> een bladwijzerbalk weer.
@@ -562,6 +563,7 @@
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME" /> niet wijzigen of negeren.
 
       Als je deze instelling niet instelt, wordt deze uitgeschakeld maar kan de gebruiker deze wijzigen.</translation>
+<translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
 <translation id="2801230735743888564">Toestaan dat gebruikers de easter egg-dinosaurusgame spelen wanneer het apparaat offline is.
 
       Als dit beleid is ingesteld op 'oinwaar', kunnen gebruikers de easter egg-dinosaurusgame niet spelen wanneer het apparaat offline is. Als deze instelling is ingesteld op 'waar', kunnen gebruikers de easter egg-dinosaurusgame spelen. Als dit beleid niet is ingesteld, kunnen gebruikers de easter egg-dinosaurusgame niet spelen op geregistreerde Chrome OS-apparaten, maar kunnen ze deze wel onder andere omstandigheden spelen.</translation>
@@ -670,9 +672,6 @@
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen vervanging van zoektermen uitgevoerd.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
-<translation id="3067188277482006117">Indien ingesteld als 'true', kan de gebruiker met de hardware van Chrome-apparaten de identiteit ervan extern bewijzen aan de privacy-CA via de Enterprise Platform Keys-API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Indien aanroepen zijn ingesteld als 'false' of als ze niet zijn ingesteld, zullen aanroepen van de API mislukken en wordt een foutcode weergegeven.</translation>
 <translation id="3069958900488014740">Hiermee kan WPAD-optimalisatie (Web Proxy Auto-Discovery) worden uitgeschakeld in <ph name="PRODUCT_NAME" />.
 
       Als dit beleid is ingesteld op 'onwaar', wordt WPAD-optimalisatie uitgeschakeld, waardoor <ph name="PRODUCT_NAME" /> langer moet wachten op DNS-gebaseerde WPAD-servers. Als het beleid niet is ingesteld of is ingeschakeld, is WPAD-optimalisatie ingeschakeld.
@@ -797,6 +796,15 @@
 <translation id="3417418267404583991">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> gasten toe zich aan te melden. Gastensessies zijn anonieme sessies waar geen wachtwoord voor hoeft te worden ingevoerd.
 
       Als dit beleid is ingesteld op 'false', staat <ph name="PRODUCT_OS_NAME" /> niet toe dat er gastensessies worden gestart.</translation>
+<translation id="3418871497193485241">Hiermee wordt een minimale 'Beperkte modus' op YouTube afgedwongen en wordt voorkomen dat gebruikers een
+      minder beperkte modus kiezen.
+
+      Als deze instelling is ingesteld op 'Streng', is de strenge 'Beperkte modus' op YouTube altijd actief.
+
+      Als deze instelling is ingesteld op 'Gemiddeld', kan de gebruiker alleen de gemiddelde 'Beperkte modus'
+      en de strenge 'Beperkte modus' op YouTube kiezen, maar hij kan de 'Beperkte modus' niet uitschakelen.
+
+      Als deze instelling is ingesteld op 'Uit' of er is geen waarde ingesteld, wordt de 'Beperkte modus' op YouTube niet afgedwongen door <ph name="PRODUCT_NAME" />. De 'Beperkte modus' kan echter nog steeds worden afgedwongen door externe beleidsregels zoals het YouTube-beleid.</translation>
 <translation id="3428247105888806363">Netwerkvoorspelling inschakelen</translation>
 <translation id="3449886121729668969">Hiermee configureer je de proxyinstellingen voor <ph name="PRODUCT_NAME" />. Deze proxyinstellingen zijn ook beschikbaar voor ARC-apps.
 
@@ -918,6 +926,12 @@
 <translation id="384743459174066962">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop geen pop-ups mogen worden geopend.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultPopupsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
+<translation id="3851039766298741586">Informatie rapporteren over de actieve kiosksessie, zoals
+      de ID en versie van de app.
+
+      Als het beleid is ingesteld op 'onwaar', worden er geen sessiegegevens
+      gerapporteerd. Als het beleid is ingesteld op 'waar' of als er geen beleid is
+      ingesteld, worden de kiosksessiegegevens gerapporteerd.</translation>
 <translation id="3859780406608282662">Voeg een parameter toe aan het ophalen van de varianten-seed in <ph name="PRODUCT_OS_NAME" />.
 
       Indien dit wordt aangegeven, wordt aan de URL waarmee de varianten-seed wordt opgehaald een zoekopdrachtparameter toegevoegd met de naam 'restrict'. De waarde van de parameter is dezelfde waarde die in dit beleid wordt opgegeven.
@@ -932,6 +946,13 @@
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="3864818549971490907">Standaardinstelling voor plug-ins</translation>
+<translation id="386487026071140458">Dit beleid is verouderd, gebruik <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> en <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Dit beleid wordt genegeerd als het beleid <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, het beleid <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> of het (verouderde) beleid <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> is ingesteld.
+
+      Hiermee wordt afgedwongen dat zoekopdrachten in Google Zoeken worden uitgevoerd met SafeSearch ingesteld op 'actief' en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. Met deze instelling wordt ook de gemiddelde 'Beperkte modus' op YouTube afgedwongen.
+
+      Als je deze instelling inschakelt, zijn SafeSearch in Google Zoeken en de gemiddelde 'Beperkte modus' op YouTube altijd actief.
+
+      Als je deze instelling uitschakelt of geen waarde instelt, worden SafeSearch in Google Zoeken en de 'Beperkte modus' op YouTube niet afgedwongen.</translation>
 <translation id="3866249974567520381">Beschrijving</translation>
 <translation id="3866530186104388232">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, worden in het aanmeldscherm van <ph name="PRODUCT_OS_NAME" /> bestaande gebruikers weergegeven die kunnen worden geselecteerd. Als dit beleid is ingesteld op 'false', krijgt de gebruiker bij aanmelding op <ph name="PRODUCT_OS_NAME" /> de vraag de combinatie van gebruikersnaam/wachtwoord in te voeren.</translation>
 <translation id="3868347814555911633">Dit beleid is alleen actief in de commerciële modus.
@@ -1014,6 +1035,17 @@
 
           Als er geen instelling voor dit beleid wordt opgegeven, wordt AllowCookies gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="4103289232974211388">Omleiden naar SAML IdP na bevestiging van de gebruiker</translation>
+<translation id="4103941930938018145">Dit beleid is verouderd. Gebruik het beleid <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> om de beschikbaarheid van de Flash-plug-in te beheren en het beleid <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> om te controleren of de geïntegreerde pdf-viewer moet worden gebruikt voor het openen van pdf-bestanden.
+
+       Hiermee wordt een lijst met plug-ins gespecificeerd die zijn uitgeschakeld in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten met willekeurige tekens te zoeken. '*' komt overeen met een willekeurig aantal tekens terwijl '?' één optioneel teken specificeert en dus kan overeenkomen met één of nul tekens. Het teken '\' kan worden gebruikt om deze tekens te escapen, dus als je overeenkomsten voor de letterlijke tekens '*', '?' of '\' wilt zoeken, moet je er een '\' vóór plaatsen.
+
+      Als je deze instelling inschakelt, wordt de lijst met gespecificeerde plug-ins nooit gebruikt in <ph name="PRODUCT_NAME" />. De plug-ins zijn als uitgeschakeld gemarkeerd in 'about:plugins' en gebruikers kunnen ze niet inschakelen.
+
+      Houd er rekening mee dat EnabledPlugins en DisabledPluginsExceptions voorrang kunnen krijgen op dit beleid.
+
+      Als dit beleid niet is ingesteld, kan de gebruiker alle plug-ins gebruiken die op het systeem zijn geïnstalleerd, met uitzondering van plug-ins die hardcoded incompatibel, verouderd of gevaarlijk zijn.</translation>
 <translation id="410478022164847452">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna de vertragingsactie wordt ondernomen wanneer op netstroom wordt gewerkt.
 
           Als dit beleid is ingesteld, specificeert het de tijd die de gebruiker inactief moet blijven voordat de vertragingsactie wordt ondernomen door <ph name="PRODUCT_OS_NAME" />. De vertragingsactie kan afzonderlijk worden geconfigureerd.
@@ -1328,6 +1360,13 @@
 
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="5423197884968724595">Naam van Android WebView-beperking:</translation>
+<translation id="543559563129402336">Dit beleid is verouderd. Overweeg <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> te gebruiken, dat voorrang krijgt op dit beleid en waarmee gedetailleerdere afstelling kan plaatsvinden.
+
+      Hiermee wordt de gemiddelde 'Beperkte modus' op YouTube afgedwongen en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Als deze instelling is ingeschakeld, wordt altijd ten minste de gemiddelde 'Beperkte modus' op YouTube afgedwongen.
+
+      Als deze instelling is uitgeschakeld of er is geen waarde ingesteld, wordt de 'Beperkte modus' op YouTube niet afgedwongen door <ph name="PRODUCT_NAME" />. De 'Beperkte modus' kan echter nog steeds worden afgedwongen door externe beleidsregels zoals het YouTube-beleid.</translation>
 <translation id="5447306928176905178">Het rapporteren van geheugengegevens (JS-heapgrootte) aan de pagina inschakelen (verouderd)</translation>
 <translation id="5457065417344056871">De gastmodus inschakelen in browser</translation>
 <translation id="5457924070961220141">Hiermee kun je de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME" /> is geïnstalleerd.
@@ -1433,6 +1472,19 @@
           Als dit beleid niet is ingesteld, wordt een standaardtijdsduur gebruikt.
 
           De beleidswaarde moet worden opgegeven in milliseconden.</translation>
+<translation id="5783595563813359339">Dit beleid is verouderd. Gebruik het beleid <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> om de beschikbaarheid van de Flash-plug-in te beheren en het beleid <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> om te controleren of de geïntegreerde pdf-viewer moet worden gebruikt voor het openen van pdf-bestanden.
+
+       Hiermee wordt een lijst met plug-ins gespecificeerd die gebruikers kunnen in- of uitschakelen in <ph name="PRODUCT_NAME" />.
+
+      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten met willekeurige tekens te zoeken. '*' komt overeen met een willekeurig aantal tekens terwijl '?' één optioneel teken specificeert en dus kan overeenkomen met één of nul tekens. Het teken '\' kan worden gebruikt om deze tekens te escapen, dus als je overeenkomsten voor de letterlijke tekens '*', '?' of '\' wilt zoeken, moet je er een '\' vóór plaatsen.
+
+      Als je deze instelling inschakelt, kan de lijst met gespecificeerde plug-ins worden gebruikt in <ph name="PRODUCT_NAME" />. Gebruikers kunnen ze in- of uitschakelen in 'about:plugins', zelfs als de plug-in ook overeenkomt met een patroon in DisabledPlugins. Gebruikers kunnen ook plug-ins in- of uitschakelen die niet overeenkomen met patronen in DisabledPlugins, DisabledPluginsExceptions en EnabledPlugins.
+
+      Dit beleid is bedoeld voor gevallen met strenge zwarte lijsten voor plug-ins, waarin de lijst 'DisabledPlugins' vermeldingen met jokertekens bevat, zoals 'disable all plug-ins '*'' (alle plug-ins '*' uitschakelen) of 'disable all Java plugins '*Java*'' (alle Java-plug-ins '*Java*' uitschakelen), maar de beheerder een specifieke versie zoals 'IcedTea Java 2.3' wil inschakelen. Deze specifieke versies kunnen worden opgegeven in dit beleid.
+
+      Zowel de naam van de plug-in als de groepsnaam van de plug-in moeten worden uitgesloten. Elke groep plug-ins wordt in een afzonderlijk gedeelte in 'about:plugins' weergegeven. Elk gedeelte kan een of meer plug-ins bevatten. De plug-in 'Shockwave Flash' hoort bijvoorbeeld bij de groep 'Adobe Flash Player' en beide namen moeten een overeenkomst hebben in de lijst met uitzonderingen als die plug-in moet worden uitgesloten van de zwarte lijst.
+
+      Als dit beleid niet is ingesteld, wordt elke plug-in uitgeschakeld die overeenkomt met de patronen in 'DisabledPlugins', en kan de gebruiker deze niet inschakelen.</translation>
 <translation id="5795001131770861387">Hiermee wordt ondersteuning voor HTTP/0.9 op niet-standaardpoorten ingeschakeld</translation>
 <translation id="5809728392451418079">De weergavenaam voor lokale accounts van het apparaat instellen</translation>
 <translation id="5814301096961727113">De standaardstatus van gesproken feedback op het inlogscherm instellen</translation>
@@ -1502,6 +1554,13 @@
 
       Als het beleid niet is ingesteld, of is ingesteld op 'onwaar', voert <ph name="PRODUCT_NAME" /> geen online intrekkingscontroles uit in <ph name="PRODUCT_NAME" /> 19 en hoger.</translation>
 <translation id="5966615072639944554">Extensies die toestemming hebben de API voor externe bevestiging te gebruiken</translation>
+<translation id="5974970919245996815">Rapportagegegevens over de status van Android wordt teruggestuurd naar
+      de server.
+
+      Als het beleid is ingesteld op 'onwaar', wordt de informatie niet gerapporteerd.
+      Als het beleid is ingesteld op 'waar' of niet wordt ingesteld, wordt de informatie gerapporteerd.
+
+      Dit beleid is alleen van toepassing als Android-apps zijn ingeschakeld.</translation>
 <translation id="5983708779415553259">Standaardgedrag voor sites die zich niet in een inhoudspakket bevinden</translation>
 <translation id="5997543603646547632">Klok met 24-uursnotatie standaard gebruiken</translation>
 <translation id="6009903244351574348"><ph name="PRODUCT_FRAME_NAME" /> toestaan de genoemde soorten content te verwerken.
@@ -1532,6 +1591,17 @@
 <translation id="6076099373507468537">Hiermee wordt de lijst met USB-apparaten gedefinieerd die mogen worden ontkoppeld van hun kernel-driver, zodat ze via de chrome.usb-API rechtstreeks kunnen worden gebruikt in een webapplicatie. Items zijn paren van de ID van de USB-leverancier en de ID van het product, zodat specifieke hardware kan worden geïdentificeerd.
 
       Als dit beleid niet is geconfigureerd, is de lijst met USB-apparaten die kunnen worden ontkoppeld leeg.</translation>
+<translation id="608377055310226486">Dit beleid is verouderd. Gebruik het beleid <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> om de beschikbaarheid van de Flash-plug-in te beheren en het beleid <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> om te controleren of de geïntegreerde pdf-viewer moet worden gebruikt voor het openen van pdf-bestanden.
+
+      Hiermee wordt een lijst met plug-ins gespecificeerd die zijn ingeschakeld in  <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten met willekeurige tekens te zoeken. '*' komt overeen met een willekeurig aantal tekens terwijl '?' één optioneel teken specificeert en dus kan overeenkomen met één of nul tekens. Het teken '\' kan worden gebruikt om deze tekens te escapen, dus als je overeenkomsten voor de letterlijke tekens '*', '?' of '\' wilt zoeken, moet je er een '\' vóór plaatsen.
+
+      De gespecificeerde lijst met plug-ins wordt altijd gebruikt in <ph name="PRODUCT_NAME" /> als deze plug-ins zijn geïnstalleerd. De plug-ins zijn gemarkeerd als ingeschakeld in 'about:plugins' en gebruikers kunnen ze niet uitschakelen.
+
+      Houd er rekening mee dat dit beleid voorrang heeft op zowel DisabledPlugins als DisabledPluginsExceptions.
+
+      Als dit beleid niet wordt ingesteld, kan de gebruiker alle plug-ins verwijderen die op het systeem zijn geïnstalleerd.</translation>
 <translation id="6093156968240188330">Externe gebruikers toestaan om een vensters met verhoogde bevoegdheid te gebruiken tijdens een sessie voor ondersteuning op afstand</translation>
 <translation id="6095999036251797924">Specificeert de periode zonder gebruikersinvoer waarna het scherm wordt vergrendeld wanneer het apparaat op netstroom of op de accu werkt.
 
@@ -1760,6 +1830,7 @@
 <translation id="6828905844648501476">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, staat <ph name="PRODUCT_NAME" /> 'Persoon toevoegen' toe vanuit gebruikersbeheer.
 
       Als dit beleid is ingesteld op 'onwaar', staat <ph name="PRODUCT_NAME" /> het maken van nieuwe profielen niet toe vanuit profielbeheer.</translation>
+<translation id="685769593149966548">'Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
 Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien van de optiewaarde, maar de gerapporteerde grootten zijn gekwantiseerd en de snelheid van updates is om veiligheidsredenen beperkt. Om nauwkeurige realtime gegevens te verkrijgen, gebruik je tools zoals Telemetry.</translation>
@@ -1894,9 +1965,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7132877481099023201">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van video</translation>
 <translation id="7167436895080860385">Gebruikers toestaan wachtwoorden weer te geven in Wachtwoordbeheer (beëindigd)</translation>
 <translation id="7173856672248996428">Kort geldig profiel</translation>
-<translation id="7187256234726597551">Als je 'waar' heeft ingesteld, wordt toestemming op afstand toegestaan voor het apparaat en wordt er automatisch een certificaat gegenereerd en naar de Device Management Server geüpload.
-
-          Als je 'onwaar' of niets heeft ingesteld, wordt er geen certificaat gegenereerd en zullen oproepen aan de uitbreidings-API enterprise.platformKeysPrivate mislukken.</translation>
 <translation id="718956142899066210">Verbindingstypen die zijn toegestaan voor updates</translation>
 <translation id="7194407337890404814">Naam van standaardzoekprovider</translation>
 <translation id="7195064223823777550">Specificeer de actie die moet worden ondernomen wanneer de gebruiker de klep sluit.
@@ -2211,6 +2279,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid wordt ingesteld op 'true', gebruikt het apparaat een 24-uursnotatie. Als het beleid wordt ingesteld op 'false', gebruikt het apparaat een 12-uursnotatie.
 
       Als dit beleid niet wordt ingesteld, gebruikt het apparaat standaard een 24-uursnotatie.</translation>
+<translation id="8114382167597081590">'Beperkte modus' niet afdwingen op YouTube</translation>
 <translation id="8118665053362250806">Grootte voor mediaschijfcache instellen</translation>
 <translation id="8135937294926049787">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt uitgeschakeld als er op netstroom wordt gewerkt.
 
@@ -2266,9 +2335,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet is ingesteld, worden er geen uitzonderingen opgegeven voor de zwarte lijst van het beleid 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Toestaan dat Enterprise-gebruiker alleen primair gebruiker van meerdere profielen is (standaardgedrag voor beheerde Enterprise-gebruikers)</translation>
-<translation id="8197918588508433925">Dit beleid geeft aan welke extensies de Enterprise Platform Keys-API chrome.enterprise.platformKeysPrivate.challengeUserKey() mogen gebruiken voor externe bevestiging. Je moet extensies aan deze lijst toevoegen om de API te kunnen gebruiken.
-
-          Als een extensie niet in de lijst voorkomt, of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt een foutcode weergegeven.</translation>
 <translation id="8214600119442850823">Hiermee wordt Wachtwoordbeheer geconfigureerd.</translation>
 <translation id="8244525275280476362">Maximum vertraging voor ophalen na ongeldigverklaring voor beleid</translation>
 <translation id="8256688113167012935">Hiermee wordt de weergave van de accountnaam in <ph name="PRODUCT_OS_NAME" /> op het aanmeldscherm beheerd voor het bijbehorende lokale account van het apparaat.
@@ -2417,6 +2483,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Dit beleid wordt alleen gebruikt als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="8731693562790917685">Met instellingen voor content kun je opgeven hoe content van een bepaald type (zoals cookies, afbeeldingen of JavaScript) wordt verwerkt.</translation>
+<translation id="8736538322216687231">Minimale 'Beperkte modus' op YouTube afdwingen</translation>
 <translation id="8749370016497832113">Hiermee wordt het verwijderen van de browsergeschiedenis en downloadgeschiedenis in <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling wijzigen.
 
       Zelfs als dit beleid is uitgeschakeld, kan niet worden gegarandeerd dat de browser- en downloadgeschiedenis behouden blijven. Gebruikers kunnen de geschiedenisbestanden rechtstreeks bewerken of verwijderen en de browser kan sommige of alle geschiedenisitems op elk gewenst moment laten verlopen of archiveren.

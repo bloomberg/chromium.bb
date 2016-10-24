@@ -39,7 +39,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2158734852934720349">Licencie open source systému OS Chromium</translation>
 <translation id="2241627712206172106">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chromium prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
 <translation id="225614027745146050">Vitajte</translation>
-<translation id="2264142189334629813">Chromium OS nedokáže túto stránku otvoriť.</translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
 <translation id="2347108572062610441">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chromium.</translation>
 <translation id="2372704305038231957">32-bitová verzia prehliadača Chromium nemusí fungovať správne, pretože v tejto verzii systému Linux už nie je podporovaná. Inovujte Chromium na 64-bitovú verziu.</translation>
@@ -48,6 +47,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2483889755041906834">V prehliadači Chromium</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
 <translation id="2486653164587200256">Chromium nemusí fungovať správne, pretože v systémoch Windows XP a Windows Vista už nie je podporovaný.</translation>
+<translation id="2527042973354814951">Ak chcete zapnúť doplnok <ph name="PLUGIN_NAME" />, reštartujte Chromium</translation>
 <translation id="2535480412977113886">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="2558641060352364164">Táto stránka používa doplnok Chromium Frame, ktorého podpora sa čoskoro ukončí. Odinštalujte ho a inovujte na moderný prehliadač.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

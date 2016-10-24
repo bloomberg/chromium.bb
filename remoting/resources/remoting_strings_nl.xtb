@@ -126,6 +126,7 @@ host</translation>
 <translation id="409800995205263688">OPMERKING: beleidsinstellingen staan alleen verbindingen tussen computers binnen je netwerk toe.</translation>
 <translation id="4155497795971509630">Er ontbreken enkele vereiste componenten. Controleer of de nieuwste versie van de software is geïnstalleerd en probeer het opnieuw.</translation>
 <translation id="4156740505453712750">Om de toegang tot deze computer te beschermen, kies je een pincode van <ph name="BOLD_START" />ten minste zes cijfers<ph name="BOLD_END" />. Je moet deze pincode opgeven wanneer je verbinding maakt vanaf een andere locatie.</translation>
+<translation id="4156741816461781891">Ingelogd als <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Toegangscode</translation>
 <translation id="4207623512727273241">Voer het installatieprogramma uit voordat je doorgaat.</translation>
 <translation id="4227991223508142681">Hulpprogramma voor hostprovisioning</translation>
@@ -208,10 +209,6 @@ Desktop-host</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Iets anders.</translation>
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
-<translation id="6408143143164565232">• Luisteren naar audio vanaf Windows- of Linux-computers.
-• Ongewenste verbindingen verwijderen door lang op de computernaam te drukken.
-• Soepeler knijpen om te zoomen en scrollen met twee vingers.
-• Nieuw scherm voor Help en feedback.</translation>
 <translation id="6441316101718669559">Bureaubladintegratie wordt niet ondersteund op dit platform. Je kunt de app nog steeds gebruiken, maar de gebruikerservaring is beperkt.</translation>
 <translation id="652218476070540101">De pincode voor deze computer wordt bijgewerkt…</translation>
 <translation id="6527303717912515753">Delen</translation>

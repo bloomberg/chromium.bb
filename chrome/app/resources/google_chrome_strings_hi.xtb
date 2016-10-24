@@ -128,6 +128,7 @@
 <translation id="4700157086864140907">Google Chrome आपके द्वारा ब्राउज़र में लिखे गए टेक्स्ट को Google सर्वर को भेजकर शानदार वर्तनी-जांच प्रदान करता है, जो आपको Google खोज द्वारा उपयोग की जाने वाली वर्तनी-जांच के समान वर्तनी जांच तकनीक का उपयोग करने की अनुमति देता है.</translation>
 <translation id="4728575227883772061">अनिर्दिष्ट कारण से स्थापना विफल हुई. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और फिर से प्रयास करें.</translation>
 <translation id="4743926867934016338">स्‍वीकार करें और खोजें</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सक्षम करने के लिए Chrome फिर से चालू करें</translation>
 <translation id="4751441238232965030">यह कंप्यूटर जल्दी ही 32-बिट Google Chrome के अपडेट प्राप्त करना बंद करेगा. कृपया 64-बिट Google Chrome में अपग्रेड करें.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">यह फ़ाइल खतरनाक हो सकती है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
@@ -258,7 +259,6 @@
 <translation id="8290100596633877290">रुकिए! Google Chrome क्रैश हो गया है. अभी पुन: लॉन्च करें?</translation>
 <translation id="8342675569599923794">यह फ़ाइल खतरनाक है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="8406086379114794905">Chrome को बेहतर बनाने में सहायता करें</translation>
-<translation id="8410645163819739900">Google Chrome OS यह पृष्ठ नहीं खोल सकता.</translation>
 <translation id="8455999171311319804">वैकल्पिक: Google को निदान और उपयोग डेटा अपने आप भेजकर Chrome OS को बेहतर बनाने में सहायता करें.</translation>
 <translation id="853189717709780425">आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपने Google Chrome प्रोफ़ाइल पर उसके व्यवस्थापक नियंत्रण दे रहे हैं. आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग जैसा Chrome डेटा <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएगा. आप इस डेटा को Google खाते डैशबोर्ड के माध्यम से हटा सकेंगे, लेकिन आप इस डेटा को किसी अन्य खाते से संबद्ध नहीं कर सकेंगे.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

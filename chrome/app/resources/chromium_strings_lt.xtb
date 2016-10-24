@@ -39,7 +39,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2158734852934720349">„Chromium“ OS atvirojo šaltinio licencijos</translation>
 <translation id="2241627712206172106">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chromium“ pagal savo poreikius.</translation>
 <translation id="225614027745146050">Sveiki</translation>
-<translation id="2264142189334629813">„Chromium“ OS negali atidaryti šio puslapio.</translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
 <translation id="2347108572062610441">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chromium“.</translation>
 <translation id="2372704305038231957">32 bitų „Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant šią „Linux“ sistemą. Naujovinkite į 64 bitų „Chromium“.</translation>
@@ -48,6 +47,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2483889755041906834">Naudojant „Chromium“</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="2486653164587200256">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant „Windows XP“ arba „Windows Vista“.</translation>
+<translation id="2527042973354814951">Iš naujo paleiskite „Chromium“, kad įgalintumėte „<ph name="PLUGIN_NAME" />“</translation>
 <translation id="2535480412977113886">„Chromium“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="2558641060352364164">Šioje svetainėje naudojamas „Chromium“ rėmelio papildinys, kuris greitai bus nepalaikomas. Pašalinkite jį ir atsisiųskite modernią naršyklę.</translation>
 <translation id="2572494885440352020">„Chromium“ pagalbos priemonė</translation>

@@ -65,6 +65,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1643702317193804718">La pàgina s'està traduint a <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1647391597548383849">Accés a la càmera</translation>
+<translation id="1661474178782861119">Aviat es mostraran més articles. Que tinguis un bon vespre.</translation>
 <translation id="169033420419426091">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè no s'ha trobat la targeta SD.</translation>
 <translation id="1709438864123551175">Economitzador de dades</translation>
 <translation id="1742134235943978220">S'ha traduït a <ph name="TARGET_LANGUAGE" />.</translation>
@@ -382,7 +383,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> gestiona aquest compte.</translation>
 <translation id="5527082711130173040">Chrome necessita tenir accés a la ubicació per poder cercar dispositius. <ph name="BEGIN_LINK1" />Actualitza els permisos<ph name="END_LINK1" />. L'accés a la ubicació també està <ph name="BEGIN_LINK2" />desactivat en aquest dispositiu<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Tanca pestanyes d'incògnit</translation>
-<translation id="5538968846107343822">No s'ha trobat cap dispositiu Bluetooth. <ph name="BEGIN_LINK" />Torna a fer la cerca<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">El web físic</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5565871407246142825">Targetes de crèdit</translation>
@@ -418,6 +418,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="583891442612896534">Chrome no es pot connectar amb els servidors de Google per comprimir les dades. És possible que només pugueu desar dades de manera limitada.</translation>
 <translation id="585027516397408832">Economitzador de dades està activat</translation>
 <translation id="5860033963881614850">Desactivat</translation>
+<translation id="5867027562311576691">Aviat es mostraran més articles. Que tinguis un bon matí.</translation>
 <translation id="5869522115854928033">Contrasenyes desades</translation>
 <translation id="5899349522111170522">Crea un fitxer nou</translation>
 <translation id="5902828464777634901">Se suprimiran totes les dades que aquest lloc web hagi emmagatzemat, incloses les galetes.</translation>
@@ -557,6 +558,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7493994139787901920"><ph name="VERSION" /> (última actualització: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Espereu...</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">De moment, això és tot</translation>
 <translation id="7562080006725997899">S'estan esborrant les dades de navegació</translation>
 <translation id="756809126120519699">S'han esborrat les dades de Chrome</translation>
 <translation id="7588950540487816470">El Web físic</translation>
@@ -627,6 +629,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8275818695183729150">Permet (per a les cerques a la barra d'adreces)</translation>
 <translation id="8283853025636624853">Se sincronitza amb <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Pestanyes estàndard</translation>
+<translation id="8321376388213838985">Aviat es mostraran més articles. Que tinguis una bona tarda.</translation>
 <translation id="8372893542064058268">Permet la sincronització en segon pla en un lloc concret.</translation>
 <translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
 <translation id="8396312449826231789">Només els llocs aprovats</translation>
@@ -702,7 +705,6 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="917685106653909562">Pàgines del Web físic a prop</translation>
 <translation id="9187199695613236444">Visualització optimitzada per a mòbils</translation>
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
-<translation id="9192643434065497760">Activeu el Bluetooth a la <ph name="BEGIN_LINK" />configuració del dispositiu<ph name="END_LINK" /> per permetre la vinculació.</translation>
 <translation id="9198708126133947749">Substituïu les dades d'aquest dispositiu per les del compte <ph name="TO_ACCOUNT" />. Per recuperar les vostres dades actuals, torneu a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imatges</translation>

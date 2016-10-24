@@ -298,6 +298,7 @@
       If HardwareAccelerationModeEnabled is set to false, Disable3DAPIs is ignored and it is equivalent to Disable3DAPIs being set to true.</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>
+<translation id="2178899310296064282">Enforce at least Moderate Restricted Mode on YouTube</translation>
 <translation id="2188979373208322108">Enables the bookmark bar on <ph name="PRODUCT_NAME" />.
 
       If you enable this setting, <ph name="PRODUCT_NAME" /> will show a bookmark bar.
@@ -567,6 +568,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you enable or disable this setting, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME" />.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
+<translation id="2787173078141616821">Report information about status of Android</translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
@@ -675,9 +677,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, no search term replacement will be performed.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="3067188277482006117">If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          If it is set to false, or if it is not set, calls to the API will fail with an error code.</translation>
 <translation id="3069958900488014740">Allows you to turn off WPAD (Web Proxy Auto-Discovery) optimisation in <ph name="PRODUCT_NAME" />.
 
       If this policy is set to false, WPAD optimisation is disabled causing <ph name="PRODUCT_NAME" /> to wait longer for DNS-based WPAD servers. If the policy is not set or is enabled, WPAD optimisation is enabled.
@@ -800,6 +799,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not allow guest sessions to be started.</translation>
+<translation id="3418871497193485241">Enforces a minimum Restricted Mode on YouTube and prevents users from
+      picking a less restricted mode.
+
+      If this setting is set to Strict, Strict Restricted Mode on YouTube is always active.
+
+      If this setting is set to Moderate, the user may only pick Moderate Restricted Mode
+      and Strict Restricted Mode on YouTube, but cannot disable Restricted Mode.
+
+      If this setting is set to Off or no value is set, Restricted Mode on YouTube is not enforced by <ph name="PRODUCT_NAME" />. However, external policies such as YouTube policies might still enforce Restricted Mode.</translation>
 <translation id="3428247105888806363">Enable network prediction.</translation>
 <translation id="3449886121729668969">Configures the proxy settings for <ph name="PRODUCT_NAME" />. These proxy settings will be available for ARC-apps too.
 
@@ -921,6 +929,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="384743459174066962">Allows you to set a list of url patterns that specify sites which are not allowed to open pop-ups.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="3851039766298741586">Report information about the active kiosk session, such as
+      application ID and version.
+
+      If the policy is set to false, the kiosk session information will not be
+      reported. If set to true or left unset, kiosk session information will be
+      reported.</translation>
 <translation id="3859780406608282662">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME" />.
 
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
@@ -935,6 +949,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="3864818549971490907"> setting</translation>
+<translation id="386487026071140458">This policy is deprecated, please use <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> and <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> instead. This policy is ignored if either the <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, the <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> or the (deprecated) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> policies are set.
+
+      Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Moderate Restricted Mode on YouTube.
+
+      If you enable this setting, SafeSearch in Google Search and Moderate Restricted Mode YouTube is always active.
+
+      If you disable this setting or do not set a value, SafeSearch in Google Search and Restricted Mode in YouTube is not enforced.</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3866530186104388232">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will show existing users on the login screen and allow the user to pick one. If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will use the username/password prompt for login.</translation>
 <translation id="3868347814555911633">This policy is active in retail mode only.
@@ -1019,6 +1040,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left not set, 'AllowCookies' will be used and the user will be able to change it.</translation>
 <translation id="4103289232974211388">Redirect to SAML IdP after user confirmation</translation>
+<translation id="4103941930938018145">This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> to control the availability of the Flash plug-in and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> to control whether the integrated PDF viewer should be used for opening PDF files.
+
+      Specifies a list of plug-ins that are disabled in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
+
+      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?' or '\' characters, you can put a '\' in front of them.
+
+      If you enable this setting, the specified list of plug-ins is never used in <ph name="PRODUCT_NAME" />. The plug-ins are marked as disabled in 'about:plug-ins' and users cannot enable them.
+
+      Note that this policy can be overridden by EnabledPlug-ins and DisabledPlug-insExceptions.
+
+      If this policy is left not set, the user can use any plug-in installed on the system except for hard-coded incompatible, outdated or dangerous plug-ins.</translation>
 <translation id="410478022164847452">Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> takes the idle action, which can be configured separately.
@@ -1337,6 +1369,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5423197884968724595">Android WebView restriction name:</translation>
+<translation id="543559563129402336">This policy is deprecated. Consider using <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, which overrides this policy and allows more fine-grained tuning.
+
+      Forces YouTube Moderate Restricted Mode and prevents users from changing this setting.
+
+      If this setting is enabled, Restricted Mode on YouTube is always enforced to be at least Moderate.
+
+      If this setting is disabled or no value is set, Restricted Mode on YouTube is not enforced by <ph name="PRODUCT_NAME" />. However, policies such as YouTube policies might still enforce Restricted Mode.</translation>
 <translation id="5447306928176905178">Enable reporting memory info (JS heap size) to page (deprecated)</translation>
 <translation id="5457065417344056871">Enable guest mode in browser</translation>
 <translation id="5457924070961220141">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
@@ -1444,6 +1483,19 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
+<translation id="5783595563813359339">This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> to control the availability of the Flash plug-in and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> to control whether the integrated PDF viewer should be used for opening PDF files.
+
+      Specifies a list of plug-ins that user can enable or disable in <ph name="PRODUCT_NAME" />.
+
+      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?' or '\' characters, you can put a '\' in front of them.
+
+      If you enable this setting, the specified list of plug-ins can be used in <ph name="PRODUCT_NAME" />. Users can enable or disable them in 'about:plug-ins', even if the plug-in also matches a pattern in DisabledPlug-ins. Users can also enable and disable plug-ins that don't match any patterns in DisabledPlug-ins, DisabledPlug-insExceptions and EnabledPlug-ins.
+
+      This policy is meant to allow for strict plug-in blacklisting where the 'DisabledPlug-ins' list contains wildcarded entries like disable all plug-ins '*' or disable all Java plug-ins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
+
+      Note that both the plug-in name and the plug-in's group name have to be exempted. Each plug-in group is shown in a separate section in about:plug-ins; each section may have one or more plug-ins. For example, the "Shockwave Flash" plug-in belongs to the "Adobe Flash Player" group, and both names have to have a match in the exceptions list if that plug-in is to be exempted from the blacklist.
+
+      If this policy is left not set, any plug-in that matches the patterns in the 'DisabledPlug-ins' will be locked disabled, and the user won't be able to enable them.</translation>
 <translation id="5795001131770861387">Enables HTTP/0.9 support on non-default ports</translation>
 <translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="5814301096961727113">Set the default state of spoken feedback on the login screen</translation>
@@ -1513,6 +1565,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME" /> will not perform online revocation checks in <ph name="PRODUCT_NAME" /> 19 and later.</translation>
 <translation id="5966615072639944554">Extensions allowed to to use the remote attestation API</translation>
+<translation id="5974970919245996815">Report information about the status of Android is sent back to
+      the server.
+
+      If the policy is set to false, the information will not be reported.
+      If set to true or left unset, the information will be reported.
+
+      This policy only applies if Android apps are enabled.</translation>
 <translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
 <translation id="6009903244351574348">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the listed content types.
@@ -1543,6 +1602,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6076099373507468537">Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
 
       If this policy is not configured, the list of a detachable USB devices is empty.</translation>
+<translation id="608377055310226486">This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> to control the availability of the Flash plug-in and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> to control whether the integrated PDF viewer should be used for opening PDF files.
+
+      Specifies a list of plug-ins that are enabled in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
+
+      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?' or '\' characters, you can put a '\' in front of them.
+
+      The specified list of plug-ins is always used in <ph name="PRODUCT_NAME" /> if they are installed. The plug-ins are marked as enabled in 'about:plug-ins' and users cannot disable them.
+
+      Note that this policy overrides both DisabledPlug-ins and DisabledPlug-insExceptions.
+
+      If this policy is left not set, the user can disable any plug-in installed on the system.</translation>
 <translation id="6093156968240188330">Allow remote users to interact with elevated windows in remote assistance sessions</translation>
 <translation id="6095999036251797924">Specifies the length of time without user input after which the screen is locked when running on AC power or battery.
 
@@ -1772,6 +1842,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6828905844648501476">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow creation of new profiles from the profile manager.</translation>
+<translation id="685769593149966548">Enforce Strict Restricted Mode for YouTube</translation>
 <translation id="687046793986382807">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 35.
 
       Memory info is reported to page anyway, regardless of the option value, but the sizes reported are
@@ -1909,9 +1980,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
 <translation id="7167436895080860385">Allow users to show passwords in Password Manager (deprecated)</translation>
 <translation id="7173856672248996428">Ephemeral profile</translation>
-<translation id="7187256234726597551">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
-
-          If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeysPrivate extension API will fail.</translation>
 <translation id="718956142899066210">Connection types allowed for updates</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
 <translation id="7195064223823777550">Specify the action to take when the user closes the lid.
@@ -2226,6 +2294,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If the policy is set to true, the device will use a 24-hour clock format. If the policy is set to false, the device will use a 12-hour clock format.
 
       If this policy is not set, the device will default to a 24-hour clock format.</translation>
+<translation id="8114382167597081590">Do not enforce Restricted Mode on YouTube</translation>
 <translation id="8118665053362250806">Set media disk cache size</translation>
 <translation id="8135937294926049787">Specifies the length of time without user input after which the screen is turned off when running on AC power.
 
@@ -2281,9 +2350,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.</translation>
 <translation id="8176035528522326671">Allow enterprise user to be primary multi-profile user only (Default behaviour for enterprise-managed users)</translation>
-<translation id="8197918588508433925">This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
-
-          If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
 <translation id="8214600119442850823">Configures the password manager.</translation>
 <translation id="8244525275280476362">Maximum fetch delay after a policy invalidation</translation>
 <translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME" /> shows on the login screen for the corresponding device-local account.
@@ -2434,6 +2500,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
+<translation id="8736538322216687231">Force minimum YouTube Restricted Mode</translation>
 <translation id="8749370016497832113">Enables deleting browser history and download history in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
 
       Note that even with this policy disabled, the browsing and download history are not guaranteed to be retained: users may be able to edit or delete the history database files directly and the browser itself may expire or archive any or all history items at any time.

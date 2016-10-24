@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
 <translation id="106701514854093668">Adreces d'interès d'escriptori</translation>
 <translation id="1080116354587839789">Ajusta a l'amplada</translation>
-<translation id="1103124106085518534">Tot llest per ara</translation>
 <translation id="1103523840287552314">Tradueix sempre de: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si s'activa aquesta casella, Chrome emmagatzema una còpia d'aquesta targeta al dispositiu per agilitzar l'emplenament de formularis.</translation>
 <translation id="1111153019813902504">Adreces d'interès recents</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proveu d'executar el Diagnòstic de xarxa de Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Les pàgines que has visitat fa poc es mostraran aquí.</translation>
 <translation id="1821930232296380041">Sol·licitud o paràmetres de la sol·licitud no vàlids</translation>
 <translation id="1838667051080421715">Estàs veient el codi font d'una pàgina web.</translation>
 <translation id="1871208020102129563">El servidor intermediari està configurat perquè utilitzi servidors intermediaris fixos, en lloc d'un URL d'script .pac.</translation>
@@ -361,7 +359,6 @@
 <translation id="4816492930507672669">Ajusta a la mida de la pàgina</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="4880827082731008257">Cerca a l'historial</translation>
-<translation id="4884656795097055129">Es mostraran més articles en el moment oportú.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i 1 pàgina web més}other{i # pàgines web més}}</translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>

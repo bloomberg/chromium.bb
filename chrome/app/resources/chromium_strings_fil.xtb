@@ -39,7 +39,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2158734852934720349">Mga lisensya ng open source ng Chromium OS</translation>
 <translation id="2241627712206172106">Kung nagpapahiram ka ng computer, ang mga kaibigan at kapamilya ay maaaring mag-browse nang hiwalay at i-set up ang Chromium sa paraang gusto nila.</translation>
 <translation id="225614027745146050">Maligayang pagdating</translation>
-<translation id="2264142189334629813">Hindi mabubuksan ng Chromium OS ang page na ito.</translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="2347108572062610441">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chronium.</translation>
 <translation id="2372704305038231957">Maaaring hindi gumana nang maayos ang 32-bit na Chromium dahil hindi na ito sinusuportahan sa Linux system na ito. Mangyaring mag-upgrade sa 64-bit na Chromium.</translation>
@@ -48,6 +47,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2483889755041906834">Sa Chromium</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="2486653164587200256">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Windows XP o Windows Vista.</translation>
+<translation id="2527042973354814951">I-restart ang Chromium upang ma-enable ang <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in sa iyong account.</translation>
 <translation id="2558641060352364164">Ginagamit ng site na ito ang plugin na Chromium Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
 <translation id="2572494885440352020">Helper ng Chromium</translation>

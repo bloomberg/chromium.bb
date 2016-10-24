@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">NOTA. Le impostazioni dei criteri consentono connessioni solo tra computer all'interno della tua rete.</translation>
 <translation id="4155497795971509630">Mancano alcuni componenti obbligatori. Verifica che sia installata la versione più recente del software e riprova.</translation>
 <translation id="4156740505453712750">Per proteggere l'accesso a questo computer, scegli un PIN di <ph name="BOLD_START" />almeno sei cifre<ph name="BOLD_END" />. Questo PIN sarà richiesto quando ti connetti da un'altra posizione.</translation>
+<translation id="4156741816461781891">Accesso eseguito come <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Codice di accesso</translation>
 <translation id="4207623512727273241">Esegui il programma di installazione prima di continuare.</translation>
 <translation id="4227991223508142681">Utilità di provisioning degli host</translation>
@@ -208,10 +209,6 @@ Remote Desktop</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Qualcos'altro.</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
-<translation id="6408143143164565232">• Ascolta contenuti audio da computer Windows o Linux.
-• Rimuovi le connessioni indesiderate premendo a lungo il nome di un computer.
-• Pizzico per eseguire lo zoom e scorrimento con due dita semplificati.
-• Nuova schermata Guida e feedback.</translation>
 <translation id="6441316101718669559">L'integrazione desktop non è supportata su questa piattaforma. Puoi comunque utilizzare l'applicazione, ma l'esperienza utente sarà peggiore.</translation>
 <translation id="652218476070540101">Aggiornamento PIN del computer in corso…</translation>
 <translation id="6527303717912515753">Condividi</translation>

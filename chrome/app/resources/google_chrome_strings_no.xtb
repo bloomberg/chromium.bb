@@ -128,6 +128,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="4700157086864140907">Google Chrome kan gi bedre stavekontroll ved å sende det du skriver inn i nettleseren til Googles tjenere, noe som gjør at du kan bruke samme teknologi for stavekontroll som brukes av Google Søk.</translation>
 <translation id="4728575227883772061">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Google Chrome hvis det kjører, og prøv på nytt.</translation>
 <translation id="4743926867934016338">Godta og søk</translation>
+<translation id="4750550185319565338">Start Chrome på nytt for å slå på <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Denne datamaskinen slutter snart å motta oppdateringer for 32-bit-versjonen av Google Chrome. Oppgrader til 64-bit-versjonen av Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-Inn)</translation>
 <translation id="4771048833395599659">Denne filen kan være farlig, så Chrome har blokkert den.</translation>
@@ -256,7 +257,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="8290100596633877290">Google Chrome har fått et programstopp. Vil du starte på nytt nå?</translation>
 <translation id="8342675569599923794">Denne filen er farlig, så Chrome har blokkert den.</translation>
 <translation id="8406086379114794905">Bidra til å gjøre Chrome bedre</translation>
-<translation id="8410645163819739900">Google Chrome OS kan ikke åpne denne siden.</translation>
 <translation id="8455999171311319804">Valgfritt: Bidra til å gjøre Chrome OS bedre ved å sende diagnostikk og brukerdata automatisk til Google.</translation>
 <translation id="853189717709780425">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via Google Konto-oversikten, men du kan ikke knytte disse dataene til en annen konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

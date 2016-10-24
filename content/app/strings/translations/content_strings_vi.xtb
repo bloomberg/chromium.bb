@@ -40,6 +40,7 @@
 <translation id="2507943997699731163">Vui lòng điền vào trường này.</translation>
 <translation id="2508569020611168319">danh sách tab</translation>
 <translation id="2548326553472216322">Không có tìm kiếm nào gần đây</translation>
+<translation id="2561842179657104141">hiển thị các kiểm soát phương tiện khác</translation>
 <translation id="2572483411312390101">phát</translation>
 <translation id="2613802280814924224">Vui lòng nhập giá trị hợp lệ. Giá trị hợp lệ gần nhất là <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Gửi</translation>
@@ -113,6 +114,7 @@
 <translation id="561939826962581046">thời gian</translation>
 <translation id="5641012560118721995">tạm dừng phát lại</translation>
 <translation id="5643186887447432888">nút</translation>
+<translation id="5677946354068040947">tùy chọn khác</translation>
 <translation id="57838592816432529">Tắt tiếng</translation>
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5843503607508392247">Khác...</translation>
@@ -147,6 +149,7 @@
 <translation id="6853785296079745596">ẩn phụ đề chi tiết</translation>
 <translation id="6885760532393684712">thư mục</translation>
 <translation id="6934078000481955284">khung trích dẫn</translation>
+<translation id="6941933287844615239">tải xuống phương tiện</translation>
 <translation id="7057186640035488495">thời gian phim</translation>
 <translation id="709897737746224366">Vui lòng khớp với định dạng được yêu cầu.</translation>
 <translation id="7223624360433298498">thời gian trôi qua</translation>

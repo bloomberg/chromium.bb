@@ -128,6 +128,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="4700157086864140907">O Google Chrome pode disponibilizar uma verificação ortográfica mais inteligente, enviando o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da pesquisa do Google.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver atualmente em execução, feche-o e tente de novo.</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
+<translation id="4750550185319565338">Reinicie o Chrome para ativar o <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Em breve, este computador deixará de receber atualizações do Google Chrome de 32 bits. Atualize para o Google Chrome de 64 bits.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Este ficheiro pode ser perigoso. Como tal, o Chrome bloqueou-o.</translation>
@@ -256,7 +257,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="8290100596633877290">Ups! O Google Chrome falhou. Reiniciar agora?</translation>
 <translation id="8342675569599923794">Este ficheiro é perigoso. Como tal, o Chrome bloqueou-o.</translation>
 <translation id="8406086379114794905">Ajude a melhorar o Chrome</translation>
-<translation id="8410645163819739900">O Google Chrome SO não consegue abrir esta página.</translation>
 <translation id="8455999171311319804">Opcional: ajude a melhorar o SO Chrome ao enviar automaticamente dados de diagnóstico e de utilização para a Google.</translation>
 <translation id="853189717709780425">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições ficarão permanentemente associados a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google mas não poderá associar estes dados a outra conta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

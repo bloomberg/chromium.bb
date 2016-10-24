@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
 <translation id="106701514854093668">Oznake radne površine</translation>
 <translation id="1080116354587839789">Prilagođavanje širini</translation>
-<translation id="1103124106085518534">Gotovo zasad</translation>
 <translation id="1103523840287552314">Uvijek prevedi <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Ako je označeno, Chrome će pohraniti kopiju vaše kartice na uređaj radi bržeg popunjavanja obrazaca.</translation>
 <translation id="1111153019813902504">Najnovije oznake</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Pokušajte pokrenuti Mrežnu dijagnostiku sustava Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Ažurirajte zaporku za sinkronizaciju.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Ovdje će se pojaviti oznake koje ste nedavno posjetili.</translation>
 <translation id="1821930232296380041">Nevažeći zahtjev ili parametri zahtjeva</translation>
 <translation id="1838667051080421715">Gledate izvor web-stranice.</translation>
 <translation id="1871208020102129563">Proxy poslužitelj postavljen je na upotrebu fiksnih proxy poslužitelja, a ne URL .pac skripte.</translation>
@@ -360,7 +358,6 @@
 <translation id="4816492930507672669">Prilagodi stranici</translation>
 <translation id="4850886885716139402">Prikaz</translation>
 <translation id="4880827082731008257">Pretraži povijest</translation>
-<translation id="4884656795097055129">U odgovarajućem će se trenutku prikazati više članaka.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i još 1 web-stranica}one{i još # web-stranica}few{i još # web-stranice}other{i još # web-stranica}}</translation>
 <translation id="4923417429809017348">Ova je stranica prevedena s nepoznatog jezika na <ph name="LANGUAGE_LANGUAGE" /></translation>

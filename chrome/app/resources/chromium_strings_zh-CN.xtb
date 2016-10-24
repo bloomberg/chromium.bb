@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
 <translation id="2241627712206172106">如果您与亲朋好友共用计算机，他们将能够使用单独的帐户进行浏览，并可随心所欲地设置Chromium。</translation>
 <translation id="225614027745146050">欢迎</translation>
-<translation id="2264142189334629813">Chromium 操作系统无法打开此网页。</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="2347108572062610441">此扩展程序更改了 Chromium 启动后系统显示的页面。</translation>
 <translation id="2372704305038231957">32 位 Chromium 已不再适用于此 Linux 系统，因此可能无法正常运行。请升级到 64 位 Chromium。</translation>
@@ -76,7 +75,7 @@
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3264279740686075150">太棒了！Chromium 已设为您的默认浏览器。</translation>
+<translation id="3264279740686075150">太棒了！Chromium 现已成为您的默认浏览器。</translation>
 <translation id="328888136576916638">缺少 Google API 密钥，因此 Chromium 的部分功能将无法使用。</translation>
 <translation id="3289635842886789612">Chromium 版本太旧。</translation>
 <translation id="3296368748942286671">关闭 Chromium 后继续运行后台应用</translation>

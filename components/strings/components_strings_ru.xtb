@@ -10,7 +10,6 @@
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="106701514854093668">Закладки на компьютере</translation>
 <translation id="1080116354587839789">Выровнять по ширине окна</translation>
-<translation id="1103124106085518534">Новых закладок нет</translation>
 <translation id="1103523840287552314">Всегда переводить <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Если флажок установлен, Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="1111153019813902504">Недавно в закладках</translation>
@@ -74,7 +73,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Выполните диагностику сети в Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Обновите кодовую фразу для синхронизации.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Здесь появятся закладки, которые вы недавно открывали.</translation>
 <translation id="1821930232296380041">Недопустимый запрос или неверные параметры запроса</translation>
 <translation id="1838667051080421715">Вы просматриваете код страницы.</translation>
 <translation id="1871208020102129563">Выбрано использование фиксированных прокси-серверов, а не URL PAC-скрипта.</translation>
@@ -360,7 +358,6 @@
 <translation id="4816492930507672669">По размеру страницы</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4880827082731008257">Искать в истории</translation>
-<translation id="4884656795097055129">Скоро здесь появятся другие статьи.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и ещё 1 веб-страница}one{и ещё # веб-страница}few{и ещё # веб-страницы}many{и ещё # веб-страниц}other{и ещё # веб-страницы}}</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>

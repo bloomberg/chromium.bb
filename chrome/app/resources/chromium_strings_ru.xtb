@@ -37,7 +37,6 @@
 <translation id="2158734852934720349">Лицензии Chromium OS на ПО с открытым исходным кодом</translation>
 <translation id="2241627712206172106">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chromium на свой вкус.</translation>
 <translation id="225614027745146050">Добро пожаловать!</translation>
-<translation id="2264142189334629813">Не удалось открыть страницу</translation>
 <translation id="2316129865977710310">Спасибо, не надо</translation>
 <translation id="2347108572062610441">Расширение изменило стартовую страницу Chromium.</translation>
 <translation id="2372704305038231957">В работе 32-разрядной версии Chromium могут возникать сбои, поскольку она больше не поддерживается этой системой Linux. Установите 64-разрядную версию браузера.</translation>
@@ -46,6 +45,7 @@
 <translation id="2483889755041906834">В Chromium</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2486653164587200256">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Windows XP и Windows Vista.</translation>
+<translation id="2527042973354814951">Перезапустите Chromium, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="2535480412977113886">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>
 <translation id="2558641060352364164">Этот сайт использует плагин Chromium Frame, поддержка которого скоро будет прекращена. Установите новую версию браузера.</translation>
 <translation id="2572494885440352020">Помощник по Chromium</translation>

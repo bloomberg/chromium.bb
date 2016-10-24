@@ -129,6 +129,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="4700157086864140907">Google Chrome può offrire una funzione di controllo ortografico migliore inviando il testo digitato nel browser ai server di Google, consentendo così di usufruire della stessa tecnologia di controllo ortografico utilizzata da Ricerca Google.</translation>
 <translation id="4728575227883772061">Installazione non riuscita a causa di un errore non specificato. Se Google Chrome è attivo, chiudilo e riprova.</translation>
 <translation id="4743926867934016338">Accetta e cerca</translation>
+<translation id="4750550185319565338">Riavvia Chrome per attivare <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome a 32 bit. Esegui l'upgrade a Google Chrome a 64 bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Questo file potrebbe essere pericoloso, pertanto è stato bloccato da Chrome.</translation>
@@ -257,7 +258,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="8290100596633877290">Spiacenti, si è verificato un arresto anomalo di Google Chrome. Riavviarlo ora?</translation>
 <translation id="8342675569599923794">Questo file è pericoloso, pertanto è stato bloccato da Chrome.</translation>
 <translation id="8406086379114794905">Contribuisci a migliorare Chrome</translation>
-<translation id="8410645163819739900">Impossibile aprire questa pagina in Google Chrome OS.</translation>
 <translation id="8455999171311319804">Facoltativo. Aiutaci a migliorare Chrome OS inviando automaticamente a Google dati di diagnostica e utilizzo.</translation>
 <translation id="853189717709780425">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

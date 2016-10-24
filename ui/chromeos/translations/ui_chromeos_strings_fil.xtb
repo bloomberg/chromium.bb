@@ -1,78 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="1119447706177454957">Panloob na error</translation>
 <translation id="153454903766751181">Sinisimulan ang cellular na modem...</translation>
-<translation id="158849752021629804">Kailangan ng home network</translation>
-<translation id="1661867754829461514">Nawawala ang PIN</translation>
-<translation id="1773212559869067373">Lokal na tinanggihan ang certificate ng pagpapatunay</translation>
 <translation id="1829129547161959350">Penguin</translation>
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
 <translation id="2288278176040912387">Record player</translation>
 <translation id="2354174487190027830">Ina-activate ang <ph name="NAME" /></translation>
-<translation id="2544853746127077729">Tinanggihan ng network ang certificate sa pagpapatunay</translation>
 <translation id="2563185590376525700">Palaka</translation>
-<translation id="2563856802393254086">Binabati kita! Na-activate ang iyong serbisyo ng data ng '<ph name="NAME" />' at handa nang gamitin.</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
-<translation id="2670531586141364277">Nangangailangan ng koneksyon sa network ang pag-activate ng '<ph name="NAME" />.'</translation>
 <translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Impormasyon</translation>
 <translation id="2951236788251446349">Jellyfish</translation>
-<translation id="2966449113954629791">Maaaring naubos mo na ang iyong allowance sa mobile data. Bisitahin ang activation portal ng <ph name="NAME" /> upang bumili ng higit pang data.</translation>
 <translation id="3846575436967432996">Walang available na impormasyon sa network</translation>
-<translation id="3871838685472846647">Na-activate ang Cellular</translation>
 <translation id="3901991538546252627">Kumokonekta sa <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="40400351611212369">Error sa Pag-activate ng Network</translation>
 <translation id="4118990158415604803">Ang pagkonekta sa iba pang mga network ay na-disable ng iyong administrator.</translation>
-<translation id="4237016987259239829">Error sa Koneksyon ng Network</translation>
-<translation id="4274292172790327596">Di-kilalang error</translation>
 <translation id="4326192123064055915">Kape</translation>
-<translation id="4387004326333427325">Remote na tinanggihan ang certificate sa pagpapatunay</translation>
-<translation id="4442424173763614572">Nabigo ang paghahanap sa DNS</translation>
 <translation id="4448844063988177157">Naghahanap ng mga network na Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Kumokonekta...</translation>
-<translation id="4508265954913339219">Nabigo ang pag-activate</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Bulaklak</translation>
-<translation id="5045550434625856497">Hindi wastong password</translation>
-<translation id="5097002363526479830">Nabigong kumonekta sa network na '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">Chess</translation>
 <translation id="5257456363153333584">Tutubi</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">Nabigo ang paghanap ng DHCP</translation>
-<translation id="6232116551750539448">Naputol ang koneksyon sa <ph name="NAME" /></translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ina-activate...</translation>
-<translation id="6312403991423642364">Hindi alam na error sa network</translation>
-<translation id="6490455614072479501">Hindi nakakonekta sa '<ph name="NAME" />': <ph name="DETAILS" />
-        Mensahe sa server: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">Walang available na cellular na network</translation>
-<translation id="6732801395666424405">Hindi na-load ang mga certificate</translation>
 <translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Paru-paro</translation>
-<translation id="6943836128787782965">Nabigo ang pagkuha ng HTTP</translation>
 <translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
-<translation id="7165320105431587207">Nabigong ma-configure ang network</translation>
-<translation id="7170041865419449892">Wala sa sakop</translation>
-<translation id="7229570126336867161">Kailangan ng EVDO</translation>
-<translation id="7256405249507348194">Hindi nakikilalang error: <ph name="DESC" /></translation>
-<translation id="7297443947353982503">Mali ang username/password o nabigo ang EAP-auth</translation>
 <translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
 <translation id="7874779702599364982">Naghahanap ng mga cellular network...</translation>
-<translation id="7925247922861151263">Nabigo ang pagsusuri sa AAA</translation>
-<translation id="7973962044839454485">Nabigo ang pagpapatotoo sa PPP dahil sa hindi tamang username o password</translation>
 <translation id="8000066093800657092">Walang network</translation>
 <translation id="8008366997883261463">Aso</translation>
 <translation id="8132793192354020517">Kumukonekta sa <ph name="NAME" /></translation>
-<translation id="8300849813060516376">Nabigo ang OTASP</translation>
-<translation id="8372369524088641025">Mahinang WEP key</translation>
 <translation id="8454013096329229812">Naka-on ang Wi-Fi.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Muling kumokonekta...</translation>
-<translation id="8688591111840995413">Hindi magandang password</translation>
 <translation id="8714406895390098252">Bisikleta</translation>
 <translation id="8808686172382650546">Pusa</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="9044646465488564462">Nabigong kumonekta sa network: <ph name="DETAILS" /></translation>
-<translation id="9046895021617826162">Nabigo ang pagkonekta</translation>
 </translationbundle>

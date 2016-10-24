@@ -65,6 +65,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1643702317193804718">Seite wird in folgende Sprache übersetzt: <ph name="SOURCE_LANGUAGE" />...</translation>
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="1647391597548383849">Kamerazugriff</translation>
+<translation id="1661474178782861119">Weitere Artikel werden in Kürze erscheinen. Genießen Sie den Abend.</translation>
 <translation id="169033420419426091"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, weil keine SD-Karte gefunden wurde.</translation>
 <translation id="1709438864123551175">Datensparmodus</translation>
 <translation id="1742134235943978220">In folgende Sprache übersetzt: <ph name="TARGET_LANGUAGE" /></translation>
@@ -382,7 +383,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5512137114520586844">Dieses Konto wird von <ph name="PARENT_NAME" /> verwaltet.</translation>
 <translation id="5527082711130173040">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK1" />Berechtigungen aktualisieren.<ph name="END_LINK1" /> Außerdem ist der Standortzugriff <ph name="BEGIN_LINK2" />für dieses Gerät deaktiviert<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Inkognito-Tabs schließen</translation>
-<translation id="5538968846107343822">Keine Bluetooth-Geräte gefunden. <ph name="BEGIN_LINK" />Noch einmal suchen<ph name="END_LINK" /></translation>
 <translation id="554327794654007401">Physical Web</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5565871407246142825">Kreditkarten</translation>
@@ -418,6 +418,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="583891442612896534">Chrome kann die Google-Server für die Datenkomprimierung nicht erreichen. Ihre Einsparungen bei der Datennutzung können begrenzt sein.</translation>
 <translation id="585027516397408832">Datensparmodus aktiviert</translation>
 <translation id="5860033963881614850">Aus</translation>
+<translation id="5867027562311576691">Weitere Artikel werden in Kürze erscheinen. Genießen Sie den Morgen.</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5899349522111170522">Neue Datei erstellen</translation>
 <translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
@@ -557,6 +558,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualisiert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Bitte warten...</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Das ist im Moment alles</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
 <translation id="7588950540487816470">Physical Web</translation>
@@ -627,6 +629,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8275818695183729150">Zulassen (für Suchanfragen in der Adressleiste)</translation>
 <translation id="8283853025636624853">Synchronisierung mit <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standard-Tabs</translation>
+<translation id="8321376388213838985">Weitere Artikel werden in Kürze erscheinen. Genießen Sie den Nachmittag.</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
 <translation id="8396312449826231789">Nur genehmigte Websites</translation>
@@ -702,7 +705,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="917685106653909562">Physical Web-Seiten zu Objekten in der Nähe</translation>
 <translation id="9187199695613236444">Für Mobilgeräte optimierte Ansicht</translation>
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
-<translation id="9192643434065497760">Aktivieren Sie Bluetooth in den <ph name="BEGIN_LINK" />Geräteeinstellungen<ph name="END_LINK" />, um eine Kopplung zu ermöglichen.</translation>
 <translation id="9198708126133947749">Die Daten dieses Geräts werden durch die Daten von <ph name="TO_ACCOUNT" /> ersetzt. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>

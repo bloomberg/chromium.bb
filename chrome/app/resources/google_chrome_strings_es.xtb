@@ -132,6 +132,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4700157086864140907">Para que el corrector ortográfico sea más útil, Google Chrome envía lo que escribes en el navegador a los servidores de Google con el fin de poder usar la tecnología de corrección ortográfica de la búsqueda de Google.</translation>
 <translation id="4728575227883772061">Debido a un error desconocido, la instalación no se ha llevado a cabo. Si Google Chrome se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
 <translation id="4743926867934016338">Aceptar y buscar</translation>
+<translation id="4750550185319565338">Reiniciar Chrome para habilitar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome (32 bits). Actualiza Google Chrome a la versión de 64 bits.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (tráfico mDNS entrante)</translation>
 <translation id="4771048833395599659">Es posible que este archivo sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
@@ -264,7 +265,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un fallo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8342675569599923794">Este archivo es peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="8406086379114794905">Ayuda a mejorar Chrome</translation>
-<translation id="8410645163819739900">Google Chrome OS no puede abrir esta página.</translation>
 <translation id="8455999171311319804">Opcional: Envía datos de uso y diagnóstico automáticamente a Google para ayudarnos a mejorar Chrome OS.</translation>
 <translation id="853189717709780425">Estas iniciando sesión con una cuenta administrada, por lo que concedes a su administrador el control sobre tu perfil de Google Chrome. Tus datos de Chrome, como aplicaciones, marcadores, historial, contraseñas y otras opciones quedarán vinculados de forma permanente a <ph name="USER_NAME" />. Podrás eliminar estos datos mediante el panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

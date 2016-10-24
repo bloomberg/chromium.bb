@@ -303,6 +303,7 @@
       Om HardwareAccelerationModeEnabled är inställd på falskt ignoreras Disable3DAPIs och det motsvarar att Disable3DAPIs är inställd på sant.</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
+<translation id="2178899310296064282">Tillämpa minst medelbegränsat läge på YouTube</translation>
 <translation id="2188979373208322108">Policyn aktiverar bokmärkesfältet i <ph name="PRODUCT_NAME" />.
 
       Om du aktiverar inställningen visas ett bokmärkesfält i <ph name="PRODUCT_NAME" />.
@@ -572,6 +573,7 @@
       Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta inställningen ”Aktivera skydd mot lösenordsfiske och skadlig programvara” i <ph name="PRODUCT_NAME" />.
 
       Om den här principen inte anges är den aktiverad, men användarna kan ändra den.</translation>
+<translation id="2787173078141616821">Rapportera information om Android-status</translation>
 <translation id="2801230735743888564">Tillåt användare att spela påskäggsspelet med dinosaurier när enheten är offline.
 
       Om den här principen är inställd på falskt kommer användare inte att kunna spela påskäggsspelet med dinosaurier när enheten är offline. Om principen är inställd på sant kommer användare att kunna spela dinosauriespelet. Om principen inte tillämpas kommer användare inte att kunna spela påskäggsspelet med dinosaurier på Chrome OS med registrering, men kan spela det under andra omständigheter.</translation>
@@ -680,9 +682,6 @@
           Policyn är valfri. Om den inte ställs in byts inga sökord ut.
 
           Policyn beaktas bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="3067188277482006117">Om den är inställd på sant kan användaren, genom att använda maskinvaran i Chrome-enheten, fjärrattestera sin identitet i sekretessinställningarna CA via API:et Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod att visas.</translation>
 <translation id="3069958900488014740">Tillåter att WPAD-optimering (Web Proxy Auto-Discovery) inaktiveras för <ph name="PRODUCT_NAME" />.
 
       Om principen är inställd på falskt är WPAD-optimeringen inaktiverad, vilket innebär att <ph name="PRODUCT_NAME" /> får vänta längre på DNS-baserade WPAD-servrar. Om principen inte har konfigurerats eller har aktiverats är WPAD-optimeringen aktiverad.
@@ -807,6 +806,15 @@
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
       Om policyn är inställd på falskt går det inte att starta gästsessioner i <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="3418871497193485241">Anger en obligatorisk lägstanivå för begränsat läge på YouTube och
+      förhindrar att användarna väljer en mindre strikt begränsning.
+
+      Med inställningen Strikt är strikt begränsat läge på YouTube alltid aktivt.
+
+      Med inställningen Medel kan användaren välja mellan medelbegränsat eller
+      strikt begränsat läge på YouTube men inte inaktivera begränsat läge.
+
+      Med inställningen Av eller om inget värde anges är begränsat läge på YouTube inte obligatoriskt i <ph name="PRODUCT_NAME" />. Däremot kan det fortfarande finnas externa principer, till exempel principer för YouTube, som gör begränsat läge obligatoriskt.</translation>
 <translation id="3428247105888806363">Aktivera nätverksförslag</translation>
 <translation id="3449886121729668969">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" />. Dessa proxyinställningar blir också tillgängliga för ARC-appar.
 
@@ -928,6 +936,12 @@
 <translation id="384743459174066962">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som inte får öppna popupfönster.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
+<translation id="3851039766298741586">Rapporterar information om den aktiva kiosksessionen, bland annat
+      app-id och appversion.
+
+      Om principen är inställd på falskt rapporteras ingen information om
+      kiosksessionen. Om principen är inställd på sant eller inte har angetts
+      rapporteras information om kiosksessionen.</translation>
 <translation id="3859780406608282662">Lägg till en parameter för att hämta ett slumpfrö i <ph name="PRODUCT_OS_NAME" />.
 
       Om den har specificerats kommer en frågeparameter som kallas begränsad att läggas till webbadressen som används för att hämta ett slumpfrö. Parametervärdet kommer att vara det värde som specificerats i denna policy.
@@ -942,6 +956,13 @@
 
           Principen tillämpas bara om principen DefaultSearchProviderEnabled har aktiverats.</translation>
 <translation id="3864818549971490907">Standardinställning för plugin-program</translation>
+<translation id="386487026071140458">Den här principen har fasats ut. Använd <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> och <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> i stället. Den här principen ignoreras om någon av principerna <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> eller (den utfasade) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> har angetts.
+
+      Gör så att det blir obligatoriskt att ha SafeSearch aktivt för sökfrågor på Google Webbsökning och förhindrar att användarna ändrar inställningen. Inställningen gör även medelbegränsat läge på YouTube obligatoriskt.
+
+      Om du aktiverar den här inställningen är SafeSearch i Google Sök och medelbegränsat läge på YouTube alltid aktivt.
+
+      Om du inaktiverar inställningen eller inte anger något värde är SafeSearch på Google Sök och begränsat läge på YouTube inte obligatoriskt.</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="3866530186104388232">Om den här policyn är inställd på sant eller inte är konfigurerad visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" /> och det går att välja en. Om policyn är inställd på falskt används inloggningsfönstret för användarnamn och lösenord i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3868347814555911633">Den här policyn är bara aktiv i återförsäljarläge.
@@ -1026,6 +1047,17 @@
 
           Om inget värde anges för principen används AllowCookies och användaren kan ändra inställningen.</translation>
 <translation id="4103289232974211388">Omdirigera till SAML IdP när användaren har bekräftat</translation>
+<translation id="4103941930938018145">Den här principen har fasats ut. Bestäm om Flash-pluginprogrammet ska vara tillgängligt med <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> och om PDF-filer ska öppnas i den inbyggda PDF-läsaren med <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />.
+
+      Anger en lista med inaktiverade pluginprogram i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
+
+      Jokertecknen * och ? kan användas för att matcha godtyckliga teckensekvenser. * matchar ett godtyckligt antal tecken medan ? anger ett tecken som kan finnas eller inte, d.v.s. det matchar noll eller ett tecken. Som escape-tecken används \, så om något av tecknen *, ? eller \ behöver matchas skriver du ett \ före det.
+
+      Om du aktiverar inställningen används pluginprogrammen på den angivna listan aldrig i <ph name="PRODUCT_NAME" />. Pluginprogrammen står som inaktiverade på sidan about:plugins och användarna kan inte aktivera dem.
+
+      Observera att den här principen kan åsidosättas av EnabledPlugins och DisabledPluginsExceptions.
+
+      Om ingen inställning anges för principen kan användaren använda alla pluginprogram som installerats på systemet utom hårdkodade inkompatibla, inaktuella eller farliga pluginprogram.</translation>
 <translation id="410478022164847452">Anger efter hur lång tid utan åtgärd från användaren som inaktivitetsåtgärden vidtas när enheten är ansluten till elnätet.
 
           När den här policyn är inställd anger den hur länge användaren måste vara inaktiv innan inaktivitetsåtgärden vidtas av <ph name="PRODUCT_OS_NAME" />. Inaktivitetsåtgärden kan ställas in separat.
@@ -1344,6 +1376,13 @@
 
       Om policyn inte är inställd kan användaren tillfrågas om importen ska göras eller inte, eller så kan importen göras automatiskt.</translation>
 <translation id="5423197884968724595">Begränsningsnamn för Android WebView:</translation>
+<translation id="543559563129402336">Den här principen har fasats ut. Använd hellre <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, som åsidosätter den här principen och ger större nyanseringsmöjligheter.
+
+      Gör begränsat läge på YouTube obligatoriskt och förhindrar att användarna ändrar inställningen.
+
+      När inställningen har aktiverats är som minst medelbegränsat läge alltid obligatoriskt på YouTube.
+
+      Om inställningen inaktiveras eller om inget värde anges är begränsat läge på YouTube inte obligatoriskt i <ph name="PRODUCT_NAME" />. Däremot kan det fortfarande finnas externa principer, till exempel principer för YouTube, som gör begränsat läge obligatoriskt.</translation>
 <translation id="5447306928176905178">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan (föråldrad)</translation>
 <translation id="5457065417344056871">Använda gästläget i webbläsaren</translation>
 <translation id="5457924070961220141">Policyn gör att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> installeras.
@@ -1450,6 +1489,19 @@
           Om policyn inte är inställd används standardtiden.
 
           Policyns värde anges i millisekunder.</translation>
+<translation id="5783595563813359339">Den här principen har fasats ut. Bestäm om Flash-pluginprogrammet ska vara tillgängligt med <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> och om PDF-filer ska öppnas i den inbyggda PDF-läsaren med <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />.
+
+      Anger en lista med pluginprogram som användaren kan aktivera eller inaktivera i <ph name="PRODUCT_NAME" />.
+
+      Jokertecknen * och ? kan användas för att matcha godtyckliga teckensekvenser. * matchar ett godtyckligt antal tecken medan ? anger ett tecken som kan finnas eller inte, d.v.s. det matchar noll eller ett tecken. Som escape-tecken används \, så om något av tecknen *, ? eller \ behöver matchas skriver du ett \ före det.
+
+      Om du aktiverar inställningen går det att använda de pluginprogram som står på den angivna listan i <ph name="PRODUCT_NAME" />. Användaren kan aktivera eller inaktivera dem på sidan about:plugins, även om pluginprogrammet även matchar ett mönster i DisabledPlugins. Användaren kan dessutom aktivera och inaktivera pluginprogram som inte matchar något mönster i DisabledPlugins, DisabledPluginsExceptions och EnabledPlugins.
+
+      Den här principen är tänkt att möjliggöra strikt användning av en svart lista för pluginprogram i de fall då listan DisabledPlugins innehåller poster med jokertecken – t.ex. att alla pluginprogram inaktiveras med * eller alla Java-pluginprogram inaktiveras med *Java – men administratören vill kunna aktivera en bestämd version, till exempel IcedTea Java 2.3. Den versionen kan anges med den här principen.
+
+      Observera att både pluginprogrammets namn och dess gruppnamn måste undantas. Plugingrupperna visas för sig på sidan about:plugins och det kan finnas ett eller flera pluginprogram i varje del. Till exempel hör pluginprogrammet Shockwave Flash till gruppen Adobe Flash Player, och det måste finnas en matchande post för båda namnen i undantagslistan om det pluginprogrammet ska undantas från den svarta listan.
+
+      Om ingen inställning anges för principen inaktiveras alla pluginprogram som matchar ett mönster i DisabledPlugins och användaren kan inte aktivera dem.</translation>
 <translation id="5795001131770861387">Aktiverar stöd för HTTP/0.9 på portar som inte har angetts som standard</translation>
 <translation id="5809728392451418079">Ange visningsnamnet för lokala konton på enheten</translation>
 <translation id="5814301096961727113">Ange standardtillståndet för talad feedback på inloggningsskärmen</translation>
@@ -1519,6 +1571,12 @@
 
      Om ingen inställning görs för principen eller om den ställs in på falskt görs ingen återkallelsekontroll online i <ph name="PRODUCT_NAME" /> från och med <ph name="PRODUCT_NAME" /> 19.</translation>
 <translation id="5966615072639944554">Tilläggen får använda API:et för fjärrattestering</translation>
+<translation id="5974970919245996815">Statusrapporter om Android skickas till servern.
+
+      Om principen har ställts in på falskt rapporteras informationen inte in.
+      Om principen har ställts in på sant eller lämnats utan värde rapporteras informationen in.
+
+      Principen gäller bara om Android-appar har aktiverats.</translation>
 <translation id="5983708779415553259">Standardbeteende för webbplatser som inte ingår i ett innehållspaket</translation>
 <translation id="5997543603646547632">Använd 24-timmarsklocka som standard</translation>
 <translation id="6009903244351574348">Policyn tillåter att <ph name="PRODUCT_FRAME_NAME" /> hanterar de innehållstyper som anges.
@@ -1549,6 +1607,17 @@
 <translation id="6076099373507468537">Definierar vilka USB-enheter som får kopplas bort från sina kärndrivrutiner så att de kan användas direkt i en webbapp med API:et chrome.usb. Posterna i listan består av id-par för USB, leverantörs-id och produkt-id, som tillsammans identifierar maskinvaran.
 
       Om principen inte har konfigurerats är listan med frånkopplingsbara USB-enheter tom.</translation>
+<translation id="608377055310226486">Den här principen har fasats ut. Bestäm om Flash-pluginprogrammet ska vara tillgängligt med <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> och om PDF-filer ska öppnas i den inbyggda PDF-läsaren med <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />.
+
+      Anger en lista med aktiverade pluginprogram i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
+
+      Jokertecknen * och ? kan användas för att matcha godtyckliga teckensekvenser. * matchar ett godtyckligt antal tecken medan ? anger ett tecken som kan finnas eller inte, d.v.s. det matchar noll eller ett tecken. Som escape-tecken används \, så om något av tecknen *, ? eller \ behöver matchas skriver du ett \ före det.
+
+      Pluginprogram på den angivna listan används alltid i <ph name="PRODUCT_NAME" /> om de har installerats. Pluginprogrammen står som aktiverade på sidan about:plugins och användarna kan inte inaktivera dem.
+
+      Observera att den här principen åsidosätter både DisabledPlugins och DisabledPluginsExceptions.
+
+      Om ingen inställning anges för principen kan användaren inaktivera alla pluginprogram som installerats på systemet.</translation>
 <translation id="6093156968240188330">Tillåt att fjärranvändare kan interagera med fönster som öppnats med adminbehörighet i fjärrhjälpsessioner</translation>
 <translation id="6095999036251797924">Anger efter hur lång tid skärmen släcks när användaren är inaktiv och enheten drivs med batteri eller ström.
 
@@ -1782,6 +1851,7 @@
 <translation id="6828905844648501476">Om den här principen är inställd på sant eller inte är konfigurerad tillåter <ph name="PRODUCT_NAME" /> Lägg till person i användarhanteraren.
 
       Om principen är inställd på falskt tillåter <ph name="PRODUCT_NAME" /> inte att nya profiler skapas i profilhanteraren.</translation>
+<translation id="685769593149966548">Gör strikt begränsat läge på YouTube obligatoriskt</translation>
 <translation id="687046793986382807">Denna princip används inte från och med <ph name="PRODUCT_NAME" /> version 35. 
 
       Minnesinfo rapporteras ändå till sidan, oavsett värdealternativ, men de storlekar som
@@ -1919,9 +1989,6 @@
 <translation id="7132877481099023201">Webbadresser som ska beviljas åtkomst till videoinspelningsenheter utan meddelande</translation>
 <translation id="7167436895080860385">Tillåt att användarnas lösenord visas i lösenordshanteraren (utfasad)</translation>
 <translation id="7173856672248996428">Kortlivad profil</translation>
-<translation id="7187256234726597551">Om detta är sant är vidimering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det laddas upp till enhetshanteringsservern.
-
-          Om detta är falskt, eller om alternativet inte har angetts, skapas inget certifikat och anrop till tilläggs-API:et enterprise.platformKeysPrivate misslyckas.</translation>
 <translation id="718956142899066210">Anslutningstyper som tillåts för uppdateringar</translation>
 <translation id="7194407337890404814">Standardsökleverantörens namn</translation>
 <translation id="7195064223823777550">Ange vilken åtgärd som ska vidtas när användaren stänger locket.
@@ -2235,6 +2302,7 @@
       Om värdet "true" anges för policyn används formatet 24-timmarstid på enheten. Om värdet "false" anges för policyn används formatet 12-timmarstid.
 
       Om inget värde anges för policyn används formatet 24-timmarstid som standard.</translation>
+<translation id="8114382167597081590">Gör inte begränsat läge på YouTube obligatoriskt</translation>
 <translation id="8118665053362250806">Ange cachestorlek för medieenhet</translation>
 <translation id="8135937294926049787">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska stängas av när enheten är ansluten till elnätet.
 
@@ -2290,9 +2358,6 @@
 
       Om den här policyn inte anges görs inga undantag från policyn URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillåt en företagsanvändare att vara enbart primär flerprofilsanvändare (standardbeteendet för företagshanterade användare)</translation>
-<translation id="8197918588508433925">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
-
-          Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
 <translation id="8214600119442850823">Konfigurerar lösenordshanteraren.</translation>
 <translation id="8244525275280476362">Längsta fördröjning av hämtning efter en ogiltigförklarad policy</translation>
 <translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME" /> visas på inloggningssidan för motsvarande lokala konto på enheten.
@@ -2445,6 +2510,7 @@
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="8731693562790917685">Med innehållsinställningarna kan du ange hur innehåll av en viss typ (till exempel cookies, bilder eller JavaScript) ska hanteras.</translation>
+<translation id="8736538322216687231">Ange obligatorisk lägstanivå för begränsat läge på YouTube</translation>
 <translation id="8749370016497832113">Aktiverar borttagning av webb- och nedladdningshistorik i <ph name="PRODUCT_NAME" /> och förhindrar att användare ändrar den här inställningen.
 
       Tänk på att även om policyn är inaktiverad finns det ingen garanti för att webb- och nedladdningshistoriken behålls. Användare kan eventuellt redigera eller ta bort databasfiler i historiken direkt och webbläsaren kan sluta att gälla eller arkivera några eller alla historikobjekt när som helst.

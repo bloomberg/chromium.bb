@@ -298,6 +298,7 @@
       Jei nustatymas „HardwareAccelerationModeEnabled“ nustatytas į „false“, nustatymo „Disable3DAPIs“ nepaisoma ir jis atitinka nustatymą „Disable3DAPIs“, nustatytą į „true“.</translation>
 <translation id="2168397434410358693">Neveikos delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2170233653554726857">Įgalinti WPAD optimizavimą</translation>
+<translation id="2178899310296064282">Vykdyti bent vidutiniškai ribotą režimą sistemoje „YouTube“</translation>
 <translation id="2188979373208322108">Įgalinama žymių juosta „<ph name="PRODUCT_NAME" />“.
 
       Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ bus rodoma žymių juosta.
@@ -567,6 +568,7 @@
       Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės keisti arba nepaisyti „<ph name="PRODUCT_NAME" />“ nustatymo „Įgalinti apsaugą nuo sukčiavimo ir kenkėjiškų programų“.
 
       Jei ši politika nenustatyta, šis nustatymas bus įgalintas, bet naudotojas galės jį keisti.</translation>
+<translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
       Jei ši politika nustatyta į „False“, naudotojai negali žaisti dinozaurų Velykų kiaušinių žaidimo, kai įrenginys neprijungtas prie interneto. Jei šis nustatymas nustatytas į „True“, naudotojams leidžiama žaisti dinozaurų žaidimą. Jei ši politika nenustatyta, naudotojams neleidžiama žaisti dinozaurų Velykų kiaušinių žaidimo užregistruotoje „Chrome“ OS, bet leidžiama žaisti kitomis aplinkybėmis.</translation>
@@ -675,9 +677,6 @@
           Ši politika yra pasirenkama. Jei ji nebus nustatyta, paieškos terminas nebus pakeistas.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Įgalintas numatytasis paieškos teikėjas“.</translation>
-<translation id="3067188277482006117">Jei nustatyta kaip „Tiesa“, naudotojas gali naudoti „Chrome“ įrenginių aparatinę įrangą, kad nuotoliniu būdu patvirtintų tapatybę privatumo CA per įmonės platformos klavišų API „chrome.enterprise.platformKeysPrivate.challengeUserKey()“.
-
-Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks klaida ir bus pateiktas jos kodas.</translation>
 <translation id="3069958900488014740">Leidžiama išjungti WPAD (žiniatinklio tarpinio serverio automatinį aptikimą, angl. „Web Proxy Auto-Discovery“) optimizavimą sistemoje „<ph name="PRODUCT_NAME" />“.
 
       Nustačius šią politiką į „false“, WPAD optimizavimas išjungiamas, todėl „<ph name="PRODUCT_NAME" />“ reikia ilgiau laukti DNS pagrindu veikiančių WPAD serverių. Jei politika nenustatoma arba įgalinama, WPAD optimizavimas įgalinamas.
@@ -802,6 +801,15 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3417418267404583991">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ įgalinami svečių prisijungimai. Svečių prisijungimai – tai anoniminės naudotojų sesijos ir nereikalaujama slaptažodžio.
 
       Jei ši politika nustatyta į „false“ (netiesa), „<ph name="PRODUCT_OS_NAME" />“ neleidžiama pradėti svečio sesijų.</translation>
+<translation id="3418871497193485241">Vykdomas minimalus ribotas režimas sistemoje „YouTube“ ir neleidžiama naudotojams
+      pasirinkti mažiau riboto režimo.
+
+      Nustačius šį nustatytą į „Griežtas“ sistemoje „YouTube“ visada aktyvus griežtai ribotas režimas.
+
+      Nustačius šį nustatymą į „Vidutiniškas“, naudotojas gali pasirinkti tik vidutiniškai ribotą
+      ir griežtai ribotą režimus sistemoje „YouTube“, bet negali išjungti riboto režimo.
+
+      Nustačius šį nustatymą į „Išjungta“ arba nenustačius jokios vertės, „<ph name="PRODUCT_NAME" />“ nevykdo riboto režimo sistemoje „YouTube“. Taikant išorinę politiką, pvz., „YouTube“ politiką, ribotą režimą vis tiek gali reikėti vykdyti.</translation>
 <translation id="3428247105888806363">Įgalinti tinklo prognozę</translation>
 <translation id="3449886121729668969">Sukonfigūruojami „<ph name="PRODUCT_NAME" />“ tarpinio serverio nustatymai. Šie tarpinio serverio nustatymai bus pasiekiami ir ARC programoms.
 
@@ -923,6 +931,12 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="384743459174066962">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama atidaryti iššokančiųjų langų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
+<translation id="3851039766298741586">Pranešama informacija apie aktyvią viešojo terminalo sesiją, pvz.,
+      programos ID ir versija.
+
+      Nustačius politiką kaip „False“, viešojo terminalo sesijos informacija
+      nepranešama. Nustačius kaip „True“ arba nenustačius, viešojo terminalo sesijos informacija
+      pranešama.</translation>
 <translation id="3859780406608282662">Pridėti parametrą prie atsitiktinio varianto gavimo „<ph name="PRODUCT_OS_NAME" />“.
 
       Jei nurodyta, prie URL, naudojamo gaunant atsitiktinį variantą, pridedamas užklausos parametras, vadinamas „apriboti“. Parametro vertė bus vertė, nurodyta šioje politikoje.
@@ -937,6 +951,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="3864818549971490907">Numatytasis papildinių nustatymas</translation>
+<translation id="386487026071140458">Ši politika nebenaudojama, vietoje jos naudokite „<ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />“ ir „<ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />“. Šios politikos nepaisoma, jei nustatyta politika „<ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />“, „<ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />“ arba (nebenaudojama) „<ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" />“.
+
+      „Google“ žiniatinklio paieškos užklausos priverstinai vykdomos naudojant aktyvintą saugią paiešką. Neleidžiama naudotojams keisti šio nustatymo. Be to, nustačius šį nustatymą priverstinai vykdomas vidutiniškai ribotas režimas sistemoje „YouTube“.
+
+      Įgalinus šį nustatymą, visada aktyvi saugi paieška „Google“ paieškoje ir vidutiniškai ribotas režimas sistemoje „YouTube“.
+
+      Išjungus šį nustatymą arba nenustačius jokios vertės, nevykdoma saugi paieška „Google“ paieškoje ir ribotas režimas sistemoje „YouTube“.</translation>
 <translation id="3866249974567520381">Aprašas</translation>
 <translation id="3866530186104388232">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ rodomi esami naudotojai prisijungimo ekrane ir leidžiama juos pasirinkti. Jei ši politika nustatyta į „false“ (netiesa), „<ph name="PRODUCT_OS_NAME" />“ prisijungiant naudojamas naudotojo vardo / slaptažodžio raginimas.</translation>
 <translation id="3868347814555911633">Ši politika taikoma tik mažmeninės prekybos režimu.
@@ -1021,6 +1042,17 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei ši politika nenustatyta, bus naudojama parinktis „AllowCookies“ ir naudotojas galės ją pakeisti.</translation>
 <translation id="4103289232974211388">Patvirtinus naudotoją peradresuoti į „SAML IdP“</translation>
+<translation id="4103941930938018145">Ši politika nebenaudojama. Naudokite „<ph name="DEFAULT_PLUGINS_SETTING_POLICY" />“ „Flash“ papildinio pasiekiamumui valdyti ir „<ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />“, kad galėtumėte valdyti, ar atidarant PDF failus turėtų būti naudojama integruota PDF peržiūros priemonė.
+
+      Nurodomas „<ph name="PRODUCT_NAME" />“ neleidžiamų papildinių sąrašas; naudotojams šio nustatymo keisti neleidžiama.
+
+      Kad vertės atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio ir vieneto simbolius. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ niekada nebus naudojamas nurodytas papildinių sąrašas. Skiltyje „about:plugins“ papildiniai bus pažymėti kaip neleidžiami ir naudotojai negalės jų įgalinti.
+
+      Atminkite, kad nustačius įgalintų papildinių ir neleidžiamų papildinių išimčių politiką šios politikos bus nepaisoma.
+
+      Nenustačius šios politikos, naudotojas gali naudoti bet kokį sistemoje įdiegtą papildinį, išskyrus užprogramuotuosius nesuderinamus, pasenusius ar pavojingus papildinius.</translation>
 <translation id="410478022164847452">Nurodoma laiko trukmė be naudotojo įvesties, po kurios neveikos veiksmai atliekami, kai naudojama kintamosios srovės energija.
 
           Kai ši politika nustatyta, ji nurodo laiko trukmę, kurią naudotojas turi neatlikti jokių veiksmų, kad „<ph name="PRODUCT_OS_NAME" />“ imtųsi veiksmų dėl neveikos. Šiuos veiksmus galite sukonfigūruoti atskirai.
@@ -1338,6 +1370,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei nenustatyta, naudotojo gali būti paklausta, ar importuoti, arba gali būti automatiškai importuojama.</translation>
 <translation id="5423197884968724595">„Android WebView“ apribojimo pavadinimas:</translation>
+<translation id="543559563129402336">Ši politika nebenaudojama. Apsvarstykite galimybę naudoti „<ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />“, pakeičiančią šią politiką ir leidžiančią tikslesnį derinimą.
+
+      Priverstinai vykdomas „YouTube“ vidutiniškai ribotas režimas ir neleidžiama naudotojams keisti šio nustatymo.
+
+      Įgalinus šį nustatymą, sistemoje „YouTube“ visada vykdomas bent vidutiniškai ribotas režimas.
+
+      Išjungus šį nustatymą arba nenustačius jokios vertės, „<ph name="PRODUCT_NAME" />“ nevykdo riboto režimo sistemoje „YouTube“. Taikant išorinę politiką, pvz., „YouTube“ politiką, ribotą režimą vis tiek gali reikėti vykdyti.</translation>
 <translation id="5447306928176905178">Įgalinti ataskaitų teikimo atminties informaciją (JS masyvo dydžio) puslapyje (nepatvirtinta)</translation>
 <translation id="5457065417344056871">Svečio režimo įgalinimas naršyklėje</translation>
 <translation id="5457924070961220141">Leidžiama konfigūruoti numatytąją HTML pateikimo programą, kai įdiegta „<ph name="PRODUCT_FRAME_NAME" />“.
@@ -1444,6 +1483,19 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Kai ši politika nenustatyta, naudojama numatytoji laiko trukmė.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
+<translation id="5783595563813359339">Ši politika nebenaudojama. Naudokite „<ph name="DEFAULT_PLUGINS_SETTING_POLICY" />“ „Flash“ papildinio pasiekiamumui valdyti ir „<ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />“, kad galėtumėte valdyti, ar atidarant PDF failus turėtų būti naudojama integruota PDF peržiūros priemonė.
+
+      Nurodomas „<ph name="PRODUCT_NAME" />“ papildinių sąrašas, kuriuos naudotojas gali įgalinti arba išjungti.
+
+      Kad įrašai atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio arba vieneto simbolį. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
+
+      Jei įgalinate šį nustatymą, „<ph name="PRODUCT_NAME" />“ galima naudoti nurodytą papildinių sąrašą. Naudotojai gali įjungti arba išjungti juos skiltyje „about:plugins“, net jei papildinys taip pat atitinka neleidžiamų papildinių šabloną. Be to, naudotojai gali įgalinti ir išjungti papildinius, kurie neatitinka jokių neleidžiamų papildinių, neleidžiamų papildinių išimčių ir įgalintų papildinių šablonų.
+
+      Ši politika skirta leisti griežtai įtraukti papildinius į juodąjį sąrašą, kai „Neleidžiamų papildinių“ sąraše pateikiama pakaitos simbolių įrašų, pvz., neleisti visų papildinių „*“ arba neleisti visų „Java“ papildinių „*Java*“, bet administratorius nori įgalinti tam tikrą versiją, pvz., „IcedTea Java 2.3“. Šią konkrečią versiją galima nurodyti šioje politikoje.
+
+      Atminkite, kad papildinio pavadinimas ir papildinio grupės pavadinimas turi būti išskirti. Kiekviena papildinių grupė rodoma atskiroje „about:plugins“ skiltyje; kiekvienoje skiltyje gali būti vienas ar daugiau papildinių. Pavyzdžiui, „Shockwave Flash“ papildinys priklauso „Adobe Flash“ leistuvės grupei, todėl abu pavadinimai turi atitikti sąraše nurodytas išimtis, jei tas papildinys turi būti išskirtas iš juodojo sąrašo.
+
+      Nenustačius šios politikos, bet koks papildinys, kuris atitinka šablonus skiltyje „Neleidžiami papildiniai“, bus užrakintas neleidžiamas ir naudotojas (-a) negalės jo įgalinti.</translation>
 <translation id="5795001131770861387">Įgalina HTTP/0.9 protokolo palaikymą nenumatytuose prievaduose</translation>
 <translation id="5809728392451418079">Nustatyti įrenginio vietinių paskyrų pateikiamą pavadinimą</translation>
 <translation id="5814301096961727113">Nustatyti numatytąją ekrano skaitymo balsu prisijungimo ekrane būklę</translation>
@@ -1512,6 +1564,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei politika nenustatyta arba jos reikšmė nustatyta kaip „false“, „<ph name="PRODUCT_NAME" />“ neatliks internetinių panaikinimo patikrinimų 19 ar naujesnės versijos „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="5966615072639944554">Plėtiniams leidžiama naudoti nuotolinio patvirtinimo API</translation>
+<translation id="5974970919245996815">Ataskaitos informacija apie „Android“ būseną siunčiama atgal į
+      serverį.
+
+      Nustačius politiką kaip „False“, informacija nepranešama.
+      Nustačius kaip „True“ arba nenustačius, informacija pranešama.
+
+      Ši politika taikoma tik įgalinus „Android“ programas.</translation>
 <translation id="5983708779415553259">Numatytoji elgsena, skirta svetainėms, neesančioms turinio paketuose</translation>
 <translation id="5997543603646547632">Naudoti 24 val. laikrodį pagal numatytuosius nustatymus</translation>
 <translation id="6009903244351574348">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ tvarkyti nurodytus turinio tipus.
@@ -1542,6 +1601,17 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="6076099373507468537">Apibrėžiamas USB įrenginių, kuriuos leidžiama atjungti nuo branduolio tvarkyklės, kad būtų galima naudoti naudojant chrome.usb API tiesiai žiniatinklio programoje, sąrašas. Įrašai – tai USB paslaugos teikėjo identifikatoriaus ir produkto identifikatoriaus poros, nurodančios konkrečią aparatinę įrangą.
 
       Jei ši politika nesukonfigūruota, atjungiamų USB įrenginių sąrašas yra tuščias.</translation>
+<translation id="608377055310226486">Ši politika nebenaudojama. Naudokite „<ph name="DEFAULT_PLUGINS_SETTING_POLICY" />“ „Flash“ papildinio pasiekiamumui valdyti ir „<ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />“, kad galėtumėte valdyti, ar atidarant PDF failus turėtų būti naudojama integruota PDF peržiūros priemonė.
+
+      Nurodomas „<ph name="PRODUCT_NAME" />“ įgalintų papildinių sąrašas; naudotojams šio nustatymo keisti neleidžiama.
+
+      Kad vertės atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio ir vieneto simbolius. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
+
+      Nurodytas papildinių sąrašas visada naudojamas „<ph name="PRODUCT_NAME" />“, jei jie įdiegti. Skiltyje „about:plugins“ papildiniai pažymėti kaip įgalinti ir naudotojai negali jų išjungti.
+
+      Atminkite, kad nustačius šią politiką neleidžiamų papildinių ir neleidžiamų papildinių išimčių politikos bus nepaisoma.
+
+      Nenustačius šios politikos, naudotojas gali išjungti bet kokį sistemoje įdiegtą papildinį.</translation>
 <translation id="6093156968240188330">Leisti nuotoliniams naudotojams sąveikauti su pakeltais langais nuotolinės pagalbos sesijose</translation>
 <translation id="6095999036251797924">Nurodo laikotarpį, per kurį naudotojas neatliko įvesties veiksmų ir po kurio užrakinamas ekranas, kai įrenginys veikia naudojant kintamosios srovės arba akumuliatoriaus maitinimą.
 
@@ -1775,6 +1845,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="6828905844648501476">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ leis „Pridėti asmenį“ naudojant naudotojų tvarkytuvę.
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis kurti naujų profilių naudojant profilių tvarkytuvę.</translation>
+<translation id="685769593149966548">Vykdyti griežtai ribotą režimą sistemoje „YouTube“</translation>
 <translation id="687046793986382807">Ši politika nebegalioja išleidus „<ph name="PRODUCT_NAME" />“ 35 versiją.
 
       Vis tiek teikiamos atminties informacijos ataskaitos puslapyje, neatsižvelgiant į parinkties vertę, bet nurodomi dydžiai
@@ -1912,9 +1983,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7132877481099023201">URL, kuriems bus suteikta prieiga prie vaizdo įrašų užfiksavimo įrenginių be paraginimo</translation>
 <translation id="7167436895080860385">Leisti naudotojams rodyti slaptažodžius slaptažodžių tvarkytuvėje (nebenaudojama)</translation>
 <translation id="7173856672248996428">Efemeriškas profilis</translation>
-<translation id="7187256234726597551">Jei ši politika nustatyta, leidžiama nuotoliniu būdu patvirtinti įrenginį, o sertifikatas bus automatiškai sugeneruotas ir įkeltas į įrenginių tvarkymo serverį.
-
-          Jei ši politika negalioja arba yra nenustatyta, sertifikatas nebus sugeneruotas ir nepavyks iškviesti „enterprise.platformKeysPrivate“ plėtinio API.</translation>
 <translation id="718956142899066210">Leistini ryšio tipai naujinant</translation>
 <translation id="7194407337890404814">Numatytojo paieškos teikėjo pavadinimas</translation>
 <translation id="7195064223823777550">Nurodykite veiksmą, kuris bus atliktas, kai naudotojas uždarys dangtelį.
@@ -2228,6 +2296,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei politika galioja, įrenginys naudos 24 val. laikrodžio formatą. Jei politika negalioja, įrenginyje bus naudojamas 12 val. laikrodžio formatas.
 
       Jei ši politika nenustatyta, įrenginyje automatiškai bus nustatytas numatytasis 24 val. laikrodžio formatas.</translation>
+<translation id="8114382167597081590">Nevykdyti riboto režimo sistemoje „YouTube“</translation>
 <translation id="8118665053362250806">Nustatyti medijos disko talpyklos dydį</translation>
 <translation id="8135937294926049787">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas išjungiamas, kai naudojama kintamosios srovės energija.
 
@@ -2283,9 +2352,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei ši politika nenustatoma, nebus jokių politikos „URLBlacklist“ juodojo sąrašo išimčių.</translation>
 <translation id="8176035528522326671">Leisti įmonei būti tik pirminiu kelių profilių naudotoju (numatytoji elgsena įmonių valdomiems naudotojams)</translation>
-<translation id="8197918588508433925">Šioje politikoje nustatomi plėtiniai, kuriems leidžiama naudoti įmonės platformos raktų API „chrome.enterprise.platformKeysPrivate.challengeUserKey()“ patvirtinant nuotoliniu būdu. Plėtiniai turi būti pridėti prie šio sąrašo, kad galėtų naudoti API.
-
-Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įvyks klaida ir bus pateiktas jos kodas.</translation>
 <translation id="8214600119442850823">Konfigūruoja slaptažodžių tvarkytuvę.</translation>
 <translation id="8244525275280476362">Maksimali gavimo delsa atšaukus politiką</translation>
 <translation id="8256688113167012935">Valdomas paskyros pavadinimas, kurį „<ph name="PRODUCT_OS_NAME" />“ rodo atitinkamo įrenginio vietinės paskyros prisijungimo ekrane.
@@ -2436,6 +2502,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="8731693562790917685">Turinio nustatymų skiltyje leidžiama nurodyti, kaip turi būti naudojamas konkretaus tipo turinys (pvz., slapukai, vaizdai arba „JavaScript“).</translation>
+<translation id="8736538322216687231">Priverstinis minimalaus „YouTube“ riboto režimo vykdymas</translation>
 <translation id="8749370016497832113">Įgalinamas naršyklės ir atsisiuntimo istorijos ištrynimas „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama keisti šio nustatymo.
 
       Atminkite, kad net jei ši politika neleidžiama, negarantuojama, kad naršymo ir atsisiuntimo istorijos bus saugomos: naudotojai galbūt galės tiesiogiai redaguoti ar ištrinti failus, gali baigtis naršyklės galiojimo laikas ar ji gali archyvuoti bet kuriuos ar visus istorijos elementus.

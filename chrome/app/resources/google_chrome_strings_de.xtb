@@ -128,6 +128,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="4700157086864140907">Google Chrome bietet eine intelligentere Rechtschreibprüfung, indem der Browser das, was Sie eingeben, an die Google-Server sendet. So steht Ihnen dieselbe Technologie zur Rechtschreibprüfung zur Verfügung, die bei der Google-Suche zum Einsatz kommt.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
 <translation id="4743926867934016338">Akzeptieren und suchen</translation>
+<translation id="4750550185319565338">Chrome neu starten, um <ph name="PLUGIN_NAME" /> zu aktivieren</translation>
 <translation id="4751441238232965030">Für diesen Computer werden in Kürze keine weiteren Updates mehr für die 32-Bit-Version von Google Chrome bereitgestellt. Aktualisieren Sie bitte auf die 64-Bit-Version von Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Diese Datei ist eventuell schädlich und wurde von Chrome blockiert.</translation>
@@ -256,7 +257,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>
 <translation id="8342675569599923794">Diese Datei ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="8406086379114794905">Zur Verbesserung von Chrome beitragen</translation>
-<translation id="8410645163819739900">Google Chrome OS kann diese Seite nicht öffnen.</translation>
 <translation id="8455999171311319804">Optional: Diagnose- und Nutzungsdaten zur Verbesserung von Chrome OS automatisch an Google senden.</translation>
 <translation id="853189717709780425">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

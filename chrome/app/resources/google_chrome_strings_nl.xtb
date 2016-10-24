@@ -132,6 +132,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="4700157086864140907">Google Chrome kan een betere spellingcontrole leveren door wat je in de browser typt naar Google-servers te verzenden. Hierdoor kun je profiteren van dezelfde technologie voor spellingcontrole die ook voor Google Zoeken wordt gebruikt.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit je het programma af en probeer je het opnieuw.</translation>
 <translation id="4743926867934016338">Accepteren en zoeken</translation>
+<translation id="4750550185319565338">Start Chrome opnieuw op om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
 <translation id="4751441238232965030">Deze computer ontvangt binnenkort geen updates meer voor de 32-bits versie van Google Chrome. Upgrade naar de 64-bits versie van Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Dit bestand kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>
@@ -262,7 +263,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8290100596633877290">Oeps! Google Chrome is vastgelopen. Nu opnieuw starten?</translation>
 <translation id="8342675569599923794">Dit bestand is gevaarlijk en is daarom door Chrome geblokkeerd.</translation>
 <translation id="8406086379114794905">Help ons Chrome te verbeteren</translation>
-<translation id="8410645163819739900">Google Chrome OS kan deze pagina niet openen.</translation>
 <translation id="8455999171311319804">Optioneel: Help Chrome OS beter te maken door automatisch diagnostische en gebruiksgegevens te verzenden naar Google.</translation>
 <translation id="853189717709780425">Je logt in met een beheerd account en geeft de beheerderscontrole over aan je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

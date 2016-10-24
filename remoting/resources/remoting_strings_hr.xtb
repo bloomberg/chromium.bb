@@ -126,6 +126,7 @@ Chromoting</translation>
 <translation id="409800995205263688">NAPOMENA: postavke pravila dopuštaju jedino veze između računala u vašoj mreži.</translation>
 <translation id="4155497795971509630">Nedostaju neke obavezne komponente. Provjerite jeste li instalirali najnoviju verziju softvera i pokušajte ponovo.</translation>
 <translation id="4156740505453712750">Da biste zaštitili pristup ovom računalu, odaberite PIN s <ph name="BOLD_START" />najmanje šest brojeva<ph name="BOLD_END" />. Taj će PIN biti potreban pri povezivanju s druge lokacije.</translation>
+<translation id="4156741816461781891">Prijavljeni ste kao <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Pristupni kôd</translation>
 <translation id="4207623512727273241">Ponovo pokrenite instalacijski program prije nastavka.</translation>
 <translation id="4227991223508142681">Uslužni program za pružanje usluge hosta</translation>
@@ -208,10 +209,6 @@ površine Chrome</translation>
 <translation id="6304318647555713317">Klijent</translation>
 <translation id="6381670701864002291">Nešto drugo.</translation>
 <translation id="6398765197997659313">Izađi iz cijelog zaslona</translation>
-<translation id="6408143143164565232">• Slušanje zvuka s Windows ili Linux računala.
-• Uklanjanje neželjenih veza duljim pritiskom na naziv računala.
-• Ujednačenije zumiranje privlačenjem prstiju i pomicanje s dva prsta.
-• Novi zaslon za pomoć i povratne informacije.</translation>
 <translation id="6441316101718669559">Ova platforma ne podržava integraciju radne površine. Aplikacija se može upotrebljavati, ali uz lošiji korisnički doživljaj.</translation>
 <translation id="652218476070540101">U tijeku je ažuriranje PIN-a za ovo računalo…</translation>
 <translation id="6527303717912515753">Podijeli</translation>
