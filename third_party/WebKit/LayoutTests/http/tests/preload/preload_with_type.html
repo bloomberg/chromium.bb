@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+    var t = async_test('Makes sure that preloaded resources trigger the onload event');
+    var scriptLoaded = false;
+    var styleLoaded = false;
+    var imageLoaded = false;
+    var fontLoaded = false;
+    var videoLoaded = false;
+    var audioLoaded = false;
+    var trackLoaded = false;
+    var gibberishLoaded = 0;
+</script>
+<link rel=preload href="../resources/dummy.js" as=script type="text/javascript" onload="scriptLoaded = true;">
+<link rel=preload href="../resources/dummy.css" as=style type="text/css" onload="styleLoaded = true;">
+<link rel=preload href="../resources/square.png" as=image type="image/png" onload="imageLoaded = true;">
+<link rel=preload href="../resources/Ahem.ttf" as=font type="font/ttf" crossorigin onload="fontLoaded = true;">
+<link rel=preload href="../resources/test.webm" as=media type="video/webm" onload="videoLoaded = true;">
+<link rel=preload href="../resources/test.wav" as=media type="audio/wav" onload="audioLoaded = true;">
+<link rel=preload href="../security/resources/captions.vtt" as=track type="text/vtt" onload="trackLoaded = true;">
+<link rel=preload href="../resources/dummy.js" as=script type="application/foobar" onload="gibberishLoaded++;">
+<link rel=preload href="../resources/dummy.css" as=style type="text/foobar" onload="gibberishLoaded++;">
+<link rel=preload href="../resources/square.png" as=image type="image/foobar" onload="gibberishLoaded++;">
+<link rel=preload href="../resources/Ahem.ttf" as=font type="font/foobar" crossorigin onload="gibberishLoaded++;">
+<link rel=preload href="../resources/test.webm" as=media type="video/foobar" onload="gibberishLoaded++;">
+<link rel=preload href="../resources/test.wav" as=media type="audio/foobar" onload="gibberishLoaded++;">
+<link rel=preload href="../security/resources/captions.vtt" as=track type="text/foobar" onload="gibberishLoaded++;">
+<script src="../resources/slow-script.pl?delay=500"></script>
+<script>
+    window.onload = t.step(function(){
+        assert_true(styleLoaded, "style triggered load event");
+        assert_true(scriptLoaded, "script triggered load event");
+        assert_true(imageLoaded, "image triggered load event");
+        assert_true(fontLoaded, "font triggered load event");
+        assert_true(videoLoaded, "video triggered load event");
+        assert_true(audioLoaded, "audio triggered load event");
+        assert_true(trackLoaded, "track triggered load event");
+        assert_equals(gibberishLoaded, 0, "resources with gibberish type should not be loaded");
+        t.done();
+    });
+</script>
+</body>
+</html>

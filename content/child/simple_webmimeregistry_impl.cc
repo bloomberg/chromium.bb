@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/mime_util/mime_util.h"
 #include "media/base/mime_util.h"
+#include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -60,21 +61,26 @@ WebMimeRegistry::SupportsType
              : WebMimeRegistry::IsNotSupported;
 }
 
-// When debugging layout tests failures in the test shell,
-// see TestShellWebMimeRegistryImpl.
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
     const WebString& mime_type,
     const WebString& codecs) {
-  // Media features are only supported at the content/renderer/ layer.
-  return IsNotSupported;
+  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
+  std::vector<std::string> codec_vector;
+  media::ParseCodecString(ToASCIIOrEmpty(codecs), &codec_vector, false);
+  return static_cast<WebMimeRegistry::SupportsType>(
+      media::IsSupportedMediaFormat(mime_type_ascii, codec_vector));
 }
 
 bool SimpleWebMimeRegistryImpl::supportsMediaSourceMIMEType(
     const WebString& mime_type,
     const WebString& codecs) {
-  // Media features are only supported at the content/renderer layer.
   const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
-  return media::IsSupportedMediaMimeType(mime_type_ascii);
+  if (mime_type_ascii.empty())
+    return false;
+  std::vector<std::string> parsed_codec_ids;
+  media::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
+  return media::StreamParserFactory::IsTypeSupported(mime_type_ascii,
+                                                     parsed_codec_ids);
 }
 
 WebMimeRegistry::SupportsType

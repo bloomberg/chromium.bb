@@ -196,11 +196,6 @@ media::AudioParameters GetAudioHardwareParams() {
 class RendererBlinkPlatformImpl::MimeRegistry
     : public SimpleWebMimeRegistryImpl {
  public:
-  blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
-      const blink::WebString& mime_type,
-      const blink::WebString& codecs) override;
-  bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
-                                   const blink::WebString& codecs) override;
   blink::WebString mimeTypeForExtension(
       const blink::WebString& file_extension) override;
 
@@ -504,30 +499,6 @@ WebString RendererBlinkPlatformImpl::fileSystemCreateOriginIdentifier(
 }
 
 //------------------------------------------------------------------------------
-
-WebMimeRegistry::SupportsType
-RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
-    const WebString& mime_type,
-    const WebString& codecs) {
-  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
-
-  std::vector<std::string> codec_vector;
-  media::ParseCodecString(ToASCIIOrEmpty(codecs), &codec_vector, false);
-  return static_cast<WebMimeRegistry::SupportsType>(
-      media::IsSupportedMediaFormat(mime_type_ascii, codec_vector));
-}
-
-bool RendererBlinkPlatformImpl::MimeRegistry::supportsMediaSourceMIMEType(
-    const blink::WebString& mime_type,
-    const WebString& codecs) {
-  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
-  std::vector<std::string> parsed_codec_ids;
-  media::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
-  if (mime_type_ascii.empty())
-    return false;
-  return media::StreamParserFactory::IsTypeSupported(
-      mime_type_ascii, parsed_codec_ids);
-}
 
 WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
     const WebString& file_extension) {

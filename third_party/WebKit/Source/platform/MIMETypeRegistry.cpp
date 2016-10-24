@@ -92,11 +92,16 @@ bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType) {
              mimeType.lower()) != WebMimeRegistry::IsNotSupported;
 }
 
+bool MIMETypeRegistry::isSupportedMediaMIMEType(const String& mimeType,
+                                                const String& codecs) {
+  return Platform::current()->mimeRegistry()->supportsMediaMIMEType(
+      mimeType.lower(), codecs);
+}
+
 bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType,
                                                       const String& codecs) {
-  return !mimeType.isEmpty() &&
-         Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(
-             mimeType.lower(), codecs);
+  return Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(
+      mimeType.lower(), codecs);
 }
 
 bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType) {

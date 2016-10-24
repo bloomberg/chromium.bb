@@ -248,8 +248,7 @@ static bool isSupportedType(Resource::Type resourceType,
     case Resource::Font:
       return MIMETypeRegistry::isSupportedFontMIMEType(mimeType);
     case Resource::Media:
-      return MIMETypeRegistry::isSupportedMediaSourceMIMEType(mimeType,
-                                                              String());
+      return MIMETypeRegistry::isSupportedMediaMIMEType(mimeType, String());
     case Resource::TextTrack:
       return MIMETypeRegistry::isSupportedTextTrackMIMEType(mimeType);
     case Resource::Raw:
