@@ -55,6 +55,9 @@ class WorkerEntityTracker {
   // Handles receipt of an update from the server.
   void ReceiveUpdate(const UpdateResponseData& update);
 
+  // Check if update contains newer version than local.
+  bool UpdateContainsNewVersion(const UpdateResponseData& update);
+
   // Handles the receipt of an encrypted update from the server.
   //
   // Returns true if the tracker decides this item is worth keeping. Returns

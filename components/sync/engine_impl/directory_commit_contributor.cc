@@ -4,14 +4,14 @@
 
 #include "components/sync/engine_impl/directory_commit_contributor.h"
 
-#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"
 
 namespace syncer {
 
 DirectoryCommitContributor::DirectoryCommitContributor(
     syncable::Directory* dir,
     ModelType type,
-    DirectoryTypeDebugInfoEmitter* debug_info_emitter)
+    DataTypeDebugInfoEmitter* debug_info_emitter)
     : dir_(dir), type_(type), debug_info_emitter_(debug_info_emitter) {}
 
 DirectoryCommitContributor::~DirectoryCommitContributor() {}

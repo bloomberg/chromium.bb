@@ -23,8 +23,8 @@
 namespace syncer {
 
 class CommitContributor;
+class DataTypeDebugInfoEmitter;
 class DirectoryCommitContributor;
-class DirectoryTypeDebugInfoEmitter;
 class DirectoryUpdateHandler;
 class ModelTypeProcessor;
 class ModelTypeWorker;
@@ -102,13 +102,13 @@ class ModelTypeRegistry : public ModelTypeConnector,
   base::WeakPtr<ModelTypeConnector> AsWeakPtr();
 
  private:
-  typedef std::map<ModelType, std::unique_ptr<DirectoryTypeDebugInfoEmitter>>
-      DirectoryTypeDebugInfoEmitterMap;
+  typedef std::map<ModelType, std::unique_ptr<DataTypeDebugInfoEmitter>>
+      DataTypeDebugInfoEmitterMap;
 
   void OnEncryptionStateChanged();
 
   // DebugInfoEmitters are never deleted. Returns an existing one if we have it.
-  DirectoryTypeDebugInfoEmitter* GetOrCreateEmitter(ModelType type);
+  DataTypeDebugInfoEmitter* GetEmitter(ModelType type);
 
   ModelTypeSet GetEnabledNonBlockingTypes() const;
   ModelTypeSet GetEnabledDirectoryTypes() const;
@@ -126,9 +126,9 @@ class ModelTypeRegistry : public ModelTypeConnector,
   UpdateHandlerMap update_handler_map_;
   CommitContributorMap commit_contributor_map_;
 
-  // Map of DebugInfoEmitters for directory types.
-  // Non-blocking types handle debug info differently.
-  DirectoryTypeDebugInfoEmitterMap directory_type_debug_info_emitter_map_;
+  // Map of DebugInfoEmitters for directory types and Non-blocking types.
+  // Does not own its contents.
+  DataTypeDebugInfoEmitterMap data_type_debug_info_emitter_map_;
 
   // The known ModelSafeWorkers.
   std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> workers_map_;

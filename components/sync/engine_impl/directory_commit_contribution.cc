@@ -28,7 +28,7 @@ std::unique_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
     syncable::Directory* dir,
     ModelType type,
     size_t max_entries,
-    DirectoryTypeDebugInfoEmitter* debug_info_emitter) {
+    DataTypeDebugInfoEmitter* debug_info_emitter) {
   DCHECK(debug_info_emitter);
 
   std::vector<int64_t> metahandles;
@@ -121,7 +121,7 @@ SyncerError DirectoryCommitContribution::ProcessCommitResponse(
 
   CommitCounters* counters = debug_info_emitter_->GetMutableCommitCounters();
   counters->num_commits_success += successes;
-  counters->num_commits_conflict += transient_error_commits;
+  counters->num_commits_conflict += conflicting_commits;
   counters->num_commits_error += transient_error_commits;
 
   int commit_count = static_cast<int>(metahandles_.size());
@@ -165,7 +165,7 @@ DirectoryCommitContribution::DirectoryCommitContribution(
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
     const sync_pb::DataTypeContext& context,
     syncable::Directory* dir,
-    DirectoryTypeDebugInfoEmitter* debug_info_emitter)
+    DataTypeDebugInfoEmitter* debug_info_emitter)
     : dir_(dir),
       metahandles_(metahandles),
       entities_(entities),

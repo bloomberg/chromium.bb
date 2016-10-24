@@ -30,8 +30,10 @@ ModelTypeWorker::ModelTypeWorker(
     const sync_pb::ModelTypeState& initial_state,
     std::unique_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
-    std::unique_ptr<ModelTypeProcessor> model_type_processor)
+    std::unique_ptr<ModelTypeProcessor> model_type_processor,
+    DataTypeDebugInfoEmitter* debug_info_emitter)
     : type_(type),
+      debug_info_emitter_(debug_info_emitter),
       model_type_state_(initial_state),
       model_type_processor_(std::move(model_type_processor)),
       cryptographer_(std::move(cryptographer)),
@@ -113,6 +115,9 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   *model_type_state_.mutable_type_context() = mutated_context;
   *model_type_state_.mutable_progress_marker() = progress_marker;
 
+  UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
+  counters->num_updates_received += applicable_updates.size();
+
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     // Skip updates for permanent folders.
     // TODO(crbug.com/516866): might need to handle this for hierarchical types.
@@ -138,6 +143,15 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     response_data.response_version = update_entity->version();
 
     WorkerEntityTracker* entity = GetOrCreateEntityTracker(data);
+
+    if (!entity->UpdateContainsNewVersion(response_data)) {
+      status->increment_num_reflected_updates_downloaded_by(1);
+      ++counters->num_reflected_updates_received;
+    }
+    if (update_entity->deleted()) {
+      status->increment_num_tombstone_updates_downloaded_by(1);
+      ++counters->num_tombstone_updates_received;
+    }
 
     // Deleted entities must use the default instance of EntitySpecifics in
     // order for EntityData to correctly reflect that they are deleted.
@@ -170,6 +184,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     }
   }
 
+  debug_info_emitter_->EmitUpdateCountersUpdate();
   return SYNCER_OK;
 }
 
@@ -216,6 +231,12 @@ void ModelTypeWorker::ApplyPendingUpdates() {
 
     model_type_processor_->OnUpdateReceived(model_type_state_,
                                             pending_updates_);
+
+    UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
+    counters->num_updates_applied += pending_updates_.size();
+    debug_info_emitter_->EmitUpdateCountersUpdate();
+    debug_info_emitter_->EmitStatusCountersUpdate();
+
     pending_updates_.clear();
   }
 }
@@ -265,7 +286,8 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     return std::unique_ptr<CommitContribution>();
 
   return base::MakeUnique<NonBlockingTypeCommitContribution>(
-      model_type_state_.type_context(), commit_entities, this);
+      model_type_state_.type_context(), commit_entities, this,
+      debug_info_emitter_);
 }
 
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {

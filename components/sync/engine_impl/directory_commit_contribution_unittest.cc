@@ -9,6 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "components/sync/base/attachment_id_proto.h"
+#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_read_transaction.h"

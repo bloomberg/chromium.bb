@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "components/sync/engine_impl/commit_contribution.h"
+#include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -27,7 +28,8 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   NonBlockingTypeCommitContribution(
       const sync_pb::DataTypeContext& context,
       const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
-      ModelTypeWorker* worker);
+      ModelTypeWorker* worker,
+      DataTypeDebugInfoEmitter* debug_info_emitter);
   ~NonBlockingTypeCommitContribution() override;
 
   // Implementation of CommitContribution
@@ -55,6 +57,8 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   // A flag used to ensure this object's contract is respected.  Helps to check
   // that CleanUp() is called before the object is destructed.
   bool cleaned_up_;
+
+  DataTypeDebugInfoEmitter* debug_info_emitter_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingTypeCommitContribution);
 };

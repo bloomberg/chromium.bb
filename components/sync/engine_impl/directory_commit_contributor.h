@@ -21,7 +21,7 @@ namespace syncable {
 class Directory;
 }
 
-class DirectoryTypeDebugInfoEmitter;
+class DataTypeDebugInfoEmitter;
 
 // This class represents the syncable::Directory as a source of items to commit
 // to the sync server.
@@ -34,7 +34,7 @@ class DirectoryCommitContributor : public CommitContributor {
  public:
   DirectoryCommitContributor(syncable::Directory* dir,
                              ModelType type,
-                             DirectoryTypeDebugInfoEmitter* debug_info_emitter);
+                             DataTypeDebugInfoEmitter* debug_info_emitter);
   ~DirectoryCommitContributor() override;
 
   std::unique_ptr<CommitContribution> GetContribution(
@@ -44,7 +44,7 @@ class DirectoryCommitContributor : public CommitContributor {
   syncable::Directory* dir_;
   ModelType type_;
 
-  DirectoryTypeDebugInfoEmitter* debug_info_emitter_;
+  DataTypeDebugInfoEmitter* debug_info_emitter_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryCommitContributor);
 };

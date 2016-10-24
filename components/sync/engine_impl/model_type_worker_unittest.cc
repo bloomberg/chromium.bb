@@ -14,6 +14,7 @@
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
+#include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
@@ -131,7 +132,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
         update_encryption_filter_index_(0),
         mock_type_processor_(nullptr),
         mock_server_(kModelType),
-        is_processor_disconnected_(false) {}
+        is_processor_disconnected_(false),
+        preferences_emitter_(kModelType, &type_observers_) {}
 
   ~ModelTypeWorkerTest() override {}
 
@@ -191,7 +193,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
     worker_ = base::MakeUnique<ModelTypeWorker>(
         kModelType, state, std::move(cryptographer_copy), &mock_nudge_handler_,
-        std::move(processor));
+        std::move(processor), &preferences_emitter_);
   }
 
   // Introduce a new key that the local cryptographer can't decrypt.
@@ -420,6 +422,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   MockModelTypeProcessor* processor() { return mock_type_processor_; }
   ModelTypeWorker* worker() { return worker_.get(); }
   SingleTypeMockServer* server() { return &mock_server_; }
+  NonBlockingTypeDebugInfoEmitter* emitter() { return &preferences_emitter_; }
 
  private:
   // An encryptor for our cryptographer.
@@ -453,6 +456,10 @@ class ModelTypeWorkerTest : public ::testing::Test {
   MockNudgeHandler mock_nudge_handler_;
 
   bool is_processor_disconnected_;
+
+  base::ObserverList<TypeDebugInfoObserver> type_observers_;
+
+  NonBlockingTypeDebugInfoEmitter preferences_emitter_;
 };
 
 // Requests a commit and verifies the messages sent to the client and server as
@@ -469,6 +476,8 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   EXPECT_FALSE(WillCommit());
   EXPECT_EQ(0U, server()->GetNumCommitMessages());
   EXPECT_EQ(0U, processor()->GetNumCommitResponses());
+  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_attempted);
+  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_success);
 
   CommitRequest(kTag1, kValue1);
 
@@ -494,6 +503,10 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   EXPECT_FALSE(entity.deleted());
   EXPECT_EQ(kValue1, entity.specifics().preference().value());
 
+  // Verify the counters update correctly.
+  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_attempted);
+  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_success);
+
   // Exhaustively verify the commit response returned to the model thread.
   ASSERT_EQ(1U, processor()->GetNumCommitResponses());
   EXPECT_EQ(1U, processor()->GetNthCommitResponse(0).size());
@@ -518,8 +531,14 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   // Step 1 is to create and commit a new entity.
   CommitRequest(kTag1, kValue1);
   EXPECT_EQ(1, GetNumCommitNudges());
+  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_attempted);
+  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_success);
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
+
+  // Verify the counters update correctly.
+  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_attempted);
+  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_success);
 
   ASSERT_TRUE(processor()->HasCommitResponse(kHash1));
   const CommitResponseData& initial_commit_response =
@@ -530,6 +549,10 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   DeleteRequest(kTag1);
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
+
+  // Verify the counters update correctly.
+  EXPECT_EQ(2, emitter()->GetCommitCounters().num_commits_attempted);
+  EXPECT_EQ(2, emitter()->GetCommitCounters().num_commits_success);
 
   // Verify the SyncEntity sent in the commit message.
   ASSERT_EQ(2U, server()->GetNumCommitMessages());
@@ -642,6 +665,9 @@ TEST_F(ModelTypeWorkerTest, TwoNewItemsCommittedSeparately) {
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   NormalInitialize();
 
+  EXPECT_EQ(0, emitter()->GetUpdateCounters().num_updates_received);
+  EXPECT_EQ(0, emitter()->GetUpdateCounters().num_updates_applied);
+
   const std::string& tag_hash = GenerateTagHash(kTag1);
 
   TriggerUpdateFromServer(10, kTag1, kValue1);
@@ -663,6 +689,10 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   EXPECT_FALSE(entity.is_deleted());
   EXPECT_EQ(kTag1, entity.specifics.preference().name());
   EXPECT_EQ(kValue1, entity.specifics.preference().value());
+
+  // Verify the counters update correctly.
+  EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_received);
+  EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_applied);
 }
 
 // Test that an update download coming in multiple parts gets accumulated into

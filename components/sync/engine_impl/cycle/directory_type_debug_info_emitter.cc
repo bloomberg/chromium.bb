@@ -4,8 +4,6 @@
 
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 
-#include <stdint.h>
-
 #include <vector>
 
 #include "components/sync/engine/cycle/status_counters.h"
@@ -19,49 +17,14 @@ DirectoryTypeDebugInfoEmitter::DirectoryTypeDebugInfoEmitter(
     syncable::Directory* directory,
     ModelType type,
     base::ObserverList<TypeDebugInfoObserver>* observers)
-    : directory_(directory),
-      type_(type),
-      type_debug_info_observers_(observers) {}
+    : DataTypeDebugInfoEmitter(type, observers), directory_(directory) {}
 
 DirectoryTypeDebugInfoEmitter::DirectoryTypeDebugInfoEmitter(
     ModelType type,
     base::ObserverList<TypeDebugInfoObserver>* observers)
-    : directory_(nullptr), type_(type), type_debug_info_observers_(observers) {}
+    : DataTypeDebugInfoEmitter(type, observers), directory_(nullptr) {}
 
 DirectoryTypeDebugInfoEmitter::~DirectoryTypeDebugInfoEmitter() {}
-
-std::unique_ptr<base::ListValue> DirectoryTypeDebugInfoEmitter::GetAllNodes() {
-  syncable::ReadTransaction trans(FROM_HERE, directory_);
-  std::unique_ptr<base::ListValue> nodes(
-      directory_->GetNodeDetailsForType(&trans, type_));
-  return nodes;
-}
-
-const CommitCounters& DirectoryTypeDebugInfoEmitter::GetCommitCounters() const {
-  return commit_counters_;
-}
-
-CommitCounters* DirectoryTypeDebugInfoEmitter::GetMutableCommitCounters() {
-  return &commit_counters_;
-}
-
-void DirectoryTypeDebugInfoEmitter::EmitCommitCountersUpdate() {
-  for (auto& observer : *type_debug_info_observers_)
-    observer.OnCommitCountersUpdated(type_, commit_counters_);
-}
-
-const UpdateCounters& DirectoryTypeDebugInfoEmitter::GetUpdateCounters() const {
-  return update_counters_;
-}
-
-UpdateCounters* DirectoryTypeDebugInfoEmitter::GetMutableUpdateCounters() {
-  return &update_counters_;
-}
-
-void DirectoryTypeDebugInfoEmitter::EmitUpdateCountersUpdate() {
-  for (auto& observer : *type_debug_info_observers_)
-    observer.OnUpdateCountersUpdated(type_, update_counters_);
-}
 
 void DirectoryTypeDebugInfoEmitter::EmitStatusCountersUpdate() {
   // This is expensive.  Avoid running this code unless about:sync is open.

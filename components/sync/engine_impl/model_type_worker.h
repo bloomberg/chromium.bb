@@ -19,6 +19,7 @@
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine_impl/commit_contributor.h"
+#include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/nudge_handler.h"
 #include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -61,7 +62,8 @@ class ModelTypeWorker : public UpdateHandler,
                   const sync_pb::ModelTypeState& initial_state,
                   std::unique_ptr<Cryptographer> cryptographer,
                   NudgeHandler* nudge_handler,
-                  std::unique_ptr<ModelTypeProcessor> model_type_processor);
+                  std::unique_ptr<ModelTypeProcessor> model_type_processor,
+                  DataTypeDebugInfoEmitter* debug_info_emitter);
   ~ModelTypeWorker() override;
 
   ModelType GetModelType() const;
@@ -162,6 +164,7 @@ class ModelTypeWorker : public UpdateHandler,
   WorkerEntityTracker* GetOrCreateEntityTracker(const EntityData& data);
 
   ModelType type_;
+  DataTypeDebugInfoEmitter* debug_info_emitter_;
 
   // State that applies to the entire model type.
   sync_pb::ModelTypeState model_type_state_;

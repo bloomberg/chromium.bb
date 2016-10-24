@@ -128,7 +128,7 @@ void WorkerEntityTracker::ReceiveCommitResponse(CommitResponseData* ack) {
 }
 
 void WorkerEntityTracker::ReceiveUpdate(const UpdateResponseData& update) {
-  if (update.response_version <= highest_gu_response_version_)
+  if (!UpdateContainsNewVersion(update))
     return;
 
   highest_gu_response_version_ = update.response_version;
@@ -143,6 +143,11 @@ void WorkerEntityTracker::ReceiveUpdate(const UpdateResponseData& update) {
     // The model thread can re-request this commit later if it wants to.
     ClearPendingCommit();
   }
+}
+
+bool WorkerEntityTracker::UpdateContainsNewVersion(
+    const UpdateResponseData& update) {
+  return (update.response_version > highest_gu_response_version_);
 }
 
 bool WorkerEntityTracker::ReceiveEncryptedUpdate(

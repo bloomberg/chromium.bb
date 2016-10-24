@@ -16,7 +16,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine_impl/commit_contribution.h"
-#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -49,7 +49,7 @@ class DirectoryCommitContribution : public CommitContribution {
       syncable::Directory* dir,
       ModelType type,
       size_t max_items,
-      DirectoryTypeDebugInfoEmitter* debug_info_emitter);
+      DataTypeDebugInfoEmitter* debug_info_emitter);
 
   // Serialize this contribution's entries to the given commit request |msg|.
   //
@@ -85,7 +85,7 @@ class DirectoryCommitContribution : public CommitContribution {
       const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
       const sync_pb::DataTypeContext& context,
       syncable::Directory* directory,
-      DirectoryTypeDebugInfoEmitter* debug_info_emitter);
+      DataTypeDebugInfoEmitter* debug_info_emitter);
 
   void UnsetSyncingBits();
 
@@ -102,7 +102,7 @@ class DirectoryCommitContribution : public CommitContribution {
   bool syncing_bits_set_;
 
   // A pointer to the commit counters of our parent CommitContributor.
-  DirectoryTypeDebugInfoEmitter* debug_info_emitter_;
+  DataTypeDebugInfoEmitter* debug_info_emitter_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryCommitContribution);
 };

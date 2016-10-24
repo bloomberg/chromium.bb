@@ -23,7 +23,7 @@ class GetUpdatesResponse;
 
 namespace syncer {
 
-class DirectoryTypeDebugInfoEmitter;
+class DataTypeDebugInfoEmitter;
 class ModelSafeWorker;
 class StatusController;
 
@@ -42,7 +42,7 @@ class DirectoryUpdateHandler : public UpdateHandler {
   DirectoryUpdateHandler(syncable::Directory* dir,
                          ModelType type,
                          scoped_refptr<ModelSafeWorker> worker,
-                         DirectoryTypeDebugInfoEmitter* debug_info_emitter);
+                         DataTypeDebugInfoEmitter* debug_info_emitter);
   ~DirectoryUpdateHandler() override;
 
   // UpdateHandler implementation.
@@ -98,7 +98,7 @@ class DirectoryUpdateHandler : public UpdateHandler {
   syncable::Directory* dir_;
   ModelType type_;
   scoped_refptr<ModelSafeWorker> worker_;
-  DirectoryTypeDebugInfoEmitter* debug_info_emitter_;
+  DataTypeDebugInfoEmitter* debug_info_emitter_;
 
   std::unique_ptr<sync_pb::GarbageCollectionDirective> cached_gc_directive_;
 

@@ -17,6 +17,7 @@
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/directory_commit_contributor.h"
 #include "components/sync/engine_impl/directory_update_handler.h"
 #include "components/sync/engine_impl/model_type_worker.h"
@@ -99,7 +100,14 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
     DCHECK(worker_it != workers_map_.end());
     scoped_refptr<ModelSafeWorker> worker = worker_it->second;
 
-    DirectoryTypeDebugInfoEmitter* emitter = GetOrCreateEmitter(type);
+    DataTypeDebugInfoEmitter* emitter = GetEmitter(type);
+    if (emitter == nullptr) {
+      auto new_emitter = base::MakeUnique<DirectoryTypeDebugInfoEmitter>(
+          directory_, type, &type_debug_info_observers_);
+      emitter = new_emitter.get();
+      data_type_debug_info_emitter_map_.insert(
+          std::make_pair(type, std::move(new_emitter)));
+    }
 
     auto updater = base::MakeUnique<DirectoryUpdateHandler>(directory_, type,
                                                             worker, emitter);
@@ -137,9 +145,18 @@ void ModelTypeRegistry::ConnectType(
   if (encrypted_types_.Has(type))
     cryptographer_copy = base::MakeUnique<Cryptographer>(*cryptographer_);
 
+  DataTypeDebugInfoEmitter* emitter = GetEmitter(type);
+  if (emitter == nullptr) {
+    auto new_emitter = base::MakeUnique<NonBlockingTypeDebugInfoEmitter>(
+        type, &type_debug_info_observers_);
+    emitter = new_emitter.get();
+    data_type_debug_info_emitter_map_.insert(
+        std::make_pair(type, std::move(new_emitter)));
+  }
+
   auto worker = base::MakeUnique<ModelTypeWorker>(
       type, activation_context->model_type_state, std::move(cryptographer_copy),
-      nudge_handler_, std::move(activation_context->type_processor));
+      nudge_handler_, std::move(activation_context->type_processor), emitter);
 
   // Initialize Processor -> Worker communication channel.
   auto commit_queue_proxy = base::MakeUnique<CommitQueueProxy>(
@@ -223,7 +240,7 @@ bool ModelTypeRegistry::HasDirectoryTypeDebugInfoObserver(
 }
 
 void ModelTypeRegistry::RequestEmitDebugInfo() {
-  for (const auto& kv : directory_type_debug_info_emitter_map_) {
+  for (const auto& kv : data_type_debug_info_emitter_map_) {
     kv.second->EmitCommitCountersUpdate();
     kv.second->EmitUpdateCountersUpdate();
     kv.second->EmitStatusCountersUpdate();
@@ -284,18 +301,11 @@ void ModelTypeRegistry::OnEncryptionStateChanged() {
   }
 }
 
-DirectoryTypeDebugInfoEmitter* ModelTypeRegistry::GetOrCreateEmitter(
-    ModelType type) {
-  DirectoryTypeDebugInfoEmitter* raw_emitter = nullptr;
-  auto it = directory_type_debug_info_emitter_map_.find(type);
-  if (it != directory_type_debug_info_emitter_map_.end()) {
+DataTypeDebugInfoEmitter* ModelTypeRegistry::GetEmitter(ModelType type) {
+  DataTypeDebugInfoEmitter* raw_emitter = nullptr;
+  auto it = data_type_debug_info_emitter_map_.find(type);
+  if (it != data_type_debug_info_emitter_map_.end()) {
     raw_emitter = it->second.get();
-  } else {
-    auto emitter = base::MakeUnique<DirectoryTypeDebugInfoEmitter>(
-        directory_, type, &type_debug_info_observers_);
-    raw_emitter = emitter.get();
-    directory_type_debug_info_emitter_map_.insert(
-        std::make_pair(type, std::move(emitter)));
   }
   return raw_emitter;
 }
