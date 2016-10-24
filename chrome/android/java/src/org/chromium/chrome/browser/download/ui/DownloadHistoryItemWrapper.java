@@ -190,6 +190,7 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
                 Intent intent = DownloadUtils.getMediaViewerIntentForDownloadItem(
                         fileUri, shareUri, mimeType);
                 IntentHandler.startActivityForTrustedIntent(intent, context);
+                recordOpenSuccess();
                 return;
             }
 
