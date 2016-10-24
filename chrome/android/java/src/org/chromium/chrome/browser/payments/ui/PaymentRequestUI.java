@@ -829,18 +829,20 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
             // Turn the bottom sheet back into a collapsed bottom sheet showing only the spinner.
             // TODO(dfalcantara): Animate this: https://crbug.com/621955
-            FrameLayout.LayoutParams params =
-                    (FrameLayout.LayoutParams) mRequestView.getLayoutParams();
-            params.width = LayoutParams.MATCH_PARENT;
-            params.height = LayoutParams.WRAP_CONTENT;
-            params.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+            ((FrameLayout.LayoutParams) mRequestView.getLayoutParams()).height =
+                    LayoutParams.WRAP_CONTENT;
             mRequestView.requestLayout();
         } else {
             mRequestView.removeView(mSpinnyLayout);
             mRequestView.addView(mPaymentContainer);
             mRequestView.addView(mButtonBar);
 
-            if (mIsShowingEditDialog) expand(mSelectedSection);
+            if (mIsShowingEditDialog) {
+                ((FrameLayout.LayoutParams) mRequestView.getLayoutParams()).height =
+                        LayoutParams.MATCH_PARENT;
+                mRequestView.requestLayout();
+                expand(mSelectedSection);
+            }
         }
     }
 
