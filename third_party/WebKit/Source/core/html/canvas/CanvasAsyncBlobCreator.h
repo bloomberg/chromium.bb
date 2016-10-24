@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/fileapi/BlobCallback.h"
@@ -27,10 +28,16 @@ class CORE_EXPORT CanvasAsyncBlobCreator
       const String& mimeType,
       const IntSize&,
       BlobCallback*,
-      double,
-      Document&);
-  void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling,
-                                 const double& quality = 0.0);
+      double startTime,
+      Document*);
+  static CanvasAsyncBlobCreator* create(
+      DOMUint8ClampedArray* unpremultipliedRGBAImageData,
+      const String& mimeType,
+      const IntSize&,
+      double startTime,
+      Document*,
+      ScriptPromiseResolver*);
+  void scheduleAsyncBlobCreation(const double& quality);
   virtual ~CanvasAsyncBlobCreator();
   enum MimeType {
     MimeTypePng,
@@ -45,11 +52,18 @@ class CORE_EXPORT CanvasAsyncBlobCreator
     IdleTaskStarted,
     IdleTaskCompleted,
     IdleTaskFailed,
-    IdleTaskSwitchedToMainThreadTask,
+    IdleTaskSwitchedToImmediateTask,
     IdleTaskNotSupported,  // Idle tasks are not implemented for some image
                            // types
     IdleTaskCount,         // Should not be seen in production
   };
+
+  enum ToBlobFunctionType {
+    HTMLCanvasToBlobCallback,
+    OffscreenCanvasToBlobPromise,
+    NumberOfToBlobFunctionTypes
+  };
+
   // Methods are virtual for mocking in unit tests
   virtual void signalTaskSwitchInStartTimeoutEventForTesting() {}
   virtual void signalTaskSwitchInCompleteTimeoutEventForTesting() {}
@@ -62,7 +76,8 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                          const IntSize&,
                          BlobCallback*,
                          double,
-                         Document&);
+                         Document*,
+                         ScriptPromiseResolver*);
   // Methods are virtual for unit testing
   virtual void scheduleInitiatePngEncoding();
   virtual void scheduleInitiateJpegEncoding(const double&);
@@ -72,8 +87,8 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                                            std::unique_ptr<WTF::Closure>,
                                            double delayMs);
   virtual void signalAlternativeCodePathFinishedForTesting() {}
-  virtual void createBlobAndInvokeCallback();
-  virtual void createNullAndInvokeCallback();
+  virtual void createBlobAndReturnResult();
+  virtual void createNullAndReturnResult();
 
   void initiatePngEncoding(double deadlineSeconds);
   void initiateJpegEncoding(const double& quality, double deadlineSeconds);
@@ -94,11 +109,20 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   const IntSize m_size;
   size_t m_pixelRowStride;
   const MimeType m_mimeType;
-  Member<BlobCallback> m_callback;
   double m_startTime;
   double m_scheduleInitiateStartTime;
   double m_elapsedTime;
+
+  ToBlobFunctionType m_functionType;
+
+  // Used when CanvasAsyncBlobCreator runs on main thread only
   Member<ParentFrameTaskRunners> m_parentFrameTaskRunner;
+
+  // Used for HTMLCanvasElement only
+  Member<BlobCallback> m_callback;
+
+  // Used for OffscreenCanvas only
+  Member<ScriptPromiseResolver> m_scriptPromiseResolver;
 
   // PNG
   bool initializePngStruct();

@@ -12,6 +12,11 @@
   },
   {
     "prefix": "threaded",
+    "base": "fast/idleToBlob",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
     "base": "compositing/visibility",
     "args": ["--enable-threaded-compositing"]
   },

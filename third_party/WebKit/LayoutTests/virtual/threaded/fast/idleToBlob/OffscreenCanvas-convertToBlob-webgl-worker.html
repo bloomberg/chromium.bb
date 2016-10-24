@@ -1,0 +1,42 @@
+<img id="png"/>
+<script id="myWorker" type="text/worker">
+self.onmessage = function (e) {
+  var offCanvas = new OffscreenCanvas(50, 50);
+  var gl = offCanvas.getContext('webgl');
+  gl.clearColor(0, 1, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // TODO: Add more image types to this test once the toImageData() for webgl
+  // is completed. See crbug.com/657531.
+  offCanvas.convertToBlob()
+    .then(function(blob) { 
+      self.postMessage({version: "png", data:blob});
+    });
+}
+</script>
+<script>
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+}
+
+var pngImage = document.getElementById('png');
+function imageLoaded() {
+  if (window.testRunner) {
+    window.testRunner.notifyDone();
+  }
+}
+pngImage.addEventListener('load', imageLoaded);
+
+var workerBlob = new Blob([document.getElementById('myWorker').textContent]);
+var worker = new Worker(URL.createObjectURL(workerBlob));
+worker.addEventListener("message", function(msg) {
+  var blob = msg.data.data;
+  switch (msg.data.version) {
+    case 'png':
+      pngImage.src = URL.createObjectURL(blob);
+      break;
+  }
+});
+worker.postMessage("");
+</script>
+

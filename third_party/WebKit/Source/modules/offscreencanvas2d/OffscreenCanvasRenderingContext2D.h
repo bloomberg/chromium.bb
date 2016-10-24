@@ -51,6 +51,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     BaseRenderingContext2D::clearRect(x, y, width, height);
   }
   PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final;
+  ImageData* toImageData(SnapshotReason) const override;
 
   // BaseRenderingContext2D implementation
   bool originClean() const final;

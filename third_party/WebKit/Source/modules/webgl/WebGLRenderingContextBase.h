@@ -595,6 +595,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   };
 
   PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const override;
+  ImageData* toImageData(SnapshotReason) const override;
   void setFilterQuality(SkFilterQuality) override;
   bool isWebGL2OrHigher() { return version() >= 2; }
 

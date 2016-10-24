@@ -1,0 +1,28 @@
+<img id="png"/>
+<script type="text/javascript">
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+}
+
+// TODO: Add more image types to this test once the toImageData() for webgl
+// is completed. See crbug.com/657531.
+var pngImage = document.getElementById('png');
+function imageLoaded() {
+  if (window.testRunner) {
+    window.testRunner.notifyDone();
+  }
+}
+pngImage.addEventListener('load', imageLoaded);
+
+var offCanvas = new OffscreenCanvas(50, 50);
+var gl = offCanvas.getContext('webgl');
+gl.clearColor(0, 1, 0, 1);
+gl.clear(gl.COLOR_BUFFER_BIT);
+
+offCanvas.convertToBlob()
+  .then(function(blob) { 
+    pngImage.src = URL.createObjectURL(blob);
+  });
+
+</script>
+

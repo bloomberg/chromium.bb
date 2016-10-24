@@ -559,6 +559,7 @@ core_dictionary_idl_files =
                     "html/track/TrackEventInit.idl",
                     "imagebitmap/ImageBitmapOptions.idl",
                     "input/InputDeviceCapabilitiesInit.idl",
+                    "offscreencanvas/ImageEncodeOptions.idl",
                     "page/scrolling/ScrollStateInit.idl",
                     "timing/PerformanceObserverInit.idl",
                   ],

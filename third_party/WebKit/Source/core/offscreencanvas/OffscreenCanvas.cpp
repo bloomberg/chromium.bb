@@ -5,12 +5,17 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "core/fileapi/Blob.h"
+#include "core/html/ImageData.h"
+#include "core/html/canvas/CanvasAsyncBlobCreator.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
+#include "platform/graphics/StaticBitmapImage.h"
+#include "platform/image-encoders/ImageEncoderUtils.h"
 #include "wtf/MathExtras.h"
 #include <memory>
 
@@ -181,6 +186,53 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
         m_clientId, m_sinkId, m_localId, m_nonce, width(), height()));
   }
   return m_frameDispatcher.get();
+}
+
+ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* scriptState,
+                                             const ImageEncodeOptions& options,
+                                             ExceptionState& exceptionState) {
+  if (this->isNeutered()) {
+    exceptionState.throwDOMException(InvalidStateError,
+                                     "OffscreenCanvas object is detached.");
+    return exceptionState.reject(scriptState);
+  }
+
+  if (!this->originClean()) {
+    exceptionState.throwSecurityError(
+        "Tainted OffscreenCanvas may not be exported.");
+    return exceptionState.reject(scriptState);
+  }
+
+  if (!this->isPaintable()) {
+    return ScriptPromise();
+  }
+
+  double startTime = WTF::monotonicallyIncreasingTime();
+  String encodingMimeType = ImageEncoderUtils::toEncodingMimeType(
+      options.type(), ImageEncoderUtils::EncodeReasonConvertToBlobPromise);
+
+  ImageData* imageData = nullptr;
+  if (this->renderingContext()) {
+    imageData = this->renderingContext()->toImageData(SnapshotReasonUnknown);
+  }
+  if (!imageData) {
+    return ScriptPromise();
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+
+  Document* document =
+      scriptState->getExecutionContext()->isDocument()
+          ? static_cast<Document*>(scriptState->getExecutionContext())
+          : nullptr;
+
+  CanvasAsyncBlobCreator* asyncCreator = CanvasAsyncBlobCreator::create(
+      imageData->data(), encodingMimeType, imageData->size(), startTime,
+      document, resolver);
+
+  asyncCreator->scheduleAsyncBlobCreation(options.quality());
+
+  return resolver->promise();
 }
 
 DEFINE_TRACE(OffscreenCanvas) {

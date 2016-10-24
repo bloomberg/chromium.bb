@@ -158,6 +158,24 @@ PassRefPtr<Image> OffscreenCanvasRenderingContext2D::getImage(
   return image;
 }
 
+ImageData* OffscreenCanvasRenderingContext2D::toImageData(
+    SnapshotReason reason) const {
+  if (!imageBuffer())
+    return nullptr;
+  sk_sp<SkImage> snapshot =
+      m_imageBuffer->newSkImageSnapshot(PreferNoAcceleration, reason);
+  ImageData* imageData = nullptr;
+  if (snapshot) {
+    imageData = ImageData::create(this->getOffscreenCanvas()->size());
+    SkImageInfo imageInfo =
+        SkImageInfo::Make(this->width(), this->height(), kRGBA_8888_SkColorType,
+                          kUnpremul_SkAlphaType);
+    snapshot->readPixels(imageInfo, imageData->data()->data(),
+                         imageInfo.minRowBytes(), 0, 0);
+  }
+  return imageData;
+}
+
 void OffscreenCanvasRenderingContext2D::setOffscreenCanvasGetContextResult(
     OffscreenRenderingContext& result) {
   result.setOffscreenCanvasRenderingContext2D(this);

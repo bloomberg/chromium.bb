@@ -746,10 +746,9 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback,
 
   CanvasAsyncBlobCreator* asyncCreator = CanvasAsyncBlobCreator::create(
       imageData->data(), encodingMimeType, imageData->size(), callback,
-      startTime, document());
+      startTime, &document());
 
-  bool useIdlePeriodScheduling = (encodingMimeType != "image/webp");
-  asyncCreator->scheduleAsyncBlobCreation(useIdlePeriodScheduling, quality);
+  asyncCreator->scheduleAsyncBlobCreation(quality);
 }
 
 void HTMLCanvasElement::addListener(CanvasDrawListener* listener) {

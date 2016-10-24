@@ -737,6 +737,26 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
   return buffer->newImageSnapshot(hint, reason);
 }
 
+ImageData* WebGLRenderingContextBase::toImageData(SnapshotReason reason) const {
+  // TODO: Furnish toImageData in webgl renderingcontext for jpeg and webp
+  // images. See crbug.com/657531.
+  ImageData* imageData = nullptr;
+  if (this->drawingBuffer()) {
+    sk_sp<SkImage> snapshot = this->drawingBuffer()
+                                  ->transferToStaticBitmapImage()
+                                  ->imageForCurrentFrame();
+    if (snapshot) {
+      imageData = ImageData::create(this->getOffscreenCanvas()->size());
+      SkImageInfo imageInfo = SkImageInfo::Make(
+          this->drawingBufferWidth(), this->drawingBufferHeight(),
+          kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+      snapshot->readPixels(imageInfo, imageData->data()->data(),
+                           imageInfo.minRowBytes(), 0, 0);
+    }
+  }
+  return imageData;
+}
+
 namespace {
 
 // Exposed by GL_ANGLE_depth_texture

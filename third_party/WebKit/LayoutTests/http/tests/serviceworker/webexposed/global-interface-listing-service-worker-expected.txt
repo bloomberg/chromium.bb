@@ -478,6 +478,7 @@ interface OffscreenCanvas
     getter height
     getter width
     method constructor
+    method convertToBlob
     method getContext
     method transferToImageBitmap
     setter height
