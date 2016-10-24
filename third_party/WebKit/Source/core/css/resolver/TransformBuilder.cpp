@@ -102,14 +102,13 @@ static TransformOperation::OperationType getTransformOperationType(
   }
 }
 
-void TransformBuilder::createTransformOperations(
+TransformOperations TransformBuilder::createTransformOperations(
     const CSSValue& inValue,
-    const CSSToLengthConversionData& conversionData,
-    TransformOperations& outOperations) {
-  ASSERT(!outOperations.size());
+    const CSSToLengthConversionData& conversionData) {
+  TransformOperations operations;
   if (!inValue.isValueList()) {
     DCHECK_EQ(toCSSIdentifierValue(inValue).getValueID(), CSSValueNone);
-    return;
+    return operations;
   }
 
   float zoomFactor = conversionData.zoom();
@@ -141,7 +140,7 @@ void TransformBuilder::createTransformOperations(
             }
           }
         }
-        outOperations.operations().append(
+        operations.operations().append(
             ScaleTransformOperation::create(sx, sy, 1.0, transformType));
         break;
       }
@@ -157,7 +156,7 @@ void TransformBuilder::createTransformOperations(
           sy = toCSSPrimitiveValue(transformValue->item(1)).getDoubleValue();
           sz = toCSSPrimitiveValue(transformValue->item(2)).getDoubleValue();
         }
-        outOperations.operations().append(
+        operations.operations().append(
             ScaleTransformOperation::create(sx, sy, sz, transformType));
         break;
       }
@@ -179,7 +178,7 @@ void TransformBuilder::createTransformOperations(
           }
         }
 
-        outOperations.operations().append(
+        operations.operations().append(
             TranslateTransformOperation::create(tx, ty, 0, transformType));
         break;
       }
@@ -198,7 +197,7 @@ void TransformBuilder::createTransformOperations(
                    .computeLength<double>(conversionData);
         }
 
-        outOperations.operations().append(
+        operations.operations().append(
             TranslateTransformOperation::create(tx, ty, tz, transformType));
         break;
       }
@@ -209,7 +208,7 @@ void TransformBuilder::createTransformOperations(
         double x = transformType == TransformOperation::RotateX;
         double y = transformType == TransformOperation::RotateY;
         double z = transformType == TransformOperation::RotateZ;
-        outOperations.operations().append(
+        operations.operations().append(
             RotateTransformOperation::create(x, y, z, angle, transformType));
         break;
       }
@@ -224,7 +223,7 @@ void TransformBuilder::createTransformOperations(
         double y = secondValue.getDoubleValue();
         double z = thirdValue.getDoubleValue();
         double angle = fourthValue.computeDegrees();
-        outOperations.operations().append(
+        operations.operations().append(
             RotateTransformOperation::create(x, y, z, angle, transformType));
         break;
       }
@@ -246,7 +245,7 @@ void TransformBuilder::createTransformOperations(
             }
           }
         }
-        outOperations.operations().append(
+        operations.operations().append(
             SkewTransformOperation::create(angleX, angleY, transformType));
         break;
       }
@@ -264,7 +263,7 @@ void TransformBuilder::createTransformOperations(
         double f =
             zoomFactor *
             toCSSPrimitiveValue(transformValue->item(5)).getDoubleValue();
-        outOperations.operations().append(
+        operations.operations().append(
             MatrixTransformOperation::create(a, b, c, d, e, f));
         break;
       }
@@ -288,14 +287,14 @@ void TransformBuilder::createTransformOperations(
                 toCSSPrimitiveValue(transformValue->item(13)).getDoubleValue(),
             toCSSPrimitiveValue(transformValue->item(14)).getDoubleValue(),
             toCSSPrimitiveValue(transformValue->item(15)).getDoubleValue());
-        outOperations.operations().append(
+        operations.operations().append(
             Matrix3DTransformOperation::create(matrix));
         break;
       }
       case TransformOperation::Perspective: {
         double p = firstValue.computeLength<double>(conversionData);
         ASSERT(p >= 0);
-        outOperations.operations().append(
+        operations.operations().append(
             PerspectiveTransformOperation::create(p));
         break;
       }
@@ -304,6 +303,7 @@ void TransformBuilder::createTransformOperations(
         break;
     }
   }
+  return operations;
 }
 
 }  // namespace blink

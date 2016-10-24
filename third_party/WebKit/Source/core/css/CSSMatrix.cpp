@@ -77,11 +77,10 @@ void CSSMatrix::setMatrixValue(const String& string,
       return;
 
     DEFINE_STATIC_REF(ComputedStyle, initialStyle, createInitialStyle());
-    TransformOperations operations;
-    TransformBuilder::createTransformOperations(
-        *value, CSSToLengthConversionData(initialStyle, initialStyle,
-                                          LayoutViewItem(nullptr), 1.0f),
-        operations);
+    TransformOperations operations =
+        TransformBuilder::createTransformOperations(
+            *value, CSSToLengthConversionData(initialStyle, initialStyle,
+                                              LayoutViewItem(nullptr), 1.0f));
 
     // Convert transform operations to a TransformationMatrix. This can fail
     // if a param has a percentage ('%')

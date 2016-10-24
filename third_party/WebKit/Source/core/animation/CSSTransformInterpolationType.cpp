@@ -201,9 +201,8 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertValue(
       conversionCheckers.append(std::move(lengthUnitsChecker));
   }
 
-  TransformOperations transform;
-  TransformBuilder::createTransformOperations(
-      value, state.cssToLengthConversionData(), transform);
+  TransformOperations transform = TransformBuilder::createTransformOperations(
+      value, state.cssToLengthConversionData());
   return convertTransform(std::move(transform));
 }
 

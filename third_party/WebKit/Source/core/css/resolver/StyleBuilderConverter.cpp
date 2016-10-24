@@ -45,6 +45,7 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/FilterOperationResolver.h"
+#include "core/css/resolver/TransformBuilder.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/style/ClipPathOperation.h"
@@ -1139,6 +1140,13 @@ TextSizeAdjust StyleBuilderConverter::convertTextSizeAdjust(
   const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
   DCHECK(primitiveValue.isPercentage());
   return TextSizeAdjust(primitiveValue.getFloatValue() / 100.0f);
+}
+
+TransformOperations StyleBuilderConverter::convertTransformOperations(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  return TransformBuilder::createTransformOperations(
+      value, state.cssToLengthConversionData());
 }
 
 TransformOrigin StyleBuilderConverter::convertTransformOrigin(

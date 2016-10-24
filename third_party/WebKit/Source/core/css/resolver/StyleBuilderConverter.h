@@ -140,6 +140,8 @@ class StyleBuilderConverter {
   static float convertTextStrokeWidth(StyleResolverState&, const CSSValue&);
   static TextSizeAdjust convertTextSizeAdjust(StyleResolverState&,
                                               const CSSValue&);
+  static TransformOperations convertTransformOperations(StyleResolverState&,
+                                                        const CSSValue&);
   static TransformOrigin convertTransformOrigin(StyleResolverState&,
                                                 const CSSValue&);
 

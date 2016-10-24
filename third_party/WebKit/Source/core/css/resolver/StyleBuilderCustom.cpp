@@ -63,7 +63,6 @@
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleBuilder.h"
-#include "core/css/resolver/TransformBuilder.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/style/ComputedStyle.h"
@@ -560,16 +559,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(
   state.style()->setTextIndent(lengthOrPercentageValue);
   state.style()->setTextIndentLine(textIndentLineValue);
   state.style()->setTextIndentType(textIndentTypeValue);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyTransform(
-    StyleResolverState& state,
-    const CSSValue& value) {
-  // FIXME: We should just make this a converter
-  TransformOperations operations;
-  TransformBuilder::createTransformOperations(
-      value, state.cssToLengthConversionData(), operations);
-  state.style()->setTransform(operations);
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(
