@@ -989,6 +989,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContext.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApi.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
@@ -1099,6 +1100,7 @@ if (!is_official_build) {
 
 chrome_vr_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContextImpl.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApiImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrWindowAndroid.java",
 ]

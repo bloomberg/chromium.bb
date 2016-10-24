@@ -443,6 +443,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         if (getActivityTab() != null) getActivityTab().setIsAllowedToReturnToExternalApp(false);
 
+        if (mVrShellDelegate.isVrShellEnabled()) {
+            mVrShellDelegate.close();
+        }
         mTabModelSelectorImpl.saveState();
         StartupMetrics.getInstance().recordHistogram(true);
         mActivityStopMetrics.onStopWithNative(this);

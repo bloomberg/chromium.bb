@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.StrictMode;
@@ -36,12 +38,17 @@ public class VrShellDelegate {
 
     private Class<? extends VrShell> mVrShellClass;
     private Class<? extends NonPresentingGvrContext> mNonPresentingGvrContextClass;
+    private Class<? extends VrDaydreamApi> mVrDaydreamApiClass;
     private VrShell mVrShell;
     private NonPresentingGvrContext mNonPresentingGvrContext;
+    private VrDaydreamApi mVrDaydreamApi;
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private String mVrExtra;
     private long mNativeVrShellDelegate;
+
+    private static final String DAYDREAM_DON_AUTO_TRANSITION =
+            "org.chromium.chrome.browser.vr_shell.DAYDREAM_DON_AUTO_TRANSITION";
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
@@ -54,6 +61,7 @@ public class VrShellDelegate {
                 Log.e(TAG, "Unable to read VR_EXTRA field", e);
                 mVrEnabled = false;
             }
+            createVrDaydreamApi();
         }
     }
 
@@ -75,10 +83,13 @@ public class VrShellDelegate {
             mNonPresentingGvrContextClass =
                     (Class<? extends NonPresentingGvrContext>) Class.forName(
                             "org.chromium.chrome.browser.vr_shell.NonPresentingGvrContextImpl");
+            mVrDaydreamApiClass = (Class<? extends VrDaydreamApi>) Class.forName(
+                    "org.chromium.chrome.browser.vr_shell.VrDaydreamApiImpl");
             return true;
         } catch (ClassNotFoundException e) {
             mVrShellClass = null;
             mNonPresentingGvrContextClass = null;
+            mVrDaydreamApiClass = null;
             return false;
         }
     }
@@ -132,6 +143,10 @@ public class VrShellDelegate {
      * Resumes VR Shell.
      */
     public void maybeResumeVR() {
+        if (isVrShellEnabled()) {
+            registerDaydreamIntent();
+        }
+
         // TODO(bshe): Ideally, we do not need two gvr context exist at the same time. We can
         // probably shutdown non presenting gvr when presenting and create a new one after exit
         // presenting. See crbug.com/655242
@@ -163,6 +178,10 @@ public class VrShellDelegate {
      * Pauses VR Shell.
      */
     public void maybePauseVR() {
+        if (isVrShellEnabled()) {
+            unregisterDaydreamIntent();
+        }
+
         if (mNonPresentingGvrContext != null) {
             mNonPresentingGvrContext.pause();
         }
@@ -185,6 +204,40 @@ public class VrShellDelegate {
         }
 
         return true;
+    }
+
+    /**
+     * Registers the Intent to fire after phone inserted into a headset.
+     */
+    private void registerDaydreamIntent() {
+        if (mVrDaydreamApi == null) return;
+
+        Intent intent = new Intent();
+        // TODO(bshe): Ideally, this should go through ChromeLauncherActivity. To avoid polluting
+        // metrics, use ChromeTabbedActivity directly for now.
+        intent.setClass(mActivity, ChromeTabbedActivity.class);
+        intent.putExtra(DAYDREAM_DON_AUTO_TRANSITION, true);
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(mActivity, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        mVrDaydreamApi.registerDaydreamIntent(pendingIntent);
+    }
+
+    /**
+     * Unregisters the Intent which registered by this context if any.
+     */
+    private void unregisterDaydreamIntent() {
+        if (mVrDaydreamApi != null) {
+            mVrDaydreamApi.unregisterDaydreamIntent();
+        }
+    }
+
+    /**
+     * Closes DaydreamApi.
+     */
+    public void close() {
+        if (mVrDaydreamApi != null) {
+            mVrDaydreamApi.close();
+        }
     }
 
     @CalledByNative
@@ -225,6 +278,21 @@ public class VrShellDelegate {
         mInVr = false;
         Tab tab = mActivity.getActivityTab();
         if (tab != null) tab.updateFullscreenEnabledState();
+    }
+
+    private boolean createVrDaydreamApi() {
+        if (!mVrEnabled) return false;
+
+        try {
+            Constructor<?> vrPrivateApiConstructor =
+                    mVrDaydreamApiClass.getConstructor(Context.class);
+            mVrDaydreamApi = (VrDaydreamApi) vrPrivateApiConstructor.newInstance(mActivity);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException e) {
+            Log.e(TAG, "Unable to instantiate VrDaydreamApi", e);
+            return false;
+        }
+        return true;
     }
 
     private boolean createVrShell() {
@@ -294,7 +362,8 @@ public class VrShellDelegate {
      */
     public boolean isVrIntent(Intent intent) {
         if (intent == null) return false;
-        return intent.getBooleanExtra(mVrExtra, false);
+        return intent.getBooleanExtra(DAYDREAM_DON_AUTO_TRANSITION, false)
+                || intent.getBooleanExtra(mVrExtra, false);
     }
 
     /**
