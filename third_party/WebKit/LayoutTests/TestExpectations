@@ -533,8 +533,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 
-crbug.com/657839 [ Mac10.9 ] css3/filters/buffer-offset.html [ NeedsRebaseline ]
-
 # In imported/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
