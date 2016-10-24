@@ -1538,7 +1538,9 @@ def ToolchainBuilders(site_config, board_configs, hw_test_list):
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       images=['base', 'test', 'recovery'],
       build_timeout=(15 * 60 + 50) * 60,
-      useflags=append_useflags(['-cros-debug']),
+      # Need to re-enable platform_SyncCrash after issue 658864 is fixed.
+      useflags=append_useflags(['-cros-debug', '-test_security_OpenFDs',
+                                '-test_platform_SyncCrash']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
@@ -1568,7 +1570,8 @@ def ToolchainBuilders(site_config, board_configs, hw_test_list):
       'llvm_next_toolchain',
       site_config.templates.llvm_toolchain,
       description='Full release build with LLVM (next) toolchain',
-      useflags=['clang', 'llvm-next'],
+      useflags=['clang', 'llvm-next', '-test_security_OpenFDs',
+                '-test_platform_SyncCrash'],
   )
 
   ### Toolchain waterfall entries.

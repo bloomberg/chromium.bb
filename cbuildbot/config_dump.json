@@ -632,6 +632,8 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
+                "-test_platform_SyncCrash",
+                "-test_security_OpenFDs",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
@@ -687,7 +689,9 @@
             "profile": "llvm",
             "useflags": [
                 "clang",
-                "llvm-next"
+                "llvm-next",
+                "-test_security_OpenFDs",
+                "-test_platform_SyncCrash"
             ],
             "usepkg_build_packages": false,
             "vm_tests": []
@@ -728,6 +732,8 @@
             "profile": "llvm",
             "useflags": [
                 "-cros-debug",
+                "-test_platform_SyncCrash",
+                "-test_security_OpenFDs",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
@@ -1104,6 +1110,8 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
+                "-test_platform_SyncCrash",
+                "-test_security_OpenFDs",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
@@ -5408,6 +5416,8 @@
             "chell"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -6214,6 +6224,8 @@
             "daisy"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -13228,6 +13240,8 @@
             "link"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -13637,6 +13651,8 @@
             "lulu"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -15202,6 +15218,8 @@
             "nyan_big"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -17266,6 +17284,8 @@
             "peach_pit"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -17505,6 +17525,8 @@
             "peppy"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -19497,6 +19519,8 @@
             "sentry"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -20863,6 +20887,8 @@
             "squawks"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
@@ -22346,6 +22372,8 @@
             "terra"
         ],
         "useflags": [
+            "-test_platform_SyncCrash",
+            "-test_security_OpenFDs",
             "chrome_internal",
             "clang",
             "llvm-next"
