@@ -74,4 +74,12 @@ void Adapter::DeviceRemoved(device::BluetoothAdapter* adapter,
   }
 }
 
+void Adapter::DeviceChanged(device::BluetoothAdapter* adapter,
+                            device::BluetoothDevice* device) {
+  if (client_) {
+    auto device_info = Device::ConstructDeviceInfoStruct(device);
+    client_->DeviceChanged(std::move(device_info));
+  }
+}
+
 }  // namespace bluetooth

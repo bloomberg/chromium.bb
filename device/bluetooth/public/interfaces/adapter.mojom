@@ -38,6 +38,15 @@ interface AdapterClient {
 
   // Called after the device hasn't been seen for 3 minutes.
   DeviceRemoved(DeviceInfo device);
+
+  // Called when one of the following properties of a device changes:
+  //   Address, appearance, Bluetooth class, Inquiry RSSI, Inquiry TX Power,
+  //   Service UUIDs, Connectionable state, Connection state, Pairing state,
+  //   Trustable state.
+  // Generally called for each advertisement packet recevied, but this is not
+  // guaranteed on ChromeOS or Linux. Because the RSSI is always changing,
+  // it's very likely this will be called for each advertising packet.
+  DeviceChanged(DeviceInfo device);
 };
 
 interface AdapterFactory {

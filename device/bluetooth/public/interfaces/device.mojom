@@ -4,10 +4,16 @@
 
 module bluetooth.mojom;
 
+// TODO(crbug.com/657632): Remove when numerical values can be optional.
+struct RSSIWrapper {
+  int8 value;
+};
+
 struct DeviceInfo {
   string? name;
   string name_for_display;
   string address;
+  RSSIWrapper? rssi;
 };
 
 interface Device {

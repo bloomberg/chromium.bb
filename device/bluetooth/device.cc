@@ -26,6 +26,11 @@ mojom::DeviceInfoPtr Device::ConstructDeviceInfoStruct(
       base::UTF16ToUTF8(device->GetNameForDisplay());
   device_info->address = device->GetAddress();
 
+  if (device->GetInquiryRSSI()) {
+    device_info->rssi = mojom::RSSIWrapper::New();
+    device_info->rssi->value = device->GetInquiryRSSI().value();
+  }
+
   return device_info;
 }
 

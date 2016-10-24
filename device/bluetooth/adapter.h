@@ -37,6 +37,8 @@ class Adapter : public mojom::Adapter,
                    device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
 
  private:
   // The current Bluetooth adapter.

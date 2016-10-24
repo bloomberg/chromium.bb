@@ -7,27 +7,53 @@
  *     chrome://bluetooth-internals/.
  */
 
-/**
- * The implementation of AdapterClient in
- *     device/bluetooth/public/interfaces/adapter.mojom.
- */
-var AdapterClient = function() {};
-AdapterClient.prototype = {
-  /**
-   * Prints added device to console.
-   * @param {!bluetoothDevice.DeviceInfo} device
-   */
-  deviceAdded: function(device) { console.log('Device added', device); },
-
-  /**
-   * Prints removed device to console.
-   * @param {!bluetoothDevice.DeviceInfo} device
-   */
-  deviceRemoved: function(device) { console.log('Device removed', device); }
-};
-
 (function() {
   var adapter, adapterClient, bluetoothAdapter, bluetoothDevice, connection;
+
+  /*
+   * Data model for a cached device.
+   * @constructor
+   * @param {!bluetoothDevice.DeviceInfo} info
+   */
+  var Device = function(info) { this.info = info; };
+
+  /**
+   * The implementation of AdapterClient in
+   *     device/bluetooth/public/interfaces/adapter.mojom. This also manages the
+   *     client-side collection of devices.
+   * @constructor
+   */
+  var AdapterClient = function() { this.devices_ = new Map(); };
+  AdapterClient.prototype = {
+    /**
+     * Logs added device to console and caches the device info.
+     * @param {!bluetoothDevice.DeviceInfo} device
+     */
+    deviceAdded: function(deviceInfo) {
+      console.log('Device added', deviceInfo);
+      this.devices_.set(deviceInfo.address, new Device(deviceInfo));
+    },
+
+    /**
+     * Logs removed device to console and removes the cached device.
+     * @param {!bluetoothDevice.DeviceInfo} device
+     */
+    deviceRemoved: function(deviceInfo) {
+      console.log('Device removed', deviceInfo);
+      this.devices_.delete(deviceInfo.address);
+    },
+
+    /**
+     * Logs changed device info to console and updates the cached device.
+     * @param {!bluetoothDevice.DeviceInfo} deviceInfo
+     */
+    deviceChanged: function(deviceInfo) {
+      console.log(new Date(), deviceInfo);
+      if (this.devices_.has(deviceInfo.address)) {
+        this.devices_.get(deviceInfo.address).info = deviceInfo;
+      }
+    }
+  };
 
   /**
    * TODO(crbug.com/652361): Move to shared location.
@@ -85,38 +111,17 @@ AdapterClient.prototype = {
     });
   }
 
-  /**
-   * Prints device info from the device service.
-   * @param {!bluetoothDevice.DeviceInfo} deviceInfo the device for which to
-   *     get the information.
-   * @return {!Promise} resolves if device service is retrieved, rejects
-   *     otherwise.
-   */
-  function logDevice(deviceInfo) {
-    return adapter.getDevice(deviceInfo.address).then(function(response) {
-        var deviceHandle = response.device;
-        if (!deviceHandle) {
-          throw new Error(deviceInfo.name_for_display + ' cannot be found.');
-        }
-
-        var device = connection.bindHandleToProxy(
-              deviceHandle, bluetoothDevice.Device);
-        return device.getInfo();
-      }).then(function(response) {
-        console.log(deviceInfo.name_for_display, response.info);
-      });
-  }
-
   document.addEventListener('DOMContentLoaded', function() {
     initializeProxies()
       .then(function() { return adapter.getInfo(); })
       .then(function(response) { console.log('adapter', response.info); })
       .then(function() { return adapter.getDevices(); })
       .then(function(response) {
-        var devices = response.devices;
-        console.log('devices', devices.length);
+        console.log('devices', response.devices.length);
 
-        return Promise.all(devices.map(logDevice));
+        response.devices.forEach(function(deviceInfo) {
+          adapterClient.deviceAdded(deviceInfo);
+        });
       })
       .catch(function(error) { console.error(error); });
   });
