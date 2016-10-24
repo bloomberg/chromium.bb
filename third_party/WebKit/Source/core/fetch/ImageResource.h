@@ -65,7 +65,7 @@ class CORE_EXPORT ImageResource final
   }
 
   static ImageResource* create(const ResourceRequest& request) {
-    return new ImageResource(request, ResourceLoaderOptions());
+    return new ImageResource(request, ResourceLoaderOptions(), false);
   }
 
   ~ImageResource() override;
@@ -108,9 +108,17 @@ class CORE_EXPORT ImageResource final
 
   void updateImageAnimationPolicy();
 
-  // If this ImageResource has the Lo-Fi response headers, reload it with the
-  // Lo-Fi state set to off and bypassing the cache.
-  void reloadIfLoFi(ResourceFetcher*);
+  enum class ReloadCachePolicy {
+    UseExistingPolicy = 0,  // Don't modify the request's cache policy.
+    BypassCache,  // Modify the request so that the reload bypasses the cache.
+  };
+
+  // If this ImageResource has the Lo-Fi response headers or is a placeholder,
+  // reload the full original image with the Lo-Fi state set to off and
+  // optionally bypassing the cache.
+  void reloadIfLoFiOrPlaceholder(
+      ResourceFetcher*,
+      ReloadCachePolicy = ReloadCachePolicy::BypassCache);
 
   void didAddClient(ResourceClient*) override;
 
@@ -145,6 +153,13 @@ class CORE_EXPORT ImageResource final
   void onePartInMultipartReceived(const ResourceResponse&) final;
   void multipartDataReceived(const char*, size_t) final;
 
+  // Used by tests.
+  bool isPlaceholder() const { return m_isPlaceholder; }
+
+  bool shouldReloadBrokenPlaceholder() const {
+    return m_isPlaceholder && willPaintBrokenImage();
+  }
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -156,17 +171,11 @@ class CORE_EXPORT ImageResource final
     FinishedParsingFirstPart,
   };
 
-  class ImageResourceFactory : public ResourceFactory {
-   public:
-    ImageResourceFactory() : ResourceFactory(Resource::Image) {}
+  class ImageResourceFactory;
 
-    Resource* create(const ResourceRequest& request,
-                     const ResourceLoaderOptions& options,
-                     const String&) const override {
-      return new ImageResource(request, options);
-    }
-  };
-  ImageResource(const ResourceRequest&, const ResourceLoaderOptions&);
+  ImageResource(const ResourceRequest&,
+                const ResourceLoaderOptions&,
+                bool isPlaceholder);
 
   bool hasClientsOrObservers() const override {
     return Resource::hasClientsOrObservers() || !m_observers.isEmpty() ||
@@ -205,6 +214,10 @@ class CORE_EXPORT ImageResource final
   // Indicates if the ImageResource is currently scheduling a reload, e.g.
   // because reloadIfLoFi() was called.
   bool m_isSchedulingReload;
+
+  // Indicates if this ImageResource is either attempting to load a placeholder
+  // image, or is a (possibly broken) placeholder image.
+  bool m_isPlaceholder;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

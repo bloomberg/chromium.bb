@@ -32,7 +32,9 @@
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/PlaceholderImage.h"
 #include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
@@ -44,6 +46,26 @@
 #include <v8.h>
 
 namespace blink {
+
+class ImageResource::ImageResourceFactory : public ResourceFactory {
+  STACK_ALLOCATED();
+
+ public:
+  ImageResourceFactory(const FetchRequest& fetchRequest)
+      : ResourceFactory(Resource::Image), m_fetchRequest(&fetchRequest) {}
+
+  Resource* create(const ResourceRequest& request,
+                   const ResourceLoaderOptions& options,
+                   const String&) const override {
+    return new ImageResource(request, options,
+                             m_fetchRequest->placeholderImageRequestType() ==
+                                 FetchRequest::AllowPlaceholder);
+  }
+
+ private:
+  // Weak, unowned pointer. Must outlive |this|.
+  const FetchRequest* m_fetchRequest;
+};
 
 ImageResource* ImageResource::fetch(FetchRequest& request,
                                     ResourceFetcher* fetcher) {
@@ -63,17 +85,29 @@ ImageResource* ImageResource::fetch(FetchRequest& request,
     return nullptr;
   }
 
-  return toImageResource(
-      fetcher->requestResource(request, ImageResourceFactory()));
+  ImageResource* resource = toImageResource(
+      fetcher->requestResource(request, ImageResourceFactory(request)));
+  if (resource &&
+      request.placeholderImageRequestType() != FetchRequest::AllowPlaceholder &&
+      resource->m_isPlaceholder) {
+    // If the image is a placeholder, but this fetch doesn't allow a
+    // placeholder, then load the original image. Note that the cache is not
+    // bypassed here - it should be fine to use a cached copy if possible.
+    resource->reloadIfLoFiOrPlaceholder(fetcher,
+                                        ReloadCachePolicy::UseExistingPolicy);
+  }
+  return resource;
 }
 
 ImageResource::ImageResource(const ResourceRequest& resourceRequest,
-                             const ResourceLoaderOptions& options)
+                             const ResourceLoaderOptions& options,
+                             bool isPlaceholder)
     : Resource(resourceRequest, Image, options),
       m_devicePixelRatioHeaderValue(1.0),
       m_image(nullptr),
       m_hasDevicePixelRatioHeaderValue(false),
-      m_isSchedulingReload(false) {
+      m_isSchedulingReload(false),
+      m_isPlaceholder(isPlaceholder) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageResource(ResourceRequest) " << this;
 }
 
@@ -83,7 +117,8 @@ ImageResource::ImageResource(blink::Image* image,
       m_devicePixelRatioHeaderValue(1.0),
       m_image(image),
       m_hasDevicePixelRatioHeaderValue(false),
-      m_isSchedulingReload(false) {
+      m_isSchedulingReload(false),
+      m_isPlaceholder(false) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageResource(Image) " << this;
   setStatus(Cached);
 }
@@ -103,7 +138,7 @@ DEFINE_TRACE(ImageResource) {
 void ImageResource::checkNotify() {
   // Don't notify observers and clients of completion if this ImageResource is
   // about to be reloaded.
-  if (m_isSchedulingReload)
+  if (m_isSchedulingReload || shouldReloadBrokenPlaceholder())
     return;
 
   notifyObserversInternal(MarkFinishedOption::ShouldMarkFinished);
@@ -136,7 +171,7 @@ void ImageResource::didAddClient(ResourceClient* client) {
 
   // Don't notify observers and clients of completion if this ImageResource is
   // about to be reloaded.
-  if (m_isSchedulingReload)
+  if (m_isSchedulingReload || shouldReloadBrokenPlaceholder())
     return;
 
   Resource::didAddClient(client);
@@ -164,7 +199,7 @@ void ImageResource::addObserver(ImageResourceObserver* observer) {
     observer->imageChanged(this);
   }
 
-  if (isLoaded() && !m_isSchedulingReload) {
+  if (isLoaded() && !m_isSchedulingReload && !shouldReloadBrokenPlaceholder()) {
     markObserverFinished(observer);
     observer->imageNotifyFinished(this);
   }
@@ -402,6 +437,22 @@ void ImageResource::updateImage(bool allDataReceived) {
   // observers to repaint, which will force that chunk to decode.
   if (sizeAvailable == Image::SizeUnavailable && !allDataReceived)
     return;
+
+  if (m_isPlaceholder && allDataReceived && m_image && !m_image->isNull()) {
+    if (sizeAvailable == Image::SizeAvailable) {
+      // TODO(sclittle): Show the original image if the response consists of the
+      // entire image, such as if the entire image response body is smaller than
+      // the requested range.
+      IntSize dimensions = m_image->size();
+      clearImage();
+      m_image = PlaceholderImage::create(this, dimensions);
+    } else {
+      // Clear the image so that it gets treated like a decoding error, since
+      // the attempt to build a placeholder image failed.
+      clearImage();
+    }
+  }
+
   if (!m_image || m_image->isNull()) {
     size_t size = encodedSize();
     clear();
@@ -536,11 +587,17 @@ void ImageResource::updateImageAnimationPolicy() {
   }
 }
 
-void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher) {
-  if (resourceRequest().loFiState() != WebURLRequest::LoFiOn)
-    return;
-  if (isLoaded() &&
-      !response().httpHeaderField("chrome-proxy").contains("q=low"))
+static bool isLoFiImage(const ImageResource& resource) {
+  if (resource.resourceRequest().loFiState() != WebURLRequest::LoFiOn)
+    return false;
+  return !resource.isLoaded() ||
+         resource.response().httpHeaderField("chrome-proxy").contains("q=low");
+}
+
+void ImageResource::reloadIfLoFiOrPlaceholder(
+    ResourceFetcher* fetcher,
+    ReloadCachePolicy reloadCachePolicy) {
+  if (!m_isPlaceholder && !isLoFiImage(*this))
     return;
 
   // Prevent clients and observers from being notified of completion while the
@@ -550,8 +607,15 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher) {
   DCHECK(!m_isSchedulingReload);
   m_isSchedulingReload = true;
 
-  setCachePolicyBypassingCache();
+  if (reloadCachePolicy == ReloadCachePolicy::BypassCache)
+    setCachePolicyBypassingCache();
   setLoFiStateOff();
+
+  if (m_isPlaceholder) {
+    m_isPlaceholder = false;
+    clearRangeRequestHeader();
+  }
+
   if (isLoading()) {
     loader()->cancel();
     // Canceling the loader causes error() to be called, which in turn calls

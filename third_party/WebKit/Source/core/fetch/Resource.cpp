@@ -936,6 +936,10 @@ void Resource::setLoFiStateOff() {
   m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
 }
 
+void Resource::clearRangeRequestHeader() {
+  m_resourceRequest.clearHTTPHeaderField("range");
+}
+
 void Resource::revalidationSucceeded(
     const ResourceResponse& validatingResponse) {
   SECURITY_CHECK(m_redirectChain.isEmpty());

@@ -853,6 +853,8 @@ component("platform") {
     "graphics/PicturePattern.h",
     "graphics/PictureSnapshot.cpp",
     "graphics/PictureSnapshot.h",
+    "graphics/PlaceholderImage.cpp",
+    "graphics/PlaceholderImage.h",
     "graphics/ProfilingCanvas.cpp",
     "graphics/ProfilingCanvas.h",
     "graphics/RecordingImageBufferSurface.cpp",

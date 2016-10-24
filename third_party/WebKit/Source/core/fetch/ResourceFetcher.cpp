@@ -1164,6 +1164,11 @@ void ResourceFetcher::didFinishLoading(Resource* resource,
   if (finishReason == DidFinishLoading)
     resource->finish(finishTime);
   context().didLoadResource(resource);
+
+  if (resource->isImage() &&
+      toImageResource(resource)->shouldReloadBrokenPlaceholder()) {
+    toImageResource(resource)->reloadIfLoFiOrPlaceholder(this);
+  }
 }
 
 void ResourceFetcher::didFailLoading(Resource* resource,
@@ -1176,6 +1181,11 @@ void ResourceFetcher::didFailLoading(Resource* resource,
   context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
   resource->error(error);
   context().didLoadResource(resource);
+
+  if (resource->isImage() &&
+      toImageResource(resource)->shouldReloadBrokenPlaceholder()) {
+    toImageResource(resource)->reloadIfLoFiOrPlaceholder(this);
+  }
 }
 
 void ResourceFetcher::didReceiveResponse(Resource* resource,
@@ -1423,7 +1433,7 @@ void ResourceFetcher::reloadLoFiImages() {
     Resource* resource = documentResource.value.get();
     if (resource && resource->isImage()) {
       ImageResource* imageResource = toImageResource(resource);
-      imageResource->reloadIfLoFi(this);
+      imageResource->reloadIfLoFiOrPlaceholder(this);
     }
   }
 }

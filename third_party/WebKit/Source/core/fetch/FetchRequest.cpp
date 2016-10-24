@@ -27,6 +27,7 @@
 
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
@@ -40,7 +41,8 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
       m_linkPreload(false),
       m_preloadDiscoveryTime(0.0),
       m_defer(NoDefer),
-      m_originRestriction(UseDefaultOriginRestrictionForType) {
+      m_originRestriction(UseDefaultOriginRestrictionForType),
+      m_placeholderImageRequestType(DisallowPlaceholder) {
   m_options.initiatorInfo.name = initiator;
 }
 
@@ -53,7 +55,9 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
       m_linkPreload(false),
       m_preloadDiscoveryTime(0.0),
       m_defer(NoDefer),
-      m_originRestriction(UseDefaultOriginRestrictionForType) {
+      m_originRestriction(UseDefaultOriginRestrictionForType),
+      m_placeholderImageRequestType(
+          PlaceholderImageRequestType::DisallowPlaceholder) {
   m_options.initiatorInfo.name = initiator;
 }
 
@@ -65,7 +69,9 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
       m_linkPreload(false),
       m_preloadDiscoveryTime(0.0),
       m_defer(NoDefer),
-      m_originRestriction(UseDefaultOriginRestrictionForType) {
+      m_originRestriction(UseDefaultOriginRestrictionForType),
+      m_placeholderImageRequestType(
+          PlaceholderImageRequestType::DisallowPlaceholder) {
   m_options.initiatorInfo = initiator;
 }
 
@@ -117,6 +123,27 @@ void FetchRequest::makeSynchronous() {
   m_resourceRequest.setPriority(ResourceLoadPriorityHighest);
   m_resourceRequest.setTimeoutInterval(10);
   m_options.synchronousPolicy = RequestSynchronously;
+}
+
+void FetchRequest::setAllowImagePlaceholder() {
+  DCHECK_EQ(DisallowPlaceholder, m_placeholderImageRequestType);
+  if (!m_resourceRequest.url().protocolIsInHTTPFamily() ||
+      m_resourceRequest.httpMethod() != "GET" ||
+      !m_resourceRequest.httpHeaderField("range").isNull()) {
+    return;
+  }
+
+  m_placeholderImageRequestType = AllowPlaceholder;
+
+  // Fetch the first few bytes of the image. This number is tuned to both (a)
+  // likely capture the entire image for small images and (b) likely contain
+  // the dimensions for larger images.
+  // TODO(sclittle): Calculate the optimal value for this number.
+  m_resourceRequest.setHTTPHeaderField("range", "bytes=0-2047");
+
+  // TODO(sclittle): Indicate somehow (e.g. through a new request bit) to the
+  // embedder that it should return the full resource if the entire resource is
+  // fresh in the cache.
 }
 
 }  // namespace blink

@@ -69,6 +69,7 @@
 #include "core/page/DragState.h"
 #include "core/page/Page.h"
 #include "platform/DragImage.h"
+#include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"
@@ -84,6 +85,7 @@
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include <memory>
 
@@ -1086,7 +1088,7 @@ bool DragController::startDrag(LocalFrame* src,
       return false;
     Element* element = toElement(node);
     Image* image = getImage(element);
-    if (!image || image->isNull())
+    if (!image || image->isNull() || !image->data() || !image->data()->size())
       return false;
     // We shouldn't be starting a drag for an image that can't provide an
     // extension.

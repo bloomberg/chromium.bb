@@ -433,3 +433,6 @@ spellCheckEnabledByDefault initial=true
 
 # Whether download UI should be hidden for the current page content.
 hideDownloadUI initial=false
+
+# Whether or not to issue range requests for images and show placeholders.
+fetchImagePlaceholders initial=false

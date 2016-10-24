@@ -141,7 +141,6 @@ void ProgressTracker::willStartLoading(unsigned long identifier,
           ProgressBarCompletion::LoadEvent &&
       (m_finishedParsing || priority < ResourceLoadPriorityHigh))
     return;
-  DCHECK(!m_progressItems.get(identifier));
   m_progressItems.set(
       identifier,
       wrapUnique(new ProgressItem(progressItemDefaultEstimatedLength)));

@@ -163,6 +163,10 @@ Resource* DocumentLoader::startPreload(Resource::Type type,
   Resource* resource = nullptr;
   switch (type) {
     case Resource::Image:
+      if (m_frame && m_frame->settings() &&
+          m_frame->settings()->fetchImagePlaceholders()) {
+        request.setAllowImagePlaceholder();
+      }
       resource = ImageResource::fetch(request, fetcher());
       break;
     case Resource::Script:

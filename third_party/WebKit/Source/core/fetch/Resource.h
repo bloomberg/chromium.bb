@@ -380,6 +380,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   void setCachePolicyBypassingCache();
   void setLoFiStateOff();
+  void clearRangeRequestHeader();
 
   SharedBuffer* data() const { return m_data.get(); }
   void clearData() { m_data.clear(); }

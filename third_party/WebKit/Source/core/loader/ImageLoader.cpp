@@ -313,6 +313,11 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
     configureRequest(request, bypassBehavior, *m_element,
                      document.clientHintsPreferences());
 
+    if (updateBehavior != UpdateForcedReload && document.settings() &&
+        document.settings()->fetchImagePlaceholders()) {
+      request.setAllowImagePlaceholder();
+    }
+
     newImage = ImageResource::fetch(request, document.fetcher());
 
     if (!newImage && !pageIsBeingDismissed(&document)) {

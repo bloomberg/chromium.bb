@@ -33,6 +33,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/frame/Settings.h"
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleInvalidImage.h"
 #include "platform/weborigin/KURL.h"
@@ -116,6 +117,8 @@ StyleImage* CSSImageSetValue::cacheImage(
     if (crossOrigin != CrossOriginAttributeNotSet)
       request.setCrossOriginAccessControl(document.getSecurityOrigin(),
                                           crossOrigin);
+    if (document.settings() && document.settings()->fetchImagePlaceholders())
+      request.setAllowImagePlaceholder();
 
     if (ImageResource* cachedImage =
             ImageResource::fetch(request, document.fetcher()))

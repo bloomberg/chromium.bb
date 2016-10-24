@@ -26,6 +26,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/Settings.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleInvalidImage.h"
@@ -64,6 +65,8 @@ StyleImage* CSSImageValue::cacheImage(const Document& document,
     if (crossOrigin != CrossOriginAttributeNotSet)
       request.setCrossOriginAccessControl(document.getSecurityOrigin(),
                                           crossOrigin);
+    if (document.settings() && document.settings()->fetchImagePlaceholders())
+      request.setAllowImagePlaceholder();
 
     if (ImageResource* cachedImage =
             ImageResource::fetch(request, document.fetcher()))
