@@ -262,6 +262,9 @@ class RequestCoordinatorTest
   void GetQueuedRequestsDone(
       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
+  void SetupForOfflinerDoneCallbackTest(
+      offline_pages::SavePageRequest* request);
+
   void SendOfflinerDoneCallback(const SavePageRequest& request,
                                 Offliner::RequestStatus status);
 
@@ -288,6 +291,19 @@ class RequestCoordinatorTest
   void SetNetworkConditionsForTest(
       net::NetworkChangeNotifier::ConnectionType connection) {
     coordinator()->SetNetworkConditionsForTest(connection);
+  }
+
+  void SetIsLowEndDeviceForTest(bool is_low_end_device) {
+    coordinator()->is_low_end_device_ = is_low_end_device;
+  }
+
+  void SetProcessingStateForTest(
+      RequestCoordinator::ProcessingWindowState processing_state) {
+    coordinator()->processing_state_ = processing_state;
+  }
+
+  void SetOperationStartTimeForTest(base::Time start_time) {
+    coordinator()->operation_start_time_ = start_time;
   }
 
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
@@ -402,6 +418,33 @@ void RequestCoordinatorTest::GetQueuedRequestsDone(
 void RequestCoordinatorTest::AddRequestDone(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {}
+
+void RequestCoordinatorTest::SetupForOfflinerDoneCallbackTest(
+    offline_pages::SavePageRequest* request) {
+  // Mark request as started and add it to the queue,
+  // then wait for callback to finish.
+  request->MarkAttemptStarted(base::Time::Now());
+  coordinator()->queue()->AddRequest(
+      *request, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // Override the processing callback for test visiblity.
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
+  coordinator()->SetProcessingCallbackForTest(callback);
+
+  // Mock that coordinator is in actively processing state starting now.
+  SetProcessingStateForTest(
+      RequestCoordinator::ProcessingWindowState::IMMEDIATE_WINDOW);
+  SetOperationStartTimeForTest(base::Time::Now());
+
+  // Set up good device conditions for the test.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
+}
 
 void RequestCoordinatorTest::SendOfflinerDoneCallback(
     const SavePageRequest& request, Offliner::RequestStatus status) {
@@ -553,23 +596,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
-  request.MarkAttemptStarted(base::Time::Now());
-  coordinator()->queue()->AddRequest(
-      request,
-      base::Bind(&RequestCoordinatorTest::AddRequestDone,
-                 base::Unretained(this)));
-  PumpLoop();
-
-  // We need to give a callback to the request.
-  base::Callback<void(bool)> callback =
-      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
-                 base::Unretained(this));
-  coordinator()->SetProcessingCallbackForTest(callback);
-
-  // Set up device conditions for the test.
-  DeviceConditions device_conditions(
-      false, 75, net::NetworkChangeNotifier::CONNECTION_3G);
-  SetDeviceConditionsForTest(device_conditions);
+  SetupForOfflinerDoneCallbackTest(&request);
 
   // Call the OfflinerDoneCallback to simulate the page being completed, wait
   // for callbacks.
@@ -598,12 +625,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
-  request.MarkAttemptStarted(base::Time::Now());
-  coordinator()->queue()->AddRequest(
-      request,
-      base::Bind(&RequestCoordinatorTest::AddRequestDone,
-                 base::Unretained(this)));
-  PumpLoop();
+  SetupForOfflinerDoneCallbackTest(&request);
 
   // Add second request to the queue to check handling when first fails.
   offline_pages::SavePageRequest request2(
@@ -614,22 +636,14 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
                  base::Unretained(this)));
   PumpLoop();
 
-  // We need to give a callback to the request.
-  base::Callback<void(bool)> callback =
-      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
-                 base::Unretained(this));
-  coordinator()->SetProcessingCallbackForTest(callback);
-
-  // Set up device conditions for the test.
-  DeviceConditions device_conditions(
-      false, 75, net::NetworkChangeNotifier::CONNECTION_3G);
-  SetDeviceConditionsForTest(device_conditions);
-
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::PRERENDERING_FAILED);
   PumpLoop();
+
+  // For retriable failure, processing should stop and scheduler callback
+  // called (so that request can be retried first next processing window).
   EXPECT_TRUE(immediate_schedule_callback_called());
 
   // TODO(dougarnett): Consider injecting mock RequestPicker for this test
@@ -655,11 +669,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
                                          base::Time::Now(), kUserRequested);
-  request.MarkAttemptStarted(base::Time::Now());
-  coordinator()->queue()->AddRequest(
-      request, base::Bind(&RequestCoordinatorTest::AddRequestDone,
-                          base::Unretained(this)));
-  PumpLoop();
+  SetupForOfflinerDoneCallbackTest(&request);
 
   // Add second request to the queue to check handling when first fails.
   offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
@@ -669,23 +679,15 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
                            base::Unretained(this)));
   PumpLoop();
 
-  // We need to give a callback to the request.
-  base::Callback<void(bool)> callback =
-      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
-                 base::Unretained(this));
-  coordinator()->SetProcessingCallbackForTest(callback);
-
-  // Set up device conditions for the test.
-  DeviceConditions device_conditions(false, 75,
-                                     net::NetworkChangeNotifier::CONNECTION_3G);
-  SetDeviceConditionsForTest(device_conditions);
-
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
   SendOfflinerDoneCallback(
       request, Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY);
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+
+  // For no retry failure, processing should continue to 2nd request so
+  // no scheduler callback yet.
+  EXPECT_FALSE(immediate_schedule_callback_called());
 
   // TODO(dougarnett): Consider injecting mock RequestPicker for this test
   // and verifying that there is as attempt to pick another request following
@@ -708,22 +710,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
-  request.MarkAttemptStarted(base::Time::Now());
-  coordinator()->queue()->AddRequest(
-      request, base::Bind(&RequestCoordinatorTest::AddRequestDone,
-                          base::Unretained(this)));
-  PumpLoop();
-
-  // We need to give a callback to the request.
-  base::Callback<void(bool)> callback =
-      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
-                 base::Unretained(this));
-  coordinator()->SetProcessingCallbackForTest(callback);
-
-  // Set up device conditions for the test.
-  DeviceConditions device_conditions(false, 75,
-                                     net::NetworkChangeNotifier::CONNECTION_3G);
-  SetDeviceConditionsForTest(device_conditions);
+  SetupForOfflinerDoneCallbackTest(&request);
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
@@ -747,22 +734,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
                                          base::Time::Now(), kUserRequested);
-  request.MarkAttemptStarted(base::Time::Now());
-  coordinator()->queue()->AddRequest(
-      request, base::Bind(&RequestCoordinatorTest::AddRequestDone,
-                          base::Unretained(this)));
-  PumpLoop();
-
-  // We need to give a callback to the request.
-  base::Callback<void(bool)> callback =
-      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
-                 base::Unretained(this));
-  coordinator()->SetProcessingCallbackForTest(callback);
-
-  // Set up device conditions for the test.
-  DeviceConditions device_conditions(false, 75,
-                                     net::NetworkChangeNotifier::CONNECTION_3G);
-  SetDeviceConditionsForTest(device_conditions);
+  SetupForOfflinerDoneCallbackTest(&request);
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
@@ -1107,9 +1079,8 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
 }
 
 TEST_F(RequestCoordinatorTest, WatchdogTimeoutForImmediateProcessing) {
-  // Test only applies on non-svelte device.
-  if (base::SysInfo::IsLowEndDevice())
-    return;
+  // If low end device, pretend it is not so that immediate start happens.
+  SetIsLowEndDeviceForTest(false);
 
   // Set good network connection so that adding request will trigger
   // immediate processing.

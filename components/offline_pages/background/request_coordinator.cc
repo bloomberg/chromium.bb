@@ -122,7 +122,8 @@ RequestCoordinator::RequestCoordinator(
     std::unique_ptr<Scheduler> scheduler,
     net::NetworkQualityEstimator::NetworkQualityProvider*
         network_quality_estimator)
-    : is_busy_(false),
+    : is_low_end_device_(base::SysInfo::IsLowEndDevice()),
+      is_busy_(false),
       is_starting_(false),
       processing_state_(ProcessingWindowState::STOPPED),
       use_test_connection_type_(false),
@@ -468,8 +469,8 @@ RequestCoordinator::TryImmediateStart() {
     return OfflinerImmediateStartStatus::BUSY;
 
   // Make sure we are not on svelte device to start immediately.
-  // Let the scheduler know we are done processing and failed due to svelte.
-  if (base::SysInfo::IsLowEndDevice()) {
+  if (is_low_end_device_) {
+    // Let the scheduler know we are done processing and failed due to svelte.
     immediate_schedule_callback_.Run(false);
     return OfflinerImmediateStartStatus::NOT_STARTED_ON_SVELTE;
   }
@@ -499,13 +500,21 @@ RequestCoordinator::TryImmediateStart() {
 }
 
 void RequestCoordinator::TryNextRequest() {
+  base::TimeDelta processing_time_budget;
+  if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
+    processing_time_budget = base::TimeDelta::FromSeconds(
+        policy_->GetProcessingTimeBudgetWhenBackgroundScheduledInSeconds());
+  } else {
+    DCHECK(processing_state_ == ProcessingWindowState::IMMEDIATE_WINDOW);
+    processing_time_budget = base::TimeDelta::FromSeconds(
+        policy_->GetProcessingTimeBudgetForImmediateLoadInSeconds());
+  }
+
   // If there is no time left in the budget, return to the scheduler.
   // We do not remove the pending task that was set up earlier in case
   // we run out of time, so the background scheduler will return to us
   // at the next opportunity to run background tasks.
-  if (base::Time::Now() - operation_start_time_ >
-      base::TimeDelta::FromSeconds(
-          policy_->GetBackgroundProcessingTimeBudgetSeconds())) {
+  if ((base::Time::Now() - operation_start_time_) > processing_time_budget) {
     is_starting_ = false;
 
     // Let the scheduler know we are done processing.
