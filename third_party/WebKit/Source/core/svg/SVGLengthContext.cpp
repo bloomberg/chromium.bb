@@ -373,15 +373,15 @@ float SVGLengthContext::convertValueFromUserUnits(
 
 float SVGLengthContext::convertValueFromUserUnitsToCHS(float value) const {
   const ComputedStyle* style = computedStyleForLengthResolving(m_context);
-  const SimpleFontData* fontData = style->font().primaryFont();
-  if (!style || !fontData)
+  if (!style)
     return 0;
-
+  const SimpleFontData* fontData = style->font().primaryFont();
+  if (!fontData)
+    return 0;
   float zeroWidth =
       fontData->getFontMetrics().zeroWidth() / style->effectiveZoom();
   if (!zeroWidth)
     return 0;
-
   return value / zeroWidth;
 }
 
@@ -389,21 +389,20 @@ float SVGLengthContext::convertValueFromCHSToUserUnits(float value) const {
   const ComputedStyle* style = computedStyleForLengthResolving(m_context);
   if (!style)
     return 0;
-
   const SimpleFontData* fontData = style->font().primaryFont();
   if (!fontData)
     return 0;
-
   return value * fontData->getFontMetrics().zeroWidth() /
          style->effectiveZoom();
 }
 
 float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const {
   const ComputedStyle* style = computedStyleForLengthResolving(m_context);
-  const SimpleFontData* fontData = style->font().primaryFont();
-  if (!style || !fontData)
+  if (!style)
     return 0;
-
+  const SimpleFontData* fontData = style->font().primaryFont();
+  if (!fontData)
+    return 0;
   // Use of ceil allows a pixel match to the W3Cs expected output of
   // coords-units-03-b.svg, if this causes problems in real world cases maybe it
   // would be best to remove this.
@@ -411,16 +410,16 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const {
       ceilf(fontData->getFontMetrics().xHeight() / style->effectiveZoom());
   if (!xHeight)
     return 0;
-
   return value / xHeight;
 }
 
 float SVGLengthContext::convertValueFromEXSToUserUnits(float value) const {
   const ComputedStyle* style = computedStyleForLengthResolving(m_context);
-  const SimpleFontData* fontData = style->font().primaryFont();
-  if (!style || !fontData)
+  if (!style)
     return 0;
-
+  const SimpleFontData* fontData = style->font().primaryFont();
+  if (!fontData)
+    return 0;
   // Use of ceil allows a pixel match to the W3Cs expected output of
   // coords-units-03-b.svg, if this causes problems in real world cases maybe it
   // would be best to remove this.
