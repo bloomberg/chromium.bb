@@ -105,7 +105,8 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   void StartLoadAndSetActivationState(ActivationState activation_state) {
     agent_as_rfo()->DidStartProvisionalLoad();
     EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
-        SubresourceFilterMsg_ActivateForProvisionalLoad(0, activation_state)));
+        SubresourceFilterMsg_ActivateForProvisionalLoad(0, activation_state,
+                                                        GURL())));
     agent_as_rfo()->DidCommitProvisionalLoad(
         true /* is_new_navigation */, false /* is_same_page_navigation */);
   }
@@ -232,7 +233,7 @@ TEST_F(SubresourceFilterAgentTest,
   agent_as_rfo()->DidStartProvisionalLoad();
   EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
       SubresourceFilterMsg_ActivateForProvisionalLoad(
-          0, ActivationState::ENABLED)));
+          0, ActivationState::ENABLED, GURL())));
   agent_as_rfo()->DidStartProvisionalLoad();
   agent_as_rfo()->DidCommitProvisionalLoad(true /* is_new_navigation */,
                                            false /* is_same_page_navigation */);

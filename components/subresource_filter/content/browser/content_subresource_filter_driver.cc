@@ -16,11 +16,12 @@ ContentSubresourceFilterDriver::ContentSubresourceFilterDriver(
 ContentSubresourceFilterDriver::~ContentSubresourceFilterDriver() {}
 
 void ContentSubresourceFilterDriver::ActivateForProvisionalLoad(
-    ActivationState activation_state) {
+    ActivationState activation_state,
+    const GURL& url) {
   // Must use legacy IPC to ensure the activation message arrives in-order, i.e.
   // before the load is committed on the renderer side.
   render_frame_host_->Send(new SubresourceFilterMsg_ActivateForProvisionalLoad(
-      render_frame_host_->GetRoutingID(), activation_state));
+      render_frame_host_->GetRoutingID(), activation_state, url));
 }
 
 }  // namespace subresource_filter

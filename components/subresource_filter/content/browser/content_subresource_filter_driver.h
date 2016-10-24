@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 
+class GURL;
+
 namespace content {
 class RenderFrameHost;
 }  // namespace content
@@ -24,7 +26,8 @@ class ContentSubresourceFilterDriver {
 
   // Instructs the agent on the renderer to set up the subresource filter for
   // the currently ongoing provisional document load in the frame.
-  virtual void ActivateForProvisionalLoad(ActivationState activation_state);
+  virtual void ActivateForProvisionalLoad(ActivationState activation_state,
+                                          const GURL& url);
 
  private:
   // The RenderFrameHost that this driver belongs to.

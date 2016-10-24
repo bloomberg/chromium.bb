@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "url/gurl.h"
 
 class GURL;
 
@@ -56,7 +57,8 @@ class SubresourceFilterAgent
   virtual void SignalFirstSubresourceDisallowedForCommittedLoad();
 
  private:
-  void ActivateForProvisionalLoad(ActivationState activation_state);
+  void OnActivateForProvisionalLoad(ActivationState activation_state,
+                                    const GURL& url);
   void RecordHistogramsOnLoadCommitted();
   void RecordHistogramsOnLoadFinished();
 
@@ -72,6 +74,7 @@ class SubresourceFilterAgent
   RulesetDealer* ruleset_dealer_;
 
   ActivationState activation_state_for_provisional_load_;
+  GURL url_for_provisional_load_;
   base::WeakPtr<DocumentSubresourceFilter> filter_for_last_committed_load_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgent);

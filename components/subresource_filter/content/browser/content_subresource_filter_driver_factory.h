@@ -76,25 +76,9 @@ class ContentSubresourceFilterDriverFactory
   // Reloads the page and inserts the url to the whitelist.
   void OnReloadRequested();
 
-  // Checks if all preconditions are fulfilled and if so, activates filtering
-  // for the given |render_frame_host|. |url| is used to check web site specific
-  // preconditions and should be the web URL of the page where caller is
-  // intended to activate the Safe Browsing Subresource Filter.
-  // TODO(melandory) While due to crbug.com/621856 we cannot yet get rid of
-  // SubresourceFilterNavigationThrottle, it would still make sense to change
-  // its semantics so that its only responsibility is to emulate
-  // DidRedirectNavigation and ReadyToCommitNavigation for us before we get
-  // these from WebContentsObserver for free. Then, the throttle would no longer
-  // contain any subresource filter specific logic, and those pieces of logic
-  // would all be moved into here.
-  void ReadyToCommitMainFrameNavigation(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url);
-
   const HostSet& safe_browsing_blacklisted_patterns_set() const {
     return safe_browsing_blacklisted_patterns_;
   }
-  const HostSet& whitelisted_set() const { return whitelisted_hosts_; }
   ActivationState activation_state() { return activation_state_; }
 
  private:
@@ -117,11 +101,10 @@ class ContentSubresourceFilterDriverFactory
   // content::WebContentsObserver:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
@@ -131,7 +114,11 @@ class ContentSubresourceFilterDriverFactory
   void ActivateForFrameHostIfNeeded(content::RenderFrameHost* render_frame_host,
                                     const GURL& url);
 
-  void set_activation_state(const ActivationState& new_activation_state);
+  // Internal implementation of ReadyToCommitNavigation which doesn't use
+  // NavigationHandle to ease unit tests.
+  void ReadyToCommitNavigationInternal(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url);
 
   bool IsHit(const GURL& url) const;
 

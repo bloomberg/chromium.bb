@@ -10,6 +10,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_list.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -71,13 +72,12 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
 
 bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
     const GURL& url) const {
-  return whitelisted_set().find(url.host()) != whitelisted_set().end();
+  return whitelisted_hosts_.find(url.host()) != whitelisted_hosts_.end();
 }
 
 bool ContentSubresourceFilterDriverFactory::IsHit(const GURL& url) const {
-  return safe_browsing_blacklisted_patterns_set().find(url.host() +
-                                                       url.path()) !=
-         safe_browsing_blacklisted_patterns_set().end();
+  return safe_browsing_blacklisted_patterns_.find(url.host() + url.path()) !=
+         safe_browsing_blacklisted_patterns_.end();
 }
 
 
@@ -113,15 +113,6 @@ void ContentSubresourceFilterDriverFactory::AddToActivationHitsSet(
     safe_browsing_blacklisted_patterns_.insert(url.host() + url.path());
 }
 
-void ContentSubresourceFilterDriverFactory::ReadyToCommitMainFrameNavigation(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url) {
-  if (ShouldActivateForMainFrameURL(url)) {
-    set_activation_state(GetMaximumActivationState());
-    ActivateForFrameHostIfNeeded(render_frame_host, url);
-  }
-}
-
 bool ContentSubresourceFilterDriverFactory::ShouldActivateForMainFrameURL(
     const GURL& url) const {
   if (GetCurrentActivationScope() == ActivationScope::ALL_SITES)
@@ -136,7 +127,7 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
     const GURL& url) {
   if (activation_state_ != ActivationState::DISABLED) {
     DriverFromFrameHost(render_frame_host)
-        ->ActivateForProvisionalLoad(GetMaximumActivationState());
+        ->ActivateForProvisionalLoad(GetMaximumActivationState(), url);
   }
 }
 
@@ -172,18 +163,21 @@ void ContentSubresourceFilterDriverFactory::RenderFrameDeleted(
   frame_drivers_.erase(render_frame_host);
 }
 
-void ContentSubresourceFilterDriverFactory::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
+void ContentSubresourceFilterDriverFactory::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
   safe_browsing_blacklisted_patterns_.clear();
-  if (!render_frame_host->GetParent()) {
+  if (navigation_handle->IsInMainFrame()) {
     client_->ToggleNotificationVisibility(false);
-    set_activation_state(ActivationState::DISABLED);
-  } else {
-    ActivateForFrameHostIfNeeded(render_frame_host, validated_url);
+    activation_state_ = ActivationState::DISABLED;
   }
+}
+
+void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  content::RenderFrameHost* render_frame_host =
+      navigation_handle->GetRenderFrameHost();
+  GURL url = navigation_handle->GetURL();
+  ReadyToCommitNavigationInternal(render_frame_host, url);
 }
 
 bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
@@ -198,9 +192,19 @@ bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
   return handled;
 }
 
-void ContentSubresourceFilterDriverFactory::set_activation_state(
-    const ActivationState& new_activation_state) {
-  activation_state_ = new_activation_state;
+void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url) {
+  if (!render_frame_host->GetParent()) {
+    if (ShouldActivateForMainFrameURL(url)) {
+      activation_state_ = GetMaximumActivationState();
+      ActivateForFrameHostIfNeeded(render_frame_host, url);
+    } else {
+      activation_state_ = ActivationState::DISABLED;
+    }
+  } else {
+    ActivateForFrameHostIfNeeded(render_frame_host, url);
+  }
 }
 
 }  // namespace subresource_filter

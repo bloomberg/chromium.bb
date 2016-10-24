@@ -10,8 +10,6 @@ static_library("browser") {
     "content_subresource_filter_driver.h",
     "content_subresource_filter_driver_factory.cc",
     "content_subresource_filter_driver_factory.h",
-    "subresource_filter_navigation_throttle.cc",
-    "subresource_filter_navigation_throttle.h",
   ]
   deps = [
     "//base",
@@ -31,7 +29,6 @@ source_set("unit_tests") {
   sources = [
     "content_ruleset_distributor_unittest.cc",
     "content_subresource_filter_driver_factory_unittest.cc",
-    "subresource_filter_navigation_throttle_unittests.cc",
   ]
   deps = [
     ":browser",

@@ -88,7 +88,7 @@ class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
 
   ~MockSubresourceFilterDriver() override = default;
 
-  MOCK_METHOD1(ActivateForProvisionalLoad, void(ActivationState));
+  MOCK_METHOD2(ActivateForProvisionalLoad, void(ActivationState, const GURL&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
@@ -170,22 +170,19 @@ class ContentSubresourceFilterDriverFactoryTest
                                            content::RenderFrameHost* rfh,
                                            const GURL& url,
                                            bool should_activate) {
-    EXPECT_CALL(*driver, ActivateForProvisionalLoad(::testing::_))
+    EXPECT_CALL(*driver, ActivateForProvisionalLoad(::testing::_, ::testing::_))
         .Times(should_activate);
-    factory()->ReadyToCommitMainFrameNavigation(rfh, url);
+    factory()->ReadyToCommitNavigationInternal(rfh, url);
     ::testing::Mock::VerifyAndClearExpectations(driver);
   }
 
   void NavigateAndCommitSubframe(const GURL& url, bool should_activate) {
-    EXPECT_CALL(*subframe_driver(), ActivateForProvisionalLoad(::testing::_))
+    EXPECT_CALL(*subframe_driver(),
+                ActivateForProvisionalLoad(::testing::_, ::testing::_))
         .Times(should_activate);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
 
-    factory()->DidStartProvisionalLoadForFrame(
-        subframe_rfh(), url /* validated_url */, false /* is_error_page */,
-        false /* is_iframe_srcdoc */);
-    factory()->DidCommitProvisionalLoadForFrame(
-        subframe_rfh(), url, ui::PageTransition::PAGE_TRANSITION_AUTO_SUBFRAME);
+    factory()->ReadyToCommitNavigationInternal(subframe_rfh(), url);
     ::testing::Mock::VerifyAndClearExpectations(subframe_driver());
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
@@ -214,8 +211,10 @@ class ContentSubresourceFilterDriverFactoryTest
 
     BlacklistURLWithRedirectsNavigateMainFrameAndSubrame(
         bad_url, redirects, GURL(kExampleUrl), should_activate);
-    EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
-    EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
+    EXPECT_CALL(*driver(),
+                ActivateForProvisionalLoad(::testing::_, ::testing::_))
+        .Times(0);
+    EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(1);
     content::RenderFrameHostTester::For(main_rfh())
         ->SimulateNavigationCommit(GURL(kExampleUrl));
     ::testing::Mock::VerifyAndClearExpectations(driver());

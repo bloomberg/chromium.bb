@@ -9,6 +9,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
+#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START SubresourceFilterMsgStart
 
@@ -29,8 +30,9 @@ IPC_MESSAGE_CONTROL1(SubresourceFilterMsg_SetRulesetForProcess,
 // ongoing provisional document load in a frame. The message must arrive after
 // the provisional load starts, but before it is committed on the renderer side.
 // If no message arrives, the default behavior is ActivationState::DISABLED.
-IPC_MESSAGE_ROUTED1(SubresourceFilterMsg_ActivateForProvisionalLoad,
-                    subresource_filter::ActivationState /* activation_state */);
+IPC_MESSAGE_ROUTED2(SubresourceFilterMsg_ActivateForProvisionalLoad,
+                    subresource_filter::ActivationState /* activation_state */,
+                    GURL /* url */);
 
 // ----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
