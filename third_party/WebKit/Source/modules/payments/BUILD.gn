@@ -21,4 +21,7 @@ blink_modules_sources("payments") {
     "PaymentsValidators.cpp",
     "PaymentsValidators.h",
   ]
+  deps = [
+    "//components/payments:payment_request_blink",
+  ]
 }

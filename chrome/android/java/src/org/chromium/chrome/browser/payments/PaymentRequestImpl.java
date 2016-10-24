@@ -66,7 +66,7 @@ import java.util.Set;
 
 /**
  * Android implementation of the PaymentRequest service defined in
- * third_party/WebKit/public/platform/modules/payments/payment_request.mojom.
+ * components/payments/payment_request.mojom.
  */
 public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Client,
         PaymentApp.InstrumentsCallback, PaymentInstrument.InstrumentDetailsCallback,

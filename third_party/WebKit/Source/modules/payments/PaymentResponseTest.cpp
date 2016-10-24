@@ -129,10 +129,9 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   input->shipping_address->country = "US";
   input->shipping_address->language_code = "en";
   input->shipping_address->script_code = "Latn";
-  input->shipping_address->address_line = mojo::WTFArray<WTF::String>::New(3);
-  input->shipping_address->address_line[0] = "340 Main St";
-  input->shipping_address->address_line[1] = "BIN1";
-  input->shipping_address->address_line[2] = "First floor";
+  input->shipping_address->address_line.append("340 Main St");
+  input->shipping_address->address_line.append("BIN1");
+  input->shipping_address->address_line.append("First floor");
 
   PaymentResponse output(std::move(input), new MockPaymentCompleter);
   ScriptValue jsonObject = output.toJSONForBinding(scope.getScriptState());

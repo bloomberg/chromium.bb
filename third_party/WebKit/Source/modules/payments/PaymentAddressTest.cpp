@@ -13,10 +13,9 @@ namespace {
 TEST(PaymentAddressTest, ValuesAreCopiedOver) {
   mojom::blink::PaymentAddressPtr input = mojom::blink::PaymentAddress::New();
   input->country = "US";
-  input->address_line = mojo::WTFArray<WTF::String>::New(3);
-  input->address_line[0] = "340 Main St";
-  input->address_line[1] = "BIN1";
-  input->address_line[2] = "First floor";
+  input->address_line.append("340 Main St");
+  input->address_line.append("BIN1");
+  input->address_line.append("First floor");
   input->region = "CA";
   input->city = "Los Angeles";
   input->dependent_locality = "Venice";

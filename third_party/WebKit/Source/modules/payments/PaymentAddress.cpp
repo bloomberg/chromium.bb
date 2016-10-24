@@ -11,7 +11,7 @@ namespace blink {
 
 PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
     : m_country(address->country),
-      m_addressLine(address->address_line.PassStorage()),
+      m_addressLine(address->address_line),
       m_region(address->region),
       m_city(address->city),
       m_dependentLocality(address->dependent_locality),

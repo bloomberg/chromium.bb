@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "components/payments/payment_request.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

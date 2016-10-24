@@ -696,10 +696,10 @@ mojom("new_wrapper_types_mojo_bindings") {
 
 mojom("android_mojo_bindings") {
   sources = [
-    "platform/modules/payments/payment_request.mojom",
     "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
+    "//components/payments:payment_request",
     "//url/mojo:url_mojom_gurl",
   ]
 
