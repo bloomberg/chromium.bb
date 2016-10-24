@@ -166,6 +166,10 @@ cursors.Cursor.prototype = {
     if (!adjustedNode)
       return null;
 
+    // Make no adjustments if we're within editable content.
+    if (adjustedNode.state.editable)
+      return adjustedNode;
+
     // Selections over line break nodes are broken.
     var parent = adjustedNode.parent;
     var grandparent = parent && parent.parent;
@@ -197,8 +201,13 @@ cursors.Cursor.prototype = {
   get selectionIndex_() {
     var adjustedIndex = this.index_;
 
-    // Selecting things under a line break is currently broken.
-    if (this.node.role == RoleType.inlineTextBox &&
+    if (!this.node)
+      return -1;
+
+    if (this.node.state.editable) {
+      return this.index_ == cursors.NODE_INDEX ? 0 : this.index_;
+    } else if (this.node.role == RoleType.inlineTextBox &&
+    // Selections under a line break are broken.
         this.node.parent && this.node.parent.role != RoleType.lineBreak) {
       if (adjustedIndex == cursors.NODE_INDEX)
         adjustedIndex = 0;
