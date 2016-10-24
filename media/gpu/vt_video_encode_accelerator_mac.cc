@@ -560,6 +560,14 @@ bool VTVideoEncodeAccelerator::ConfigureCompressionSession() {
   rv &= session_property_setter.Set(
       videotoolbox_glue_->kVTCompressionPropertyKey_AllowFrameReordering(),
       false);
+  // Limit keyframe output to 4 minutes, see crbug.com/658429.
+  rv &= session_property_setter.Set(
+      videotoolbox_glue_->kVTCompressionPropertyKey_MaxKeyFrameInterval(),
+      7200);
+  rv &= session_property_setter.Set(
+      videotoolbox_glue_
+          ->kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration(),
+      240);
   DLOG_IF(ERROR, !rv) << " Setting session property failed.";
   return rv;
 }
