@@ -11,6 +11,7 @@ import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
@@ -125,7 +126,7 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
     }
 
     /** Attempts to show the sign in promo. If the user dismissed it before, it will not be shown.*/
-    public void maybeShow() {
+    private void maybeShow() {
         if (mVisible) return;
         mVisible = true;
 
@@ -136,7 +137,7 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
     }
 
     /** Hides the sign in promo. */
-    public void hide() {
+    private void hide() {
         if (!mVisible) return;
         mVisible = false;
 
@@ -154,7 +155,8 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
         mObserver.unregister();
     }
 
-    private class SigninObserver
+    @VisibleForTesting
+    class SigninObserver
             implements SignInStateObserver, SignInAllowedObserver, DestructionObserver {
         private final SigninManager mSigninManager;
         private final NewTabPageAdapter mAdapter;

@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 
 import java.util.ArrayList;
@@ -138,6 +139,24 @@ public class NewTabPageAdapter
             protected List<TreeNode> getChildren() {
                 return mChildren;
             }
+
+            @Override
+            public void onItemRangeChanged(TreeNode child, int index, int count) {
+                if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
+                super.onItemRangeChanged(child, index, count);
+            }
+
+            @Override
+            public void onItemRangeInserted(TreeNode child, int index, int count) {
+                if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
+                super.onItemRangeInserted(child, index, count);
+            }
+
+            @Override
+            public void onItemRangeRemoved(TreeNode child, int index, int count) {
+                if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
+                super.onItemRangeRemoved(child, index, count);
+            }
         };
 
         mSigninPromo = new SignInPromo(mRoot, this);
@@ -155,6 +174,7 @@ public class NewTabPageAdapter
      */
     public void resetSections(boolean alwaysAllowEmptySections) {
         mSections.clear();
+        mChildren.clear();
 
         SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
         int[] categories = suggestionsSource.getCategories();
@@ -341,11 +361,7 @@ public class NewTabPageAdapter
     }
 
     public int getFirstHeaderPosition() {
-        int count = getItemCount();
-        for (int i = 0; i < count; i++) {
-            if (getItemViewType(i) == ItemViewType.HEADER) return i;
-        }
-        return RecyclerView.NO_POSITION;
+        return getFirstPositionForType(ItemViewType.HEADER);
     }
 
     public int getFirstCardPosition() {
@@ -353,10 +369,6 @@ public class NewTabPageAdapter
             if (CardViewHolder.isCard(getItemViewType(i))) return i;
         }
         return RecyclerView.NO_POSITION;
-    }
-
-    public int getFooterPosition() {
-        return getChildPositionOffset(mFooter);
     }
 
     public int getBottomSpacerPosition() {
@@ -409,17 +421,27 @@ public class NewTabPageAdapter
         notifyDataSetChanged();
     }
 
+    private void updateAllDismissedVisibility() {
+        boolean showAllDismissed = hasAllBeenDismissed();
+        if (showAllDismissed == mChildren.contains(mAllDismissed)) return;
+
+        if (showAllDismissed) {
+            assert mChildren.contains(mFooter);
+            mChildren.set(mChildren.indexOf(mFooter), mAllDismissed);
+        } else {
+            assert mChildren.contains(mAllDismissed);
+            mChildren.set(mChildren.indexOf(mAllDismissed), mFooter);
+        }
+        notifyItemChanged(getLastContentItemPosition());
+    }
+
     private void removeSection(SuggestionsSection section) {
         mSections.remove(section.getCategory());
         int startPos = getChildPositionOffset(section);
         mChildren.remove(section);
         notifyItemRangeRemoved(startPos, section.getItemCount());
 
-        if (hasAllBeenDismissed()) {
-            int footerPosition = getFooterPosition();
-            mChildren.set(mChildren.indexOf(mFooter), mAllDismissed);
-            notifyItemChanged(footerPosition);
-        }
+        updateAllDismissedVisibility();
 
         notifyItemChanged(getBottomSpacerPosition());
     }
@@ -427,24 +449,25 @@ public class NewTabPageAdapter
     @Override
     public void onItemRangeChanged(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
-        if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemRangeChanged(itemPosition, itemCount);
     }
 
     @Override
     public void onItemRangeInserted(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
-        if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemRangeInserted(itemPosition, itemCount);
         notifyItemChanged(getItemCount() - 1); // Refresh the spacer too.
+
+        updateAllDismissedVisibility();
     }
 
     @Override
     public void onItemRangeRemoved(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
-        if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemRangeRemoved(itemPosition, itemCount);
         notifyItemChanged(getItemCount() - 1); // Refresh the spacer too.
+
+        updateAllDismissedVisibility();
     }
 
     @Override
@@ -492,6 +515,7 @@ public class NewTabPageAdapter
     }
 
     private void dismissSection(SuggestionsSection section) {
+        assert SnippetsConfig.isSectionDismissalEnabled();
         mNewTabPageManager.getSuggestionsSource().dismissCategory(section.getCategory());
         removeSection(section);
     }
@@ -517,12 +541,6 @@ public class NewTabPageAdapter
     private void dismissPromo() {
         // TODO(dgn): accessibility announcement.
         mSigninPromo.dismiss();
-
-        if (hasAllBeenDismissed()) {
-            int footerPosition = getFooterPosition();
-            mChildren.set(mChildren.indexOf(mFooter), mAllDismissed);
-            notifyItemChanged(footerPosition);
-        }
     }
 
     /**
@@ -565,6 +583,15 @@ public class NewTabPageAdapter
     @VisibleForTesting
     SnippetArticle getSuggestionAt(int position) {
         return mRoot.getSuggestionAt(position);
+    }
+
+    @VisibleForTesting
+    int getFirstPositionForType(@ItemViewType int viewType) {
+        int count = getItemCount();
+        for (int i = 0; i < count; i++) {
+            if (getItemViewType(i) == viewType) return i;
+        }
+        return RecyclerView.NO_POSITION;
     }
 
     private void announceItemRemoved(String suggestionTitle) {

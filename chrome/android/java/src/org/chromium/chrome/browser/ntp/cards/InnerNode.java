@@ -31,6 +31,10 @@ public abstract class InnerNode extends ChildNode implements NodeParent {
 
     private int getStartingOffsetForChildIndex(int childIndex) {
         List<TreeNode> children = getChildren();
+        if (childIndex < 0 || childIndex >= children.size()) {
+            throw new IndexOutOfBoundsException(childIndex + "/" + children.size());
+        }
+
         int offset = 0;
         for (int i = 0; i < childIndex; i++) {
             offset += children.get(i).getItemCount();

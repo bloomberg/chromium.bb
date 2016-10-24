@@ -18,6 +18,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -39,6 +40,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -46,12 +48,14 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.cards.SignInPromo.SigninObserver;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -63,6 +67,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -75,6 +80,7 @@ public class NewTabPageAdapterTest {
     private FakeSuggestionsSource mSource;
     private NewTabPageAdapter mAdapter;
     private SigninManager mMockSigninManager;
+    private MockNewTabPageManager mNtpManager;
 
     /**
      * Stores information about a section that should be present in the adapter.
@@ -223,6 +229,7 @@ public class NewTabPageAdapterTest {
         mMockSigninManager = mock(SigninManager.class);
         SigninManager.setInstanceForTesting(mMockSigninManager);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
 
         RecordHistogram.disableForTests();
         RecordUserAction.disableForTests();
@@ -232,7 +239,8 @@ public class NewTabPageAdapterTest {
         mSource = new FakeSuggestionsSource();
         mSource.setStatusForCategory(category, CategoryStatus.INITIALIZING);
         mSource.setInfoForCategory(category, createInfo(category, false, true));
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
+        mNtpManager = new MockNewTabPageManager(mSource);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
     }
 
     @After
@@ -240,6 +248,7 @@ public class NewTabPageAdapterTest {
         SigninManager.setInstanceForTesting(null);
         ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
                 .setNewTabPageSigninPromoDismissed(false);
+        SnippetsConfig.setTestEnabledFeatures(null);
     }
 
     /**
@@ -364,7 +373,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testProgressIndicatorDisplay() {
-        int progressPos = mAdapter.getFooterPosition() - 1;
+        int progressPos = mAdapter.getFirstPositionForType(ItemViewType.FOOTER) - 1;
         SuggestionsSection section = mAdapter.getSuggestionsSection(progressPos);
         ProgressItem progress = section.getProgressItemForTesting();
 
@@ -398,20 +407,20 @@ public class NewTabPageAdapterTest {
         assertItemsFor();
 
         // Same when loading a new NTP.
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor();
 
         // Same for CATEGORY_EXPLICITLY_DISABLED.
         mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor(section(5));
         mSource.setStatusForCategory(
                 KnownCategories.ARTICLES, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
         assertItemsFor();
 
         // Same when loading a new NTP.
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor();
     }
 
@@ -432,7 +441,7 @@ public class NewTabPageAdapterTest {
         assertItemsFor(section(4));
 
         // But it disappears when loading a new NTP.
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor();
     }
 
@@ -453,7 +462,8 @@ public class NewTabPageAdapterTest {
         suggestionsSource.setInfoForCategory(category, createInfo(category, false, true));
 
         // 1.1 - Initial state
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
+        mNtpManager = new MockNewTabPageManager(suggestionsSource);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor(sectionWithStatusCard());
 
         // 1.2 - With suggestions
@@ -476,7 +486,8 @@ public class NewTabPageAdapterTest {
         suggestionsSource.setInfoForCategory(category, createInfo(category, false, false));
 
         // 2.1 - Initial state
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
+        mNtpManager = new MockNewTabPageManager(suggestionsSource);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor();
 
         // 2.2 - With suggestions
@@ -507,7 +518,8 @@ public class NewTabPageAdapterTest {
         suggestionsSource.setInfoForCategory(category, createInfo(category, true, true));
 
         // 1.1 - Initial state.
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
+        mNtpManager = new MockNewTabPageManager(suggestionsSource);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor(sectionWithStatusCardAndMoreButton());
 
         // 1.2 - With suggestions.
@@ -530,7 +542,8 @@ public class NewTabPageAdapterTest {
         suggestionsSource.setInfoForCategory(category, createInfo(category, false, true));
 
         // 2.1 - Initial state.
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
+        mNtpManager = new MockNewTabPageManager(suggestionsSource);
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null);
         assertItemsFor(sectionWithStatusCard());
 
         // 2.2 - With suggestions.
@@ -588,7 +601,7 @@ public class NewTabPageAdapterTest {
         mSource.setInfoForCategory(dynamicCategory1, createInfo(dynamicCategory1, true, false));
         mSource.setStatusForCategory(dynamicCategory1, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(dynamicCategory1, dynamics1);
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null); // Reload
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null); // Reload
         assertItemsFor(section(3), sectionWithMoreButton(5));
 
         int dynamicCategory2 = 1011;
@@ -596,7 +609,7 @@ public class NewTabPageAdapterTest {
         mSource.setInfoForCategory(dynamicCategory2, createInfo(dynamicCategory1, false, false));
         mSource.setStatusForCategory(dynamicCategory2, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(dynamicCategory2, dynamics2);
-        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null); // Reload
+        mAdapter = new NewTabPageAdapter(mNtpManager, null, null); // Reload
         assertItemsFor(section(3), sectionWithMoreButton(5), section(11));
     }
 
@@ -830,6 +843,107 @@ public class NewTabPageAdapterTest {
         assertEquals(5, adapter.getChildren().size());
         // The items below the signin promo move up, footer is now at the position of the promo.
         assertEquals(ItemViewType.FOOTER, adapter.getItemViewType(signInPromoIndex));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testAllDismissedVisibility() {
+        SnippetsConfig.setTestEnabledFeatures(new HashSet<String>() {
+            { add(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL); }
+        });
+        SigninObserver signinObserver = (SigninObserver) mNtpManager.mDestructionObserver;
+
+        // By default, there is no All Dismissed item.
+        // Adapter content:
+        // Idx | Item
+        // ----|--------------------
+        // 0   | Above-the-fold
+        // 1   | Header
+        // 2   | Status
+        // 3   | Action
+        // 4   | Progress Indicator
+        // 5   | Footer
+        // 6   | Spacer
+        assertEquals(5, mAdapter.getFirstPositionForType(ItemViewType.FOOTER));
+        assertEquals(RecyclerView.NO_POSITION,
+                mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
+
+        // When we remove the section, the All Dismissed item should be there.
+        mAdapter.dismissItem(2);
+        // Adapter content:
+        // Idx | Item
+        // ----|--------------------
+        // 0   | Above-the-fold
+        // 1   | All Dismissed
+        // 2   | Spacer
+        assertEquals(
+                RecyclerView.NO_POSITION, mAdapter.getFirstPositionForType(ItemViewType.FOOTER));
+        assertEquals(1, mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
+
+        // On Sign out, the sign in promo should come and the All Dismissed item be removed.
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        signinObserver.onSignedOut();
+        // Adapter content:
+        // Idx | Item
+        // ----|--------------------
+        // 0   | Above-the-fold
+        // 1   | Sign In Promo
+        // 2   | Footer
+        // 3   | Spacer
+        assertEquals(2, mAdapter.getFirstPositionForType(ItemViewType.FOOTER));
+        assertEquals(RecyclerView.NO_POSITION,
+                mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
+
+        // When sign in is disabled, the promo is removed and the All Dismissed item can come back.
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(false);
+        signinObserver.onSignInAllowedChanged();
+        // Adapter content:
+        // Idx | Item
+        // ----|--------------------
+        // 0   | Above-the-fold
+        // 1   | All Dismissed
+        // 2   | Spacer
+        assertEquals(
+                RecyclerView.NO_POSITION, mAdapter.getFirstPositionForType(ItemViewType.FOOTER));
+        assertEquals(1, mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
+
+        // Re-enabling sign in should only bring the promo back, thus removing the AllDismissed item
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
+        signinObserver.onSignInAllowedChanged();
+        // Adapter content:
+        // Idx | Item
+        // ----|--------------------
+        // 0   | Above-the-fold
+        // 1   | Sign In Promo
+        // 2   | Footer
+        // 3   | Spacer
+        assertEquals(ItemViewType.FOOTER, mAdapter.getItemViewType(2));
+        assertEquals(RecyclerView.NO_POSITION,
+                mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
+
+        // Prepare some suggestions. They should not load because the category is dismissed on
+        // the current NTP.
+        mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, createDummySuggestions(1));
+        mSource.setInfoForCategory(
+                KnownCategories.ARTICLES, createInfo(KnownCategories.ARTICLES, false, false));
+        assertEquals(4, mAdapter.getItemCount()); // TODO(dgn): rewrite with section descriptors.
+
+        // On Sign in, we should reset the sections, bring back suggestions instead of the All
+        // Dismissed item.
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
+        signinObserver.onSignedIn();
+        // Adapter content:
+        // Idx | Item
+        // ----|--------------------
+        // 0   | Above-the-fold
+        // 1   | Header
+        // 2   | Suggestion
+        // 4   | Footer
+        // 5   | Spacer
+        assertEquals(3, mAdapter.getFirstPositionForType(ItemViewType.FOOTER));
+        assertEquals(RecyclerView.NO_POSITION,
+                mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
     }
 
     /** Registers the category with hasMoreButton=false and showIfEmpty=true*/

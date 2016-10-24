@@ -97,7 +97,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
 
     @Override
     public void dismissCategory(@CategoryInt int category) {
-        throw new UnsupportedOperationException();
+        silentlyRemoveCategory(category);
     }
 
     @Override
