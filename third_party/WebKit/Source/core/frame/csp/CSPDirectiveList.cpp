@@ -52,7 +52,6 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
       m_headerType(type),
       m_headerSource(source),
       m_hasSandboxPolicy(false),
-      m_reflectedXSSDisposition(ReflectedXSSUnset),
       m_didSetReferrerPolicy(false),
       m_referrerPolicy(ReferrerPolicyDefault),
       m_strictMixedContentCheckingEnforced(false),
@@ -1071,56 +1070,6 @@ void CSPDirectiveList::enableInsecureRequestsUpgrade(const String& name,
     m_policy->reportValueForEmptyDirective(name, value);
 }
 
-void CSPDirectiveList::parseReflectedXSS(const String& name,
-                                         const String& value) {
-  if (m_reflectedXSSDisposition != ReflectedXSSUnset) {
-    m_policy->reportDuplicateDirective(name);
-    m_reflectedXSSDisposition = ReflectedXSSInvalid;
-    return;
-  }
-
-  if (value.isEmpty()) {
-    m_reflectedXSSDisposition = ReflectedXSSInvalid;
-    m_policy->reportInvalidReflectedXSS(value);
-    return;
-  }
-
-  Vector<UChar> characters;
-  value.appendTo(characters);
-
-  const UChar* position = characters.data();
-  const UChar* end = position + characters.size();
-
-  skipWhile<UChar, isASCIISpace>(position, end);
-  const UChar* begin = position;
-  skipWhile<UChar, isNotASCIISpace>(position, end);
-
-  StringView token(begin, position - begin);
-
-  // value1
-  //       ^
-  if (equalIgnoringCase("allow", token)) {
-    m_reflectedXSSDisposition = AllowReflectedXSS;
-  } else if (equalIgnoringCase("filter", token)) {
-    m_reflectedXSSDisposition = FilterReflectedXSS;
-  } else if (equalIgnoringCase("block", token)) {
-    m_reflectedXSSDisposition = BlockReflectedXSS;
-  } else {
-    m_reflectedXSSDisposition = ReflectedXSSInvalid;
-    m_policy->reportInvalidReflectedXSS(value);
-    return;
-  }
-
-  skipWhile<UChar, isASCIISpace>(position, end);
-  if (position == end && m_reflectedXSSDisposition != ReflectedXSSUnset)
-    return;
-
-  // value1 value2
-  //        ^
-  m_reflectedXSSDisposition = ReflectedXSSInvalid;
-  m_policy->reportInvalidReflectedXSS(value);
-}
-
 void CSPDirectiveList::parseReferrer(const String& name, const String& value) {
   m_didSetReferrerPolicy = true;
 
@@ -1211,8 +1160,6 @@ void CSPDirectiveList::addDirective(const String& name, const String& value) {
     setCSPDirective<SourceListDirective>(name, value, m_formAction);
   } else if (equalIgnoringCase(name, ContentSecurityPolicy::PluginTypes)) {
     setCSPDirective<MediaListDirective>(name, value, m_pluginTypes);
-  } else if (equalIgnoringCase(name, ContentSecurityPolicy::ReflectedXSS)) {
-    parseReflectedXSS(name, value);
   } else if (equalIgnoringCase(name, ContentSecurityPolicy::Referrer)) {
     parseReferrer(name, value);
   } else if (equalIgnoringCase(

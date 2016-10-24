@@ -142,9 +142,6 @@ class CORE_EXPORT CSPDirectiveList
   const String& evalDisabledErrorMessage() const {
     return m_evalDisabledErrorMessage;
   }
-  ReflectedXSSDisposition getReflectedXSSDisposition() const {
-    return m_reflectedXSSDisposition;
-  }
   ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
   bool didSetReferrerPolicy() const { return m_didSetReferrerPolicy; }
   bool isReportOnly() const {
@@ -181,7 +178,6 @@ class CORE_EXPORT CSPDirectiveList
   void parseRequireSRIFor(const String& name, const String& value);
   void parseReportURI(const String& name, const String& value);
   void parsePluginTypes(const String& name, const String& value);
-  void parseReflectedXSS(const String& name, const String& value);
   void parseReferrer(const String& name, const String& value);
   void addDirective(const String& name, const String& value);
   void applySandboxPolicy(const String& name, const String& sandboxPolicy);
@@ -281,7 +277,6 @@ class CORE_EXPORT CSPDirectiveList
   ContentSecurityPolicyHeaderSource m_headerSource;
 
   bool m_hasSandboxPolicy;
-  ReflectedXSSDisposition m_reflectedXSSDisposition;
 
   bool m_didSetReferrerPolicy;
   ReferrerPolicy m_referrerPolicy;

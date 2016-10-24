@@ -46,11 +46,9 @@ class XSSInfo {
  public:
   static std::unique_ptr<XSSInfo> create(const String& originalURL,
                                          bool didBlockEntirePage,
-                                         bool didSendXSSProtectionHeader,
-                                         bool didSendCSPHeader) {
+                                         bool didSendXSSProtectionHeader) {
     return wrapUnique(new XSSInfo(originalURL, didBlockEntirePage,
-                                  didSendXSSProtectionHeader,
-                                  didSendCSPHeader));
+                                  didSendXSSProtectionHeader));
   }
 
   String buildConsoleError() const;
@@ -59,18 +57,15 @@ class XSSInfo {
   String m_originalURL;
   bool m_didBlockEntirePage;
   bool m_didSendXSSProtectionHeader;
-  bool m_didSendCSPHeader;
   TextPosition m_textPosition;
 
  private:
   XSSInfo(const String& originalURL,
           bool didBlockEntirePage,
-          bool didSendXSSProtectionHeader,
-          bool didSendCSPHeader)
+          bool didSendXSSProtectionHeader)
       : m_originalURL(originalURL.isolatedCopy()),
         m_didBlockEntirePage(didBlockEntirePage),
-        m_didSendXSSProtectionHeader(didSendXSSProtectionHeader),
-        m_didSendCSPHeader(didSendCSPHeader) {}
+        m_didSendXSSProtectionHeader(didSendXSSProtectionHeader) {}
 };
 
 class XSSAuditorDelegate final {

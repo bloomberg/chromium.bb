@@ -92,7 +92,6 @@ const char ContentSecurityPolicy::ChildSrc[] = "child-src";
 const char ContentSecurityPolicy::FormAction[] = "form-action";
 const char ContentSecurityPolicy::FrameAncestors[] = "frame-ancestors";
 const char ContentSecurityPolicy::PluginTypes[] = "plugin-types";
-const char ContentSecurityPolicy::ReflectedXSS[] = "reflected-xss";
 const char ContentSecurityPolicy::Referrer[] = "referrer";
 
 // CSP Editor's Draft:
@@ -127,7 +126,6 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name) {
       equalIgnoringCase(name, FormAction) ||
       equalIgnoringCase(name, FrameAncestors) ||
       equalIgnoringCase(name, PluginTypes) ||
-      equalIgnoringCase(name, ReflectedXSS) ||
       equalIgnoringCase(name, Referrer) ||
       equalIgnoringCase(name, ManifestSrc) ||
       equalIgnoringCase(name, BlockAllMixedContent) ||
@@ -1010,16 +1008,6 @@ bool ContentSecurityPolicy::isActive() const {
   return !m_policies.isEmpty();
 }
 
-ReflectedXSSDisposition ContentSecurityPolicy::getReflectedXSSDisposition()
-    const {
-  ReflectedXSSDisposition disposition = ReflectedXSSUnset;
-  for (const auto& policy : m_policies) {
-    if (policy->getReflectedXSSDisposition() > disposition)
-      disposition = std::max(disposition, policy->getReflectedXSSDisposition());
-  }
-  return disposition;
-}
-
 bool ContentSecurityPolicy::didSetReferrerPolicy() const {
   for (const auto& policy : m_policies) {
     if (policy->didSetReferrerPolicy())
@@ -1404,15 +1392,6 @@ void ContentSecurityPolicy::reportInvalidSandboxFlags(
   logToConsole(
       "Error while parsing the 'sandbox' Content Security Policy directive: " +
       invalidFlags);
-}
-
-void ContentSecurityPolicy::reportInvalidReflectedXSS(
-    const String& invalidValue) {
-  logToConsole(
-      "The 'reflected-xss' Content Security Policy directive has the invalid "
-      "value \"" +
-      invalidValue +
-      "\". Valid values are \"allow\", \"filter\", and \"block\".");
 }
 
 void ContentSecurityPolicy::reportInvalidRequireSRIForTokens(

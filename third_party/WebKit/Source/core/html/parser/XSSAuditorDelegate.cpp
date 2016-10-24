@@ -52,18 +52,14 @@ String XSSInfo::buildConsoleError() const {
                                       : "its source code");
   message.append(" was found within the request.");
 
-  if (m_didSendCSPHeader)
-    message.append(
-        " The server sent a 'Content-Security-Policy' header requesting this "
-        "behavior.");
-  else if (m_didSendXSSProtectionHeader)
+  if (m_didSendXSSProtectionHeader)
     message.append(
         " The server sent an 'X-XSS-Protection' header requesting this "
         "behavior.");
   else
     message.append(
-        " The auditor was enabled as the server sent neither an "
-        "'X-XSS-Protection' nor 'Content-Security-Policy' header.");
+        " The auditor was enabled as the server did not send an "
+        "'X-XSS-Protection' header.");
 
   return message.toString();
 }

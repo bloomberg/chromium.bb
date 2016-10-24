@@ -65,12 +65,6 @@ if ($cgi->param('malformed-header')) {
     }
 }
 
-if ($cgi->param('csp') eq '_empty_') {
-    print "Content-Security-Policy: reflected-xss\n";
-} elsif ($cgi->param('csp')) {
-    print "Content-Security-Policy: reflected-xss " . $cgi->param('csp') . "\n";
-}
-
 print "Content-Type: text/html; charset=";
 print $cgi->param('charset') ? $cgi->param('charset') : "UTF-8";
 print "\n\n";

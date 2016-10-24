@@ -92,7 +92,6 @@ class CORE_EXPORT ContentSecurityPolicy
   static const char FormAction[];
   static const char FrameAncestors[];
   static const char PluginTypes[];
-  static const char ReflectedXSS[];
   static const char Referrer[];
 
   // Manifest Directives (to be merged into CSP Level 2)
@@ -277,8 +276,6 @@ class CORE_EXPORT ContentSecurityPolicy
   void usesScriptHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
   void usesStyleHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
 
-  ReflectedXSSDisposition getReflectedXSSDisposition() const;
-
   bool didSetReferrerPolicy() const;
 
   void setOverrideAllowInlineStyle(bool);
@@ -304,7 +301,6 @@ class CORE_EXPORT ContentSecurityPolicy
   void reportInvalidSandboxFlags(const String&);
   void reportInvalidSourceExpression(const String& directiveName,
                                      const String& source);
-  void reportInvalidReflectedXSS(const String&);
   void reportMissingReportURI(const String&);
   void reportUnsupportedDirective(const String&);
   void reportInvalidInReportOnly(const String&);

@@ -128,7 +128,6 @@ class XSSAuditor {
   bool m_isEnabled;
 
   ReflectedXSSDisposition m_xssProtection;
-  bool m_didSendValidCSPHeader;
   bool m_didSendValidXSSProtectionHeader;
 
   String m_decodedURL;
