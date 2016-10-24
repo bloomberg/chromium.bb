@@ -185,8 +185,8 @@ void MessageListView::ResetRepositionSession() {
     has_deferred_task_ = false;
     // cancel cause OnBoundsAnimatorDone which deletes |deleted_when_done_|.
     animator_.Cancel();
-    base::STLDeleteContainerPointers(deleting_views_.begin(),
-                                     deleting_views_.end());
+    for (auto view : deleting_views_)
+      delete view;
     deleting_views_.clear();
     adding_views_.clear();
   }
@@ -218,17 +218,16 @@ void MessageListView::ClearAllClosableNotifications(
 void MessageListView::OnBoundsAnimatorProgressed(
     views::BoundsAnimator* animator) {
   DCHECK_EQ(&animator_, animator);
-  for (std::set<views::View*>::iterator iter = deleted_when_done_.begin();
-       iter != deleted_when_done_.end(); ++iter) {
-    const gfx::SlideAnimation* animation = animator->GetAnimationForView(*iter);
+  for (auto view : deleted_when_done_) {
+    const gfx::SlideAnimation* animation = animator->GetAnimationForView(view);
     if (animation)
-      (*iter)->layer()->SetOpacity(animation->CurrentValueBetween(1.0, 0.0));
+      view->layer()->SetOpacity(animation->CurrentValueBetween(1.0, 0.0));
   }
 }
 
 void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  base::STLDeleteContainerPointers(deleted_when_done_.begin(),
-                                   deleted_when_done_.end());
+  for (auto view : deleted_when_done_)
+    delete view;
   deleted_when_done_.clear();
 
   if (clear_all_started_) {
@@ -379,7 +378,7 @@ void MessageListView::AnimateNotificationsAboveTarget() {
     }
 
     // If the calculated length is changed from |repositon_top_|, it means that
-    // some of items above the targe are updated and their height are changed.
+    // some of items above the target are updated and their height are changed.
     // Adjust the vertical length above the target.
     if (reposition_top_ != vertical_gap_to_target_from_top) {
       fixed_height_ -= reposition_top_ - vertical_gap_to_target_from_top;

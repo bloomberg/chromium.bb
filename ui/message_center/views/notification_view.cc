@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/url_formatter/elide_url.h"
@@ -509,8 +508,8 @@ void NotificationView::CreateOrUpdateProgressBarView(
 
 void NotificationView::CreateOrUpdateListItemViews(
     const Notification& notification) {
-  for (size_t i = 0; i < item_views_.size(); ++i)
-    delete item_views_[i];
+  for (auto item_view : item_views_)
+    delete item_view;
   item_views_.clear();
 
   int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
@@ -590,9 +589,12 @@ void NotificationView::CreateOrUpdateActionButtonViews(
   bool new_buttons = action_buttons_.size() != buttons.size();
 
   if (new_buttons || buttons.size() == 0) {
-    // STLDeleteElements also clears the container.
-    base::STLDeleteElements(&separators_);
-    base::STLDeleteElements(&action_buttons_);
+    for (auto item : separators_)
+      delete item;
+    separators_.clear();
+    for (auto item : action_buttons_)
+      delete item;
+    action_buttons_.clear();
   }
 
   DCHECK(bottom_view_);
