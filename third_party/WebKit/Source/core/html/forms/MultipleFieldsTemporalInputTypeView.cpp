@@ -194,7 +194,7 @@ void MultipleFieldsTemporalInputTypeView::editControlValueChanged() {
   if ((oldValue.isEmpty() && newValue.isEmpty()) || oldValue == newValue) {
     element().setNeedsValidityCheck();
   } else {
-    element().setValueInternal(newValue, DispatchNoEvent);
+    element().setNonAttributeValue(newValue);
     element().setNeedsStyleRecalc(
         SubtreeStyleChange,
         StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
@@ -482,8 +482,7 @@ void MultipleFieldsTemporalInputTypeView::restoreFormControlState(
   DateTimeFieldsState dateTimeFieldsState =
       DateTimeFieldsState::restoreFormControlState(state);
   edit->setValueAsDateTimeFieldsState(dateTimeFieldsState);
-  element().setValueInternal(m_inputType->sanitizeValue(edit->value()),
-                             DispatchNoEvent);
+  element().setNonAttributeValue(m_inputType->sanitizeValue(edit->value()));
   updateClearButtonVisibility();
 }
 

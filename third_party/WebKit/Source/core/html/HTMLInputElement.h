@@ -231,7 +231,7 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   bool isInRequiredRadioButtonGroup();
 
   // Functions for InputType classes.
-  void setValueInternal(const String&, TextFieldEventBehavior);
+  void setNonAttributeValue(const String&);
   bool valueAttributeWasUpdatedAfterParsing() const {
     return m_valueAttributeWasUpdatedAfterParsing;
   }

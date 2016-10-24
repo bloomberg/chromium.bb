@@ -142,14 +142,9 @@ void ColorInputType::createShadowSubtree() {
   element().updateView();
 }
 
-void ColorInputType::setValue(const String& value,
-                              bool valueChanged,
-                              TextFieldEventBehavior eventBehavior) {
-  InputType::setValue(value, valueChanged, eventBehavior);
-
+void ColorInputType::didSetValue(const String&, bool valueChanged) {
   if (!valueChanged)
     return;
-
   element().updateView();
   if (m_chooser)
     m_chooser->setSelectedColor(valueAsColor());

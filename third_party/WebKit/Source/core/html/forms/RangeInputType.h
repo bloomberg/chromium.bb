@@ -71,9 +71,7 @@ class RangeInputType final : public InputType, public InputTypeView {
   void sanitizeValueInResponseToMinOrMaxAttributeChange() override;
   void stepAttributeChanged() override;
   void warnIfValueIsInvalid(const String&) const override;
-  void setValue(const String&,
-                bool valueChanged,
-                TextFieldEventBehavior) override;
+  void didSetValue(const String&, bool valueChanged) override;
   String fallbackValue() const override;
   String sanitizeValue(const String& proposedValue) const override;
   bool shouldRespectListAttribute() override;

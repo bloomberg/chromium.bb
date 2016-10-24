@@ -148,9 +148,9 @@ bool TextFieldInputType::canSetSuggestedValue() {
 void TextFieldInputType::setValue(const String& sanitizedValue,
                                   bool valueChanged,
                                   TextFieldEventBehavior eventBehavior) {
-  // We don't ask InputType::setValue to dispatch events because
-  // TextFieldInputType dispatches events different way from InputType.
-  InputType::setValue(sanitizedValue, valueChanged, DispatchNoEvent);
+  // We don't use InputType::setValue.  TextFieldInputType dispatches events
+  // different way from InputType::setValue.
+  element().setNonAttributeValue(sanitizedValue);
 
   if (valueChanged)
     element().updateView();

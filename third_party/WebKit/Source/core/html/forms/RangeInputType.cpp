@@ -282,11 +282,7 @@ void RangeInputType::stepAttributeChanged() {
   element().updateView();
 }
 
-void RangeInputType::setValue(const String& value,
-                              bool valueChanged,
-                              TextFieldEventBehavior eventBehavior) {
-  InputType::setValue(value, valueChanged, eventBehavior);
-
+void RangeInputType::didSetValue(const String&, bool valueChanged) {
   if (valueChanged)
     element().updateView();
 }
