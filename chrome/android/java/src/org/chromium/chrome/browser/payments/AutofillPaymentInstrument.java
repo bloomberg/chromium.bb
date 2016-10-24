@@ -34,7 +34,7 @@ public class AutofillPaymentInstrument
     private CreditCard mCard;
     private boolean mIsComplete;
     @Nullable private AutofillProfile mBillingAddress;
-    @Nullable private DetailsCallback mCallback;
+    @Nullable private InstrumentDetailsCallback mCallback;
 
     /**
      * Builds a payment instrument for the given credit card.
@@ -59,13 +59,14 @@ public class AutofillPaymentInstrument
     }
 
     @Override
-    public String getMethodName() {
+    public String getInstrumentMethodName() {
         return mCard.getBasicCardPaymentType();
     }
 
     @Override
-    public void getDetails(String unusedMerchantName, String unusedOrigin, PaymentItem unusedTotal,
-            List<PaymentItem> unusedCart, JSONObject unusedDetails, DetailsCallback callback) {
+    public void getInstrumentDetails(String unusedMerchantName, String unusedOrigin,
+            PaymentItem unusedTotal, List<PaymentItem> unusedCart, JSONObject unusedDetails,
+            InstrumentDetailsCallback callback) {
         assert mIsComplete;
         assert mCallback == null;
         mCallback = callback;
@@ -132,7 +133,7 @@ public class AutofillPaymentInstrument
     }
 
     @Override
-    public void dismiss() {}
+    public void dismissInstrument() {}
 
     /** @return Whether the card is complete and ready to be sent to the merchant as-is. */
     public boolean isComplete() {

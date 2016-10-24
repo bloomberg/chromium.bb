@@ -40,6 +40,7 @@ import org.chromium.payments.mojom.PaymentItem;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -677,7 +678,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
         @Override
         public void getInstruments(
-                JSONObject details, final InstrumentsCallback instrumentsCallback) {
+                Map<String, JSONObject> methodData, final InstrumentsCallback instrumentsCallback) {
             mCallback = instrumentsCallback;
             respond();
         }
@@ -702,14 +703,14 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
-        public Set<String> getSupportedMethodNames() {
+        public Set<String> getAppMethodNames() {
             Set<String> methodNames = new HashSet<>();
             methodNames.add(mMethodName);
             return methodNames;
         }
 
         @Override
-        public String getIdentifier() {
+        public String getAppIdentifier() {
             return mMethodName;
         }
     }
@@ -724,18 +725,19 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
-        public String getMethodName() {
+        public String getInstrumentMethodName() {
             return mMethodName;
         }
 
         @Override
-        public void getDetails(String merchantName, String origin, PaymentItem total,
-                List<PaymentItem> cart, JSONObject details, DetailsCallback detailsCallback) {
+        public void getInstrumentDetails(String merchantName, String origin, PaymentItem total,
+                List<PaymentItem> cart, JSONObject details,
+                InstrumentDetailsCallback detailsCallback) {
             detailsCallback.onInstrumentDetailsReady(
                     mMethodName, "{\"transaction\": 1337}");
         }
 
         @Override
-        public void dismiss() {}
+        public void dismissInstrument() {}
     }
 }

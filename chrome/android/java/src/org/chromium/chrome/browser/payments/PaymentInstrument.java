@@ -20,7 +20,7 @@ public abstract class PaymentInstrument extends PaymentOption {
     /**
      * The interface for the requester of instrument details.
      */
-    public interface DetailsCallback {
+    public interface InstrumentDetailsCallback {
         /**
          * Called after retrieving instrument details.
          *
@@ -40,12 +40,12 @@ public abstract class PaymentInstrument extends PaymentOption {
     }
 
     /**
-     * Returns the method name for this instrument, e.g., "visa" or "mastercard" in basic card
-     * payments: https://w3c.github.io/browser-payment-api/specs/basic-card-payment.html#method-id
+     * Returns a method name for this instrument, e.g., "visa" or "mastercard" in basic card
+     * payments: https://w3c.github.io/webpayments-methods-card/#method-id
      *
-     * @return The method name for this instrument.
+     * @return The method names for this instrument.
      */
-    public abstract String getMethodName();
+    public abstract String getInstrumentMethodName();
 
     /**
      * Asynchronously retrieves the instrument details and invokes the callback with the result.
@@ -58,12 +58,12 @@ public abstract class PaymentInstrument extends PaymentOption {
      *                     in test or production key, a merchant identifier, or a public key.
      * @param callback     The object that will receive the instrument details.
      */
-    public abstract void getDetails(String merchantName, String origin, PaymentItem total,
-            List<PaymentItem> cart, JSONObject details, DetailsCallback callback);
+    public abstract void getInstrumentDetails(String merchantName, String origin, PaymentItem total,
+            List<PaymentItem> cart, JSONObject details, InstrumentDetailsCallback callback);
 
     /**
      * Cleans up any resources held by the payment instrument. For example, closes server
      * connections.
      */
-    public abstract void dismiss();
+    public abstract void dismissInstrument();
 }

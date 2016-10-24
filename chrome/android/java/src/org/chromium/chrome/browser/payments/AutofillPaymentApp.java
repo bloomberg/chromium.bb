@@ -18,6 +18,7 @@ import org.chromium.content_public.browser.WebContents;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,7 +40,8 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public void getInstruments(JSONObject unusedDetails, final InstrumentsCallback callback) {
+    public void getInstruments(
+            Map<String, JSONObject> unusedMethodData, final InstrumentsCallback callback) {
         PersonalDataManager pdm = PersonalDataManager.getInstance();
         List<CreditCard> cards = pdm.getCreditCardsToSuggest();
         final List<PaymentInstrument> instruments = new ArrayList<>(cards.size());
@@ -61,7 +63,7 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public Set<String> getSupportedMethodNames() {
+    public Set<String> getAppMethodNames() {
         // https://w3c.github.io/webpayments-methods-card/#method-id
         // The spec also includes more detailed card types, e.g., "visa/credit" and "visa/debit".
         // Autofill does not distinguish between these types of cards, so they are not in the list
@@ -84,7 +86,7 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public String getIdentifier() {
+    public String getAppIdentifier() {
         return "Chrome_Autofill_Payment_App";
     }
 }

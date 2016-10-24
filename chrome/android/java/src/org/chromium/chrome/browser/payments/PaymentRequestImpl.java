@@ -69,7 +69,7 @@ import java.util.Set;
  * third_party/WebKit/public/platform/modules/payments/payment_request.mojom.
  */
 public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Client,
-        PaymentApp.InstrumentsCallback, PaymentInstrument.DetailsCallback,
+        PaymentApp.InstrumentsCallback, PaymentInstrument.InstrumentDetailsCallback,
         NormalizedAddressRequestDelegate {
     /**
      * Observer to be notified when PaymentRequest UI has been dismissed.
@@ -457,26 +457,39 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mPendingInstruments = new ArrayList<>();
         mPendingAutofillInstruments = new ArrayList<>();
 
-        Map<PaymentApp, JSONObject> queryApps = new HashMap<>();
+        Map<PaymentApp, Map<String, JSONObject>> queryApps = new HashMap<>();
         for (int i = 0; i < mApps.size(); i++) {
             PaymentApp app = mApps.get(i);
-            Set<String> appMethods = app.getSupportedMethodNames();
-            appMethods.retainAll(mMethodData.keySet());
-            if (appMethods.isEmpty()) {
+            Map<String, JSONObject> appMethods =
+                    filterMerchantMethodData(mMethodData, app.getAppMethodNames());
+            if (appMethods == null) {
                 mPendingApps.remove(app);
             } else {
                 mArePaymentMethodsSupported = true;
                 mMerchantSupportsAutofillPaymentInstruments |= app instanceof AutofillPaymentApp;
-                queryApps.put(app, mMethodData.get(appMethods.iterator().next()));
+                queryApps.put(app, appMethods);
             }
         }
 
         // Query instruments after mMerchantSupportsAutofillPaymentInstruments has been initialized,
         // so a fast response from a non-autofill payment app at the front of the app list does not
         // cause NOT_SUPPORTED payment rejection.
-        for (Map.Entry<PaymentApp, JSONObject> q : queryApps.entrySet()) {
+        for (Map.Entry<PaymentApp, Map<String, JSONObject>> q : queryApps.entrySet()) {
             q.getKey().getInstruments(q.getValue(), this);
         }
+    }
+
+    /** Filter out merchant method data that's not relevant to a payment app. Can return null. */
+    private static Map<String, JSONObject> filterMerchantMethodData(
+            Map<String, JSONObject> merchantMethodData, Set<String> appMethods) {
+        Map<String, JSONObject> result = null;
+        for (String method : appMethods) {
+            if (merchantMethodData.containsKey(method)) {
+                if (result == null) result = new HashMap<>();
+                result.put(method, merchantMethodData.get(method));
+            }
+        }
+        return result;
     }
 
     /**
@@ -880,8 +893,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
         mPaymentAppRunning = true;
-        instrument.getDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
-                mMethodData.get(instrument.getMethodName()), this);
+        instrument.getInstrumentDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
+                mMethodData.get(instrument.getInstrumentMethodName()), this);
         recordSuccessFunnelHistograms("PayClicked");
         return !(instrument instanceof AutofillPaymentInstrument);
     }
@@ -965,10 +978,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (instruments != null) {
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
-                if (mMethodData.containsKey(instrument.getMethodName())) {
+                if (mMethodData.containsKey(instrument.getInstrumentMethodName())) {
                     addPendingInstrument(instrument);
                 } else {
-                    instrument.dismiss();
+                    instrument.dismissInstrument();
                 }
             }
         }
@@ -1226,7 +1239,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
                 PaymentOption option = mPaymentMethodsSection.getItem(i);
                 assert option instanceof PaymentInstrument;
-                ((PaymentInstrument) option).dismiss();
+                ((PaymentInstrument) option).dismissInstrument();
             }
             mPaymentMethodsSection = null;
         }
