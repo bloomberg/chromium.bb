@@ -80,6 +80,8 @@ crbug.com/587737 [ Mac ] virtual/gpu-rasterization/fast/images/color-profile-fil
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 crbug.com/624233 virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Pass Failure ]
 
+crbug.com/657839 fast/images/color-profile-layer.html [ Pass Failure ]
+
 crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
 crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html [ Failure ]
 
