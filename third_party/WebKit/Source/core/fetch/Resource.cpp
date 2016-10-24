@@ -323,8 +323,6 @@ Resource::Resource(const ResourceRequest& request,
       m_responseTimestamp(currentTime()),
       m_cancelTimer(this, &Resource::cancelTimerFired),
       m_resourceRequest(request) {
-  // m_type is a bitfield, so this tests careless updates of the enum.
-  DCHECK_EQ(m_type, unsigned(type));
   InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
 
   // Currently we support the metadata caching only for HTTP family.

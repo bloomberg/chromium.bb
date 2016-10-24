@@ -161,11 +161,9 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     PreloadReferencedWhileLoading,
     PreloadReferencedWhileComplete
   };
-  PreloadResult getPreloadResult() const {
-    return static_cast<PreloadResult>(m_preloadResult);
-  }
+  PreloadResult getPreloadResult() const { return m_preloadResult; }
 
-  Status getStatus() const { return static_cast<Status>(m_status); }
+  Status getStatus() const { return m_status; }
   void setStatus(Status status) { m_status = status; }
 
   size_t size() const { return encodedSize() + decodedSize() + overheadSize(); }
@@ -434,9 +432,9 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   String m_cacheIdentifier;
 
-  unsigned m_preloadResult : 2;  // PreloadResult
-  unsigned m_type : 4;           // Type
-  unsigned m_status : 3;         // Status
+  PreloadResult m_preloadResult;
+  Type m_type;
+  Status m_status;
 
   bool m_needsSynchronousCacheHit;
   bool m_linkPreload;
