@@ -11,4 +11,7 @@ class GpuRasterizationExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('GpuRasterization.BlueBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    pass
+
+    # Seems to be flaky on the new AMD R7 240 drivers.
+    self.Flaky('GpuRasterization.BlueBox',
+        ['win', ('amd', 0x6613)], bug=653538)
