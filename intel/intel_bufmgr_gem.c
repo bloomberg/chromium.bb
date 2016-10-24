@@ -2643,7 +2643,7 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	 * for named buffers, we must not create two bo's pointing at the same
 	 * kernel object
 	 */
-	HASH_FIND(name_hh, bufmgr_gem->name_table,
+	HASH_FIND(handle_hh, bufmgr_gem->handle_table,
 		  &handle, sizeof(handle), bo_gem);
 	if (bo_gem) {
 		drm_intel_gem_bo_reference(&bo_gem->bo);
