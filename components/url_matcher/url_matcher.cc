@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -262,9 +263,6 @@ const char kQuerySeparator = '&';
 URLMatcherConditionFactory::URLMatcherConditionFactory() : id_counter_(0) {}
 
 URLMatcherConditionFactory::~URLMatcherConditionFactory() {
-  base::STLDeleteElements(&substring_pattern_singletons_);
-  base::STLDeleteElements(&regex_pattern_singletons_);
-  base::STLDeleteElements(&origin_and_path_regex_pattern_singletons_);
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeURLForComponentSearches(
@@ -463,32 +461,28 @@ URLMatcherConditionFactory::CreateOriginAndPathMatchesCondition(
 
 void URLMatcherConditionFactory::ForgetUnusedPatterns(
       const std::set<StringPattern::ID>& used_patterns) {
-  PatternSingletons::iterator i = substring_pattern_singletons_.begin();
+  auto i = substring_pattern_singletons_.begin();
   while (i != substring_pattern_singletons_.end()) {
-    if (base::ContainsKey(used_patterns, (*i)->id())) {
+    if (base::ContainsKey(used_patterns, i->first->id()))
       ++i;
-    } else {
-      delete *i;
+    else
       substring_pattern_singletons_.erase(i++);
-    }
   }
+
   i = regex_pattern_singletons_.begin();
   while (i != regex_pattern_singletons_.end()) {
-    if (base::ContainsKey(used_patterns, (*i)->id())) {
+    if (base::ContainsKey(used_patterns, i->first->id()))
       ++i;
-    } else {
-      delete *i;
+    else
       regex_pattern_singletons_.erase(i++);
-    }
   }
+
   i = origin_and_path_regex_pattern_singletons_.begin();
   while (i != origin_and_path_regex_pattern_singletons_.end()) {
-    if (base::ContainsKey(used_patterns, (*i)->id())) {
+    if (base::ContainsKey(used_patterns, i->first->id()))
       ++i;
-    } else {
-      delete *i;
+    else
       origin_and_path_regex_pattern_singletons_.erase(i++);
-    }
   }
 }
 
@@ -510,14 +504,13 @@ URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
   else
     pattern_singletons = &substring_pattern_singletons_;
 
-  PatternSingletons::const_iterator iter =
-      pattern_singletons->find(&search_pattern);
+  auto iter = pattern_singletons->find(&search_pattern);
 
   if (iter != pattern_singletons->end())
-    return URLMatcherCondition(criterion, *iter);
+    return URLMatcherCondition(criterion, iter->first);
 
   StringPattern* new_pattern = new StringPattern(pattern, id_counter_++);
-  pattern_singletons->insert(new_pattern);
+  (*pattern_singletons)[new_pattern] = base::WrapUnique(new_pattern);
   return URLMatcherCondition(criterion, new_pattern);
 }
 

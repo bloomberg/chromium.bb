@@ -215,8 +215,9 @@ class URL_MATCHER_EXPORT URLMatcherConditionFactory {
   };
   // Set to ensure that we generate only one StringPattern for each content
   // of StringPattern::pattern().
-  typedef std::set<StringPattern*, StringPatternPointerCompare>
-      PatternSingletons;
+  using PatternSingletons = std::map<StringPattern*,
+                                     std::unique_ptr<StringPattern>,
+                                     StringPatternPointerCompare>;
   PatternSingletons substring_pattern_singletons_;
   PatternSingletons regex_pattern_singletons_;
   PatternSingletons origin_and_path_regex_pattern_singletons_;

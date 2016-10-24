@@ -75,7 +75,7 @@ class URL_MATCHER_EXPORT RegexSetMatcher {
 
   // The substring patterns from FilteredRE2, which are used in
   // |substring_matcher_| but whose lifetime is managed here.
-  std::vector<const StringPattern*> substring_patterns_;
+  std::vector<std::unique_ptr<StringPattern>> substring_patterns_;
 };
 
 }  // namespace url_matcher
