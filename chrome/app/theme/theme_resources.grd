@@ -70,13 +70,6 @@
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_L" file="common/app_window_minimize_light.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="common/app_window_minimize_active.png" />
       </if>
-      <if expr="use_ash">
-        <structure type="chrome_scaled_image" name="IDR_ASH_BROWSER_WINDOW_HEADER_SHADE_LEFT" file="common/ash/browser_window_header_shade_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_ASH_BROWSER_WINDOW_HEADER_SHADE_RIGHT" file="common/ash/browser_window_header_shade_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_ASH_BROWSER_WINDOW_HEADER_SHADE_TOP" file="common/ash/browser_window_header_shade_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_ASH_BROWSER_WINDOW_HEADER_SHADE_TOP_LEFT" file="common/ash/browser_window_header_shade_top_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_ASH_BROWSER_WINDOW_HEADER_SHADE_TOP_RIGHT" file="common/ash/browser_window_header_shade_top_right.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON" file="common/autofill_dialog_menu_button_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON_P" file="common/autofill_dialog_menu_button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON_H" file="common/autofill_dialog_menu_button_hover.png" />
@@ -649,12 +642,10 @@
         </if>
       </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_V" file="theme_tab_background_glass.png" />
-      <if expr="not use_ash and not is_macosx and not is_ios">
-        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" />
-      </if>
-      <if expr="use_ash">
-        <!-- Ash has a dark gray toolbar background, Windows has light gray. -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="common/ash/theme_default_active.png" />
+      <if expr="not is_macosx and not is_ios">
+        <!-- This identifier exists to give us something to associate with a custom image that a theme can provide.
+             In normal themes, it's unused. -->
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="notused.png" />
       </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="mac/theme_default_active.png" />
@@ -666,11 +657,6 @@
         <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="legacy/throbber_waiting.png" />
         <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING_INCOGNITO" file="mac/throbber_waiting_incognito.png" />
         <structure type="chrome_scaled_image" name="IDR_THROBBER_INCOGNITO" file="mac/throbber_incognito.png" />
-      </if>
-      <if expr="use_ash">
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="common/toolbar_shade_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_RIGHT" file="common/toolbar_shade_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="common/toolbar_shade_top.png" />
       </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="mac/toolbar_shade_top.png" />

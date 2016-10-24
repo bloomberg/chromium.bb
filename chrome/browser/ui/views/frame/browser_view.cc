@@ -201,25 +201,15 @@ const int kLoadingAnimationFrameTimeMs = 30;
 
 // Paints the horizontal border separating the Bookmarks Bar from the Toolbar
 // or page content according to |at_top| with |color|.
-void PaintHorizontalBorder(gfx::Canvas* canvas,
-                           BookmarkBarView* view,
-                           bool at_top,
-                           SkColor color) {
-  int thickness = views::NonClientFrameView::kClientEdgeThickness;
-  int y = at_top ? 0 : (view->height() - thickness);
-  canvas->FillRect(gfx::Rect(0, y, view->width(), thickness), color);
-}
-
 void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
                               BookmarkBarView* view) {
   // Paint background for detached state; if animating, this is fade in/out.
   const ui::ThemeProvider* tp = view->GetThemeProvider();
   gfx::Rect fill_rect = view->GetLocalBounds();
-  // In MD, we have to not color the top 1dp, because that should be painted by
-  // the toolbar. We will, however, paint the 1px separator at the bottom of the
+  // We have to not color the top 1dp, because that should be painted by the
+  // toolbar. We will, however, paint the 1px separator at the bottom of the
   // first dp. See crbug.com/610359
-  if (ui::MaterialDesignController::IsModeMaterial())
-    fill_rect.Inset(0, 1, 0, 0);
+  fill_rect.Inset(0, 1, 0, 0);
 
   // In detached mode, the bar is meant to overlap with |contents_container_|.
   // The detached background color may be partially transparent, but the layer
@@ -235,10 +225,6 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   // if animating, these are fading in/out.
   SkColor separator_color =
       tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
-
-  // In material mode the toolbar bottom stroke serves as our top stroke.
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    PaintHorizontalBorder(canvas, view, true, separator_color);
 
   // For the bottom separator, increase the luminance. Either double it or halve
   // the distance to 1.0, whichever is less of a difference.
@@ -259,11 +245,8 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                                  const gfx::Point& background_origin) {
   canvas->DrawColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
-  // Always tile the background image in pre-MD. In MD, only tile if there's a
-  // non-default image.
-  // TODO(estade): remove IDR_THEME_TOOLBAR when MD is default.
-  if (theme_provider->HasCustomImage(IDR_THEME_TOOLBAR) ||
-      !ui::MaterialDesignController::IsModeMaterial()) {
+  // If there's a non-default background image, tile it.
+  if (theme_provider->HasCustomImage(IDR_THEME_TOOLBAR)) {
     canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
                          background_origin.x(),
                          background_origin.y(),
@@ -272,52 +255,23 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                          bounds.width(),
                          bounds.height());
   }
-
-#if defined(USE_ASH)
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    // The pre-material design version of Ash provides additional lightening
-    // at the edges of the toolbar.
-    gfx::ImageSkia* toolbar_left =
-        theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
-    canvas->TileImageInt(*toolbar_left,
-                         bounds.x(),
-                         bounds.y(),
-                         toolbar_left->width(),
-                         bounds.height());
-    gfx::ImageSkia* toolbar_right =
-        theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
-    canvas->TileImageInt(*toolbar_right,
-                         bounds.right() - toolbar_right->width(),
-                         bounds.y(),
-                         toolbar_right->width(),
-                         bounds.height());
-  }
-#endif  // USE_ASH
 }
 
 void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
                               BookmarkBarView* view,
                               BrowserView* browser_view,
                               int toolbar_overlap) {
-  // Paint background for attached state, this is fade in/out.
+  // Paint background for attached state.
   gfx::Point background_image_offset =
       browser_view->OffsetPointForToolbarBackgroundImage(
           gfx::Point(view->GetMirroredX(), view->y()));
   PaintBackgroundAttachedMode(canvas, view->GetThemeProvider(),
                               view->GetLocalBounds(), background_image_offset);
   if (view->height() >= toolbar_overlap) {
-    // Draw the separator below the Bookmarks Bar; this is fading in/out.
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      BrowserView::Paint1pxHorizontalLine(
-          canvas, view->GetThemeProvider()->GetColor(
-                      ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
-          view->GetLocalBounds(), true);
-    } else {
-      PaintHorizontalBorder(
-          canvas, view, false,
-          view->GetThemeProvider()->GetColor(
-              ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
-    }
+    BrowserView::Paint1pxHorizontalLine(
+        canvas, view->GetThemeProvider()->GetColor(
+                    ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
+        view->GetLocalBounds(), true);
   }
 }
 
@@ -1947,8 +1901,7 @@ void BrowserView::GetAccessibleState(ui::AXViewState* state) {
 }
 
 void BrowserView::OnThemeChanged() {
-  if (!IsRegularOrGuestSession() &&
-      ui::MaterialDesignController::IsModeMaterial()) {
+  if (!IsRegularOrGuestSession()) {
     // When the theme changes, the native theme may also change (in incognito,
     // the usage of dark or normal hinges on the browser theme), so we have to
     // propagate both kinds of change.

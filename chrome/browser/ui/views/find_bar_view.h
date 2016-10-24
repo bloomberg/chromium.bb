@@ -10,9 +10,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/views/dropdown_bar_view.h"
+#include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
 
 class FindBarHost;
@@ -38,7 +39,8 @@ class VectorIconButton;
 // button. It communicates the user search words to the FindBarHost.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class FindBarView : public DropdownBarView,
+class FindBarView : public views::View,
+                    public DropdownBarHostDelegate,
                     public views::VectorIconButtonDelegate,
                     public views::TextfieldController,
                     public views::ViewTargeterDelegate {
@@ -66,12 +68,12 @@ class FindBarView : public DropdownBarView,
   // Clears the current Match Count value in the Find text box.
   void ClearMatchCount();
 
-  // Claims focus for the text field and selects its contents.
-  void SetFocusAndSelection(bool select_all) override;
-
-  // DropdownBarView:
+  // views::View:
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
+
+  // DropdownBarHostDelegate:
+  void SetFocusAndSelection(bool select_all) override;
 
   // views::VectorIconButtonDelegate:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -100,9 +102,9 @@ class FindBarView : public DropdownBarView,
   // Returns the color for the icons on the buttons per the current NativeTheme.
   SkColor GetTextColorForIcon();
 
-  // Returns the OS-specific view for the find bar that acts as an intermediary
+  // The OS-specific view for the find bar that acts as an intermediary
   // between us and the WebContentsView.
-  FindBarHost* find_bar_host() const;
+  FindBarHost* find_bar_host_;
 
   // Used to detect if the input text, not including the IME composition text,
   // has changed or not.

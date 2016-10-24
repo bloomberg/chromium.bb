@@ -8,7 +8,6 @@
 
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "ui/events/keycodes/keyboard_codes.h"

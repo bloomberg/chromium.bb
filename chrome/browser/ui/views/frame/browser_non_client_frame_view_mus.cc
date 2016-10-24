@@ -6,12 +6,9 @@
 
 #include <algorithm>
 
-#include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
@@ -24,17 +21,13 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
 #include "services/ui/public/cpp/window.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
@@ -434,17 +427,12 @@ void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
   int avatar_bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
                       avatar_insets.bottom();
   int avatar_y = avatar_bottom - incognito_icon.height();
-  if (!ui::MaterialDesignController::IsModeMaterial() &&
-      browser_view()->IsTabStripVisible() &&
-      (frame()->IsMaximized() || frame()->IsFullscreen())) {
-    avatar_y = GetTopInset(false) + kContentShadowHeight;
-  }
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
   // visible because the header is too short for the icognito icon to be
   // recognizable.
   bool avatar_visible = !UseImmersiveLightbarHeaderStyle();
-  int avatar_height = avatar_visible ? avatar_bottom - avatar_y : 0;
+  int avatar_height = avatar_visible ? incognito_icon.height() : 0;
 
   gfx::Rect avatar_bounds(avatar_insets.left(), avatar_y,
                           incognito_icon.width(), avatar_height);
@@ -485,107 +473,37 @@ void BrowserNonClientFrameViewMus::PaintToolbarBackground(gfx::Canvas* canvas) {
   gfx::Point toolbar_origin(toolbar_bounds.origin());
   View::ConvertPointToTarget(browser_view(), this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
-
-  int x = toolbar_bounds.x();
-  int w = toolbar_bounds.width();
-  int y = toolbar_bounds.y();
   const ui::ThemeProvider* tp = GetThemeProvider();
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
-      // Paint the main toolbar image.  Since this image is also used to draw
-      // the tab background, we must use the tab strip offset to compute the
-      // image source y position.  If you have to debug this code use an image
-      // editor to paint a diagonal line through the toolbar image and ensure it
-      // lines up across the tab and toolbar.
-      gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-      canvas->TileImageInt(*theme_toolbar, x + GetThemeBackgroundXInset(),
-                           y - GetTopInset(false), x, y, w,
-                           theme_toolbar->height());
-    } else {
-      canvas->FillRect(toolbar_bounds,
-                       tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-    }
-
-    // Draw the separator line atop the toolbar, on the left and right of the
-    // tabstrip.
-    // TODO(tdanderson): Draw the separator line for non-tabbed windows.
-    if (browser_view()->IsTabStripVisible()) {
-      gfx::Rect separator_rect(x, y, w, 0);
-      gfx::ScopedCanvas scoped_canvas(canvas);
-      gfx::Rect tabstrip_bounds(
-          GetBoundsForTabStrip(browser_view()->tabstrip()));
-      tabstrip_bounds.set_x(GetMirroredXForRect(tabstrip_bounds));
-      canvas->ClipRect(tabstrip_bounds, SkRegion::kDifference_Op);
-      separator_rect.set_y(tabstrip_bounds.bottom());
-      BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                          separator_rect, true);
-    }
-
-    // Draw the content/toolbar separator.
-    toolbar_bounds.Inset(kClientEdgeThickness, 0);
-    BrowserView::Paint1pxHorizontalLine(
-        canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
-        toolbar_bounds, true);
+  // Background.
+  if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
+    const int bg_y = GetTopInset(false) + GetLayoutInsets(TAB).top();
+    const int x = toolbar_bounds.x();
+    const int y = toolbar_bounds.y();
+    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
+                         x + GetThemeBackgroundXInset(), y - bg_y, x, y,
+                         toolbar_bounds.width(), toolbar_bounds.height());
   } else {
-    // NOTE: this ifdef can't be OS_CHROMEOS as we want to see how it looks on
-    // windows as well.
-#if defined(USE_ASH)
-    int h = toolbar_bounds.height();
-    // Gross hack: We split the toolbar images into two pieces, since sometimes
-    // (popup mode) the toolbar isn't tall enough to show the whole image.  The
-    // split happens between the top shadow section and the bottom gradient
-    // section so that we never break the gradient.
-    // NOTE(pkotwicz): If the computation for |bottom_y| is changed, Layout()
-    // must be changed as well.
-    int split_point = kFrameShadowThickness * 2;
-    int bottom_y = y + split_point;
-    int bottom_edge_height = h - split_point;
-
-    canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),
+    canvas->FillRect(toolbar_bounds,
                      tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-
-    // Paint the main toolbar image.  Since this image is also used to draw the
-    // tab background, we must use the tab strip offset to compute the image
-    // source y position.  If you have to debug this code use an image editor
-    // to paint a diagonal line through the toolbar image and ensure it lines up
-    // across the tab and toolbar.
-    gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-    canvas->TileImageInt(*theme_toolbar, x + GetThemeBackgroundXInset(),
-                         bottom_y - GetTopInset(false), x, bottom_y, w,
-                         theme_toolbar->height());
-
-    // The pre-material design content area line has a shadow that extends a
-    // couple of pixels above the toolbar bounds.
-    const int kContentShadowHeight = 2;
-    gfx::ImageSkia* toolbar_top = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
-    canvas->TileImageInt(*toolbar_top, 0, 0, x, y - kContentShadowHeight, w,
-                         split_point + kContentShadowHeight + 1);
-
-    // Draw the "lightening" shade line around the edges of the toolbar.
-    gfx::ImageSkia* toolbar_left =
-        tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
-    canvas->TileImageInt(*toolbar_left, 0, 0, x + kClientEdgeThickness,
-                         y + kClientEdgeThickness + kContentShadowHeight,
-                         toolbar_left->width(), theme_toolbar->height());
-    gfx::ImageSkia* toolbar_right =
-        tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
-    canvas->TileImageInt(*toolbar_right, 0, 0,
-                         w - toolbar_right->width() - 2 * kClientEdgeThickness,
-                         y + kClientEdgeThickness + kContentShadowHeight,
-                         toolbar_right->width(), theme_toolbar->height());
-
-    // Draw the content/toolbar separator.
-    canvas->FillRect(
-        gfx::Rect(x + kClientEdgeThickness,
-                  toolbar_bounds.bottom() - kClientEdgeThickness,
-                  w - (2 * kClientEdgeThickness), kClientEdgeThickness),
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
-#else
-    // This is the case for running on non-chromeos. Decide how we want this to
-    // look.
-#endif
   }
+
+  // Top stroke.
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  gfx::Rect tabstrip_bounds(GetBoundsForTabStrip(browser_view()->tabstrip()));
+  tabstrip_bounds.set_x(GetMirroredXForRect(tabstrip_bounds));
+  canvas->ClipRect(tabstrip_bounds, SkRegion::kDifference_Op);
+  const gfx::Rect separator_rect(toolbar_bounds.x(), tabstrip_bounds.bottom(),
+                                 toolbar_bounds.width(), 0);
+  BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
+                                      separator_rect, true);
+
+  // Toolbar/content separator.
+  toolbar_bounds.Inset(kClientEdgeThickness, 0);
+  BrowserView::Paint1pxHorizontalLine(
+      canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
+      toolbar_bounds,
+      true);
 }
 
 void BrowserNonClientFrameViewMus::PaintContentEdge(gfx::Canvas* canvas) {

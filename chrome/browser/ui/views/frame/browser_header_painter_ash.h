@@ -60,9 +60,6 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   // the activation animation.
   void PaintFrameImages(gfx::Canvas* canvas, bool active);
 
-  // Paints highlight around the edge of the header for restored windows.
-  void PaintHighlightForRestoredWindow(gfx::Canvas* canvas);
-
   // Paints the title bar, primarily the title string.
   void PaintTitleBar(gfx::Canvas* canvas);
 

@@ -1630,8 +1630,6 @@ split_static_library("ui") {
         "views/dropdown_bar_host.cc",
         "views/dropdown_bar_host.h",
         "views/dropdown_bar_host_delegate.h",
-        "views/dropdown_bar_view.cc",
-        "views/dropdown_bar_view.h",
         "views/elevation_icon_setter.cc",
         "views/elevation_icon_setter.h",
         "views/find_bar_host.cc",
