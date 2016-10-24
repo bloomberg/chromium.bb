@@ -259,8 +259,6 @@ struct I18nContentToMessage {
   { "keyboardOverlayDisableCapsLock", IDS_KEYBOARD_OVERLAY_DISABLE_CAPS_LOCK },
   { "keyboardOverlayToggleChromevoxSpokenFeedback",
     IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK },
-  { "keyboardOverlayToggleHighContrastMode",
-    IDS_KEYBOARD_OVERLAY_TOGGLE_HIGH_CONTRAST_MODE},
   { "keyboardOverlayToggleProjectionTouchHud",
     IDS_KEYBOARD_OVERLAY_TOGGLE_PROJECTION_TOUCH_HUD },
   { "keyboardOverlayUndo", IDS_KEYBOARD_OVERLAY_UNDO },
