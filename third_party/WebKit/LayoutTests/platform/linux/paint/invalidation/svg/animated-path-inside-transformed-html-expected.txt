@@ -39,12 +39,12 @@
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [355, 128, 103, 101],
+          "rect": [354, 127, 105, 102],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [111, 85, 101, 100],
+          "rect": [111, 84, 101, 102],
           "reason": "full"
         },
         {

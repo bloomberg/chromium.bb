@@ -1216,6 +1216,8 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
   context.newLocation.move(adjustment);
   context.newBounds.move(adjustment);
 
+  adjustVisualRectForRasterEffects(context.newBounds);
+
   setPreviousPaintInvalidationRect(context.newBounds);
   setPreviousPositionFromPaintInvalidationBacking(context.newLocation);
 

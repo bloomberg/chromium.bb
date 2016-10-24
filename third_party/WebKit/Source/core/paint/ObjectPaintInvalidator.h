@@ -54,7 +54,7 @@ class CORE_EXPORT ObjectPaintInvalidator {
 
   // Actually do the paint invalidate of rect r for this object which has been
   // computed in the coordinate space of the GraphicsLayer backing of
-  // |paintInvalidationContainer|. Note that this coordinaten space is not the
+  // |paintInvalidationContainer|. Note that this coordinate space is not the
   // same as the local coordinate space of |paintInvalidationContainer| in the
   // presence of layer squashing.
   void invalidatePaintUsingContainer(

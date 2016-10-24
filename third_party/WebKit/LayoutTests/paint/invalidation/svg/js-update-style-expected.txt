@@ -7,6 +7,26 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [5, 185, 160, 60],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [5, 125, 160, 60],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [5, 65, 160, 60],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [5, 5, 160, 60],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutSVGContainer g",
           "rect": [6, 6, 158, 238],
           "reason": "style change"
@@ -15,26 +35,6 @@
           "object": "LayoutSVGRoot svg",
           "rect": [6, 6, 158, 238],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [6, 186, 158, 58],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [6, 126, 158, 58],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [6, 66, 158, 58],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [6, 6, 158, 58],
-          "reason": "style change"
         }
       ]
     }

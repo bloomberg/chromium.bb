@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutSVGPath path id='path'",
-          "rect": [200, 50, 100, 50],
+          "rect": [199, 49, 102, 52],
           "reason": "full"
         },
         {
           "object": "LayoutSVGPath path id='path'",
-          "rect": [50, 50, 100, 50],
+          "rect": [49, 49, 102, 52],
           "reason": "full"
         }
       ]

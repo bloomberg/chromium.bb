@@ -90,28 +90,6 @@ LayoutRect SVGLayoutSupport::transformPaintInvalidationRect(
     const FloatRect& localRect) {
   FloatRect adjustedRect = rootTransform.mapRect(localRect);
 
-  if (object.isSVGShape() && object.styleRef().svgStyle().hasStroke()) {
-    if (float strokeWidthForHairlinePadding =
-            toLayoutSVGShape(object).strokeWidth()) {
-      // For hairline strokes (stroke-width < 1 in device space), Skia
-      // rasterizes up to 0.4(9) off the stroke center. That means
-      // enclosingIntRect is not enough - we must also pad to 0.5.
-      // This is still fragile as it misses out on CC/DSF CTM components.
-      const FloatSize strokeSize = rootTransform.mapSize(FloatSize(
-          strokeWidthForHairlinePadding, strokeWidthForHairlinePadding));
-      if (strokeSize.width() < 1 || strokeSize.height() < 1) {
-        float pad =
-            0.5f - std::min(strokeSize.width(), strokeSize.height()) / 2;
-        DCHECK_GT(pad, 0);
-        // Additionally, square/round caps can potentially introduce an outset
-        // <= 0.5
-        if (object.styleRef().svgStyle().capStyle() != ButtCap)
-          pad += 0.5f;
-        adjustedRect.inflate(pad);
-      }
-    }
-  }
-
   if (adjustedRect.isEmpty())
     return LayoutRect();
 

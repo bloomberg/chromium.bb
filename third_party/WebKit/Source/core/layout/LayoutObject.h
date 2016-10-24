@@ -1857,6 +1857,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // changes at all).
   virtual bool anonymousHasStylePropagationOverride() { return false; }
 
+  // Allows objects to adjust |visualEffect|, which is in the space of the
+  // paint invalidation container, for any special raster effects that might
+  // expand the rastered pixel area.
+  virtual void adjustVisualRectForRasterEffects(LayoutRect& visualRect) const {}
+
  protected:
   // This function is called before calling the destructor so that some clean-up
   // can happen regardless of whether they call a virtual function or not. As a

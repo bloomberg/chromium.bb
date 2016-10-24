@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGPath path id='go'",
+          "rect": [89, 94, 100, 100],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGContainer g",
           "rect": [90, 95, 98, 98],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGPath path id='go'",
-          "rect": [90, 95, 98, 98],
-          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",

@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath path",
-          "rect": [98, 98, 120, 120],
+          "rect": [97, 97, 122, 122],
           "reason": "full"
         }
       ]
