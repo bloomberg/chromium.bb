@@ -340,8 +340,126 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
   assert False, 'unreachable'
 
 
+def _get_bucket_map(changelist, options, option_parser):
+  """Returns a dict mapping bucket names (or master names) to
+  builders and tests, for triggering try jobs.
+  """
+  if not options.bot:
+    change = changelist.GetChange(
+        changelist.GetCommonAncestorWithUpstream(), None)
+
+    # Get try masters from PRESUBMIT.py files.
+    masters = presubmit_support.DoGetTryMasters(
+        change=change,
+        changed_files=change.LocalPaths(),
+        repository_root=settings.GetRoot(),
+        default_presubmit=None,
+        project=None,
+        verbose=options.verbose,
+        output_stream=sys.stdout)
+
+    if masters:
+      return masters
+
+    # Fall back to deprecated method: get try slaves from PRESUBMIT.py
+    # files.
+    options.bot = presubmit_support.DoGetTrySlaves(
+        change=change,
+        changed_files=change.LocalPaths(),
+        repository_root=settings.GetRoot(),
+        default_presubmit=None,
+        project=None,
+        verbose=options.verbose,
+        output_stream=sys.stdout)
+
+    if not options.bot:
+      return {}
+
+  if options.bucket:
+    return {options.bucket: {b: [] for b in options.bot}}
+
+  builders_and_tests = {}
+
+  # TODO(machenbach): The old style command-line options don't support
+  # multiple try masters yet.
+  old_style = filter(lambda x: isinstance(x, basestring), options.bot)
+  new_style = filter(lambda x: isinstance(x, tuple), options.bot)
+
+  for bot in old_style:
+    if ':' in bot:
+      option_parser.error('Specifying testfilter is no longer supported')
+    elif ',' in bot:
+      option_parser.error('Specify one bot per --bot flag')
+    else:
+      builders_and_tests.setdefault(bot, [])
+
+  for bot, tests in new_style:
+    builders_and_tests.setdefault(bot, []).extend(tests)
+
+  if not options.master:
+    # TODO(qyearsley): crbug.com/640740
+    options.master, error_message = _get_builder_master(options.bot)
+    if error_message:
+      option_parser.error(
+          'Tryserver master cannot be found because: %s\n'
+          'Please manually specify the tryserver master, e.g. '
+          '"-m tryserver.chromium.linux".' % error_message)
+
+  # Return a master map with one master to be backwards compatible. The
+  # master name defaults to an empty string, which will cause the master
+  # not to be set on rietveld (deprecated).
+  bucket = ''
+  if options.master:
+    # Add the "master." prefix to the master name to obtain the bucket name.
+    bucket = _prefix_master(options.master)
+  return {bucket: builders_and_tests}
+
+
+def _get_builder_master(bot_list):
+  """Fetches a master for the given list of builders.
+
+  Returns a pair (master, error_message), where either master or
+  error_message is None.
+  """
+  map_url = 'https://builders-map.appspot.com/'
+  try:
+    master_map = json.load(urllib2.urlopen(map_url))
+  except urllib2.URLError as e:
+    return None, ('Failed to fetch builder-to-master map from %s. Error: %s.' %
+                  (map_url, e))
+  except ValueError as e:
+    return None, ('Invalid json string from %s. Error: %s.' % (map_url, e))
+  if not master_map:
+    return None, 'Failed to build master map.'
+
+  result_master = ''
+  for bot in bot_list:
+    builder = bot.split(':', 1)[0]
+    master_list = master_map.get(builder, [])
+    if not master_list:
+      return None, ('No matching master for builder %s.' % builder)
+    elif len(master_list) > 1:
+      return None, ('The builder name %s exists in multiple masters %s.' %
+                    (builder, master_list))
+    else:
+      cur_master = master_list[0]
+      if not result_master:
+        result_master = cur_master
+      elif result_master != cur_master:
+        return None, 'The builders do not belong to the same master.'
+  return result_master, None
+
+
 def _trigger_try_jobs(auth_config, changelist, buckets, options,
                       category='git_cl_try', patchset=None):
+  """Sends a request to Buildbucket to trigger try jobs for a changelist.
+
+  Args:
+    auth_config: AuthConfig for Rietveld.
+    changelist: Changelist that the try jobs are associated with.
+    buckets: A nested dict mapping bucket names to builders to tests.
+    options: Command-line options.
+  """
   assert changelist.GetIssue(), 'CL must be uploaded first'
   codereview_url = changelist.GetCodereviewServer()
   assert codereview_url, 'CL must be uploaded first'
@@ -1581,6 +1699,31 @@ class Changelist(object):
     assert new_state in _CQState.ALL_STATES
     assert self.GetIssue()
     return self._codereview_impl.SetCQState(new_state)
+
+  def TriggerDryRun(self):
+    """Triggers a dry run and prints a warning on failure."""
+    # TODO(qyearsley): Either re-use this method in CMDset_commit
+    # and CMDupload, or change CMDtry to trigger dry runs with
+    # just SetCQState, and catch keyboard interrupt and other
+    # errors in that method.
+    try:
+      self.SetCQState(_CQState.DRY_RUN)
+      print('scheduled CQ Dry Run on %s' % self.GetIssueURL())
+      return 0
+    except KeyboardInterrupt:
+      raise
+    except:
+      print('WARNING: failed to trigger CQ Dry Run.\n'
+            'Either:\n'
+            ' * your project has no CQ\n'
+            ' * you don\'t have permission to trigger Dry Run\n'
+            ' * bug in this code (see stack trace below).\n'
+            'Consider specifying which bots to trigger manually '
+            'or asking your project owners for permissions '
+            'or contacting Chrome Infrastructure team at '
+            'https://www.chromium.org/infra\n\n')
+      # Still raise exception so that stack trace is printed.
+      raise
 
   # Forward methods to codereview specific implementation.
 
@@ -4648,37 +4791,6 @@ def GetTreeStatusReason():
   return status['message']
 
 
-def GetBuilderMaster(bot_list):
-  """For a given builder, fetch the master from AE if available."""
-  map_url = 'https://builders-map.appspot.com/'
-  try:
-    master_map = json.load(urllib2.urlopen(map_url))
-  except urllib2.URLError as e:
-    return None, ('Failed to fetch builder-to-master map from %s. Error: %s.' %
-                  (map_url, e))
-  except ValueError as e:
-    return None, ('Invalid json string from %s. Error: %s.' % (map_url, e))
-  if not master_map:
-    return None, 'Failed to build master map.'
-
-  result_master = ''
-  for bot in bot_list:
-    builder = bot.split(':', 1)[0]
-    master_list = master_map.get(builder, [])
-    if not master_list:
-      return None, ('No matching master for builder %s.' % builder)
-    elif len(master_list) > 1:
-      return None, ('The builder name %s exists in multiple masters %s.' %
-                    (builder, master_list))
-    else:
-      cur_master = master_list[0]
-      if not result_master:
-        result_master = cur_master
-      elif result_master != cur_master:
-        return None, 'The builders do not belong to the same master.'
-  return result_master, None
-
-
 def CMDtree(parser, args):
   """Shows the status of the tree."""
   _, args = parser.parse_args(args)
@@ -4696,8 +4808,7 @@ def CMDtree(parser, args):
 
 
 def CMDtry(parser, args):
-  """Triggers try jobs using CQ dry run or BuildBucket for individual builders.
-  """
+  """Triggers try jobs using either BuildBucket or CQ dry run."""
   group = optparse.OptionGroup(parser, 'Try job options')
   group.add_option(
       '-b', '--bot', action='append',
@@ -4772,97 +4883,13 @@ def CMDtry(parser, args):
   if options.bucket and options.master:
     parser.error('Only one of --bucket and --master may be used.')
 
-  if options.bot and not options.master and not options.bucket:
-    options.master, err_msg = GetBuilderMaster(options.bot)
-    if err_msg:
-      parser.error('Tryserver master cannot be found because: %s\n'
-                   'Please manually specify the tryserver master'
-                   ', e.g. "-m tryserver.chromium.linux".' % err_msg)
+  buckets = _get_bucket_map(cl, options, parser)
 
-  def GetMasterMap():
-    """Returns {master: {builder_name: [test_names]}}. Not buckets!"""
-    # Process --bot.
-    if not options.bot:
-      change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
-
-      # Get try masters from PRESUBMIT.py files.
-      masters = presubmit_support.DoGetTryMasters(
-          change,
-          change.LocalPaths(),
-          settings.GetRoot(),
-          None,
-          None,
-          options.verbose,
-          sys.stdout)
-      if masters:
-        return masters
-
-      # Fall back to deprecated method: get try slaves from PRESUBMIT.py files.
-      options.bot = presubmit_support.DoGetTrySlaves(
-          change,
-          change.LocalPaths(),
-          settings.GetRoot(),
-          None,
-          None,
-          options.verbose,
-          sys.stdout)
-
-    if not options.bot:
-      return {}
-
-    builders_and_tests = {}
-    # TODO(machenbach): The old style command-line options don't support
-    # multiple try masters yet.
-    old_style = filter(lambda x: isinstance(x, basestring), options.bot)
-    new_style = filter(lambda x: isinstance(x, tuple), options.bot)
-
-    for bot in old_style:
-      if ':' in bot:
-        parser.error('Specifying testfilter is no longer supported')
-      elif ',' in bot:
-        parser.error('Specify one bot per --bot flag')
-      else:
-        builders_and_tests.setdefault(bot, [])
-
-    for bot, tests in new_style:
-      builders_and_tests.setdefault(bot, []).extend(tests)
-
-    # Return a master map with one master to be backwards compatible. The
-    # master name defaults to an empty string, which will cause the master
-    # not to be set on rietveld (deprecated).
-    return {options.master: builders_and_tests}
-
-  if options.bucket:
-    buckets = {options.bucket: {b: [] for b in options.bot}}
-  else:
-    buckets = {}
-    for master, data in GetMasterMap().iteritems():
-      # Add the "master." prefix to the master name to obtain the bucket name.
-      bucket = _prefix_master(master) if master else ''
-      buckets[bucket] = data
-
-    if not buckets:
-      # Default to triggering Dry Run (see http://crbug.com/625697).
-      if options.verbose:
-        print('git cl try with no bots now defaults to CQ Dry Run.')
-      try:
-        cl.SetCQState(_CQState.DRY_RUN)
-        print('scheduled CQ Dry Run on %s' % cl.GetIssueURL())
-        return 0
-      except KeyboardInterrupt:
-        raise
-      except:
-        print('WARNING: failed to trigger CQ Dry Run.\n'
-              'Either:\n'
-              ' * your project has no CQ\n'
-              ' * you don\'t have permission to trigger Dry Run\n'
-              ' * bug in this code (see stack trace below).\n'
-              'Consider specifying which bots to trigger manually '
-              'or asking your project owners for permissions '
-              'or contacting Chrome Infrastructure team at '
-              'https://www.chromium.org/infra\n\n')
-        # Still raise exception so that stack trace is printed.
-        raise
+  if not buckets:
+    # Default to triggering Dry Run (see http://crbug.com/625697).
+    if options.verbose:
+      print('git cl try with no bots now defaults to CQ Dry Run.')
+    return cl.TriggerDryRun()
 
   for builders in buckets.itervalues():
     if any('triggered' in b for b in builders):
@@ -4880,6 +4907,7 @@ def CMDtry(parser, args):
           'By default, git cl try uses the latest patchset from '
           'codereview, continuing to use patchset %s.\n' %
           (patchset, cl.GetPatchset(), patchset))
+
   try:
     _trigger_try_jobs(auth_config, cl, buckets, options, 'git_cl_try',
                       patchset)
@@ -5001,6 +5029,7 @@ def CMDset_commit(parser, args):
   if options.clear:
     state = _CQState.NONE
   elif options.dry_run:
+      # TODO(qyearsley): Use cl.TriggerDryRun.
     state = _CQState.DRY_RUN
   else:
     state = _CQState.COMMIT
