@@ -17,7 +17,6 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
@@ -136,8 +135,23 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
 };
 
-class EmbeddedWorkerInstanceTestP
-    : public MojoServiceWorkerTestP<EmbeddedWorkerInstanceTest> {};
+class EmbeddedWorkerInstanceTestP : public EmbeddedWorkerInstanceTest,
+                                    public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    is_mojo_enabled_ = GetParam();
+    if (is_mojo_enabled()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kMojoServiceWorker);
+    }
+    EmbeddedWorkerInstanceTest::SetUp();
+  }
+
+  bool is_mojo_enabled() { return is_mojo_enabled_; }
+
+ private:
+  bool is_mojo_enabled_ = false;
+};
 
 // A helper to simulate the start worker sequence is stalled in a worker
 // process.

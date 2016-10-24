@@ -336,10 +336,19 @@ void CountScriptResources(
 
 }  // namespace
 
-class ServiceWorkerBrowserTest
-    : public MojoServiceWorkerTestP<ContentBrowserTest> {
+class ServiceWorkerBrowserTest : public testing::WithParamInterface<bool>,
+                                 public ContentBrowserTest {
  protected:
   using self = ServiceWorkerBrowserTest;
+
+  void SetUp() override {
+    is_mojo_enabled_ = GetParam();
+    if (is_mojo_enabled()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kMojoServiceWorker);
+    }
+    ContentBrowserTest::SetUp();
+  }
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -368,6 +377,7 @@ class ServiceWorkerBrowserTest
 
   ServiceWorkerContextWrapper* wrapper() { return wrapper_.get(); }
   ServiceWorkerContext* public_context() { return wrapper(); }
+  bool is_mojo_enabled() const { return is_mojo_enabled_; }
 
   void AssociateRendererProcessToPattern(const GURL& pattern) {
     wrapper_->process_manager()->AddProcessReferenceToPattern(
@@ -376,6 +386,7 @@ class ServiceWorkerBrowserTest
 
  private:
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
+  bool is_mojo_enabled_ = false;
 };
 
 class ConsoleListener : public EmbeddedWorkerInstance::Listener {

@@ -134,8 +134,8 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
 
 // static
 bool ServiceWorkerUtils::IsMojoForServiceWorkerEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableMojoServiceWorker);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kMojoServiceWorker);
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {

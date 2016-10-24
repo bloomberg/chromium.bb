@@ -710,9 +710,9 @@ class ServiceWorkerContextRecoveryTest
 
  protected:
   void SetUp() override {
-    if (!is_mojo_enabled()) {
+    if (is_mojo_enabled()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kDisableMojoServiceWorker);
+          switches::kMojoServiceWorker);
     }
     ServiceWorkerContextTest::SetUp();
   }
