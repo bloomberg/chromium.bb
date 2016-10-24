@@ -13,8 +13,8 @@
 #include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
 #include "ui/display/chromeos/test/test_display_layout_manager.h"
-#include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/chromeos/test/test_native_display_delegate.h"
+#include "ui/display/fake_display_snapshot.h"
 
 namespace ui {
 namespace test {
@@ -24,11 +24,11 @@ namespace {
 std::unique_ptr<DisplaySnapshot> CreateDisplaySnapshot(
     int64_t id,
     DisplayConnectionType type) {
-  std::unique_ptr<TestDisplaySnapshot> display(new TestDisplaySnapshot());
-  display->set_display_id(id);
-  display->set_type(type);
-
-  return std::move(display);
+  return display::FakeDisplaySnapshot::Builder()
+      .SetId(id)
+      .SetNativeMode(gfx::Size(1024, 768))
+      .SetType(type)
+      .Build();
 }
 
 }  // namespace

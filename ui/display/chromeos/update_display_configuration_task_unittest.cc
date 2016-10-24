@@ -16,8 +16,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
-#include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/chromeos/test/test_native_display_delegate.h"
+#include "ui/display/fake_display_snapshot.h"
 
 namespace ui {
 namespace test {
@@ -154,27 +154,25 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
         configuration_status_(false),
         display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
         power_state_(chromeos::DISPLAY_POWER_ALL_ON) {
-    std::vector<std::unique_ptr<const DisplayMode>> modes;
-    modes.push_back(small_mode_.Clone());
-    displays_[0].set_current_mode(modes[0].get());
-    displays_[0].set_native_mode(modes[0].get());
-    displays_[0].set_modes(std::move(modes));
-    displays_[0].set_display_id(123);
+    displays_[0] = display::FakeDisplaySnapshot::Builder()
+                       .SetId(123)
+                       .SetNativeMode(small_mode_.Clone())
+                       .SetCurrentMode(small_mode_.Clone())
+                       .Build();
 
-    modes.clear();
-    modes.push_back(small_mode_.Clone());
-    modes.push_back(big_mode_.Clone());
-    displays_[1].set_current_mode(modes[1].get());
-    displays_[1].set_native_mode(modes[1].get());
-    displays_[1].set_modes(std::move(modes));
-    displays_[1].set_display_id(456);
+    displays_[1] = display::FakeDisplaySnapshot::Builder()
+                       .SetId(456)
+                       .SetNativeMode(big_mode_.Clone())
+                       .SetCurrentMode(big_mode_.Clone())
+                       .AddMode(small_mode_.Clone())
+                       .Build();
   }
   ~UpdateDisplayConfigurationTaskTest() override {}
 
   void UpdateDisplays(size_t count) {
     std::vector<DisplaySnapshot*> displays;
     for (size_t i = 0; i < count; ++i)
-      displays.push_back(&displays_[i]);
+      displays.push_back(displays_[i].get());
 
     delegate_.set_outputs(displays);
   }
@@ -204,7 +202,7 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
   const DisplayMode small_mode_;
   const DisplayMode big_mode_;
 
-  TestDisplaySnapshot displays_[2];
+  std::unique_ptr<DisplaySnapshot> displays_[2];
 
   bool configured_;
   bool configuration_status_;
@@ -232,7 +230,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, HeadlessConfiguration) {
   EXPECT_TRUE(configuration_status_);
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_HEADLESS, display_state_);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, power_state_);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, nullptr), log_.GetActionsAndClear());
 }
 
 TEST_F(UpdateDisplayConfigurationTaskTest, SingleConfiguration) {
@@ -251,12 +249,14 @@ TEST_F(UpdateDisplayConfigurationTaskTest, SingleConfiguration) {
   EXPECT_TRUE(configuration_status_);
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_SINGLE, display_state_);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, power_state_);
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(), &displays_[0],
-                                            nullptr).c_str(),
-                GetCrtcAction(displays_[0], &small_mode_, gfx::Point()).c_str(),
-                kUngrab, NULL),
-            log_.GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), displays_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
+          kUngrab, nullptr),
+      log_.GetActionsAndClear());
 }
 
 TEST_F(UpdateDisplayConfigurationTaskTest, ExtendedConfiguration) {
@@ -280,11 +280,13 @@ TEST_F(UpdateDisplayConfigurationTaskTest, ExtendedConfiguration) {
           kGrab, GetFramebufferAction(gfx::Size(big_mode_.size().width(),
                                                 small_mode_.size().height() +
                                                     big_mode_.size().height()),
-                                      &displays_[0], &displays_[1]).c_str(),
-          GetCrtcAction(displays_[0], &small_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(displays_[1], &big_mode_,
-                        gfx::Point(0, small_mode_.size().height())).c_str(),
-          kUngrab, NULL),
+                                      displays_[0].get(), displays_[1].get())
+                     .c_str(),
+          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
+          GetCrtcAction(*displays_[1], &big_mode_,
+                        gfx::Point(0, small_mode_.size().height()))
+              .c_str(),
+          kUngrab, nullptr),
       log_.GetActionsAndClear());
 }
 
@@ -304,13 +306,15 @@ TEST_F(UpdateDisplayConfigurationTaskTest, MirrorConfiguration) {
   EXPECT_TRUE(configuration_status_);
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, display_state_);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, power_state_);
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(), &displays_[0],
-                                            &displays_[1]).c_str(),
-                GetCrtcAction(displays_[0], &small_mode_, gfx::Point()).c_str(),
-                GetCrtcAction(displays_[1], &small_mode_, gfx::Point()).c_str(),
-                kUngrab, NULL),
-            log_.GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab, GetFramebufferAction(small_mode_.size(), displays_[0].get(),
+                                      displays_[1].get())
+                     .c_str(),
+          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
+          GetCrtcAction(*displays_[1], &small_mode_, gfx::Point()).c_str(),
+          kUngrab, nullptr),
+      log_.GetActionsAndClear());
 }
 
 TEST_F(UpdateDisplayConfigurationTaskTest, FailMirrorConfiguration) {
@@ -328,7 +332,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, FailMirrorConfiguration) {
 
   EXPECT_TRUE(configured_);
   EXPECT_FALSE(configuration_status_);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, nullptr), log_.GetActionsAndClear());
 }
 
 TEST_F(UpdateDisplayConfigurationTaskTest, FailExtendedConfiguration) {
@@ -351,13 +355,16 @@ TEST_F(UpdateDisplayConfigurationTaskTest, FailExtendedConfiguration) {
           kGrab, GetFramebufferAction(gfx::Size(big_mode_.size().width(),
                                                 small_mode_.size().height() +
                                                     big_mode_.size().height()),
-                                      &displays_[0], &displays_[1]).c_str(),
-          GetCrtcAction(displays_[0], &small_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(displays_[1], &big_mode_,
-                        gfx::Point(0, small_mode_.size().height())).c_str(),
-          GetCrtcAction(displays_[1], &small_mode_,
-                        gfx::Point(0, small_mode_.size().height())).c_str(),
-          kUngrab, NULL),
+                                      displays_[0].get(), displays_[1].get())
+                     .c_str(),
+          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
+          GetCrtcAction(*displays_[1], &big_mode_,
+                        gfx::Point(0, small_mode_.size().height()))
+              .c_str(),
+          GetCrtcAction(*displays_[1], &small_mode_,
+                        gfx::Point(0, small_mode_.size().height()))
+              .c_str(),
+          kUngrab, nullptr),
       log_.GetActionsAndClear());
 }
 
@@ -377,12 +384,14 @@ TEST_F(UpdateDisplayConfigurationTaskTest, SingleChangePowerConfiguration) {
   EXPECT_TRUE(configuration_status_);
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_SINGLE, display_state_);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, power_state_);
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(), &displays_[0],
-                                            nullptr).c_str(),
-                GetCrtcAction(displays_[0], &small_mode_, gfx::Point()).c_str(),
-                kUngrab, NULL),
-            log_.GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), displays_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
+          kUngrab, nullptr),
+      log_.GetActionsAndClear());
 
   // Turn power off
   {
@@ -398,10 +407,11 @@ TEST_F(UpdateDisplayConfigurationTaskTest, SingleChangePowerConfiguration) {
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_SINGLE, display_state_);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_OFF, power_state_);
   EXPECT_EQ(
-      JoinActions(kGrab, GetFramebufferAction(small_mode_.size(), &displays_[0],
-                                              nullptr).c_str(),
-                  GetCrtcAction(displays_[0], nullptr, gfx::Point()).c_str(),
-                  kUngrab, NULL),
+      JoinActions(kGrab, GetFramebufferAction(small_mode_.size(),
+                                              displays_[0].get(), nullptr)
+                             .c_str(),
+                  GetCrtcAction(*displays_[0], nullptr, gfx::Point()).c_str(),
+                  kUngrab, nullptr),
       log_.GetActionsAndClear());
 }
 
@@ -435,7 +445,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, NoopSoftwareMirrorConfiguration) {
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED, display_state_);
   EXPECT_TRUE(layout_manager_.GetSoftwareMirroringController()
               ->SoftwareMirroringEnabled());
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, nullptr), log_.GetActionsAndClear());
 }
 
 TEST_F(UpdateDisplayConfigurationTaskTest,
@@ -474,11 +484,13 @@ TEST_F(UpdateDisplayConfigurationTaskTest,
           kGrab, GetFramebufferAction(gfx::Size(big_mode_.size().width(),
                                                 small_mode_.size().height() +
                                                     big_mode_.size().height()),
-                                      &displays_[0], &displays_[1]).c_str(),
-          GetCrtcAction(displays_[0], &small_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(displays_[1], &big_mode_,
-                        gfx::Point(0, small_mode_.size().height())).c_str(),
-          kUngrab, NULL),
+                                      displays_[0].get(), displays_[1].get())
+                     .c_str(),
+          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
+          GetCrtcAction(*displays_[1], &big_mode_,
+                        gfx::Point(0, small_mode_.size().height()))
+              .c_str(),
+          kUngrab, nullptr),
       log_.GetActionsAndClear());
 }
 

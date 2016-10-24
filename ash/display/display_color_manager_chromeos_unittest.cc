@@ -17,13 +17,14 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
-#include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/chromeos/test/test_native_display_delegate.h"
+#include "ui/display/fake_display_snapshot.h"
 
 namespace ash {
 
 namespace {
 
+constexpr gfx::Size kDisplaySize(1024, 768);
 const char kResetGammaAction[] = "*set_color_correction(id=123)";
 const char kSetGammaAction[] =
     "set_color_correction(id=123,gamma[0]*gamma[255]=???????????\?)";
@@ -165,21 +166,16 @@ class DisplayColorManagerTest : public testing::Test {
 };
 
 TEST_F(DisplayColorManagerTest, VCGTOnly) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  ui::DisplayMode mode(gfx::Size(1024, 768), false, 60.0f);
-  modes.push_back(mode.Clone());
-  const ui::DisplayMode* mode_ptr = modes.back().get();
-  ui::TestDisplaySnapshot snapshot(
-      123, gfx::Point(0, 0),                /* origin */
-      gfx::Size(0, 0),                      /* physical_size */
-      ui::DISPLAY_CONNECTION_TYPE_INTERNAL, /* type */
-      false,                                /* is_aspect_preserving_scaling */
-      0x06af5c10,                           /* product_id */
-      false,                                /* has_color_correction_matrix */
-      std::move(modes),                     /* modes */
-      mode_ptr /* current_mode */, mode_ptr /* native_mode */);
-  std::vector<ui::DisplaySnapshot*> outputs;
-  outputs.push_back(&snapshot);
+  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(kDisplaySize)
+          .SetCurrentMode(kDisplaySize)
+          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetHasColorCorrectionMatrix(false)
+          .SetProductId(0x06af5c10)
+          .Build();
+  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -192,21 +188,16 @@ TEST_F(DisplayColorManagerTest, VCGTOnly) {
 }
 
 TEST_F(DisplayColorManagerTest, VCGTOnlyWithPlatformCTM) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  ui::DisplayMode mode(gfx::Size(1024, 768), false, 60.0f);
-  modes.push_back(mode.Clone());
-  const ui::DisplayMode* mode_ptr = modes.back().get();
-  ui::TestDisplaySnapshot snapshot(
-      123, gfx::Point(0, 0),                /* origin */
-      gfx::Size(0, 0),                      /* physical_size */
-      ui::DISPLAY_CONNECTION_TYPE_INTERNAL, /* type */
-      false,                                /* is_aspect_preserving_scaling */
-      0x06af5c10,                           /* product_id */
-      true,                                 /* has_color_correction_matrix */
-      std::move(modes),                     /* modes */
-      mode_ptr /* current_mode */, mode_ptr /* native_mode */);
-  std::vector<ui::DisplaySnapshot*> outputs;
-  outputs.push_back(&snapshot);
+  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(kDisplaySize)
+          .SetCurrentMode(kDisplaySize)
+          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetHasColorCorrectionMatrix(true)
+          .SetProductId(0x06af5c10)
+          .Build();
+  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   log_->GetActionsAndClear();
@@ -220,21 +211,16 @@ TEST_F(DisplayColorManagerTest, VCGTOnlyWithPlatformCTM) {
 }
 
 TEST_F(DisplayColorManagerTest, FullWithPlatformCTM) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  ui::DisplayMode mode(gfx::Size(1024, 768), false, 60.0f);
-  modes.push_back(mode.Clone());
-  const ui::DisplayMode* mode_ptr = modes.back().get();
-  ui::TestDisplaySnapshot snapshot(
-      123, gfx::Point(0, 0),                /* origin */
-      gfx::Size(0, 0),                      /* physical_size */
-      ui::DISPLAY_CONNECTION_TYPE_INTERNAL, /* type */
-      false,                                /* is_aspect_preserving_scaling */
-      0x4c834a42,                           /* product_id */
-      true,                                 /* has_color_correction_matrix */
-      std::move(modes),                     /* modes */
-      mode_ptr /* current_mode */, mode_ptr /* native_mode */);
-  std::vector<ui::DisplaySnapshot*> outputs;
-  outputs.push_back(&snapshot);
+  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(kDisplaySize)
+          .SetCurrentMode(kDisplaySize)
+          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetHasColorCorrectionMatrix(true)
+          .SetProductId(0x4c834a42)
+          .Build();
+  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -248,21 +234,16 @@ TEST_F(DisplayColorManagerTest, FullWithPlatformCTM) {
 }
 
 TEST_F(DisplayColorManagerTest, FullWithoutPlatformCTM) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  ui::DisplayMode mode(gfx::Size(1024, 768), false, 60.0f);
-  modes.push_back(mode.Clone());
-  const ui::DisplayMode* mode_ptr = modes.back().get();
-  ui::TestDisplaySnapshot snapshot(
-      123, gfx::Point(0, 0),                /* origin */
-      gfx::Size(0, 0),                      /* physical_size */
-      ui::DISPLAY_CONNECTION_TYPE_INTERNAL, /* type */
-      false,                                /* is_aspect_preserving_scaling */
-      0x4c834a42,                           /* product_id */
-      false,                                /* has_color_correction_matrix */
-      std::move(modes),                     /* modes */
-      mode_ptr /* current_mode */, mode_ptr /* native_mode */);
-  std::vector<ui::DisplaySnapshot*> outputs;
-  outputs.push_back(&snapshot);
+  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(kDisplaySize)
+          .SetCurrentMode(kDisplaySize)
+          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetHasColorCorrectionMatrix(false)
+          .SetProductId(0x4c834a42)
+          .Build();
+  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -275,21 +256,16 @@ TEST_F(DisplayColorManagerTest, FullWithoutPlatformCTM) {
 }
 
 TEST_F(DisplayColorManagerTest, NoMatchProductID) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  ui::DisplayMode mode(gfx::Size(1024, 768), false, 60.0f);
-  modes.push_back(mode.Clone());
-  const ui::DisplayMode* mode_ptr = modes.back().get();
-  ui::TestDisplaySnapshot snapshot(
-      123, gfx::Point(0, 0),                /* origin */
-      gfx::Size(0, 0),                      /* physical_size */
-      ui::DISPLAY_CONNECTION_TYPE_INTERNAL, /* type */
-      false,                                /* is_aspect_preserving_scaling */
-      0,                                    /* product_id */
-      false,                                /* has_color_correction_matrix */
-      std::move(modes),                     /* modes */
-      mode_ptr /* current_mode */, mode_ptr /* native_mode */);
-  std::vector<ui::DisplaySnapshot*> outputs;
-  outputs.push_back(&snapshot);
+  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(kDisplaySize)
+          .SetCurrentMode(kDisplaySize)
+          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetHasColorCorrectionMatrix(false)
+          .SetProductId(0)
+          .Build();
+  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -303,21 +279,16 @@ TEST_F(DisplayColorManagerTest, NoMatchProductID) {
 }
 
 TEST_F(DisplayColorManagerTest, NoVCGT) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  ui::DisplayMode mode(gfx::Size(1024, 768), false, 60.0f);
-  modes.push_back(mode.Clone());
-  const ui::DisplayMode* mode_ptr = modes.back().get();
-  ui::TestDisplaySnapshot snapshot(
-      123, gfx::Point(0, 0),                /* origin */
-      gfx::Size(0, 0),                      /* physical_size */
-      ui::DISPLAY_CONNECTION_TYPE_INTERNAL, /* type */
-      false,                                /* is_aspect_preserving_scaling */
-      0x0dae3211,                           /* product_id */
-      false,                                /* has_color_correction_matrix */
-      std::move(modes),                     /* modes */
-      mode_ptr /* current_mode */, mode_ptr /* native_mode */);
-  std::vector<ui::DisplaySnapshot*> outputs;
-  outputs.push_back(&snapshot);
+  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(kDisplaySize)
+          .SetCurrentMode(kDisplaySize)
+          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetHasColorCorrectionMatrix(false)
+          .SetProductId(0x0dae3211)
+          .Build();
+  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();

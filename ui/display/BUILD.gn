@@ -126,28 +126,6 @@ component("display") {
   }
 }
 
-if (is_chromeos) {
-  component("test_util") {
-    output_name = "display_test_util"
-    sources = [
-      "chromeos/test/test_display_snapshot.cc",
-      "chromeos/test/test_display_snapshot.h",
-    ]
-
-    defines = [ "DISPLAY_IMPLEMENTATION" ]
-
-    public_deps = [
-      ":display",
-    ]
-    deps = [
-      "//base",
-      "//ui/display/types",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-    ]
-  }
-}
-
 static_library("test_support") {
   testonly = true
   sources = [
@@ -219,10 +197,6 @@ test("display_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
-
-  if (is_chromeos) {
-    deps += [ ":test_util" ]
-  }
 
   if (use_aura) {
     sources -= [ "screen_unittest.cc" ]

@@ -7,21 +7,25 @@
 #include "base/memory/scoped_vector.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/chromeos/test/test_display_snapshot.h"
+#include "ui/display/fake_display_snapshot.h"
 
 namespace ash {
 namespace {
 
-ui::TestDisplaySnapshot* CreateInternalSnapshot() {
-  ui::TestDisplaySnapshot* output = new ui::TestDisplaySnapshot();
-  output->set_type(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
-  return output;
+std::unique_ptr<ui::DisplaySnapshot> CreateInternalSnapshot() {
+  return display::FakeDisplaySnapshot::Builder()
+      .SetId(123)
+      .SetNativeMode(gfx::Size(1024, 768))
+      .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+      .Build();
 }
 
-ui::TestDisplaySnapshot* CreateVGASnapshot() {
-  ui::TestDisplaySnapshot* output = new ui::TestDisplaySnapshot();
-  output->set_type(ui::DISPLAY_CONNECTION_TYPE_VGA);
-  return output;
+std::unique_ptr<ui::DisplaySnapshot> CreateVGASnapshot() {
+  return display::FakeDisplaySnapshot::Builder()
+      .SetId(456)
+      .SetNativeMode(gfx::Size(1024, 768))
+      .SetType(ui::DISPLAY_CONNECTION_TYPE_VGA)
+      .Build();
 }
 
 class ProjectingObserverTest : public testing::Test {

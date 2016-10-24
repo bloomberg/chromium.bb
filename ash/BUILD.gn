@@ -1167,7 +1167,6 @@ test("ash_content_unittests") {
       "//ui/chromeos",
       "//ui/display",
       "//ui/display:test_support",
-      "//ui/display:test_util",
     ]
   }
 }
@@ -1408,7 +1407,6 @@ test("ash_unittests") {
       "//ui/chromeos",
       "//ui/display",
       "//ui/display:test_support",
-      "//ui/display:test_util",
     ]
   } else {
     sources -= [

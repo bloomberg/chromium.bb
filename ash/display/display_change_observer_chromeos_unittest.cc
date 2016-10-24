@@ -7,59 +7,61 @@
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/display/chromeos/test/test_display_snapshot.h"
+#include "ui/display/fake_display_snapshot.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/types/display_mode.h"
 
 using ui::DisplayConfigurator;
 
-typedef testing::Test DisplayChangeObserverTest;
-
 namespace ash {
 
-TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1200), false, 60));
+namespace {
 
-  // All non-interlaced (as would be seen with different refresh rates).
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 80));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 70));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 60));
+float ComputeDeviceScaleFactor(float diagonal_inch,
+                               const gfx::Rect& resolution) {
+  // We assume that displays have square pixel.
+  float diagonal_pixel = std::sqrt(std::pow(resolution.width(), 2) +
+                                   std::pow(resolution.height(), 2));
+  float dpi = diagonal_pixel / diagonal_inch;
+  return DisplayChangeObserver::FindDeviceScaleFactor(dpi);
+}
 
-  // Interlaced vs non-interlaced.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1280, 720), true, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1280, 720), false, 60));
+std::unique_ptr<ui::DisplayMode> MakeDisplayMode(int width,
+                                                 int height,
+                                                 bool is_interlaced,
+                                                 float refresh_rate) {
+  return base::MakeUnique<ui::DisplayMode>(gfx::Size(width, height),
+                                           is_interlaced, refresh_rate);
+}
 
-  // Interlaced only.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 768), true, 70));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 768), true, 60));
+}  // namespace
 
-  // Mixed.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 600), true, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 600), false, 70));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 600), false, 60));
-
-  // Just one interlaced mode.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(640, 480), true, 60));
-
-  ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_modes(std::move(modes));
+TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
+  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60))
+          // All non-interlaced (as would be seen with different refresh rates).
+          .AddMode(MakeDisplayMode(1920, 1080, false, 80))
+          .AddMode(MakeDisplayMode(1920, 1080, false, 70))
+          .AddMode(MakeDisplayMode(1920, 1080, false, 60))
+          // Interlaced vs non-interlaced.
+          .AddMode(MakeDisplayMode(1280, 720, true, 60))
+          .AddMode(MakeDisplayMode(1280, 720, false, 60))
+          // Interlaced only.
+          .AddMode(MakeDisplayMode(1024, 768, true, 70))
+          .AddMode(MakeDisplayMode(1024, 768, true, 60))
+          // Mixed.
+          .AddMode(MakeDisplayMode(1024, 600, true, 60))
+          .AddMode(MakeDisplayMode(1024, 600, false, 70))
+          .AddMode(MakeDisplayMode(1024, 600, false, 60))
+          // Just one interlaced mode.
+          .AddMode(MakeDisplayMode(640, 480, true, 60))
+          .Build();
 
   display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
-          display_snapshot);
+          *display_snapshot);
   ASSERT_EQ(6u, display_modes.size());
   EXPECT_EQ("640x480", display_modes[0]->size().ToString());
   EXPECT_TRUE(display_modes[0]->is_interlaced());
@@ -84,40 +86,37 @@ TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   EXPECT_EQ("1920x1200", display_modes[5]->size().ToString());
   EXPECT_FALSE(display_modes[5]->is_interlaced());
   EXPECT_EQ(display_modes[5]->refresh_rate(), 60);
+}
 
-  // Outputs without any modes shouldn't cause a crash.
-  modes.clear();
-  display_snapshot.set_modes(std::move(modes));
+TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
+  display::FakeDisplaySnapshot display_snapshot(
+      123, gfx::Point(), gfx::Size(), ui::DISPLAY_CONNECTION_TYPE_UNKNOWN,
+      false, false, false, std::string(), 0,
+      std::vector<std::unique_ptr<const ui::DisplayMode>>(), nullptr, nullptr);
 
-  display_modes = DisplayChangeObserver::GetExternalManagedDisplayModeList(
-      display_snapshot);
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+      DisplayChangeObserver::GetExternalManagedDisplayModeList(
+          display_snapshot);
   EXPECT_EQ(0u, display_modes.size());
 }
 
-TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  // Data picked from peppy.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1366, 768), false, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 768), false, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(800, 600), false, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(600, 600), false, 56.2));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(640, 480), false, 59.9));
-
-  ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_native_mode(modes[0].get());
-  display_snapshot.set_modes(std::move(modes));
+TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
+  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(MakeDisplayMode(1366, 768, false, 60))
+          .AddMode(MakeDisplayMode(1024, 768, false, 60))
+          .AddMode(MakeDisplayMode(800, 600, false, 60))
+          .AddMode(MakeDisplayMode(600, 600, false, 56.2))
+          .AddMode(MakeDisplayMode(640, 480, false, 59.9))
+          .Build();
 
   display::ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1366, 768));
 
   display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
-          info, display_snapshot);
+          info, *display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
   EXPECT_EQ("1366x768", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->native());
@@ -145,19 +144,15 @@ TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
   EXPECT_EQ(display_modes[4]->refresh_rate(), 60);
 }
 
-TEST_F(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
+TEST(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   // Data picked from peppy.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(2560, 1700), false, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(2048, 1536), false, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1440), false, 60));
-
-  ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_native_mode(modes[0].get());
-  display_snapshot.set_modes(std::move(modes));
+  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(MakeDisplayMode(2560, 1700, false, 60))
+          .AddMode(MakeDisplayMode(2048, 1536, false, 60))
+          .AddMode(MakeDisplayMode(1920, 1440, false, 60))
+          .Build();
 
   display::ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 2560, 1700));
@@ -165,7 +160,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
 
   display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
-          info, display_snapshot);
+          info, *display_snapshot);
   ASSERT_EQ(8u, display_modes.size());
   EXPECT_EQ("2560x1700", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->native());
@@ -208,15 +203,13 @@ TEST_F(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   EXPECT_EQ(display_modes[7]->refresh_rate(), 60);
 }
 
-TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
+TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   // Data picked from peppy.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 60));
-
-  ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_native_mode(modes[0].get());
-  display_snapshot.set_modes(std::move(modes));
+  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(MakeDisplayMode(1920, 1080, false, 60))
+          .Build();
 
   display::ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1920, 1080));
@@ -224,7 +217,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
 
   display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
-          info, display_snapshot);
+          info, *display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
   EXPECT_EQ("1920x1080", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->native());
@@ -252,52 +245,33 @@ TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   EXPECT_EQ(display_modes[4]->refresh_rate(), 60);
 }
 
-TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(3840, 2160), false, 30));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1200), false, 60));
-
-  // All non-interlaced (as would be seen with different refresh rates).
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 80));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 70));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 60));
-
-  // Interlaced vs non-interlaced.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1280, 720), true, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1280, 720), false, 60));
-
-  // Interlaced only.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 768), true, 70));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 768), true, 60));
-
-  // Mixed.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 600), true, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 600), false, 70));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1024, 600), false, 60));
-
-  // Just one interlaced mode.
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(640, 480), true, 60));
-
-  ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_native_mode(modes[0].get());
-  display_snapshot.set_modes(std::move(modes));
+TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
+  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(MakeDisplayMode(3840, 2160, false, 30))
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60))
+          // All non-interlaced (as would be seen with different refresh rates).
+          .AddMode(MakeDisplayMode(1920, 1080, false, 80))
+          .AddMode(MakeDisplayMode(1920, 1080, false, 70))
+          .AddMode(MakeDisplayMode(1920, 1080, false, 60))
+          // Interlaced vs non-interlaced.
+          .AddMode(MakeDisplayMode(1280, 720, true, 60))
+          .AddMode(MakeDisplayMode(1280, 720, false, 60))
+          // Interlaced only.
+          .AddMode(MakeDisplayMode(1024, 768, true, 70))
+          .AddMode(MakeDisplayMode(1024, 768, true, 60))
+          // Mixed.
+          .AddMode(MakeDisplayMode(1024, 600, true, 60))
+          .AddMode(MakeDisplayMode(1024, 600, false, 70))
+          .AddMode(MakeDisplayMode(1024, 600, false, 60))
+          // Just one interlaced mode.
+          .AddMode(MakeDisplayMode(640, 480, true, 60))
+          .Build();
 
   display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
-          display_snapshot);
+          *display_snapshot);
   display::ManagedDisplayInfo info(1, "", false);
   info.SetManagedDisplayModes(display_modes);  // Sort as external display.
   display_modes = info.display_modes();
@@ -343,31 +317,9 @@ TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
   EXPECT_FALSE(display_modes[8]->is_interlaced());
   EXPECT_TRUE(display_modes[8]->native());
   EXPECT_EQ(display_modes[8]->refresh_rate(), 30);
-
-  // Outputs without any modes shouldn't cause a crash.
-  modes.clear();
-  display_snapshot.set_native_mode(NULL);
-  display_snapshot.set_modes(std::move(modes));
-
-  display_modes = DisplayChangeObserver::GetExternalManagedDisplayModeList(
-      display_snapshot);
-  EXPECT_EQ(0u, display_modes.size());
 }
 
-namespace {
-
-float ComputeDeviceScaleFactor(float diagonal_inch,
-                               const gfx::Rect& resolution) {
-  // We assume that displays have square pixel.
-  float diagonal_pixel = std::sqrt(std::pow(resolution.width(), 2) +
-                                   std::pow(resolution.height(), 2));
-  float dpi = diagonal_pixel / diagonal_inch;
-  return DisplayChangeObserver::FindDeviceScaleFactor(dpi);
-}
-
-}  // namespace
-
-TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
+TEST(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(19.5f, gfx::Rect(1600, 900)));
 
   // 21.5" 1920x1080
@@ -394,21 +346,17 @@ TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(2.0f, DisplayChangeObserver::FindDeviceScaleFactor(10000.0f));
 }
 
-TEST_F(DisplayChangeObserverTest,
-       FindExternalDisplayNativeModeWhenOverwritten) {
-  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), true, 60));
-  modes.push_back(
-      base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1080), false, 60));
-
-  ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_native_mode(modes[0].get());
-  display_snapshot.set_modes(std::move(modes));
+TEST(DisplayChangeObserverTest, FindExternalDisplayNativeModeWhenOverwritten) {
+  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(MakeDisplayMode(1920, 1080, true, 60))
+          .AddMode(MakeDisplayMode(1920, 1080, false, 60))
+          .Build();
 
   display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
-          display_snapshot);
+          *display_snapshot);
   ASSERT_EQ(2u, display_modes.size());
   EXPECT_EQ("1920x1080", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->is_interlaced());
