@@ -25,11 +25,6 @@ class CORE_TEMPLATE_CLASS_EXPORT EditingAlgorithm : public Traversal {
 
  public:
   static int caretMaxOffset(const Node&);
-  // TODO(yosin) We should make following functions to take |Node&| instead
-  // of |Node*|.
-  static bool isEmptyNonEditableNodeInEditable(const Node*);
-  static bool editingIgnoresContent(const Node*);
-
   // This method is used to create positions in the DOM. It returns the
   // maximum valid offset in a node. It returns 1 for some elements even
   // though they do not have children, which creates technically invalid DOM

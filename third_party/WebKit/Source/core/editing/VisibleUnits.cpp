@@ -1930,7 +1930,7 @@ static PositionTemplate<Strategy> endOfParagraphAlgorithm(
       candidateOffset =
           layoutObject->caretMaxOffset() + text->textStartOffset();
       nextNodeItreator = Strategy::next(*nextNodeItreator, startBlock);
-    } else if (Strategy::editingIgnoresContent(nextNodeItreator) ||
+    } else if (editingIgnoresContent(nextNodeItreator) ||
                isDisplayInsideTable(nextNodeItreator)) {
       candidateNode = nextNodeItreator;
       candidateType = PositionAnchorType::AfterAnchor;
@@ -2847,7 +2847,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(
 
     // Return position after tables and nodes which have content that can be
     // ignored.
-    if (Strategy::editingIgnoresContent(currentNode) ||
+    if (editingIgnoresContent(currentNode) ||
         isDisplayInsideTable(currentNode)) {
       if (currentPos.atEndOfNode())
         return PositionTemplate<Strategy>::afterNode(currentNode);
@@ -3024,7 +3024,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(
 
     // Return position before tables and nodes which have content that can be
     // ignored.
-    if (Strategy::editingIgnoresContent(currentNode) ||
+    if (editingIgnoresContent(currentNode) ||
         isDisplayInsideTable(currentNode)) {
       if (currentPos.offsetInLeafNode() <= layoutObject->caretMinOffset())
         return PositionTemplate<Strategy>::editingPositionOf(
@@ -3172,8 +3172,7 @@ static bool isVisuallyEquivalentCandidateAlgorithm(
     return false;
   }
 
-  if (isDisplayInsideTable(anchorNode) ||
-      Strategy::editingIgnoresContent(anchorNode)) {
+  if (isDisplayInsideTable(anchorNode) || editingIgnoresContent(anchorNode)) {
     if (!position.atFirstEditingPositionForNode() &&
         !position.atLastEditingPositionForNode())
       return false;
