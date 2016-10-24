@@ -58,8 +58,7 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   DCHECK([NSThread isMainThread]);
   if (!configuration_) {
     configuration_.reset([[WKWebViewConfiguration alloc] init]);
-    if (is_off_the_record_ && base::ios::IsRunningOnIOS9OrLater()) {
-      // WKWebsiteDataStore is iOS9 only.
+    if (is_off_the_record_) {
       [configuration_
           setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
     }

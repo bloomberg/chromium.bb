@@ -4,7 +4,6 @@
 
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 
-#include "base/ios/ios_util.h"
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
@@ -169,16 +168,12 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return firstResponder.inputAccessoryView;
 }
 
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 - (UITextInputAssistantItem*)inputAssistantItem {
-  DCHECK(base::ios::IsRunningOnIOS9OrLater())
-      << "Cannot retrieve inputAssistantItem on iOS versions earlier than 9.";
   if (!_contentView)
     return nil;
   UIView* firstResponder = GetFirstResponderSubview(_contentView);
   return firstResponder.inputAssistantItem;
 }
-#endif
 
 - (BOOL)becomeFirstResponder {
   return [_contentView becomeFirstResponder];

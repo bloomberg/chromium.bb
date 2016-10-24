@@ -5038,10 +5038,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)webView:(WKWebView*)webView
     didStartProvisionalNavigation:(WKNavigation*)navigation {
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
-  if (webViewURL.is_empty() && base::ios::IsRunningOnIOS9OrLater()) {
+  if (webViewURL.is_empty()) {
     // May happen on iOS9, however in didCommitNavigation: callback the URL
-    // will be "about:blank". TODO(eugenebut): File radar for this issue
-    // (crbug.com/523549).
+    // will be "about:blank".
     webViewURL = GURL(url::kAboutBlankURL);
   }
 

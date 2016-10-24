@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/test/test_browser_state.h"
@@ -37,11 +36,9 @@ WKWebView* CreateMockWKWebViewWithStubbedJSEvalFunction(
 namespace web {
 
 void SimulateWKWebViewCrash(WKWebView* webView) {
-  if (base::ios::IsRunningOnIOS9OrLater()) {
-    SEL selector = @selector(webViewWebContentProcessDidTerminate:);
-    if ([webView.navigationDelegate respondsToSelector:selector]) {
-      [webView.navigationDelegate performSelector:selector withObject:webView];
-    }
+  SEL selector = @selector(webViewWebContentProcessDidTerminate:);
+  if ([webView.navigationDelegate respondsToSelector:selector]) {
+    [webView.navigationDelegate performSelector:selector withObject:webView];
   }
   [webView performSelector:@selector(_processDidExit)];
 }
