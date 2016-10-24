@@ -119,34 +119,8 @@ crbug.com/627008 imported/wpt/pointerevents/pointerevent_touch-action-table-test
 crbug.com/627008 imported/wpt/uievents/order-of-events/mouse-events/mouseover-out-manual.html [ Timeout ]
 crbug.com/627008 imported/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Timeout ]
 
-# Tests for the service workers, which are skipped in TestExpectations
-crbug.com/602693 imported/wpt/service-workers/service-worker/client-navigate.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/clients-get-cross-origin.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/clients-matchall-client-types.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/controller-on-disconnect.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/controller-on-load.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/controller-on-reload.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-canvas-tainting-cache.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-canvas-tainting.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-csp.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-event-async-respond-with.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-event-respond-with-stops-propagation.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-request-css-base-url.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-response-xhr.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/getregistrations.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/invalid-blobtype.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/invalid-header.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/performance-timeline.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/referer.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/register-wait-forever-in-install-worker.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/request-end-to-end.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/resource-timing.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/service-worker-csp-script.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/update-after-oneday.https.html [ Pass ]
-crbug.com/602693 imported/wpt/service-workers/service-worker/xhr.https.html [ Pass ]
+# Tests for the service workers, which are set as Failure by default in TestExpectations
+crbug.com/602693 imported/wpt/service-workers [ Pass ]
 crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
 
 # TODO(shimazu): remove the following after the wpt auto-roller imports
@@ -164,20 +138,6 @@ crbug.com/602693 imported/wpt/service-workers/stub-4.7.1-install-phase-event.htm
 crbug.com/602693 imported/wpt/service-workers/stub-4.7.2.1-install-event-section.html [ Failure ]
 crbug.com/602693 imported/wpt/service-workers/stub-4.7.4.1-fetch-event-section.html [ Failure ]
 
-# Two bugs are related to fetch-event.https.html (crbug.com/624278, crbug.com/453190)
-crbug.com/624278 imported/wpt/service-workers/service-worker/fetch-event.https.html [ Pass ]
-
-crbug.com/571722 imported/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Pass ]
-
-crbug.com/617886 imported/wpt/service-workers/service-worker/update-recovery.https.html [ Pass ]
-
-crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-request-fallback.https.html [ Pass ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/navigate-window.https.html [ Pass ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/navigation-redirect.https.html [ Pass ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Pass ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/service-worker-csp-connect.https.html [ Pass ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/websocket.https.html [ Pass ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Pass Timeout ]
 crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-inscope.https.html [ Timeout ]
 crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-outscope.https.html [ Timeout ]
