@@ -67,7 +67,7 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
   }
 
   // Dummy method to be called upon bubble closing.
-  void OnBubbleClosed(std::string selected_app_package,
+  void OnBubbleClosed(const std::string& selected_app_package,
                       arc::ArcNavigationThrottle::CloseReason close_reason) {}
 
   std::unique_ptr<IntentPickerBubbleView> bubble_;

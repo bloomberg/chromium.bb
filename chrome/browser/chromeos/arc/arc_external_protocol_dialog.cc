@@ -70,7 +70,7 @@ void OnIntentPickerClosed(int render_process_host_id,
                           int routing_id,
                           const GURL& url,
                           mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
-                          std::string selected_app_package,
+                          const std::string& selected_app_package,
                           ArcNavigationThrottle::CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

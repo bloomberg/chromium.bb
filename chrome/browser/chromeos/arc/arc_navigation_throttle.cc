@@ -248,7 +248,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
 
 void ArcNavigationThrottle::OnIntentPickerClosed(
     mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
-    std::string selected_app_package,
+    const std::string& selected_app_package,
     CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const GURL& url = navigation_handle()->GetURL();

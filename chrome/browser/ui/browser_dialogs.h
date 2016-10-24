@@ -180,7 +180,8 @@ class ContentSettingBubbleViewsBridge {
 // these cases we return a dummy value which won't be used at all and has no
 // significance.
 using IntentPickerResponse =
-    base::Callback<void(std::string, arc::ArcNavigationThrottle::CloseReason)>;
+    base::Callback<void(const std::string&,
+                        arc::ArcNavigationThrottle::CloseReason)>;
 
 // Return a pointer to the IntentPickerBubbleView::ShowBubble method.
 using BubbleShowPtr =
