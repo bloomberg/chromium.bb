@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS TrackEvent constructor, one arg 
-FAIL TrackEvent constructor, two args Failed to construct 'TrackEvent': The provided value is not of type '(VideoTrack or AudioTrack or TextTrack)'
-Harness: the test ran to completion.
-

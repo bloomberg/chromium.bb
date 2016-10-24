@@ -1,0 +1,8 @@
+CONSOLE ERROR: line 14: Uncaught InvalidStateError: Failed to construct 'HTMLElement': this instance is already constructed
+CONSOLE ERROR: line 14: Uncaught InvalidStateError: Failed to construct 'HTMLElement': this instance is already constructed
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught InvalidStateError: Failed to construct 'HTMLElement': this instance is already constructed
+FAIL HTML parser must use the returned value of the custom element constructor instead of the one created before super() call assert_equals: expected (string) "HTML parser must insert the synchronously constructed custom element" but got (boolean) false
+FAIL HTML parser must use the returned value of the custom element constructor instead using the one created in super() call assert_equals: expected (string) "HTML parser must insert the synchronously constructed custom element" but got (boolean) false
+Harness: the test ran to completion.
+

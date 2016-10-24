@@ -1268,7 +1268,7 @@ crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/onfinish.html 
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/playbackRate.html [ Pass Failure ]
 
 crbug.com/600248 imported/wpt/web-animations/animation-model/animation-types/type-per-property.html [ Failure Timeout ]
-crbug.com/600248 imported/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure ]
+crbug.com/600248 imported/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
@@ -1366,6 +1366,13 @@ crbug.com/626703 [ Win10 ] imported/csswg-test/vendor-imports/mozilla/mozilla-ce
 crbug.com/626703 imported/wpt/pointerevents/pointerevent_element_haspointercapture-manual.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 imported/wpt/web-animations/timing-model/animations/set-the-target-effect-of-an-animation.html [ Failure ]
+
+# Newly imported and untriaged tests from WPT that time out.
+crbug.com/626703 imported/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout ]
+crbug.com/626703 imported/wpt/workers/constructors/SharedWorker/URLMismatchError.htm [ Timeout ]
+crbug.com/626703 imported/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
 
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
 

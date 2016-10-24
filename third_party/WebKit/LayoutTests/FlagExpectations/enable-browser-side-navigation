@@ -29,7 +29,7 @@ crbug.com/575210 http/tests/navigation/history-back-across-form-submission-to-fr
 crbug.com/575210 http/tests/navigation/rename-subframe-goback.html [ Failure ]
 crbug.com/575210 imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
 crbug.com/575210 imported/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
-crbug.com/575210 imported/wpt/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
+crbug.com/575210 imported/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
 crbug.com/575210 virtual/stable/http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
 crbug.com/575210 virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Failure ]
 
