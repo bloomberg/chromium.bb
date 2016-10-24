@@ -779,6 +779,7 @@ src_common_dumper_unittest_OBJECTS =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_DEPENDENCIES =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_2) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
 am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
 	src/common/dwarf_cfi_to_module.cc \
@@ -1390,29 +1391,33 @@ am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST =  \
 	src/common/linux/memory_mapped_file.cc \
 	src/common/linux/safe_readlink.cc \
 	src/tools/linux/dump_syms/dump_syms.cc
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am_src_tools_linux_dump_syms_dump_syms_OBJECTS = src/common/dwarf_cfi_to_module.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cu_to_module.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_line_to_module.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/language.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_reader.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_to_module.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/bytereader.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2diehandler.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/elf_reader.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/crc32.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/dump_symbols.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/elf_symbols_to_module.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/elfutils.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/file_id.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/linux_libc_support.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/memory_mapped_file.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/safe_readlink.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/dump_syms/dump_syms.$(OBJEXT)
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am_src_tools_linux_dump_syms_dump_syms_OBJECTS = src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-language.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.$(OBJEXT)
 src_tools_linux_dump_syms_dump_syms_OBJECTS =  \
 	$(am_src_tools_linux_dump_syms_dump_syms_OBJECTS)
-src_tools_linux_dump_syms_dump_syms_LDADD = $(LDADD)
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_dump_syms_dump_syms_DEPENDENCIES =  \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
+src_tools_linux_dump_syms_dump_syms_LINK = $(CXXLD) \
+	$(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am__src_tools_linux_md2core_minidump_2_core_SOURCES_DIST =  \
 	src/common/linux/memory_mapped_file.cc \
 	src/tools/linux/md2core/minidump-2-core.cc \
@@ -1489,7 +1494,8 @@ am__src_tools_mac_dump_syms_dump_syms_mac_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/mac/dump_syms/src_tools_mac_dump_syms_dump_syms_mac-dump_syms_tool.$(OBJEXT)
 src_tools_mac_dump_syms_dump_syms_mac_OBJECTS =  \
 	$(am_src_tools_mac_dump_syms_dump_syms_mac_OBJECTS)
-src_tools_mac_dump_syms_dump_syms_mac_LDADD = $(LDADD)
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_mac_dump_syms_dump_syms_mac_DEPENDENCIES =  \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
 src_tools_mac_dump_syms_dump_syms_mac_LINK = $(CXXLD) \
 	$(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -1951,6 +1957,8 @@ PTHREAD_CC = @PTHREAD_CC@
 PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
 PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
+RUST_DEMANGLE_CFLAGS = @RUST_DEMANGLE_CFLAGS@
+RUST_DEMANGLE_LIBS = @RUST_DEMANGLE_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -2384,6 +2392,12 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/safe_readlink.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/dump_syms/dump_syms.cc
 
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_dump_syms_dump_syms_CXXFLAGS = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(RUST_DEMANGLE_CFLAGS)
+
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_dump_syms_dump_syms_LDADD = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(RUST_DEMANGLE_LIBS)
+
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_SOURCES = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/memory_mapped_file.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump-2-core.cc \
@@ -2432,7 +2446,11 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/third_party/mac_headers \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(RUST_DEMANGLE_CFLAGS) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-DHAVE_MACH_O_NLIST_H
+
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_mac_dump_syms_dump_syms_mac_LDADD = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(RUST_DEMANGLE_LIBS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_SOURCES = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/byte_cursor_unittest.cc \
@@ -2490,10 +2508,12 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_CPPFLAGS = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(RUST_DEMANGLE_CFLAGS) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_LDADD = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(TEST_LIBS) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(RUST_DEMANGLE_LIBS) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_mac_macho_reader_unittest_SOURCES = \
@@ -4429,38 +4449,61 @@ src/tools/linux/core2md/core2md.$(OBJEXT):  \
 src/tools/linux/core2md/core2md$(EXEEXT): $(src_tools_linux_core2md_core2md_OBJECTS) $(src_tools_linux_core2md_core2md_DEPENDENCIES) $(EXTRA_src_tools_linux_core2md_core2md_DEPENDENCIES) src/tools/linux/core2md/$(am__dirstamp)
 	@rm -f src/tools/linux/core2md/core2md$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(src_tools_linux_core2md_core2md_OBJECTS) $(src_tools_linux_core2md_core2md_LDADD) $(LIBS)
-src/common/dwarf_cfi_to_module.$(OBJEXT): src/common/$(am__dirstamp) \
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/dwarf_cu_to_module.$(OBJEXT): src/common/$(am__dirstamp) \
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/dwarf_line_to_module.$(OBJEXT): src/common/$(am__dirstamp) \
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/language.$(OBJEXT): src/common/$(am__dirstamp) \
+src/common/src_tools_linux_dump_syms_dump_syms-language.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/module.$(OBJEXT): src/common/$(am__dirstamp) \
+src/common/src_tools_linux_dump_syms_dump_syms-module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/stabs_reader.$(OBJEXT): src/common/$(am__dirstamp) \
+src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/stabs_to_module.$(OBJEXT): src/common/$(am__dirstamp) \
+src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/dwarf/bytereader.$(OBJEXT):  \
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
-src/common/dwarf/dwarf2diehandler.$(OBJEXT):  \
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
-src/common/dwarf/dwarf2reader.$(OBJEXT):  \
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
-src/common/dwarf/elf_reader.$(OBJEXT):  \
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
-src/common/linux/crc32.$(OBJEXT): src/common/linux/$(am__dirstamp) \
-	src/common/linux/$(DEPDIR)/$(am__dirstamp)
-src/common/linux/dump_symbols.$(OBJEXT):  \
+src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.$(OBJEXT):  \
 	src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
-src/common/linux/elf_symbols_to_module.$(OBJEXT):  \
+src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.$(OBJEXT):  \
 	src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
 src/tools/linux/dump_syms/$(am__dirstamp):
@@ -4469,13 +4512,13 @@ src/tools/linux/dump_syms/$(am__dirstamp):
 src/tools/linux/dump_syms/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/tools/linux/dump_syms/$(DEPDIR)
 	@: > src/tools/linux/dump_syms/$(DEPDIR)/$(am__dirstamp)
-src/tools/linux/dump_syms/dump_syms.$(OBJEXT):  \
+src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.$(OBJEXT):  \
 	src/tools/linux/dump_syms/$(am__dirstamp) \
 	src/tools/linux/dump_syms/$(DEPDIR)/$(am__dirstamp)
 
 src/tools/linux/dump_syms/dump_syms$(EXEEXT): $(src_tools_linux_dump_syms_dump_syms_OBJECTS) $(src_tools_linux_dump_syms_dump_syms_DEPENDENCIES) $(EXTRA_src_tools_linux_dump_syms_dump_syms_DEPENDENCIES) src/tools/linux/dump_syms/$(am__dirstamp)
 	@rm -f src/tools/linux/dump_syms/dump_syms$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(src_tools_linux_dump_syms_dump_syms_OBJECTS) $(src_tools_linux_dump_syms_dump_syms_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(src_tools_linux_dump_syms_dump_syms_LINK) $(src_tools_linux_dump_syms_dump_syms_OBJECTS) $(src_tools_linux_dump_syms_dump_syms_LDADD) $(LIBS)
 src/tools/linux/md2core/$(am__dirstamp):
 	@$(MKDIR_P) src/tools/linux/md2core
 	@: > src/tools/linux/md2core/$(am__dirstamp)
@@ -4648,12 +4691,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_cpuinfo_reader_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/convert_UTF.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/dwarf_cfi_to_module.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/dwarf_cu_to_module.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/dwarf_line_to_module.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/language.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/md5.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-memory_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-byte_cursor_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_cfi_to_module.Po@am__quote@
@@ -4691,6 +4729,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_processor_stackwalker_mips_unittest-test_assembler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_processor_stackwalker_x86_unittest-test_assembler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cfi_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cu_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_line_to_module.Po@am__quote@
@@ -4699,16 +4744,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-stabs_to_module.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/stabs_reader.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/stabs_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/string_conversion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/android/$(DEPDIR)/breakpad_getcontext.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/bytereader.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/dwarf2diehandler.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/dwarf2reader.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/elf_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-bytereader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-bytereader_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-cfi_assembler.Po@am__quote@
@@ -4723,14 +4762,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-dwarf2diehandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-dwarf2reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-elf_reader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-bytereader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2reader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-bytereader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf2diehandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf2reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/crc32.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/dump_symbols.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/elf_core_dump.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/elf_symbols_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/elfutils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/file_id.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/guid_creator.Po@am__quote@
@@ -4757,6 +4797,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_dumper_unittest-safe_readlink_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_dumper_unittest-synth_elf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_dumper_unittest-synth_elf_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elfutils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-file_id.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-linux_libc_support.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-safe_readlink.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/symbol_upload.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/tests/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-crash_generator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/tests/$(DEPDIR)/src_common_dumper_unittest-crash_generator.Po@am__quote@
@@ -4877,7 +4925,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_operand_list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/core2md/$(DEPDIR)/core2md.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/dump_syms/$(DEPDIR)/dump_syms.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/dump_syms/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_syms.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/md2core/$(DEPDIR)/minidump-2-core.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/symupload/$(DEPDIR)/minidump_upload.Po@am__quote@
@@ -6821,6 +6869,286 @@ src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj: src/proc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/synth_minidump.cc' object='src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj `if test -f 'src/processor/synth_minidump.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump.cc'; fi`
+
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.o: src/common/dwarf_cfi_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.o `test -f 'src/common/dwarf_cfi_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_cfi_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_cfi_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.o `test -f 'src/common/dwarf_cfi_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_cfi_to_module.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.obj: src/common/dwarf_cfi_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.obj `if test -f 'src/common/dwarf_cfi_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_cfi_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_cfi_to_module.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_cfi_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.obj `if test -f 'src/common/dwarf_cfi_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_cfi_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_cfi_to_module.cc'; fi`
+
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.o: src/common/dwarf_cu_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.o `test -f 'src/common/dwarf_cu_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_cu_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_cu_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.o `test -f 'src/common/dwarf_cu_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_cu_to_module.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.obj: src/common/dwarf_cu_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.obj `if test -f 'src/common/dwarf_cu_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_cu_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_cu_to_module.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_cu_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.obj `if test -f 'src/common/dwarf_cu_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_cu_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_cu_to_module.cc'; fi`
+
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.o: src/common/dwarf_line_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.o `test -f 'src/common/dwarf_line_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_line_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_line_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.o `test -f 'src/common/dwarf_line_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_line_to_module.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.obj: src/common/dwarf_line_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.obj `if test -f 'src/common/dwarf_line_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_line_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_line_to_module.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_line_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.obj `if test -f 'src/common/dwarf_line_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_line_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_line_to_module.cc'; fi`
+
+src/common/src_tools_linux_dump_syms_dump_syms-language.o: src/common/language.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-language.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-language.o `test -f 'src/common/language.cc' || echo '$(srcdir)/'`src/common/language.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/language.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-language.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-language.o `test -f 'src/common/language.cc' || echo '$(srcdir)/'`src/common/language.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-language.obj: src/common/language.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-language.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-language.obj `if test -f 'src/common/language.cc'; then $(CYGPATH_W) 'src/common/language.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/language.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/language.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-language.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-language.obj `if test -f 'src/common/language.cc'; then $(CYGPATH_W) 'src/common/language.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/language.cc'; fi`
+
+src/common/src_tools_linux_dump_syms_dump_syms-module.o: src/common/module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-module.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-module.o `test -f 'src/common/module.cc' || echo '$(srcdir)/'`src/common/module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-module.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-module.o `test -f 'src/common/module.cc' || echo '$(srcdir)/'`src/common/module.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-module.obj: src/common/module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-module.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-module.obj `if test -f 'src/common/module.cc'; then $(CYGPATH_W) 'src/common/module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/module.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-module.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-module.obj `if test -f 'src/common/module.cc'; then $(CYGPATH_W) 'src/common/module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/module.cc'; fi`
+
+src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o: src/common/stabs_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o `test -f 'src/common/stabs_reader.cc' || echo '$(srcdir)/'`src/common/stabs_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/stabs_reader.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o `test -f 'src/common/stabs_reader.cc' || echo '$(srcdir)/'`src/common/stabs_reader.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.obj: src/common/stabs_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.obj `if test -f 'src/common/stabs_reader.cc'; then $(CYGPATH_W) 'src/common/stabs_reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/stabs_reader.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/stabs_reader.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.obj `if test -f 'src/common/stabs_reader.cc'; then $(CYGPATH_W) 'src/common/stabs_reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/stabs_reader.cc'; fi`
+
+src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.o: src/common/stabs_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.o `test -f 'src/common/stabs_to_module.cc' || echo '$(srcdir)/'`src/common/stabs_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/stabs_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.o `test -f 'src/common/stabs_to_module.cc' || echo '$(srcdir)/'`src/common/stabs_to_module.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.obj: src/common/stabs_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.obj `if test -f 'src/common/stabs_to_module.cc'; then $(CYGPATH_W) 'src/common/stabs_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/stabs_to_module.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/stabs_to_module.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.obj `if test -f 'src/common/stabs_to_module.cc'; then $(CYGPATH_W) 'src/common/stabs_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/stabs_to_module.cc'; fi`
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.o: src/common/dwarf/bytereader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.o -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-bytereader.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.o `test -f 'src/common/dwarf/bytereader.cc' || echo '$(srcdir)/'`src/common/dwarf/bytereader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-bytereader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-bytereader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/bytereader.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.o `test -f 'src/common/dwarf/bytereader.cc' || echo '$(srcdir)/'`src/common/dwarf/bytereader.cc
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.obj: src/common/dwarf/bytereader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.obj -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-bytereader.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.obj `if test -f 'src/common/dwarf/bytereader.cc'; then $(CYGPATH_W) 'src/common/dwarf/bytereader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/bytereader.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-bytereader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-bytereader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/bytereader.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.obj `if test -f 'src/common/dwarf/bytereader.cc'; then $(CYGPATH_W) 'src/common/dwarf/bytereader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/bytereader.cc'; fi`
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.o: src/common/dwarf/dwarf2diehandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.o -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.o `test -f 'src/common/dwarf/dwarf2diehandler.cc' || echo '$(srcdir)/'`src/common/dwarf/dwarf2diehandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/dwarf2diehandler.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.o `test -f 'src/common/dwarf/dwarf2diehandler.cc' || echo '$(srcdir)/'`src/common/dwarf/dwarf2diehandler.cc
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.obj: src/common/dwarf/dwarf2diehandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.obj -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.obj `if test -f 'src/common/dwarf/dwarf2diehandler.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2diehandler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2diehandler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/dwarf2diehandler.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2diehandler.obj `if test -f 'src/common/dwarf/dwarf2diehandler.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2diehandler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2diehandler.cc'; fi`
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.o: src/common/dwarf/dwarf2reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.o -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2reader.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.o `test -f 'src/common/dwarf/dwarf2reader.cc' || echo '$(srcdir)/'`src/common/dwarf/dwarf2reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2reader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/dwarf2reader.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.o `test -f 'src/common/dwarf/dwarf2reader.cc' || echo '$(srcdir)/'`src/common/dwarf/dwarf2reader.cc
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.obj: src/common/dwarf/dwarf2reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.obj -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2reader.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.obj `if test -f 'src/common/dwarf/dwarf2reader.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2reader.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2reader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf2reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/dwarf2reader.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-dwarf2reader.obj `if test -f 'src/common/dwarf/dwarf2reader.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2reader.cc'; fi`
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.o: src/common/dwarf/elf_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.o -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_reader.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.o `test -f 'src/common/dwarf/elf_reader.cc' || echo '$(srcdir)/'`src/common/dwarf/elf_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_reader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/elf_reader.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.o `test -f 'src/common/dwarf/elf_reader.cc' || echo '$(srcdir)/'`src/common/dwarf/elf_reader.cc
+
+src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.obj: src/common/dwarf/elf_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.obj -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_reader.Tpo -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.obj `if test -f 'src/common/dwarf/elf_reader.cc'; then $(CYGPATH_W) 'src/common/dwarf/elf_reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/elf_reader.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_reader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/elf_reader.cc' object='src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_linux_dump_syms_dump_syms-elf_reader.obj `if test -f 'src/common/dwarf/elf_reader.cc'; then $(CYGPATH_W) 'src/common/dwarf/elf_reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/elf_reader.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.o: src/common/linux/crc32.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.o `test -f 'src/common/linux/crc32.cc' || echo '$(srcdir)/'`src/common/linux/crc32.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/crc32.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.o `test -f 'src/common/linux/crc32.cc' || echo '$(srcdir)/'`src/common/linux/crc32.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.obj: src/common/linux/crc32.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.obj `if test -f 'src/common/linux/crc32.cc'; then $(CYGPATH_W) 'src/common/linux/crc32.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/crc32.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/crc32.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-crc32.obj `if test -f 'src/common/linux/crc32.cc'; then $(CYGPATH_W) 'src/common/linux/crc32.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/crc32.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.o: src/common/linux/dump_symbols.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.o `test -f 'src/common/linux/dump_symbols.cc' || echo '$(srcdir)/'`src/common/linux/dump_symbols.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/dump_symbols.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.o `test -f 'src/common/linux/dump_symbols.cc' || echo '$(srcdir)/'`src/common/linux/dump_symbols.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.obj: src/common/linux/dump_symbols.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.obj `if test -f 'src/common/linux/dump_symbols.cc'; then $(CYGPATH_W) 'src/common/linux/dump_symbols.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/dump_symbols.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/dump_symbols.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-dump_symbols.obj `if test -f 'src/common/linux/dump_symbols.cc'; then $(CYGPATH_W) 'src/common/linux/dump_symbols.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/dump_symbols.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.o: src/common/linux/elf_symbols_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.o `test -f 'src/common/linux/elf_symbols_to_module.cc' || echo '$(srcdir)/'`src/common/linux/elf_symbols_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/elf_symbols_to_module.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.o `test -f 'src/common/linux/elf_symbols_to_module.cc' || echo '$(srcdir)/'`src/common/linux/elf_symbols_to_module.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.obj: src/common/linux/elf_symbols_to_module.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.obj `if test -f 'src/common/linux/elf_symbols_to_module.cc'; then $(CYGPATH_W) 'src/common/linux/elf_symbols_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/elf_symbols_to_module.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/elf_symbols_to_module.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.obj `if test -f 'src/common/linux/elf_symbols_to_module.cc'; then $(CYGPATH_W) 'src/common/linux/elf_symbols_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/elf_symbols_to_module.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.o: src/common/linux/elfutils.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elfutils.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.o `test -f 'src/common/linux/elfutils.cc' || echo '$(srcdir)/'`src/common/linux/elfutils.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elfutils.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elfutils.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/elfutils.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.o `test -f 'src/common/linux/elfutils.cc' || echo '$(srcdir)/'`src/common/linux/elfutils.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.obj: src/common/linux/elfutils.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elfutils.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.obj `if test -f 'src/common/linux/elfutils.cc'; then $(CYGPATH_W) 'src/common/linux/elfutils.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/elfutils.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elfutils.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elfutils.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/elfutils.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-elfutils.obj `if test -f 'src/common/linux/elfutils.cc'; then $(CYGPATH_W) 'src/common/linux/elfutils.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/elfutils.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.o: src/common/linux/file_id.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-file_id.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.o `test -f 'src/common/linux/file_id.cc' || echo '$(srcdir)/'`src/common/linux/file_id.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-file_id.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-file_id.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/file_id.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.o `test -f 'src/common/linux/file_id.cc' || echo '$(srcdir)/'`src/common/linux/file_id.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.obj: src/common/linux/file_id.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-file_id.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.obj `if test -f 'src/common/linux/file_id.cc'; then $(CYGPATH_W) 'src/common/linux/file_id.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/file_id.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-file_id.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-file_id.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/file_id.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-file_id.obj `if test -f 'src/common/linux/file_id.cc'; then $(CYGPATH_W) 'src/common/linux/file_id.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/file_id.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.o: src/common/linux/linux_libc_support.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-linux_libc_support.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.o `test -f 'src/common/linux/linux_libc_support.cc' || echo '$(srcdir)/'`src/common/linux/linux_libc_support.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-linux_libc_support.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-linux_libc_support.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/linux_libc_support.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.o `test -f 'src/common/linux/linux_libc_support.cc' || echo '$(srcdir)/'`src/common/linux/linux_libc_support.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.obj: src/common/linux/linux_libc_support.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-linux_libc_support.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.obj `if test -f 'src/common/linux/linux_libc_support.cc'; then $(CYGPATH_W) 'src/common/linux/linux_libc_support.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/linux_libc_support.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-linux_libc_support.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-linux_libc_support.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/linux_libc_support.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-linux_libc_support.obj `if test -f 'src/common/linux/linux_libc_support.cc'; then $(CYGPATH_W) 'src/common/linux/linux_libc_support.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/linux_libc_support.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.o: src/common/linux/memory_mapped_file.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.o `test -f 'src/common/linux/memory_mapped_file.cc' || echo '$(srcdir)/'`src/common/linux/memory_mapped_file.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/memory_mapped_file.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.o `test -f 'src/common/linux/memory_mapped_file.cc' || echo '$(srcdir)/'`src/common/linux/memory_mapped_file.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.obj: src/common/linux/memory_mapped_file.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.obj `if test -f 'src/common/linux/memory_mapped_file.cc'; then $(CYGPATH_W) 'src/common/linux/memory_mapped_file.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/memory_mapped_file.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/memory_mapped_file.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-memory_mapped_file.obj `if test -f 'src/common/linux/memory_mapped_file.cc'; then $(CYGPATH_W) 'src/common/linux/memory_mapped_file.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/memory_mapped_file.cc'; fi`
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.o: src/common/linux/safe_readlink.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-safe_readlink.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.o `test -f 'src/common/linux/safe_readlink.cc' || echo '$(srcdir)/'`src/common/linux/safe_readlink.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-safe_readlink.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-safe_readlink.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/safe_readlink.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.o `test -f 'src/common/linux/safe_readlink.cc' || echo '$(srcdir)/'`src/common/linux/safe_readlink.cc
+
+src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.obj: src/common/linux/safe_readlink.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-safe_readlink.Tpo -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.obj `if test -f 'src/common/linux/safe_readlink.cc'; then $(CYGPATH_W) 'src/common/linux/safe_readlink.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/safe_readlink.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-safe_readlink.Tpo src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-safe_readlink.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/safe_readlink.cc' object='src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_tools_linux_dump_syms_dump_syms-safe_readlink.obj `if test -f 'src/common/linux/safe_readlink.cc'; then $(CYGPATH_W) 'src/common/linux/safe_readlink.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/safe_readlink.cc'; fi`
+
+src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.o: src/tools/linux/dump_syms/dump_syms.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.o -MD -MP -MF src/tools/linux/dump_syms/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_syms.Tpo -c -o src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.o `test -f 'src/tools/linux/dump_syms/dump_syms.cc' || echo '$(srcdir)/'`src/tools/linux/dump_syms/dump_syms.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/tools/linux/dump_syms/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_syms.Tpo src/tools/linux/dump_syms/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_syms.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/tools/linux/dump_syms/dump_syms.cc' object='src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.o `test -f 'src/tools/linux/dump_syms/dump_syms.cc' || echo '$(srcdir)/'`src/tools/linux/dump_syms/dump_syms.cc
+
+src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.obj: src/tools/linux/dump_syms/dump_syms.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.obj -MD -MP -MF src/tools/linux/dump_syms/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_syms.Tpo -c -o src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.obj `if test -f 'src/tools/linux/dump_syms/dump_syms.cc'; then $(CYGPATH_W) 'src/tools/linux/dump_syms/dump_syms.cc'; else $(CYGPATH_W) '$(srcdir)/src/tools/linux/dump_syms/dump_syms.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/tools/linux/dump_syms/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_syms.Tpo src/tools/linux/dump_syms/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_syms.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/tools/linux/dump_syms/dump_syms.cc' object='src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.obj `if test -f 'src/tools/linux/dump_syms/dump_syms.cc'; then $(CYGPATH_W) 'src/tools/linux/dump_syms/dump_syms.cc'; else $(CYGPATH_W) '$(srcdir)/src/tools/linux/dump_syms/dump_syms.cc'; fi`
 
 src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o: src/tools/linux/md2core/minidump_memory_range_unittest.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o -MD -MP -MF src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Tpo -c -o src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o `test -f 'src/tools/linux/md2core/minidump_memory_range_unittest.cc' || echo '$(srcdir)/'`src/tools/linux/md2core/minidump_memory_range_unittest.cc

@@ -40,6 +40,10 @@
 #include <cxxabi.h>
 #endif
 
+#if defined(HAVE_RUST_DEMANGLE)
+#include <rust_demangle.h>
+#endif
+
 #include <limits>
 
 namespace {
@@ -136,6 +140,40 @@ class SwiftLanguage: public Language {
 
 SwiftLanguage SwiftLanguageSingleton;
 
+// Rust language-specific operations.
+class RustLanguage: public Language {
+ public:
+  RustLanguage() {}
+
+  string MakeQualifiedName(const string &parent_name,
+                           const string &name) const {
+    return MakeQualifiedNameWithSeparator(parent_name, ".", name);
+  }
+
+  virtual DemangleResult DemangleName(const string& mangled,
+                                      std::string* demangled) const {
+    // Rust names use GCC C++ name mangling, but demangling them with
+    // abi_demangle doesn't produce stellar results due to them having
+    // another layer of encoding.
+    // If callers provide rustc-demangle, use that.
+#if defined(HAVE_RUST_DEMANGLE)
+    char* rust_demangled = rust_demangle(mangled.c_str());
+    if (rust_demangled == nullptr) {
+      return kDemangleFailure;
+    }
+    demangled->assign(rust_demangled);
+    free_rust_demangled_name(rust_demangled);
+#else
+    // Otherwise, pass through the mangled name so callers can demangle
+    // after the fact.
+    demangled->assign(mangled);
+#endif
+    return kDemangleSuccess;
+  }
+};
+
+RustLanguage RustLanguageSingleton;
+
 // Assembler language-specific operations.
 class AssemblerLanguage: public Language {
  public:
@@ -153,6 +191,7 @@ AssemblerLanguage AssemblerLanguageSingleton;
 const Language * const Language::CPlusPlus = &CPPLanguageSingleton;
 const Language * const Language::Java = &JavaLanguageSingleton;
 const Language * const Language::Swift = &SwiftLanguageSingleton;
+const Language * const Language::Rust = &RustLanguageSingleton;
 const Language * const Language::Assembler = &AssemblerLanguageSingleton;
 
 } // namespace google_breakpad

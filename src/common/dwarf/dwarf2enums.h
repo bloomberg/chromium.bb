@@ -544,6 +544,7 @@ enum DwarfLanguage
     DW_LANG_ObjC_plus_plus           =0x0011,
     DW_LANG_UPC                      =0x0012,
     DW_LANG_D                        =0x0013,
+    DW_LANG_Rust                     =0x001c,
     DW_LANG_Swift                    =0x001e,
     // Implementation-defined language code range.
     DW_LANG_lo_user = 0x8000,

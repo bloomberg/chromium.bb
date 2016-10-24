@@ -96,6 +96,7 @@ class Language {
   static const Language * const CPlusPlus,
                         * const Java,
                         * const Swift,
+                        * const Rust,
                         * const Assembler;
 };
 

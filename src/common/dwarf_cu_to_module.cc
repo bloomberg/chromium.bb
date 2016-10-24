@@ -777,6 +777,10 @@ void DwarfCUToModule::SetLanguage(DwarfLanguage language) {
       cu_context_->language = Language::Swift;
       break;
 
+    case dwarf2reader::DW_LANG_Rust:
+      cu_context_->language = Language::Rust;
+      break;
+
     // DWARF has no generic language code for assembly language; this is
     // what the GNU toolchain uses.
     case dwarf2reader::DW_LANG_Mips_Assembler:

@@ -195,6 +195,31 @@ AC_ARG_ENABLE(selftest,
               [selftest=false])
 AM_CONDITIONAL(SELFTEST, test x$selftest = xtrue)
 
+AC_ARG_WITH(rust-demangle,
+            AS_HELP_STRING([--with-rust-demangle=/path/to/rust-demangle-capi],
+                             [Link against the rust-demangle library]
+                             [to demangle Rust language symbols during]
+                             [symbol dumping (default is no)]
+                             [Pass the path to the crate root.]),
+            [case "${withval}" in
+               yes)
+                 AC_MSG_ERROR(You must pass the path to the rust-demangle-capi crate for --with-rust-demangle)
+                 ;;
+               no)
+                 rust_demangle=false
+                 ;;
+               *)
+                 if ! test -f "${withval}/Cargo.toml"; then
+                   AC_MSG_ERROR(You must pass the path to the rust-demangle-capi crate for --with-rust-demangle)
+                 fi
+                 RUST_DEMANGLE_CFLAGS="-DHAVE_RUST_DEMANGLE -I${withval}/target/include"
+                 RUST_DEMANGLE_LIBS="-L${withval}/target/release -lrust_demangle -lpthread -ldl"
+                 ;;
+             esac],
+            [rust_demangle=false])
+AC_ARG_VAR([RUST_DEMANGLE_CFLAGS], [Compiler flags for rust-demangle])
+AC_ARG_VAR([RUST_DEMANGLE_LIBS], [Linker flags for rust-demangle])
+
 AC_CONFIG_FILES(m4_flatten([
   breakpad.pc
   breakpad-client.pc
