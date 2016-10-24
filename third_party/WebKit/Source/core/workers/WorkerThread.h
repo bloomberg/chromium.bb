@@ -34,6 +34,7 @@
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
 #include "platform/WaitableEvent.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/PassRefPtr.h"
@@ -90,7 +91,7 @@ class CORE_EXPORT WorkerThreadLifecycleContext final
 //    any interruptions.
 //  - Queued tasks never run.
 //  - postTask() and appendDebuggerTask() reject posting new tasks.
-class CORE_EXPORT WorkerThread {
+class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
  public:
   // Represents how this thread is terminated. Used for UMA. Append only.
   enum class ExitCode {
@@ -111,6 +112,10 @@ class CORE_EXPORT WorkerThread {
   // (by *blocking* the calling thread) until the worker(s) is/are shut down.
   void terminateAndWait();
   static void terminateAndWaitForAllWorkers();
+
+  // WebThread::TaskObserver.
+  void willProcessTask() override;
+  void didProcessTask() override;
 
   virtual WorkerBackingThread& workerBackingThread() = 0;
   virtual void clearWorkerBackingThread() = 0;
@@ -186,7 +191,6 @@ class CORE_EXPORT WorkerThread {
                            Terminate_WhileDebuggerTaskIsRunning);
 
   class ForceTerminationTask;
-  class WorkerMicrotaskRunner;
 
   enum class TerminationMode {
     // Synchronously terminate the worker execution. Please be careful to
@@ -267,7 +271,6 @@ class CORE_EXPORT WorkerThread {
   long long m_forceTerminationDelayInMs;
 
   std::unique_ptr<InspectorTaskRunner> m_inspectorTaskRunner;
-  std::unique_ptr<WorkerMicrotaskRunner> m_microtaskRunner;
 
   RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
   WorkerReportingProxy& m_workerReportingProxy;

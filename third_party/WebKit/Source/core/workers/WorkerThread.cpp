@@ -48,7 +48,6 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
@@ -110,42 +109,6 @@ class WorkerThread::ForceTerminationTask final {
 
   WorkerThread* m_workerThread;
   std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
-};
-
-class WorkerThread::WorkerMicrotaskRunner final
-    : public WebThread::TaskObserver {
- public:
-  explicit WorkerMicrotaskRunner(WorkerThread* workerThread)
-      : m_workerThread(workerThread) {}
-
-  void willProcessTask() override {
-    // No tasks should get executed after we have closed.
-    DCHECK(!m_workerThread->globalScope()->isClosing());
-
-    if (m_workerThread->isForciblyTerminated()) {
-      // The script has been terminated forcibly, which means we need to
-      // ask objects in the thread to stop working as soon as possible.
-      m_workerThread->prepareForShutdownOnWorkerThread();
-    }
-  }
-
-  void didProcessTask() override {
-    Microtask::performCheckpoint(m_workerThread->isolate());
-    WorkerOrWorkletGlobalScope* globalScope = m_workerThread->globalScope();
-    globalScope->scriptController()->getRejectedPromises()->processQueue();
-    if (globalScope->isClosing()) {
-      // |m_workerThread| will eventually be requested to terminate.
-      m_workerThread->workerReportingProxy().didCloseWorkerGlobalScope();
-
-      // Stop further worker tasks to run after this point.
-      m_workerThread->prepareForShutdownOnWorkerThread();
-    }
-  }
-
- private:
-  // Thread owns the microtask runner; reference remains
-  // valid for the lifetime of this object.
-  WorkerThread* m_workerThread;
 };
 
 static Mutex& threadSetMutex() {
@@ -235,6 +198,32 @@ void WorkerThread::terminateAndWaitForAllWorkers() {
   // Destruct base::Thread and join the underlying system threads.
   for (WorkerThread* thread : threads)
     thread->clearWorkerBackingThread();
+}
+
+void WorkerThread::willProcessTask() {
+  DCHECK(isCurrentThread());
+
+  // No tasks should get executed after we have closed.
+  DCHECK(!globalScope()->isClosing());
+
+  if (isForciblyTerminated()) {
+    // The script has been terminated forcibly, which means we need to
+    // ask objects in the thread to stop working as soon as possible.
+    prepareForShutdownOnWorkerThread();
+  }
+}
+
+void WorkerThread::didProcessTask() {
+  DCHECK(isCurrentThread());
+  Microtask::performCheckpoint(isolate());
+  globalScope()->scriptController()->getRejectedPromises()->processQueue();
+  if (globalScope()->isClosing()) {
+    // This WorkerThread will eventually be requested to terminate.
+    workerReportingProxy().didCloseWorkerGlobalScope();
+
+    // Stop further worker tasks to run after this point.
+    prepareForShutdownOnWorkerThread();
+  }
 }
 
 v8::Isolate* WorkerThread::isolate() {
@@ -489,9 +478,7 @@ void WorkerThread::initializeOnWorkerThread(
     if (shouldAttachThreadDebugger())
       V8PerIsolateData::from(isolate())->setThreadDebugger(
           wrapUnique(new WorkerThreadDebugger(this, isolate())));
-    m_microtaskRunner = wrapUnique(new WorkerMicrotaskRunner(this));
-    workerBackingThread().backingThread().addTaskObserver(
-        m_microtaskRunner.get());
+    workerBackingThread().backingThread().addTaskObserver(this);
 
     // Optimize for memory usage instead of latency for the worker isolate.
     isolate()->IsolateInBackgroundNotification();
@@ -560,8 +547,7 @@ void WorkerThread::prepareForShutdownOnWorkerThread() {
     m_workerInspectorController.clear();
   }
   m_consoleMessageStorage.clear();
-  workerBackingThread().backingThread().removeTaskObserver(
-      m_microtaskRunner.get());
+  workerBackingThread().backingThread().removeTaskObserver(this);
 }
 
 void WorkerThread::performShutdownOnWorkerThread() {
@@ -579,8 +565,6 @@ void WorkerThread::performShutdownOnWorkerThread() {
   if (isOwningBackingThread())
     workerBackingThread().shutdown();
   // We must not touch workerBackingThread() from now on.
-
-  m_microtaskRunner = nullptr;
 
   // Notify the proxy that the WorkerOrWorkletGlobalScope has been disposed
   // of. This can free this thread object, hence it must not be touched
