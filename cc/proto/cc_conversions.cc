@@ -45,4 +45,28 @@ ScrollbarOrientation ScrollbarOrientationFromProto(
   return ScrollbarOrientation::HORIZONTAL;
 }
 
+proto::ClipNodeData::ClipType ClipNodeTypeToProto(
+    const ClipNode::ClipType& clip_type) {
+  switch (clip_type) {
+    case ClipNode::ClipType::NONE:
+      return proto::ClipNodeData::NONE;
+    case ClipNode::ClipType::APPLIES_LOCAL_CLIP:
+      return proto::ClipNodeData::APPLIES_LOCAL_CLIP;
+  }
+  NOTREACHED();
+  return proto::ClipNodeData::NONE;
+}
+
+ClipNode::ClipType ClipNodeTypeFromProto(
+    const proto::ClipNodeData::ClipType& clip_type) {
+  switch (clip_type) {
+    case proto::ClipNodeData::NONE:
+      return ClipNode::ClipType::NONE;
+    case proto::ClipNodeData::APPLIES_LOCAL_CLIP:
+      return ClipNode::ClipType::APPLIES_LOCAL_CLIP;
+  }
+  NOTREACHED();
+  return ClipNode::ClipType::NONE;
+}
+
 }  // namespace cc

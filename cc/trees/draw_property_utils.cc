@@ -266,12 +266,13 @@ static ConditionalClip ComputeAccumulatedClip(
 
   // TODO(weiliangc): If we don't create clip for render surface, we don't need
   // to check applies_local_clip.
-  while (!clip_node->applies_local_clip && parent_chain.size() > 0) {
+  while (clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP &&
+         parent_chain.size() > 0) {
     clip_node = parent_chain.top();
     parent_chain.pop();
   }
 
-  if (!clip_node->applies_local_clip)
+  if (clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP)
     // No clip node applying clip in between.
     return ConditionalClip{false, gfx::RectF()};
 
@@ -283,7 +284,7 @@ static ConditionalClip ComputeAccumulatedClip(
   while (parent_chain.size() > 0) {
     clip_node = parent_chain.top();
     parent_chain.pop();
-    if (!clip_node->applies_local_clip) {
+    if (clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
       continue;
     }
     ConditionalClip current_clip = ComputeCurrentClip(
@@ -856,7 +857,7 @@ void ComputeClips(PropertyTrees* property_trees,
     // need to clip using our parent clip and if we don't propagate it here,
     // it will be lost.
     if (clip_node->resets_clip && non_root_surfaces_enabled) {
-      if (clip_node->applies_local_clip) {
+      if (clip_node->clip_type == ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
         clip_node->clip_in_target_space = MathUtil::MapClippedRect(
             transform_tree.ToTarget(clip_node->transform_id,
                                     clip_node->target_effect_id),
@@ -874,7 +875,8 @@ void ComputeClips(PropertyTrees* property_trees,
       ResetIfHasNanCoordinate(&clip_node->combined_clip_in_target_space);
       continue;
     }
-    bool use_only_parent_clip = !clip_node->applies_local_clip;
+    bool use_only_parent_clip =
+        clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP;
     if (use_only_parent_clip) {
       clip_node->combined_clip_in_target_space =
           parent_combined_clip_in_target_space;

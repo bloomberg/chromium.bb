@@ -77,8 +77,13 @@ message StickyPositionNodeData {
 }
 
 // Proto for struct ClipNodeData.
-// NEXT ID: 13
+// NEXT ID: 14
 message ClipNodeData {
+  enum ClipType {
+    NONE = 1;
+    APPLIES_LOCAL_CLIP = 2;
+  }
+  optional ClipType clip_type = 13;
   optional RectF clip = 1;
   optional RectF combined_clip_in_target_space = 2;
   optional RectF clip_in_target_space = 3;

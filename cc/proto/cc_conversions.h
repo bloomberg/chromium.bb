@@ -8,6 +8,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/proto/layer.pb.h"
+#include "cc/proto/property_tree.pb.h"
+#include "cc/trees/clip_node.h"
 
 namespace cc {
 class Region;
@@ -27,6 +29,11 @@ ScrollbarOrientationToProto(const ScrollbarOrientation& orientation);
 CC_EXPORT ScrollbarOrientation ScrollbarOrientationFromProto(
     const proto::SolidColorScrollbarLayerProperties::ScrollbarOrientation&
         proto);
+
+proto::ClipNodeData::ClipType ClipNodeTypeToProto(
+    const ClipNode::ClipType& clip_type);
+ClipNode::ClipType ClipNodeTypeFromProto(
+    const proto::ClipNodeData::ClipType& clip_type);
 
 }  // namespace cc
 

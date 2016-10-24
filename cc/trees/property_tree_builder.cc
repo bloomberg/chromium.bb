@@ -369,7 +369,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       // of its own, but clips from ancestor nodes don't need to be considered
       // when computing clip rects or visibility.
       has_unclipped_surface = true;
-      DCHECK(!parent->applies_local_clip);
+      DCHECK_NE(parent->clip_type, ClipNode::ClipType::APPLIES_LOCAL_CLIP);
     }
     // A surface with unclipped descendants cannot be clipped by its ancestor
     // clip at draw time since the unclipped descendants aren't affected by the
@@ -429,7 +429,10 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       node.layer_clipping_uses_only_local_clip = false;
     }
 
-    node.applies_local_clip = layer_clips_subtree;
+    if (layer_clips_subtree)
+      node.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
+    else
+      node.clip_type = ClipNode::ClipType::NONE;
     node.resets_clip = has_unclipped_surface;
     node.target_is_clipped = data_for_children->target_is_clipped;
     node.layers_are_clipped = layers_are_clipped;
@@ -1388,7 +1391,7 @@ void BuildPropertyTreesTopLevelInternal(
 
   ClipNode root_clip;
   root_clip.resets_clip = true;
-  root_clip.applies_local_clip = true;
+  root_clip.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   root_clip.clip = gfx::RectF(viewport);
   root_clip.transform_id = kRootPropertyTreeNodeId;
   data_for_recursion.clip_tree_parent =

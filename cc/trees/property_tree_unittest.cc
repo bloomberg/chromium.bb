@@ -113,7 +113,7 @@ TEST(PropertyTreeSerializationTest, ClipNodeSerialization) {
   original.transform_id = 2;
   original.target_transform_id = 3;
   original.target_effect_id = 4;
-  original.applies_local_clip = false;
+  original.clip_type = ClipNode::ClipType::NONE;
   original.layer_clipping_uses_only_local_clip = false;
   original.target_is_clipped = false;
   original.layers_are_clipped = false;
@@ -138,7 +138,7 @@ TEST(PropertyTreeSerializationTest, ClipTreeSerialization) {
   ClipNode second;
   second.owner_id = 2;
   second.transform_id = 4;
-  second.applies_local_clip = true;
+  second.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   ClipNode third;
   third.owner_id = 3;
   third.target_transform_id = 3;

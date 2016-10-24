@@ -364,7 +364,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneClip) {
 
   const cc::ClipNode* clipNode =
       propertyTrees().clip_tree.Node(layer->clip_tree_index());
-  EXPECT_TRUE(clipNode->applies_local_clip);
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, clipNode->clip_type);
   EXPECT_TRUE(clipNode->layers_are_clipped);
   EXPECT_EQ(gfx::RectF(100, 100, 300, 200), clipNode->clip);
 }
@@ -413,14 +413,14 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedClips) {
   EXPECT_EQ(whiteLayer->clip_tree_index(), darkGrayLayer->clip_tree_index());
   const cc::ClipNode* outerClip =
       propertyTrees().clip_tree.Node(whiteLayer->clip_tree_index());
-  EXPECT_TRUE(outerClip->applies_local_clip);
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, outerClip->clip_type);
   EXPECT_TRUE(outerClip->layers_are_clipped);
   EXPECT_EQ(gfx::RectF(100, 100, 700, 700), outerClip->clip);
 
   EXPECT_EQ(lightGrayLayer->clip_tree_index(), blackLayer->clip_tree_index());
   const cc::ClipNode* innerClip =
       propertyTrees().clip_tree.Node(blackLayer->clip_tree_index());
-  EXPECT_TRUE(innerClip->applies_local_clip);
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, innerClip->clip_type);
   EXPECT_TRUE(innerClip->layers_are_clipped);
   EXPECT_EQ(gfx::RectF(200, 200, 700, 100), innerClip->clip);
   EXPECT_EQ(outerClip->id, innerClip->parent_id);
@@ -451,7 +451,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DeeplyNestedClips) {
       propertyTrees().clip_tree.Node(drawingLayer->clip_tree_index());
   for (auto it = clips.rbegin(); it != clips.rend(); ++it) {
     const ClipPaintPropertyNode* paintClipNode = it->get();
-    EXPECT_TRUE(clipNode->applies_local_clip);
+    EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, clipNode->clip_type);
     EXPECT_TRUE(clipNode->layers_are_clipped);
     EXPECT_EQ(paintClipNode->clipRect().rect(), clipNode->clip);
     clipNode = propertyTrees().clip_tree.Node(clipNode->parent_id);
@@ -481,7 +481,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SiblingClips) {
   EXPECT_EQ(gfx::Transform(), whiteLayer->screen_space_transform());
   const cc::ClipNode* whiteClip =
       propertyTrees().clip_tree.Node(whiteLayer->clip_tree_index());
-  EXPECT_TRUE(whiteClip->applies_local_clip);
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, whiteClip->clip_type);
   EXPECT_TRUE(whiteClip->layers_are_clipped);
   ASSERT_EQ(gfx::RectF(0, 0, 400, 600), whiteClip->clip);
 
@@ -491,14 +491,15 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SiblingClips) {
   EXPECT_EQ(gfx::Transform(), blackLayer->screen_space_transform());
   const cc::ClipNode* blackClip =
       propertyTrees().clip_tree.Node(blackLayer->clip_tree_index());
-  EXPECT_TRUE(blackClip->applies_local_clip);
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, blackClip->clip_type);
   EXPECT_TRUE(blackClip->layers_are_clipped);
   ASSERT_EQ(gfx::RectF(400, 0, 400, 600), blackClip->clip);
 
   EXPECT_EQ(whiteClip->parent_id, blackClip->parent_id);
   const cc::ClipNode* commonClipNode =
       propertyTrees().clip_tree.Node(whiteClip->parent_id);
-  EXPECT_TRUE(commonClipNode->applies_local_clip);
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP,
+            commonClipNode->clip_type);
   EXPECT_TRUE(commonClipNode->layers_are_clipped);
   ASSERT_EQ(gfx::RectF(0, 0, 800, 600), commonClipNode->clip);
 }

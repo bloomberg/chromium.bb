@@ -522,7 +522,7 @@ int PropertyTreeManager::compositorIdForClipNode(
       compositorIdForTransformNode(clipNode->localTransformSpace());
   compositorNode.target_transform_id = kRealRootNodeId;
   compositorNode.target_effect_id = kSecondaryRootNodeId;
-  compositorNode.applies_local_clip = true;
+  compositorNode.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   compositorNode.layers_are_clipped = true;
   compositorNode.layers_are_clipped_when_surfaces_disabled = true;
 

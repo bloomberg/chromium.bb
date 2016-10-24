@@ -9333,7 +9333,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
 
   ClipTree& clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
-  EXPECT_FALSE(clip_node->applies_local_clip);
+  EXPECT_EQ(clip_node->clip_type, ClipNode::ClipType::NONE);
   EXPECT_EQ(gfx::Rect(20, 20), test_layer->visible_layer_rect());
 
   // Also test the visible rects computed by combining clips in root space.
