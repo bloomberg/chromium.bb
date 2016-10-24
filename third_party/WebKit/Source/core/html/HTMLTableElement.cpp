@@ -234,6 +234,8 @@ void HTMLTableElement::deleteRow(int index, ExceptionState& exceptionState) {
   int i = 0;
   if (index == -1) {
     row = HTMLTableRowsCollection::lastRow(*this);
+    if (!row)
+      return;
   } else {
     for (i = 0; i <= index; ++i) {
       row = HTMLTableRowsCollection::rowAfter(*this, row);
