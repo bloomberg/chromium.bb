@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "content/browser/android/java/java_method.h"
@@ -79,7 +79,7 @@ class GinJavaBoundObject
   std::set<int32_t> holders_;
 
   // The following fields are accessed on the background thread.
-  typedef std::multimap<std::string, linked_ptr<JavaMethod> > JavaMethodMap;
+  using JavaMethodMap = std::multimap<std::string, std::unique_ptr<JavaMethod>>;
   JavaMethodMap methods_;
   jmethodID object_get_class_method_id_;
   bool are_methods_set_up_;

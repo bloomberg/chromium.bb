@@ -183,8 +183,8 @@ void GinJavaBoundObject::EnsureMethodsAreSetUp() {
         continue;
     }
 
-    JavaMethod* method = new JavaMethod(java_method);
-    methods_.insert(std::make_pair(method->name(), make_linked_ptr(method)));
+    std::unique_ptr<JavaMethod> method(new JavaMethod(java_method));
+    methods_.insert(std::make_pair(method->name(), std::move(method)));
   }
 }
 
