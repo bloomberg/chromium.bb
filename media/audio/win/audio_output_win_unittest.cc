@@ -138,9 +138,7 @@ class ReadOnlyMappedFile {
     }
   }
   // Returns true if the file was successfully mapped.
-  bool is_valid() const {
-    return ((start_ > 0) && (size_ > 0));
-  }
+  bool is_valid() const { return (start_ && (size_ > 0)); }
   // Returns the size in bytes of the mapped memory.
   uint32_t size() const { return size_; }
   // Returns the memory backing the file.
