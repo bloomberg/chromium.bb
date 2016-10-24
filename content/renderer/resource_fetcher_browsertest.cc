@@ -156,7 +156,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
-                   ResourceFetcher::PLATFORM_LOADER,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -175,7 +174,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
-                   ResourceFetcher::PLATFORM_LOADER,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -194,7 +192,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
-                   ResourceFetcher::PLATFORM_LOADER,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -215,7 +212,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
-                   ResourceFetcher::PLATFORM_LOADER,
                    delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
 
@@ -237,7 +233,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
-                   ResourceFetcher::PLATFORM_LOADER,
                    delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
     delegate->SetFetcher(fetcher.release());
@@ -258,7 +253,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
-                   ResourceFetcher::PLATFORM_LOADER,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -278,7 +272,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
-                   ResourceFetcher::PLATFORM_LOADER,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();

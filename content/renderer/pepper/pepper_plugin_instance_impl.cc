@@ -172,8 +172,7 @@ using blink::WebPrintScalingOption;
 using blink::WebScopedUserGesture;
 using blink::WebString;
 using blink::WebURLError;
-using blink::WebURLLoader;
-using blink::WebURLLoaderClient;
+using blink::WebAssociatedURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 using blink::WebUserGestureIndicator;
@@ -405,36 +404,27 @@ PepperPluginInstanceImpl::ExternalDocumentLoader::ExternalDocumentLoader()
 PepperPluginInstanceImpl::ExternalDocumentLoader::~ExternalDocumentLoader() {}
 
 void PepperPluginInstanceImpl::ExternalDocumentLoader::ReplayReceivedData(
-    WebURLLoaderClient* document_loader) {
+    WebAssociatedURLLoaderClient* document_loader) {
   for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
        ++it) {
-    document_loader->didReceiveData(NULL, it->c_str(), it->length(),
-                                    0 /* encoded_data_length */, it->length());
+    document_loader->didReceiveData(it->c_str(), it->length());
   }
   if (finished_loading_) {
-    document_loader->didFinishLoading(
-        NULL,
-        0 /* finish_time */,
-        blink::WebURLLoaderClient::kUnknownEncodedDataLength);
+    document_loader->didFinishLoading(0 /* finish_time */);
   } else if (error_.get()) {
     DCHECK(!finished_loading_);
-    document_loader->didFail(NULL, *error_);
+    document_loader->didFail(*error_);
   }
 }
 
 void PepperPluginInstanceImpl::ExternalDocumentLoader::didReceiveData(
-    WebURLLoader* loader,
     const char* data,
-    int data_length,
-    int encoded_data_length,
-    int encoded_body_length) {
+    int data_length) {
   data_.push_back(std::string(data, data_length));
 }
 
 void PepperPluginInstanceImpl::ExternalDocumentLoader::didFinishLoading(
-    WebURLLoader* loader,
-    double finish_time,
-    int64_t total_encoded_data_length) {
+    double finish_time) {
   DCHECK(!finished_loading_);
 
   if (error_.get())
@@ -444,7 +434,6 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::didFinishLoading(
 }
 
 void PepperPluginInstanceImpl::ExternalDocumentLoader::didFail(
-    WebURLLoader* loader,
     const WebURLError& error) {
   DCHECK(!error_.get());
 
@@ -932,7 +921,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
   // TODO(teravest): Remove set_document_loader() from instance and clean up
   // this relationship.
   set_document_loader(loader_host);
-  loader_host->didReceiveResponse(NULL, response);
+  loader_host->didReceiveResponse(response);
 
   // This host will be pending until the resource object attaches to it.
   //

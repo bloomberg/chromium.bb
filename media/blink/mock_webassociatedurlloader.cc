@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/blink/mock_weburlloader.h"
+#include "media/blink/mock_webassociatedurlloader.h"
 
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -11,8 +11,8 @@
 
 namespace media {
 
-MockWebURLLoader::MockWebURLLoader() {}
+MockWebAssociatedURLLoader::MockWebAssociatedURLLoader() {}
 
-MockWebURLLoader::~MockWebURLLoader() {}
+MockWebAssociatedURLLoader::~MockWebAssociatedURLLoader() {}
 
 }  // namespace media

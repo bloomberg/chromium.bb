@@ -33,7 +33,6 @@
 
 #include "WebIconURL.h"
 #include "WebNode.h"
-#include "WebURLLoaderOptions.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebFrameLoadType.h"
@@ -56,6 +55,8 @@ namespace blink {
 class Frame;
 class OpenedFrameTracker;
 class Visitor;
+class WebAssociatedURLLoader;
+struct WebAssociatedURLLoaderOptions;
 class WebDOMEvent;
 class WebData;
 class WebDataSource;
@@ -70,7 +71,6 @@ class WebSecurityOrigin;
 class WebSharedWorkerRepositoryClient;
 class WebString;
 class WebURL;
-class WebURLLoader;
 class WebURLRequest;
 class WebView;
 enum class WebSandboxFlags;
@@ -381,11 +381,13 @@ class WebFrame {
   // DEPRECATED: Please use createAssociatedURLLoader instead.
   virtual void dispatchWillSendRequest(WebURLRequest&) = 0;
 
-  // Returns a WebURLLoader that is associated with this frame.  The loader
-  // will, for example, be cancelled when WebFrame::stopLoading is called.
+  // Returns an AssociatedURLLoader that is associated with this frame.  The
+  // loader will, for example, be cancelled when WebFrame::stopLoading is
+  // called.
+  //
   // FIXME: stopLoading does not yet cancel an associated loader!!
-  virtual WebURLLoader* createAssociatedURLLoader(
-      const WebURLLoaderOptions& = WebURLLoaderOptions()) = 0;
+  virtual WebAssociatedURLLoader* createAssociatedURLLoader(
+      const WebAssociatedURLLoaderOptions&) = 0;
 
   // Returns the number of registered unload listeners.
   virtual unsigned unloadListenerCount() const = 0;

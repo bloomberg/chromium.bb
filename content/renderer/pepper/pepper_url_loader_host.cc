@@ -19,22 +19,22 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 
+using blink::WebAssociatedURLLoader;
+using blink::WebAssociatedURLLoaderOptions;
 using blink::WebLocalFrame;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebURLError;
-using blink::WebURLLoader;
-using blink::WebURLLoaderOptions;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 
@@ -100,7 +100,8 @@ PepperURLLoaderHost::~PepperURLLoaderHost() {
   // re-entering the scoped_ptr destructor with the same scoped_ptr object
   // via loader_.reset(). Be sure that loader_ is first NULL then destroy
   // the scoped_ptr. See http://crbug.com/159429.
-  std::unique_ptr<blink::WebURLLoader> for_destruction_only(loader_.release());
+  std::unique_ptr<WebAssociatedURLLoader> for_destruction_only(
+      loader_.release());
 }
 
 int32_t PepperURLLoaderHost::OnResourceMessageReceived(
@@ -121,8 +122,7 @@ int32_t PepperURLLoaderHost::OnResourceMessageReceived(
 }
 
 bool PepperURLLoaderHost::willFollowRedirect(
-    WebURLLoader* loader,
-    WebURLRequest& new_request,
+    const WebURLRequest& new_request,
     const WebURLResponse& redirect_response) {
   DCHECK(out_of_order_replies_.empty());
   if (!request_data_.follow_redirects) {
@@ -136,7 +136,6 @@ bool PepperURLLoaderHost::willFollowRedirect(
 }
 
 void PepperURLLoaderHost::didSendData(
-    WebURLLoader* loader,
     unsigned long long bytes_sent,
     unsigned long long total_bytes_to_be_sent) {
   // TODO(darin): Bounds check input?
@@ -145,8 +144,7 @@ void PepperURLLoaderHost::didSendData(
   UpdateProgress();
 }
 
-void PepperURLLoaderHost::didReceiveResponse(WebURLLoader* loader,
-                                             const WebURLResponse& response) {
+void PepperURLLoaderHost::didReceiveResponse(const WebURLResponse& response) {
   // Sets -1 if the content length is unknown. Send before issuing callback.
   total_bytes_to_be_received_ = response.expectedContentLength();
   UpdateProgress();
@@ -154,18 +152,12 @@ void PepperURLLoaderHost::didReceiveResponse(WebURLLoader* loader,
   SaveResponse(response);
 }
 
-void PepperURLLoaderHost::didDownloadData(WebURLLoader* loader,
-                                          int data_length,
-                                          int encoded_data_length) {
+void PepperURLLoaderHost::didDownloadData(int data_length) {
   bytes_received_ += data_length;
   UpdateProgress();
 }
 
-void PepperURLLoaderHost::didReceiveData(WebURLLoader* loader,
-                                         const char* data,
-                                         int data_length,
-                                         int encoded_data_length,
-                                         int encoded_body_length) {
+void PepperURLLoaderHost::didReceiveData(const char* data, int data_length) {
   // Note that |loader| will be NULL for document loads.
   bytes_received_ += data_length;
   UpdateProgress();
@@ -176,15 +168,12 @@ void PepperURLLoaderHost::didReceiveData(WebURLLoader* loader,
   SendUpdateToPlugin(message);
 }
 
-void PepperURLLoaderHost::didFinishLoading(WebURLLoader* loader,
-                                           double finish_time,
-                                           int64_t total_encoded_data_length) {
+void PepperURLLoaderHost::didFinishLoading(double finish_time) {
   // Note that |loader| will be NULL for document loads.
   SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_FinishedLoading(PP_OK));
 }
 
-void PepperURLLoaderHost::didFail(WebURLLoader* loader,
-                                  const WebURLError& error) {
+void PepperURLLoaderHost::didFail(const WebURLError& error) {
   // Note that |loader| will be NULL for document loads.
   int32_t pp_error = PP_ERROR_FAILED;
   if (error.domain.equals(WebString::fromUTF8(net::kErrorDomain))) {
@@ -270,14 +259,14 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   // origin must skip the ServiceWorker.
   web_request.setSkipServiceWorker(
       host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE)
-          ? blink::WebURLRequest::SkipServiceWorker::All
-          : blink::WebURLRequest::SkipServiceWorker::None);
+          ? WebURLRequest::SkipServiceWorker::All
+          : WebURLRequest::SkipServiceWorker::None);
 
-  WebURLLoaderOptions options;
+  WebAssociatedURLLoaderOptions options;
   if (has_universal_access_) {
     options.allowCredentials = true;
     options.crossOriginRequestPolicy =
-        WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+        WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyAllow;
   } else {
     // All other HTTP requests are untrusted.
     options.untrustedHTTP = true;
@@ -285,8 +274,8 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
       // Allow cross-origin requests with access control. The request specifies
       // if credentials are to be sent.
       options.allowCredentials = filled_in_request_data.allow_credentials;
-      options.crossOriginRequestPolicy =
-          WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+      options.crossOriginRequestPolicy = WebAssociatedURLLoaderOptions::
+          CrossOriginRequestPolicyUseAccessControl;
     } else {
       // Same-origin requests can always send credentials.
       options.allowCredentials = true;
@@ -380,13 +369,13 @@ void PepperURLLoaderHost::Close() {
     // other URLLoaders and then closes the main one, the others should still
     // remain connected. Work out how to only cancel the main request:
     // crbug.com/384197.
-    blink::WebLocalFrame* frame = GetFrame();
+    WebLocalFrame* frame = GetFrame();
     if (frame)
       frame->stopLoading();
   }
 }
 
-blink::WebLocalFrame* PepperURLLoaderHost::GetFrame() {
+WebLocalFrame* PepperURLLoaderHost::GetFrame() {
   PepperPluginInstanceImpl* instance_object =
       static_cast<PepperPluginInstanceImpl*>(
           renderer_ppapi_host_->GetPluginInstance(pp_instance()));

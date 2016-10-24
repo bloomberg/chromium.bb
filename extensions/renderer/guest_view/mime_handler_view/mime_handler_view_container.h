@@ -13,11 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/guest_view/renderer/guest_view_container.h"
-#include "third_party/WebKit/public/platform/WebURLLoader.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
+
+namespace blink {
+class WebAssociatedURLLoader;
+}  // namespace blink
 
 namespace extensions {
 
@@ -34,11 +37,11 @@ namespace extensions {
 //    respectively.
 // 2) In the embedded case, no URL request is automatically made by the
 //    renderer. We make a URL request for the data inside the container using
-//    a WebURLLoader. In this case, the |didReceiveData| and |didFinishLoading|
-//    (from WebURLLoaderClient) when data is received and when it has finished
-//    being received.
+//    a WebAssociatedURLLoader. In this case, the |didReceiveData| and
+//    |didFinishLoading| (from WebAssociatedURLLoaderClient) when data is
+//    received and when it has finished being received.
 class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
-                                 public blink::WebURLLoaderClient {
+                                 public blink::WebAssociatedURLLoaderClient {
  public:
   MimeHandlerViewContainer(content::RenderFrame* render_frame,
                            const std::string& mime_type,
@@ -57,15 +60,9 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   void DidResizeElement(const gfx::Size& new_size) override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate*) override;
 
-  // WebURLLoaderClient overrides.
-  void didReceiveData(blink::WebURLLoader* loader,
-                      const char* data,
-                      int data_length,
-                      int encoded_data_length,
-                      int encoded_body_length) override;
-  void didFinishLoading(blink::WebURLLoader* loader,
-                        double finish_time,
-                        int64_t total_encoded_data_length) override;
+  // WebAssociatedURLLoaderClient overrides.
+  void didReceiveData(const char* data, int data_length) override;
+  void didFinishLoading(double finish_time) override;
 
   // GuestViewContainer overrides.
   void OnRenderFrameDestroyed() override;
@@ -105,7 +102,7 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
 
   // A URL loader to load the |original_url_| when the plugin is embedded. In
   // the embedded case, no URL request is made automatically.
-  std::unique_ptr<blink::WebURLLoader> loader_;
+  std::unique_ptr<blink::WebAssociatedURLLoader> loader_;
 
   // The scriptable object that backs the plugin.
   v8::Global<v8::Object> scriptable_object_;

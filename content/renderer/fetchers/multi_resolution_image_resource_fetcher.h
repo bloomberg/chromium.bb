@@ -24,7 +24,7 @@ enum class WebCachePolicy;
 
 namespace content {
 
-class ResourceFetcher;
+class AssociatedResourceFetcher;
 
 // A resource fetcher that returns all (differently-sized) frames in
 // an image. Useful for favicons.
@@ -69,7 +69,7 @@ class MultiResolutionImageResourceFetcher {
   const GURL image_url_;
 
   // Does the actual download.
-  std::unique_ptr<ResourceFetcher> fetcher_;
+  std::unique_ptr<AssociatedResourceFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiResolutionImageResourceFetcher);
 };

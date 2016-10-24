@@ -6,11 +6,12 @@
 
 #include <utility>
 
-#include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
 
 namespace media {
 
-ActiveLoader::ActiveLoader(std::unique_ptr<blink::WebURLLoader> loader)
+ActiveLoader::ActiveLoader(
+    std::unique_ptr<blink::WebAssociatedURLLoader> loader)
     : loader_(std::move(loader)), deferred_(false) {}
 
 ActiveLoader::~ActiveLoader() {

@@ -21,7 +21,7 @@ class WebFrame;
 
 namespace content {
 
-class ResourceFetcher;
+class AssociatedResourceFetcher;
 
 // Helper class to download a Web Manifest. When an instance is created, the
 // caller need to call Start() and wait for the passed callback to be executed.
@@ -49,7 +49,7 @@ class CONTENT_EXPORT ManifestFetcher {
 
   bool completed_;
   Callback callback_;
-  std::unique_ptr<ResourceFetcher> fetcher_;
+  std::unique_ptr<AssociatedResourceFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestFetcher);
 };

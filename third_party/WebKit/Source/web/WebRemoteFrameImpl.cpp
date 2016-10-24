@@ -283,8 +283,8 @@ void WebRemoteFrameImpl::dispatchWillSendRequest(WebURLRequest&) {
   NOTREACHED();
 }
 
-WebURLLoader* WebRemoteFrameImpl::createAssociatedURLLoader(
-    const WebURLLoaderOptions&) {
+WebAssociatedURLLoader* WebRemoteFrameImpl::createAssociatedURLLoader(
+    const WebAssociatedURLLoaderOptions&) {
   NOTREACHED();
   return nullptr;
 }

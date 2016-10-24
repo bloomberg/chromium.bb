@@ -189,6 +189,7 @@
 #include "public/platform/WebSuspendableTask.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebAssociatedURLLoaderOptions.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDOMEvent.h"
@@ -211,13 +212,13 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_canvas.h"
-#include "web/AssociatedURLLoader.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
 #include "web/RemoteFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
 #include "web/TextFinder.h"
+#include "web/WebAssociatedURLLoaderImpl.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebFrameWidgetImpl.h"
@@ -955,9 +956,9 @@ void WebLocalFrameImpl::dispatchWillSendRequest(WebURLRequest& request) {
       request.toMutableResourceRequest());
 }
 
-WebURLLoader* WebLocalFrameImpl::createAssociatedURLLoader(
-    const WebURLLoaderOptions& options) {
-  return new AssociatedURLLoader(this, options);
+WebAssociatedURLLoader* WebLocalFrameImpl::createAssociatedURLLoader(
+    const WebAssociatedURLLoaderOptions& options) {
+  return new WebAssociatedURLLoaderImpl(this, options);
 }
 
 unsigned WebLocalFrameImpl::unloadListenerCount() const {

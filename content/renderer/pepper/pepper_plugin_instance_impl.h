@@ -57,8 +57,8 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebUserGestureToken.h"
 #include "ui/base/ime/text_input_type.h"
@@ -373,10 +373,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // case is non-NULL as long as the corresponding loader resource is alive.
   // This pointer is non-owning, so the loader must use set_document_loader to
   // clear itself when it is destroyed.
-  blink::WebURLLoaderClient* document_loader() const {
+  blink::WebAssociatedURLLoaderClient* document_loader() const {
     return document_loader_;
   }
-  void set_document_loader(blink::WebURLLoaderClient* loader) {
+  void set_document_loader(blink::WebAssociatedURLLoaderClient* loader) {
     document_loader_ = loader;
   }
 
@@ -572,24 +572,17 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Class to record document load notifications and play them back once the
   // real document loader becomes available. Used only by external instances.
-  class ExternalDocumentLoader : public blink::WebURLLoaderClient {
+  class ExternalDocumentLoader : public blink::WebAssociatedURLLoaderClient {
    public:
     ExternalDocumentLoader();
     ~ExternalDocumentLoader() override;
 
-    void ReplayReceivedData(WebURLLoaderClient* document_loader);
+    void ReplayReceivedData(WebAssociatedURLLoaderClient* document_loader);
 
-    // blink::WebURLLoaderClient implementation.
-    void didReceiveData(blink::WebURLLoader* loader,
-                        const char* data,
-                        int data_length,
-                        int encoded_data_length,
-                        int encoded_body_length) override;
-    void didFinishLoading(blink::WebURLLoader* loader,
-                          double finish_time,
-                          int64_t total_encoded_data_length) override;
-    void didFail(blink::WebURLLoader* loader,
-                 const blink::WebURLError& error) override;
+    // blink::WebAssociatedURLLoaderClient implementation.
+    void didReceiveData(const char* data, int data_length) override;
+    void didFinishLoading(double finish_time) override;
+    void didFail(const blink::WebURLError& error) override;
 
    private:
     std::list<std::string> data_;
@@ -941,7 +934,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   std::vector<std::string> argv_;
 
   // Non-owning pointer to the document loader, if any.
-  blink::WebURLLoaderClient* document_loader_;
+  blink::WebAssociatedURLLoaderClient* document_loader_;
   // State for deferring document loads. Used only by external instances.
   blink::WebURLResponse external_document_response_;
   std::unique_ptr<ExternalDocumentLoader> external_document_loader_;

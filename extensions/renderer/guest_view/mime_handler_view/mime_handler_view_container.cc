@@ -22,6 +22,8 @@
 #include "gin/interceptor.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
@@ -145,11 +147,11 @@ void MimeHandlerViewContainer::OnReady() {
     return;
 
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  blink::WebURLLoaderOptions options;
+  blink::WebAssociatedURLLoaderOptions options;
   // The embedded plugin is allowed to be cross-origin and we should always
   // send credentials/cookies with the request.
   options.crossOriginRequestPolicy =
-      blink::WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+      blink::WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyAllow;
   options.allowCredentials = true;
   DCHECK(!loader_);
   loader_.reset(frame->createAssociatedURLLoader(options));
@@ -204,18 +206,12 @@ v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
   return v8::Local<v8::Object>::New(isolate, scriptable_object_);
 }
 
-void MimeHandlerViewContainer::didReceiveData(blink::WebURLLoader* /* unused */,
-                                              const char* data,
-                                              int data_length,
-                                              int /* unused */,
-                                              int /* unused */) {
+void MimeHandlerViewContainer::didReceiveData(const char* data,
+                                              int data_length) {
   view_id_ += std::string(data, data_length);
 }
 
-void MimeHandlerViewContainer::didFinishLoading(
-    blink::WebURLLoader* /* unused */,
-    double /* unused */,
-    int64_t /* unused */) {
+void MimeHandlerViewContainer::didFinishLoading(double /* unused */) {
   DCHECK(is_embedded_);
   CreateMimeHandlerViewGuest();
 }

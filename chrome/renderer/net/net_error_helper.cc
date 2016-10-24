@@ -286,7 +286,6 @@ void NetErrorHelper::FetchNavigationCorrections(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::RequestContextInternal,
       blink::WebURLRequest::FrameTypeNone,
-      content::ResourceFetcher::PLATFORM_LOADER,
       base::Bind(&NetErrorHelper::OnNavigationCorrectionsFetched,
                  base::Unretained(this)));
 
@@ -311,7 +310,6 @@ void NetErrorHelper::SendTrackingRequest(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::RequestContextInternal,
       blink::WebURLRequest::FrameTypeNone,
-      content::ResourceFetcher::PLATFORM_LOADER,
       base::Bind(&NetErrorHelper::OnTrackingRequestComplete,
                  base::Unretained(this)));
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2010, 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebURLLoaderOptions_h
-#define WebURLLoaderOptions_h
+#ifndef WebAssociatedURLLoader_h
+#define WebAssociatedURLLoader_h
+
+#include "public/web/WebAssociatedURLLoaderOptions.h"
 
 namespace blink {
 
-struct WebURLLoaderOptions {
-  enum CrossOriginRequestPolicy {
-    CrossOriginRequestPolicyDeny,
-    CrossOriginRequestPolicyUseAccessControl,
-    CrossOriginRequestPolicyAllow
-  };
+class WebAssociatedURLLoaderClient;
+class WebLocalFrameImpl;
+class WebTaskRunner;
+class WebURLRequest;
 
-  enum PreflightPolicy { ConsiderPreflight, ForcePreflight, PreventPreflight };
+// This class is used to implement WebFrame::createAssociatedURLLoader.
+class WebAssociatedURLLoader {
+ public:
+  virtual ~WebAssociatedURLLoader() {}
 
-  WebURLLoaderOptions()
-      : untrustedHTTP(false),
-        allowCredentials(false),
-        exposeAllResponseHeaders(false),
-        preflightPolicy(ConsiderPreflight),
-        crossOriginRequestPolicy(CrossOriginRequestPolicyDeny) {}
-
-  bool untrustedHTTP;  // Whether to validate the method and headers as if this
-                       // was an XMLHttpRequest.
-  bool allowCredentials;  // Whether to send HTTP credentials and cookies with
-                          // the request.
-  bool exposeAllResponseHeaders;  // If policy is to use access control, whether
-                                  // to expose non-whitelisted response headers
-                                  // to the client.
-  PreflightPolicy preflightPolicy;
-  CrossOriginRequestPolicy crossOriginRequestPolicy;
+  virtual void loadAsynchronously(const WebURLRequest&,
+                                  WebAssociatedURLLoaderClient*) = 0;
+  virtual void cancel() = 0;
+  virtual void setDefersLoading(bool) = 0;
+  virtual void setLoadingTaskRunner(WebTaskRunner*) = 0;
 };
 
 }  // namespace blink

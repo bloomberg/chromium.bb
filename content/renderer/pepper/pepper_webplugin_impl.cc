@@ -24,7 +24,7 @@
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -222,22 +222,24 @@ void PepperWebPluginImpl::didReceiveResponse(
 }
 
 void PepperWebPluginImpl::didReceiveData(const char* data, int data_length) {
-  blink::WebURLLoaderClient* document_loader = instance_->document_loader();
+  blink::WebAssociatedURLLoaderClient* document_loader =
+      instance_->document_loader();
   if (document_loader)
-    document_loader->didReceiveData(nullptr, data, data_length, 0, data_length);
+    document_loader->didReceiveData(data, data_length);
 }
 
 void PepperWebPluginImpl::didFinishLoading() {
-  blink::WebURLLoaderClient* document_loader = instance_->document_loader();
+  blink::WebAssociatedURLLoaderClient* document_loader =
+      instance_->document_loader();
   if (document_loader)
-    document_loader->didFinishLoading(
-        nullptr, 0.0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
+    document_loader->didFinishLoading(0.0);
 }
 
 void PepperWebPluginImpl::didFailLoading(const blink::WebURLError& error) {
-  blink::WebURLLoaderClient* document_loader = instance_->document_loader();
+  blink::WebAssociatedURLLoaderClient* document_loader =
+      instance_->document_loader();
   if (document_loader)
-    document_loader->didFail(nullptr, error);
+    document_loader->didFail(error);
 }
 
 bool PepperWebPluginImpl::hasSelection() const {

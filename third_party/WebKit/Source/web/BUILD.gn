@@ -36,8 +36,6 @@ component("web") {
 
   sources = [
     "AssertMatchingEnums.cpp",
-    "AssociatedURLLoader.cpp",
-    "AssociatedURLLoader.h",
     "AudioOutputDeviceClientImpl.cpp",
     "AudioOutputDeviceClientImpl.h",
     "ChromeClientImpl.cpp",
@@ -139,6 +137,8 @@ component("web") {
     "WebArrayBuffer.cpp",
     "WebArrayBufferConverter.cpp",
     "WebArrayBufferView.cpp",
+    "WebAssociatedURLLoaderImpl.cpp",
+    "WebAssociatedURLLoaderImpl.h",
     "WebBlob.cpp",
     "WebCSSParser.cpp",
     "WebCache.cpp",
@@ -309,10 +309,10 @@ test("webkit_unit_tests") {
   visibility = [ "*" ]
 
   sources = [
-    "AssociatedURLLoaderTest.cpp",
     "ExternalPopupMenuTest.cpp",
     "LinkHighlightImplTest.cpp",
     "PageOverlayTest.cpp",
+    "WebAssociatedURLLoaderImplTest.cpp",
     "WebDragDataTest.cpp",
     "WebElementTest.cpp",
     "WebEmbeddedWorkerImplTest.cpp",

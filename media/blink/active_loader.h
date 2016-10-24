@@ -11,7 +11,7 @@
 #include "media/blink/media_blink_export.h"
 
 namespace blink {
-class WebURLLoader;
+class WebAssociatedURLLoader;
 }
 
 namespace media {
@@ -23,7 +23,7 @@ class MEDIA_BLINK_EXPORT ActiveLoader {
  public:
   // Creates an ActiveLoader with the given loader. It is assumed that the
   // initial state of |loader| is loading and not deferred.
-  explicit ActiveLoader(std::unique_ptr<blink::WebURLLoader> loader);
+  explicit ActiveLoader(std::unique_ptr<blink::WebAssociatedURLLoader> loader);
   ~ActiveLoader();
 
   // Starts or stops deferring the resource load.
@@ -33,7 +33,7 @@ class MEDIA_BLINK_EXPORT ActiveLoader {
  private:
   friend class MultibufferDataSourceTest;
 
-  std::unique_ptr<blink::WebURLLoader> loader_;
+  std::unique_ptr<blink::WebAssociatedURLLoader> loader_;
   bool deferred_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ActiveLoader);

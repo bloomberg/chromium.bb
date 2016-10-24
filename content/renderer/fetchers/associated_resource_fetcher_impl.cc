@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/fetchers/resource_fetcher_impl.h"
+#include "content/renderer/fetchers/associated_resource_fetcher_impl.h"
 
 #include <stdint.h>
 
@@ -15,9 +15,10 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/platform/WebURLLoader.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -26,17 +27,15 @@
 namespace content {
 
 // static
-ResourceFetcher* ResourceFetcher::Create(const GURL& url) {
-  return new ResourceFetcherImpl(url);
+AssociatedResourceFetcher* AssociatedResourceFetcher::Create(const GURL& url) {
+  return new AssociatedResourceFetcherImpl(url);
 }
 
-class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
+class AssociatedResourceFetcherImpl::ClientImpl
+    : public blink::WebAssociatedURLLoaderClient {
  public:
-  ClientImpl(ResourceFetcherImpl* parent, const Callback& callback)
-      : parent_(parent),
-        completed_(false),
-        status_(LOADING),
-        callback_(callback) {}
+  explicit ClientImpl(const Callback& callback)
+      : completed_(false), status_(LOADING), callback_(callback) {}
 
   ~ClientImpl() override {}
 
@@ -58,8 +57,6 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
     completed_ = true;
     status_ = status;
 
-    parent_->OnLoadComplete();
-
     if (callback_.is_null())
       return;
 
@@ -70,44 +67,36 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
                  status_ == LOAD_FAILED ? std::string() : data_);
   }
 
-  // WebURLLoaderClient methods:
-  void didReceiveResponse(blink::WebURLLoader* loader,
-                          const blink::WebURLResponse& response) override {
+  // WebAssociatedURLLoaderClient methods:
+  void didReceiveResponse(const blink::WebURLResponse& response) override {
     DCHECK(!completed_);
-
     response_ = response;
   }
-  void didReceiveCachedMetadata(blink::WebURLLoader* loader,
-                                const char* data,
-                                int data_length) override {
+  void didReceiveCachedMetadata(const char* data, int data_length) override {
     DCHECK(!completed_);
     DCHECK_GT(data_length, 0);
   }
-  void didReceiveData(blink::WebURLLoader* loader,
-                      const char* data,
-                      int data_length,
-                      int encoded_data_length,
-                      int encoded_body_length) override {
-    DCHECK(!completed_);
+  void didReceiveData(const char* data, int data_length) override {
+    // The WebAssociatedURLLoader will continue after a load failure.
+    // For example, for an Access Control error.
+    if (completed_)
+      return;
     DCHECK_GT(data_length, 0);
 
     data_.append(data, data_length);
   }
-  void didFinishLoading(blink::WebURLLoader* loader,
-                        double finishTime,
-                        int64_t total_encoded_data_length) override {
-    DCHECK(!completed_);
-
+  void didFinishLoading(double finishTime) override {
+    // The WebAssociatedURLLoader will continue after a load failure.
+    // For example, for an Access Control error.
+    if (completed_)
+      return;
     OnLoadCompleteInternal(LOAD_SUCCEEDED);
   }
-  void didFail(blink::WebURLLoader* loader,
-               const blink::WebURLError& error) override {
+  void didFail(const blink::WebURLError& error) override {
     OnLoadCompleteInternal(LOAD_FAILED);
   }
 
  private:
-  ResourceFetcherImpl* parent_;
-
   // Set to true once the request is complete.
   bool completed_;
 
@@ -125,11 +114,10 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
   DISALLOW_COPY_AND_ASSIGN(ClientImpl);
 };
 
-ResourceFetcherImpl::ResourceFetcherImpl(const GURL& url)
-    : request_(url) {
-}
+AssociatedResourceFetcherImpl::AssociatedResourceFetcherImpl(const GURL& url)
+    : request_(url) {}
 
-ResourceFetcherImpl::~ResourceFetcherImpl() {
+AssociatedResourceFetcherImpl::~AssociatedResourceFetcherImpl() {
   if (!loader_)
     return;
 
@@ -139,42 +127,31 @@ ResourceFetcherImpl::~ResourceFetcherImpl() {
     loader_->cancel();
 }
 
-void ResourceFetcherImpl::SetMethod(const std::string& method) {
+void AssociatedResourceFetcherImpl::SetSkipServiceWorker(
+    blink::WebURLRequest::SkipServiceWorker skip_service_worker) {
   DCHECK(!request_.isNull());
   DCHECK(!loader_);
 
-  request_.setHTTPMethod(blink::WebString::fromUTF8(method));
+  request_.setSkipServiceWorker(skip_service_worker);
 }
 
-void ResourceFetcherImpl::SetBody(const std::string& body) {
+void AssociatedResourceFetcherImpl::SetCachePolicy(
+    blink::WebCachePolicy policy) {
   DCHECK(!request_.isNull());
   DCHECK(!loader_);
 
-  blink::WebHTTPBody web_http_body;
-  web_http_body.initialize();
-  web_http_body.appendData(blink::WebData(body));
-  request_.setHTTPBody(web_http_body);
+  request_.setCachePolicy(policy);
 }
 
-void ResourceFetcherImpl::SetHeader(const std::string& header,
-                                    const std::string& value) {
+void AssociatedResourceFetcherImpl::SetLoaderOptions(
+    const blink::WebAssociatedURLLoaderOptions& options) {
   DCHECK(!request_.isNull());
   DCHECK(!loader_);
 
-  if (base::LowerCaseEqualsASCII(header, "referer")) {
-    blink::WebString referrer =
-        blink::WebSecurityPolicy::generateReferrerHeader(
-            blink::WebReferrerPolicyDefault,
-            request_.url(),
-            blink::WebString::fromUTF8(value));
-    request_.setHTTPReferrer(referrer, blink::WebReferrerPolicyDefault);
-  } else {
-    request_.setHTTPHeaderField(blink::WebString::fromUTF8(header),
-                                blink::WebString::fromUTF8(value));
-  }
+  options_ = options;
 }
 
-void ResourceFetcherImpl::Start(
+void AssociatedResourceFetcherImpl::Start(
     blink::WebFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
     blink::WebURLRequest::FrameType frame_type,
@@ -190,28 +167,16 @@ void ResourceFetcherImpl::Start(
   request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   frame->dispatchWillSendRequest(request_);
 
-  client_.reset(new ClientImpl(this, callback));
+  client_.reset(new ClientImpl(callback));
 
-  loader_.reset(blink::Platform::current()->createURLLoader());
+  loader_.reset(frame->createAssociatedURLLoader(options_));
   loader_->loadAsynchronously(request_, client_.get());
 
   // No need to hold on to the request; reset it now.
   request_ = blink::WebURLRequest();
 }
 
-void ResourceFetcherImpl::SetTimeout(const base::TimeDelta& timeout) {
-  DCHECK(loader_);
-  DCHECK(client_);
-  DCHECK(!client_->completed());
-
-  timeout_timer_.Start(FROM_HERE, timeout, this, &ResourceFetcherImpl::Cancel);
-}
-
-void ResourceFetcherImpl::OnLoadComplete() {
-  timeout_timer_.Stop();
-}
-
-void ResourceFetcherImpl::Cancel() {
+void AssociatedResourceFetcherImpl::Cancel() {
   loader_->cancel();
   client_->Cancel();
 }

@@ -17,19 +17,20 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 
 namespace blink {
+class WebAssociatedURLLoader;
 class WebLocalFrame;
 class WebURLLoader;
-}
+}  // namespace blink
 
 namespace content {
 
 class RendererPpapiHostImpl;
 
 class PepperURLLoaderHost : public ppapi::host::ResourceHost,
-                            public blink::WebURLLoaderClient {
+                            public blink::WebAssociatedURLLoaderClient {
  public:
   // If main_document_loader is true, PP_Resource must be 0 since it will be
   // pending until the plugin resource attaches to it.
@@ -44,28 +45,16 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
-  // blink::WebURLLoaderClient implementation.
-  bool willFollowRedirect(blink::WebURLLoader* loader,
-                          blink::WebURLRequest& new_request,
+  // blink::WebAssociatedURLLoaderClient implementation.
+  bool willFollowRedirect(const blink::WebURLRequest& new_request,
                           const blink::WebURLResponse& redir_response) override;
-  void didSendData(blink::WebURLLoader* loader,
-                   unsigned long long bytes_sent,
+  void didSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent) override;
-  void didReceiveResponse(blink::WebURLLoader* loader,
-                          const blink::WebURLResponse& response) override;
-  void didDownloadData(blink::WebURLLoader* loader,
-                       int data_length,
-                       int encoded_data_length) override;
-  void didReceiveData(blink::WebURLLoader* loader,
-                      const char* data,
-                      int data_length,
-                      int encoded_data_length,
-                      int encoded_body_length) override;
-  void didFinishLoading(blink::WebURLLoader* loader,
-                        double finish_time,
-                        int64_t total_encoded_data_length) override;
-  void didFail(blink::WebURLLoader* loader,
-               const blink::WebURLError& error) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override;
+  void didDownloadData(int data_length) override;
+  void didReceiveData(const char* data, int data_length) override;
+  void didFinishLoading(double finish_time) override;
+  void didFail(const blink::WebURLError& error) override;
 
  private:
   // ResourceHost protected overrides.
@@ -133,7 +122,7 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
   // always NULL check this value before using it. In the case of a main
   // document load, you would call the functions on the document to cancel the
   // load, etc. since there is no loader.
-  std::unique_ptr<blink::WebURLLoader> loader_;
+  std::unique_ptr<blink::WebAssociatedURLLoader> loader_;
 
   int64_t bytes_sent_;
   int64_t total_bytes_to_be_sent_;

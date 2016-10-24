@@ -17,7 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/media_log.h"
 #include "media/base/seekable_buffer.h"
-#include "media/blink/mock_weburlloader.h"
+#include "media/blink/mock_webassociatedurlloader.h"
 #include "media/blink/url_index.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -104,8 +104,9 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     url_data_->multibuffer()->AddProvider(std::move(loader));
 
     // |test_loader_| will be used when Start() is called.
-    url_loader_ = new NiceMock<MockWebURLLoader>();
-    loader_->test_loader_ = std::unique_ptr<blink::WebURLLoader>(url_loader_);
+    url_loader_ = new NiceMock<MockWebAssociatedURLLoader>();
+    loader_->test_loader_ =
+        std::unique_ptr<blink::WebAssociatedURLLoader>(url_loader_);
   }
 
   void Start() {
@@ -124,7 +125,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
         WebString::fromUTF8(base::StringPrintf("%" PRId64, instance_size)));
     response.setExpectedContentLength(instance_size);
     response.setHTTPStatusCode(kHttpOK);
-    loader_->didReceiveResponse(url_loader_, response);
+    loader_->didReceiveResponse(response);
 
     if (ok) {
       EXPECT_EQ(instance_size, url_data_->length());
@@ -169,7 +170,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     }
 
     response.setHTTPStatusCode(kHttpPartialContent);
-    loader_->didReceiveResponse(url_loader_, response);
+    loader_->didReceiveResponse(response);
 
     EXPECT_EQ(instance_size, url_data_->length());
 
@@ -186,7 +187,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
         .WillOnce(
             Invoke(this, &ResourceMultiBufferDataProviderTest::SetUrlData));
 
-    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse);
+    loader_->willFollowRedirect(newRequest, redirectResponse);
 
     base::RunLoop().RunUntilIdle();
   }
@@ -200,14 +201,12 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   // Helper method to write to |loader_| from |data_|.
   void WriteLoader(int position, int size) {
-    loader_->didReceiveData(url_loader_,
-                            reinterpret_cast<char*>(data_ + position), size,
-                            size, size);
+    loader_->didReceiveData(reinterpret_cast<char*>(data_ + position), size);
   }
 
   void WriteData(int size) {
     std::unique_ptr<char[]> data(new char[size]);
-    loader_->didReceiveData(url_loader_, data.get(), size, size, size);
+    loader_->didReceiveData(data.get(), size);
   }
 
   // Verifies that data in buffer[0...size] is equal to data_[pos...pos+size].
@@ -231,7 +230,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   scoped_refptr<UrlData> redirected_to_;
   // The loader is owned by the UrlData above.
   ResourceMultiBufferDataProvider* loader_;
-  NiceMock<MockWebURLLoader>* url_loader_;
+  NiceMock<MockWebAssociatedURLLoader>* url_loader_;
 
   blink::WebFrameClient client_;
   WebView* view_;
@@ -260,7 +259,7 @@ TEST_F(ResourceMultiBufferDataProviderTest, BadHttpResponse) {
   WebURLResponse response(gurl_);
   response.setHTTPStatusCode(404);
   response.setHTTPStatusText("Not Found\n");
-  loader_->didReceiveResponse(url_loader_, response);
+  loader_->didReceiveResponse(response);
 }
 
 // Tests that partial content is requested but not fulfilled.
@@ -323,7 +322,7 @@ TEST_F(ResourceMultiBufferDataProviderTest, InvalidPartialResponse) {
                                              1, 10, 1024)));
   response.setExpectedContentLength(10);
   response.setHTTPStatusCode(kHttpPartialContent);
-  loader_->didReceiveResponse(url_loader_, response);
+  loader_->didReceiveResponse(response);
 }
 
 TEST_F(ResourceMultiBufferDataProviderTest, TestRedirects) {

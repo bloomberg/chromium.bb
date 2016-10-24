@@ -21,6 +21,8 @@ class FrameHost;
 class FrameOwner;
 class RemoteFrame;
 enum class WebFrameLoadType;
+class WebAssociatedURLLoader;
+struct WebAssociatedURLLoaderOptions;
 
 class WEB_EXPORT WebRemoteFrameImpl final
     : public WebFrameImplBase,
@@ -93,7 +95,8 @@ class WEB_EXPORT WebRemoteFrameImpl final
   bool isViewSourceModeEnabled() const override;
   void setReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;
   void dispatchWillSendRequest(WebURLRequest&) override;
-  WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions&) override;
+  WebAssociatedURLLoader* createAssociatedURLLoader(
+      const WebAssociatedURLLoaderOptions&) override;
   unsigned unloadListenerCount() const override;
   int printBegin(const WebPrintParams&,
                  const WebNode& constrainToNode) override;
