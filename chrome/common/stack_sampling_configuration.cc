@@ -187,10 +187,10 @@ StackSamplingConfiguration::GenerateConfiguration() {
 
     case version_info::Channel::DEV:
       return ChooseConfiguration({
-        { PROFILE_BROWSER_PROCESS, 100},
+        { PROFILE_BROWSER_PROCESS, 80},
         { PROFILE_GPU_PROCESS, 0},
-        { PROFILE_BROWSER_AND_GPU_PROCESS, 0},
-        { PROFILE_CONTROL, 0},
+        { PROFILE_BROWSER_AND_GPU_PROCESS, 10},
+        { PROFILE_CONTROL, 10},
         { PROFILE_DISABLED, 0}
       });
 
