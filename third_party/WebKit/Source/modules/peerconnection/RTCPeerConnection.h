@@ -32,7 +32,6 @@
 #define RTCPeerConnection_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
@@ -49,6 +48,7 @@ namespace blink {
 class ExceptionState;
 class MediaStreamTrack;
 class RTCAnswerOptions;
+class RTCConfiguration;
 class RTCDTMFSender;
 class RTCDataChannel;
 class RTCIceCandidateInitOrRTCIceCandidate;
@@ -72,7 +72,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
 
  public:
   static RTCPeerConnection* create(ExecutionContext*,
-                                   const Dictionary&,
+                                   const RTCConfiguration&,
                                    const Dictionary&,
                                    ExceptionState&);
   ~RTCPeerConnection() override;
@@ -107,7 +107,8 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
 
   String signalingState() const;
 
-  void updateIce(const Dictionary& rtcConfiguration,
+  void updateIce(ExecutionContext*,
+                 const RTCConfiguration&,
                  const Dictionary& mediaConstraints,
                  ExceptionState&);
 

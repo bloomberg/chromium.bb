@@ -1376,6 +1376,9 @@ class CORE_EXPORT UseCounter {
     LoopbackEmbeddedInSecureContext = 1652,
     LoopbackEmbeddedInNonSecureContext = 1653,
     BlinkMacSystemFont = 1654,
+    RTCConfigurationIceTransportsNone = 1655,
+    RTCIceServerURL = 1656,
+    RTCIceServerURLs = 1657,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

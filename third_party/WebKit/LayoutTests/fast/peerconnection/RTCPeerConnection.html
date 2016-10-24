@@ -9,7 +9,8 @@ description("Tests the RTCPeerConnection constructor.");
 
 shouldNotThrow("new webkitRTCPeerConnection(null);");
 shouldNotThrow("new webkitRTCPeerConnection(undefined);");
-shouldThrow("new webkitRTCPeerConnection();");
+shouldNotThrow("new webkitRTCPeerConnection({});");
+shouldNotThrow("new webkitRTCPeerConnection();");
 shouldThrow("new webkitRTCPeerConnection('');");
 
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[]});");
@@ -19,7 +20,7 @@ shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', cr
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]});");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]});");
 
-shouldThrow("new webkitRTCPeerConnection({fooServers:[]});");
+shouldNotThrow("new webkitRTCPeerConnection({fooServers:[]});");
 shouldThrow("new webkitRTCPeerConnection({iceServers:true});");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[1, 2, 3]});");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[{}]});");
@@ -60,6 +61,7 @@ shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_2:1, mandato
 
 // Construct with certificates.
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:null});");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:undefined});");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[]});");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[null]});");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[1337]});");

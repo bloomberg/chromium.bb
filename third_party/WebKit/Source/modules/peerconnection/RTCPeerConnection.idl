@@ -63,9 +63,8 @@ enum RTCIceConnectionState {
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    // TODO(guidou): There should only be one constructor argument, and it
-    // should be optional.
-    Constructor(Dictionary rtcConfiguration, optional Dictionary mediaConstraints),
+    // TODO(guidou): There should only be one constructor argument.
+    Constructor(optional RTCConfiguration configuration, optional Dictionary mediaConstraints),
     ConstructorCallWith=ExecutionContext,
     NoInterfaceObject,
     RaisesException=Constructor,
@@ -122,7 +121,7 @@ enum RTCIceConnectionState {
     [RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(AlgorithmIdentifier keygenAlgorithm);
 
     // Non-standard or removed from the spec:
-    [Measure, RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
+    [Measure, CallWith=ExecutionContext, RaisesException] void updateIce(optional RTCConfiguration configuration, optional Dictionary mediaConstraints);
     [Measure] sequence<MediaStream> getLocalStreams();
     [Measure] sequence<MediaStream> getRemoteStreams();
     [Measure] MediaStream getStreamById(DOMString streamId);
