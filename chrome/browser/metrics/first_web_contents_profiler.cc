@@ -13,20 +13,27 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 
-void FirstWebContentsProfiler::WebContentsStarted(
-    content::WebContents* web_contents) {
-  static bool first_web_contents_profiled = false;
-  if (first_web_contents_profiled)
-    return;
-
-  first_web_contents_profiled = true;
-  new FirstWebContentsProfiler(web_contents);
+// static
+void FirstWebContentsProfiler::Start() {
+  for (auto* browser : *BrowserList::GetInstance()) {
+    content::WebContents* web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    if (web_contents) {
+      // FirstWebContentsProfiler owns itself and is also bound to
+      // |web_contents|'s lifetime by observing WebContentsDestroyed().
+      new FirstWebContentsProfiler(web_contents);
+      return;
+    }
+  }
 }
 
 FirstWebContentsProfiler::FirstWebContentsProfiler(
@@ -81,6 +88,13 @@ void FirstWebContentsProfiler::DidStartNavigation(
     return;
   }
 
+  if (content::IsBrowserSideNavigationEnabled()) {
+    // With PlzNavigate, DidStartNavigation is called synchronously on
+    // browser-initiated loads instead of through an IPC. This means that we
+    // will miss this signal. Instead we record it when the commit completes.
+    return;
+  }
+
   // The first navigation has to be the main frame's.
   DCHECK(navigation_handle->IsInMainFrame());
 
@@ -118,6 +132,12 @@ void FirstWebContentsProfiler::DidFinishNavigation(
       navigation_handle->IsErrorPage()) {
     FinishedCollectingMetrics(FinishReason::ABANDON_NAVIGATION_ERROR);
     return;
+  }
+
+  if (content::IsBrowserSideNavigationEnabled()) {
+    startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
+        navigation_handle->NavigationStart());
+    collected_main_navigation_start_metric_ = true;
   }
 
   collected_main_navigation_finished_metric_ = true;

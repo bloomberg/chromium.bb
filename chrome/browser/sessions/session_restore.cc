@@ -31,7 +31,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
-#include "chrome/browser/metrics/first_web_contents_profiler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore_delegate.h"
@@ -549,7 +548,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
         if (!is_selected_tab)
           continue;
 
-        FirstWebContentsProfiler::WebContentsStarted(contents);
         ShowBrowser(browser, browser->tab_strip_model()->GetIndexOfWebContents(
                                  contents));
         // TODO(sky): remove. For debugging 368236.

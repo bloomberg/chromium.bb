@@ -28,6 +28,10 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_switches.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/metrics/first_web_contents_profiler.h"
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_ANDROID) && defined(__arm__)
 #include <cpu-features.h>
 #endif  // defined(OS_ANDROID) && defined(__arm__)
@@ -368,6 +372,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   is_screen_observer_ = true;
 
 #if !defined(OS_ANDROID)
+  FirstWebContentsProfiler::Start();
   metrics::TabUsageRecorder::Initialize();
 #endif  // !defined(OS_ANDROID)
 }

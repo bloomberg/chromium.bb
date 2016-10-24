@@ -55,10 +55,6 @@
 #include "extensions/common/extension_set.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/metrics/first_web_contents_profiler.h"
-#endif  // !defined(OS_ANDROID)
-
 using content::GlobalRequestID;
 using content::NavigationController;
 using content::WebContents;
@@ -385,9 +381,6 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
       SetExtensionAppById(params.extension_app_id);
 #endif
 
-#if !defined(OS_ANDROID)
-  FirstWebContentsProfiler::WebContentsStarted(target_contents);
-#endif  // !defined(OS_ANDROID)
   return target_contents;
 }
 
