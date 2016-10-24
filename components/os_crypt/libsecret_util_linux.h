@@ -20,7 +20,6 @@ class LibsecretLoader {
   static decltype(&::secret_item_load_secret_sync) secret_item_load_secret_sync;
   static decltype(&::secret_password_clear_sync) secret_password_clear_sync;
   static decltype(&::secret_password_store_sync) secret_password_store_sync;
-  static decltype(&::secret_service_lookup_sync) secret_service_lookup_sync;
   static decltype(&::secret_service_search_sync) secret_service_search_sync;
   static decltype(&::secret_value_get_text) secret_value_get_text;
   static decltype(&::secret_value_unref) secret_value_unref;

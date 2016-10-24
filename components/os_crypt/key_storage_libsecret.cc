@@ -33,6 +33,22 @@ const SecretSchema kKeystoreSchemaV2 = {
         {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING},
     }};
 
+// From a search result, extracts a SecretValue, asserting that there was at
+// most one result. Returns nullptr if there are no results.
+SecretValue* ToSingleSecret(GList* secret_items) {
+  GList* first = g_list_first(secret_items);
+  if (first == nullptr)
+    return nullptr;
+  if (g_list_next(first) != nullptr) {
+    VLOG(1) << "OSCrypt found more than one encryption keys.";
+  }
+  SecretItem* secret_item = static_cast<SecretItem*>(first->data);
+  SecretValue* secret_value =
+      LibsecretLoader::secret_item_get_secret(secret_item);
+  g_list_free(secret_items);
+  return secret_value;
+}
+
 }  // namespace
 
 std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
@@ -42,8 +58,13 @@ std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
   bool success = LibsecretLoader::secret_password_store_sync(
       &kKeystoreSchemaV2, nullptr, KeyStorageLinux::kKey, password.c_str(),
       nullptr, &error, "application", kApplicationName, nullptr);
-  if (error || !success) {
+  if (error) {
     VLOG(1) << "Libsecret lookup failed: " << error->message;
+    g_error_free(error);
+    return std::string();
+  }
+  if (!success) {
+    VLOG(1) << "Libsecret lookup failed.";
     return std::string();
   }
 
@@ -55,13 +76,17 @@ std::string KeyStorageLibsecret::GetKey() {
   GError* error = nullptr;
   LibsecretAttributesBuilder attrs;
   attrs.Append("application", kApplicationName);
-  SecretValue* password_libsecret = LibsecretLoader::secret_service_lookup_sync(
-      nullptr, &kKeystoreSchemaV2, attrs.Get(), nullptr, &error);
+  GList* search_results = LibsecretLoader::secret_service_search_sync(
+      nullptr /* default secret service */, &kKeystoreSchemaV2, attrs.Get(),
+      static_cast<SecretSearchFlags>(SECRET_SEARCH_UNLOCK |
+                                     SECRET_SEARCH_LOAD_SECRETS),
+      nullptr, &error);
   if (error) {
     VLOG(1) << "Libsecret lookup failed: " << error->message;
     g_error_free(error);
     return std::string();
   }
+  SecretValue* password_libsecret = ToSingleSecret(search_results);
   if (!password_libsecret) {
     std::string password = Migrate();
     if (!password.empty())
@@ -83,26 +108,48 @@ std::string KeyStorageLibsecret::Migrate() {
   LibsecretAttributesBuilder attrs;
 
   // Detect old entry.
-  SecretValue* password_libsecret = LibsecretLoader::secret_service_lookup_sync(
-      nullptr, &kKeystoreSchemaV1, attrs.Get(), nullptr, &error);
-  if (error || !password_libsecret)
+  GList* search_results = LibsecretLoader::secret_service_search_sync(
+      nullptr /* default secret service */, &kKeystoreSchemaV1, attrs.Get(),
+      static_cast<SecretSearchFlags>(SECRET_SEARCH_UNLOCK |
+                                     SECRET_SEARCH_LOAD_SECRETS),
+      nullptr, &error);
+  if (error) {
+    g_error_free(error);
+    g_list_free(search_results);
+    return std::string();
+  }
+  SecretValue* password_libsecret = ToSingleSecret(search_results);
+  if (!password_libsecret)
     return std::string();
 
   VLOG(1) << "OSCrypt detected a deprecated password in Libsecret.";
   std::string password(
       LibsecretLoader::secret_value_get_text(password_libsecret));
+  LibsecretLoader::secret_value_unref(password_libsecret);
 
   // Create new entry.
   bool success = LibsecretLoader::secret_password_store_sync(
       &kKeystoreSchemaV2, nullptr, KeyStorageLinux::kKey, password.c_str(),
       nullptr, &error, "application", kApplicationName, nullptr);
-  if (error || !success)
+  if (error) {
+    VLOG(1) << "Failed to store migrated password. " << error->message;
+    g_error_free(error);
     return std::string();
+  }
+  if (!success) {
+    VLOG(1) << "Failed to store migrated password.";
+    return std::string();
+  }
 
   // Delete old entry.
   // Even if deletion failed, we have to use the password that we created.
   success = LibsecretLoader::secret_password_clear_sync(
       &kKeystoreSchemaV1, nullptr, &error, nullptr);
+  if (error) {
+    VLOG(1) << "OSCrypt failed to delete deprecated password. "
+            << error->message;
+    g_error_free(error);
+  }
 
   VLOG(1) << "OSCrypt migrated from deprecated password.";
 

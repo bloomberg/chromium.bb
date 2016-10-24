@@ -26,8 +26,6 @@ decltype(
 decltype(&::secret_item_load_secret_sync)
     LibsecretLoader::secret_item_load_secret_sync;
 decltype(&::secret_value_unref) LibsecretLoader::secret_value_unref;
-decltype(
-    &::secret_service_lookup_sync) LibsecretLoader::secret_service_lookup_sync;
 
 bool LibsecretLoader::libsecret_loaded_ = false;
 
@@ -42,8 +40,6 @@ const LibsecretLoader::FunctionInfo LibsecretLoader::kFunctions[] = {
      reinterpret_cast<void**>(&secret_password_clear_sync)},
     {"secret_password_store_sync",
      reinterpret_cast<void**>(&secret_password_store_sync)},
-    {"secret_service_lookup_sync",
-     reinterpret_cast<void**>(&secret_service_lookup_sync)},
     {"secret_service_search_sync",
      reinterpret_cast<void**>(&secret_service_search_sync)},
     {"secret_value_get_text", reinterpret_cast<void**>(&secret_value_get_text)},
@@ -102,11 +98,12 @@ bool LibsecretLoader::LibsecretIsAvailable() {
        {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING}}};
 
   GError* error = nullptr;
-  GList* found =
-      secret_service_search_sync(nullptr,  // default secret service
-                                 &kDummySchema, attrs.Get(), SECRET_SEARCH_ALL,
-                                 nullptr,  // no cancellable ojbect
-                                 &error);
+  GList* found = secret_service_search_sync(
+      nullptr,  // default secret service
+      &kDummySchema, attrs.Get(),
+      static_cast<SecretSearchFlags>(SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK),
+      nullptr,  // no cancellable ojbect
+      &error);
   bool success = (error == nullptr);
   if (error)
     g_error_free(error);

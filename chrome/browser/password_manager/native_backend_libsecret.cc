@@ -318,7 +318,8 @@ bool NativeBackendLibsecret::AddUpdateLoginSearch(
   GError* error = nullptr;
   GList* found = LibsecretLoader::secret_service_search_sync(
       nullptr,  // default secret service
-      &kLibsecretSchema, attrs.Get(), SECRET_SEARCH_ALL,
+      &kLibsecretSchema, attrs.Get(),
+      static_cast<SecretSearchFlags>(SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK),
       nullptr,  // no cancellable ojbect
       &error);
   if (error) {
@@ -421,7 +422,8 @@ bool NativeBackendLibsecret::GetLoginsList(
   GError* error = nullptr;
   GList* found = LibsecretLoader::secret_service_search_sync(
       nullptr,  // default secret service
-      &kLibsecretSchema, attrs.Get(), SECRET_SEARCH_ALL,
+      &kLibsecretSchema, attrs.Get(),
+      static_cast<SecretSearchFlags>(SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK),
       nullptr,  // no cancellable ojbect
       &error);
   if (error) {

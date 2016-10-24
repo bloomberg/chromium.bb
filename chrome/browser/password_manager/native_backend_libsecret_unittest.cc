@@ -129,6 +129,7 @@ GList* mock_secret_service_search_sync(SecretService* service,
                                        SecretSearchFlags flags,
                                        GCancellable* cancellable,
                                        GError** error) {
+  EXPECT_TRUE(flags & SECRET_SEARCH_UNLOCK);
   GList* result = nullptr;
   for (MockSecretItem* item : *global_mock_libsecret_items) {
     if (Matches(item, attributes))

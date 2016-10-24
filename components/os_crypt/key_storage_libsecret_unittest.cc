@@ -16,6 +16,8 @@ namespace {
 // cast to the correct signature. We can reduce SecretValue to an std::string,
 // because we don't use anything else from it.
 using MockSecretValue = std::string;
+// Likewise, we only need a SecretValue from SecretItem.
+using MockSecretItem = MockSecretValue;
 
 const SecretSchema kKeystoreSchemaV1 = {
     "chrome_libsecret_os_crypt_password",
@@ -61,13 +63,6 @@ class MockLibsecretLoader : public LibsecretLoader {
                                                   GError** error,
                                                   ...);
 
-  static MockSecretValue* mock_secret_service_lookup_sync(
-      SecretService* service,
-      const SecretSchema* schema,
-      GHashTable* attributes,
-      GCancellable* cancellable,
-      GError** error);
-
   static void mock_secret_value_unref(gpointer value);
 
   static GList* mock_secret_service_search_sync(SecretService* service,
@@ -81,6 +76,8 @@ class MockLibsecretLoader : public LibsecretLoader {
                                                   GCancellable* cancellable,
                                                   GError** error,
                                                   ...);
+
+  static MockSecretValue* mock_secret_item_get_secret(MockSecretItem* item);
 
   // MockLibsecretLoader owns these objects.
   static MockSecretValue* stored_password_mock_ptr_;
@@ -111,26 +108,6 @@ gboolean MockLibsecretLoader::mock_secret_password_store_sync(
 }
 
 // static
-MockSecretValue* MockLibsecretLoader::mock_secret_service_lookup_sync(
-    SecretService* service,
-    const SecretSchema* schema,
-    GHashTable* attributes,
-    GCancellable* cancellable,
-    GError** error) {
-  bool is_known_schema = strcmp(schema->name, kKeystoreSchemaV2.name) == 0 ||
-                         strcmp(schema->name, kKeystoreSchemaV1.name) == 0;
-  EXPECT_TRUE(is_known_schema);
-
-  if (strcmp(schema->name, kKeystoreSchemaV2.name) == 0)
-    return stored_password_mock_ptr_;
-  else if (strcmp(schema->name, kKeystoreSchemaV1.name) == 0)
-    return deprecated_password_mock_ptr_;
-
-  NOTREACHED();
-  return nullptr;
-}
-
-// static
 void MockLibsecretLoader::mock_secret_value_unref(gpointer value) {}
 
 // static
@@ -141,8 +118,23 @@ GList* MockLibsecretLoader::mock_secret_service_search_sync(
     SecretSearchFlags flags,
     GCancellable* cancellable,
     GError** error) {
-  *error = nullptr;
-  return nullptr;
+  bool is_known_schema = strcmp(schema->name, kKeystoreSchemaV2.name) == 0 ||
+                         strcmp(schema->name, kKeystoreSchemaV1.name) == 0;
+  EXPECT_TRUE(is_known_schema);
+
+  EXPECT_TRUE(flags & SECRET_SEARCH_UNLOCK);
+  EXPECT_TRUE(flags & SECRET_SEARCH_LOAD_SECRETS);
+
+  MockSecretItem* item = nullptr;
+  if (strcmp(schema->name, kKeystoreSchemaV2.name) == 0)
+    item = stored_password_mock_ptr_;
+  else if (strcmp(schema->name, kKeystoreSchemaV1.name) == 0)
+    item = deprecated_password_mock_ptr_;
+
+  GList* result = nullptr;
+  result = g_list_append(result, item);
+  g_clear_error(error);
+  return result;
 }
 
 // static
@@ -151,6 +143,7 @@ gboolean MockLibsecretLoader::mock_secret_password_clear_sync(
     GCancellable* cancellable,
     GError** error,
     ...) {
+  // We would only delete entries in the deprecated schema.
   EXPECT_STREQ(kKeystoreSchemaV1.name, schema->name);
   delete deprecated_password_mock_ptr_;
   deprecated_password_mock_ptr_ = nullptr;
@@ -158,22 +151,26 @@ gboolean MockLibsecretLoader::mock_secret_password_clear_sync(
 }
 
 // static
+MockSecretValue* MockLibsecretLoader::mock_secret_item_get_secret(
+    MockSecretItem* item) {
+  return item;
+}
+
+// static
 bool MockLibsecretLoader::ResetForOSCrypt() {
-  // 4 methods used by KeyStorageLibsecret
+  // Methods used by KeyStorageLibsecret
   secret_password_store_sync =
       &MockLibsecretLoader::mock_secret_password_store_sync;
   secret_value_get_text = (decltype(&::secret_value_get_text)) &
                           MockLibsecretLoader::mock_secret_value_get_text;
   secret_value_unref = &MockLibsecretLoader::mock_secret_value_unref;
-  secret_service_lookup_sync =
-      (decltype(&::secret_service_lookup_sync)) &
-      MockLibsecretLoader::mock_secret_service_lookup_sync;
+  secret_service_search_sync =
+      &MockLibsecretLoader::mock_secret_service_search_sync;
+  secret_item_get_secret =
+      (decltype(&::secret_item_get_secret))mock_secret_item_get_secret;
   // Used by Migrate()
   secret_password_clear_sync =
       &MockLibsecretLoader::mock_secret_password_clear_sync;
-  // 1 method used by LibsecretLoader::EnsureLibsecretLoaded()
-  secret_service_search_sync =
-      &MockLibsecretLoader::mock_secret_service_search_sync;
 
   delete stored_password_mock_ptr_;
   stored_password_mock_ptr_ = nullptr;
