@@ -275,6 +275,11 @@
     "args": ["--enable-blink-features=LoadingWithMojo"]
   },
   {
+    "prefix": "mojo-loading",
+    "base": "http/tests/xmlhttprequest/web-apps",
+    "args": ["--enable-blink-features=LoadingWithMojo"]
+  },
+  {
     "prefix": "scalefactor150",
     "base": "fast/events/synthetic-events",
     "args": ["--force-device-scale-factor=1.5"]

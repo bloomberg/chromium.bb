@@ -3697,6 +3697,72 @@ TEST_P(ResourceDispatcherHostTest, ThrottleMustProcessResponseBeforeRead) {
   base::RunLoop().RunUntilIdle();
 }
 
+namespace {
+
+void StoreSyncLoadResult(bool* called,
+                         bool* was_null,
+                         SyncLoadResult* result_out,
+                         const SyncLoadResult* result) {
+  *called = true;
+  *was_null = !result;
+
+  if (result)
+    *result_out = *result;
+}
+
+} // namespace
+
+TEST_P(ResourceDispatcherHostTest, SyncLoadWithMojoSuccess) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_XHR, net::URLRequestTestJob::test_url_1());
+  request.priority = net::MAXIMUM_PRIORITY;
+
+  bool called = false;
+  bool was_null = false;
+  SyncLoadResult result;
+  host_.OnSyncLoadWithMojo(0, 1, request, filter_.get(),
+                           base::Bind(&StoreSyncLoadResult,
+                                      &called, &was_null, &result));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+  EXPECT_FALSE(was_null);
+  EXPECT_EQ(net::OK, result.error_code);
+}
+
+TEST_P(ResourceDispatcherHostTest, SyncLoadWithMojoError) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_XHR, net::URLRequestTestJob::test_url_error());
+  request.priority = net::MAXIMUM_PRIORITY;
+
+  bool called = false;
+  bool was_null = false;
+  SyncLoadResult result;
+  host_.OnSyncLoadWithMojo(0, 1, request, filter_.get(),
+                           base::Bind(&StoreSyncLoadResult,
+                                      &called, &was_null, &result));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+  EXPECT_FALSE(was_null);
+  EXPECT_EQ(net::ERR_INVALID_URL, result.error_code);
+}
+
+TEST_P(ResourceDispatcherHostTest, SyncLoadWithMojoCancel) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_XHR, net::URLRequestTestJob::test_url_error());
+  request.priority = net::MAXIMUM_PRIORITY;
+
+  bool called = false;
+  bool was_null = false;
+  SyncLoadResult result;
+  host_.OnSyncLoadWithMojo(0, 1, request, filter_.get(),
+                           base::Bind(&StoreSyncLoadResult,
+                                      &called, &was_null, &result));
+  host_.CancelRequestsForProcess(filter_->child_id());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+  EXPECT_TRUE(was_null);
+}
+
 // A URLRequestTestJob that sets a test certificate on the |ssl_info|
 // field of the response.
 class TestHTTPSURLRequestJob : public net::URLRequestTestJob {

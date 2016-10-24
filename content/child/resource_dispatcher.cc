@@ -618,17 +618,23 @@ void ResourceDispatcher::StartSync(
     mojom::URLLoaderFactory* url_loader_factory) {
   CheckSchemeForReferrerPolicy(*request);
 
-  // TODO(yhirano): Use url_loader_factory otherwise.
-  DCHECK_EQ(blink::WebURLRequest::LoadingIPCType::ChromeIPC, ipc_type);
-
   SyncLoadResult result;
-  IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
-      routing_id, MakeRequestID(), *request, &result);
 
-  // NOTE: This may pump events (see RenderThread::Send).
-  if (!message_sender_->Send(msg)) {
-    response->error_code = net::ERR_FAILED;
-    return;
+  if (ipc_type == blink::WebURLRequest::LoadingIPCType::Mojo) {
+    if (!url_loader_factory->SyncLoad(
+            routing_id, MakeRequestID(), *request, &result)) {
+      response->error_code = net::ERR_FAILED;
+      return;
+    }
+  } else {
+    IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
+        routing_id, MakeRequestID(), *request, &result);
+
+    // NOTE: This may pump events (see RenderThread::Send).
+    if (!message_sender_->Send(msg)) {
+      response->error_code = net::ERR_FAILED;
+      return;
+    }
   }
 
   response->error_code = result.error_code;

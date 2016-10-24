@@ -2272,6 +2272,18 @@ void ResourceDispatcherHostImpl::OnRequestResourceWithMojo(
   filter_ = nullptr;
 }
 
+void ResourceDispatcherHostImpl::OnSyncLoadWithMojo(
+    int routing_id,
+    int request_id,
+    const ResourceRequest& request_data,
+    ResourceMessageFilter* filter,
+    const SyncLoadResultCallback& result_handler) {
+  filter_ = filter;
+  BeginRequest(request_id, request_data, result_handler, routing_id,
+               nullptr, nullptr);
+  filter_ = nullptr;
+}
+
 // static
 int ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
     net::URLRequest* request) {

@@ -13,6 +13,26 @@
 
 namespace content {
 
+namespace {
+
+void DispatchSyncLoadResult(
+    const URLLoaderFactoryImpl::SyncLoadCallback& callback,
+    const SyncLoadResult* result) {
+  // |result| can be null when a loading task is aborted unexpectedly. Reply
+  // with a failure result on that case.
+  // TODO(tzik): Test null-result case.
+  if (!result) {
+    SyncLoadResult failure;
+    failure.error_code = net::ERR_FAILED;
+    callback.Run(failure);
+    return;
+  }
+
+  callback.Run(*result);
+}
+
+} // namespace
+
 URLLoaderFactoryImpl::URLLoaderFactoryImpl(
     scoped_refptr<ResourceMessageFilter> resource_message_filter)
     : resource_message_filter_(std::move(resource_message_filter)) {
@@ -36,6 +56,18 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
   rdh->OnRequestResourceWithMojo(routing_id, request_id, url_request,
                                  std::move(request), std::move(client),
                                  resource_message_filter_.get());
+}
+
+void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
+                                    int32_t request_id,
+                                    const ResourceRequest& url_request,
+                                    const SyncLoadCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
+  rdh->OnSyncLoadWithMojo(routing_id, request_id, url_request,
+                          resource_message_filter_.get(),
+                          base::Bind(&DispatchSyncLoadResult, callback));
 }
 
 void URLLoaderFactoryImpl::Create(
