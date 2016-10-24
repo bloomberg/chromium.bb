@@ -81,11 +81,17 @@ class CONTENT_EXPORT InterceptingResourceHandler
     // Resume().
     SENDING_PAYLOAD_TO_OLD_HANDLER,
 
-    // The InterceptingResourcHandler is notifying OnResponseStarted to the new
-    // handler and waiting for its completion via Resume(). After the
-    // completion, the InterceptingResourcHandler will transit to
+    // The InterceptingResourcHandler is calling the new handler's
+    // OnResponseStarted method and waiting for its completion via Resume().
+    // After completion, the InterceptingResourceHandler will transition to
+    // SENDING_ON_RESPONSE_STARTED_TO_NEW_HANDLER on success.
+    SENDING_ON_WILL_START_TO_NEW_HANDLER,
+
+    // The InterceptingResourcHandler is calling the new handler's
+    // OnResponseStarted method and waiting for its completion via Resume().
+    // After completion, the InterceptingResourceHandler will transition to
     // WAITING_FOR_ON_READ_COMPLETED on success.
-    NOTIFYING_ON_RESPONSE_STARTED_TO_NEW_HANDLER,
+    SENDING_ON_RESPONSE_STARTED_TO_NEW_HANDLER,
 
     // The InterceptingResourcHandler is waiting for OnReadCompleted to be
     // called.
@@ -110,7 +116,7 @@ class CONTENT_EXPORT InterceptingResourceHandler
   // The return value and |defer| has the same meaning as DoLoop.
   bool SendPayloadToOldHandler(bool* defer);
   bool SendFirstReadBufferToNewHandler(bool* defer);
-  bool SendCompletionToOldHandler(bool* defer);
+  bool SendOnResponseStartedToNewHandler(bool* defer);
 
   State state_ = State::STARTING;
 

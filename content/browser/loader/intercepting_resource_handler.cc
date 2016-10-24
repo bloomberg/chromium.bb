@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 
@@ -175,7 +176,10 @@ bool InterceptingResourceHandler::DoLoop(bool* defer) {
       case State::PASS_THROUGH:
         NOTREACHED();
         break;
-      case State::NOTIFYING_ON_RESPONSE_STARTED_TO_NEW_HANDLER:
+      case State::SENDING_ON_WILL_START_TO_NEW_HANDLER:
+        result = SendOnResponseStartedToNewHandler(defer);
+        break;
+      case State::SENDING_ON_RESPONSE_STARTED_TO_NEW_HANDLER:
         if (first_read_buffer_double_) {
           // OnWillRead has been called, so copying the data from
           // |first_read_buffer_double_| to |first_read_buffer_| will be needed
@@ -239,7 +243,13 @@ bool InterceptingResourceHandler::SendPayloadToOldHandler(bool* defer) {
   DCHECK(!*defer);
 
   next_handler_ = std::move(new_handler_);
-  state_ = State::NOTIFYING_ON_RESPONSE_STARTED_TO_NEW_HANDLER;
+  state_ = State::SENDING_ON_WILL_START_TO_NEW_HANDLER;
+  return next_handler_->OnWillStart(request()->url(), defer);
+}
+
+bool InterceptingResourceHandler::SendOnResponseStartedToNewHandler(
+    bool* defer) {
+  state_ = State::SENDING_ON_RESPONSE_STARTED_TO_NEW_HANDLER;
   return next_handler_->OnResponseStarted(response_.get(), defer);
 }
 
