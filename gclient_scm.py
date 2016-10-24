@@ -377,8 +377,6 @@ class GitWrapper(SCMWrapper):
     if managed:
       self._DisableHooks()
 
-    files = [] if file_list is not None else None
-
     printed_path = False
     verbose = []
     if options.verbose:
@@ -563,12 +561,12 @@ class GitWrapper(SCMWrapper):
       upstream_branch = self.remote
       if options.revision or deps_revision:
         upstream_branch = revision
-      self._AttemptRebase(upstream_branch, files, options,
+      self._AttemptRebase(upstream_branch, file_list, options,
                           printed_path=printed_path, merge=options.merge)
       printed_path = True
     elif rev_type == 'hash':
       # case 2
-      self._AttemptRebase(upstream_branch, files, options,
+      self._AttemptRebase(upstream_branch, file_list, options,
                           newbase=revision, printed_path=printed_path,
                           merge=options.merge)
       printed_path = True
@@ -605,8 +603,8 @@ class GitWrapper(SCMWrapper):
         raise gclient_utils.Error(switch_error)
     else:
       # case 3 - the default case
-      if files is not None:
-        files = self._Capture(['diff', upstream_branch, '--name-only']).split()
+      rebase_files = self._Capture(
+          ['diff', upstream_branch, '--name-only']).split()
       if verbose:
         self.Print('Trying fast-forward merge to branch : %s' % upstream_branch)
       try:
@@ -618,8 +616,8 @@ class GitWrapper(SCMWrapper):
         merge_args.append(upstream_branch)
         merge_output = self._Capture(merge_args)
       except subprocess2.CalledProcessError as e:
+        rebase_files = []
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
-          files = []
           if not printed_path:
             self.Print('_____ %s at %s' % (self.relpath, revision),
                        timestamp=False)
@@ -635,7 +633,7 @@ class GitWrapper(SCMWrapper):
               except ValueError:
                 raise gclient_utils.Error('Invalid Character')
             if options.auto_rebase or re.match(r'yes|y', action, re.I):
-              self._AttemptRebase(upstream_branch, files, options,
+              self._AttemptRebase(upstream_branch, rebase_files, options,
                                   printed_path=printed_path, merge=False)
               printed_path = True
               break
@@ -676,8 +674,8 @@ class GitWrapper(SCMWrapper):
             # whitespace between projects when syncing.
             self.Print('')
 
-    if file_list is not None:
-      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      file_list.extend(
+          [os.path.join(self.checkout_path, f) for f in rebase_files])
 
     # If the rebase generated a conflict, abort and ask user to fix
     if self._IsRebasing():
