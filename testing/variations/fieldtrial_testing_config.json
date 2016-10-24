@@ -1319,24 +1319,6 @@
             ]
         }
     ],
-    "PluginPowerSaverTiny": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BlockSmallPluginContent"
-                    ]
-                }
-            ]
-        }
-    ],
     "PointerEvent": [
         {
             "platforms": [

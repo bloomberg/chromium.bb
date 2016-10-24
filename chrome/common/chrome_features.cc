@@ -41,7 +41,7 @@ const base::Feature kBlockPromptsIfDismissedOften{
 
 // Experiment to disable small cross-origin content. (http://crbug.com/608886)
 const base::Feature kBlockSmallContent{"BlockSmallPluginContent",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Fixes for browser hang bugs are deployed in a field trial in order to measure
 // their impact. See crbug.com/478209.
