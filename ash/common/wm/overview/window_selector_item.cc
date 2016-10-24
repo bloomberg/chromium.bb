@@ -27,17 +27,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
-#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -653,9 +650,6 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
                                                transform_window_.window());
   }
   window_label_button_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  window_label_button_view_->SetFontList(
-      bundle.GetFontList(ui::ResourceBundle::BaseFont));
   // Hint at the background color that the label will be drawn onto (for
   // subpixel antialiasing). Does not actually set the background color.
   window_label_button_view_->SetBackgroundColorHint(kLabelBackgroundColor);

@@ -185,10 +185,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP" file="common/window_header_shade_top_inactive.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_OVERVIEW_CLOSE" file="common/window_overview_close_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_OVERVIEW_CLOSE_H" file="common/window_overview_close_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_OVERVIEW_CLOSE_P" file="common/window_overview_close_pressed.png" />
-
       <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER" file="cros/avatar_holder.png" />
       <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER_MASK" file="cros/avatar_holder_mask.png" />
     </structures>
