@@ -249,14 +249,6 @@ class CORE_EXPORT FrameSelection final
   void showTreeForThis() const;
 #endif
 
-  enum EndPointsAdjustmentMode {
-    AdjustEndpointsAtBidiBoundary,
-    DoNotAdjustEndpoints
-  };
-  void setNonDirectionalSelectionIfNeeded(
-      const VisibleSelectionInFlatTree&,
-      TextGranularity,
-      EndPointsAdjustmentMode = DoNotAdjustEndpoints);
   void setFocusedNodeIfNeeded();
   void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
@@ -295,6 +287,7 @@ class CORE_EXPORT FrameSelection final
  private:
   friend class FrameSelectionTest;
   friend class PaintControllerPaintTestForSlimmingPaintV1AndV2;
+  friend class SelectionControllerTest;
   FRIEND_TEST_ALL_PREFIXES(PaintControllerPaintTestForSlimmingPaintV1AndV2,
                            FullDocumentPaintingWithCaret);
 
@@ -303,11 +296,6 @@ class CORE_EXPORT FrameSelection final
   // Note: We have |selectionInFlatTree()| for unit tests, we should
   // use |visibleSelection<EditingInFlatTreeStrategy>()|.
   const VisibleSelectionInFlatTree& selectionInFlatTree() const;
-
-  template <typename Strategy>
-  VisiblePositionTemplate<Strategy> originalBase() const;
-  void setOriginalBase(const VisiblePosition&);
-  void setOriginalBase(const VisiblePositionInFlatTree&);
 
   template <typename Strategy>
   void setSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>&,
@@ -345,8 +333,6 @@ class CORE_EXPORT FrameSelection final
   const Member<PendingSelection> m_pendingSelection;
   const Member<SelectionEditor> m_selectionEditor;
 
-  // Used to store base before the adjustment at bidi boundary
-  VisiblePositionInFlatTree m_originalBaseInFlatTree;
   TextGranularity m_granularity;
   LayoutUnit m_xPosForVerticalArrowNavigation;
 

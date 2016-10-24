@@ -10,8 +10,10 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameCaret.h"
+#include "core/editing/SelectionController.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBodyElement.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -273,7 +275,40 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
   EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
 
-TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded) {
+// TODO(yosin): We should move |SelectionControllerTest" to
+// "SelectionControllerTest.cpp"
+class SelectionControllerTest : public EditingTestBase {
+ protected:
+  SelectionControllerTest() = default;
+
+  const VisibleSelection& visibleSelectionInDOMTree() const {
+    return selection().selection();
+  }
+
+  const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const {
+    return selection().selectionInFlatTree();
+  }
+
+  void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&,
+                                          TextGranularity);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SelectionControllerTest);
+};
+
+// TODO(yosin): We should move this function to "SelectionControllerTest.cpp"
+void SelectionControllerTest::setNonDirectionalSelectionIfNeeded(
+    const VisibleSelectionInFlatTree& newSelection,
+    TextGranularity granularity) {
+  frame()
+      .eventHandler()
+      .selectionController()
+      .setNonDirectionalSelectionIfNeeded(
+          newSelection, granularity, SelectionController::DoNotAdjustEndpoints);
+}
+
+// TODO(yosin): We should move this test to "SelectionControllerTest.cpp"
+TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   const char* bodyContent = "<span id=top>top</span><span id=host></span>";
   const char* shadowContent = "<span id=bottom>bottom</span>";
   setBodyContent(bodyContent);
@@ -284,7 +319,7 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded) {
   Node* host = document().getElementById("host");
 
   // top to bottom
-  selection().setNonDirectionalSelectionIfNeeded(
+  setNonDirectionalSelectionIfNeeded(
       createVisibleSelection(SelectionInFlatTree::Builder()
                                  .collapse(PositionInFlatTree(top, 1))
                                  .extend(PositionInFlatTree(bottom, 3))
@@ -302,7 +337,7 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded) {
   EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().end());
 
   // bottom to top
-  selection().setNonDirectionalSelectionIfNeeded(
+  setNonDirectionalSelectionIfNeeded(
       createVisibleSelection(SelectionInFlatTree::Builder()
                                  .collapse(PositionInFlatTree(bottom, 3))
                                  .extend(PositionInFlatTree(top, 1))

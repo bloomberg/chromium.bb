@@ -39,13 +39,15 @@ class FrameSelection;
 class HitTestResult;
 class LocalFrame;
 
-class SelectionController final : public GarbageCollected<SelectionController> {
+class CORE_EXPORT SelectionController final
+    : public GarbageCollectedFinalized<SelectionController> {
   WTF_MAKE_NONCOPYABLE(SelectionController);
 
  public:
   static SelectionController* create(LocalFrame&);
   DECLARE_TRACE();
 
+  void documentDetached();
   void handleMousePressEvent(const MouseEventWithHitTestResults&);
   bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
   bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
@@ -80,10 +82,18 @@ class SelectionController final : public GarbageCollected<SelectionController> {
   }
 
  private:
+  friend class SelectionControllerTest;
+
   explicit SelectionController(LocalFrame&);
 
   enum class AppendTrailingWhitespace { ShouldAppend, DontAppend };
   enum class SelectInputEventType { Touch, Mouse };
+  enum EndPointsAdjustmentMode {
+    AdjustEndpointsAtBidiBoundary,
+    DoNotAdjustEndpoints
+  };
+
+  Document& document() const;
 
   void selectClosestWordFromHitTestResult(const HitTestResult&,
                                           AppendTrailingWhitespace,
@@ -95,6 +105,9 @@ class SelectionController final : public GarbageCollected<SelectionController> {
       const MouseEventWithHitTestResults&);
   void selectClosestWordOrLinkFromMouseEvent(
       const MouseEventWithHitTestResults&);
+  void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&,
+                                          TextGranularity,
+                                          EndPointsAdjustmentMode);
   bool updateSelectionForMouseDownDispatchingSelectStart(
       Node*,
       const VisibleSelectionInFlatTree&,
@@ -103,6 +116,10 @@ class SelectionController final : public GarbageCollected<SelectionController> {
   FrameSelection& selection() const;
 
   Member<LocalFrame> const m_frame;
+  // TODO(yosin): We should use |PositionWIthAffinityInFlatTree| since we
+  // should reduce usage of |VisibleSelectionInFlatTree|.
+  // Used to store base before the adjustment at bidi boundary
+  VisiblePositionInFlatTree m_originalBaseInFlatTree;
   bool m_mouseDownMayStartSelect;
   bool m_mouseDownWasSingleClickInSelection;
   bool m_mouseDownAllowsMultiClick;

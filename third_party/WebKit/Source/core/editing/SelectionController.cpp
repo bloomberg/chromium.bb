@@ -61,6 +61,7 @@ SelectionController::SelectionController(LocalFrame& frame)
 
 DEFINE_TRACE(SelectionController) {
   visitor->trace(m_frame);
+  visitor->trace(m_originalBaseInFlatTree);
 }
 
 namespace {
@@ -122,6 +123,15 @@ VisiblePositionInFlatTree visiblePositionOfHitTestResult(
 }
 
 }  // namespace
+
+Document& SelectionController::document() const {
+  DCHECK(m_frame->document());
+  return *m_frame->document();
+}
+
+void SelectionController::documentDetached() {
+  m_originalBaseInFlatTree = VisiblePositionInFlatTree();
+}
 
 bool SelectionController::handleMousePressEventSingleClick(
     const MouseEventWithHitTestResults& event) {
@@ -332,9 +342,8 @@ void SelectionController::updateSelectionForMouseDrag(
   if (selection().granularity() != CharacterGranularity)
     newSelection.expandUsingGranularity(selection().granularity());
 
-  selection().setNonDirectionalSelectionIfNeeded(
-      newSelection, selection().granularity(),
-      FrameSelection::AdjustEndpointsAtBidiBoundary);
+  setNonDirectionalSelectionIfNeeded(newSelection, selection().granularity(),
+                                     AdjustEndpointsAtBidiBoundary);
 }
 
 bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
@@ -362,7 +371,8 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
     m_selectionState = SelectionState::PlacedCaret;
   }
 
-  this->selection().setNonDirectionalSelectionIfNeeded(selection, granularity);
+  setNonDirectionalSelectionIfNeeded(selection, granularity,
+                                     DoNotAdjustEndpoints);
 
   return true;
 }

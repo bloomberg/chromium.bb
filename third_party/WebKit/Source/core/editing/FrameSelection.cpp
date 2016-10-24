@@ -223,7 +223,9 @@ static void adjustEndpointsAtBidiBoundary(
   }
 }
 
-void FrameSelection::setNonDirectionalSelectionIfNeeded(
+// TODO(yosin): We should move |setNonDirectionalSelectionIfNeeded()| to
+// "SelectionController.cpp"
+void SelectionController::setNonDirectionalSelectionIfNeeded(
     const VisibleSelectionInFlatTree& passedNewSelection,
     TextGranularity granularity,
     EndPointsAdjustmentMode endpointsAdjustmentMode) {
@@ -256,7 +258,7 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(
     newSelection.setBase(newBase);
     newSelection.setExtent(newExtent);
   } else if (originalBase.isNotNull()) {
-    if (visibleSelection<EditingInFlatTreeStrategy>().base() ==
+    if (selection().visibleSelection<EditingInFlatTreeStrategy>().base() ==
         newSelection.base())
       newSelection.setBase(originalBase);
     m_originalBaseInFlatTree = VisiblePositionInFlatTree();
@@ -264,12 +266,13 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(
 
   // Adjusting base and extent will make newSelection always directional
   newSelection.setIsDirectional(isDirectional);
-  if (visibleSelection<EditingInFlatTreeStrategy>() == newSelection)
+  if (selection().visibleSelection<EditingInFlatTreeStrategy>() == newSelection)
     return;
 
-  const SetSelectionOptions options = CloseTyping | ClearTypingStyle;
-  setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded,
-               granularity);
+  const FrameSelection::SetSelectionOptions options =
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle;
+  selection().setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded,
+                           granularity);
 }
 
 template <typename Strategy>
@@ -813,7 +816,6 @@ void FrameSelection::documentAttached(Document* document) {
 void FrameSelection::documentDetached(const Document& document) {
   DCHECK_EQ(m_document, document);
   m_document = nullptr;
-  m_originalBaseInFlatTree = VisiblePositionInFlatTree();
   m_granularity = CharacterGranularity;
 
   LayoutViewItem view = m_frame->contentLayoutItem();
@@ -823,6 +825,7 @@ void FrameSelection::documentDetached(const Document& document) {
   clearTypingStyle();
   m_selectionEditor->documentDetached(document);
   m_frameCaret->documentDetached();
+  m_frame->eventHandler().selectionController().documentDetached();
 }
 
 LayoutBlock* FrameSelection::caretLayoutObject() const {
@@ -1373,7 +1376,6 @@ DEFINE_TRACE(FrameSelection) {
   visitor->trace(m_frame);
   visitor->trace(m_pendingSelection);
   visitor->trace(m_selectionEditor);
-  visitor->trace(m_originalBaseInFlatTree);
   visitor->trace(m_typingStyle);
   visitor->trace(m_frameCaret);
 }
