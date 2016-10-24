@@ -852,7 +852,7 @@ TEST(ObserverListTest, NonCompactList) {
   Disrupter disrupter1(&observer_list, true);
   Disrupter disrupter2(&observer_list, true);
 
-  // Disrupt itself and another guy.
+  // Disrupt itself and another one.
   disrupter1.SetDoomed(&disrupter2);
 
   observer_list.AddObserver(&disrupter1);
@@ -880,7 +880,7 @@ TEST(ObserverListTest, BecomesEmptyThanNonEmpty) {
   Disrupter disrupter1(&observer_list, true);
   Disrupter disrupter2(&observer_list, true);
 
-  // Disrupt itself and another guy.
+  // Disrupt itself and another one.
   disrupter1.SetDoomed(&disrupter2);
 
   observer_list.AddObserver(&disrupter1);
