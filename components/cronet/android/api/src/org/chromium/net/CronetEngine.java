@@ -1170,11 +1170,8 @@ public abstract class CronetEngine {
     /**
      * Registers a listener that gets called after the end of each request with the request info.
      *
-     * <p>This must be called after {@link #enableNetworkQualityEstimator} and will throw an
-     * exception otherwise.
-     *
-     * <p>The listener is called on the {@link java.util.concurrent.Executor} that
-     * is passed to {@link #enableNetworkQualityEstimator}.
+     * <p>The listener is called on an {@link java.util.concurrent.Executor} provided by the
+     * listener.
      *
      * @param listener the listener for finished requests.
      *
