@@ -290,8 +290,9 @@ class CONTENT_EXPORT WebContentsImpl
   void ClosePage() override;
   RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const override;
   SkColor GetThemeColor() const override;
-  WebUI* CreateSubframeWebUI(const GURL& url,
-                             const std::string& frame_name) override;
+  std::unique_ptr<WebUI> CreateSubframeWebUI(
+      const GURL& url,
+      const std::string& frame_name) override;
   WebUI* GetWebUI() const override;
   WebUI* GetCommittedWebUI() const override;
   void SetUserAgentOverride(const std::string& override) override;
@@ -1102,7 +1103,8 @@ class CONTENT_EXPORT WebContentsImpl
   // used to determine which WebUI should be created (if any). |frame_name|
   // corresponds to the name of a frame that the WebUI should be created for (or
   // the main frame if empty).
-  WebUI* CreateWebUI(const GURL& url, const std::string& frame_name);
+  std::unique_ptr<WebUIImpl> CreateWebUI(const GURL& url,
+                                         const std::string& frame_name);
 
   void SetJavaScriptDialogManagerForTesting(
       JavaScriptDialogManager* dialog_manager);

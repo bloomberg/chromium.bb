@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -174,7 +175,6 @@ UberUI::UberUI(content::WebUI* web_ui)
 }
 
 UberUI::~UberUI() {
-  base::STLDeleteValues(&sub_uis_);
 }
 
 void UberUI::RegisterSubpage(const std::string& page_url,
@@ -185,13 +185,12 @@ void UberUI::RegisterSubpage(const std::string& page_url,
 
 content::WebUI* UberUI::GetSubpage(const std::string& page_url) {
   if (!base::ContainsKey(sub_uis_, page_url))
-    return NULL;
-  return sub_uis_[page_url];
+    return nullptr;
+  return sub_uis_[page_url].get();
 }
 
 void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
-       ++iter) {
+  for (auto iter = sub_uis_.begin(); iter != sub_uis_.end(); ++iter) {
     iter->second->GetController()->RenderViewCreated(render_view_host);
   }
 }
@@ -200,7 +199,7 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
                                         const std::string& message,
                                         const base::ListValue& args) {
   // Find the appropriate subpage and forward the message.
-  SubpageMap::iterator subpage = sub_uis_.find(source_url.GetOrigin().spec());
+  auto subpage = sub_uis_.find(source_url.GetOrigin().spec());
   if (subpage == sub_uis_.end()) {
     // The message was sent from the uber page itself.
     DCHECK_EQ(std::string(chrome::kChromeUIUberHost), source_url.host());

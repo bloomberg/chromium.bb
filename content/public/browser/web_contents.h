@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/callback_forward.h"
@@ -293,8 +294,9 @@ class WebContents : public PageNavigator,
   // necessary. However if the embedder wants to create its own WebUI object and
   // keep track of it manually, it can use this. |frame_name| is used to
   // identify the frame and cannot be empty.
-  virtual WebUI* CreateSubframeWebUI(const GURL& url,
-                                     const std::string& frame_name) = 0;
+  virtual std::unique_ptr<WebUI> CreateSubframeWebUI(
+      const GURL& url,
+      const std::string& frame_name) = 0;
 
   // Returns the committed WebUI if one exists, otherwise the pending one.
   virtual WebUI* GetWebUI() const = 0;
