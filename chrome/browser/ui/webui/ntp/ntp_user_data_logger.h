@@ -84,10 +84,6 @@ class NTPUserDataLogger
   // True if at least one iframe came from a client-side suggestion.
   bool has_client_side_suggestions_;
 
-  // Total number of tiles rendered, no matter if it's a thumbnail, a gray tile
-  // or an external tile.
-  size_t number_of_tiles_;
-
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;
 

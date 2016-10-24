@@ -122,20 +122,8 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
 
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
-  switch (event) {
-    case NTP_SERVER_SIDE_SUGGESTION:
-      has_server_side_suggestions_ = true;
-      number_of_tiles_++;
-      return;
-    case NTP_CLIENT_SIDE_SUGGESTION:
-      has_client_side_suggestions_ = true;
-      number_of_tiles_++;
-      return;
-    case NTP_ALL_TILES_LOADED:
-      EmitNtpStatistics(time);
-      return;
-  }
-  NOTREACHED();
+  DCHECK_EQ(NTP_ALL_TILES_LOADED, event);
+  EmitNtpStatistics(time);
 }
 
 void NTPUserDataLogger::LogMostVisitedImpression(
@@ -144,6 +132,15 @@ void NTPUserDataLogger::LogMostVisitedImpression(
     return;
   }
   impression_was_logged_[position] = true;
+
+  switch (tile_source) {
+    case NTPLoggingTileSource::CLIENT:
+      has_client_side_suggestions_ = true;
+      break;
+    case NTPLoggingTileSource::SERVER:
+      has_server_side_suggestions_ = true;
+      break;
+  }
 
   UMA_HISTOGRAM_ENUMERATION(kMostVisitedImpressionHistogramName, position,
                             kNumMostVisited);
@@ -185,7 +182,6 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       has_server_side_suggestions_(false),
       has_client_side_suggestions_(false),
-      number_of_tiles_(0),
       has_emitted_(false),
       during_startup_(!AfterStartupTaskUtils::IsBrowserStartupComplete()) {
   // We record metrics about session data here because when this class typically
@@ -209,7 +205,6 @@ void NTPUserDataLogger::NavigatedFromURLToURL(const GURL& from,
     DVLOG(1) << "Returning to New Tab Page";
     impression_was_logged_.reset();
     has_emitted_ = false;
-    number_of_tiles_ = 0;
     has_server_side_suggestions_ = false;
     has_client_side_suggestions_ = false;
   }
@@ -219,8 +214,10 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // We only send statistics once per page.
   if (has_emitted_)
     return;
+
+  size_t number_of_tiles = impression_was_logged_.count();
   DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
-           << "number of tiles: " << number_of_tiles_;
+           << "number of tiles: " << number_of_tiles;
 
   LogLoadTimeHistogram("NewTabPage.LoadTime", load_time);
 
@@ -236,12 +233,9 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   std::string status = during_startup_ ? "Startup" : "NewTab";
   LogLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time);
 
-  has_server_side_suggestions_ = false;
-  has_client_side_suggestions_ = false;
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "NewTabPage.NumberOfTiles", number_of_tiles_, 1, kNumMostVisited,
+      "NewTabPage.NumberOfTiles", number_of_tiles, 1, kNumMostVisited,
       kNumMostVisited + 1);
-  number_of_tiles_ = 0;
   has_emitted_ = true;
   during_startup_ = false;
 }

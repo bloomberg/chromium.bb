@@ -16,10 +16,6 @@
  * @const
  */
 var LOG_TYPE = {
-  // A suggestion coming from the server was rendered.
-  NTP_SERVER_SIDE_SUGGESTION: 0,
-  // A suggestion coming from the client was rendered.
-  NTP_CLIENT_SIDE_SUGGESTION: 1,
   // All NTP Tiles have finished loading (successfully or failing).
   NTP_ALL_TILES_LOADED: 11,
 };
@@ -310,7 +306,6 @@ var addTile = function(args) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
     }
-    logEvent(LOG_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
     tiles.appendChild(renderTile(data));
   } else if (args.url) {
     // If a URL is passed: a server-side suggestion.
@@ -319,7 +314,6 @@ var addTile = function(args) {
     if (/^javascript:/i.test(args.url) ||
         /^javascript:/i.test(args.thumbnailUrl))
       return;
-    logEvent(LOG_TYPE.NTP_SERVER_SIDE_SUGGESTION);
     tiles.appendChild(renderTile(args));
   } else {  // an empty tile
     tiles.appendChild(renderTile(null));

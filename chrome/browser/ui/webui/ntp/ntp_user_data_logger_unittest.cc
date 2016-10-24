@@ -4,82 +4,38 @@
 
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 
-#include "base/metrics/histogram_macros.h"
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/common/search/ntp_logging_events.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::Bucket;
+using testing::ElementsAre;
+using testing::IsEmpty;
+
 namespace {
 
-using testing::ElementsAre;
 using Sample = base::HistogramBase::Sample;
 using Samples = std::vector<Sample>;
 
 class TestNTPUserDataLogger : public NTPUserDataLogger {
  public:
-  TestNTPUserDataLogger() : NTPUserDataLogger(NULL) {}
+  TestNTPUserDataLogger() : NTPUserDataLogger(nullptr) {}
   ~TestNTPUserDataLogger() override {}
 };
 
-base::HistogramBase::Count GetTotalCount(const std::string& histogram_name) {
-  base::HistogramBase* histogram = base::StatisticsRecorder::FindHistogram(
-      histogram_name);
-  // Return 0 if history is uninitialized.
-  return histogram ? histogram->SnapshotSamples()->TotalCount() : 0;
-}
-
-base::HistogramBase::Count GetBinCount(const std::string& histogram_name,
-                                       Sample value) {
-  base::HistogramBase* histogram = base::StatisticsRecorder::FindHistogram(
-      histogram_name);
-  // Return 0 if history is uninitialized.
-  return histogram ? histogram->SnapshotSamples()->GetCount(value) : 0;
-}
-
-std::vector<int> GetBinCounts(const std::string& histogram_name,
-                              const Samples& values) {
-  std::vector<int> results;
-  for (const auto& value : values) {
-    results.push_back(GetBinCount(histogram_name, value));
-  }
-  return results;
-}
-
-std::vector<int> TotalImpressions(const Samples& values) {
-  return GetBinCounts("NewTabPage.SuggestionsImpression", values);
-}
-
-std::vector<int> ServerImpressions(const Samples& values) {
-  return GetBinCounts("NewTabPage.SuggestionsImpression.server", values);
-}
-
-std::vector<int> ClientImpressions(const Samples& values) {
-  return GetBinCounts("NewTabPage.SuggestionsImpression.client", values);
-}
-
-std::vector<int> TotalNavigations(const Samples& values) {
-  return GetBinCounts("NewTabPage.MostVisited", values);
-}
-
-std::vector<int> ServerNavigations(const Samples& values) {
-  return GetBinCounts("NewTabPage.MostVisited.server", values);
-}
-
-std::vector<int> ClientNavigations(const Samples& values) {
-  return GetBinCounts("NewTabPage.MostVisited.client", values);
-}
-
 }  // namespace
 
-class NTPUserDataLoggerTest : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
-};
-
-TEST_F(NTPUserDataLoggerTest, TestNumberOfTiles) {
+TEST(NTPUserDataLoggerTest, TestNumberOfTiles) {
   base::StatisticsRecorder::Initialize();
+
+  base::HistogramTester histogram_tester;
 
   // Ensure non-zero statistics.
   TestNTPUserDataLogger logger;
@@ -88,16 +44,15 @@ TEST_F(NTPUserDataLoggerTest, TestNumberOfTiles) {
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
 
   for (int i = 0; i < 8; ++i)
-    logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION, delta);
-
+    logger.LogMostVisitedImpression(i, NTPLoggingTileSource::SERVER);
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
+              ElementsAre(Bucket(8, 1)));
 
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfTiles", 8));
-
-  // Statistics should be reset to 0, so we should not log anything else.
+  // We should not log again for the same NTP.
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
+              ElementsAre(Bucket(8, 1)));
 
   // Navigating away and back resets stats.
   logger.NavigatedFromURLToURL(GURL("chrome://newtab/"),
@@ -105,105 +60,175 @@ TEST_F(NTPUserDataLoggerTest, TestNumberOfTiles) {
   logger.NavigatedFromURLToURL(GURL("http://chromium.org"),
                                GURL("chrome://newtab/"));
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
-  EXPECT_EQ(2, GetTotalCount("NewTabPage.NumberOfTiles"));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
+              ElementsAre(Bucket(0, 1), Bucket(8, 1)));
 }
 
-TEST_F(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
+TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
   base::StatisticsRecorder::Initialize();
-  EXPECT_THAT(TotalImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
-  EXPECT_THAT(ServerImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
-  EXPECT_THAT(ClientImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
+
+  base::HistogramTester histogram_tester;
 
   TestNTPUserDataLogger logger;
   logger.ntp_url_ = GURL("chrome://newtab/");
 
   // Impressions increment the associated bins.
 
-  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::SERVER);
-  EXPECT_THAT(TotalImpressions({1, 2, 3, 4}), ElementsAre(1, 0, 0, 0));
-  EXPECT_THAT(ServerImpressions({1, 2, 3, 4}), ElementsAre(1, 0, 0, 0));
-  EXPECT_THAT(ClientImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
+  logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      IsEmpty());
 
-  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
-  EXPECT_THAT(TotalImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ServerImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ClientImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
+  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::SERVER);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      IsEmpty());
+
+  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::CLIENT);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      ElementsAre(Bucket(2, 1)));
 
   logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 1, 0));
-  EXPECT_THAT(ServerImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ClientImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 1, 0));
-
-  logger.LogMostVisitedImpression(4, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 1, 1));
-  EXPECT_THAT(ServerImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ClientImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 1, 1));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
 
   // But once incremented, they don't increase again unless reset.
-  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(4, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 1, 1));
-  EXPECT_THAT(ServerImpressions({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ClientImpressions({1, 2, 3, 4}), ElementsAre(0, 0, 1, 1));
+  logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
 
   // Impressions are silently ignored for tiles >= 8.
   logger.LogMostVisitedImpression(8, NTPLoggingTileSource::SERVER);
   logger.LogMostVisitedImpression(9, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalImpressions({8, 9}), ElementsAre(0, 0));
-  EXPECT_THAT(ServerImpressions({8, 9}), ElementsAre(0, 0));
-  EXPECT_THAT(ClientImpressions({8, 9}), ElementsAre(0, 0));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
 
-  // Navigating away from the NTP and back resets stats.
+  // After navigating away from the NTP and back, we record again.
   logger.NavigatedFromURLToURL(GURL("chrome://newtab/"),
                                GURL("http://chromium.org"));
   logger.NavigatedFromURLToURL(GURL("http://chromium.org"),
                                GURL("chrome://newtab/"));
-  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(4, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalImpressions({1, 2, 3, 4}), ElementsAre(2, 2, 2, 2));
-  EXPECT_THAT(ServerImpressions({1, 2, 3, 4}), ElementsAre(2, 1, 1, 0));
-  EXPECT_THAT(ClientImpressions({1, 2, 3, 4}), ElementsAre(0, 1, 1, 2));
+  logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 2), Bucket(1, 2), Bucket(2, 2), Bucket(3, 2)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 2), Bucket(1, 1), Bucket(2, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 2)));
 }
 
-TEST_F(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
+TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
   base::StatisticsRecorder::Initialize();
 
-  EXPECT_THAT(TotalNavigations({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
-  EXPECT_THAT(ServerNavigations({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
-  EXPECT_THAT(ClientNavigations({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
+  base::HistogramTester histogram_tester;
 
   TestNTPUserDataLogger logger;
 
-  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::SERVER);
-  EXPECT_THAT(TotalNavigations({1, 2, 3, 4}), ElementsAre(1, 0, 0, 0));
-  EXPECT_THAT(ServerNavigations({1, 2, 3, 4}), ElementsAre(1, 0, 0, 0));
-  EXPECT_THAT(ClientNavigations({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
+  logger.LogMostVisitedNavigation(0, NTPLoggingTileSource::SERVER);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+      ElementsAre(Bucket(0, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+      ElementsAre(Bucket(0, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+      IsEmpty());
 
-  logger.LogMostVisitedNavigation(2, NTPLoggingTileSource::SERVER);
-  EXPECT_THAT(TotalNavigations({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ServerNavigations({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ClientNavigations({1, 2, 3, 4}), ElementsAre(0, 0, 0, 0));
+  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::SERVER);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+      IsEmpty());
+
+  logger.LogMostVisitedNavigation(2, NTPLoggingTileSource::CLIENT);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+      ElementsAre(Bucket(2, 1)));
 
   logger.LogMostVisitedNavigation(3, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalNavigations({1, 2, 3, 4}), ElementsAre(1, 1, 1, 0));
-  EXPECT_THAT(ServerNavigations({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ClientNavigations({1, 2, 3, 4}), ElementsAre(0, 0, 1, 0));
-
-  logger.LogMostVisitedNavigation(4, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalNavigations({1, 2, 3, 4}), ElementsAre(1, 1, 1, 1));
-  EXPECT_THAT(ServerNavigations({1, 2, 3, 4}), ElementsAre(1, 1, 0, 0));
-  EXPECT_THAT(ClientNavigations({1, 2, 3, 4}), ElementsAre(0, 0, 1, 1));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
 
   // Navigations always increase.
-  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedNavigation(2, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedNavigation(3, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedNavigation(4, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(TotalNavigations({1, 2, 3, 4}), ElementsAre(2, 2, 2, 2));
-  EXPECT_THAT(ServerNavigations({1, 2, 3, 4}), ElementsAre(2, 1, 1, 0));
-  EXPECT_THAT(ClientNavigations({1, 2, 3, 4}), ElementsAre(0, 1, 1, 2));
+  logger.LogMostVisitedNavigation(0, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedNavigation(2, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedNavigation(3, NTPLoggingTileSource::CLIENT);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+      ElementsAre(Bucket(0, 2), Bucket(1, 2), Bucket(2, 2), Bucket(3, 2)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+      ElementsAre(Bucket(0, 2), Bucket(1, 1), Bucket(2, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+      ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 2)));
 }

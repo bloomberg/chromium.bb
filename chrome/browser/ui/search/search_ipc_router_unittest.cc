@@ -259,7 +259,7 @@ TEST_F(SearchIPCRouterTest, ProcessLogEventMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_CLIENT_SIDE_SUGGESTION, delta))
+  EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_ALL_TILES_LOADED, delta))
       .Times(1);
   EXPECT_CALL(*policy, ShouldProcessLogEvent()).Times(1)
       .WillOnce(testing::Return(true));
@@ -267,7 +267,7 @@ TEST_F(SearchIPCRouterTest, ProcessLogEventMsg) {
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_LogEvent(
       contents->GetRoutingID(), GetSearchIPCRouterSeqNo(),
-      NTP_CLIENT_SIDE_SUGGESTION, delta));
+      NTP_ALL_TILES_LOADED, delta));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreLogEventMsg) {
@@ -275,7 +275,7 @@ TEST_F(SearchIPCRouterTest, IgnoreLogEventMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_CLIENT_SIDE_SUGGESTION, delta))
+  EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_ALL_TILES_LOADED, delta))
       .Times(0);
   EXPECT_CALL(*policy, ShouldProcessLogEvent()).Times(1)
       .WillOnce(testing::Return(false));
@@ -283,7 +283,7 @@ TEST_F(SearchIPCRouterTest, IgnoreLogEventMsg) {
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_LogEvent(
       contents->GetRoutingID(), GetSearchIPCRouterSeqNo(),
-      NTP_CLIENT_SIDE_SUGGESTION, delta));
+      NTP_ALL_TILES_LOADED, delta));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedImpressionMsg) {
@@ -488,12 +488,12 @@ TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
       contents->GetRoutingID(), page_seq_no, OMNIBOX_FOCUS_VISIBLE));
 
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(123);
-  EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_CLIENT_SIDE_SUGGESTION, delta))
+  EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_ALL_TILES_LOADED, delta))
       .Times(0);
   EXPECT_CALL(*policy, ShouldProcessLogEvent()).Times(0);
   OnMessageReceived(
       ChromeViewHostMsg_LogEvent(contents->GetRoutingID(), page_seq_no,
-                                 NTP_CLIENT_SIDE_SUGGESTION, delta));
+                                 NTP_ALL_TILES_LOADED, delta));
 
   base::string16 text;
   EXPECT_CALL(*mock_delegate(), PasteIntoOmnibox(text)).Times(0);

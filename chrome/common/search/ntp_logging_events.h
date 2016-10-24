@@ -11,10 +11,10 @@
 // Note: Keep in sync with browser/resources/local_ntp/most_visited_single.js
 enum NTPLoggingEventType {
   // A suggestion coming from the server was rendered.
-  NTP_SERVER_SIDE_SUGGESTION = 0,
+  // Deleted: NTP_SERVER_SIDE_SUGGESTION = 0,
 
   // A suggestion coming from the client was rendered.
-  NTP_CLIENT_SIDE_SUGGESTION = 1,
+  // Deleted: NTP_CLIENT_SIDE_SUGGESTION = 1,
 
   // Indicates a tile was rendered, no matter if it's a thumbnail, a gray tile
   // or an external tile.
