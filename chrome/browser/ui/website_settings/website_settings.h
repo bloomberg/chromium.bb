@@ -236,6 +236,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver,
 
   Profile* profile_;
 
+  security_state::SecurityStateModel::SecurityLevel security_level_;
+
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettings);
 };
 

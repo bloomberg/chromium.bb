@@ -268,7 +268,8 @@ WebsiteSettings::WebsiteSettings(
       chrome_ssl_host_state_delegate_(
           ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
       did_revoke_user_ssl_decisions_(false),
-      profile_(profile) {
+      profile_(profile),
+      security_level_(security_state::SecurityStateModel::NONE) {
   Init(url, security_info);
 
   PresentSitePermissions();
@@ -289,20 +290,34 @@ void WebsiteSettings::RecordWebsiteSettingsAction(
                             action,
                             WEBSITE_SETTINGS_COUNT);
 
-  // Use a separate histogram to record actions if they are done on a page with
-  // an HTTPS URL. Note that this *disregards* security status.
-  //
+  std::string histogram_name;
 
-  // TODO(palmer): Consider adding a new histogram for
-  // GURL::SchemeIsCryptographic. (We don't want to replace this call with a
-  // call to that function because we don't want to change the meanings of
-  // existing metrics.) This would inform the decision to mark non-secure
-  // origins as Dubious or Non-Secure; the overall bug for that is
-  // crbug.com/454579.
-  if (site_url_.SchemeIs(url::kHttpsScheme)) {
-    UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action.HttpsUrl",
-                              action,
-                              WEBSITE_SETTINGS_COUNT);
+  if (site_url_.SchemeIsCryptographic()) {
+    if (security_level_ == security_state::SecurityStateModel::SECURE ||
+        security_level_ == security_state::SecurityStateModel::EV_SECURE) {
+      UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Valid",
+                                action, WEBSITE_SETTINGS_COUNT);
+    } else if (security_level_ == security_state::SecurityStateModel::NONE) {
+      UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Downgraded",
+                                action, WEBSITE_SETTINGS_COUNT);
+    } else if (security_level_ ==
+               security_state::SecurityStateModel::DANGEROUS) {
+      UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Dangerous",
+                                action, WEBSITE_SETTINGS_COUNT);
+    }
+    return;
+  }
+
+  if (security_level_ ==
+      security_state::SecurityStateModel::HTTP_SHOW_WARNING) {
+    UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Warning",
+                              action, WEBSITE_SETTINGS_COUNT);
+  } else if (security_level_ == security_state::SecurityStateModel::DANGEROUS) {
+    UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Dangerous",
+                              action, WEBSITE_SETTINGS_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Neutral",
+                              action, WEBSITE_SETTINGS_COUNT);
   }
 }
 
@@ -411,6 +426,8 @@ void WebsiteSettings::Init(
 #if BUILDFLAG(ANDROID_JAVA_UI)
   isChromeUINativeScheme = url.SchemeIs(chrome::kChromeUINativeScheme);
 #endif
+
+  security_level_ = security_info.security_level;
 
   if (url.SchemeIs(url::kAboutScheme)) {
     // All about: URLs except about:blank are redirected.
