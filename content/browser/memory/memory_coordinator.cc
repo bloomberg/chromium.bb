@@ -120,6 +120,14 @@ mojom::MemoryState MemoryCoordinator::GetMemoryState(
   return iter->second.memory_state;
 }
 
+void MemoryCoordinator::EnableFeaturesForTesting() {
+  base::FeatureList::ClearInstanceForTesting();
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(features::kMemoryCoordinator.name,
+                                          "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+}
+
 base::MemoryState MemoryCoordinator::GetCurrentMemoryState() const {
   return base::MemoryState::UNKNOWN;
 }

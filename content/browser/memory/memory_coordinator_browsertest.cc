@@ -10,24 +10,12 @@
 
 namespace content {
 
-namespace {
-
-void EnableForTesting() {
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(features::kMemoryCoordinator.name,
-                                          "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-}
-
-}  // namespace
-
 class MemoryCoordinatorTest : public ContentBrowserTest {
  public:
   MemoryCoordinatorTest() {}
 
   void SetUp() override {
-    EnableForTesting();
+    MemoryCoordinator::EnableFeaturesForTesting();
     ContentBrowserTest::SetUp();
   }
 

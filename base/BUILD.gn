@@ -475,6 +475,8 @@ component("base") {
     "memory/memory_coordinator_client.h",
     "memory/memory_coordinator_client_registry.cc",
     "memory/memory_coordinator_client_registry.h",
+    "memory/memory_coordinator_proxy.cc",
+    "memory/memory_coordinator_proxy.h",
     "memory/memory_pressure_listener.cc",
     "memory/memory_pressure_listener.h",
     "memory/memory_pressure_monitor.cc",

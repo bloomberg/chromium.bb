@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -1393,6 +1394,12 @@ void BrowserMainLoop::InitializeMemoryManagementComponent() {
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     // Disable MemoryPressureListener when memory coordinator is enabled.
     base::MemoryPressureListener::SetNotificationsSuppressed(true);
+    // base::Unretained is safe because the lifetime of MemoryCoordinator is
+    // tied to the lifetime of the browser process.
+    base::MemoryCoordinatorProxy::GetInstance()->
+        SetGetCurrentMemoryStateCallback(base::Bind(
+            &MemoryCoordinator::GetCurrentMemoryState,
+            base::Unretained(MemoryCoordinator::GetInstance())));
     return;
   }
 
