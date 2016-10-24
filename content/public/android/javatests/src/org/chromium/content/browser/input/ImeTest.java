@@ -4,13 +4,16 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.InputType;
@@ -97,6 +100,9 @@ public class ImeTest extends ContentShellTestBase {
         mCallbackContainer = new TestCallbackHelperContainer(mContentViewCore);
         DOMUtils.waitForNonZeroNodeBounds(mWebContents, "input_text");
         boolean result = DOMUtils.clickNode(this, mContentViewCore, "input_text");
+
+        // TODO(yabinh): Sometimes |result| is false. We suspect it's because the screen is locked.
+        if (!result) assertScreenIsOn();
         assertEquals("Failed to dispatch touch event.", true, result);
         assertWaitForKeyboardStatus(true);
 
@@ -115,6 +121,19 @@ public class ImeTest extends ContentShellTestBase {
         clearEventLogs();
 
         resetAllStates();
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
+    @SuppressWarnings("deprecation")
+    private void assertScreenIsOn() {
+        PowerManager pm = (PowerManager) getInstrumentation().getContext().getSystemService(
+                Context.POWER_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
+        } else {
+            assertTrue("Many tests will fail if the screen is not on.", pm.isScreenOn());
+        }
     }
 
     @MediumTest
