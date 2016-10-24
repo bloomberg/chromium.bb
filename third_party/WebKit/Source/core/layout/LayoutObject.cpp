@@ -2040,25 +2040,25 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     return;
 
   bool ancestorSkipped;
-  const LayoutObject* o = container(ancestor, &ancestorSkipped);
-  if (!o)
+  const LayoutObject* container = this->container(ancestor, &ancestorSkipped);
+  if (!container)
     return;
 
   if (mode & ApplyContainerFlip) {
     if (isBox()) {
       mode &= ~ApplyContainerFlip;
-    } else if (o->isBox()) {
-      if (o->style()->isFlippedBlocksWritingMode()) {
+    } else if (container->isBox()) {
+      if (container->style()->isFlippedBlocksWritingMode()) {
         IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
-        transformState.move(
-            toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)) -
-            centerPoint);
+        transformState.move(toLayoutBox(container)->flipForWritingMode(
+                                LayoutPoint(centerPoint)) -
+                            centerPoint);
       }
       mode &= ~ApplyContainerFlip;
     }
   }
 
-  LayoutSize containerOffset = offsetFromContainer(o);
+  LayoutSize containerOffset = offsetFromContainer(container);
   if (isLayoutFlowThread()) {
     // So far the point has been in flow thread coordinates (i.e. as if
     // everything in the fragmentation context lived in one tall single column).
@@ -2071,11 +2071,12 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   // Text objects just copy their parent's computed style, so we need to ignore
   // them.
   bool preserve3D =
-      mode & UseTransforms && ((o->style()->preserves3D() && !o->isText()) ||
-                               (style()->preserves3D() && !isText()));
-  if (mode & UseTransforms && shouldUseTransformFromContainer(o)) {
+      mode & UseTransforms &&
+      ((container->style()->preserves3D() && !container->isText()) ||
+       (style()->preserves3D() && !isText()));
+  if (mode & UseTransforms && shouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
-    getTransformFromContainer(o, containerOffset, t);
+    getTransformFromContainer(container, containerOffset, t);
     transformState.applyTransform(t, preserve3D
                                          ? TransformState::AccumulateTransform
                                          : TransformState::FlattenTransform);
@@ -2089,14 +2090,23 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     // There can't be a transform between |ancestor| and |o|, because transforms
     // create containers, so it should be safe to just subtract the delta
     // between the ancestor and |o|.
-    LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(o);
+    LayoutSize containerOffset =
+        ancestor->offsetFromAncestorContainer(container);
     transformState.move(-containerOffset.width(), -containerOffset.height(),
                         preserve3D ? TransformState::AccumulateTransform
                                    : TransformState::FlattenTransform);
+    // If the ancestor is fixed, then the rect is already in its coordinates so
+    // doesn't need viewport-adjusting.
+    if (ancestor->style()->position() != FixedPosition &&
+        container->isLayoutView() && styleRef().position() == FixedPosition) {
+      LayoutRect rect;
+      toLayoutView(container)->adjustOffsetForFixedPosition(rect);
+      transformState.move(rect.x(), rect.y());
+    }
     return;
   }
 
-  o->mapLocalToAncestor(ancestor, transformState, mode);
+  container->mapLocalToAncestor(ancestor, transformState, mode);
 }
 
 const LayoutObject* LayoutObject::pushMappingToContainer(
@@ -2113,24 +2123,24 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     return;
 
   bool ancestorSkipped;
-  LayoutObject* o = container(ancestor, &ancestorSkipped);
-  if (!o)
+  LayoutObject* container = this->container(ancestor, &ancestorSkipped);
+  if (!container)
     return;
 
   bool applyContainerFlip = false;
   if (mode & ApplyContainerFlip) {
     if (isBox()) {
       mode &= ~ApplyContainerFlip;
-    } else if (o->isBox()) {
-      applyContainerFlip = o->style()->isFlippedBlocksWritingMode();
+    } else if (container->isBox()) {
+      applyContainerFlip = container->style()->isFlippedBlocksWritingMode();
       mode &= ~ApplyContainerFlip;
     }
   }
 
   if (!ancestorSkipped)
-    o->mapAncestorToLocal(ancestor, transformState, mode);
+    container->mapAncestorToLocal(ancestor, transformState, mode);
 
-  LayoutSize containerOffset = offsetFromContainer(o);
+  LayoutSize containerOffset = offsetFromContainer(container);
   if (isLayoutFlowThread()) {
     // Descending into a flow thread. Convert to the local coordinate space,
     // i.e. flow thread coordinates.
@@ -2140,11 +2150,12 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
         toLayoutFlowThread(this)->visualPointToFlowThreadPoint(visualPoint));
   }
 
-  bool preserve3D = mode & UseTransforms &&
-                    (o->style()->preserves3D() || style()->preserves3D());
-  if (mode & UseTransforms && shouldUseTransformFromContainer(o)) {
+  bool preserve3D =
+      mode & UseTransforms &&
+      (container->style()->preserves3D() || style()->preserves3D());
+  if (mode & UseTransforms && shouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
-    getTransformFromContainer(o, containerOffset, t);
+    getTransformFromContainer(container, containerOffset, t);
     transformState.applyTransform(t, preserve3D
                                          ? TransformState::AccumulateTransform
                                          : TransformState::FlattenTransform);
@@ -2158,12 +2169,20 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
     transformState.move(
         centerPoint -
-        toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)));
+        toLayoutBox(container)->flipForWritingMode(LayoutPoint(centerPoint)));
   }
 
   if (ancestorSkipped) {
-    containerOffset = ancestor->offsetFromAncestorContainer(o);
+    containerOffset = ancestor->offsetFromAncestorContainer(container);
     transformState.move(-containerOffset.width(), -containerOffset.height());
+    // If the ancestor is fixed, then the rect is already in its coordinates so
+    // doesn't need viewport-adjusting.
+    if (ancestor->style()->position() != FixedPosition &&
+        container->isLayoutView() && styleRef().position() == FixedPosition) {
+      LayoutRect rect;
+      toLayoutView(container)->adjustOffsetForFixedPosition(rect);
+      transformState.move(rect.x(), rect.y());
+    }
   }
 }
 

@@ -505,6 +505,66 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPos) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
+TEST_F(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
+  setBodyInnerHTML(
+      "<div style='height: 4000px'></div>"
+      "<div id='container' style='position:fixed; top: 100px; left: 100px'>"
+      "  <div id='target' style='position:fixed; top: 200px; left: 200px'>"
+      "  </div>"
+      "</div>");
+
+  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* body = container->parentBox();
+  LayoutBox* html = body->parentBox();
+  LayoutBox* view = html->parentBox();
+  ASSERT_TRUE(view->isLayoutView());
+
+  document().view()->setScrollOffset(ScrollOffset(0.0, 50), ProgrammaticScroll);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(50, document().view()->scrollOffsetInt().height());
+
+  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(FloatPoint(200, 250), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(200, 250));
+  EXPECT_EQ(FloatPoint(), mappedPoint);
+
+  mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(100, 100), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(100, 100));
+  EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
+  setBodyInnerHTML(
+      "<div style='height: 4000px'></div>"
+      "<div id='container' style='position:absolute; top: 100px; left: 100px'>"
+      "  <div id='target' style='position:fixed; top: 200px; left: 200px'>"
+      "  </div>"
+      "</div>");
+
+  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* body = container->parentBox();
+  LayoutBox* html = body->parentBox();
+  LayoutBox* view = html->parentBox();
+  ASSERT_TRUE(view->isLayoutView());
+
+  document().view()->setScrollOffset(ScrollOffset(0.0, 50), ProgrammaticScroll);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(50, document().view()->scrollOffsetInt().height());
+
+  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(FloatPoint(200, 250), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(200, 250));
+  EXPECT_EQ(FloatPoint(), mappedPoint);
+
+  mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(100, 150), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(100, 150));
+  EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
 TEST_F(MapCoordinatesTest, FixedPosInTransform) {
   setBodyInnerHTML(
       "<style>#container { transform: translateY(100px); position: absolute; "

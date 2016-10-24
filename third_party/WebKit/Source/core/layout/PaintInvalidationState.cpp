@@ -249,14 +249,6 @@ void PaintInvalidationState::updateForCurrentObject(
   EPosition position = m_currentObject.styleRef().position();
 
   if (position == FixedPosition) {
-    if (m_paintInvalidationContainer != m_currentObject.view() &&
-        m_paintInvalidationContainer->view() == m_currentObject.view()) {
-      // TODO(crbug.com/598762): localToAncestorPoint() is incorrect for
-      // fixed-position when paintInvalidationContainer is under the containing
-      // LayoutView.
-      m_cachedOffsetsEnabled = false;
-      return;
-    }
     // Use slow path to get the offset of the fixed-position, and enable fast
     // path for descendants.
     FloatPoint fixedOffset = m_currentObject.localToAncestorPoint(

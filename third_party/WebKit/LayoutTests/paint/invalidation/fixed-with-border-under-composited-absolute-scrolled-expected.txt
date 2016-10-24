@@ -9,14 +9,14 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='absolute'",
       "position": [0, 400],
-      "bounds": [100, 1601],
+      "bounds": [120, 1601],
       "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [0, 100, 100, 100],
+          "rect": [0, 110, 120, 110],
           "reason": "incremental"
         }
       ]

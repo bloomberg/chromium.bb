@@ -400,10 +400,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(
 void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                     TransformState& transformState,
                                     MapCoordinatesFlags mode) const {
-  if (this == ancestor)
-    return;
-
-  if (mode & TraverseDocumentBoundaries) {
+  if (this != ancestor && (mode & TraverseDocumentBoundaries)) {
     if (LayoutPart* parentDocLayoutObject = toLayoutPart(
             LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem()))) {
       // A LayoutView is a containing block for fixed-position elements, so
@@ -415,7 +412,7 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
       transformState.move(LayoutSize(-frame()->view()->scrollOffset()));
     }
   } else {
-    ASSERT(!ancestor);
+    DCHECK(this == ancestor || !ancestor);
   }
 
   if (mode & IsFixed)
