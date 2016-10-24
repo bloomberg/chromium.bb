@@ -1014,12 +1014,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // 'width' set to auto.
   virtual void layout() = 0;
   virtual bool updateImageLoadingPriorities() { return false; }
-  void setHasPendingResourceUpdate(bool hasPendingResourceUpdate) {
-    m_bitfields.setHasPendingResourceUpdate(hasPendingResourceUpdate);
-  }
-  bool hasPendingResourceUpdate() const {
-    return m_bitfields.hasPendingResourceUpdate();
-  }
 
   void handleSubtreeModifications();
   virtual void subtreeDidChange() {}
@@ -2107,7 +2101,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_hasCounterNodeMap(false),
           m_everHadLayout(false),
           m_ancestorLineBoxDirty(false),
-          m_hasPendingResourceUpdate(false),
           m_isInsideFlowThread(false),
           m_subtreeChangeListenerRegistered(false),
           m_notifiedOfSubtreeChange(false),
@@ -2125,7 +2118,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_backgroundObscurationState(BackgroundObscurationStatusInvalid),
           m_fullPaintInvalidationReason(PaintInvalidationNone) {}
 
-    // 32 bits have been used in the first word, and 18 in the second.
+    // 32 bits have been used in the first word, and 19 in the second.
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2245,8 +2238,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     ADD_BOOLEAN_BITFIELD(everHadLayout, EverHadLayout);
     ADD_BOOLEAN_BITFIELD(ancestorLineBoxDirty, AncestorLineBoxDirty);
-
-    ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
 
     ADD_BOOLEAN_BITFIELD(isInsideFlowThread, IsInsideFlowThread);
 
