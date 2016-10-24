@@ -80,24 +80,23 @@ ProfileOAuth2TokenServiceIOSProviderImpl::GetAuthenticationErrorCategory(
     return kAuthenticationErrorCategoryAuthorizationErrors;
   }
 
-  ios::SigninErrorCategory error_category =
-      ios::GetSigninErrorProvider()->GetErrorCategory(error);
-  switch (error_category) {
+  ios::SigninErrorProvider* provider =
+      ios::GetChromeBrowserProvider()->GetSigninErrorProvider();
+  switch (provider->GetErrorCategory(error)) {
     case ios::SigninErrorCategory::UNKNOWN_ERROR: {
       // Google's OAuth 2 implementation returns a 400 with JSON body
       // containing error key "invalid_grant" to indicate the refresh token
       // is invalid or has been revoked by the user.
       // Check that the underlying library does not categorize these errors as
       // unknown.
-      NSString* json_error_key =
-          ios::GetSigninErrorProvider()->GetInvalidGrantJsonErrorKey();
-      DCHECK(!ios::GetSigninErrorProvider()->IsBadRequest(error) ||
+      NSString* json_error_key = provider->GetInvalidGrantJsonErrorKey();
+      DCHECK(!provider->IsBadRequest(error) ||
              ![[[error userInfo] valueForKeyPath:@"json.error"]
                  isEqual:json_error_key]);
       return kAuthenticationErrorCategoryUnknownErrors;
     }
     case ios::SigninErrorCategory::AUTHORIZATION_ERROR:
-      if (ios::GetSigninErrorProvider()->IsForbidden(error)) {
+      if (provider->IsForbidden(error)) {
         return kAuthenticationErrorCategoryAuthorizationForbiddenErrors;
       }
       return kAuthenticationErrorCategoryAuthorizationErrors;
