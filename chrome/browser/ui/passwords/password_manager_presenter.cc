@@ -63,11 +63,11 @@ std::string GetEntryTypeCode(bool is_android_uri, bool is_clickable) {
   return "2";
 }
 
-// Creates key for sorting password or password exception entries.
-// The key is eTLD+1 followed by subdomains
-// (e.g. secure.accounts.example.com => example.com.accounts.secure).
-// If |entry_type == SAVED|, username, password and federation are appended to
-// the key. The entry type code (non-Android, Android w/ or w/o affiliated web
+// Creates key for sorting password or password exception entries. The key is
+// eTLD+1 followed by the reversed list of domains (e.g.
+// secure.accounts.example.com => example.com.com.example.accounts.secure). If
+// |entry_type == SAVED|, username, password and federation are appended to the
+// key. The entry type code (non-Android, Android w/ or w/o affiliated web
 // realm) is also appended to the key.
 std::string CreateSortKey(const autofill::PasswordForm& form,
                           PasswordEntryType entry_type) {
@@ -77,18 +77,15 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
   std::string origin = password_manager::GetShownOriginAndLinkUrl(
       form, &is_android_uri, &link_url, &is_clickable);
 
-  if (!is_clickable) {  // e.g. android://com.example.r => r.example.com.
+  if (!is_clickable)  // e.g. android://com.example.r => r.example.com.
     origin = password_manager::StripAndroidAndReverse(origin);
-  }
 
   std::string site_name =
       net::registry_controlled_domains::GetDomainAndRegistry(
           origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (site_name.empty())  // e.g. localhost.
     site_name = origin;
-  std::string key =
-      site_name + password_manager::SplitByDotAndReverse(StringPiece(
-                      &origin[0], origin.length() - site_name.length()));
+  std::string key = site_name + password_manager::SplitByDotAndReverse(origin);
 
   if (entry_type == PasswordEntryType::SAVED) {
     key = key + kSortKeyPartsSeparator +
