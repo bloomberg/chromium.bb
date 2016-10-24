@@ -7,12 +7,14 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -54,7 +56,6 @@ class TimeZoneMonitorLinuxImpl
       TimeZoneMonitorLinux* owner,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner)
       : base::RefCountedThreadSafe<TimeZoneMonitorLinuxImpl>(),
-        file_path_watchers_(),
         main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         file_task_runner_(file_task_runner),
         owner_(owner) {
@@ -77,7 +78,6 @@ class TimeZoneMonitorLinuxImpl
 
   ~TimeZoneMonitorLinuxImpl() {
     DCHECK(!owner_);
-    base::STLDeleteElements(&file_path_watchers_);
   }
 
   void StartWatchingOnFileThread() {
@@ -96,7 +96,7 @@ class TimeZoneMonitorLinuxImpl
     };
 
     for (size_t index = 0; index < arraysize(kFilesToWatch); ++index) {
-      file_path_watchers_.push_back(new base::FilePathWatcher());
+      file_path_watchers_.push_back(base::MakeUnique<base::FilePathWatcher>());
       file_path_watchers_.back()->Watch(
           base::FilePath(kFilesToWatch[index]), false,
           base::Bind(&TimeZoneMonitorLinuxImpl::OnTimeZoneFileChanged, this));
@@ -105,7 +105,7 @@ class TimeZoneMonitorLinuxImpl
 
   void StopWatchingOnFileThread() {
     DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-    base::STLDeleteElements(&file_path_watchers_);
+    file_path_watchers_.clear();
   }
 
   void OnTimeZoneFileChanged(const base::FilePath& path, bool error) {
@@ -123,7 +123,7 @@ class TimeZoneMonitorLinuxImpl
     }
   }
 
-  std::vector<base::FilePathWatcher*> file_path_watchers_;
+  std::vector<std::unique_ptr<base::FilePathWatcher>> file_path_watchers_;
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

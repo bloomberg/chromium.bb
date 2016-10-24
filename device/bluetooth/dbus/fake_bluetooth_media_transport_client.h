@@ -98,7 +98,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothMediaTransportClient
   // assigned with a transport path, an object of Transport is created.
   struct Transport {
     Transport(const dbus::ObjectPath& transport_path,
-              Properties* transport_properties);
+              std::unique_ptr<Properties> transport_properties);
     ~Transport();
 
     // An unique transport path.
@@ -134,7 +134,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothMediaTransportClient
   // Map of endpoints with valid transport. Each pair is composed of an endpoint
   // path and a Transport structure containing a transport path and its
   // properties.
-  std::map<dbus::ObjectPath, Transport*> endpoint_to_transport_map_;
+  std::map<dbus::ObjectPath, std::unique_ptr<Transport>>
+      endpoint_to_transport_map_;
 
   // Map of valid transports. Each pair is composed of a transport path as the
   // key and an endpoint path as the value. This map is used to get the

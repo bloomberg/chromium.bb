@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
@@ -20,7 +20,7 @@ namespace bluez {
 FakeBluetoothInputClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : BluetoothInputClient::Properties(
-          NULL,
+          nullptr,
           bluetooth_input::kBluetoothInputInterface,
           callback) {}
 
@@ -46,10 +46,7 @@ void FakeBluetoothInputClient::Properties::Set(
 
 FakeBluetoothInputClient::FakeBluetoothInputClient() {}
 
-FakeBluetoothInputClient::~FakeBluetoothInputClient() {
-  // Clean up Properties structures
-  base::STLDeleteValues(&properties_map_);
-}
+FakeBluetoothInputClient::~FakeBluetoothInputClient() {}
 
 void FakeBluetoothInputClient::Init(dbus::Bus* bus) {}
 
@@ -63,10 +60,10 @@ void FakeBluetoothInputClient::RemoveObserver(Observer* observer) {
 
 FakeBluetoothInputClient::Properties* FakeBluetoothInputClient::GetProperties(
     const dbus::ObjectPath& object_path) {
-  PropertiesMap::iterator iter = properties_map_.find(object_path);
+  auto iter = properties_map_.find(object_path);
   if (iter != properties_map_.end())
-    return iter->second;
-  return NULL;
+    return iter->second.get();
+  return nullptr;
 }
 
 void FakeBluetoothInputClient::AddInputDevice(
@@ -74,9 +71,9 @@ void FakeBluetoothInputClient::AddInputDevice(
   if (properties_map_.find(object_path) != properties_map_.end())
     return;
 
-  Properties* properties =
-      new Properties(base::Bind(&FakeBluetoothInputClient::OnPropertyChanged,
-                                base::Unretained(this), object_path));
+  std::unique_ptr<Properties> properties = base::MakeUnique<Properties>(
+      base::Bind(&FakeBluetoothInputClient::OnPropertyChanged,
+                 base::Unretained(this), object_path));
 
   // The LegacyAutopair and DisplayPinCode devices represent a typical mouse
   // and keyboard respectively, so mark them as ReconnectMode "any". The
@@ -93,7 +90,7 @@ void FakeBluetoothInputClient::AddInputDevice(
         bluetooth_input::kAnyReconnectModeProperty);
   }
 
-  properties_map_[object_path] = properties;
+  properties_map_[object_path] = std::move(properties);
 
   for (auto& observer : observers_)
     observer.InputAdded(object_path);
@@ -101,7 +98,7 @@ void FakeBluetoothInputClient::AddInputDevice(
 
 void FakeBluetoothInputClient::RemoveInputDevice(
     const dbus::ObjectPath& object_path) {
-  PropertiesMap::iterator it = properties_map_.find(object_path);
+  auto it = properties_map_.find(object_path);
 
   if (it == properties_map_.end())
     return;
@@ -109,7 +106,6 @@ void FakeBluetoothInputClient::RemoveInputDevice(
   for (auto& observer : observers_)
     observer.InputRemoved(object_path);
 
-  delete it->second;
   properties_map_.erase(it);
 }
 

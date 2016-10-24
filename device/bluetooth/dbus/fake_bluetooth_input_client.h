@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -52,8 +54,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothInputClient
                          const std::string& property_name);
 
   // Static properties we return.
-  typedef std::map<const dbus::ObjectPath, Properties*> PropertiesMap;
-  PropertiesMap properties_map_;
+  std::map<const dbus::ObjectPath, std::unique_ptr<Properties>> properties_map_;
 
   // List of observers interested in event notifications from us.
   base::ObserverList<Observer> observers_;
