@@ -290,7 +290,7 @@ class CORE_EXPORT FrameSelection final
   // to use updated selection, we should make |updateIfNeeded()| private.
   void updateIfNeeded();
 
-  DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE();
 
  private:
   friend class FrameSelectionTest;
