@@ -9,6 +9,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace chromeos {
@@ -77,7 +78,11 @@ void AccessibilityHighlightManager::RegisterObservers() {
 
 void AccessibilityHighlightManager::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_MOVED) {
-    cursor_point_ = event->root_location();
+    cursor_point_ = event->location();
+    if (event->target()) {
+      ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
+                                 &cursor_point_);
+    }
     UpdateCursorHighlight();
   }
 }

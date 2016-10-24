@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
@@ -59,6 +60,9 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   virtual int GetMargin() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
+                           CursorWorksOnMultipleDisplays);
+
   // FocusRingLayerDelegate overrides.
   void OnDeviceScaleFactorChanged() override;
   void OnAnimationStep(base::TimeTicks timestamp) override;

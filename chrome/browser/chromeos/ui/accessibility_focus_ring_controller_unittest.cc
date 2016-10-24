@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
+#include "chrome/browser/chromeos/ui/accessibility_cursor_ring_layer.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 
 namespace chromeos {
 
@@ -28,7 +33,7 @@ class TestableAccessibilityFocusRingController
   int margin_;
 };
 
-class AccessibilityFocusRingControllerTest : public testing::Test {
+class AccessibilityFocusRingControllerTest : public ash::test::AshTestBase {
  public:
   AccessibilityFocusRingControllerTest() {}
   ~AccessibilityFocusRingControllerTest() override {}
@@ -126,6 +131,46 @@ TEST_F(AccessibilityFocusRingControllerTest, RectsToRingsParagraphShape) {
   EXPECT_EQ(gfx::Point(0, 100), points[33]);
   EXPECT_EQ(gfx::Point(0, 100), points[34]);
   EXPECT_EQ(gfx::Point(0, 100), points[35]);
+}
+
+TEST_F(AccessibilityFocusRingControllerTest, CursorWorksOnMultipleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+  UpdateDisplay("400x400,500x500");
+  aura::Window::Windows root_windows =
+      ash::Shell::GetInstance()->GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+
+  AccessibilityHighlightManager highlight_manager;
+  highlight_manager.HighlightCursor(true);
+  gfx::Point location(90, 90);
+  ui::MouseEvent event0(ui::ET_MOUSE_MOVED, location, location,
+                        ui::EventTimeForNow(), 0, 0);
+  ui::Event::DispatcherApi event_mod(&event0);
+  event_mod.set_target(root_windows[0]);
+  highlight_manager.OnMouseEvent(&event0);
+
+  AccessibilityFocusRingController* controller =
+      AccessibilityFocusRingController::GetInstance();
+  AccessibilityCursorRingLayer* cursor_layer = controller->cursor_layer_.get();
+  EXPECT_EQ(root_windows[0], cursor_layer->root_window());
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().x() - location.x()),
+            50);
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().y() - location.y()),
+            50);
+
+  ui::MouseEvent event1(ui::ET_MOUSE_MOVED, location, location,
+                        ui::EventTimeForNow(), 0, 0);
+  ui::Event::DispatcherApi event_mod1(&event1);
+  event_mod1.set_target(root_windows[1]);
+  highlight_manager.OnMouseEvent(&event1);
+
+  cursor_layer = controller->cursor_layer_.get();
+  EXPECT_EQ(root_windows[1], cursor_layer->root_window());
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().x() - location.x()),
+            50);
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().y() - location.y()),
+            50);
 }
 
 }  // namespace chromeos

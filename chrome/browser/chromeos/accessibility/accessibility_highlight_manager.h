@@ -36,6 +36,9 @@ class AccessibilityHighlightManager
   void RegisterObservers();
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
+                           CursorWorksOnMultipleDisplays);
+
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
