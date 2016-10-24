@@ -57,7 +57,7 @@ layer at (0,0) size 480x360
             [feImage image-size="150x150"]
             [feImage image-size="150x150"]
       LayoutSVGContainer {g} at (20,10) size 440x290 [transform={m=((0.40,0.00)(0.00,0.40)) t=(5.00,70.00)}]
-        LayoutSVGRect {rect} at (19,9) size 442x292 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=1098.00] [height=723.00]
+        LayoutSVGRect {rect} at (20,10) size 440x290 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=1098.00] [height=723.00]
         LayoutSVGText {text} at (100,15) size 759x73 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 759x73
             chunk 1 text run 1 at (100.00,75.00) startOffset 0 endOffset 26 width 758.24: "on first Row : opacity 1.0"

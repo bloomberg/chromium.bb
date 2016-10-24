@@ -42,17 +42,17 @@ layer at (0,0) size 800x600
               chunk 1 (middle anchor) text run 1 at (961.30,386.50) startOffset 0 endOffset 12 width 85.00: "Zervreilasee"
     LayoutSVGContainer {g} at (40,60) size 733x173
       LayoutSVGContainer {g} at (40,220) size 720x13
-        LayoutSVGRect {rect} at (51,219) size 698x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=65.50] [y=250.50] [width=869.00] [height=15.00]
-        LayoutSVGRect {rect} at (51,219) size 176x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=65.50] [y=250.50] [width=216.82] [height=15.00]
-        LayoutSVGRect {rect} at (39,219) size 14x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.50] [y=250.50] [width=15.00] [height=15.00]
-        LayoutSVGRect {rect} at (747,219) size 14x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=934.50] [y=250.50] [width=15.00] [height=15.00]
+        LayoutSVGRect {rect} at (52,220) size 696x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=65.50] [y=250.50] [width=869.00] [height=15.00]
+        LayoutSVGRect {rect} at (52,220) size 175x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=65.50] [y=250.50] [width=216.82] [height=15.00]
+        LayoutSVGRect {rect} at (40,220) size 13x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.50] [y=250.50] [width=15.00] [height=15.00]
+        LayoutSVGRect {rect} at (747,220) size 13x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=934.50] [y=250.50] [width=15.00] [height=15.00]
         LayoutSVGPath {path} at (43,223) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 54.5 258.5 L 62.5 254.5 L 62.5 262.5 Z"]
         LayoutSVGPath {path} at (750,223) size 8x7 [fill={[type=SOLID] [color=#696969]}] [data="M 946.5 258.5 L 938.5 262.5 L 938.5 254.5 Z"]
       LayoutSVGContainer {g} at (760,60) size 13x160
-        LayoutSVGRect {rect} at (759,71) size 14x138 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=950.50] [y=65.50] [width=15.00] [height=169.00]
-        LayoutSVGRect {rect} at (759,71) size 14x67 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=65.50] [width=15.00] [height=80.38]
-        LayoutSVGRect {rect} at (759,59) size 14x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=50.50] [width=15.00] [height=15.00]
-        LayoutSVGRect {rect} at (759,207) size 14x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=234.50] [width=15.00] [height=15.00]
+        LayoutSVGRect {rect} at (760,72) size 13x136 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=950.50] [y=65.50] [width=15.00] [height=169.00]
+        LayoutSVGRect {rect} at (760,72) size 13x66 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=65.50] [width=15.00] [height=80.38]
+        LayoutSVGRect {rect} at (760,60) size 13x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=50.50] [width=15.00] [height=15.00]
+        LayoutSVGRect {rect} at (760,207) size 13x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=234.50] [width=15.00] [height=15.00]
         LayoutSVGPath {path} at (763,63) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 958 54.5 L 962.5 62.5 L 954.5 62.5 Z"]
         LayoutSVGPath {path} at (763,210) size 7x8 [fill={[type=SOLID] [color=#696969]}] [data="M 958 246.5 L 954.5 238.5 L 962.5 238.5 Z"]
     LayoutSVGText {text} at (393,267) size 557x17 contains 1 chunk(s)
@@ -63,17 +63,17 @@ layer at (0,0) size 800x600
         LayoutSVGImage {image} at (40,300) size 760x300
     LayoutSVGContainer {g} at (40,300) size 729x169
       LayoutSVGContainer {g} at (40,460) size 720x9
-        LayoutSVGRect {rect} at (39,459) size 706x10 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=50.50] [y=550.50] [width=879.00] [height=10.00]
-        LayoutSVGRect {rect} at (39,459) size 180x10 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.50] [y=550.50] [width=222.21] [height=10.00]
-        LayoutSVGRect {rect} at (743,459) size 10x10 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=929.50] [y=550.50] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (751,459) size 10x10 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=939.50] [y=550.50] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (40,460) size 704x9 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=50.50] [y=550.50] [width=879.00] [height=10.00]
+        LayoutSVGRect {rect} at (40,460) size 179x9 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.50] [y=550.50] [width=222.21] [height=10.00]
+        LayoutSVGRect {rect} at (743,460) size 9x9 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=929.50] [y=550.50] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (751,460) size 9x9 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=939.50] [y=550.50] [width=10.00] [height=10.00]
         LayoutSVGPath {path} at (746,462) size 5x6 [fill={[type=SOLID] [color=#696969]}] [data="M 932.5 556.5 L 938.5 553.5 L 938.5 559.5 Z"]
         LayoutSVGPath {path} at (754,462) size 5x6 [fill={[type=SOLID] [color=#696969]}] [data="M 948.5 556.5 L 942.5 559.5 L 942.5 553.5 Z"]
       LayoutSVGContainer {g} at (760,300) size 9x160
-        LayoutSVGRect {rect} at (759,299) size 10x146 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=950.50] [y=350.50] [width=10.00] [height=179.00]
-        LayoutSVGRect {rect} at (759,299) size 10x44 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=350.50] [width=10.00] [height=51.96]
-        LayoutSVGRect {rect} at (759,443) size 10x10 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=529.50] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (759,451) size 10x10 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=539.50] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (760,300) size 9x144 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=950.50] [y=350.50] [width=10.00] [height=179.00]
+        LayoutSVGRect {rect} at (760,300) size 9x43 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=350.50] [width=10.00] [height=51.96]
+        LayoutSVGRect {rect} at (760,443) size 9x9 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=529.50] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (760,451) size 9x9 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=539.50] [width=10.00] [height=10.00]
         LayoutSVGPath {path} at (762,446) size 6x5 [fill={[type=SOLID] [color=#696969]}] [data="M 955.5 532.5 L 959.5 538.5 L 953.5 538.5 Z"]
         LayoutSVGPath {path} at (762,454) size 6x5 [fill={[type=SOLID] [color=#696969]}] [data="M 955.5 548.5 L 953.5 542.5 L 959.5 542.5 Z"]
     LayoutSVGText {text} at (390,562) size 560x17 contains 1 chunk(s)

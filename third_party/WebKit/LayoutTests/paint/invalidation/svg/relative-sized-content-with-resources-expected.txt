@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutSVGEllipse circle",
-          "rect": [48, 108, 322, 322],
+          "rect": [47, 107, 324, 324],
           "reason": "SVG resource change"
         },
         {
@@ -23,7 +23,7 @@
         },
         {
           "object": "LayoutSVGEllipse circle",
-          "rect": [9, 151, 100, 236],
+          "rect": [8, 150, 102, 238],
           "reason": "SVG resource change"
         },
         {

@@ -34,7 +34,7 @@ layer at (0,0) size 480x360
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 25.00: "xMin*"
             LayoutSVGRect {rect} at (120,80) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGViewportContainer {svg} at (120,80) size 23x30
-              LayoutSVGRect {rect} at (119,79) size 24x32 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=29.00] [height=39.00]
+              LayoutSVGRect {rect} at (120,80) size 23x30 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=29.00] [height=39.00]
               LayoutSVGContainer {g} at (123,87) size 16x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,5.00)}]
                 LayoutSVGEllipse {circle} at (123,87) size 16x16 [fill={[type=SOLID] [color=#FFFF00]}] [cx=15.00] [cy=15.00] [r=10.00]
                 LayoutSVGEllipse {circle} at (127,91) size 4x3 [fill={[type=SOLID] [color=#000000]}] [cx=12.00] [cy=12.00] [r=1.50]
@@ -46,7 +46,7 @@ layer at (0,0) size 480x360
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 25.00: "xMid*"
             LayoutSVGRect {rect} at (190,80) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGViewportContainer {svg} at (203,80) size 24x30
-              LayoutSVGRect {rect} at (203,79) size 24x32 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=29.00] [height=39.00]
+              LayoutSVGRect {rect} at (203,80) size 24x30 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=29.00] [height=39.00]
               LayoutSVGContainer {g} at (207,87) size 16x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,5.00)}]
                 LayoutSVGEllipse {circle} at (207,87) size 16x16 [fill={[type=SOLID] [color=#FFFF00]}] [cx=15.00] [cy=15.00] [r=10.00]
                 LayoutSVGEllipse {circle} at (211,91) size 3x3 [fill={[type=SOLID] [color=#000000]}] [cx=12.00] [cy=12.00] [r=1.50]
@@ -58,7 +58,7 @@ layer at (0,0) size 480x360
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 25.00: "xMax*"
             LayoutSVGRect {rect} at (120,130) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGViewportContainer {svg} at (147,130) size 23x30
-              LayoutSVGRect {rect} at (147,129) size 24x32 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=29.00] [height=39.00]
+              LayoutSVGRect {rect} at (147,130) size 23x30 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=29.00] [height=39.00]
               LayoutSVGContainer {g} at (151,137) size 16x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,5.00)}]
                 LayoutSVGEllipse {circle} at (151,137) size 16x16 [fill={[type=SOLID] [color=#FFFF00]}] [cx=15.00] [cy=15.00] [r=10.00]
                 LayoutSVGEllipse {circle} at (155,141) size 3x3 [fill={[type=SOLID] [color=#000000]}] [cx=12.00] [cy=12.00] [r=1.50]

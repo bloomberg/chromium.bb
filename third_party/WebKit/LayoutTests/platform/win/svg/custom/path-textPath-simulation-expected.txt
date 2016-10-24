@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGPath {path} at (80,180) size 640x240 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
     LayoutSVGContainer {use} at (79,180) size 641x240
-      LayoutSVGPath {path} at (79,179) size 642x242 [stroke={[type=SOLID] [color=#FF0000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+      LayoutSVGPath {path} at (79,180) size 641x240 [stroke={[type=SOLID] [color=#FF0000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
     LayoutSVGContainer {g} at (80,248) size 648x95
       LayoutSVGText {text} at (100,185) size 13x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 13x19

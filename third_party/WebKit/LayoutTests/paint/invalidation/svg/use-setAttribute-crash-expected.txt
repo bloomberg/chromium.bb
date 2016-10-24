@@ -12,14 +12,14 @@
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
+          "rect": [32, 32, 52, 52],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGContainer svg:use id='use'",
           "rect": [33, 33, 50, 50],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [33, 33, 50, 50],
-          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRoot svg:svg id='svg'",
@@ -33,12 +33,12 @@
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [8, 8, 25, 25],
+          "rect": [7, 7, 27, 27],
           "reason": "full"
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [53, 53, 10, 10],
+          "rect": [52, 52, 12, 12],
           "reason": "layoutObject removal"
         },
         {

@@ -7,11 +7,11 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (0,0) size 258x18
           chunk 1 (middle anchor) text run 1 at (96.03,40.00) startOffset 0 endOffset 36 width 257.95: "Text on a path with adjusted spacing"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-        LayoutSVGPath {path} at (14,0) size 122x46 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
-        LayoutSVGPath {path} at (29,0) size 92x51 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 100 C 100 0 400 0 400 100"]
+        LayoutSVGPath {path} at (14,0) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+        LayoutSVGPath {path} at (29,0) size 92x50 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 100 C 100 0 400 0 400 100"]
       LayoutSVGContainer {g} at (2,60) size 133x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,70.00)}]
         LayoutSVGContainer {use} at (14,70) size 121x45
-          LayoutSVGPath {path} at (14,69) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (14,70) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-10) size 72x44 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 72x44
             LayoutSVGTSpan {tspan} at (0,0) size 72x44
@@ -28,7 +28,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,60.00) startOffset 0 endOffset 15 width 60.81: "default spacing"
       LayoutSVGContainer {g} at (160,60) size 125x83 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,70.00)}]
         LayoutSVGContainer {use} at (164,70) size 121x45
-          LayoutSVGPath {path} at (164,69) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (164,70) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (10,-10) size 107x52 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 107x51
             LayoutSVGTSpan {tspan} at (0,0) size 107x51
@@ -48,7 +48,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,70.00) startOffset 0 endOffset 7 width 33.44: "y=\"110\""
       LayoutSVGContainer {g} at (302,60) size 133x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,70.00)}]
         LayoutSVGContainer {use} at (314,70) size 121x45
-          LayoutSVGPath {path} at (314,69) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (314,70) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-10) size 105x51 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 105x51
             LayoutSVGTSpan {tspan} at (0,0) size 105x51
@@ -65,7 +65,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (15.00,60.00) startOffset 0 endOffset 27 width 114.91: "tspan dx=\"0,10,10,10,10,10\""
       LayoutSVGContainer {g} at (2,155) size 133x68 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
         LayoutSVGContainer {use} at (14,160) size 121x45
-          LayoutSVGPath {path} at (14,159) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (14,160) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-5) size 121x46 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 120x46
             LayoutSVGInlineText {#text} at (0,0) size 120x46
@@ -81,7 +81,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,60.00) startOffset 0 endOffset 16 width 72.12: "textLength=\"140\""
       LayoutSVGContainer {g} at (152,150) size 133x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,160.00)}]
         LayoutSVGContainer {use} at (164,160) size 121x45
-          LayoutSVGPath {path} at (164,159) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (164,160) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-10) size 81x44 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 81x43
             LayoutSVGInlineText {#text} at (0,0) size 81x43
@@ -97,7 +97,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,60.00) startOffset 0 endOffset 15 width 67.12: "textLength=\"70\""
       LayoutSVGContainer {g} at (2,239) size 133x94 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,250.00)}]
         LayoutSVGContainer {use} at (14,250) size 121x45
-          LayoutSVGPath {path} at (14,249) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (14,250) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-11) size 133x53 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 132x53
             LayoutSVGInlineText {#text} at (0,0) size 132x53
@@ -119,7 +119,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,80.00) startOffset 0 endOffset 18 width 84.82: "\"spacingAndGlyphs\""
       LayoutSVGContainer {g} at (152,240) size 133x93 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,250.00)}]
         LayoutSVGContainer {use} at (164,250) size 121x45
-          LayoutSVGPath {path} at (164,249) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (164,250) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-10) size 63x44 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 63x43
             LayoutSVGInlineText {#text} at (0,0) size 63x43
@@ -141,7 +141,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,80.00) startOffset 0 endOffset 18 width 84.82: "\"spacingAndGlyphs\""
       LayoutSVGContainer {g} at (2,340) size 133x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,350.00)}]
         LayoutSVGContainer {use} at (14,350) size 121x45
-          LayoutSVGPath {path} at (14,349) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (14,350) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-10) size 48x44 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 48x43
             LayoutSVGInlineText {#text} at (0,0) size 48x43
@@ -157,7 +157,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,60.00) startOffset 0 endOffset 19 width 76.36: "letter-spacing=\"-3\""
       LayoutSVGContainer {g} at (152,340) size 134x83 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,350.00)}]
         LayoutSVGContainer {use} at (164,350) size 121x45
-          LayoutSVGPath {path} at (164,349) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (164,350) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-10) size 134x52 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 133x51
             LayoutSVGInlineText {#text} at (0,0) size 133x51
@@ -183,7 +183,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (35.00,70.00) startOffset 0 endOffset 18 width 85.45: "word-spacing=\"2em\""
       LayoutSVGContainer {g} at (302,340) size 133x103 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,350.00)}]
         LayoutSVGContainer {use} at (314,350) size 121x45
-          LayoutSVGPath {path} at (314,349) size 122x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+          LayoutSVGPath {path} at (314,350) size 121x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (2,-10) size 133x54 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 132x53
             LayoutSVGInlineText {#text} at (0,0) size 132x53

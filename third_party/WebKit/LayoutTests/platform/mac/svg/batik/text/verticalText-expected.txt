@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 448x498
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGPath {path} at (14,0) size 317x46 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
+      LayoutSVGPath {path} at (14,0) size 317x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
     LayoutSVGContainer {g} at (20,26) size 410x469
       LayoutSVGText {text} at (164,26) size 122x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 121x17
@@ -237,7 +237,7 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 8 at (395.50,359.95) startOffset 7 endOffset 8 height 17.00: "t"
       LayoutSVGContainer {g} at (50,450) size 321x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,450.00)}]
         LayoutSVGContainer {use} at (54,450) size 317x45
-          LayoutSVGPath {path} at (54,449) size 317x47 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
+          LayoutSVGPath {path} at (54,450) size 317x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
         LayoutSVGText {text} at (10,0) size 298x45 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 44x298
             LayoutSVGInlineText {#text} at (0,0) size 298x44

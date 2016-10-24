@@ -97,12 +97,12 @@ layer at (0,0) size 800x600
             LayoutSVGInlineText {#text} at (0,0) size 43x16
               chunk 1 text run 1 at (53.00,356.50) startOffset 0 endOffset 7 width 42.24: "B\x{F6}bikon"
         LayoutSVGRect {rect} at (283,169) size 155x163 [stroke={[type=SOLID] [color=#696969]}] [x=50.00] [y=200.00] [width=134.00] [height=160.00]
-        LayoutSVGRect {rect} at (380,232) size 63x96 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=184.00] [y=216.00] [width=16.00] [height=128.00]
+        LayoutSVGRect {rect} at (380,233) size 63x95 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=184.00] [y=216.00] [width=16.00] [height=128.00]
         LayoutSVGRect {rect} at (430,222) size 19x19 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=184.00] [y=200.00] [width=16.00] [height=16.00]
         LayoutSVGPath {path} at (435,227) size 9x9 [fill={[type=SOLID] [color=#696969]}] [data="M 188 212 L 196 212 L 192 204 Z"]
         LayoutSVGRect {rect} at (373,319) size 20x19 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=184.00] [y=344.00] [width=16.00] [height=16.00]
         LayoutSVGPath {path} at (378,324) size 10x10 [fill={[type=SOLID] [color=#696969]}] [data="M 188 348 L 196 348 L 192 356 Z"]
-        LayoutSVGRect {rect} at (421,242) size 16x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=184.00] [y=229.51] [width=16.00] [height=8.00]
+        LayoutSVGRect {rect} at (421,242) size 16x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=184.00] [y=229.51] [width=16.00] [height=8.00]
       LayoutSVGText {text} at (220,200) size 373x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 217x16
           chunk 1 text run 1 at (220.00,212.00) startOffset 0 endOffset 39 width 216.32: "Communities of Kt. Aargau (Switzerland)"

@@ -134,7 +134,7 @@ layer at (475,271) size 200x50
       LayoutSVGRoot {svg} at (74,0) size 32x31
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (74,0) size 32x31 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-162.36,-403.29)}]
-          LayoutSVGPath {path} at (74,0) size 33x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]
+          LayoutSVGPath {path} at (74,0) size 32x31 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]
 layer at (475,330) size 200x50
   LayoutEmbeddedObject {OBJECT} at (1,1) size 200x50 [border: (1px dashed #008000)]
     layer at (0,0) size 192x42
@@ -143,7 +143,7 @@ layer at (475,330) size 200x50
       LayoutSVGRoot {svg} at (0,0) size 140x31
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (0,0) size 140x31 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-162.36,-403.29)}]
-          LayoutSVGPath {path} at (0,0) size 141x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]
+          LayoutSVGPath {path} at (0,0) size 140x31 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]
 layer at (475,389) size 200x50
   LayoutEmbeddedObject {OBJECT} at (1,1) size 200x50 [border: (1px dashed #008000)]
     layer at (0,0) size 192x42
@@ -152,7 +152,7 @@ layer at (475,389) size 200x50
       LayoutSVGRoot {svg} at (74,0) size 32x31
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (74,0) size 32x31 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-162.36,-403.29)}]
-          LayoutSVGPath {path} at (74,0) size 33x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]
+          LayoutSVGPath {path} at (74,0) size 32x31 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]
 layer at (475,448) size 200x50
   LayoutEmbeddedObject {OBJECT} at (1,1) size 200x50 [border: (1px dashed #008000)]
     layer at (0,0) size 192x42
@@ -161,4 +161,4 @@ layer at (475,448) size 200x50
       LayoutSVGRoot {svg} at (0,0) size 140x42
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (0,0) size 140x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-162.36,-403.29)}]
-          LayoutSVGPath {path} at (0,0) size 141x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]
+          LayoutSVGPath {path} at (0,0) size 140x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [data="M 525.714 585.219 A 181.429 181.429 0 1 1 162.857 585.219 A 181.429 181.429 0 1 1 525.714 585.219 Z"]

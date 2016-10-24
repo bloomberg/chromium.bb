@@ -1,0 +1,127 @@
+layer at (0,0) size 480x360
+  LayoutView at (0,0) size 480x360
+layer at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
+    LayoutSVGContainer {g} at (20,10) size 440x290 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,-60.00)}]
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#00FFFF]}] [data="M 0 0 L 150 0 L 150 150 Z"]
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#FF00FF]}] [data="M 0 0 L 0 150 L 150 0 Z"]
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#00FFFF] [opacity=0.50]}] [data="M 0 0 L 150 0 L 150 150 Z"]
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#FF00FF] [opacity=0.50]}] [data="M 0 0 L 0 150 L 150 0 Z"]
+        LayoutSVGResourceFilter {filter} [id="over"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="OVER"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="over50"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="OVER"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="in"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="IN"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="in50"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="IN"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="out"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="OUT"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="out50"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="OUT"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="atop"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="ATOP"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="atop50"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="ATOP"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="xor"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="XOR"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="xor50"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="XOR"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="arithmetic"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="ARITHMETIC" k1="0.50" k2="0.50" k3="0.50" k4="0.50"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+        LayoutSVGResourceFilter {filter} [id="arithmetic50"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          [feComposite operation="ARITHMETIC" k1="0.50" k2="0.50" k3="0.50" k4="0.50"]
+            [feImage image-size="150x150"]
+            [feImage image-size="150x150"]
+      LayoutSVGContainer {g} at (20,10) size 440x290 [transform={m=((0.40,0.00)(0.00,0.40)) t=(5.00,70.00)}]
+        LayoutSVGRect {rect} at (19,9) size 442x292 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=1098.00] [height=723.00]
+        LayoutSVGText {text} at (100,15) size 759x73 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 759x73
+            chunk 1 text run 1 at (100.00,75.00) startOffset 0 endOffset 26 width 758.24: "on first Row : opacity 1.0"
+        LayoutSVGText {text} at (100,120) size 793x73 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 793x73
+            chunk 1 text run 1 at (100.00,180.00) startOffset 0 endOffset 25 width 792.21: "on second row opacity 0.5"
+        LayoutSVGContainer {g} at (26,102) size 60x165 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,230.00)}]
+          LayoutSVGRect {rect} at (26,102) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="over"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+          LayoutSVGText {text} at (10,340) size 132x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 132x73
+              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 4 width 131.53: "over"
+        LayoutSVGContainer {g} at (26,182) size 60x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,430.00)}]
+          LayoutSVGRect {rect} at (26,182) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="over50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+        LayoutSVGContainer {g} at (98,102) size 60x165 [transform={m=((1.00,0.00)(0.00,1.00)) t=(195.00,230.00)}]
+          LayoutSVGRect {rect} at (98,102) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="in"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+          LayoutSVGText {text} at (10,340) size 53x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 53x73
+              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 2 width 52.50: "in"
+        LayoutSVGContainer {g} at (98,182) size 60x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(195.00,430.00)}]
+          LayoutSVGRect {rect} at (98,182) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="in50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+        LayoutSVGContainer {g} at (170,102) size 60x165 [transform={m=((1.00,0.00)(0.00,1.00)) t=(375.00,230.00)}]
+          LayoutSVGRect {rect} at (170,102) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="out"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+          LayoutSVGText {text} at (10,340) size 98x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 98x73
+              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 3 width 97.50: "out"
+        LayoutSVGContainer {g} at (170,182) size 60x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(375.00,430.00)}]
+          LayoutSVGRect {rect} at (170,182) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="out50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+        LayoutSVGContainer {g} at (242,102) size 60x165 [transform={m=((1.00,0.00)(0.00,1.00)) t=(555.00,230.00)}]
+          LayoutSVGRect {rect} at (242,102) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="atop"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+          LayoutSVGText {text} at (10,340) size 133x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 133x73
+              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 4 width 132.50: "atop"
+        LayoutSVGContainer {g} at (242,182) size 60x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(555.00,430.00)}]
+          LayoutSVGRect {rect} at (242,182) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="atop50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+        LayoutSVGContainer {g} at (314,102) size 60x165 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,230.00)}]
+          LayoutSVGRect {rect} at (314,102) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="xor"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+          LayoutSVGText {text} at (10,340) size 97x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 97x73
+              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 3 width 96.80: "xor"
+        LayoutSVGContainer {g} at (314,182) size 60x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,430.00)}]
+          LayoutSVGRect {rect} at (314,182) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="xor50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+        LayoutSVGContainer {g} at (376,102) size 70x193 [transform={m=((1.00,0.00)(0.00,1.00)) t=(915.00,230.00)}]
+          LayoutSVGRect {rect} at (386,102) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="arithmetic"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+          LayoutSVGText {text} at (-25,340) size 163x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 163x73
+              chunk 1 text run 1 at (-25.00,400.00) startOffset 0 endOffset 6 width 162.50: "arith-"
+          LayoutSVGText {text} at (-25,410) size 163x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 163x73
+              chunk 1 text run 1 at (-25.00,470.00) startOffset 0 endOffset 5 width 162.50: "metic"
+        LayoutSVGContainer {g} at (386,182) size 60x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(915.00,430.00)}]
+          LayoutSVGRect {rect} at (386,182) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
+            [filter="arithmetic50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 261x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.5 $"
+    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

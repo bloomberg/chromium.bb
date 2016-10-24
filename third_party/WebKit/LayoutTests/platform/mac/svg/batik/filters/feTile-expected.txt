@@ -67,7 +67,7 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (255,201) size 80x58 [transform={m=((0.66,0.24)(-0.24,0.66)) t=(268.10,201.58)}]
         LayoutSVGRect {rect} at (256,201) size 78x58 [fill={[type=LINEAR-GRADIENT] [id="tileFill"]}] [x=25.00] [y=12.50] [width=50.00] [height=25.00]
           [filter="tile_2"] LayoutSVGResourceFilter {filter} at (0,0) size 100x50
-        LayoutSVGRect {rect} at (255,200) size 80x60 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
+        LayoutSVGRect {rect} at (255,201) size 80x58 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
       LayoutSVGContainer {g} at (205,171) size 180x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(245.00,200.00)}]
         LayoutSVGText {text} at (30,-29) size 40x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 39x18

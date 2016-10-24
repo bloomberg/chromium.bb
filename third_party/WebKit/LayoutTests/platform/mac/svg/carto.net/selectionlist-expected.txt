@@ -90,22 +90,22 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (158,77) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=100.00] [width=16.00] [height=16.00]
         LayoutSVGPath {path} at (162,81) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 104 L 216 104 L 212 112 Z"]
       LayoutSVGContainer {g} at (38,38) size 135x14
-        LayoutSVGRect {rect} at (38,38) size 135x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=50.00] [width=170.00] [height=16.00]
+        LayoutSVGRect {rect} at (38,38) size 135x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=50.00] [width=170.00] [height=16.00]
         LayoutSVGText {text} at (53,52) size 29x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 29x13
             chunk 1 text run 1 at (53.00,62.50) startOffset 0 endOffset 5 width 28.72: "Pears"
-        LayoutSVGRect {rect} at (158,38) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=50.00] [width=16.00] [height=16.00]
+        LayoutSVGRect {rect} at (158,38) size 15x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=50.00] [width=16.00] [height=16.00]
         LayoutSVGPath {path} at (162,42) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 54 L 216 54 L 212 62 Z"]
       LayoutSVGContainer {g} at (546,38) size 41x54
         LayoutSVGRect {rect} at (546,77) size 41x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=700.00] [y=100.00] [width=50.00] [height=16.00]
         LayoutSVGText {text} at (703,102) size 7x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 7x13
             chunk 1 text run 1 at (703.00,112.50) startOffset 0 endOffset 1 width 6.11: "1"
-        LayoutSVGRect {rect} at (572,77) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=734.00] [y=100.00] [width=16.00] [height=16.00]
+        LayoutSVGRect {rect} at (573,77) size 14x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=734.00] [y=100.00] [width=16.00] [height=16.00]
         LayoutSVGPath {path} at (576,81) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 738 104 L 746 104 L 742 112 Z"]
-        LayoutSVGRect {rect} at (546,38) size 25x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=700.00] [y=50.00] [width=30.00] [height=16.00]
+        LayoutSVGRect {rect} at (546,38) size 25x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=700.00] [y=50.00] [width=30.00] [height=16.00]
         LayoutSVGText {text} at (703,52) size 7x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 7x13
             chunk 1 text run 1 at (703.00,62.50) startOffset 0 endOffset 1 width 6.11: "1"
-        LayoutSVGRect {rect} at (557,38) size 14x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=714.00] [y=50.00] [width=16.00] [height=16.00]
+        LayoutSVGRect {rect} at (557,38) size 14x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=714.00] [y=50.00] [width=16.00] [height=16.00]
         LayoutSVGPath {path} at (560,42) size 8x7 [fill={[type=SOLID] [color=#696969]}] [data="M 718 54 L 726 54 L 722 62 Z"]
