@@ -930,7 +930,7 @@ void IndexedDBDatabase::SendObservations(
   for (auto* conn : connections_) {
     auto it = changes_map.find(conn->id());
     if (it != changes_map.end())
-      conn->callbacks()->OnDatabaseChange(it->first, std::move(it->second));
+      conn->callbacks()->OnDatabaseChange(std::move(it->second));
   }
 }
 

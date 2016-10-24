@@ -647,7 +647,6 @@ void IndexedDBDispatcher::OnError(int32_t ipc_thread_id,
 
 void IndexedDBDispatcher::OnDatabaseChanges(
     int32_t ipc_thread_id,
-    int32_t ipc_database_id,
     const IndexedDBMsg_ObserverChanges& changes) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   std::vector<WebIDBObservation> observations(

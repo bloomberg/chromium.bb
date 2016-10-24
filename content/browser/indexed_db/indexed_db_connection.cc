@@ -8,17 +8,21 @@
 
 namespace content {
 
+namespace {
+
+static int32_t next_id;
+
+}  // namespace
+
 IndexedDBConnection::IndexedDBConnection(
     scoped_refptr<IndexedDBDatabase> database,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks)
-    : database_(database), callbacks_(callbacks), weak_factory_(this) {}
+    : id_(next_id++),
+      database_(database),
+      callbacks_(callbacks),
+      weak_factory_(this) {}
 
 IndexedDBConnection::~IndexedDBConnection() {}
-
-void IndexedDBConnection::set_id(int32_t id) {
-  DCHECK_EQ(id_, kInvalidId);
-  id_ = id;
-}
 
 void IndexedDBConnection::Close() {
   if (!callbacks_.get())

@@ -236,7 +236,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
                int code,
                const base::string16& message);
   void OnDatabaseChanges(int32_t ipc_thread_id,
-                         int32_t ipc_database_id,
                          const IndexedDBMsg_ObserverChanges&);
 
   // Reset cursor prefetch caches for all cursors except exception_cursor_id.

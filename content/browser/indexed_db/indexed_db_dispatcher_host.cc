@@ -159,7 +159,6 @@ int32_t IndexedDBDispatcherHost::Add(IndexedDBConnection* connection,
     return -1;
   }
   int32_t ipc_database_id = database_dispatcher_host_->map_.Add(connection);
-  connection->set_id(ipc_database_id);
   context()->ConnectionOpened(origin, connection);
   database_dispatcher_host_->database_origin_map_[ipc_database_id] = origin;
   return ipc_database_id;

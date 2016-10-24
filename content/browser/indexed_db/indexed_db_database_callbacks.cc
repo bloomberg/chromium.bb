@@ -100,12 +100,11 @@ void IndexedDBDatabaseCallbacks::OnComplete(int64_t host_transaction_id) {
 }
 
 void IndexedDBDatabaseCallbacks::OnDatabaseChange(
-    int32_t ipc_database_id,
     std::unique_ptr<IndexedDBObserverChanges> changes) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(io_helper_);
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksChanges(
-      ipc_thread_id_, ipc_database_id,
+      ipc_thread_id_,
       IndexedDBDispatcherHost::ConvertObserverChanges(std::move(changes))));
 }
 

@@ -361,9 +361,8 @@ IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksError,
                      base::string16 /* message */)
 
 // IDBDatabaseCallback message handlers
-IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksChanges,
+IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksChanges,
                      int32_t, /* ipc_thread_id */
-                     int32_t, /* ipc_database_id */
                      IndexedDBMsg_ObserverChanges)
 
 // Indexed DB messages sent from the renderer to the browser.
