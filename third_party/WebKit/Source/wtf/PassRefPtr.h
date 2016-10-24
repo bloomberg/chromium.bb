@@ -71,11 +71,6 @@ class PassRefPtr {
   PassRefPtr() : m_ptr(nullptr) {}
   PassRefPtr(std::nullptr_t) : m_ptr(nullptr) {}
   PassRefPtr(T* ptr) : m_ptr(ptr) { refIfNotNull(ptr); }
-  // It somewhat breaks the type system to allow transfer of ownership out of
-  // a const PassRefPtr. However, it makes it much easier to work with
-  // PassRefPtr temporaries, and we don't have a need to use real const
-  // PassRefPtrs anyway.
-  PassRefPtr(const PassRefPtr& o) : m_ptr(o.leakRef()) {}
   PassRefPtr(PassRefPtr&& o) : m_ptr(o.leakRef()) {}
   template <typename U>
   PassRefPtr(const PassRefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T))

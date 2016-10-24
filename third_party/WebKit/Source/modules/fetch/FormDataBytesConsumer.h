@@ -29,7 +29,8 @@ class FormDataBytesConsumer final : public BytesConsumer {
       ExecutionContext* executionContext,
       PassRefPtr<EncodedFormData> formData,
       BytesConsumer* consumer) {
-    return new FormDataBytesConsumer(executionContext, formData, consumer);
+    return new FormDataBytesConsumer(executionContext, std::move(formData),
+                                     consumer);
   }
 
   // BytesConsumer implementation

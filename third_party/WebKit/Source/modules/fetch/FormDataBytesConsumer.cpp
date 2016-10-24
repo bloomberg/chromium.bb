@@ -212,7 +212,7 @@ FormDataBytesConsumer::FormDataBytesConsumer(const void* data, size_t size)
 FormDataBytesConsumer::FormDataBytesConsumer(
     ExecutionContext* executionContext,
     PassRefPtr<EncodedFormData> formData)
-    : FormDataBytesConsumer(executionContext, formData, nullptr) {}
+    : FormDataBytesConsumer(executionContext, std::move(formData), nullptr) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(
     ExecutionContext* executionContext,
@@ -220,10 +220,10 @@ FormDataBytesConsumer::FormDataBytesConsumer(
     BytesConsumer* consumer)
     : m_impl(isSimple(formData.get())
                  ? static_cast<BytesConsumer*>(
-                       new SimpleFormDataBytesConsumer(formData))
+                       new SimpleFormDataBytesConsumer(std::move(formData)))
                  : static_cast<BytesConsumer*>(
                        new ComplexFormDataBytesConsumer(executionContext,
-                                                        formData,
+                                                        std::move(formData),
                                                         consumer))) {}
 
 }  // namespace blink

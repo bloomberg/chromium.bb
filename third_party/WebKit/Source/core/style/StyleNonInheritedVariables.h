@@ -30,7 +30,7 @@ class StyleNonInheritedVariables {
 
   void setVariable(const AtomicString& name,
                    PassRefPtr<CSSVariableData> value) {
-    m_data.set(name, value);
+    m_data.set(name, std::move(value));
   }
   CSSVariableData* getVariable(const AtomicString& name) const;
   void removeVariable(const AtomicString&);

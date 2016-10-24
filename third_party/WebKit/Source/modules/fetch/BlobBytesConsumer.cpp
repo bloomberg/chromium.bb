@@ -36,7 +36,7 @@ BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* executionContext,
 
 BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* executionContext,
                                      PassRefPtr<BlobDataHandle> blobDataHandle)
-    : BlobBytesConsumer(executionContext, blobDataHandle, nullptr) {}
+    : BlobBytesConsumer(executionContext, std::move(blobDataHandle), nullptr) {}
 
 BlobBytesConsumer::~BlobBytesConsumer() {}
 
@@ -265,7 +265,8 @@ BlobBytesConsumer* BlobBytesConsumer::createForTesting(
     ExecutionContext* executionContext,
     PassRefPtr<BlobDataHandle> blobDataHandle,
     ThreadableLoader* loader) {
-  return new BlobBytesConsumer(executionContext, blobDataHandle, loader);
+  return new BlobBytesConsumer(executionContext, std::move(blobDataHandle),
+                               loader);
 }
 
 ThreadableLoader* BlobBytesConsumer::createLoader() {
