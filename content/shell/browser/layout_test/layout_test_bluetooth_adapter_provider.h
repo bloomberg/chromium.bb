@@ -345,6 +345,28 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetServicesDiscoveredAfterReconnectionAdapter(bool disconnect);
 
+  // |GATTOperationFinishesAfterReconnectionAdapter|(disconnect, succeeds)
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //   - Health Thermometer Device
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
+  //         - Health Thermometer UUID (0x1809)
+  //      - Services:
+  //         - Generic Access Service - Characteristics as described in
+  //           GetGenericAccessService.
+  //         - Health Thermometer
+  //            - Measurement Interval:
+  //               - Read: If |succeeds| is true, saves a succeeding callback,
+  //                 otherwise it saves a failing callback. This callback
+  //                 is run during CreateGattConnection. If |disconnect| is true
+  //                 disconnects the device.
+  //         - CreateGattConnection: Runs success callback with a new GATT
+  //           connection and runs any pending GATT operation callbacks.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetGATTOperationFinishesAfterReconnectionAdapter(bool disconnect,
+                                                   bool succeeds);
+
   // |BlacklistTestAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

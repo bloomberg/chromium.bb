@@ -88,4 +88,15 @@ BluetoothRemoteGattService* MockBluetoothDevice::GetMockService(
   return nullptr;
 }
 
+void MockBluetoothDevice::PushPendingCallback(const base::Closure& callback) {
+  pending_callbacks_.push(callback);
+}
+
+void MockBluetoothDevice::RunPendingCallbacks() {
+  while (!pending_callbacks_.empty()) {
+    pending_callbacks_.front().Run();
+    pending_callbacks_.pop();
+  }
+}
+
 }  // namespace device

@@ -116,6 +116,14 @@ class MockBluetoothDevice : public BluetoothDevice {
 
   void AddUUID(const BluetoothUUID& uuid) { uuids_.insert(uuid); }
 
+  // Functions to save and run callbacks from this device. Useful when
+  // trying to run callbacks in response to other actions e.g. run a read
+  // value callback in response to a connection request.
+  // Appends callback to the end of the callbacks queue.
+  void PushPendingCallback(const base::Closure& callback);
+  // Runs all pending callbacks.
+  void RunPendingCallbacks();
+
   void SetConnected(bool connected) { connected_ = connected; }
 
  private:
@@ -124,6 +132,9 @@ class MockBluetoothDevice : public BluetoothDevice {
   std::string address_;
   BluetoothDevice::UUIDSet uuids_;
   bool connected_;
+
+  // Used by tests to save callbacks that will be run in the future.
+  std::queue<base::Closure> pending_callbacks_;
 
   ScopedVector<MockBluetoothGattService> mock_services_;
 };
