@@ -58,6 +58,10 @@ class NetworkConfigView : public views::DialogDelegateView,
   // 'Type' property value.
   static void ShowForType(const std::string& type, gfx::NativeWindow parent);
 
+  // As above but places the dialog in the given ash window container on the
+  // primary display. Used as a fallback when no parent is available.
+  static void ShowForTypeInContainer(const std::string& type, int container_id);
+
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
 
@@ -94,9 +98,11 @@ class NetworkConfigView : public views::DialogDelegateView,
   NetworkConfigView();
   ~NetworkConfigView() override;
 
-  static void ShowImpl(const std::string& network_id,
-                       gfx::NativeWindow parent,
-                       int container_id);
+  // Returns null for invalid network or if dialog is already showing.
+  static NetworkConfigView* CreateForNetworkId(const std::string& network_id);
+
+  // Returns null for invalid network type or if dialog is already showing.
+  static NetworkConfigView* CreateForType(const std::string& type);
 
   // Login dialog for known networks. Returns true if successfully created.
   bool InitWithNetworkState(const NetworkState* network);

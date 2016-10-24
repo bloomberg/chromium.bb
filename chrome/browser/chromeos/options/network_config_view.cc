@@ -49,6 +49,9 @@ namespace chromeos {
 
 namespace {
 
+// Used to check if a network config dialog is already showing.
+NetworkConfigView* g_instance = nullptr;
+
 gfx::NativeWindow GetParentForUnhostedDialog() {
   if (LoginDisplayHost::default_host()) {
     return LoginDisplayHost::default_host()->GetNativeWindow();
@@ -61,20 +64,6 @@ gfx::NativeWindow GetParentForUnhostedDialog() {
   return nullptr;
 }
 
-// Avoid global static initializer.
-NetworkConfigView** GetActiveDialogPointer() {
-  static NetworkConfigView* active_dialog = nullptr;
-  return &active_dialog;
-}
-
-NetworkConfigView* GetActiveDialog() {
-  return *(GetActiveDialogPointer());
-}
-
-void SetActiveDialog(NetworkConfigView* dialog) {
-  *(GetActiveDialogPointer()) = dialog;
-}
-
 }  // namespace
 
 // static
@@ -84,8 +73,8 @@ NetworkConfigView::NetworkConfigView()
     : child_config_view_(nullptr),
       delegate_(nullptr),
       advanced_button_(nullptr) {
-  DCHECK(GetActiveDialog() == nullptr);
-  SetActiveDialog(this);
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
 bool NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
@@ -118,66 +107,84 @@ bool NetworkConfigView::InitWithType(const std::string& type) {
 }
 
 NetworkConfigView::~NetworkConfigView() {
-  DCHECK(GetActiveDialog() == this);
-  SetActiveDialog(nullptr);
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
 }
 
 // static
 void NetworkConfigView::ShowInParent(const std::string& network_id,
                                      gfx::NativeWindow parent) {
   DCHECK(parent);
-  ShowImpl(network_id, parent, ash::kShellWindowId_Invalid);
+  NetworkConfigView* view = CreateForNetworkId(network_id);
+  if (view)
+    view->ShowDialog(parent);
 }
 
 // static
 void NetworkConfigView::ShowInContainer(const std::string& network_id,
                                         int container_id) {
   DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
-  ShowImpl(network_id, nullptr, container_id);
+  NetworkConfigView* view = CreateForNetworkId(network_id);
+  if (view)
+    view->ShowDialogInContainer(container_id);
 }
 
 // static
-void NetworkConfigView::ShowImpl(const std::string& network_id,
-                                 gfx::NativeWindow parent,
-                                 int container_id) {
-  DCHECK(parent || container_id != ash::kShellWindowId_Invalid);
-  if (GetActiveDialog() != nullptr)
-    return;
+NetworkConfigView* NetworkConfigView::CreateForNetworkId(
+    const std::string& network_id) {
+  if (g_instance)
+    return nullptr;
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           network_id);
   if (!network) {
-    LOG(ERROR) << "NetworkConfigView::Show called with invalid network";
-    return;
+    LOG(ERROR)
+        << "NetworkConfigView::CreateForNetworkId called with invalid network";
+    return nullptr;
   }
   NetworkConfigView* view = new NetworkConfigView();
   if (!view->InitWithNetworkState(network)) {
-    LOG(ERROR) << "NetworkConfigView::Show called with invalid network type: "
+    LOG(ERROR) << "NetworkConfigView::CreateForNetworkId called with invalid "
+                  "network type: "
                << network->type();
     delete view;
-    return;
+    return nullptr;
   }
-  NET_LOG(USER) << "NetworkConfigView::Show: " << network->path();
-  if (parent)
-    view->ShowDialog(parent);
-  else
-    view->ShowDialogInContainer(container_id);
+  NET_LOG(USER) << "NetworkConfigView::CreateForNetworkId: " << network->path();
+  return view;
 }
 
 // static
 void NetworkConfigView::ShowForType(const std::string& type,
                                     gfx::NativeWindow parent) {
-  if (GetActiveDialog() != nullptr)
-    return;
+  // |parent| may be null.
+  NetworkConfigView* view = CreateForType(type);
+  if (view)
+    view->ShowDialog(parent);
+}
+
+// static
+void NetworkConfigView::ShowForTypeInContainer(const std::string& type,
+                                               int container_id) {
+  DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
+  NetworkConfigView* view = CreateForType(type);
+  if (view)
+    view->ShowDialogInContainer(container_id);
+}
+
+// static
+NetworkConfigView* NetworkConfigView::CreateForType(const std::string& type) {
+  if (g_instance)
+    return nullptr;
   NetworkConfigView* view = new NetworkConfigView();
   if (!view->InitWithType(type)) {
-    LOG(ERROR) << "NetworkConfigView::ShowForType called with invalid type: "
+    LOG(ERROR) << "NetworkConfigView::CreateForType called with invalid type: "
                << type;
     delete view;
-    return;
+    return nullptr;
   }
-  NET_LOG(USER) << "NetworkConfigView::ShowForType: " << type;
-  view->ShowDialog(parent);
+  NET_LOG(USER) << "NetworkConfigView::CreateForType: " << type;
+  return view;
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {

@@ -567,7 +567,8 @@ void SystemTrayDelegateChromeOS::ShowOtherNetworkDialog(
     ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
     return;
   }
-  NetworkConfigView::ShowForType(type, GetNativeWindow());
+  NetworkConfigView::ShowForTypeInContainer(
+      type, SystemTrayClient::GetDialogParentContainerId());
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothAvailable() {
