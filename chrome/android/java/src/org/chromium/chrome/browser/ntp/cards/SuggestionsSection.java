@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class SuggestionsSection extends InnerNode {
     private final List<TreeNode> mChildren = new ArrayList<>();
     private final List<SnippetArticle> mSuggestions = new ArrayList<>();
     private final SectionHeader mHeader;
+    private final TreeNode mSuggestionsList = new SuggestionsList(this);
     private final StatusItem mStatus;
     private final ProgressItem mProgressIndicator = new ProgressItem();
     private final ActionItem mMoreButton;
@@ -35,6 +37,39 @@ public class SuggestionsSection extends InnerNode {
         resetChildren();
     }
 
+    private class SuggestionsList extends ChildNode {
+        public SuggestionsList(NodeParent parent) {
+            super(parent);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mSuggestions.size();
+        }
+
+        @Override
+        @ItemViewType
+        public int getItemViewType(int position) {
+            return ItemViewType.SNIPPET;
+        }
+
+        @Override
+        public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+            assert holder instanceof SnippetArticleViewHolder;
+            ((SnippetArticleViewHolder) holder).onBindViewHolder(getSuggestionAt(position));
+        }
+
+        @Override
+        public SnippetArticle getSuggestionAt(int position) {
+            return mSuggestions.get(position);
+        }
+
+        @Override
+        public int getDismissSiblingPosDelta(int position) {
+            return 0;
+        }
+    }
+
     @Override
     protected List<TreeNode> getChildren() {
         return mChildren;
@@ -43,7 +78,7 @@ public class SuggestionsSection extends InnerNode {
     private void resetChildren() {
         mChildren.clear();
         mChildren.add(mHeader);
-        mChildren.addAll(mSuggestions);
+        mChildren.add(mSuggestionsList);
 
         if (mSuggestions.isEmpty()) mChildren.add(mStatus);
         if (mCategoryInfo.hasMoreButton() || mSuggestions.isEmpty()) mChildren.add(mMoreButton);
