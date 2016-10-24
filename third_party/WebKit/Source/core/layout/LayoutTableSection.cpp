@@ -1246,14 +1246,6 @@ int LayoutTableSection::paginationStrutForRow(LayoutTableRow* row,
 
   LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(
       logicalOffset, LayoutBlock::AssociateWithLatterPage);
-  LayoutUnit offsetForBorderSpacing =
-      pageLogicalHeight - (remainingLogicalHeight + table()->vBorderSpacing());
-  // Border spacing from the previous row has pushed this row just past the top
-  // of the page, so we must reposition it to the top of the page and avoid any
-  // repeating header.
-  if (offsetForBorderSpacing < 0)
-    return offsetForBorderSpacing.toInt();
-
   if (remainingLogicalHeight >= rowLogicalHeight)
     return 0;  // It fits fine where it is. No need to break.
   LayoutUnit paginationStrut = calculatePaginationStrutToFitContent(
@@ -1998,12 +1990,18 @@ void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
   rowObject.setLogicalHeight(LayoutUnit(logicalHeightForRow(rowObject)));
   int paginationStrut =
       paginationStrutForRow(&rowObject, rowObject.logicalTop());
+  bool rowIsAtTopOfColumn = false;
+  LayoutUnit offsetFromTopOfPage;
   if (!paginationStrut) {
-    bool rowIsAtTopOfColumn =
-        state.heightOffsetForTableHeaders() &&
-        pageLogicalHeightForOffset(rowObject.logicalTop()) ==
-            pageRemainingLogicalHeightForOffset(rowObject.logicalTop(),
-                                                AssociateWithLatterPage);
+    if (state.heightOffsetForTableHeaders()) {
+      offsetFromTopOfPage =
+          pageLogicalHeightForOffset(rowObject.logicalTop()) -
+          pageRemainingLogicalHeightForOffset(rowObject.logicalTop(),
+                                              AssociateWithLatterPage);
+      rowIsAtTopOfColumn = !offsetFromTopOfPage ||
+                           offsetFromTopOfPage <= table()->vBorderSpacing();
+    }
+
     if (!rowIsAtTopOfColumn)
       return;
   }
@@ -2021,6 +2019,12 @@ void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
     state.setHeightOffsetForTableHeaders(state.heightOffsetForTableHeaders() -
                                          header->logicalHeight());
   }
+  // Border spacing from the previous row has pushed this row just past the top
+  // of the page, so we must reposition it to the top of the page and avoid any
+  // repeating header.
+  if (rowIsAtTopOfColumn && offsetFromTopOfPage)
+    paginationStrut -= offsetFromTopOfPage.toInt();
+
   // If we have a header group we will paint it at the top of each page,
   // move the rows down to accomodate it.
   paginationStrut += state.heightOffsetForTableHeaders().toInt();
