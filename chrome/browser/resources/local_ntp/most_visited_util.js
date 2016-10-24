@@ -10,41 +10,6 @@
 <include src="instant_iframe_validation.js">
 
 
-// TODO(treib): A number of things from this file (e.g. the "enums" below) are
-// duplicated in most_visited_single.js. Pull those out into a shared file.
-
-
-/**
- * The different types of events that are logged from the NTP.  This enum is
- * used to transfer information from the NTP javascript to the renderer and is
- * not used as a UMA enum histogram's logged value.
- * Note: Keep in sync with common/ntp_logging_events.h
- * @enum {number}
- * @const
- */
-var NTP_LOGGING_EVENT_TYPE = {
-  // The suggestion is coming from the server.
-  NTP_SERVER_SIDE_SUGGESTION: 0,
-  // The suggestion is coming from the client.
-  NTP_CLIENT_SIDE_SUGGESTION: 1,
-  // Indicates a tile was rendered, no matter if it's a thumbnail, a gray tile
-  // or an external tile.
-  NTP_TILE: 2,
-  // A NTP Tile has finished loading (successfully or failing).
-  NTP_TILE_LOADED: 10,
-};
-
-/**
- * The different sources that an NTP tile can have.
- * Note: Keep in sync with common/ntp_logging_events.h
- * @enum {number}
- * @const
- */
-var NTPLoggingTileSource = {
-  CLIENT: 0,
-  SERVER: 1,
-};
-
 /**
  * The origin of this request.
  * @const {string}
@@ -83,11 +48,9 @@ function parseQueryParams(location) {
  * @param {string} title The title for the link.
  * @param {string|undefined} text The text for the link or none.
  * @param {string|undefined} direction The text direction.
- * @param {number} tileSource The source from NTPLoggingTileSource.
  * @return {HTMLAnchorElement} A new link element.
  */
-function createMostVisitedLink(
-    params, href, title, text, direction, tileSource) {
+function createMostVisitedLink(params, href, title, text, direction) {
   var styles = getMostVisitedStyles(params, !!text);
   var link = document.createElement('a');
   link.style.color = styles.color;
@@ -133,12 +96,6 @@ function createMostVisitedLink(
     // Ping are only populated for server-side suggestions, never for MV.
     if (isServerSuggestion && params.ping) {
       generatePing(DOMAIN_ORIGIN + params.ping);
-    }
-
-    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
-    if ('pos' in params && isFinite(params.pos)) {
-      ntpApiHandle.logMostVisitedNavigation(parseInt(params.pos, 10),
-                                            tileSource);
     }
 
     // Follow <a> normally, so transition type will be LINK.
@@ -243,10 +200,6 @@ function fillMostVisited(location, fill) {
   params.rid = parseInt(params.rid, 10);
   if (!isFinite(params.rid) && !params.url)
     return;
-  // Log whether the suggestion was obtained from the server or the client.
-  chrome.embeddedSearch.newTabPage.logEvent(params.url ?
-      NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION :
-      NTP_LOGGING_EVENT_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
   var data;
   if (params.url) {
     // Means that the suggestion data comes from the server. Create data object.
@@ -256,15 +209,13 @@ function fillMostVisited(location, fill) {
       thumbnailUrl: params.tu || '',
       title: params.ti || '',
       direction: params.di || '',
-      domain: params.dom || '',
-      tileSource: NTPLoggingTileSource.SERVER
+      domain: params.dom || ''
     };
   } else {
     var apiHandle = chrome.embeddedSearch.searchBox;
     data = apiHandle.getMostVisitedItemData(params.rid);
     if (!data)
       return;
-    data.tileSource = NTPLoggingTileSource.CLIENT;
   }
 
   if (isFinite(params.dummy) && parseInt(params.dummy, 10)) {

@@ -81,15 +81,14 @@ class NTPUserDataLoggerTest : public testing::Test {
 TEST_F(NTPUserDataLoggerTest, TestNumberOfTiles) {
   base::StatisticsRecorder::Initialize();
 
-  // Enusure non-zero statistics.
+  // Ensure non-zero statistics.
   TestNTPUserDataLogger logger;
   logger.ntp_url_ = GURL("chrome://newtab/");
 
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
 
   for (int i = 0; i < 8; ++i)
-    logger.LogEvent(NTP_TILE, delta);
-  logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION, delta);
+    logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION, delta);
 
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
 

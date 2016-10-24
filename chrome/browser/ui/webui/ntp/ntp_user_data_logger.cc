@@ -54,6 +54,21 @@ std::string GetSourceName(NTPLoggingTileSource tile_source) {
   return std::string();
 }
 
+void RecordSyncSessionMetrics(content::WebContents* contents) {
+  if (!contents)
+    return;
+  browser_sync::ProfileSyncService* sync =
+      ProfileSyncServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(contents->GetBrowserContext()));
+  if (!sync)
+    return;
+  sync_sessions::SessionsSyncManager* sessions =
+      static_cast<sync_sessions::SessionsSyncManager*>(
+          sync->GetSessionsSyncableService());
+  sync_sessions::SyncSessionsMetrics::RecordYoungestForeignTabAgeOnNTP(
+      sessions);
+}
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
@@ -62,7 +77,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
 // Log a time event for a given |histogram| at a given |value|. This
 // routine exists because regular histogram macros are cached thus can't be used
 // if the name of the histogram will change at a given call site.
-void logLoadTimeHistogram(const std::string& histogram, base::TimeDelta value) {
+void LogLoadTimeHistogram(const std::string& histogram, base::TimeDelta value) {
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       histogram,
       base::TimeDelta::FromMilliseconds(1),
@@ -110,23 +125,17 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
   switch (event) {
     case NTP_SERVER_SIDE_SUGGESTION:
       has_server_side_suggestions_ = true;
-      break;
+      number_of_tiles_++;
+      return;
     case NTP_CLIENT_SIDE_SUGGESTION:
       has_client_side_suggestions_ = true;
-      break;
-    case NTP_TILE:
-      // TODO(sfiera): remove NTP_TILE and use NTP_*_SIDE_SUGGESTION.
       number_of_tiles_++;
-      break;
-    case NTP_TILE_LOADED:
-      // We no longer emit statistics for the multi-iframe NTP.
-      break;
+      return;
     case NTP_ALL_TILES_LOADED:
       EmitNtpStatistics(time);
-      break;
-    default:
-      NOTREACHED();
+      return;
   }
+  NOTREACHED();
 }
 
 void NTPUserDataLogger::LogMostVisitedImpression(
@@ -178,27 +187,12 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       has_client_side_suggestions_(false),
       number_of_tiles_(0),
       has_emitted_(false),
-      during_startup_(false) {
-  during_startup_ = !AfterStartupTaskUtils::IsBrowserStartupComplete();
-
+      during_startup_(!AfterStartupTaskUtils::IsBrowserStartupComplete()) {
   // We record metrics about session data here because when this class typically
   // emits metrics it is too late. This session data would theoretically have
   // been used to populate the page, and we want to learn about its state when
   // the NTP is being generated.
-  if (contents) {
-    browser_sync::ProfileSyncService* sync =
-        ProfileSyncServiceFactory::GetForProfile(
-            Profile::FromBrowserContext(contents->GetBrowserContext()));
-    if (sync) {
-      sync_sessions::SessionsSyncManager* sessions =
-          static_cast<sync_sessions::SessionsSyncManager*>(
-              sync->GetSessionsSyncableService());
-      if (sessions) {
-        sync_sessions::SyncSessionsMetrics::RecordYoungestForeignTabAgeOnNTP(
-            sessions);
-      }
-    }
-  }
+  RecordSyncSessionMetrics(contents);
 }
 
 // content::WebContentsObserver override
@@ -228,19 +222,19 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
            << "number of tiles: " << number_of_tiles_;
 
-  logLoadTimeHistogram("NewTabPage.LoadTime", load_time);
+  LogLoadTimeHistogram("NewTabPage.LoadTime", load_time);
 
   // Split between ML and MV.
   std::string type = has_server_side_suggestions_ ?
       "MostLikely" : "MostVisited";
-  logLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time);
+  LogLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time);
   // Split between Web and Local.
   std::string source = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
-  logLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time);
+  LogLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time);
 
   // Split between Startup and non-startup.
   std::string status = during_startup_ ? "Startup" : "NewTab";
-  logLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time);
+  LogLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time);
 
   has_server_side_suggestions_ = false;
   has_client_side_suggestions_ = false;

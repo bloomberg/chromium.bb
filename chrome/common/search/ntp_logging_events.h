@@ -8,18 +8,17 @@
 // The different types of events that are logged from the NTP. This enum is used
 // to transfer information from the NTP javascript to the renderer and is not
 // used as a UMA enum histogram's logged value.
-// Note: Keep in sync with browser/resources/local_ntp/most_visited_util.js
-// and browser/resources/local_ntp/most_visited_single.js
+// Note: Keep in sync with browser/resources/local_ntp/most_visited_single.js
 enum NTPLoggingEventType {
-  // The suggestion is coming from the server.
+  // A suggestion coming from the server was rendered.
   NTP_SERVER_SIDE_SUGGESTION = 0,
 
-  // The suggestion is coming from the client.
+  // A suggestion coming from the client was rendered.
   NTP_CLIENT_SIDE_SUGGESTION = 1,
 
   // Indicates a tile was rendered, no matter if it's a thumbnail, a gray tile
   // or an external tile.
-  NTP_TILE = 2,
+  // Deleted: NTP_TILE = 2,
 
   // The tile uses a local thumbnail image.
   // Deleted: NTP_THUMBNAIL_TILE = 3,
@@ -45,7 +44,7 @@ enum NTPLoggingEventType {
 
   // A NTP Tile has finished loading (successfully or failing). Logged only by
   // the multi-iframe version of the NTP.
-  NTP_TILE_LOADED = 10,
+  // Deleted: NTP_TILE_LOADED = 10,
 
   // All NTP tiles have finished loading (successfully or failing). Logged only
   // by the single-iframe version of the NTP.
@@ -55,8 +54,7 @@ enum NTPLoggingEventType {
 };
 
 // The source of an NTP tile.
-// Note: Keep in sync with browser/resources/local_ntp/most_visited_util.js and
-// browser/resources/local_ntp/most_visited_single.js.
+// Note: Keep in sync with browser/resources/local_ntp/most_visited_single.js.
 // TODO(treib): Merge this into MostVisitedSource from components/ntp_tiles.
 enum class NTPLoggingTileSource {
   CLIENT = 0,

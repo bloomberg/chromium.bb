@@ -16,13 +16,10 @@
  * @const
  */
 var LOG_TYPE = {
-  // The suggestion is coming from the server.
+  // A suggestion coming from the server was rendered.
   NTP_SERVER_SIDE_SUGGESTION: 0,
-  // The suggestion is coming from the client.
+  // A suggestion coming from the client was rendered.
   NTP_CLIENT_SIDE_SUGGESTION: 1,
-  // Indicates a tile was rendered, no matter if it's a thumbnail, a gray tile
-  // or an external tile.
-  NTP_TILE: 2,
   // All NTP Tiles have finished loading (successfully or failing).
   NTP_ALL_TILES_LOADED: 11,
 };
@@ -371,7 +368,6 @@ var renderTile = function(data) {
     return tile;
   }
 
-  logEvent(LOG_TYPE.NTP_TILE);
   // The tile will be appended to tiles.
   var position = tiles.children.length;
   logMostVisitedImpression(position, data.tileSource);
