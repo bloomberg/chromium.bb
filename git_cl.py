@@ -4780,6 +4780,7 @@ def CMDtry(parser, args):
                    ', e.g. "-m tryserver.chromium.linux".' % err_msg)
 
   def GetMasterMap():
+    """Returns {master: {builder_name: [test_names]}}. Not buckets!"""
     # Process --bot.
     if not options.bot:
       change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
@@ -4829,16 +4830,17 @@ def CMDtry(parser, args):
     # Return a master map with one master to be backwards compatible. The
     # master name defaults to an empty string, which will cause the master
     # not to be set on rietveld (deprecated).
-    bucket = ''
-    if options.master:
-      # Add the "master." prefix to the master name to obtain the bucket name.
-      bucket = _prefix_master(options.master)
-    return {bucket: builders_and_tests}
+    return {options.master: builders_and_tests}
 
   if options.bucket:
     buckets = {options.bucket: {b: [] for b in options.bot}}
   else:
-    buckets = GetMasterMap()
+    buckets = {}
+    for master, data in GetMasterMap().iteritems():
+      # Add the "master." prefix to the master name to obtain the bucket name.
+      bucket = _prefix_master(master) if master else ''
+      buckets[bucket] = data
+
     if not buckets:
       # Default to triggering Dry Run (see http://crbug.com/625697).
       if options.verbose:
