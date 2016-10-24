@@ -71,6 +71,7 @@ class DeviceEventRouterTest : public testing::Test {
                       const std::string& mount_path) {
     return Disk(device_path,
                 mount_path,
+                false,
                 "",
                 "",
                 "",

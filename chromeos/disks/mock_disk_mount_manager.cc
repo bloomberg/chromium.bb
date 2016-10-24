@@ -73,6 +73,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
   std::unique_ptr<DiskMountManager::Disk> disk1_ptr =
       base::MakeUnique<DiskMountManager::Disk>(
           std::string(kTestDevicePath), std::string(),
+          false,  // write_disabled_by_policy
           std::string(kTestSystemPath), std::string(kTestFilePath),
           std::string(), std::string(kTestDriveLabel),
           std::string(kTestVendorId), std::string(kTestVendorName),
@@ -100,6 +101,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
   std::unique_ptr<DiskMountManager::Disk> disk2_ptr =
       base::MakeUnique<DiskMountManager::Disk>(
           std::string(kTestDevicePath), std::string(kTestMountPath),
+          false,  // write_disabled_by_policy
           std::string(kTestSystemPath), std::string(kTestFilePath),
           std::string(kTestDeviceLabel), std::string(kTestDriveLabel),
           std::string(kTestVendorId), std::string(kTestVendorName),
@@ -122,6 +124,7 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
   std::unique_ptr<DiskMountManager::Disk> disk_ptr =
       base::MakeUnique<DiskMountManager::Disk>(
           std::string(kTestDevicePath), std::string(kTestMountPath),
+          false,  // write_disabled_by_policy
           std::string(kTestSystemPath), std::string(kTestFilePath),
           std::string(kTestDeviceLabel), std::string(kTestDriveLabel),
           std::string(kTestVendorId), std::string(kTestVendorName),
@@ -176,6 +179,7 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
   std::unique_ptr<DiskMountManager::Disk> disk_ptr =
       base::MakeUnique<DiskMountManager::Disk>(
           mount_info.source_path, mount_info.mount_path,
+          false,          // write_disabled_by_policy
           std::string(),  // system_path
           mount_info.source_path, device_label,
           std::string(),  // drive_label

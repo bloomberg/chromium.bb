@@ -241,7 +241,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_Hidden) {
 
   const bool kIsHidden = true;
   const chromeos::disks::DiskMountManager::Disk kDisk(
-      "device1", "", "", "", "", "", "", "", "", "", "", "",
+      "device1", "", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
       kIsHidden);
 
@@ -269,7 +269,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_Added) {
 
   const chromeos::disks::DiskMountManager::Disk kEmptyDevicePathDisk(
       "",  // empty device path.
-      "", "", "", "", "", "", "", "", "", "", "",
+      "", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
       false);
   volume_manager()->OnDiskEvent(
@@ -278,7 +278,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_Added) {
 
   const bool kHasMedia = true;
   const chromeos::disks::DiskMountManager::Disk kMediaDisk(
-      "device1", "", "", "", "", "", "", "", "", "", "", "",
+      "device1", "", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, kHasMedia, false, false,
       false);
   volume_manager()->OnDiskEvent(
@@ -311,7 +311,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_AddedNonMounting) {
 
     const bool kHasMedia = true;
     const chromeos::disks::DiskMountManager::Disk kMountedMediaDisk(
-        "device1", "mounted", "", "", "", "", "", "", "", "", "", "",
+        "device1", "mounted", false, "", "", "", "", "", "", "", "", "", "",
         chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false,
         kHasMedia, false, false, false);
     volume_manager()->OnDiskEvent(
@@ -334,7 +334,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_AddedNonMounting) {
 
     const bool kWithoutMedia = false;
     const chromeos::disks::DiskMountManager::Disk kNoMediaDisk(
-        "device1", "", "", "", "", "", "", "", "", "", "", "",
+        "device1", "", false, "", "", "", "", "", "", "", "", "", "",
         chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false,
         kWithoutMedia, false, false, false);
     volume_manager()->OnDiskEvent(
@@ -359,7 +359,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_AddedNonMounting) {
 
     const bool kHasMedia = true;
     const chromeos::disks::DiskMountManager::Disk kMediaDisk(
-        "device1", "", "", "", "", "", "", "", "", "", "", "",
+        "device1", "", false, "", "", "", "", "", "", "", "", "", "",
         chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false,
         kHasMedia, false, false, false);
     volume_manager()->OnDiskEvent(
@@ -381,7 +381,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_Removed) {
   volume_manager()->AddObserver(&observer);
 
   const chromeos::disks::DiskMountManager::Disk kMountedDisk(
-      "device1", "mount_path", "", "", "", "", "", "", "", "", "", "",
+      "device1", "mount_path", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
       false);
   volume_manager()->OnDiskEvent(
@@ -406,7 +406,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_RemovedNotMounted) {
   volume_manager()->AddObserver(&observer);
 
   const chromeos::disks::DiskMountManager::Disk kNotMountedDisk(
-      "device1", "", "", "", "", "", "", "", "", "", "", "",
+      "device1", "", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
       false);
   volume_manager()->OnDiskEvent(
@@ -428,7 +428,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_Changed) {
   volume_manager()->AddObserver(&observer);
 
   const chromeos::disks::DiskMountManager::Disk kDisk(
-      "device1", "", "", "", "", "", "", "", "", "", "", "",
+      "device1", "", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, true, false, false,
       false);
   volume_manager()->OnDiskEvent(
@@ -452,7 +452,7 @@ TEST_F(VolumeManagerTest, OnDiskEvent_ChangedInReadonly) {
   volume_manager()->AddObserver(&observer);
 
   const chromeos::disks::DiskMountManager::Disk kDisk(
-      "device1", "", "", "", "", "", "", "", "", "", "", "",
+      "device1", "", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, true, false, false,
       false);
   volume_manager()->OnDiskEvent(chromeos::disks::DiskMountManager::DISK_CHANGED,
@@ -547,7 +547,7 @@ TEST_F(VolumeManagerTest, OnMountEvent_MountingAndUnmounting) {
 TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
   std::unique_ptr<chromeos::disks::DiskMountManager::Disk> disk(
       new chromeos::disks::DiskMountManager::Disk(
-          "device1", "", "", "", "", "", "", "", "", "", "uuid1", "",
+          "device1", "", false, "", "", "", "", "", "", "", "", "uuid1", "",
           chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
           false));
   disk_mount_manager_->AddDiskForTest(std::move(disk));
@@ -757,7 +757,7 @@ TEST_F(VolumeManagerTest, ExternalStorageDisabledPolicyMultiProfile) {
 
   // Add 1 disk.
   const chromeos::disks::DiskMountManager::Disk kMediaDisk(
-      "device1", "", "", "", "", "", "", "", "", "", "", "",
+      "device1", "", false, "", "", "", "", "", "", "", "", "", "",
       chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, true, false, false,
       false);
   volume_manager()->OnDiskEvent(

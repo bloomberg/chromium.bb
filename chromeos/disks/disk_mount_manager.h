@@ -55,7 +55,12 @@ class CHROMEOS_EXPORT DiskMountManager {
   class Disk {
    public:
     Disk(const std::string& device_path,
+         // The path to the mount point of this device. Empty if not mounted.
+         // (e.g. /media/removable/VOLUME)
          const std::string& mount_path,
+         // Whether the device is mounted in read-only mode by the policy.
+         // Valid only when the device mounted and mount_path_ is non-empty.
+         bool write_disabled_by_policy,
          const std::string& system_path,
          const std::string& file_path,
          const std::string& device_label,
@@ -69,7 +74,7 @@ class CHROMEOS_EXPORT DiskMountManager {
          DeviceType device_type,
          uint64_t total_size_in_bytes,
          bool is_parent,
-         bool is_read_only,
+         bool is_read_only_hardware,
          bool has_media,
          bool on_boot_device,
          bool on_removable_device,
@@ -83,7 +88,7 @@ class CHROMEOS_EXPORT DiskMountManager {
 
     // The path to the mount point of this device. Will be empty if not mounted.
     // (e.g. /media/removable/VOLUME)
-    const std::string&  mount_path() const { return mount_path_; }
+    const std::string& mount_path() const { return mount_path_; }
 
     // The path of the device according to the udev system.
     // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/block/sdb/sdb1)
@@ -130,8 +135,13 @@ class CHROMEOS_EXPORT DiskMountManager {
     // Is the device is a parent device (i.e. sdb rather than sdb1).
     bool is_parent() const { return is_parent_; }
 
+    // Whether the user can write to the device. True if read-only.
+    bool is_read_only() const {
+      return is_read_only_hardware_ || write_disabled_by_policy_;
+    }
+
     // Is the device read only.
-    bool is_read_only() const { return is_read_only_; }
+    bool is_read_only_hardware() const { return is_read_only_hardware_; }
 
     // Does the device contains media.
     bool has_media() const { return has_media_; }
@@ -149,13 +159,16 @@ class CHROMEOS_EXPORT DiskMountManager {
       mount_path_ = mount_path;
     }
 
-    void set_read_only(bool is_read_only) { is_read_only_ = is_read_only; }
+    void set_write_disabled_by_policy(bool disable) {
+      write_disabled_by_policy_ = disable;
+    }
 
     void clear_mount_path() { mount_path_.clear(); }
 
    private:
     std::string device_path_;
     std::string mount_path_;
+    bool write_disabled_by_policy_;
     std::string system_path_;
     std::string file_path_;
     std::string device_label_;
@@ -169,7 +182,7 @@ class CHROMEOS_EXPORT DiskMountManager {
     DeviceType device_type_;
     uint64_t total_size_in_bytes_;
     bool is_parent_;
-    bool is_read_only_;
+    bool is_read_only_hardware_;
     bool has_media_;
     bool on_boot_device_;
     bool on_removable_device_;

@@ -37,6 +37,7 @@ const char kReadOnlyDeviceSourcePath[] = "/device/read_only_source_path";
 struct TestDiskInfo {
   const char* source_path;
   const char* mount_path;
+  bool write_disabled_by_policy;
   const char* system_path;
   const char* file_path;
   const char* device_label;
@@ -70,6 +71,7 @@ const TestDiskInfo kTestDisks[] = {
   {
     kDevice1SourcePath,
     kDevice1MountPath,
+    false,  // write_disabled_by_policy
     "/device/prefix/system_path",
     "/device/file_path",
     "/device/device_label",
@@ -92,6 +94,7 @@ const TestDiskInfo kTestDisks[] = {
   {
     kDevice2SourcePath,
     kDevice2MountPath,
+    false,  // write_disabled_by_policy
     "/device/prefix/system_path2",
     "/device/file_path2",
     "/device/device_label2",
@@ -114,6 +117,7 @@ const TestDiskInfo kTestDisks[] = {
   {
     kReadOnlyDeviceSourcePath,
     kReadOnlyDeviceMountPath,
+    false,  // write_disabled_by_policy
     "/device/prefix/system_path_3",
     "/device/file_path_3",
     "/device/device_label_3",
@@ -443,12 +447,13 @@ class DiskMountManagerTest : public testing::Test {
   void AddTestDisk(const TestDiskInfo& disk) {
     EXPECT_TRUE(DiskMountManager::GetInstance()->AddDiskForTest(
         base::MakeUnique<DiskMountManager::Disk>(
-            disk.source_path, disk.mount_path, disk.system_path, disk.file_path,
-            disk.device_label, disk.drive_label, disk.vendor_id,
-            disk.vendor_name, disk.product_id, disk.product_name, disk.fs_uuid,
-            disk.system_path_prefix, disk.device_type, disk.size_in_bytes,
-            disk.is_parent, disk.is_read_only, disk.has_media,
-            disk.on_boot_device, disk.on_removable_device, disk.is_hidden)));
+            disk.source_path, disk.mount_path, disk.write_disabled_by_policy,
+            disk.system_path, disk.file_path, disk.device_label,
+            disk.drive_label, disk.vendor_id, disk.vendor_name, disk.product_id,
+            disk.product_name, disk.fs_uuid, disk.system_path_prefix,
+            disk.device_type, disk.size_in_bytes, disk.is_parent,
+            disk.is_read_only, disk.has_media, disk.on_boot_device,
+            disk.on_removable_device, disk.is_hidden)));
   }
 
   // Adds a new mount point to the disk mount manager.

@@ -34,6 +34,7 @@ namespace {
 struct TestDiskInfo {
   const char* system_path;
   const char* file_path;
+  bool write_disabled_by_policy;
   const char* device_label;
   const char* drive_label;
   const char* vendor_id;
@@ -66,6 +67,7 @@ TestDiskInfo kTestDisks[] = {
   {
     "system_path1",
     "file_path1",
+    false,
     "device_label1",
     "drive_label1",
     "0123",
@@ -86,6 +88,7 @@ TestDiskInfo kTestDisks[] = {
   {
     "system_path2",
     "file_path2",
+    false,
     "device_label2",
     "drive_label2",
     "4567",
@@ -106,6 +109,7 @@ TestDiskInfo kTestDisks[] = {
   {
     "system_path3",
     "file_path3",
+    false,
     "device_label3",
     "drive_label3",
     "89ab",
@@ -271,6 +275,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
             kTestMountPoints[i].source_path,
             base::MakeUnique<DiskMountManager::Disk>(
                 kTestMountPoints[i].source_path, kTestMountPoints[i].mount_path,
+                kTestDisks[disk_info_index].write_disabled_by_policy,
                 kTestDisks[disk_info_index].system_path,
                 kTestDisks[disk_info_index].file_path,
                 kTestDisks[disk_info_index].device_label,

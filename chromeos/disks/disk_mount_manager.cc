@@ -369,7 +369,7 @@ class DiskMountManagerImpl : public DiskMountManager {
         AccessModeMap::iterator it = access_modes_.find(entry.source_path());
         if (it != access_modes_.end() &&
             it->second == chromeos::MOUNT_ACCESS_MODE_READ_ONLY) {
-          disk->set_read_only(true);
+          disk->set_write_disabled_by_policy(true);
         }
         disk->set_mount_path(mount_info.mount_path);
       }
@@ -470,8 +470,17 @@ class DiskMountManagerImpl : public DiskMountManager {
       disks_.erase(iter);
       is_new = false;
     }
+
+    // If the device was mounted by the instance, apply recorded parameter.
+    // Otherwise, default to false.
+    // Lookup by |device_path| which we pass to cros-disks when mounting a
+    // device in |VolumeManager::OnDiskEvent()|.
+    auto access_mode = access_modes_.find(disk_info.device_path());
+    bool write_disabled_by_policy = access_mode != access_modes_.end()
+        && access_mode->second == chromeos::MOUNT_ACCESS_MODE_READ_ONLY;
     Disk* disk = new Disk(disk_info.device_path(),
                           disk_info.mount_path(),
+                          write_disabled_by_policy,
                           disk_info.system_path(),
                           disk_info.file_path(),
                           disk_info.label(),
@@ -490,15 +499,6 @@ class DiskMountManagerImpl : public DiskMountManager {
                           disk_info.on_boot_device(),
                           disk_info.on_removable_device(),
                           disk_info.is_hidden());
-    // If the device was mounted by the instance, apply recorded parameter.
-    // Lookup by |device_path| which we pass to cros-disks when mounting a
-    // device in |VolumeManager::OnDiskEvent()|.
-    AccessModeMap::iterator access_mode =
-        access_modes_.find(disk->device_path());
-    if (access_mode != access_modes_.end()) {
-      disk->set_read_only(access_mode->second ==
-                          chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
-    }
     disks_.insert(
         std::make_pair(disk_info.device_path(), base::WrapUnique(disk)));
     NotifyDiskStatusUpdate(is_new ? DISK_ADDED : DISK_CHANGED, disk);
@@ -681,6 +681,7 @@ class DiskMountManagerImpl : public DiskMountManager {
 
 DiskMountManager::Disk::Disk(const std::string& device_path,
                              const std::string& mount_path,
+                             bool write_disabled_by_policy,
                              const std::string& system_path,
                              const std::string& file_path,
                              const std::string& device_label,
@@ -694,13 +695,14 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
                              DeviceType device_type,
                              uint64_t total_size_in_bytes,
                              bool is_parent,
-                             bool is_read_only,
+                             bool is_read_only_hardware,
                              bool has_media,
                              bool on_boot_device,
                              bool on_removable_device,
                              bool is_hidden)
     : device_path_(device_path),
       mount_path_(mount_path),
+      write_disabled_by_policy_(write_disabled_by_policy),
       system_path_(system_path),
       file_path_(file_path),
       device_label_(device_label),
@@ -714,7 +716,7 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
       device_type_(device_type),
       total_size_in_bytes_(total_size_in_bytes),
       is_parent_(is_parent),
-      is_read_only_(is_read_only),
+      is_read_only_hardware_(is_read_only_hardware),
       has_media_(has_media),
       on_boot_device_(on_boot_device),
       on_removable_device_(on_removable_device),
