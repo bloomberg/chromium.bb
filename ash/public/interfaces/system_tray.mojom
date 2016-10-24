@@ -20,7 +20,8 @@ interface SystemTrayClient {
   // Shows the settings related to date, timezone etc.
   ShowDateSettings();
 
-  // TODO(crbug.com/647412): ShowSetTimeDialog();
+  // Shows the dialog to set system time, date, and timezone.
+  ShowSetTimeDialog();
 
   // Shows settings related to multiple displays.
   ShowDisplaySettings();

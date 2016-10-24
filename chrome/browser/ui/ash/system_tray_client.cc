@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -141,6 +142,10 @@ void SystemTrayClient::ShowDateSettings() {
   // Everybody can change the time zone (even though it is a device setting).
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
                                         sub_page);
+}
+
+void SystemTrayClient::ShowSetTimeDialog() {
+  chromeos::SetTimeDialog::ShowDialogInContainer(GetDialogParentContainerId());
 }
 
 void SystemTrayClient::ShowDisplaySettings() {

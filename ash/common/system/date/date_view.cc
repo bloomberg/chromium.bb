@@ -6,7 +6,6 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
@@ -198,7 +197,7 @@ bool DateView::PerformAction(const ui::Event& event) {
   if (action_ == TrayDate::SHOW_DATE_SETTINGS)
     WmShell::Get()->system_tray_controller()->ShowDateSettings();
   else if (action_ == TrayDate::SET_SYSTEM_TIME)
-    WmShell::Get()->system_tray_delegate()->ShowSetTimeDialog();
+    WmShell::Get()->system_tray_controller()->ShowSetTimeDialog();
   else
     return false;
   CloseSystemBubble();

@@ -28,6 +28,11 @@ void SystemTrayController::ShowDateSettings() {
     system_tray_client_->ShowDateSettings();
 }
 
+void SystemTrayController::ShowSetTimeDialog() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowSetTimeDialog();
+}
+
 void SystemTrayController::ShowDisplaySettings() {
   if (ConnectToSystemTrayClient())
     system_tray_client_->ShowDisplaySettings();

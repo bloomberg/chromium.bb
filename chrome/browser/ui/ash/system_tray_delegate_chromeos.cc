@@ -59,7 +59,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -346,12 +345,6 @@ bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
   ash::WmShell* wm_shell = ash::WmShell::Get();
   return ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
          !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
-}
-
-void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
-  // TODO(mash): Move to SystemTrayClient.
-  SetTimeDialog::ShowDialogInContainer(
-      SystemTrayClient::GetDialogParentContainerId());
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {

@@ -80,8 +80,6 @@ bool SystemTrayDelegate::ShouldShowSettings() {
   return false;
 }
 
-void SystemTrayDelegate::ShowSetTimeDialog() {}
-
 void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}
