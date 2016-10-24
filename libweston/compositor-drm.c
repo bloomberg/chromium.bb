@@ -235,7 +235,8 @@ struct drm_output {
 	struct gbm_surface *gbm_surface;
 	uint32_t gbm_format;
 
-	struct weston_plane fb_plane;
+	/* Plane for a fullscreen direct scanout view */
+	struct weston_plane scanout_plane;
 
 	/* The last framebuffer submitted to the kernel for this CRTC. */
 	struct drm_fb *fb_current;
@@ -721,7 +722,7 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 
 	drm_fb_set_buffer(output->fb_pending, buffer);
 
-	return &output->fb_plane;
+	return &output->scanout_plane;
 }
 
 static struct drm_fb *
@@ -2784,10 +2785,10 @@ drm_output_enable(struct weston_output *base)
 
 	weston_plane_init(&output->cursor_plane, b->compositor,
 			  INT32_MIN, INT32_MIN);
-	weston_plane_init(&output->fb_plane, b->compositor, 0, 0);
+	weston_plane_init(&output->scanout_plane, b->compositor, 0, 0);
 
 	weston_compositor_stack_plane(b->compositor, &output->cursor_plane, NULL);
-	weston_compositor_stack_plane(b->compositor, &output->fb_plane,
+	weston_compositor_stack_plane(b->compositor, &output->scanout_plane,
 				      &b->compositor->primary_plane);
 
 	weston_log("Output %s, (connector %d, crtc %d)\n",
@@ -2830,7 +2831,7 @@ drm_output_deinit(struct weston_output *base)
 	else
 		drm_output_fini_egl(output);
 
-	weston_plane_release(&output->fb_plane);
+	weston_plane_release(&output->scanout_plane);
 	weston_plane_release(&output->cursor_plane);
 
 	drmModeFreeProperty(output->dpms_prop);
