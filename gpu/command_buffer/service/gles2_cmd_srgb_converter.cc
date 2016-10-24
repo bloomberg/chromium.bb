@@ -360,10 +360,15 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
   const GLint mipmap_levels =
       TextureManager::ComputeMipMapCount(target, width, height, depth);
 
-  // bind srgb_decoder_textures_[1] to draw framebuffer
   glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, nullptr);
+  if (feature_info_->ext_color_buffer_float_available() &&
+      feature_info_->oes_texture_float_linear_available()) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+  } else {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+  }
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, srgb_decoder_fbo_);
   glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                             GL_TEXTURE_2D, srgb_converter_textures_[1], 0);
@@ -387,7 +392,6 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
-  // generateMipmap for srgb_decoder_textures_[1]
   glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
   glGenerateMipmapEXT(GL_TEXTURE_2D);
 

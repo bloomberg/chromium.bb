@@ -161,6 +161,14 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void EnableOESTextureFloatLinear();
   void EnableOESTextureHalfFloatLinear();
 
+  bool ext_color_buffer_float_available() const {
+    return ext_color_buffer_float_available_;
+  }
+
+  bool oes_texture_float_linear_available() const {
+    return oes_texture_float_linear_available_;
+  }
+
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;
