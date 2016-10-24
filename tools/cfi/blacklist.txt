@@ -58,6 +58,11 @@ fun:*DatabaseContext*contextDestroyed*
 # so exclude source file for now. 
 src:*LifecycleObserver.h*
 
+# Blink wtf::Vector cast on non-initialized data
+# https://crbug.com/568891
+src:*wtf/Vector.h*
+src:*wtf/PartitionAllocator.h*
+
 #############################################################################
 # Methods disabled due to perf considerations.
 
