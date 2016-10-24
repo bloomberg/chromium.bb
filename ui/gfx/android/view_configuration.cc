@@ -40,12 +40,16 @@ struct ViewConfigurationData {
         Java_ViewConfigurationHelper_getLongPressTimeout(env);
     tap_timeout_in_ms_ = Java_ViewConfigurationHelper_getTapTimeout(env);
 
-    jobject obj = j_view_configuration_helper_.obj();
-    Update(Java_ViewConfigurationHelper_getMaximumFlingVelocity(env, obj),
-           Java_ViewConfigurationHelper_getMinimumFlingVelocity(env, obj),
-           Java_ViewConfigurationHelper_getTouchSlop(env, obj),
-           Java_ViewConfigurationHelper_getDoubleTapSlop(env, obj),
-           Java_ViewConfigurationHelper_getMinScalingSpan(env, obj));
+    Update(Java_ViewConfigurationHelper_getMaximumFlingVelocity(
+               env, j_view_configuration_helper_),
+           Java_ViewConfigurationHelper_getMinimumFlingVelocity(
+               env, j_view_configuration_helper_),
+           Java_ViewConfigurationHelper_getTouchSlop(
+               env, j_view_configuration_helper_),
+           Java_ViewConfigurationHelper_getDoubleTapSlop(
+               env, j_view_configuration_helper_),
+           Java_ViewConfigurationHelper_getMinScalingSpan(
+               env, j_view_configuration_helper_));
   }
 
   ~ViewConfigurationData() {}

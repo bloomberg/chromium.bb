@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -25,7 +26,8 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
     : public ResourceManager,
       public base::trace_event::MemoryDumpProvider {
  public:
-  static ResourceManagerImpl* FromJavaObject(jobject jobj);
+  static ResourceManagerImpl* FromJavaObject(
+      const base::android::JavaRef<jobject>& jobj);
 
   explicit ResourceManagerImpl(gfx::NativeWindow native_window);
   ~ResourceManagerImpl() override;

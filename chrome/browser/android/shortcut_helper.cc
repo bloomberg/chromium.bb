@@ -239,7 +239,7 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
   }
 
   return result.obj()
-             ? gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(result.obj()))
+             ? gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(result))
              : SkBitmap();
 }
 

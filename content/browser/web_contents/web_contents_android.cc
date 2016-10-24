@@ -651,7 +651,7 @@ void WebContentsAndroid::GetContentBitmap(
                  weak_factory_.GetWeakPtr(),
                  base::Owned(new ScopedJavaGlobalRef<jobject>(env, obj)),
                  base::Owned(new ScopedJavaGlobalRef<jobject>(env, jcallback)));
-  SkColorType pref_color_type = gfx::ConvertToSkiaColorType(color_type.obj());
+  SkColorType pref_color_type = gfx::ConvertToSkiaColorType(color_type);
   if (!view || pref_color_type == kUnknown_SkColorType) {
     result_callback.Run(SkBitmap(), READBACK_FAILED);
     return;

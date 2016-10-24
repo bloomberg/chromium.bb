@@ -35,7 +35,8 @@ using base::android::JavaRef;
 namespace ui {
 
 // static
-ResourceManagerImpl* ResourceManagerImpl::FromJavaObject(jobject jobj) {
+ResourceManagerImpl* ResourceManagerImpl::FromJavaObject(
+    const JavaRef<jobject>& jobj) {
   return reinterpret_cast<ResourceManagerImpl*>(
       Java_ResourceManager_getNativePtr(base::android::AttachCurrentThread(),
                                         jobj));
@@ -203,7 +204,7 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
 
   Resource* resource = resources_[res_type][res_id].get();
 
-  gfx::JavaBitmap jbitmap(bitmap.obj());
+  gfx::JavaBitmap jbitmap(bitmap);
   resource->size = jbitmap.size();
   resource->padding.SetRect(padding_left, padding_top,
                             padding_right - padding_left,
@@ -256,7 +257,7 @@ void ResourceManagerImpl::OnCrushedSpriteResourceReady(
       ProcessCrushedSpriteFrameRects(all_frame_rects_vector);
 
   SkBitmap skbitmap =
-      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap.obj()));
+      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap));
 
   std::unique_ptr<CrushedSpriteResource> resource =
       base::MakeUnique<CrushedSpriteResource>(
@@ -347,7 +348,7 @@ void ResourceManagerImpl::OnCrushedSpriteResourceReloaded(
     return;
   }
   SkBitmap skbitmap =
-      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap.obj()));
+      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap));
   item->second->SetBitmap(skbitmap);
 }
 

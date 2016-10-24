@@ -24,7 +24,7 @@ static SkBitmap CreateSkBitmapFromJavaBitmap(
     base::android::ScopedJavaLocalRef<jobject> jbitmap) {
   return jbitmap.is_null()
              ? SkBitmap()
-             : CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jbitmap.obj()));
+             : CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jbitmap));
 }
 
 class HandleResources {

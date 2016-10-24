@@ -14,18 +14,19 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
+using base::android::JavaRef;
 
 namespace gfx {
 
-JavaBitmap::JavaBitmap(jobject bitmap)
-    : bitmap_(bitmap),
-      pixels_(NULL) {
-  int err = AndroidBitmap_lockPixels(AttachCurrentThread(), bitmap_, &pixels_);
+JavaBitmap::JavaBitmap(const JavaRef<jobject>& bitmap)
+    : bitmap_(bitmap), pixels_(NULL) {
+  int err =
+      AndroidBitmap_lockPixels(AttachCurrentThread(), bitmap_.obj(), &pixels_);
   DCHECK(!err);
   DCHECK(pixels_);
 
   AndroidBitmapInfo info;
-  err = AndroidBitmap_getInfo(AttachCurrentThread(), bitmap_, &info);
+  err = AndroidBitmap_getInfo(AttachCurrentThread(), bitmap_.obj(), &info);
   DCHECK(!err);
   size_ = gfx::Size(info.width, info.height);
   format_ = info.format;
@@ -34,7 +35,7 @@ JavaBitmap::JavaBitmap(jobject bitmap)
 }
 
 JavaBitmap::~JavaBitmap() {
-  int err = AndroidBitmap_unlockPixels(AttachCurrentThread(), bitmap_);
+  int err = AndroidBitmap_unlockPixels(AttachCurrentThread(), bitmap_.obj());
   DCHECK(!err);
 }
 
@@ -74,7 +75,7 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   ScopedJavaLocalRef<jobject> jbitmap = CreateJavaBitmap(
       skbitmap->width(), skbitmap->height(), color_type);
   SkAutoLockPixels src_lock(*skbitmap);
-  JavaBitmap dst_lock(jbitmap.obj());
+  JavaBitmap dst_lock(jbitmap);
   void* src_pixels = skbitmap->getPixels();
   void* dst_pixels = dst_lock.pixels();
   memcpy(dst_pixels, src_pixels, skbitmap->getSize());
@@ -113,7 +114,7 @@ SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap) {
   return skbitmap;
 }
 
-SkColorType ConvertToSkiaColorType(jobject bitmap_config) {
+SkColorType ConvertToSkiaColorType(const JavaRef<jobject>& bitmap_config) {
   int jbitmap_config = Java_BitmapHelper_getBitmapFormatForConfig(
       AttachCurrentThread(), bitmap_config);
   switch (jbitmap_config) {
