@@ -914,7 +914,7 @@ crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.
 crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
 
 crbug.com/640947 [ Win ] http/tests/serviceworker/foreign-fetch-cors.html [ Pass Failure ]
-crbug.com/640947 [ Win ] virtual/mojo-service-worker/http/tests/serviceworker/foreign-fetch-cors.html [ Pass Failure ]
+crbug.com/640947 [ Win ] virtual/disable-mojo-service-worker/http/tests/serviceworker/foreign-fetch-cors.html [ Pass Failure ]
 
 crbug.com/599670 [ Win Linux ] http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
 

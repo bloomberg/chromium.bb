@@ -19,18 +19,14 @@ class MojoServiceWorkerTestP : public TestClass,
                                public testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
-    is_mojo_enabled_ = GetParam();
-    if (is_mojo_enabled()) {
+    if (!is_mojo_enabled()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kMojoServiceWorker);
+          switches::kDisableMojoServiceWorker);
     }
     TestClass::SetUp();
   }
 
-  bool is_mojo_enabled() const { return is_mojo_enabled_; }
-
- private:
-  bool is_mojo_enabled_ = false;
+  bool is_mojo_enabled() const { return GetParam(); }
 };
 
 template <typename Arg>

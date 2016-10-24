@@ -18,7 +18,7 @@ crbug.com/608375 http/tests/appcache/offline-access.html [ Crash Timeout ]
 crbug.com/608375 http/tests/appcache/remove-cache.html [ Failure Timeout ]
 crbug.com/608375 http/tests/appcache/top-frame-2.html [ Timeout ]
 crbug.com/608375 http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
-crbug.com/608375 virtual/mojo-service-worker/http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
+crbug.com/608375 virtual/disable-mojo-service-worker/http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
 crbug.com/608375 virtual/service-worker-navigation-preload/http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
 
 # https://crbug.com/575210: PlzNavigate: history navigation support
