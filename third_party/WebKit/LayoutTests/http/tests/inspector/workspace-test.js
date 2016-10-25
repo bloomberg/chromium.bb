@@ -42,9 +42,9 @@ InspectorTest._pageCapabilities =
 InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabilities)
 {
     capabilities = capabilities || InspectorTest._pageCapabilities;
-    var MockTarget = function(name, connection, callback)
+    var MockTarget = function(name, connectionFactory, callback)
     {
-        WebInspector.Target.call(this, InspectorTest.testTargetManager, name, capabilities, connection, null, callback);
+        WebInspector.Target.call(this, InspectorTest.testTargetManager, name, capabilities, connectionFactory, null, callback);
         this._inspectedURL = InspectorTest.mainTarget.inspectedURL();
         this.consoleModel = new WebInspector.ConsoleModel(this);
         this.networkManager = new WebInspector.NetworkManager(this);
@@ -67,7 +67,7 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabili
         __proto__: WebInspector.Target.prototype
     }
 
-    var target = new MockTarget("mock-target-" + id, new WebInspector.StubConnection());
+    var target = new MockTarget("mock-target-" + id, (params) => new WebInspector.StubConnection(params));
     InspectorTest.testTargetManager.addTarget(target);
     return target;
 }
