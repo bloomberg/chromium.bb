@@ -364,19 +364,6 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP" file="common/omnibox_selected_keyword_bubble_top.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP_LEFT" file="common/omnibox_selected_keyword_bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP_RIGHT" file="common/omnibox_selected_keyword_bubble_top_right.png" />
-      <if expr="toolkit_views and not is_macosx">
-        <!-- This image is not used in Material Design and can be removed when that mode is default. -->
-        <if expr="not use_ash">
-          <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="common/otr_icon.png" />
-        </if>
-        <if expr="use_ash">
-          <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="common/ash/otr_icon.png" />
-        </if>
-      </if>
-      <if expr="is_macosx or is_ios">
-        <!-- This image is not used in Mac Material Design and can be removed when that mode is default. -->
-        <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="mac/otr_icon.png" />
-      </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OVERLAY_DROP_SHADOW" file="mac/overlay_drop_shadow.png" />
       </if>

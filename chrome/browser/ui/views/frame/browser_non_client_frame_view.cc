@@ -8,9 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,16 +16,12 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
-#include "ui/views/resources/grit/views_resources.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
@@ -56,8 +50,6 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {}
 
 gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    return *GetThemeProviderForProfile()->GetImageSkiaNamed(IDR_OTR_ICON);
   const SkColor icon_color = color_utils::PickContrastingColor(
       SK_ColorWHITE, gfx::kChromeIconGrey, GetFrameColor());
   return gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, icon_color);
@@ -111,25 +103,10 @@ SkColor BrowserNonClientFrameView::GetFrameColor(bool active) const {
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(bool active) const {
   const ui::ThemeProvider* tp = frame_->GetThemeProvider();
   int frame_image_id = active ? IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE;
-
-  // |default_uses_color| means the default frame is painted with a solid color.
-  // When false, the default frame is painted with assets.
-#if defined(OS_CHROMEOS)
-  bool default_uses_color = true;
-#else
-  bool default_uses_color = ui::MaterialDesignController::IsModeMaterial();
-#endif
-  if (default_uses_color) {
-    return ShouldPaintAsThemed() && (tp->HasCustomImage(frame_image_id) ||
-                                     tp->HasCustomImage(IDR_THEME_FRAME))
-               ? *tp->GetImageSkiaNamed(frame_image_id)
-               : gfx::ImageSkia();
-  }
-
-  return ShouldPaintAsThemed()
+  return ShouldPaintAsThemed() && (tp->HasCustomImage(frame_image_id) ||
+                                   tp->HasCustomImage(IDR_THEME_FRAME))
              ? *tp->GetImageSkiaNamed(frame_image_id)
-             : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                   frame_image_id);
+             : gfx::ImageSkia();
 }
 
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
@@ -171,8 +148,6 @@ void BrowserNonClientFrameView::UpdateProfileIndicatorIcon() {
   const Profile* profile = browser_view()->browser()->profile();
   if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
     icon = gfx::Image(GetIncognitoAvatarIcon());
-    if (!ui::MaterialDesignController::IsModeMaterial())
-      profile_indicator_icon_->EnableCanvasFlippingForRTLUI(true);
   } else {
 #if defined(OS_CHROMEOS)
     AvatarMenu::GetImageForMenuButton(profile->GetPath(), &icon);
@@ -191,19 +166,17 @@ void BrowserNonClientFrameView::ViewHierarchyChanged(
 }
 
 void BrowserNonClientFrameView::ActivationChanged(bool active) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // On Windows, while deactivating the widget, this is called before the
-    // active HWND has actually been changed.  Since we want the avatar state to
-    // reflect that the window is inactive, we force NonClientFrameView to see
-    // the "correct" state as an override.
-    set_active_state_override(&active);
-    UpdateProfileIcons();
-    set_active_state_override(nullptr);
+  // On Windows, while deactivating the widget, this is called before the
+  // active HWND has actually been changed.  Since we want the avatar state to
+  // reflect that the window is inactive, we force NonClientFrameView to see the
+  // "correct" state as an override.
+  set_active_state_override(&active);
+  UpdateProfileIcons();
+  set_active_state_override(nullptr);
 
-    // Changing the activation state may change the toolbar top separator color
-    // that's used as the stroke around tabs/the new tab button.
-    browser_view_->tabstrip()->SchedulePaint();
-  }
+  // Changing the activation state may change the toolbar top separator color
+  // that's used as the stroke around tabs/the new tab button.
+  browser_view_->tabstrip()->SchedulePaint();
 
   // Changing the activation state may change the visible frame color.
   SchedulePaint();
