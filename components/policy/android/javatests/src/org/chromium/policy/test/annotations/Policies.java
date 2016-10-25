@@ -79,6 +79,10 @@ public final class Policies {
         String[] stringArray() default {};
     }
 
+    private Policies() {
+        throw new AssertionError("Policies is a non-instantiable class");
+    }
+
     /** Parses the annotations to extract usable information as {@link PolicyData} objects. */
     private static Map<String, PolicyData> fromItems(Item[] items) {
         Map<String, PolicyData> result = new HashMap<>();
