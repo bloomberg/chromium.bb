@@ -558,10 +558,21 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel'], bug=635528)
 
     # Linux Intel with ANGLE only
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_00.html',
+        ['linux', 'intel', 'opengl'], bug=658832)
+
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'intel', 'opengl'], bug=634525)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
+        ['linux', 'intel', 'opengl'], bug=655147)
+    self.Fail('conformance2/rendering/' +
+        'blitframebuffer-multisampled-readbuffer.html',
+        ['linux', 'intel', 'opengl'], bug=658898)
+    self.Fail('conformance2/rendering/blitframebuffer-test.html',
+        ['linux', 'intel', 'opengl'], bug=658898)
 
     # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
     # https://patchwork.freedesktop.org/patch/76903
@@ -797,6 +808,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_00.html',
+        ['linux', 'amd'], bug=658832)
 
     self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_01.html',
         ['linux', 'amd'], bug=483282)
@@ -811,6 +825,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'no_angle'], bug=483282)
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
         ['linux', 'amd'], bug=633022)
+    self.Flaky('conformance2/buffers/uniform-buffers.html',
+        ['linux', 'amd'], bug=658842)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
+        ['linux', 'amd'], bug=655147)
+    self.Flaky('conformance2/rendering/uniform-block-buffer-size.html',
+        ['linux', 'amd'], bug=658844)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
