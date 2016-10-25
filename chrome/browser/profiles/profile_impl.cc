@@ -802,7 +802,8 @@ ExtensionSpecialStoragePolicy*
 #if defined(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get()) {
     TRACE_EVENT0("browser", "ProfileImpl::GetExtensionSpecialStoragePolicy")
-    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(this);
+    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
+        CookieSettingsFactory::GetForProfile(this).get());
   }
   return extension_special_storage_policy_.get();
 #else

@@ -85,9 +85,15 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_media_license_helper_ =
         new MockBrowsingDataMediaLicenseHelper(profile_.get());
 
+    const char kExtensionScheme[] = "extensionscheme";
+    scoped_refptr<content_settings::CookieSettings> cookie_settings =
+        new content_settings::CookieSettings(
+            HostContentSettingsMapFactory::GetForProfile(profile_.get()),
+            profile_->GetPrefs(),
+            kExtensionScheme);
 #if defined(ENABLE_EXTENSIONS)
     special_storage_policy_ =
-        new ExtensionSpecialStoragePolicy(profile_.get());
+        new ExtensionSpecialStoragePolicy(cookie_settings.get());
 #endif
   }
 

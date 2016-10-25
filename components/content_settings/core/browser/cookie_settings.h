@@ -87,6 +87,8 @@ class CookieSettings : public RefcountedKeyedService {
   // This should only be called on the UI thread.
   void ResetCookieSetting(const GURL& primary_url);
 
+  bool IsStorageDurable(const GURL& origin) const;
+
   // Detaches the |CookieSettings| from |PrefService|. This methods needs to be
   // called before destroying the service. Afterwards, only const methods can be
   // called.
