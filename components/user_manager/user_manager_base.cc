@@ -586,6 +586,11 @@ bool UserManagerBase::IsLoggedInAsKioskApp() const {
   return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_KIOSK_APP;
 }
 
+bool UserManagerBase::IsLoggedInAsArcKioskApp() const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_ARC_KIOSK_APP;
+}
+
 bool UserManagerBase::IsLoggedInAsStub() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return IsUserLoggedIn() && IsStubAccountId(active_user_->GetAccountId());

@@ -98,6 +98,8 @@ ash::LoginStatus SystemTrayClient::GetUserLoginStatus() {
       return ash::LoginStatus::SUPERVISED;
     case LoginState::LOGGED_IN_USER_KIOSK_APP:
       return ash::LoginStatus::KIOSK_APP;
+    case LoginState::LOGGED_IN_USER_ARC_KIOSK_APP:
+      return ash::LoginStatus::ARC_KIOSK_APP;
   }
   NOTREACHED();
   return ash::LoginStatus::NOT_LOGGED_IN;

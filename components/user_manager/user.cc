@@ -97,6 +97,18 @@ class KioskAppUser : public DeviceLocalAccountUserBase {
   DISALLOW_COPY_AND_ASSIGN(KioskAppUser);
 };
 
+class ArcKioskAppUser : public DeviceLocalAccountUserBase {
+ public:
+  explicit ArcKioskAppUser(const AccountId& arc_kiosk_account_id);
+  ~ArcKioskAppUser() override;
+
+  // Overridden from User:
+  UserType GetType() const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcKioskAppUser);
+};
+
 class SupervisedUser : public User {
  public:
   explicit SupervisedUser(const AccountId& account_id);
@@ -226,6 +238,10 @@ User* User::CreateKioskAppUser(const AccountId& kiosk_app_account_id) {
   return new KioskAppUser(kiosk_app_account_id);
 }
 
+User* User::CreateArcKioskAppUser(const AccountId& arc_kiosk_account_id) {
+  return new ArcKioskAppUser(arc_kiosk_account_id);
+}
+
 User* User::CreateSupervisedUser(const AccountId& account_id) {
   return new SupervisedUser(account_id);
 }
@@ -326,6 +342,18 @@ UserType KioskAppUser::GetType() const {
   return user_manager::USER_TYPE_KIOSK_APP;
 }
 
+ArcKioskAppUser::ArcKioskAppUser(const AccountId& arc_kiosk_account_id)
+    : DeviceLocalAccountUserBase(arc_kiosk_account_id) {
+  set_display_email(arc_kiosk_account_id.GetUserEmail());
+}
+
+ArcKioskAppUser::~ArcKioskAppUser() {
+}
+
+UserType ArcKioskAppUser::GetType() const {
+  return user_manager::USER_TYPE_ARC_KIOSK_APP;
+}
+
 SupervisedUser::SupervisedUser(const AccountId& account_id) : User(account_id) {
   set_can_lock(true);
 }
@@ -352,8 +380,8 @@ UserType PublicAccountUser::GetType() const {
 }
 
 bool User::has_gaia_account() const {
-  static_assert(user_manager::NUM_USER_TYPES == 7,
-                "NUM_USER_TYPES should equal 7");
+  static_assert(user_manager::NUM_USER_TYPES == 8,
+                "NUM_USER_TYPES should equal 8");
   switch (GetType()) {
     case user_manager::USER_TYPE_REGULAR:
     case user_manager::USER_TYPE_CHILD:
@@ -362,6 +390,7 @@ bool User::has_gaia_account() const {
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
     case user_manager::USER_TYPE_SUPERVISED:
     case user_manager::USER_TYPE_KIOSK_APP:
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
       return false;
     default:
       NOTREACHED();

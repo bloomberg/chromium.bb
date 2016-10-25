@@ -64,6 +64,7 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsSupervisedUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsKioskApp, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsArcKioskApp, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));
   MOCK_CONST_METHOD1(IsUserNonCryptohomeDataEphemeral, bool(const AccountId&));

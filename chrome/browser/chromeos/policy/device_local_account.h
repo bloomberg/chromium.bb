@@ -23,6 +23,9 @@ struct DeviceLocalAccount {
     TYPE_PUBLIC_SESSION,
     // An account that serves as a container for a single full-screen app.
     TYPE_KIOSK_APP,
+    // An account that serves as a container for a single full-screen
+    // Android app.
+    TYPE_ARC_KIOSK_APP,
     // Sentinel, must be last.
     TYPE_COUNT
   };

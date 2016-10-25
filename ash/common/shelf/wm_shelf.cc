@@ -47,6 +47,7 @@ bool WmShelf::CanChangeShelfAlignment() {
     case LoginStatus::SUPERVISED:
     case LoginStatus::GUEST:
     case LoginStatus::KIOSK_APP:
+    case LoginStatus::ARC_KIOSK_APP:
     case LoginStatus::NOT_LOGGED_IN:
       return false;
   }

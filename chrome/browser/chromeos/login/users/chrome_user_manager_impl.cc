@@ -1336,6 +1336,9 @@ ChromeUserManagerImpl::CreateUserFromDeviceLocalAccount(
     case policy::DeviceLocalAccount::TYPE_KIOSK_APP:
       user.reset(user_manager::User::CreateKioskAppUser(account_id));
       break;
+    case policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP:
+      user.reset(user_manager::User::CreateArcKioskAppUser(account_id));
+      break;
     default:
       NOTREACHED();
       break;

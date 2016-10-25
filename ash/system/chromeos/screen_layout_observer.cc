@@ -78,11 +78,13 @@ bool OpenSettings() {
     case LoginStatus::PUBLIC:
     case LoginStatus::SUPERVISED:
     case LoginStatus::KIOSK_APP:
+    case LoginStatus::ARC_KIOSK_APP:
       SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
       if (delegate->ShouldShowSettings()) {
         WmShell::Get()->system_tray_controller()->ShowDisplaySettings();
         return true;
       }
+      break;
   }
 
   return false;

@@ -95,6 +95,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   bool IsLoggedInAsGuest() const override;
   bool IsLoggedInAsSupervisedUser() const override;
   bool IsLoggedInAsKioskApp() const override;
+  bool IsLoggedInAsArcKioskApp() const override;
   bool IsLoggedInAsStub() const override;
   bool IsSessionStarted() const override;
   bool IsUserNonCryptohomeDataEphemeral(

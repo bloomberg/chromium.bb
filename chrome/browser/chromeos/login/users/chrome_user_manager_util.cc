@@ -49,6 +49,8 @@ void UpdateLoginState(const user_manager::User* active_user,
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_SUPERVISED;
   else if (active_user->GetType() == user_manager::USER_TYPE_KIOSK_APP)
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP;
+  else if (active_user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP)
+    login_user_type = chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
   else
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_REGULAR;
 

@@ -28,6 +28,7 @@ namespace {
 
 const char kPublicAccountDomainPrefix[] = "public-accounts";
 const char kKioskAppAccountDomainPrefix[] = "kiosk-apps";
+const char kArcKioskAppAccountDomainPrefix[] = "arc-kiosk-apps";
 const char kDeviceLocalAccountDomainSuffix[] = ".device-local.localhost";
 
 }  // namespace
@@ -58,6 +59,9 @@ std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
       break;
     case DeviceLocalAccount::TYPE_KIOSK_APP:
       domain_prefix = kKioskAppAccountDomainPrefix;
+      break;
+    case DeviceLocalAccount::TYPE_ARC_KIOSK_APP:
+      domain_prefix = kArcKioskAppAccountDomainPrefix;
       break;
     case DeviceLocalAccount::TYPE_COUNT:
       NOTREACHED();
@@ -90,6 +94,11 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
   if (domain_prefix == kKioskAppAccountDomainPrefix) {
     if (type)
       *type = DeviceLocalAccount::TYPE_KIOSK_APP;
+    return true;
+  }
+  if (domain_prefix == kArcKioskAppAccountDomainPrefix) {
+    if (type)
+      *type = DeviceLocalAccount::TYPE_ARC_KIOSK_APP;
     return true;
   }
 

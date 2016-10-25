@@ -21,13 +21,14 @@ class CHROMEOS_EXPORT LoginState {
   };
 
   enum LoggedInUserType {
-    LOGGED_IN_USER_NONE,             // User is not logged in
-    LOGGED_IN_USER_REGULAR,          // A regular user is logged in
-    LOGGED_IN_USER_OWNER,            // The owner of the device is logged in
-    LOGGED_IN_USER_GUEST,            // A guest is logged in (i.e. incognito)
-    LOGGED_IN_USER_PUBLIC_ACCOUNT,   // A user is logged in to a public session.
-    LOGGED_IN_USER_SUPERVISED,       // A supervised user is logged in
-    LOGGED_IN_USER_KIOSK_APP         // Is in kiosk app mode
+    LOGGED_IN_USER_NONE,            // User is not logged in
+    LOGGED_IN_USER_REGULAR,         // A regular user is logged in
+    LOGGED_IN_USER_OWNER,           // The owner of the device is logged in
+    LOGGED_IN_USER_GUEST,           // A guest is logged in (i.e. incognito)
+    LOGGED_IN_USER_PUBLIC_ACCOUNT,  // A user is logged in to a public session.
+    LOGGED_IN_USER_SUPERVISED,      // A supervised user is logged in
+    LOGGED_IN_USER_KIOSK_APP,       // Is in kiosk app mode
+    LOGGED_IN_USER_ARC_KIOSK_APP    // Is in ARC kiosk mode
   };
 
   class Observer {

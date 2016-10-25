@@ -144,6 +144,7 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
       need_label = true;
       break;
     case LoginStatus::KIOSK_APP:
+    case LoginStatus::ARC_KIOSK_APP:
     case LoginStatus::NOT_LOGGED_IN:
       break;
   }

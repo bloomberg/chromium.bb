@@ -23,8 +23,10 @@ typedef enum {
   USER_TYPE_KIOSK_APP = 5,
   // Child user, with supervised options.
   USER_TYPE_CHILD = 6,
+  // Android app in kiosk mode, logs in without authentication.
+  USER_TYPE_ARC_KIOSK_APP = 7,
   // Maximum histogram value.
-  NUM_USER_TYPES = 7
+  NUM_USER_TYPES = 8
 } UserType;
 
 }  // namespace user_manager

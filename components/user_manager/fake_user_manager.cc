@@ -244,6 +244,13 @@ bool FakeUserManager::IsLoggedInAsKioskApp() const {
              : false;
 }
 
+bool FakeUserManager::IsLoggedInAsArcKioskApp() const {
+  const user_manager::User* active_user = GetActiveUser();
+  return active_user
+             ? active_user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP
+             : false;
+}
+
 bool FakeUserManager::IsLoggedInAsStub() const {
   return false;
 }
