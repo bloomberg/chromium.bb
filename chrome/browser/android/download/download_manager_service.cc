@@ -149,23 +149,6 @@ void DownloadManagerService::RemoveDownload(
     EnqueueDownloadAction(download_guid, REMOVE);
 }
 
-bool DownloadManagerService::IsDownloadOpenableInBrowser(
-    JNIEnv* env,
-    jobject obj,
-    const JavaParamRef<jstring>& jdownload_guid,
-    bool is_off_the_record) {
-  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager)
-    return false;
-
-  content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
-  if (!item)
-    return false;
-
-  return mime_util::IsSupportedMimeType(item->GetMimeType());
-}
-
 void DownloadManagerService::GetAllDownloads(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              bool is_off_the_record) {

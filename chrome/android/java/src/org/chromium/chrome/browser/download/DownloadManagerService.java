@@ -1166,12 +1166,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Checks whether the download can be opened by the browser.
      * @param downloadGuid GUID of the download.
      * @param isOffTheRecord Whether the download is off the record.
+     * @param mimeType MIME type of the file.
      * @return Whether the download is openable by the browser.
      */
     @Override
-    public boolean isDownloadOpenableInBrowser(String downloadGuid, boolean isOffTheRecord) {
-        return nativeIsDownloadOpenableInBrowser(
-                getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+    public boolean isDownloadOpenableInBrowser(
+            String downloadGuid, boolean isOffTheRecord, String mimeType) {
+        // TODO(qinmin): for audio and video, check if the codec is supported by Chrome.
+        return isSupportedMimeType(mimeType);
     }
 
     /**
@@ -1675,8 +1677,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
             boolean isOffTheRecord);
     private native void nativeRemoveDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord);
-    private native boolean nativeIsDownloadOpenableInBrowser(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
     private native void nativeGetAllDownloads(
             long nativeDownloadManagerService, boolean isOffTheRecord);
     private native void nativeCheckForExternallyRemovedDownloads(

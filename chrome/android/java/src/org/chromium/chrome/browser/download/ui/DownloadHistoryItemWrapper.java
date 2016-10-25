@@ -180,7 +180,7 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
 
             // Check if Chrome should open the file itself.
             if (mBackendProvider.getDownloadDelegate().isDownloadOpenableInBrowser(
-                    mItem.getId(), mIsOffTheRecord)) {
+                    mItem.getId(), mIsOffTheRecord, getMimeType())) {
                 // Share URIs use the content:// scheme when able, which looks bad when displayed
                 // in the URL bar.
                 Uri fileUri = Uri.fromFile(getFile());
