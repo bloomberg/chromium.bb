@@ -25,17 +25,6 @@ namespace {
 const char kEchoArgs[] =
     "(function() { this.result = Array.from(arguments); })";
 
-std::unique_ptr<base::Value> GetResultFromContext(
-    v8::Isolate* isolate,
-    v8::Local<v8::Context> context) {
-  v8::Context::Scope context_scope(context);
-  v8::Local<v8::Value> res;
-  EXPECT_TRUE(context->Global()
-                  ->Get(context, gin::StringToV8(isolate, "result"))
-                  .ToLocal(&res));
-  return V8ToBaseValue(res, context);
-}
-
 }  // namespace
 
 class APIRequestHandlerTest : public gin::V8Test {
@@ -45,8 +34,7 @@ class APIRequestHandlerTest : public gin::V8Test {
              v8::Local<v8::Context> context,
              int argc,
              v8::Local<v8::Value> argv[]) {
-    EXPECT_FALSE(
-        function->Call(context, context->Global(), argc, argv).IsEmpty());
+    RunFunctionOnGlobal(function, context, argc, argv);
     did_run_js_ = true;
   }
 
@@ -91,7 +79,7 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
 
   EXPECT_TRUE(did_run_js());
   std::unique_ptr<base::Value> result_value =
-      GetResultFromContext(isolate, context);
+      GetBaseValuePropertyFromObject(context->Global(), context, "result");
   ASSERT_TRUE(result_value);
   EXPECT_EQ(ReplaceSingleQuotes(kArguments), ValueToString(*result_value));
 
@@ -167,7 +155,7 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
               testing::UnorderedElementsAre(request_b));
 
   std::unique_ptr<base::Value> result_a =
-      GetResultFromContext(isolate, context_a);
+      GetBaseValuePropertyFromObject(context_a->Global(), context_a, "result");
   ASSERT_TRUE(result_a);
   EXPECT_EQ(ReplaceSingleQuotes("'response_a:alpha'"),
             ValueToString(*result_a));
@@ -180,7 +168,7 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
 
   std::unique_ptr<base::Value> result_b =
-      GetResultFromContext(isolate, context_b);
+      GetBaseValuePropertyFromObject(context_b->Global(), context_b, "result");
   ASSERT_TRUE(result_b);
   EXPECT_EQ(ReplaceSingleQuotes("'response_b:beta'"), ValueToString(*result_b));
 }

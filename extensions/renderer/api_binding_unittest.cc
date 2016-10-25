@@ -96,15 +96,6 @@ const char kFunctions[] =
 
 const char kError[] = "Uncaught TypeError: Invalid invocation";
 
-void RunJSFunction(v8::Local<v8::Function> function,
-                   v8::Local<v8::Context> context,
-                   int argc,
-                   v8::Local<v8::Value> argv[]) {
-  v8::MaybeLocal<v8::Value> result =
-      function->Call(context, context->Global(), argc, argv);
-  EXPECT_FALSE(result.IsEmpty());
-}
-
 }  // namespace
 
 class APIBindingTest : public gin::V8Test {
@@ -131,7 +122,7 @@ class APIBindingTest : public gin::V8Test {
     holder_->SetContext(
         v8::Local<v8::Context>::New(instance_->isolate(), context_));
     request_handler_ = base::MakeUnique<APIRequestHandler>(
-        base::Bind(&RunJSFunction));
+        base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   }
 
   void TearDown() override {
@@ -188,19 +179,15 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
       FunctionFromString(context, wrapped_script_source);
   ASSERT_FALSE(func.IsEmpty());
 
-  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Value> argv[] = {object};
-  func->Call(v8::Undefined(isolate), 1, argv);
 
   if (should_pass) {
-    EXPECT_FALSE(try_catch.HasCaught())
-        << gin::V8ToString(try_catch.Message()->Get());
+    RunFunction(func, context, 1, argv);
     ASSERT_TRUE(arguments_) << script_source;
     EXPECT_EQ(expected_json_arguments, ValueToString(*arguments_));
   } else {
-    ASSERT_TRUE(try_catch.HasCaught()) << script_source;
-    std::string message = gin::V8ToString(try_catch.Message()->Get());
-    EXPECT_EQ(expected_error, message);
+    RunFunctionAndExpectError(func, context, 1, argv, expected_error);
+    EXPECT_FALSE(arguments_);
   }
 
   arguments_.reset();
@@ -386,10 +373,8 @@ TEST_F(APIBindingTest, Callbacks) {
       ListValueFromString(kResponseArgsJson);
   request_handler()->CompleteRequest(last_request_id(), *expected_args);
 
-  v8::Local<v8::Value> res;
-  ASSERT_TRUE(context->Global()
-                  ->Get(context, gin::StringToV8(isolate, "callbackArguments"))
-                  .ToLocal(&res));
+  v8::Local<v8::Value> res =
+      GetPropertyFromObject(context->Global(), context, "callbackArguments");
 
   std::unique_ptr<base::Value> out_val = V8ToBaseValue(res, context);
   ASSERT_TRUE(out_val);
