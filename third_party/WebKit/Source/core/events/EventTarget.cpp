@@ -303,8 +303,15 @@ bool EventTarget::addEventListenerInternal(
   RegisteredEventListener registeredListener;
   bool added = ensureEventTargetData().eventListenerMap.add(
       eventType, listener, options, &registeredListener);
-  if (added)
+  if (added) {
+    if (listener->type() == EventListener::JSEventListenerType) {
+      V8AbstractEventListener* v8listener =
+          static_cast<V8AbstractEventListener*>(listener);
+      if (v8listener->hasExistingListenerObject())
+        ScriptWrappableVisitor::writeBarrier(this, v8listener);
+    }
     addedEventListener(eventType, registeredListener);
+  }
   return added;
 }
 
