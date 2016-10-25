@@ -158,12 +158,13 @@ class InMenuButtonBackground : public views::Background {
         button ? button->state() : views::Button::STATE_NORMAL;
     int h = view->height();
 
-    // Draw leading border where needed. This is along the left edge unless the
-    // layout is RTL and the button isn't mirroring itself.
+    // Draw leading border if desired.
     gfx::Rect bounds(view->GetLocalBounds());
     if (type_ == LEADING_BORDER) {
+      // We need to flip the canvas for RTL iff the button is not auto-flipping
+      // already, so we end up flipping exactly once.
       gfx::ScopedRTLFlipCanvas scoped_canvas(
-          canvas, view->width(), view->flip_canvas_on_paint_for_rtl_ui());
+          canvas, view->width(), !view->flip_canvas_on_paint_for_rtl_ui());
       canvas->FillRect(gfx::Rect(0, 0, 1, h),
                        BorderColor(view, views::Button::STATE_NORMAL));
       bounds.Inset(gfx::Insets(0, 1, 0, 0));
