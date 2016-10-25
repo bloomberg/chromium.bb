@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 
-#include "chrome/browser/chromeos/arc/arc_external_protocol_dialog.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"

@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image.h"

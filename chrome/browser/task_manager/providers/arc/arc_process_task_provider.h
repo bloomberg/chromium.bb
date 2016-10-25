@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
-#include "chrome/browser/chromeos/arc/arc_process.h"
+#include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "chrome/browser/task_manager/providers/arc/arc_process_task.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
 

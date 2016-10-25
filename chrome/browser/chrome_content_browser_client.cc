@@ -200,7 +200,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
-#include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/chrome_interface_factory.h"

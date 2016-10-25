@@ -17,7 +17,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #endif  // OS_CHROMEOS
 
 class Browser;

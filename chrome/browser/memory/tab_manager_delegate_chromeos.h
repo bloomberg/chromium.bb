@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/arc/arc_process.h"
+#include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_list_observer.h"

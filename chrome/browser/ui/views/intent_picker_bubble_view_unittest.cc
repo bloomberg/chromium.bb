@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
