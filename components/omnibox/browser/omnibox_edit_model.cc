@@ -410,41 +410,19 @@ void OmniboxEditModel::StartAutocomplete(bool has_selected_text,
                                          bool prevent_inline_autocomplete) {
   const base::string16 input_text = MaybePrependKeyword(user_text_);
 
-  // Compute the cursor position.  There are three cases:
-  //   1. The user is in the midst of typing; there is no inline autocompletion.
-  //   2. The user is in the midst of typing; there is inline autocompletion.
-  //   3. The user is not in the midst of typing, but is triggering this some
-  //      other way, e.g. hitting ctrl-K while the view is showing the permanent
-  //      or temporary text.
-  size_t cursor_position;
-  if (!has_temporary_text_ && (user_text_ == view_->GetText())) {
-    // Case 1 above.  In this case there's a meaningful current cursor position,
-    // so we read it from the view.  (Note that if there is a selected range,
-    // the "cursor position" is considered to be the selection's end.)
-    size_t start;
-    view_->GetSelectionBounds(&start, &cursor_position);
+  size_t start, cursor_position;
+  view_->GetSelectionBounds(&start, &cursor_position);
 
-    // For keyword searches, the text that AutocompleteInput expects is of the
-    // form "<keyword> <query>", where our query is |user_text_|.  So we need to
-    // adjust the cursor position forward by the length of any keyword added by
-    // MaybePrependKeyword() above.
+  // For keyword searches, the text that AutocompleteInput expects is
+  // of the form "<keyword> <query>", where our query is |user_text_|.
+  // So we need to adjust the cursor position forward by the length of
+  // any keyword added by MaybePrependKeyword() above.
+  if (is_keyword_selected())
     cursor_position += input_text.length() - user_text_.length();
-  } else {
-    // Case 2 or 3 above.  In case 2, the existing inline autocompletion will be
-    // ignored for this next autocomplete run.  The current cursor position is
-    // always effectively "the end of the input text".  (If the user changes
-    // this cursor position by arrowing, it will accept the inline
-    // autocompletion, which would put us in case 1.)  In case 3, there is no
-    // meaningful current cursor position; the correct default behavior is to
-    // simply claim the cursor is at the end of the input.
-    cursor_position = input_text.length();
-  }
 
-  GURL current_url;
-  if (client_->CurrentPageExists())
-    current_url = client_->GetURL();
   input_ = AutocompleteInput(
-      input_text, cursor_position, std::string(), current_url, ClassifyPage(),
+      input_text, cursor_position, std::string(), client_->GetURL(),
+      ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
           (has_selected_text && inline_autocomplete_text_.empty()) ||
           (paste_state_ != NONE),
@@ -560,13 +538,23 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
     KeywordModeEntryMethod entry_method) {
   autocomplete_controller()->Stop(false);
 
-  user_input_in_progress_ = true;
-  keyword_ = client_->GetTemplateURLService()->
-      GetDefaultSearchProvider()->keyword();
+  keyword_ =
+      client_->GetTemplateURLService()->GetDefaultSearchProvider()->keyword();
   is_keyword_hint_ = false;
   keyword_mode_entry_method_ = entry_method;
 
-  StartAutocomplete(false, false);
+  base::string16 display_text =
+      user_input_in_progress_ ? view_->GetText() : base::string16();
+  size_t caret_pos = display_text.length();
+  if (entry_method == KeywordModeEntryMethod::QUESTION_MARK) {
+    display_text.erase(0, 1);
+    caret_pos = 0;
+  }
+
+  InternalSetUserText(display_text);
+  view_->SetWindowTextAndCaretPos(display_text, caret_pos, true, false);
+  if (entry_method == KeywordModeEntryMethod::KEYBOARD_SHORTCUT)
+    view_->SelectAll(false);
 
   UMA_HISTOGRAM_ENUMERATION(
       kEnteredKeywordModeHistogram, static_cast<int>(entry_method),
@@ -593,8 +581,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       input_text, base::string16::npos, std::string(),
       // Somehow we can occasionally get here with no active tab.  It's not
       // clear why this happens.
-      client_->CurrentPageExists() ? client_->GetURL() : GURL(), ClassifyPage(),
-      false, false, true, true, false, client_->GetSchemeClassifier());
+      client_->GetURL(), ClassifyPage(), false, false, true, true, false,
+      client_->GetSchemeClassifier());
   std::unique_ptr<OmniboxNavigationObserver> observer(
       client_->CreateOmniboxNavigationObserver(
           input_text, match,
@@ -1216,11 +1204,8 @@ bool OmniboxEditModel::OnAfterPossibleChange(
   // If the user input a "?" at the beginning of the text, put them into
   // keyword mode for their default search provider.
   if ((state_changes.new_sel_start == 1) && (user_text_[0] == '?')) {
-    view_->SetUserText(user_text_.substr(1));
     EnterKeywordModeForDefaultSearchProvider(
         KeywordModeEntryMethod::QUESTION_MARK);
-    // Set the caret position to 0 without changing the user text.
-    view_->SetWindowTextAndCaretPos(view_->GetText(), 0, false, false);
     return false;
   }
 

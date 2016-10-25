@@ -247,10 +247,8 @@ void OmniboxViewViews::SetUserText(const base::string16& text,
 
 void OmniboxViewViews::EnterKeywordModeForDefaultSearchProvider() {
   // Transition the user into keyword mode using their default search provider.
-  // Select their query if they typed one.
   model()->EnterKeywordModeForDefaultSearchProvider(
       KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
-  SelectRange(gfx::Range(text().size(), 0));
 }
 
 void OmniboxViewViews::GetSelectionBounds(

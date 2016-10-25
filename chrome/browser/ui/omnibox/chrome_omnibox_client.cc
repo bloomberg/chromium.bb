@@ -140,11 +140,12 @@ ChromeOmniboxClient::CreateOmniboxNavigationObserver(
 }
 
 bool ChromeOmniboxClient::CurrentPageExists() const {
-  return (controller_->GetWebContents() != NULL);
+  return (controller_->GetWebContents() != nullptr);
 }
 
 const GURL& ChromeOmniboxClient::GetURL() const {
-  return controller_->GetWebContents()->GetVisibleURL();
+  return CurrentPageExists() ? controller_->GetWebContents()->GetVisibleURL()
+                             : GURL::EmptyGURL();
 }
 
 const base::string16& ChromeOmniboxClient::GetTitle() const {

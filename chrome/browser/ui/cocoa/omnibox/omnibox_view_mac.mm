@@ -375,10 +375,8 @@ void OmniboxViewMac::EnterKeywordModeForDefaultSearchProvider() {
   FocusLocation(true);
 
   // Transition the user into keyword mode using their default search provider.
-  // Select their query if they typed one.
   model()->EnterKeywordModeForDefaultSearchProvider(
       KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
-  SelectAll(false);
 }
 
 bool OmniboxViewMac::IsSelectAll() const {

@@ -177,7 +177,8 @@ class OmniboxEditModel {
   // no user input in progress).
   void Revert();
 
-  // Directs the popup to start autocomplete.
+  // Directs the popup to start autocomplete.  Makes use of the |view_| text and
+  // selection, so make sure to set those before calling StartAutocomplete().
   void StartAutocomplete(bool has_selected_text,
                          bool prevent_inline_autocomplete);
 
@@ -244,7 +245,9 @@ class OmniboxEditModel {
   bool AcceptKeyword(KeywordModeEntryMethod entry_method);
 
   // Sets the current keyword to that of the user's default search provider and
-  // updates the view so the user sees the keyword chip in the omnibox.
+  // updates the view so the user sees the keyword chip in the omnibox.  Adjusts
+  // user_text_ and the selection based on the display text and the keyword
+  // entry method.
   void EnterKeywordModeForDefaultSearchProvider(
       KeywordModeEntryMethod entry_method);
 

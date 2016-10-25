@@ -329,4 +329,22 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
     omnibox_view->RevertAll();
   }
+
+  // Calling FocusSearch() when the permanent URL is showing should result in an
+  // empty query string.
+  {
+    FocusSearchCheckPreconditions();
+
+    omnibox_model->UpdatePermanentText();
+    EXPECT_EQ(base::ASCIIToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
+
+    location_bar->FocusSearch();
+    EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
+    EXPECT_EQ(base::string16(), omnibox_view->GetText());
+    EXPECT_EQ(default_search_keyword, omnibox_model->keyword());
+    EXPECT_FALSE(omnibox_model->is_keyword_hint());
+    EXPECT_TRUE(omnibox_model->is_keyword_selected());
+
+    omnibox_view->RevertAll();
+  }
 }
