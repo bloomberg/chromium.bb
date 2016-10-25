@@ -13,6 +13,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/loader/MixedContentChecker.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/PresentationAvailability.h"
 #include "modules/presentation/PresentationAvailabilityCallbacks.h"
@@ -43,6 +44,22 @@ Settings* settings(ExecutionContext* executionContext) {
 
   Document* document = toDocument(executionContext);
   return document->settings();
+}
+
+ScriptPromise rejectWithMixedContentException(ScriptState* scriptState,
+                                              const String& url) {
+  return ScriptPromise::rejectWithDOMException(
+      scriptState,
+      DOMException::create(SecurityError,
+                           "Presentation of an insecure document [" + url +
+                               "] is prohibited from a secure context."));
+}
+
+ScriptPromise rejectWithSandBoxException(ScriptState* scriptState) {
+  return ScriptPromise::rejectWithDOMException(
+      scriptState, DOMException::create(SecurityError,
+                                        "The document is sandboxed and lacks "
+                                        "the 'allow-presentation' flag."));
 }
 
 }  // anonymous namespace
@@ -105,11 +122,13 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
             InvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
+  if (MixedContentChecker::isMixedContent(
+          getExecutionContext()->getSecurityOrigin(), m_url)) {
+    return rejectWithMixedContentException(scriptState, m_url.getString());
+  }
+
   if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(SecurityError,
-                                          "The document is sandboxed and lacks "
-                                          "the 'allow-presentation' flag."));
+    return rejectWithSandBoxException(scriptState);
 
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (!client)
@@ -130,11 +149,13 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
 
 ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
                                              const String& id) {
+  if (MixedContentChecker::isMixedContent(
+          getExecutionContext()->getSecurityOrigin(), m_url)) {
+    return rejectWithMixedContentException(scriptState, m_url.getString());
+  }
+
   if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(SecurityError,
-                                          "The document is sandboxed and lacks "
-                                          "the 'allow-presentation' flag."));
+    return rejectWithSandBoxException(scriptState);
 
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (!client)
@@ -154,11 +175,13 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
 }
 
 ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState) {
+  if (MixedContentChecker::isMixedContent(
+          getExecutionContext()->getSecurityOrigin(), m_url)) {
+    return rejectWithMixedContentException(scriptState, m_url.getString());
+  }
+
   if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(SecurityError,
-                                          "The document is sandboxed and lacks "
-                                          "the 'allow-presentation' flag."));
+    return rejectWithSandBoxException(scriptState);
 
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (!client)
