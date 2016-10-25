@@ -252,7 +252,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
         setProgressBarCompletion(0);
         setProgressBarVisible(false);
-        getImageControl().hideThumbnail(false);
+        getImageControl().hideStaticIcon(false);
 
         super.onClosed(reason);
 
@@ -490,7 +490,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param searchTerm The string that represents the search term.
      */
     public void setSearchTerm(String searchTerm) {
-        getImageControl().hideThumbnail(true);
+        getImageControl().hideStaticIcon(true);
         getSearchBarControl().setSearchTerm(searchTerm);
         mPanelMetrics.onSearchRequestStarted();
     }
@@ -501,7 +501,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param end The portion of the context from the selection to its end.
      */
     public void setSearchContext(String selection, String end) {
-        getImageControl().hideThumbnail(true);
+        getImageControl().hideStaticIcon(true);
         getSearchBarControl().setSearchContext(selection, end);
         mPanelMetrics.onSearchRequestStarted();
     }
@@ -664,19 +664,11 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
     // Image Control
     // ============================================================================================
-
-    // TODO(twellington): The image control should move to ContextualSearchBarControl since it
-    // is a part of the Bar.
-    private ContextualSearchImageControl mImageControl;
-
     /**
      * @return The {@link ContextualSearchImageControl} for the panel.
      */
     public ContextualSearchImageControl getImageControl() {
-        if (mImageControl == null) {
-            mImageControl = new ContextualSearchImageControl(this, mContext);
-        }
-        return mImageControl;
+        return getSearchBarControl().getImageControl();
     }
 
     // ============================================================================================

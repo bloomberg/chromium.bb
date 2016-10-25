@@ -52,6 +52,11 @@ public class ContextualSearchBarControl
     private final ContextualSearchQuickActionControl mQuickActionControl;
 
     /**
+     * The {@link ContextualSearchImageControl} for the panel.
+     */
+    private ContextualSearchImageControl mImageControl;
+
+    /**
      * The opacity of the Bar's Search Context.
      */
     private float mSearchBarContextOpacity = 1.f;
@@ -78,6 +83,7 @@ public class ContextualSearchBarControl
                                       ViewGroup container,
                                       DynamicResourceLoader loader) {
         mOverlayPanel = panel;
+        mImageControl = new ContextualSearchImageControl(panel, context);
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
         mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader);
@@ -87,6 +93,13 @@ public class ContextualSearchBarControl
                 R.dimen.contextual_search_text_layer_min_height);
         mTermCaptionSpacing = context.getResources().getDimension(
                 R.dimen.contextual_search_term_caption_spacing);
+    }
+
+    /**
+     * @return The {@link ContextualSearchImageControl} for the panel.
+     */
+    public ContextualSearchImageControl getImageControl() {
+        return mImageControl;
     }
 
     /**
@@ -209,6 +222,7 @@ public class ContextualSearchBarControl
             // TODO(twellington): should the quick action caption be stored separately from the
             // regular caption?
             mCaptionControl.setCaption(mQuickActionControl.getCaption());
+            mImageControl.setStaticIconResourceId(mQuickActionControl.getIconResId());
         }
     }
 

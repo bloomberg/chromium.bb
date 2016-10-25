@@ -2693,7 +2693,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             }
         });
 
-        imageControl.hideThumbnail(false);
+        imageControl.hideStaticIcon(false);
 
         assertTrue(iconSpriteControl.isVisible());
         assertFalse(imageControl.getThumbnailVisible());

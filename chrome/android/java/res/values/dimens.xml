@@ -101,7 +101,7 @@
     <dimen name="contextual_search_peek_promo_height">48dp</dimen>
     <dimen name="contextual_search_peek_promo_padding">12dp</dimen>
     <dimen name="contextual_search_caption_text_size">14sp</dimen>
-    <dimen name="contextual_search_thumbnail_size">36dp</dimen>
+    <dimen name="contextual_search_static_image_size">36dp</dimen>
     <!-- The following two dimensions were taking from the UI specs for contextual search, where
     they were 36dp and 3dp respectively, but have been updated to allow for padding around
     TextViews that we cannot get rid of. -->

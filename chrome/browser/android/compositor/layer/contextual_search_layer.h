@@ -38,8 +38,9 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      int search_term_resource_id,
                      int search_caption_resource_id,
                      int search_bar_shadow_resource_id,
-                     int panel_icon_resource_id,
+                     int sprite_resource_id,
                      int search_provider_icon_sprite_metadata_resource_id,
+                     int static_icon_resource_id,
                      int arrow_up_resource_id,
                      int close_icon_resource_id,
                      int progress_bar_background_resource_id,
@@ -76,9 +77,10 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float search_bar_shadow_opacity,
                      bool search_provider_icon_sprite_visible,
                      float search_provider_icon_sprite_completion_percentage,
+                     bool static_icon_visible,
                      bool thumbnail_visible,
-                     float thumbnail_visibility_percentage,
-                     int thumbnail_size,
+                     float static_image_visibility_percentage,
+                     int static_image_size,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
                      float close_icon_opacity,
@@ -100,8 +102,16 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   void SetupIconLayer(bool search_provider_icon_sprite_visible,
                       int search_provider_icon_sprite_metadata_resource_id,
                       float search_provider_icon_sprite_completion_percentage,
+                      bool static_icon_visible,
+                      int static_icon_resource_id,
                       bool thumbnail_visible,
-                      float thumbnail_visibility_percentage);
+                      float static_image_visibility_percentage);
+
+  void SetStaticImageProperties(
+      scoped_refptr<cc::UIResourceLayer> static_image_layer,
+      float top_margin,
+      float side_margin,
+      float visibility_percentage);
 
   // Sets up |text_layer_|, which contains |bar_text_|, |search_context_| and
   // |search_caption_|.
@@ -116,7 +126,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
       float search_context_opacity,
       float search_term_caption_spacing);
 
-  int thumbnail_size_;
+  int static_image_size_;
   float thumbnail_side_margin_;
   float thumbnail_top_margin_;
 
@@ -124,6 +134,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::Layer> icon_layer_;
   scoped_refptr<CrushedSpriteLayer> search_provider_icon_sprite_;
   scoped_refptr<cc::UIResourceLayer> thumbnail_layer_;
+  scoped_refptr<cc::UIResourceLayer> static_icon_layer_;
   scoped_refptr<cc::UIResourceLayer> arrow_icon_;
   scoped_refptr<cc::UIResourceLayer> search_promo_;
   scoped_refptr<cc::SolidColorLayer> search_promo_container_;

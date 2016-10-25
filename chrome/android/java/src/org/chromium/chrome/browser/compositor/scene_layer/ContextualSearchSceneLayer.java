@@ -77,10 +77,14 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float searchPeekPromoRippleOpacity = peekPromoControl.getRippleOpacity();
         float searchPeekPromoTextOpacity = peekPromoControl.getTextOpacity();
 
+        float staticImageVisibilityPercentage = imageControl.getStaticImageVisibilityPercentage();
+        int staticImageSize = imageControl.getStaticImageSize();
+
+        boolean staticIconVisible = imageControl.getStaticIconVisible();
+        int staticIconResId = imageControl.getStaticIconResourceId();
+
         boolean thumbnailVisible = imageControl.getThumbnailVisible();
         String thumbnailUrl = imageControl.getThumbnailUrl();
-        float thumbnailVisibilityPercentage = imageControl.getThumbnailVisibilityPercentage();
-        int thumbnailSize = imageControl.getThumbnailSize();
 
         ContextualSearchIconSpriteControl spriteControl = imageControl.getIconSpriteControl();
         boolean searchProviderIconSpriteVisible = spriteControl.isVisible();
@@ -128,6 +132,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 R.drawable.contextual_search_bar_shadow,
                 R.drawable.google_icon_sprite,
                 R.raw.google_icon_sprite,
+                staticIconResId,
                 R.drawable.breadcrumb_arrow,
                 ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
                 R.drawable.progress_bar_background,
@@ -166,10 +171,11 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 searchBarShadowOpacity,
                 searchProviderIconSpriteVisible,
                 searchProviderIconCompletionPercentage,
+                staticIconVisible,
                 thumbnailVisible,
-                thumbnailVisibilityPercentage,
-                thumbnailSize,
                 thumbnailUrl,
+                staticImageVisibilityPercentage,
+                staticImageSize,
                 arrowIconOpacity,
                 arrowIconRotation,
                 closeIconOpacity,
@@ -232,8 +238,9 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             int searchTermResourceId,
             int searchCaptionResourceId,
             int searchBarShadowResourceId,
-            int panelIconResourceId,
+            int spriteResourceId,
             int searchProviderIconSpriteMetadataResourceId,
+            int staticIconResourceId,
             int arrowUpResourceId,
             int closeIconResourceId,
             int progressBarBackgroundResourceId,
@@ -272,10 +279,11 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             float searchBarShadowOpacity,
             boolean searchProviderIconSpriteVisible,
             float searchProviderIconCompletionPercentage,
+            boolean staticIconVisible,
             boolean thumbnailVisible,
-            float thumbnailVisibilityPercentage,
-            int thumbnailSize,
             String thumbnailUrl,
+            float staticImageVisibilityPercentage,
+            int staticImageSize,
             float arrowIconOpacity,
             float arrowIconRotation,
             float closeIconOpacity,
