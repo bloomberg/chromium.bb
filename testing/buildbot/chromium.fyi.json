@@ -11436,6 +11436,57 @@
           ]
         },
         "test": "content_unittests"
+      },
+      {
+        "args": [
+          "--test-arguments=--site-per-process"
+        ],
+        "name": "site_per_process_blimp_unittests",
+        "override_isolate_target": "blimp_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "blimp_unittests"
+      },
+      {
+        "args": [
+          "--test-arguments=--site-per-process"
+        ],
+        "name": "site_per_process_components_browsertests",
+        "override_isolate_target": "components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--test-arguments=--site-per-process"
+        ],
+        "name": "site_per_process_components_unittests",
+        "override_isolate_target": "components_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "components_unittests"
       }
     ]
   },
