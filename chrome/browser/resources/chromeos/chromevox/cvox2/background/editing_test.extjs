@@ -21,11 +21,6 @@ function EditingTest() {
 EditingTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
-  /** @override */
-  setUp: function() {
-    ChromeVoxState.instance.toggleNext(true);
-  },
-
   /**
    * @return {!MockFeedback}
    */

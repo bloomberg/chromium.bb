@@ -352,7 +352,7 @@ Background.prototype = {
     if (opt_setValue !== undefined)
       useNext = opt_setValue;
     else
-      useNext = localStorage['useNext'] != 'true';
+      useNext = localStorage['useNext'] !== 'true';
 
     localStorage['useNext'] = useNext;
     if (useNext)

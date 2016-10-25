@@ -8,7 +8,7 @@ namespace chromeos {
 
 namespace {
 const char kChromeVoxEnabledMessage[] = "chrome vox spoken feedback is ready";
-}  // anonymous namespace
+}  // namespace
 
 SpeechMonitor::SpeechMonitor() {
   TtsController::GetInstance()->SetPlatformImpl(this);
@@ -30,6 +30,10 @@ std::string SpeechMonitor::GetNextUtterance() {
 }
 
 bool SpeechMonitor::SkipChromeVoxEnabledMessage() {
+  return SkipChromeVoxMessage(kChromeVoxEnabledMessage);
+}
+
+bool SpeechMonitor::SkipChromeVoxMessage(const std::string& message) {
   while (true) {
     if (utterance_queue_.empty()) {
       loop_runner_ = new content::MessageLoopRunner();
@@ -38,7 +42,7 @@ bool SpeechMonitor::SkipChromeVoxEnabledMessage() {
     }
     std::string result = utterance_queue_.front();
     utterance_queue_.pop_front();
-    if (result == kChromeVoxEnabledMessage)
+    if (result == message)
       return true;
   }
   return false;

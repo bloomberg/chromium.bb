@@ -994,6 +994,8 @@ Output.prototype = {
       return;
     var uniqueAncestors = AutomationUtil.getUniqueAncestors(prevParent, parent);
     for (var i = 0; parent = uniqueAncestors[i]; i++) {
+      if (parent.role == RoleType.window)
+        break;
       if (Output.ROLE_INFO_[parent.role] &&
           Output.ROLE_INFO_[parent.role].outputContextFirst) {
         this.outputContextFirst_ = true;

@@ -28,6 +28,7 @@ class SpeechMonitor : public TtsPlatformImpl {
   // Wait for next utterance and return true if next utterance is ChromeVox
   // enabled message.
   bool SkipChromeVoxEnabledMessage();
+  bool SkipChromeVoxMessage(const std::string& message);
 
   // TtsPlatformImpl implementation.
   bool PlatformImplAvailable() override;

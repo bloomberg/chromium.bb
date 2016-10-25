@@ -693,6 +693,11 @@ Panel.onCloseTutorial = function() {
 
 window.addEventListener('load', function() {
   Panel.init();
+
+  switch (location.search.slice(1)) {
+    case 'tutorial':
+      Panel.onTutorial();
+  }
 }, false);
 
 window.addEventListener('hashchange', function() {

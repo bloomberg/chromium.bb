@@ -325,13 +325,14 @@ TEST_F('CursorsTest', 'IsInWebRange', function() {
 
 TEST_F('CursorsTest', 'DISABLED_SingleDocSelection', function() {
   this.runWithLoadedTree(function() {/*!
+    <span>start</span>
     <p><a href="google.com">google home page</a></p>
     <p>some more text</p>
     <p>end of text</p>
   */},
   function(root) {
-    var link = root.firstChild.firstChild;
-    var p1 = root.firstChild.nextSibling;
+    var link = root.find({role: RoleType.link});
+    var p1 = root.find({role: RoleType.paragraph});
     var p2 = p1.nextSibling;
 
     var singleSel = new cursors.Range(
@@ -350,7 +351,7 @@ TEST_F('CursorsTest', 'DISABLED_SingleDocSelection', function() {
         assertEquals(1, root.focusOffset);
         this.listenOnce(root, 'textSelectionChanged', verifySel);
         multiSel.select();
-      } else {
+      } else if (root.anchorObject == p1.firstChild) {
         assertEquals(p1.firstChild, root.anchorObject);
         assertEquals(2, root.anchorOffset);
         assertEquals(p2.firstChild, root.focusObject);
@@ -394,9 +395,14 @@ TEST_F('CursorsTest', 'MultiLineOffsetSelection', function() {
 
 TEST_F('CursorsTest', 'InlineElementOffset', function() {
   this.runWithLoadedTree(function() {/*!
+    <span>start</span>
     <p>This<br> is a<a href="#g">test</a>of selection</p>
   */}, function(root) {
     root.addEventListener('textSelectionChanged', this.newCallback(function(evt) {
+      // Test setup moves initial focus; ensure we don't test that here.
+      if (testNode != root.anchorObject)
+        return;
+
       // This is a little unexpected though not really incorrect; Ctrl+C works.
       assertEquals(testNode, root.anchorObject);
       assertEquals(ofSelectionNode, root.focusObject);
