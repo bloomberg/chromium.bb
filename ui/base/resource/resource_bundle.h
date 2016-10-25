@@ -355,7 +355,7 @@ class UI_BASE_EXPORT ResourceBundle {
   // Fills the |bitmap| given the |resource_id| and |scale_factor|.
   // Returns false if the resource does not exist. This may fall back to
   // the data pack with SCALE_FACTOR_NONE, and when this happens,
-  // |scale_factor| will be set to SCALE_FACTOR_100P.
+  // |scale_factor| will be set to SCALE_FACTOR_NONE.
   bool LoadBitmap(int resource_id,
                   ScaleFactor* scale_factor,
                   SkBitmap* bitmap,
