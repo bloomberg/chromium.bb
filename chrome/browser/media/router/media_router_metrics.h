@@ -54,6 +54,13 @@ enum class MediaRouterUserAction {
 
 class MediaRouterMetrics {
  public:
+  // UMA histogram names.
+  static const char kHistogramIconClickLocation[];
+  static const char kHistogramUiDialogPaint[];
+  static const char kHistogramUiDialogLoadedWithData[];
+  static const char kHistogramUiFirstAction[];
+  static const char kHistogramRouteCreationOutcome[];
+
   // Records where the user clicked to open the Media Router dialog.
   static void RecordMediaRouterDialogOrigin(
       MediaRouterDialogOpenOrigin origin);

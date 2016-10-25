@@ -4287,6 +4287,7 @@ test("unit_tests") {
       "../browser/media/router/media_router_base_unittest.cc",
       "../browser/media/router/media_router_dialog_controller_unittest.cc",
       "../browser/media/router/media_router_factory_unittest.cc",
+      "../browser/media/router/media_router_metrics_unittest.cc",
       "../browser/media/router/media_sink_unittest.cc",
       "../browser/media/router/media_sinks_observer_unittest.cc",
       "../browser/media/router/media_source_helper_unittest.cc",

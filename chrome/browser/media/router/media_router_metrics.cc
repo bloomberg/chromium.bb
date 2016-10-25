@@ -10,27 +10,37 @@
 namespace media_router {
 
 // static
+const char MediaRouterMetrics::kHistogramIconClickLocation[] =
+    "MediaRouter.Icon.Click.Location";
+const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
+    "MediaRouter.Ui.Dialog.Paint";
+const char MediaRouterMetrics::kHistogramUiDialogLoadedWithData[] =
+    "MediaRouter.Ui.Dialog.LoadedWithData";
+const char MediaRouterMetrics::kHistogramUiFirstAction[] =
+    "MediaRouter.Ui.FirstAction";
+const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
+    "MediaRouter.Route.CreationOutcome";
+
+// static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
     MediaRouterDialogOpenOrigin origin) {
   DCHECK_LT(static_cast<int>(origin),
             static_cast<int>(MediaRouterDialogOpenOrigin::TOTAL_COUNT));
   UMA_HISTOGRAM_ENUMERATION(
-      "MediaRouter.Icon.Click.Location", static_cast<int>(origin),
+      kHistogramIconClickLocation, static_cast<int>(origin),
       static_cast<int>(MediaRouterDialogOpenOrigin::TOTAL_COUNT));
 }
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogPaint(
     const base::TimeDelta delta) {
-  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Dialog.Paint",
-                      delta);
+  UMA_HISTOGRAM_TIMES(kHistogramUiDialogPaint, delta);
 }
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogLoaded(
     const base::TimeDelta delta) {
-  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Dialog.LoadedWithData",
-                      delta);
+  UMA_HISTOGRAM_TIMES(kHistogramUiDialogLoadedWithData, delta);
 }
 
 // static
@@ -39,7 +49,7 @@ void MediaRouterMetrics::RecordMediaRouterInitialUserAction(
   DCHECK_LT(static_cast<int>(action),
             static_cast<int>(MediaRouterUserAction::TOTAL_COUNT));
   UMA_HISTOGRAM_ENUMERATION(
-      "MediaRouter.Ui.FirstAction", static_cast<int>(action),
+      kHistogramUiFirstAction, static_cast<int>(action),
       static_cast<int>(MediaRouterUserAction::TOTAL_COUNT));
 }
 
@@ -49,8 +59,8 @@ void MediaRouterMetrics::RecordRouteCreationOutcome(
   DCHECK_LT(static_cast<int>(outcome),
             static_cast<int>(MediaRouterRouteCreationOutcome::TOTAL_COUNT));
   UMA_HISTOGRAM_ENUMERATION(
-    "MediaRouter.Route.CreationOutcome", static_cast<int>(outcome),
-    static_cast<int>(MediaRouterRouteCreationOutcome::TOTAL_COUNT));
+      kHistogramRouteCreationOutcome, static_cast<int>(outcome),
+      static_cast<int>(MediaRouterRouteCreationOutcome::TOTAL_COUNT));
 }
 
 }  // namespace media_router
