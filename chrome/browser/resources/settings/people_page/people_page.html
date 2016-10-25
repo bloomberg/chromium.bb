@@ -314,7 +314,8 @@
 </if>
     </settings-animated-pages>
 
-    <dialog is="cr-dialog" id="disconnectDialog" on-close="onDisconnectClosed_">
+    <dialog is="cr-dialog" id="disconnectDialog" on-close="onDisconnectClosed_"
+        ignore-popstate>
       <div class="title">$i18n{syncDisconnectTitle}</div>
       <div class="body">
         <div inner-h-t-m-l="[[getDisconnectExplanationHtml_(syncStatus.domain)]]">

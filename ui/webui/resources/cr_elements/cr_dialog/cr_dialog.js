@@ -15,12 +15,23 @@ Polymer({
   is: 'cr-dialog',
   extends: 'dialog',
 
+  properties: {
+    /**
+     * True if the dialog should remain open on 'popstate' events. This is used
+     * for navigable dialogs that have their separate navigation handling code.
+     */
+    ignorePopstate: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
   /** @override */
-  created: function() {
+  ready: function() {
     // If the active history entry changes (i.e. user clicks back button),
     // all open dialogs should be cancelled.
     window.addEventListener('popstate', function() {
-      if (this.open)
+      if (!this.ignorePopstate && this.open)
         this.cancel();
     }.bind(this));
   },
