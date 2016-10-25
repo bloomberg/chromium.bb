@@ -177,22 +177,24 @@ gboolean mock_secret_password_clear_sync(const SecretSchema* schema,
       global_mock_libsecret_items->size() != kept_mock_libsecret_items.size();
 }
 
-MockSecretValue* mock_secret_item_get_secret(MockSecretItem* self) {
-  return self->value;
+SecretValue* mock_secret_item_get_secret(SecretItem* self) {
+  MockSecretValue* mock_value = reinterpret_cast<MockSecretItem*>(self)->value;
+  return reinterpret_cast<SecretValue*>(mock_value);
 }
 
-const gchar* mock_secret_value_get_text(MockSecretValue* value) {
-  return value->password;
+const gchar* mock_secret_value_get_text(SecretValue* value) {
+  return reinterpret_cast<MockSecretValue*>(value)->password;
 }
 
-GHashTable* mock_secret_item_get_attributes(MockSecretItem* self) {
+GHashTable* mock_secret_item_get_attributes(SecretItem* self) {
   // Libsecret backend will make unreference of received attributes, so in
   // order to save them we need to increase their reference number.
-  g_hash_table_ref(self->attributes);
-  return self->attributes;
+  MockSecretItem* mock_ptr = reinterpret_cast<MockSecretItem*>(self);
+  g_hash_table_ref(mock_ptr->attributes);
+  return mock_ptr->attributes;
 }
 
-gboolean mock_secret_item_load_secret_sync(MockSecretItem* self,
+gboolean mock_secret_item_load_secret_sync(SecretItem* self,
                                            GCancellable* cancellable,
                                            GError** error) {
   return true;
@@ -208,16 +210,11 @@ class MockLibsecretLoader : public LibsecretLoader {
     secret_password_store_sync = &mock_secret_password_store_sync;
     secret_service_search_sync = &mock_secret_service_search_sync;
     secret_password_clear_sync = &mock_secret_password_clear_sync;
-    secret_item_get_secret =
-        (decltype(&::secret_item_get_secret)) & mock_secret_item_get_secret;
-    secret_value_get_text =
-        (decltype(&::secret_value_get_text)) & mock_secret_value_get_text;
-    secret_item_get_attributes = (decltype(&::secret_item_get_attributes)) &
-                                 mock_secret_item_get_attributes;
-    secret_item_load_secret_sync = (decltype(&::secret_item_load_secret_sync)) &
-                                   mock_secret_item_load_secret_sync;
-    secret_value_unref =
-        (decltype(&::secret_value_unref)) & mock_secret_value_unref;
+    secret_item_get_secret = &mock_secret_item_get_secret;
+    secret_value_get_text = &mock_secret_value_get_text;
+    secret_item_get_attributes = &mock_secret_item_get_attributes;
+    secret_item_load_secret_sync = &mock_secret_item_load_secret_sync;
+    secret_value_unref = &mock_secret_value_unref;
     libsecret_loaded_ = true;
     // Reset the state of the mock library.
     global_mock_libsecret_items->clear();

@@ -12,9 +12,9 @@
 
 namespace {
 
-// Mock functions use MockSecretValue, where SecretValue would appear, and are
-// cast to the correct signature. We can reduce SecretValue to an std::string,
-// because we don't use anything else from it.
+// Mock functions expect MockSecretValue, where SecretValue appears, and cast it
+// to the mock type. We can reduce SecretValue to an std::string, because we
+// don't use anything else from it.
 using MockSecretValue = std::string;
 // Likewise, we only need a SecretValue from SecretItem.
 using MockSecretItem = MockSecretValue;
@@ -53,7 +53,7 @@ class MockLibsecretLoader : public LibsecretLoader {
 
  private:
   // These methods are used to redirect calls through LibsecretLoader
-  static const gchar* mock_secret_value_get_text(MockSecretValue* value);
+  static const gchar* mock_secret_value_get_text(SecretValue* value);
 
   static gboolean mock_secret_password_store_sync(const SecretSchema* schema,
                                                   const gchar* collection,
@@ -77,7 +77,7 @@ class MockLibsecretLoader : public LibsecretLoader {
                                                   GError** error,
                                                   ...);
 
-  static MockSecretValue* mock_secret_item_get_secret(MockSecretItem* item);
+  static SecretValue* mock_secret_item_get_secret(SecretItem* item);
 
   // MockLibsecretLoader owns these objects.
   static MockSecretValue* stored_password_mock_ptr_;
@@ -88,8 +88,9 @@ MockSecretValue* MockLibsecretLoader::stored_password_mock_ptr_ = nullptr;
 MockSecretValue* MockLibsecretLoader::deprecated_password_mock_ptr_ = nullptr;
 
 const gchar* MockLibsecretLoader::mock_secret_value_get_text(
-    MockSecretValue* value) {
-  return value->c_str();
+    SecretValue* value) {
+  MockSecretValue* mock_value = reinterpret_cast<MockSecretValue*>(value);
+  return mock_value->c_str();
 }
 
 // static
@@ -151,9 +152,12 @@ gboolean MockLibsecretLoader::mock_secret_password_clear_sync(
 }
 
 // static
-MockSecretValue* MockLibsecretLoader::mock_secret_item_get_secret(
-    MockSecretItem* item) {
-  return item;
+SecretValue* MockLibsecretLoader::mock_secret_item_get_secret(
+    SecretItem* item) {
+  static_assert(std::is_same<MockSecretValue, MockSecretItem>::value,
+                "mock_secret_item_get_secret() assumes that the only thing we "
+                "need from MockSercetItem is the MockSecretValue");
+  return reinterpret_cast<SecretValue*>(item);
 }
 
 // static
@@ -161,13 +165,11 @@ bool MockLibsecretLoader::ResetForOSCrypt() {
   // Methods used by KeyStorageLibsecret
   secret_password_store_sync =
       &MockLibsecretLoader::mock_secret_password_store_sync;
-  secret_value_get_text = (decltype(&::secret_value_get_text)) &
-                          MockLibsecretLoader::mock_secret_value_get_text;
+  secret_value_get_text = &MockLibsecretLoader::mock_secret_value_get_text;
   secret_value_unref = &MockLibsecretLoader::mock_secret_value_unref;
   secret_service_search_sync =
       &MockLibsecretLoader::mock_secret_service_search_sync;
-  secret_item_get_secret =
-      (decltype(&::secret_item_get_secret))mock_secret_item_get_secret;
+  secret_item_get_secret = &MockLibsecretLoader::mock_secret_item_get_secret;
   // Used by Migrate()
   secret_password_clear_sync =
       &MockLibsecretLoader::mock_secret_password_clear_sync;

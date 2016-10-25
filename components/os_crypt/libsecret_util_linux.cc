@@ -14,18 +14,24 @@
 //
 
 decltype(
-    &::secret_password_store_sync) LibsecretLoader::secret_password_store_sync;
+    &::secret_password_store_sync) LibsecretLoader::secret_password_store_sync =
+    nullptr;
 decltype(
-    &::secret_service_search_sync) LibsecretLoader::secret_service_search_sync;
+    &::secret_service_search_sync) LibsecretLoader::secret_service_search_sync =
+    nullptr;
 decltype(
-    &::secret_password_clear_sync) LibsecretLoader::secret_password_clear_sync;
-decltype(&::secret_item_get_secret) LibsecretLoader::secret_item_get_secret;
-decltype(&::secret_value_get_text) LibsecretLoader::secret_value_get_text;
+    &::secret_password_clear_sync) LibsecretLoader::secret_password_clear_sync =
+    nullptr;
+decltype(&::secret_item_get_secret) LibsecretLoader::secret_item_get_secret =
+    nullptr;
+decltype(&::secret_value_get_text) LibsecretLoader::secret_value_get_text =
+    nullptr;
 decltype(
-    &::secret_item_get_attributes) LibsecretLoader::secret_item_get_attributes;
+    &::secret_item_get_attributes) LibsecretLoader::secret_item_get_attributes =
+    nullptr;
 decltype(&::secret_item_load_secret_sync)
-    LibsecretLoader::secret_item_load_secret_sync;
-decltype(&::secret_value_unref) LibsecretLoader::secret_value_unref;
+    LibsecretLoader::secret_item_load_secret_sync = nullptr;
+decltype(&::secret_value_unref) LibsecretLoader::secret_value_unref = nullptr;
 
 bool LibsecretLoader::libsecret_loaded_ = false;
 
