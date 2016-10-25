@@ -29,12 +29,21 @@ $delay = $_GET['delay'];
 if ($delay)
     usleep(1000 * $delay);
 $value = $_GET['value'];
+$result_var = "result";
+if (!empty($_GET["resultvar"])) {
+  $result_var = $_GET["resultvar"];
+}
+$cookie = $_GET['cookie'];
 if ($_SERVER['HTTP_ORIGIN'] && $_GET['value_cors']) {
     $value = $_GET['value_cors'];
 }
-if ($value)
-    echo "result = \"" . $value . "\";";
-else if (strtolower($_GET["fail"]) == "true")
+if ($value || $cookie) {
+    if ($cookie) {
+      $value = $_COOKIE[$cookie];
+    }
+
+    echo $result_var . " = \"" . $value . "\";";
+} else if (strtolower($_GET["fail"]) == "true")
     echo "throw({toString: function(){ return 'SomeError' }});";
 else
     echo "alert('script ran.');";

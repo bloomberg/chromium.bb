@@ -140,6 +140,9 @@ Suborigin::SuboriginPolicyOptions getSuboriginPolicyOptionFromString(
   if (policyOptionName == "'unsafe-cookies'")
     return Suborigin::SuboriginPolicyOptions::UnsafeCookies;
 
+  if (policyOptionName == "'unsafe-credentials'")
+    return Suborigin::SuboriginPolicyOptions::UnsafeCredentials;
+
   return Suborigin::SuboriginPolicyOptions::None;
 }
 

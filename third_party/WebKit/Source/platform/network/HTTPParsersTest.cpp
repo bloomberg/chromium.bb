@@ -345,10 +345,13 @@ TEST(HTTPParsersTest, SuboriginParseValidPolicy) {
       Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive};
   const Suborigin::SuboriginPolicyOptions unsafeCookies[] = {
       Suborigin::SuboriginPolicyOptions::UnsafeCookies};
-  const Suborigin::SuboriginPolicyOptions unsafeAllOptions[] = {
+  const Suborigin::SuboriginPolicyOptions unsafeCredentials[] = {
+      Suborigin::SuboriginPolicyOptions::UnsafeCredentials};
+  const Suborigin::SuboriginPolicyOptions allOptions[] = {
       Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend,
       Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive,
-      Suborigin::SuboriginPolicyOptions::UnsafeCookies};
+      Suborigin::SuboriginPolicyOptions::UnsafeCookies,
+      Suborigin::SuboriginPolicyOptions::UnsafeCredentials};
 
   // All simple, valid policies
   expectParsePolicyPass(
@@ -360,6 +363,9 @@ TEST(HTTPParsersTest, SuboriginParseValidPolicy) {
                         ARRAY_SIZE(unsafePostmessageReceive));
   expectParsePolicyPass("One policy, unsafe-cookies", "foobar 'unsafe-cookies'",
                         unsafeCookies, ARRAY_SIZE(unsafeCookies));
+  expectParsePolicyPass("One policy, unsafe-credentials",
+                        "foobar 'unsafe-credentials'", unsafeCredentials,
+                        ARRAY_SIZE(unsafeCredentials));
 
   // Formatting differences of policies and multiple policies
   expectParsePolicyPass("One policy, whitespace all around",
@@ -377,8 +383,9 @@ TEST(HTTPParsersTest, SuboriginParseValidPolicy) {
       ARRAY_SIZE(unsafePostmessageSendAndReceive));
   expectParsePolicyPass("Many different policies",
                         "foobar 'unsafe-postmessage-send' "
-                        "'unsafe-postmessage-receive' 'unsafe-cookies'",
-                        unsafeAllOptions, ARRAY_SIZE(unsafeAllOptions));
+                        "'unsafe-postmessage-receive' 'unsafe-cookies' "
+                        "'unsafe-credentials'",
+                        allOptions, ARRAY_SIZE(allOptions));
   expectParsePolicyPass("One policy, unknown option", "foobar 'unknown-option'",
                         {}, 0);
 }

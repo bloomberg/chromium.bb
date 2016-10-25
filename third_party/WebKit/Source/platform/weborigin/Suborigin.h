@@ -17,7 +17,8 @@ class PLATFORM_EXPORT Suborigin {
     None = 0,
     UnsafePostMessageSend = 1 << 0,
     UnsafePostMessageReceive = 1 << 1,
-    UnsafeCookies = 1 << 2
+    UnsafeCookies = 1 << 2,
+    UnsafeCredentials = 1 << 3
   };
 
   Suborigin();

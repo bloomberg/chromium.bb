@@ -28,6 +28,8 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/Suborigin.h"
 
 namespace blink {
 
@@ -81,7 +83,18 @@ void FetchRequest::setCrossOriginAccessControl(
     SecurityOrigin* origin,
     CrossOriginAttributeValue crossOrigin) {
   DCHECK_NE(crossOrigin, CrossOriginAttributeNotSet);
-  const bool useCredentials = crossOrigin == CrossOriginAttributeUseCredentials;
+  // Per https://w3c.github.io/webappsec-suborigins/#security-model-opt-outs,
+  // credentials are forced when credentials mode is "same-origin", the
+  // 'unsafe-credentials' option is set, and the request's physical origin is
+  // the same as the URL's.
+  const bool suboriginPolicyForcesCredentials =
+      origin->hasSuborigin() &&
+      origin->suborigin()->policyContains(
+          Suborigin::SuboriginPolicyOptions::UnsafeCredentials) &&
+      SecurityOrigin::create(url())->isSameSchemeHostPort(origin);
+  const bool useCredentials =
+      crossOrigin == CrossOriginAttributeUseCredentials ||
+      suboriginPolicyForcesCredentials;
   const bool isSameOriginRequest =
       origin && origin->canRequestNoSuborigin(m_resourceRequest.url());
 
