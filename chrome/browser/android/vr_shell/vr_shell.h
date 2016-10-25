@@ -114,23 +114,13 @@ class VrShell : public device::GvrDelegate {
  private:
   virtual ~VrShell();
   void LoadUIContent();
-  bool IsUiTextureReady();
-  // Converts a pixel rectangle to (0..1) float texture coordinates.
-  // Callers need to ensure that the texture width/height is
-  // initialized by checking IsUiTextureReady() first.
-  Rectf MakeUiGlCopyRect(Recti pixel_rect);
-  void DrawVrShell(const gvr::Mat4f& head_pose);
-  void DrawEye(gvr::Eye eye,
-               const gvr::Mat4f& head_pose,
-               const gvr::BufferViewport& params);
-  void DrawUI(const gvr::Mat4f& world_matrix,
-              const gvr::Mat4f& fov_matrix);
+  void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
+  void DrawUiView(const gvr::Mat4f* head_pose,
+                  const std::vector<const ContentRectangle*>& elements);
+  void DrawElements(const gvr::Mat4f& render_matrix,
+                    const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);
   void DrawWebVr();
-  void DrawWebVrOverlay(int64_t present_time_nanos);
-  void DrawWebVrEye(const gvr::Mat4f& view_matrix,
-                    const gvr::BufferViewport& params,
-                    int64_t present_time_nanos);
 
   void UpdateController(const gvr::Vec3f& forward_vector);
 
@@ -179,8 +169,7 @@ class VrShell : public device::GvrDelegate {
   bool dom_contents_loaded_ = false;
 
   bool webvr_mode_ = false;
-  bool webvr_secure_origin_ = false;
-  int64_t webvr_warning_end_nanos_ = 0;
+
   // The pose ring buffer size must be a power of two to avoid glitches when
   // the pose index wraps around. It should be large enough to handle the
   // current backlog of poses which is 2-3 frames.
