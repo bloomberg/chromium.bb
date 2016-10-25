@@ -990,6 +990,8 @@ interface DOMMatrix : DOMMatrixReadOnly
     method multiplySelf
     method preMultiplySelf
     method rotateAxisAngleSelf
+    method rotateFromVectorSelf
+    method rotateSelf
     method scale3dSelf
     method scaleSelf
     method skewXSelf
@@ -1051,7 +1053,9 @@ interface DOMMatrixReadOnly
     method flipY
     method inverse
     method multiply
+    method rotate
     method rotateAxisAngle
+    method rotateFromVector
     method scale
     method scale3d
     method skewX

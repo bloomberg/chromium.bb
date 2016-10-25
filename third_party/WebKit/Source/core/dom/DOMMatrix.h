@@ -92,6 +92,10 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                          double ox = 0,
                          double oy = 0,
                          double oz = 0);
+  DOMMatrix* rotateSelf(double rotX);
+  DOMMatrix* rotateSelf(double rotX, double rotY);
+  DOMMatrix* rotateSelf(double rotX, double rotY, double rotZ);
+  DOMMatrix* rotateFromVectorSelf(double x, double y);
   DOMMatrix* rotateAxisAngleSelf(double x = 0,
                                  double y = 0,
                                  double z = 0,

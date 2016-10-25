@@ -183,6 +183,36 @@ DOMMatrix* DOMMatrix::scale3dSelf(double scale,
   return scaleSelf(scale, scale, scale, ox, oy, oz);
 }
 
+DOMMatrix* DOMMatrix::rotateSelf(double rotX) {
+  return rotateSelf(0, 0, rotX);
+}
+
+DOMMatrix* DOMMatrix::rotateSelf(double rotX, double rotY) {
+  return rotateSelf(rotX, rotY, 0);
+}
+
+DOMMatrix* DOMMatrix::rotateSelf(double rotX, double rotY, double rotZ) {
+  if (rotZ)
+    m_matrix->rotate3d(0, 0, 1, rotZ);
+
+  if (rotY) {
+    m_matrix->rotate3d(0, 1, 0, rotY);
+    m_is2D = false;
+  }
+
+  if (rotX) {
+    m_matrix->rotate3d(1, 0, 0, rotX);
+    m_is2D = false;
+  }
+
+  return this;
+}
+
+DOMMatrix* DOMMatrix::rotateFromVectorSelf(double x, double y) {
+  m_matrix->rotate(rad2deg(atan2(y, x)));
+  return this;
+}
+
 DOMMatrix* DOMMatrix::rotateAxisAngleSelf(double x,
                                           double y,
                                           double z,

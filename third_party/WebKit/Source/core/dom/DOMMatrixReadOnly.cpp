@@ -173,6 +173,22 @@ DOMMatrix* DOMMatrixReadOnly::scale3d(double scale,
   return DOMMatrix::create(this)->scale3dSelf(scale, ox, oy, oz);
 }
 
+DOMMatrix* DOMMatrixReadOnly::rotate(double rotX) {
+  return DOMMatrix::create(this)->rotateSelf(rotX);
+}
+
+DOMMatrix* DOMMatrixReadOnly::rotate(double rotX, double rotY) {
+  return DOMMatrix::create(this)->rotateSelf(rotX, rotY);
+}
+
+DOMMatrix* DOMMatrixReadOnly::rotate(double rotX, double rotY, double rotZ) {
+  return DOMMatrix::create(this)->rotateSelf(rotX, rotY, rotZ);
+}
+
+DOMMatrix* DOMMatrixReadOnly::rotateFromVector(double x, double y) {
+  return DOMMatrix::create(this)->rotateFromVectorSelf(x, y);
+}
+
 DOMMatrix* DOMMatrixReadOnly::rotateAxisAngle(double x,
                                               double y,
                                               double z,

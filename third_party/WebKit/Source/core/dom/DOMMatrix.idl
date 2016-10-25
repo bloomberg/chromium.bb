@@ -63,6 +63,11 @@
                           optional unrestricted double originX = 0,
                           optional unrestricted double originY = 0,
                           optional unrestricted double originZ = 0);
+    DOMMatrix rotateSelf(optional unrestricted double rotX = 0,
+                          optional unrestricted double rotY,
+                          optional unrestricted double rotZ);
+    DOMMatrix rotateFromVectorSelf(optional unrestricted double x = 0,
+                                  optional unrestricted double y = 0);
     DOMMatrix rotateAxisAngleSelf(optional unrestricted double x = 0,
                                   optional unrestricted double y = 0,
                                   optional unrestricted double z = 0,
