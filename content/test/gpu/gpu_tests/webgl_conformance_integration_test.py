@@ -252,7 +252,11 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         '--disable-gpu-process-crash-limit',
         '--js-flags=--expose-gc',
         '--test-type=gpu',
-        '--enable-experimental-canvas-features'
+        '--enable-experimental-canvas-features',
+        # Try disabling the GPU watchdog to see if this affects the
+        # intermittent GPU process hangs that have been seen on the
+        # waterfall. crbug.com/596622 crbug.com/609252
+        '--disable-gpu-watchdog'
     ])
     if cls._webgl_version == 2:
       browser_options.AppendExtraBrowserArgs([
