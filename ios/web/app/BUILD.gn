@@ -12,6 +12,8 @@ source_set("app") {
     "web_main_runner.mm",
   ]
 
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   deps = [
     "//base",
     "//base:i18n",
