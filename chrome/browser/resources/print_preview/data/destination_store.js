@@ -308,28 +308,199 @@ cr.define('print_preview', function() {
    * Delay in milliseconds before the destination store ignores the initial
    * destination ID and just selects any printer (since the initial destination
    * was not found).
-   * @type {number}
+   * @private {number}
    * @const
-   * @private
    */
   DestinationStore.AUTO_SELECT_TIMEOUT_ = 15000;
 
   /**
    * Amount of time spent searching for privet destination, in milliseconds.
-   * @type {number}
+   * @private {number}
    * @const
-   * @private
    */
   DestinationStore.PRIVET_SEARCH_DURATION_ = 5000;
 
   /**
    * Maximum amount of time spent searching for extension destinations, in
    * milliseconds.
-   * @type {number}
+   * @private {number}
    * @const
-   * @private
    */
   DestinationStore.EXTENSION_SEARCH_DURATION_ = 5000;
+
+  /**
+   * Human readable names for media sizes in the cloud print CDD.
+   * https://developers.google.com/cloud-print/docs/cdd
+   * @private {Object<string>}
+   * @const
+   */
+  DestinationStore.MEDIA_DISPLAY_NAMES_ = {
+    'ISO_2A0': '2A0',
+    'ISO_A0': 'A0',
+    'ISO_A0X3': 'A0x3',
+    'ISO_A1': 'A1',
+    'ISO_A10': 'A10',
+    'ISO_A1X3': 'A1x3',
+    'ISO_A1X4': 'A1x4',
+    'ISO_A2': 'A2',
+    'ISO_A2X3': 'A2x3',
+    'ISO_A2X4': 'A2x4',
+    'ISO_A2X5': 'A2x5',
+    'ISO_A3': 'A3',
+    'ISO_A3X3': 'A3x3',
+    'ISO_A3X4': 'A3x4',
+    'ISO_A3X5': 'A3x5',
+    'ISO_A3X6': 'A3x6',
+    'ISO_A3X7': 'A3x7',
+    'ISO_A3_EXTRA': 'A3 Extra',
+    'ISO_A4': 'A4',
+    'ISO_A4X3': 'A4x3',
+    'ISO_A4X4': 'A4x4',
+    'ISO_A4X5': 'A4x5',
+    'ISO_A4X6': 'A4x6',
+    'ISO_A4X7': 'A4x7',
+    'ISO_A4X8': 'A4x8',
+    'ISO_A4X9': 'A4x9',
+    'ISO_A4_EXTRA': 'A4 Extra',
+    'ISO_A4_TAB': 'A4 Tab',
+    'ISO_A5': 'A5',
+    'ISO_A5_EXTRA': 'A5 Extra',
+    'ISO_A6': 'A6',
+    'ISO_A7': 'A7',
+    'ISO_A8': 'A8',
+    'ISO_A9': 'A9',
+    'ISO_B0': 'B0',
+    'ISO_B1': 'B1',
+    'ISO_B10': 'B10',
+    'ISO_B2': 'B2',
+    'ISO_B3': 'B3',
+    'ISO_B4': 'B4',
+    'ISO_B5': 'B5',
+    'ISO_B5_EXTRA': 'B5 Extra',
+    'ISO_B6': 'B6',
+    'ISO_B6C4': 'B6C4',
+    'ISO_B7': 'B7',
+    'ISO_B8': 'B8',
+    'ISO_B9': 'B9',
+    'ISO_C0': 'C0',
+    'ISO_C1': 'C1',
+    'ISO_C10': 'C10',
+    'ISO_C2': 'C2',
+    'ISO_C3': 'C3',
+    'ISO_C4': 'C4',
+    'ISO_C5': 'C5',
+    'ISO_C6': 'C6',
+    'ISO_C6C5': 'C6C5',
+    'ISO_C7': 'C7',
+    'ISO_C7C6': 'C7C6',
+    'ISO_C8': 'C8',
+    'ISO_C9': 'C9',
+    'ISO_DL': 'Envelope DL',
+    'ISO_RA0': 'RA0',
+    'ISO_RA1': 'RA1',
+    'ISO_RA2': 'RA2',
+    'ISO_SRA0': 'SRA0',
+    'ISO_SRA1': 'SRA1',
+    'ISO_SRA2': 'SRA2',
+    'JIS_B0': 'B0 (JIS)',
+    'JIS_B1': 'B1 (JIS)',
+    'JIS_B10': 'B10 (JIS)',
+    'JIS_B2': 'B2 (JIS)',
+    'JIS_B3': 'B3 (JIS)',
+    'JIS_B4': 'B4 (JIS)',
+    'JIS_B5': 'B5 (JIS)',
+    'JIS_B6': 'B6 (JIS)',
+    'JIS_B7': 'B7 (JIS)',
+    'JIS_B8': 'B8 (JIS)',
+    'JIS_B9': 'B9 (JIS)',
+    'JIS_EXEC': 'Executive (JIS)',
+    'JPN_CHOU2': 'Choukei 2',
+    'JPN_CHOU3': 'Choukei 3',
+    'JPN_CHOU4': 'Choukei 4',
+    'JPN_HAGAKI': 'Hagaki',
+    'JPN_KAHU': 'Kahu Envelope',
+    'JPN_KAKU2': 'Kaku 2',
+    'JPN_OUFUKU': 'Oufuku Hagaki',
+    'JPN_YOU4': 'You 4',
+    'NA_10X11': '10x11',
+    'NA_10X13': '10x13',
+    'NA_10X14': '10x14',
+    'NA_10X15': '10x15',
+    'NA_11X12': '11x12',
+    'NA_11X15': '11x15',
+    'NA_12X19': '12x19',
+    'NA_5X7': '5x7',
+    'NA_6X9': '6x9',
+    'NA_7X9': '7x9',
+    'NA_9X11': '9x11',
+    'NA_A2': 'A2',
+    'NA_ARCH_A': 'Arch A',
+    'NA_ARCH_B': 'Arch B',
+    'NA_ARCH_C': 'Arch C',
+    'NA_ARCH_D': 'Arch D',
+    'NA_ARCH_E': 'Arch E',
+    'NA_ASME_F': 'ASME F',
+    'NA_B_PLUS': 'B-plus',
+    'NA_C': 'C',
+    'NA_C5': 'C5',
+    'NA_D': 'D',
+    'NA_E': 'E',
+    'NA_EDP': 'EDP',
+    'NA_EUR_EDP': 'European EDP',
+    'NA_EXECUTIVE': 'Executive',
+    'NA_F': 'F',
+    'NA_FANFOLD_EUR': 'FanFold European',
+    'NA_FANFOLD_US': 'FanFold US',
+    'NA_FOOLSCAP': 'FanFold German Legal',
+    'NA_GOVT_LEGAL': 'Government Legal',
+    'NA_GOVT_LETTER': 'Government Letter',
+    'NA_INDEX_3X5': 'Index 3x5',
+    'NA_INDEX_4X6': 'Index 4x6',
+    'NA_INDEX_4X6_EXT': 'Index 4x6 ext',
+    'NA_INDEX_5X8': '5x8',
+    'NA_INVOICE': 'Invoice',
+    'NA_LEDGER': 'Tabloid',  // Ledger in portrait is called Tabloid.
+    'NA_LEGAL': 'Legal',
+    'NA_LEGAL_EXTRA': 'Legal extra',
+    'NA_LETTER': 'Letter',
+    'NA_LETTER_EXTRA': 'Letter extra',
+    'NA_LETTER_PLUS': 'Letter plus',
+    'NA_MONARCH': 'Monarch',
+    'NA_NUMBER_10': 'Envelope #10',
+    'NA_NUMBER_11': 'Envelope #11',
+    'NA_NUMBER_12': 'Envelope #12',
+    'NA_NUMBER_14': 'Envelope #14',
+    'NA_NUMBER_9': 'Envelope #9',
+    'NA_PERSONAL': 'Personal',
+    'NA_QUARTO': 'Quarto',
+    'NA_SUPER_A': 'Super A',
+    'NA_SUPER_B': 'Super B',
+    'NA_WIDE_FORMAT': 'Wide format',
+    'OM_DAI_PA_KAI': 'Dai-pa-kai',
+    'OM_FOLIO': 'Folio',
+    'OM_FOLIO_SP': 'Folio SP',
+    'OM_INVITE': 'Invite Envelope',
+    'OM_ITALIAN': 'Italian Envelope',
+    'OM_JUURO_KU_KAI': 'Juuro-ku-kai',
+    'OM_LARGE_PHOTO': 'Large photo',
+    'OM_OFICIO': 'Oficio',
+    'OM_PA_KAI': 'Pa-kai',
+    'OM_POSTFIX': 'Postfix Envelope',
+    'OM_SMALL_PHOTO': 'Small photo',
+    'PRC_1': 'prc1 Envelope',
+    'PRC_10': 'prc10 Envelope',
+    'PRC_16K': 'prc 16k',
+    'PRC_2': 'prc2 Envelope',
+    'PRC_3': 'prc3 Envelope',
+    'PRC_32K': 'prc 32k',
+    'PRC_4': 'prc4 Envelope',
+    'PRC_5': 'prc5 Envelope',
+    'PRC_6': 'prc6 Envelope',
+    'PRC_7': 'prc7 Envelope',
+    'PRC_8': 'prc8 Envelope',
+    'ROC_16K': 'ROC 16K',
+    'ROC_8K': 'ROC 8k',
+  };
 
   /**
    * Localizes printer capabilities.
@@ -342,27 +513,12 @@ cr.define('print_preview', function() {
     if (!mediaSize)
       return capabilities;
 
-    var mediaDisplayNames = {
-      'ISO_A0': 'A0',
-      'ISO_A1': 'A1',
-      'ISO_A2': 'A2',
-      'ISO_A3': 'A3',
-      'ISO_A4': 'A4',
-      'ISO_A5': 'A5',
-      'ISO_A6': 'A6',
-      'JIS_B5': 'B5 (JIS)',
-      'NA_EXECUTIVE': 'Executive',
-      'NA_LEGAL': 'Legal',
-      'NA_LETTER': 'Letter',
-      'NA_LEDGER': 'Tabloid',
-      'OM_FOLIO': 'Folio'
-    };
     for (var i = 0, media; media = mediaSize.option[i]; i++) {
       // No need to patch capabilities with localized names provided.
       if (!media.custom_display_name_localized) {
         media.custom_display_name =
             media.custom_display_name ||
-            mediaDisplayNames[media.name] ||
+            DestinationStore.MEDIA_DISPLAY_NAMES_[media.name] ||
             media.name;
       }
     }
