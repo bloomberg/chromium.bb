@@ -264,6 +264,7 @@ WebsiteSettings::WebsiteSettings(
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
+      show_ssl_decision_revoke_button_(false),
       content_settings_(HostContentSettingsMapFactory::GetForProfile(profile)),
       chrome_ssl_host_state_delegate_(
           ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
