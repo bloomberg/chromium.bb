@@ -78,7 +78,8 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   focus_client_.reset(new TestFocusClient);
   client::SetFocusClient(root_window(), focus_client_.get());
   parenting_client_.reset(new TestWindowParentingClient(root_window()));
-  capture_client_.reset(new client::DefaultCaptureClient(root_window()));
+  capture_client_ = base::MakeUnique<client::DefaultCaptureClient>();
+  client::SetCaptureClient(host_->window(), capture_client_.get());
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.
@@ -88,6 +89,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 void AuraTestHelper::TearDown() {
   teardown_called_ = true;
   parenting_client_.reset();
+  client::SetCaptureClient(host_->window(), nullptr);
   capture_client_.reset();
   focus_client_.reset();
   client::SetFocusClient(root_window(), nullptr);
