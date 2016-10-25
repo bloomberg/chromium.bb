@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.17",
+  "version": "11.18",
   "entries": [
     {
       "id": 1,
@@ -1373,6 +1373,19 @@ LONG_STRING_CONST(
       },
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 125,
+      "description": "VirtualBox driver is unstable on linux.",
+      "cr_bugs": [656572, 658668],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x80ee",
+      "device_id": ["0xbeef"],
+      "features": [
+        "all"
       ]
     }
   ]
