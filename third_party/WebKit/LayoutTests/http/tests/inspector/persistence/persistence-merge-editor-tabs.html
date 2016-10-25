@@ -12,6 +12,7 @@ function test()
 {
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     var fsEntry = InspectorTest.addFooJSFile(fs);
+    var networkSourceFrame, fileSystemSourceFrame;
 
     InspectorTest.runTestSuite([
         function addFileSystem(next)
@@ -19,18 +20,38 @@ function test()
             fs.reportCreated(next);
         },
 
-        function openEditorTabs(next)
+        function openNetworkTab(next)
         {
-            var promises = [
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network)
-                    .then(code => InspectorTest.showUISourceCode(code)),
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
-                    .then(code => InspectorTest.showUISourceCode(code))
-            ];
-            Promise.all(promises).then(onTabsOpened);
+            InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network)
+                .then(code => InspectorTest.showUISourceCodePromise(code))
+                .then(onNetworkTab);
 
-            function onTabsOpened()
+            function onNetworkTab(sourceFrame)
             {
+                networkSourceFrame = sourceFrame;
+                dumpSourceFrame(networkSourceFrame);
+                next();
+            }
+        },
+
+        function openFileSystemTab(next)
+        {
+            InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+                .then(onFileSystemSourceCode)
+                .then(onFileSystemTab);
+
+            function onFileSystemSourceCode(code)
+            {
+                code.setWorkingCopy("\n\nwindow.foo = ()=>'foo2';");
+                return InspectorTest.showUISourceCodePromise(code);
+            }
+
+            function onFileSystemTab(sourceFrame)
+            {
+                fileSystemSourceFrame = sourceFrame;
+                fileSystemSourceFrame.setSelection(new WebInspector.TextRange(2, 0, 2, 5));
+                fileSystemSourceFrame.scrollToLine(2);
+                dumpSourceFrame(fileSystemSourceFrame);
                 dumpEditorTabs();
                 next();
             }
@@ -41,9 +62,10 @@ function test()
             InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
             WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
-            function onBindingCreated(binding)
+            function onBindingCreated()
             {
                 dumpEditorTabs();
+                dumpSourceFrame(networkSourceFrame);
                 next();
             }
         },
@@ -60,6 +82,7 @@ function test()
                     return
                 WebInspector.persistence.removeEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
                 dumpEditorTabs();
+                dumpSourceFrame(networkSourceFrame);
                 next();
             }
         },
@@ -73,6 +96,14 @@ function test()
         InspectorTest.addResult("Opened tabs: ");
         for (code of openedUISourceCodes)
             InspectorTest.addResult("    " + code.url());
+    }
+
+    function dumpSourceFrame(sourceFrame)
+    {
+        InspectorTest.addResult("SourceFrame: " + sourceFrame._url);
+        InspectorTest.addResult("    selection: " + sourceFrame.selection());
+        InspectorTest.addResult("    firstVisibleLine: " + sourceFrame.textEditor.firstVisibleLine());
+        InspectorTest.addResult("    isDirty: " + sourceFrame.uiSourceCode().isDirty());
     }
 };
 </script>

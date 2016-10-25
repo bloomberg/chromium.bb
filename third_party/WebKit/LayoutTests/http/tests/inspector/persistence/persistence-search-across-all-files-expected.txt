@@ -5,13 +5,13 @@ Running: waitForUISourceCodes
 
 Running: dumpSearchResults
 Search result #1: uiSourceCode.url = file:///var/www/inspector/persistence/resources/foo.js
-  search match #1: lineNumber = 0, lineContent = 'window.foo = ()=>'foo';'
+  search match #1: lineNumber = 2, lineContent = 'window.foo = ()=>'foo';'
 Search result #2: uiSourceCode.url = http://127.0.0.1:8000/inspector/persistence/resources/foo.js
-  search match #1: lineNumber = 0, lineContent = 'window.foo = ()=>'foo';'
+  search match #1: lineNumber = 2, lineContent = 'window.foo = ()=>'foo';'
 
 Running: addFileMapping
 
 Running: dumpSearchResults
 Search result #1: uiSourceCode.url = http://127.0.0.1:8000/inspector/persistence/resources/foo.js
-  search match #1: lineNumber = 0, lineContent = 'window.foo = ()=>'foo';'
+  search match #1: lineNumber = 2, lineContent = 'window.foo = ()=>'foo';'
 

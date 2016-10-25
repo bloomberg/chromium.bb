@@ -68,7 +68,7 @@ InspectorTest.waitForUISourceCode = function(name, projectType)
 
 InspectorTest.addFooJSFile = function(fs)
 {
-    return fs.root.mkdir("inspector").mkdir("persistence").mkdir("resources").addFile("foo.js", "window.foo = ()=>'foo';");
+    return fs.root.mkdir("inspector").mkdir("persistence").mkdir("resources").addFile("foo.js", "\n\nwindow.foo = ()=>'foo';");
 }
 
 }
