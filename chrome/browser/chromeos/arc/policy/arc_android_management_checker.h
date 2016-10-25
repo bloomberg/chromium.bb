@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -51,8 +52,8 @@ class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
   // retry in foreground mode and result is passed to delegate directly.
   bool background_mode_;
 
-  // Keeps current retry time for background mode.
-  int retry_time_ms_;
+  // Keeps current retry delay.
+  base::TimeDelta retry_delay_;
 
   policy::AndroidManagementClient android_management_client_;
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -17,8 +19,8 @@ namespace arc {
 
 namespace {
 
-constexpr int kRetryTimeMinMs = 10 * 1000;           // 10 sec.
-constexpr int kRetryTimeMaxMs = 1 * 60 * 60 * 1000;  // 1 hour.
+constexpr base::TimeDelta kRetryDelayMin = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kRetryDelayMax = base::TimeDelta::FromHours(1);
 
 policy::DeviceManagementService* GetDeviceManagementService() {
   policy::BrowserPolicyConnectorChromeOS* const connector =
@@ -37,7 +39,7 @@ ArcAndroidManagementChecker::ArcAndroidManagementChecker(
       token_service_(token_service),
       account_id_(account_id),
       background_mode_(background_mode),
-      retry_time_ms_(kRetryTimeMinMs),
+      retry_delay_(kRetryDelayMin),
       android_management_client_(GetDeviceManagementService(),
                                  g_browser_process->system_request_context(),
                                  account_id,
@@ -88,17 +90,13 @@ void ArcAndroidManagementChecker::StartCheck() {
 
 void ArcAndroidManagementChecker::ScheduleCheck() {
   DCHECK(background_mode_);
-
-  VLOG(2) << "Schedule next android management  check in " << retry_time_ms_
-          << " ms.";
+  VLOG(2) << "Schedule next android management check in " << retry_delay_;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&ArcAndroidManagementChecker::StartCheck,
                             weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(retry_time_ms_));
-  retry_time_ms_ *= 2;
-  if (retry_time_ms_ > kRetryTimeMaxMs)
-    retry_time_ms_ = kRetryTimeMaxMs;
+      retry_delay_);
+  retry_delay_ = std::min(retry_delay_ * 2, kRetryDelayMax);
 }
 
 void ArcAndroidManagementChecker::DispatchResult(
