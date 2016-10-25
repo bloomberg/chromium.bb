@@ -31,9 +31,6 @@ class CONTENT_EXPORT WebRTCInternalsMessageHandler
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // WebRTCInternalsUIObserver override.
-  void OnUpdate(const std::string& command, const base::Value* args) override;
-
  protected:
   // The WebRTCInternals to use. Always WebRTCInternals::GetInstance()
   // except for testing.
@@ -51,6 +48,9 @@ class CONTENT_EXPORT WebRTCInternalsMessageHandler
                                         const base::ListValue* list);
   void OnSetEventLogRecordingsEnabled(bool enable, const base::ListValue* list);
   void OnDOMLoadDone(const base::ListValue* list);
+
+  // WebRTCInternalsUIObserver override.
+  void OnUpdate(const char* command, const base::Value* args) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebRTCInternalsMessageHandler);
 };

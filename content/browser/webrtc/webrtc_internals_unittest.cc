@@ -35,7 +35,7 @@ class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
   }
 
  private:
-  void OnUpdate(const std::string& command, const base::Value* value) override {
+  void OnUpdate(const char* command, const base::Value* value) override {
     command_ = command;
     value_.reset(value ? value->DeepCopy() : nullptr);
     if (loop_)

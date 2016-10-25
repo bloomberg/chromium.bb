@@ -20,7 +20,7 @@ class WebRTCInternalsUIObserver {
 
   // This is called on the browser IO thread. |args| can be NULL if there are no
   // arguments.
-  virtual void OnUpdate(const std::string& command,
+  virtual void OnUpdate(const char* command,
                         const base::Value* args) = 0;
 };
 

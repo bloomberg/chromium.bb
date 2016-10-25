@@ -121,7 +121,7 @@ void WebRTCInternalsMessageHandler::OnDOMLoadDone(
   }
 }
 
-void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
+void WebRTCInternalsMessageHandler::OnUpdate(const char* command,
                                              const base::Value* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

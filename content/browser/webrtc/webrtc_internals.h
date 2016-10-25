@@ -128,7 +128,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   FRIEND_TEST_ALL_PREFIXES(WebRtcInternalsTest,
                            AudioDebugRecordingsFileSelectionCanceled);
 
-  void SendUpdate(const std::string& command,
+  void SendUpdate(const char* command,
                   std::unique_ptr<base::Value> value);
 
   // RenderProcessHostObserver implementation.
@@ -222,17 +222,17 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // thread.
   class PendingUpdate {
    public:
-    PendingUpdate(const std::string& command,
+    PendingUpdate(const char* command,
                   std::unique_ptr<base::Value> value);
     PendingUpdate(PendingUpdate&& other);
     ~PendingUpdate();
 
-    const std::string& command() const;
+    const char* command() const;
     const base::Value* value() const;
 
    private:
     base::ThreadChecker thread_checker_;
-    std::string command_;
+    const char* command_;
     std::unique_ptr<base::Value> value_;
     DISALLOW_COPY_AND_ASSIGN(PendingUpdate);
   };

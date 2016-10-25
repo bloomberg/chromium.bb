@@ -50,19 +50,19 @@ static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
 }  // namespace
 
 WebRTCInternals::PendingUpdate::PendingUpdate(
-    const std::string& command,
+    const char* command,
     std::unique_ptr<base::Value> value)
     : command_(command), value_(std::move(value)) {}
 
 WebRTCInternals::PendingUpdate::PendingUpdate(PendingUpdate&& other)
-    : command_(std::move(other.command_)),
+    : command_(other.command_),
       value_(std::move(other.value_)) {}
 
 WebRTCInternals::PendingUpdate::~PendingUpdate() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-const std::string& WebRTCInternals::PendingUpdate::command() const {
+const char* WebRTCInternals::PendingUpdate::command() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return command_;
 }
@@ -376,7 +376,7 @@ const base::FilePath& WebRTCInternals::GetEventLogFilePath() const {
   return event_log_recordings_file_path_;
 }
 
-void WebRTCInternals::SendUpdate(const string& command,
+void WebRTCInternals::SendUpdate(const char* command,
                                  std::unique_ptr<base::Value> value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(observers_.might_have_observers());
