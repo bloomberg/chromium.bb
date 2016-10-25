@@ -356,9 +356,8 @@ INSTANTIATE_TEST_CASE_P(
     FindRequestManagerTests, FindRequestManagerTest, testing::Bool());
 #endif
 
-// TODO(crbug.com/615291): These tests sometimes fail on the
-// linux_android_rel_ng trybot.
-#if defined(OS_ANDROID) && defined(NDEBUG)
+// TODO(crbug.com/615291): These tests frequently fail on Android.
+#if defined(OS_ANDROID)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x
