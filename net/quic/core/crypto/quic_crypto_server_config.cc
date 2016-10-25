@@ -764,7 +764,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
                                  primary_config->serialized, version, chlo_hash,
                                  &crypto_proof->chain, &crypto_proof->signature,
                                  &crypto_proof->cert_sct)) {
-      helper.Fail(QUIC_HANDSHAKE_FAILED, "");
+      helper.Fail(QUIC_HANDSHAKE_FAILED, "Missing or invalid crypto proof.");
       return;
     }
   }
