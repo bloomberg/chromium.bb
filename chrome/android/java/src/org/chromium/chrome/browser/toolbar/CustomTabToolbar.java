@@ -497,29 +497,22 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
         mSecurityIconType = securityLevel;
 
+        boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
         boolean isOfflinePage = getCurrentTab() != null && getCurrentTab().isOfflinePage();
-        boolean showSecurityButton = securityLevel != ConnectionSecurityLevel.NONE || isOfflinePage;
 
-        if (securityLevel == ConnectionSecurityLevel.NONE) {
-            if (isOfflinePage && mShowsOfflinePage != isOfflinePage) {
-                TintedDrawable bolt = TintedDrawable.constructTintedDrawable(
-                        getResources(), R.drawable.offline_pin);
-                bolt.setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
-                mSecurityButton.setImageDrawable(bolt);
-            }
+        int id = LocationBarLayout.getSecurityIconResource(
+                securityLevel, isSmallDevice, isOfflinePage);
+        boolean showSecurityButton = true;
+        if (id == 0) {
+            // Hide the button if we don't have an actual icon to display.
+            showSecurityButton = false;
+            mSecurityButton.setImageDrawable(null);
         } else {
-            boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
-            int id = LocationBarLayout.getSecurityIconResource(securityLevel, isSmallDevice);
-            if (id == 0) {
-                // Hide the button if we don't have an actual icon to display.
-                showSecurityButton = false;
-            } else {
-                // ImageView#setImageResource is no-op if given resource is the current one.
-                mSecurityButton.setImageResource(id);
-                mSecurityButton.setTint(
-                        LocationBarLayout.getColorStateList(securityLevel, getToolbarDataProvider(),
-                                getResources(), false /* omnibox is not opaque */));
-            }
+            // ImageView#setImageResource is no-op if given resource is the current one.
+            mSecurityButton.setImageResource(id);
+            mSecurityButton.setTint(
+                    LocationBarLayout.getColorStateList(securityLevel, getToolbarDataProvider(),
+                            getResources(), false /* omnibox is not opaque */));
         }
 
         mShowsOfflinePage = isOfflinePage;

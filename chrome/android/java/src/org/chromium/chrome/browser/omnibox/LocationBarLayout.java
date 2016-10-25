@@ -31,6 +31,7 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
+import android.support.annotation.IntDef;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -99,6 +100,8 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -163,7 +166,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private NavigationButtonType mNavigationButtonType;
 
     // The type of the security icon currently active.
-    private int mSecurityIconType;
+    private int mSecurityIconResource;
 
     private final OmniboxResultsAdapter mSuggestionListAdapter;
     private OmniboxSuggestionsList mSuggestionList;
@@ -206,7 +209,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     // modifying the omnibox with new input.
     private long mNewOmniboxEditSessionTimestamp = -1;
 
-    private boolean mSecurityButtonShown;
+    @LocationBarButtonType private int mLocationBarButtonType;
 
     private AnimatorSet mLocationBarIconActiveAnimator;
     private AnimatorSet mSecurityButtonShowAnimator;
@@ -399,8 +402,18 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         PAGE,
         MAGNIFIER,
         EMPTY,
-        OFFLINE,
     }
+
+    /** Specifies which button should be shown in location bar, if any. */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({BUTTON_TYPE_NONE, BUTTON_TYPE_SECURITY_ICON, BUTTON_TYPE_NAVIGATION_ICON})
+    public @interface LocationBarButtonType {}
+    /** No button should be shown. */
+    public static final int BUTTON_TYPE_NONE = 0;
+    /** Security button should be shown (includes offline icon). */
+    public static final int BUTTON_TYPE_SECURITY_ICON = 1;
+    /** Navigation button should be shown. */
+    public static final int BUTTON_TYPE_NAVIGATION_ICON = 2;
 
     /**
      * @param outRect Populated with a {@link Rect} that represents the {@link Tab} specific content
@@ -625,11 +638,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         LayoutInflater.from(context).inflate(R.layout.location_bar, this, true);
         mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
         assert mNavigationButton != null : "Missing navigation type view.";
+
         mNavigationButtonType = DeviceFormFactor.isTablet(context)
                 ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
 
         mSecurityButton = (TintedImageButton) findViewById(R.id.security_button);
-        mSecurityIconType = ConnectionSecurityLevel.NONE;
+        mSecurityIconResource = 0;
 
         mVerboseStatusTextView = (TextView) findViewById(R.id.location_bar_verbose_status);
 
@@ -661,8 +675,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         super.onFinishInflate();
 
         mUrlBar.setCursorVisible(false);
-        mNavigationButton.setVisibility(VISIBLE);
-        mSecurityButton.setVisibility(INVISIBLE);
+
+        mLocationBarButtonType = getLocationBarButtonToShow();
+        mNavigationButton.setVisibility(
+                mLocationBarButtonType == BUTTON_TYPE_NAVIGATION_ICON ? VISIBLE : INVISIBLE);
+        mSecurityButton.setVisibility(
+                mLocationBarButtonType == BUTTON_TYPE_SECURITY_ICON ? VISIBLE : INVISIBLE);
 
         setLayoutTransition(null);
 
@@ -865,18 +883,44 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mOmniboxPrerender.initializeForProfile(profile);
     }
 
-    private void changeLocationBarIcon(boolean showSecurityButton) {
+    @LocationBarButtonType private int getLocationBarButtonToShow() {
+        boolean isOffline = getCurrentTab() != null && getCurrentTab().isOfflinePage();
+        boolean isTablet = DeviceFormFactor.isTablet(getContext());
+
+        if (mUrlHasFocus) {
+            return isTablet ? BUTTON_TYPE_NAVIGATION_ICON : BUTTON_TYPE_NONE;
+        }
+
+        return getSecurityIconResource(getSecurityLevel(), !isTablet, isOffline) != 0
+                ? BUTTON_TYPE_SECURITY_ICON
+                : BUTTON_TYPE_NONE;
+    }
+
+    private void changeLocationBarIcon() {
         if (mLocationBarIconActiveAnimator != null && mLocationBarIconActiveAnimator.isRunning()) {
             mLocationBarIconActiveAnimator.cancel();
         }
-        View viewToBeShown = showSecurityButton ? mSecurityButton : mNavigationButton;
+
+        mLocationBarButtonType = getLocationBarButtonToShow();
+
+        View viewToBeShown = null;
+        switch (mLocationBarButtonType) {
+            case BUTTON_TYPE_SECURITY_ICON:
+                viewToBeShown = mSecurityButton;
+                mLocationBarIconActiveAnimator = mSecurityButtonShowAnimator;
+                break;
+            case BUTTON_TYPE_NAVIGATION_ICON:
+                viewToBeShown = mNavigationButton;
+                mLocationBarIconActiveAnimator = mNavigationIconShowAnimator;
+                break;
+            case BUTTON_TYPE_NONE:
+            default:
+                mLocationBarIconActiveAnimator = null;
+                return;
+        }
+
         if (viewToBeShown.getVisibility() == VISIBLE && viewToBeShown.getAlpha() == 1) {
             return;
-        }
-        if (showSecurityButton) {
-            mLocationBarIconActiveAnimator = mSecurityButtonShowAnimator;
-        } else {
-            mLocationBarIconActiveAnimator = mNavigationIconShowAnimator;
         }
         if (shouldAnimateIconChanges()) {
             mLocationBarIconActiveAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
@@ -975,8 +1019,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             if (mUrlHasFocus) mUrlBar.selectAll();
         }
 
-        changeLocationBarIcon(
-                (!DeviceFormFactor.isTablet(getContext()) || !hasFocus) && isSecurityButtonShown());
+        changeLocationBarIcon();
         mUrlBar.setCursorVisible(hasFocus);
 
         if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
@@ -1206,8 +1249,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
                     mSuggestionItems.get(0).getSuggestion());
-        } else if (!mUrlHasFocus && getCurrentTab() != null && getCurrentTab().isOfflinePage()) {
-            type = NavigationButtonType.OFFLINE;
         } else if (isTablet) {
             type = NavigationButtonType.PAGE;
         }
@@ -1227,7 +1268,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * (like a tablet).
      * @return The resource ID of the icon that should be displayed, 0 if no icon should show.
      */
-    public static int getSecurityIconResource(int securityLevel, boolean isSmallDevice) {
+    public static int getSecurityIconResource(
+            int securityLevel, boolean isSmallDevice, boolean isOfflinePage) {
+        // Both conditions should be met, because isOfflinePage might take longer to be cleared.
+        if (securityLevel == ConnectionSecurityLevel.NONE && isOfflinePage) {
+            return R.drawable.offline_pin;
+        }
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
             case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
@@ -1286,7 +1332,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     @Override
     public void updateSecurityIcon(int securityLevel) {
         boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
-        int id = getSecurityIconResource(securityLevel, isSmallDevice);
+        boolean isOfflinePage = getCurrentTab() != null && getCurrentTab().isOfflinePage();
+        int id = getSecurityIconResource(securityLevel, isSmallDevice, isOfflinePage);
         if (id == 0) {
             mSecurityButton.setImageDrawable(null);
         } else {
@@ -1297,14 +1344,17 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                             getToolbarDataProvider().getPrimaryColor())));
         }
 
+        updateVerboseStatusVisibility();
+
         boolean shouldEmphasizeHttpsScheme = shouldEmphasizeHttpsScheme();
-        if (mSecurityIconType == securityLevel
+        if (mSecurityIconResource == id
                 && mIsEmphasizingHttpsScheme == shouldEmphasizeHttpsScheme) {
             return;
         }
-        mSecurityIconType = securityLevel;
+        mSecurityIconResource = id;
 
-        updateSecurityButton(!(securityLevel == ConnectionSecurityLevel.NONE && isSmallDevice));
+        changeLocationBarIcon();
+        updateLocationBarIconContainerVisibility();
         // Since we emphasize the scheme of the URL based on the security type, we need to
         // refresh the emphasis.
         mUrlBar.deEmphasizeUrl();
@@ -1324,22 +1374,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
-     * Updates the display of the security button.
-     * @param enabled Whether the security button should be displayed.
-     */
-    private void updateSecurityButton(boolean enabled) {
-        changeLocationBarIcon(enabled
-                && (!DeviceFormFactor.isTablet(getContext()) || !mUrlHasFocus));
-        mSecurityButtonShown = enabled;
-        updateLocationBarIconContainerVisibility();
-    }
-
-    /**
      * @return Whether the security button is currently being displayed.
      */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
-        return mSecurityButtonShown;
+        return mLocationBarButtonType == BUTTON_TYPE_SECURITY_ICON;
     }
 
     /**
@@ -1347,6 +1386,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * @param buttonType The type of navigation button to be shown.
      */
     private void setNavigationButtonType(NavigationButtonType buttonType) {
+        if (!DeviceFormFactor.isTablet(getContext())) return;
         switch (buttonType) {
             case PAGE:
                 Drawable page = ApiCompatibilityUtils.getDrawable(
@@ -1362,15 +1402,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             case EMPTY:
                 mNavigationButton.setImageDrawable(null);
                 break;
-            case OFFLINE:
-                Drawable bolt = ApiCompatibilityUtils.getDrawable(
-                        getResources(), R.drawable.offline_pin);
-                bolt.mutate().setColorFilter(
-                        ApiCompatibilityUtils.getColor(getResources(), mUseDarkColors
-                                ? R.color.locationbar_status_color
-                                : R.color.locationbar_status_color_light), PorterDuff.Mode.SRC_IN);
-                mNavigationButton.setImageDrawable(bolt);
-                break;
             default:
                 assert false;
         }
@@ -1380,7 +1411,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
         mNavigationButtonType = buttonType;
 
-        updateVerboseStatusVisibility();
         updateLocationBarIconContainerVisibility();
     }
 
@@ -1389,8 +1419,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * omnibox.
      */
     private void updateVerboseStatusVisibility() {
-        boolean verboseStatusVisible =
-                mNavigationButtonType == NavigationButtonType.OFFLINE && !mUrlHasFocus;
+        // Because is offline page is cleared a bit slower, we also ensure that connection security
+        // level is NONE.
+        boolean verboseStatusVisible = !mUrlHasFocus && getCurrentTab() != null
+                && getCurrentTab().isOfflinePage()
+                && getSecurityLevel() == ConnectionSecurityLevel.NONE;
 
         int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
 
@@ -1414,9 +1447,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * security and navigation icons.
      */
     protected void updateLocationBarIconContainerVisibility() {
-        boolean showContainer =
-                mSecurityButtonShown || mNavigationButtonType != NavigationButtonType.EMPTY;
-        findViewById(R.id.location_bar_icon).setVisibility(showContainer ? VISIBLE : GONE);
+        @LocationBarButtonType
+        int buttonToShow = getLocationBarButtonToShow();
+        findViewById(R.id.location_bar_icon)
+                .setVisibility(buttonToShow != BUTTON_TYPE_NONE ? VISIBLE : GONE);
     }
 
     /**

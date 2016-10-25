@@ -150,7 +150,7 @@ public class WebappUrlBar extends FrameLayout implements View.OnLayoutChangeList
     private void updateSecurityIcon(int securityLevel) {
         boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
         mCurrentIconResource =
-                LocationBarLayout.getSecurityIconResource(securityLevel, isSmallDevice);
+                LocationBarLayout.getSecurityIconResource(securityLevel, isSmallDevice, false);
 
         if (mCurrentIconResource != 0 && mIconResourceWidths.get(mCurrentIconResource, -1) == -1) {
             Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(), mCurrentIconResource);
