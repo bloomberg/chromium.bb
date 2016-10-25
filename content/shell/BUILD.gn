@@ -489,7 +489,6 @@ if (is_android) {
   executable("content_shell") {
     testonly = true
 
-    # TODO(GYP) mac resource bundle stuff for this target.
     sources = [
       "app/shell_main.cc",
     ]
