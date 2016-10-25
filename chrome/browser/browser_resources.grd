@@ -77,6 +77,14 @@
         <structure name="IDR_WELCOME_HTML" file="resources\welcome\welcome.html" type="chrome_html" preprocess="true"/>
         <structure name="IDR_WELCOME_JS" file="resources\welcome\welcome.js" type="chrome_html" preprocess="true"/>
       </if>
+      <if expr="is_win">
+        <structure name="IDR_WELCOME_WIN10_INLINE_CSS" file="resources\welcome\win10\inline.css" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_INLINE_HTML" file="resources\welcome\win10\inline.html" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_INLINE_JS" file="resources\welcome\win10\inline.js" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_SECTIONED_CSS" file="resources\welcome\win10\sectioned.css" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_SECTIONED_HTML" file="resources\welcome\win10\sectioned.html" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_SECTIONED_JS" file="resources\welcome\win10\sectioned.js" type="chrome_html" />
+      </if>
     </structures>
     <includes>
       <if expr="is_win">

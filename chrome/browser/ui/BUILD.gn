@@ -2952,6 +2952,10 @@ split_static_library("ui") {
       "webui/cast/cast_ui.h",
       "webui/conflicts_ui.cc",
       "webui/conflicts_ui.h",
+      "webui/welcome_win10_handler.cc",
+      "webui/welcome_win10_handler.h",
+      "webui/welcome_win10_ui.cc",
+      "webui/welcome_win10_ui.h",
     ]
     public_deps += [
       "//ui/views",

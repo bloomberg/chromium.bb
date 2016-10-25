@@ -95,6 +95,7 @@ const char kChromeUIUberFrameURL[] = "chrome://uber-frame/";
 const char kChromeUIUserActionsURL[] = "chrome://user-actions/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
+const char kChromeUIWelcomeWin10URL[] = "chrome://welcome-win10/";
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 const char kChromeUIContextualSearchPromoURL[] =
@@ -259,6 +260,7 @@ const char kChromeUIUsbInternalsHost[] = "usb-internals";
 const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIWelcomeHost[] = "welcome";
+const char kChromeUIWelcomeWin10Host[] = "welcome-win10";
 const char kChromeUIWorkersHost[] = "workers";
 
 #if defined(ENABLE_PRINT_PREVIEW)

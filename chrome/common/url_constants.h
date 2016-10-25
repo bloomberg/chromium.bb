@@ -88,6 +88,7 @@ extern const char kChromeUIUserActionsURL[];
 extern const char kChromeUIUserManagerURL[];
 extern const char kChromeUIVersionURL[];
 extern const char kChromeUIWelcomeURL[];
+extern const char kChromeUIWelcomeWin10URL[];
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kChromeUIContextualSearchPromoURL[];
@@ -242,6 +243,7 @@ extern const char kChromeUIUsbInternalsHost[];
 extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIWelcomeHost[];
+extern const char kChromeUIWelcomeWin10Host[];
 extern const char kChromeUIWorkersHost[];
 
 #if defined(ENABLE_PRINT_PREVIEW)
