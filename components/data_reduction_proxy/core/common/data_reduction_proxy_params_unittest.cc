@@ -421,6 +421,40 @@ TEST_F(DataReductionProxyParamsTest, LoFiPreviewFieldTrial) {
   }
 }
 
+// Tests if the QUIC field trial is set correctly.
+TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+    std::string zero_rtt_param;
+    bool expected_zero_rtt;
+  } tests[] = {
+      {"Enabled", true, "true", true},
+      {"Enabled_Control", true, "true", true},
+      {"Enabled_Control", true, "false", false},
+      {"Enabled_Control", true, std::string(), false},
+      {"Control", false, "true", false},
+      {"Disabled", false, "false", false},
+      {"enabled", false, "false", false},
+  };
+
+  for (const auto& test : tests) {
+    variations::testing::ClearAllVariationParams();
+    std::map<std::string, std::string> variation_params;
+    variation_params["enable_zero_rtt"] = test.zero_rtt_param;
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        params::GetQuicFieldTrialName(), test.trial_group_name,
+        variation_params));
+
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                           test.trial_group_name);
+
+    EXPECT_EQ(test.expected_enabled, params::IsIncludedInQuicFieldTrial());
+    EXPECT_EQ(test.expected_zero_rtt, params::IsZeroRttQuicEnabled());
+  }
+}
+
 TEST_F(DataReductionProxyParamsTest, HoldbackEnabledFieldTrial) {
   const struct {
     std::string trial_group_name;

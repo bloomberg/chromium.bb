@@ -18,10 +18,13 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 
 namespace data_reduction_proxy {
+
+namespace {
+static const char kDataReductionCoreProxy[] = "proxy.googlezip.net";
+}
 
 DataReductionProxyDelegate::DataReductionProxyDelegate(
     DataReductionProxyConfig* config,
@@ -145,19 +148,48 @@ void DataReductionProxyDelegate::OnAlternativeProxyBroken(
                            1);
 }
 
+net::ProxyServer DataReductionProxyDelegate::GetDefaultAlternativeProxy()
+    const {
+  if (!params::IsZeroRttQuicEnabled())
+    return net::ProxyServer();
+
+  if (alternative_proxies_broken_) {
+    RecordGetDefaultAlternativeProxy(DEFAULT_ALTERNATIVE_PROXY_STATUS_BROKEN);
+    return net::ProxyServer();
+  }
+
+  net::ProxyServer proxy_server(
+      net::ProxyServer::SCHEME_QUIC,
+      net::HostPortPair(kDataReductionCoreProxy, 443));
+  if (!config_ || !config_->IsDataReductionProxy(proxy_server, NULL)) {
+    RecordGetDefaultAlternativeProxy(
+        DEFAULT_ALTERNATIVE_PROXY_STATUS_UNAVAILABLE);
+    return net::ProxyServer();
+  }
+
+  RecordGetDefaultAlternativeProxy(DEFAULT_ALTERNATIVE_PROXY_STATUS_AVAILABLE);
+  return proxy_server;
+}
+
 bool DataReductionProxyDelegate::SupportsQUIC(
     const net::ProxyServer& proxy_server) const {
   // Enable QUIC for whitelisted proxies.
   // TODO(tbansal):  Use client config service to control this whitelist.
   return proxy_server ==
-         net::ProxyServer::FromURI("proxy.googlezip.net:443",
-                                   net::ProxyServer::SCHEME_HTTPS);
+         net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                          net::HostPortPair(kDataReductionCoreProxy, 443));
 }
 
 void DataReductionProxyDelegate::RecordQuicProxyStatus(
     QuicProxyStatus status) const {
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.ProxyStatus", status,
                             QUIC_PROXY_STATUS_BOUNDARY);
+}
+
+void DataReductionProxyDelegate::RecordGetDefaultAlternativeProxy(
+    DefaultAlternativeProxyStatus status) const {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.DefaultAlternativeProxy",
+                            status, DEFAULT_ALTERNATIVE_PROXY_STATUS_BOUNDARY);
 }
 
 void OnResolveProxyHandler(const GURL& url,

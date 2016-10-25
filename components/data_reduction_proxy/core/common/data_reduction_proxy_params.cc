@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -58,6 +59,18 @@ const char kServerExperimentsFieldTrial[] =
 bool IsIncludedInFieldTrial(const std::string& name) {
   return base::StartsWith(FieldTrialList::FindFullName(name), kEnabled,
                           base::CompareCase::SENSITIVE);
+}
+
+// Returns the variation value for |parameter_name|. If the value is
+// unavailable, |default_value| is returned.
+std::string GetStringValueForVariationParamWithDefaultValue(
+    const std::map<std::string, std::string>& variation_params,
+    const std::string& parameter_name,
+    const std::string& default_value) {
+  const auto it = variation_params.find(parameter_name);
+  if (it == variation_params.end())
+    return default_value;
+  return it->second;
 }
 
 }  // namespace
@@ -183,6 +196,15 @@ bool IsIncludedInQuicFieldTrial() {
 
 const char* GetQuicFieldTrialName() {
   return kQuicFieldTrial;
+}
+
+bool IsZeroRttQuicEnabled() {
+  if (!IsIncludedInQuicFieldTrial())
+    return false;
+  std::map<std::string, std::string> params;
+  variations::GetVariationParams(GetQuicFieldTrialName(), &params);
+  return GetStringValueForVariationParamWithDefaultValue(
+             params, "enable_zero_rtt", "false") == "true";
 }
 
 bool IsConfigClientEnabled() {

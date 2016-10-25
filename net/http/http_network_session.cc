@@ -151,6 +151,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
               ? params.client_socket_factory
               : ClientSocketFactory::GetDefaultFactory(),
           params.http_server_properties,
+          params.proxy_delegate,
           params.cert_verifier,
           params.ct_policy_enforcer,
           params.channel_id_service,

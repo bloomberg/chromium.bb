@@ -24,6 +24,7 @@
 #include "crypto/openssl_util.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/proxy_delegate.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -703,6 +704,7 @@ QuicStreamFactory::QuicStreamFactory(
     SSLConfigService* ssl_config_service,
     ClientSocketFactory* client_socket_factory,
     HttpServerProperties* http_server_properties,
+    ProxyDelegate* proxy_delegate,
     CertVerifier* cert_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     ChannelIDService* channel_id_service,
@@ -744,6 +746,7 @@ QuicStreamFactory::QuicStreamFactory(
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
+      proxy_delegate_(proxy_delegate),
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
@@ -1816,6 +1819,16 @@ void QuicStreamFactory::MaybeInitialize() {
     return;
 
   has_initialized_data_ = true;
+
+  // Query the proxy delegate for the default alternative proxy server.
+  ProxyServer default_alternative_proxy_server =
+      proxy_delegate_ ? proxy_delegate_->GetDefaultAlternativeProxy()
+                      : ProxyServer();
+  if (default_alternative_proxy_server.is_quic()) {
+    quic_supported_servers_at_startup_.insert(
+        default_alternative_proxy_server.host_port_pair());
+  }
+
   for (const std::pair<const url::SchemeHostPort, AlternativeServiceInfoVector>&
            key_value : http_server_properties_->alternative_service_map()) {
     HostPortPair host_port_pair(key_value.first.host(), key_value.first.port());

@@ -118,6 +118,9 @@ bool IsIncludedInQuicFieldTrial();
 
 const char* GetQuicFieldTrialName();
 
+// Returns true if zero RTT for QUIC is enabled.
+bool IsZeroRttQuicEnabled();
+
 // Returns true if the Data Reduction Proxy config client should be used.
 bool IsConfigClientEnabled();
 
