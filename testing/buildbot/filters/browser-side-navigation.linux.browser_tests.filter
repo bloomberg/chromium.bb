@@ -1,6 +1,5 @@
 -ActivityLogApiTest.TriggerEvent
 -ChromeServiceWorker*
--CrazyExtensionTest.Crazy
 -DevToolsSanityTest.TestNetworkRawHeadersText
 -ErrorPageTest.IFrameDNSError_JavaScript
 -ExecuteScriptApiTest.FrameWithHttp204
@@ -30,9 +29,6 @@
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
 -RedirectTest.ClientServerServer
--SubresourceFilterBrowserTest.MainFrameActivation
--SubresourceFilterBrowserTest.MainFrameActivationOnStartup
--SubresourceFilterBrowserTest.SubFrameActivation
 # TabManagerTest.TabManagerBasics crashes sometimes
 -TabManagerTest.TabManagerBasics
 -TemplateURLScraperTest.ScrapeWithOnSubmit
