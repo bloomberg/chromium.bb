@@ -14,6 +14,7 @@ Initial fileSystem content:
 Binding created: {
        network: http://127.0.0.1:8000/nodejs.js
     fileSystem: file:///var/www/nodejs.js
+    exactMatch: false
 }
 
 Running: Edit network uiSourceCode

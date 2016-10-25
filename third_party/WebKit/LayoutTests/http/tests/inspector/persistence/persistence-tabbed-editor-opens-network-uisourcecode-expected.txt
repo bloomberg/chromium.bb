@@ -3,6 +3,7 @@ Verify that for a fileSystem UISourceCode with network binding TabbedEditorConta
 Binding created: {
        network: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
     fileSystem: file:///var/www/inspector/persistence/resources/foo.js
+    exactMatch: false
 }
 Opened tabs before opening any UISourceCodes:
 request open uiSourceCode: file:///var/www/inspector/persistence/resources/foo.js

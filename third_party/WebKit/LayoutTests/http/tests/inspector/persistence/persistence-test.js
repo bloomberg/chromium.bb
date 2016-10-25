@@ -9,6 +9,7 @@ WebInspector.PersistenceBinding.prototype.toString = function()
         "{",
         "       network: " + this.network.url(),
         "    fileSystem: " + this.fileSystem.url(),
+        "    exactMatch: " + this.exactMatch,
         "}"
     ];
     return lines.join("\n");

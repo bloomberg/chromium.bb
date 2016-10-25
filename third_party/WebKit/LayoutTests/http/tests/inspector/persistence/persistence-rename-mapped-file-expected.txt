@@ -3,10 +3,12 @@ Verify that binding gets removed as the fileSystem file gets renamed.
 Binding created: {
        network: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
     fileSystem: file:///var/www/inspector/persistence/resources/foo.js
+    exactMatch: false
 }
 Renaming foo.js -> bar.js
 Binding successfully removed: {
        network: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
     fileSystem: file:///var/www/inspector/persistence/resources/bar.js
+    exactMatch: false
 }
 

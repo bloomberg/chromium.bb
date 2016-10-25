@@ -47,6 +47,29 @@ InspectorTest.TestFileSystem.prototype = {
         fileSystemMapping.addFileSystem(this.fileSystemPath);
         fileSystemMapping.addFileMapping(this.fileSystemPath, urlPrefix, pathPrefix);
         WebInspector.fileSystemMapping._loadFromSettings();
+    },
+
+    /**
+     * @param {string} path
+     * @param {string} content
+     * @param {number} lastModified
+     */
+    addFile: function(path, content, lastModified)
+    {
+        var pathTokens = path.split("/");
+        var node = this.root;
+        var folders = pathTokens.slice(0, pathTokens.length - 1);
+        var fileName = pathTokens.peekLast();
+        for (var folder of folders) {
+            var dir = node._childrenMap[folder];
+            if (!dir)
+                dir = node.mkdir(folder);
+            node = dir;
+        }
+        var file = node.addFile(fileName, content);
+        if (lastModified)
+            file._timestamp = lastModified;
+        return file;
     }
 }
 
@@ -103,6 +126,8 @@ InspectorTest.TestFileSystem.Entry.prototype = {
         this._children.push(child);
         child.parent = this;
         child.content = new Blob([content], {type: 'text/plain'});
+        var fullPath = this._fileSystem.fileSystemPath + child.fullPath;
+        InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemFilesChanged, [fullPath]);
         return child;
     },
 

@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./automapping-test.js"></script>
+<script>
+
+function test()
+{
+    var foo_js = {
+        content: "console.log('foo.js!');",
+        time: new Date("December 1, 1989")
+    };
+
+    var automappingTest = new InspectorTest.AutomappingTest(new WebInspector.Workspace());
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    fs.reportCreated(onFileSystemCreated);
+
+    function onFileSystemCreated()
+    {
+        InspectorTest.runTestSuite(tests);
+    }
+
+    var tests = [
+        function addNetworkResource(next)
+        {
+            automappingTest.addNetworkResources({
+                "http://example.com/path/foo.js": foo_js,
+            });
+            automappingTest.waitUntilMappingIsStabilized(next);
+        },
+
+        function addFileSystemUISourceCode(next)
+        {
+            InspectorTest.addFiles(fs, {
+                "scripts/foo.js": foo_js,
+            });
+            automappingTest.waitUntilMappingIsStabilized(next);
+        },
+
+        function removeNetworkUISourceCode(next)
+        {
+            automappingTest.removeResources(["http://example.com/path/foo.js"]);
+            automappingTest.waitUntilMappingIsStabilized(next);
+        },
+
+        function reAddNetworkUISourceCode(next)
+        {
+            automappingTest.addNetworkResources({
+                // Make sure simple resource gets mapped.
+                "http://example.com/path/foo.js": foo_js,
+            });
+            automappingTest.waitUntilMappingIsStabilized(next);
+        },
+
+        function removeFileSystem(next)
+        {
+            fs.reportRemoved();
+            automappingTest.waitUntilMappingIsStabilized(next);
+        },
+    ];
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that automapping works property when UISourceCodes come and go.</p>
+</body>
+</html>
