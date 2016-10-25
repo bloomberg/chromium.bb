@@ -25,6 +25,7 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -256,14 +257,21 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          info->GetChildID(), redirect_info.new_url)) {
-    DVLOG(1) << "Denied unauthorized request for "
-             << redirect_info.new_url.possibly_invalid_spec();
+  // With PlzNavigate for frame navigations this check is done in the
+  // NavigationRequest::OnReceivedRedirect() function.
+  bool check_handled_elsewhere = IsBrowserSideNavigationEnabled() &&
+      IsResourceTypeFrame(info->GetResourceType());
 
-    // Tell the renderer that this request was disallowed.
-    Cancel();
-    return;
+  if (!check_handled_elsewhere) {
+    if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+            info->GetChildID(), redirect_info.new_url)) {
+      DVLOG(1) << "Denied unauthorized request for "
+               << redirect_info.new_url.possibly_invalid_spec();
+
+      // Tell the renderer that this request was disallowed.
+      Cancel();
+      return;
+    }
   }
 
   if (delegate_->HandleExternalProtocol(this, redirect_info.new_url)) {

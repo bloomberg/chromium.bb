@@ -223,6 +223,7 @@ specific_include_rules = {
     "+content/common/content_export.h",
     "+content/public/browser/resource_controller.h",
     "+content/public/browser/resource_dispatcher_host_login_delegate.h",
+    "+content/public/common/browser_side_navigation_policy.h",
     "+content/public/common/resource_response.h",
     "+content/public/common/resource_type.h",
 

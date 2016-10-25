@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -15,6 +16,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
@@ -333,8 +335,19 @@ void NavigationRequest::OnRequestRedirected(
   common_params_.method = redirect_info.new_method;
   common_params_.referrer.url = GURL(redirect_info.new_referrer);
 
-  // TODO(clamy): Have CSP + security upgrade checks here.
+  // For non browser initiated navigations we need to check if the source has
+  // access to the URL. We always allow browser initiated requests.
   // TODO(clamy): Kill the renderer if FilterURL fails?
+  GURL url = common_params_.url;
+  if (!browser_initiated_ && source_site_instance()) {
+    source_site_instance()->GetProcess()->FilterURL(false, &url);
+    // FilterURL sets the URL to about:blank if the CSP checks prevent the
+    // renderer from accessing it.
+    if ((url == url::kAboutBlankURL) && (url != common_params_.url)) {
+      frame_tree_node_->ResetNavigationRequest(false);
+      return;
+    }
+  }
 
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
