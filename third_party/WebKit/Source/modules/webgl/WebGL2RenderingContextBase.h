@@ -642,7 +642,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   GLboolean isQuery(WebGLQuery*);
   void beginQuery(GLenum, WebGLQuery*);
   void endQuery(GLenum);
-  WebGLQuery* getQuery(GLenum, GLenum);
+  ScriptValue getQuery(ScriptState*, GLenum, GLenum);
   ScriptValue getQueryParameter(ScriptState*, WebGLQuery*, GLenum);
 
   /* Sampler Objects */
@@ -884,7 +884,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   TraceWrapperMember<WebGLQuery> m_currentBooleanOcclusionQuery;
   TraceWrapperMember<WebGLQuery>
       m_currentTransformFeedbackPrimitivesWrittenQuery;
-  HeapVector<TraceWrapperMember<WebGLSampler>> m_samplerUnits;
+  TraceWrapperMember<WebGLQuery> m_currentElapsedQuery;
+  HeapVector<Member<WebGLSampler>> m_samplerUnits;
 
   GLint m_packRowLength;
   GLint m_packSkipPixels;

@@ -13,6 +13,7 @@ enum WebGLExtensionName {
   EXTBlendMinMaxName,
   EXTColorBufferFloatName,
   EXTDisjointTimerQueryName,
+  EXTDisjointTimerQueryWebGL2Name,
   EXTFragDepthName,
   EXTShaderTextureLODName,
   EXTsRGBName,

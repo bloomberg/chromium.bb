@@ -14,6 +14,8 @@ blink_modules_sources("webgl") {
     "EXTColorBufferFloat.h",
     "EXTDisjointTimerQuery.cpp",
     "EXTDisjointTimerQuery.h",
+    "EXTDisjointTimerQueryWebGL2.cpp",
+    "EXTDisjointTimerQueryWebGL2.h",
     "EXTFragDepth.cpp",
     "EXTFragDepth.h",
     "EXTShaderTextureLOD.cpp",

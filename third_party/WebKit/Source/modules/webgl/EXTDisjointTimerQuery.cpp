@@ -82,7 +82,7 @@ void EXTDisjointTimerQuery::beginQueryEXT(GLenum target,
 
   if (m_currentElapsedQuery) {
     scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
-                                        "no current query");
+                                        "a query is already active for target");
     return;
   }
 
@@ -156,24 +156,28 @@ ScriptValue EXTDisjointTimerQuery::getQueryEXT(ScriptState* scriptState,
   if (scoped.isLost())
     return ScriptValue::createNull(scriptState);
 
-  if (target == GL_TIMESTAMP_EXT || target == GL_TIME_ELAPSED_EXT) {
-    switch (pname) {
-      case GL_CURRENT_QUERY_EXT:
-        if (GL_TIME_ELAPSED_EXT == target && m_currentElapsedQuery.get())
-          return WebGLAny(scriptState, m_currentElapsedQuery.get());
-        return ScriptValue::createNull(scriptState);
-      case GL_QUERY_COUNTER_BITS_EXT: {
-        GLint value = 0;
-        scoped.context()->contextGL()->GetQueryivEXT(target, pname, &value);
-        return WebGLAny(scriptState, value);
-      }
-      default:
-        break;
+  if (pname == GL_QUERY_COUNTER_BITS_EXT) {
+    if (target == GL_TIMESTAMP_EXT || target == GL_TIME_ELAPSED_EXT) {
+      GLint value = 0;
+      scoped.context()->contextGL()->GetQueryivEXT(target, pname, &value);
+      return WebGLAny(scriptState, value);
     }
+    scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQuery",
+                                        "invalid target/pname combination");
+    return ScriptValue::createNull(scriptState);
   }
 
-  scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQueryEXT",
-                                      "invalid target or pname");
+  if (target == GL_TIME_ELAPSED_EXT && pname == GL_CURRENT_QUERY) {
+    return m_currentElapsedQuery ? WebGLAny(scriptState, m_currentElapsedQuery)
+                                 : ScriptValue::createNull(scriptState);
+  }
+
+  if (target == GL_TIMESTAMP_EXT && pname == GL_CURRENT_QUERY) {
+    return ScriptValue::createNull(scriptState);
+  }
+
+  scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQuery",
+                                      "invalid target/pname combination");
   return ScriptValue::createNull(scriptState);
 }
 

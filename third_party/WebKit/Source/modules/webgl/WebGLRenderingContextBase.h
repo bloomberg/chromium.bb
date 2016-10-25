@@ -68,6 +68,7 @@ namespace blink {
 class ANGLEInstancedArrays;
 class EXTBlendMinMax;
 class EXTDisjointTimerQuery;
+class EXTDisjointTimerQueryWebGL2;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
 class EXTsRGB;
@@ -605,6 +606,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
  protected:
   friend class EXTDisjointTimerQuery;
+  friend class EXTDisjointTimerQueryWebGL2;
   friend class WebGLDrawBuffers;
   friend class WebGLFramebuffer;
   friend class WebGLObject;

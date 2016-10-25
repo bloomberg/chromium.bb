@@ -311,6 +311,7 @@ modules_idl_files =
                     "webgl/EXTBlendMinMax.idl",
                     "webgl/EXTColorBufferFloat.idl",
                     "webgl/EXTDisjointTimerQuery.idl",
+                    "webgl/EXTDisjointTimerQueryWebGL2.idl",
                     "webgl/EXTFragDepth.idl",
                     "webgl/EXTShaderTextureLOD.idl",
                     "webgl/EXTTextureFilterAnisotropic.idl",

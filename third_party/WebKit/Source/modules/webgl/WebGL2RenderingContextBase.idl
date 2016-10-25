@@ -398,7 +398,7 @@ typedef long long      GLint64;
     GLboolean isQuery(WebGLQuery? query);
     void beginQuery(GLenum target, WebGLQuery? query);
     void endQuery(GLenum target);
-    WebGLQuery getQuery(GLenum target, GLenum pname);
+    [CallWith=ScriptState] any getQuery(GLenum target, GLenum pname);
     [CallWith=ScriptState] any getQueryParameter(WebGLQuery? query, GLenum pname);
 
     /* Sampler Objects */

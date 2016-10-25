@@ -12,7 +12,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/EXTColorBufferFloat.h"
-#include "modules/webgl/EXTDisjointTimerQuery.h"
+#include "modules/webgl/EXTDisjointTimerQueryWebGL2.h"
 #include "modules/webgl/EXTTextureFilterAnisotropic.h"
 #include "modules/webgl/OESTextureFloatLinear.h"
 #include "modules/webgl/WebGLCompressedTextureASTC.h"
@@ -115,7 +115,7 @@ void WebGL2RenderingContext::registerContextExtensions() {
 
   // Register extensions.
   registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat);
-  registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
+  registerExtension<EXTDisjointTimerQueryWebGL2>(m_extDisjointTimerQueryWebGL2);
   registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic);
   registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
   registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC);
@@ -133,7 +133,7 @@ void WebGL2RenderingContext::registerContextExtensions() {
 
 DEFINE_TRACE(WebGL2RenderingContext) {
   visitor->trace(m_extColorBufferFloat);
-  visitor->trace(m_extDisjointTimerQuery);
+  visitor->trace(m_extDisjointTimerQueryWebGL2);
   visitor->trace(m_extTextureFilterAnisotropic);
   visitor->trace(m_oesTextureFloatLinear);
   visitor->trace(m_webglCompressedTextureASTC);
@@ -151,7 +151,7 @@ DEFINE_TRACE(WebGL2RenderingContext) {
 
 DEFINE_TRACE_WRAPPERS(WebGL2RenderingContext) {
   visitor->traceWrappers(m_extColorBufferFloat);
-  visitor->traceWrappers(m_extDisjointTimerQuery);
+  visitor->traceWrappers(m_extDisjointTimerQueryWebGL2);
   visitor->traceWrappers(m_extTextureFilterAnisotropic);
   visitor->traceWrappers(m_oesTextureFloatLinear);
   visitor->traceWrappers(m_webglCompressedTextureASTC);

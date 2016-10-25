@@ -56,7 +56,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
       const CanvasContextCreationAttributes& requestedAttributes);
 
   Member<EXTColorBufferFloat> m_extColorBufferFloat;
-  Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
+  Member<EXTDisjointTimerQueryWebGL2> m_extDisjointTimerQueryWebGL2;
   Member<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
   Member<OESTextureFloatLinear> m_oesTextureFloatLinear;
   Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;

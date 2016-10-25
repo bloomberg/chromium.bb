@@ -237,7 +237,8 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
       m_boundTransformFeedbackBuffer(this, nullptr),
       m_boundUniformBuffer(this, nullptr),
       m_currentBooleanOcclusionQuery(this, nullptr),
-      m_currentTransformFeedbackPrimitivesWrittenQuery(this, nullptr) {
+      m_currentTransformFeedbackPrimitivesWrittenQuery(this, nullptr),
+      m_currentElapsedQuery(this, nullptr) {
   m_supportedInternalFormatsStorage.insert(
       kSupportedInternalFormatsStorage,
       kSupportedInternalFormatsStorage +
@@ -256,6 +257,7 @@ WebGL2RenderingContextBase::~WebGL2RenderingContextBase() {
 
   m_currentBooleanOcclusionQuery = nullptr;
   m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
+  m_currentElapsedQuery = nullptr;
 }
 
 void WebGL2RenderingContextBase::destroyContext() {
@@ -282,6 +284,7 @@ void WebGL2RenderingContextBase::initializeNewContext() {
 
   m_currentBooleanOcclusionQuery = nullptr;
   m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
+  m_currentElapsedQuery = nullptr;
 
   GLint numCombinedTextureImageUnits = 0;
   contextGL()->GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
@@ -2641,6 +2644,11 @@ void WebGL2RenderingContextBase::deleteQuery(WebGLQuery* query) {
     m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
   }
 
+  if (m_currentElapsedQuery == query) {
+    contextGL()->EndQueryEXT(m_currentElapsedQuery->getTarget());
+    m_currentElapsedQuery = nullptr;
+  }
+
   deleteObject(query);
 }
 
@@ -2691,6 +2699,18 @@ void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query) {
       }
       m_currentTransformFeedbackPrimitivesWrittenQuery = query;
     } break;
+    case GL_TIME_ELAPSED_EXT: {
+      if (!extensionEnabled(EXTDisjointTimerQueryWebGL2Name)) {
+        synthesizeGLError(GL_INVALID_ENUM, "beginQuery", "invalid target");
+        return;
+      }
+      if (m_currentElapsedQuery) {
+        synthesizeGLError(GL_INVALID_OPERATION, "beginQuery",
+                          "a query is already active for target");
+        return;
+      }
+      m_currentElapsedQuery = query;
+    } break;
     default:
       synthesizeGLError(GL_INVALID_ENUM, "beginQuery", "invalid target");
       return;
@@ -2729,6 +2749,20 @@ void WebGL2RenderingContextBase::endQuery(GLenum target) {
         return;
       }
     } break;
+    case GL_TIME_ELAPSED_EXT: {
+      if (!extensionEnabled(EXTDisjointTimerQueryWebGL2Name)) {
+        synthesizeGLError(GL_INVALID_ENUM, "endQuery", "invalid target");
+        return;
+      }
+      if (m_currentElapsedQuery) {
+        m_currentElapsedQuery->resetCachedResult();
+        m_currentElapsedQuery = nullptr;
+      } else {
+        synthesizeGLError(GL_INVALID_OPERATION, "endQuery",
+                          "target query is not active");
+        return;
+      }
+    } break;
     default:
       synthesizeGLError(GL_INVALID_ENUM, "endQuery", "invalid target");
       return;
@@ -2737,13 +2771,38 @@ void WebGL2RenderingContextBase::endQuery(GLenum target) {
   contextGL()->EndQueryEXT(target);
 }
 
-WebGLQuery* WebGL2RenderingContextBase::getQuery(GLenum target, GLenum pname) {
+ScriptValue WebGL2RenderingContextBase::getQuery(ScriptState* scriptState,
+                                                 GLenum target,
+                                                 GLenum pname) {
   if (isContextLost())
-    return nullptr;
+    return ScriptValue::createNull(scriptState);
+
+  if (extensionEnabled(EXTDisjointTimerQueryWebGL2Name)) {
+    if (pname == GL_QUERY_COUNTER_BITS_EXT) {
+      if (target == GL_TIMESTAMP_EXT || target == GL_TIME_ELAPSED_EXT) {
+        GLint value = 0;
+        contextGL()->GetQueryivEXT(target, pname, &value);
+        return WebGLAny(scriptState, value);
+      }
+      synthesizeGLError(GL_INVALID_ENUM, "getQuery",
+                        "invalid target/pname combination");
+      return ScriptValue::createNull(scriptState);
+    }
+
+    if (target == GL_TIME_ELAPSED_EXT && pname == GL_CURRENT_QUERY) {
+      return m_currentElapsedQuery
+                 ? WebGLAny(scriptState, m_currentElapsedQuery)
+                 : ScriptValue::createNull(scriptState);
+    }
+
+    if (target == GL_TIMESTAMP_EXT && pname == GL_CURRENT_QUERY) {
+      return ScriptValue::createNull(scriptState);
+    }
+  }
 
   if (pname != GL_CURRENT_QUERY) {
     synthesizeGLError(GL_INVALID_ENUM, "getQuery", "invalid parameter name");
-    return nullptr;
+    return ScriptValue::createNull(scriptState);
   }
 
   switch (target) {
@@ -2751,15 +2810,16 @@ WebGLQuery* WebGL2RenderingContextBase::getQuery(GLenum target, GLenum pname) {
     case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
       if (m_currentBooleanOcclusionQuery &&
           m_currentBooleanOcclusionQuery->getTarget() == target)
-        return m_currentBooleanOcclusionQuery;
+        return WebGLAny(scriptState, m_currentBooleanOcclusionQuery);
       break;
     case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
-      return m_currentTransformFeedbackPrimitivesWrittenQuery;
+      return WebGLAny(scriptState,
+                      m_currentTransformFeedbackPrimitivesWrittenQuery);
     default:
       synthesizeGLError(GL_INVALID_ENUM, "getQuery", "invalid target");
-      return nullptr;
+      return ScriptValue::createNull(scriptState);
   }
-  return nullptr;
+  return ScriptValue::createNull(scriptState);
 }
 
 ScriptValue WebGL2RenderingContextBase::getQueryParameter(
@@ -2788,7 +2848,8 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(
     return ScriptValue::createNull(scriptState);
   }
   if (query == m_currentBooleanOcclusionQuery ||
-      query == m_currentTransformFeedbackPrimitivesWrittenQuery) {
+      query == m_currentTransformFeedbackPrimitivesWrittenQuery ||
+      query == m_currentElapsedQuery) {
     synthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter",
                       "query is currently active");
     return ScriptValue::createNull(scriptState);
@@ -3838,6 +3899,22 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState,
       return getIntParameter(scriptState, pname);
     case GL_UNPACK_SKIP_ROWS:
       return getIntParameter(scriptState, pname);
+    case GL_TIMESTAMP_EXT:
+      if (extensionEnabled(EXTDisjointTimerQueryWebGL2Name)) {
+        return WebGLAny(scriptState, 0);
+      }
+      synthesizeGLError(GL_INVALID_ENUM, "getParameter",
+                        "invalid parameter name, "
+                        "EXT_disjoint_timer_query_webgl2 not enabled");
+      return ScriptValue::createNull(scriptState);
+    case GL_GPU_DISJOINT_EXT:
+      if (extensionEnabled(EXTDisjointTimerQueryWebGL2Name)) {
+        return getBooleanParameter(scriptState, GL_GPU_DISJOINT_EXT);
+      }
+      synthesizeGLError(GL_INVALID_ENUM, "getParameter",
+                        "invalid parameter name, "
+                        "EXT_disjoint_timer_query_webgl2 not enabled");
+      return ScriptValue::createNull(scriptState);
 
     default:
       return WebGLRenderingContextBase::getParameter(scriptState, pname);
@@ -4413,6 +4490,7 @@ DEFINE_TRACE(WebGL2RenderingContextBase) {
   visitor->trace(m_boundIndexedUniformBuffers);
   visitor->trace(m_currentBooleanOcclusionQuery);
   visitor->trace(m_currentTransformFeedbackPrimitivesWrittenQuery);
+  visitor->trace(m_currentElapsedQuery);
   visitor->trace(m_samplerUnits);
   visitor->trace(m_getBufferSubDataAsyncCallbacks);
   WebGLRenderingContextBase::trace(visitor);
@@ -4439,6 +4517,7 @@ DEFINE_TRACE_WRAPPERS(WebGL2RenderingContextBase) {
   }
   visitor->traceWrappers(m_currentBooleanOcclusionQuery);
   visitor->traceWrappers(m_currentTransformFeedbackPrimitivesWrittenQuery);
+  visitor->traceWrappers(m_currentElapsedQuery);
   for (auto& unit : m_samplerUnits) {
     visitor->traceWrappers(unit);
   }
@@ -4691,6 +4770,8 @@ void WebGL2RenderingContextBase::visitChildDOMWrappers(
       wrapper, m_currentBooleanOcclusionQuery, isolate);
   DOMWrapperWorld::setWrapperReferencesInAllWorlds(
       wrapper, m_currentTransformFeedbackPrimitivesWrittenQuery, isolate);
+  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
+      wrapper, m_currentElapsedQuery, isolate);
 
   for (auto& unit : m_samplerUnits) {
     DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, unit, isolate);
