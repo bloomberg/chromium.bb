@@ -293,6 +293,7 @@ ImeMenuTray::~ImeMenuTray() {
 }
 
 void ImeMenuTray::ShowImeMenuBubble() {
+  should_block_shelf_auto_hide_ = true;
   views::TrayBubbleView::InitParams init_params(
       views::TrayBubbleView::ANCHOR_TYPE_TRAY, GetAnchorAlignment(),
       kTrayPopupMinWidth, kTrayPopupMaxWidth);
@@ -353,7 +354,6 @@ void ImeMenuTray::ShowImeMenuBubble() {
 
   bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
   SetDrawBackgroundAsActive(true);
-  should_block_shelf_auto_hide_ = true;
 }
 
 void ImeMenuTray::HideImeMenuBubble() {
@@ -361,6 +361,7 @@ void ImeMenuTray::HideImeMenuBubble() {
   ime_list_view_ = nullptr;
   SetDrawBackgroundAsActive(false);
   should_block_shelf_auto_hide_ = false;
+  shelf()->UpdateAutoHideState();
 }
 
 bool ImeMenuTray::IsImeMenuBubbleShown() {
