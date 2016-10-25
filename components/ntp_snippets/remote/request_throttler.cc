@@ -152,8 +152,11 @@ bool RequestThrottler::DemandQuotaForRequest(bool interactive_request) {
 }
 
 void RequestThrottler::ResetCounterIfDayChanged() {
-  // The count of days since a fixed reference (the Unix epoch).
-  int now_day = (base::Time::Now() - base::Time::UnixEpoch()).InDays();
+  // Get the date, "concatenated" into an int in "YYYYMMDD" format.
+  base::Time::Exploded now_exploded;
+  base::Time::Now().LocalExplode(&now_exploded);
+  int now_day = 10000 * now_exploded.year + 100 * now_exploded.month +
+                now_exploded.day_of_month;
 
   if (!HasDay()) {
     // The counter is used for the first time in this profile.
