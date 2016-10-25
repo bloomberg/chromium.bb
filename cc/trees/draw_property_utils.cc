@@ -109,22 +109,18 @@ bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
     if (property_trees->ComputeTransformToTarget(clip_node->target_transform_id,
                                                  target_effect_node->id,
                                                  &clip_to_target)) {
-      // We don't have to apply surface contents scale when target is root.
-      if (target_effect_node->id != EffectTree::kContentsRootNodeId) {
-        PostConcatSurfaceContentsScale(target_effect_node, &clip_to_target);
+      PostConcatSurfaceContentsScale(target_effect_node, &clip_to_target);
 #if DCHECK_IS_ON()
-        const TransformTree& transform_tree = property_trees->transform_tree;
-        VerifySurfaceContentsScalesMatch(layer->effect_tree_index(),
-                                         target_node_id, effect_tree,
-                                         transform_tree);
+      const TransformTree& transform_tree = property_trees->transform_tree;
+      VerifySurfaceContentsScalesMatch(layer->effect_tree_index(),
+                                       target_node_id, effect_tree,
+                                       transform_tree);
 #endif
-      }
 
       const EffectNode* source_node =
           effect_tree.Node(clip_node->target_effect_id);
       ConcatInverseSurfaceContentsScale(source_node, &clip_to_target);
 #if DCHECK_IS_ON()
-      const TransformTree& transform_tree = property_trees->transform_tree;
       VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
                                        clip_node->target_transform_id,
                                        effect_tree, transform_tree);
@@ -183,20 +179,18 @@ static ConditionalClip ComputeLocalRectInTargetSpace(
     int target_effect_id) {
   gfx::Transform current_to_target;
   if (!property_trees->ComputeTransformToTarget(
-          current_transform_id, target_effect_id, &current_to_target))
+          current_transform_id, target_effect_id, &current_to_target)) {
     // If transform is not invertible, cannot apply clip.
     return ConditionalClip{false, gfx::RectF()};
-  // We don't have to apply surface contents scale when target is root.
-  if (target_effect_id != EffectTree::kContentsRootNodeId) {
-    const EffectTree& effect_tree = property_trees->effect_tree;
-    const EffectNode* target_effect_node = effect_tree.Node(target_effect_id);
-    PostConcatSurfaceContentsScale(target_effect_node, &current_to_target);
-#if DCHECK_IS_ON()
-    const TransformTree& transform_tree = property_trees->transform_tree;
-    VerifySurfaceContentsScalesMatch(target_effect_id, target_transform_id,
-                                     effect_tree, transform_tree);
-#endif
   }
+  const EffectTree& effect_tree = property_trees->effect_tree;
+  const EffectNode* target_effect_node = effect_tree.Node(target_effect_id);
+  PostConcatSurfaceContentsScale(target_effect_node, &current_to_target);
+#if DCHECK_IS_ON()
+  const TransformTree& transform_tree = property_trees->transform_tree;
+  VerifySurfaceContentsScalesMatch(target_effect_id, target_transform_id,
+                                   effect_tree, transform_tree);
+#endif
 
   if (current_transform_id > target_transform_id)
     return ConditionalClip{true,  // is_clipped.
@@ -219,7 +213,9 @@ static ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
   gfx::RectF current_clip = clip_node->clip;
   gfx::Vector2dF surface_contents_scale =
       effect_tree.Node(target_effect_id)->surface_contents_scale;
-  if (surface_contents_scale.x() > 0 && surface_contents_scale.y() > 0)
+  // The viewport clip should not be scaled
+  if (surface_contents_scale.x() > 0 && surface_contents_scale.y() > 0 &&
+      clip_node->transform_id != TransformTree::kRootNodeId)
     current_clip.Scale(surface_contents_scale.x(), surface_contents_scale.y());
   return ConditionalClip{true /* is_clipped */, current_clip};
 }
@@ -533,13 +529,11 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
       }
-      if (target_effect_node->id > EffectTree::kContentsRootNodeId) {
-        ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
+      ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
 #if DCHECK_IS_ON()
-        VerifySurfaceContentsScalesMatch(target_effect_node->id, target_node_id,
-                                         effect_tree, transform_tree);
+      VerifySurfaceContentsScalesMatch(target_effect_node->id, target_node_id,
+                                       effect_tree, transform_tree);
 #endif
-      }
     }
     gfx::Transform target_to_content;
     target_to_content.Translate(-layer->offset_to_transform_parent().x(),
@@ -818,29 +812,23 @@ void ComputeClips(PropertyTrees* property_trees,
       success &= property_trees->ComputeTransformFromTarget(
           clip_node->target_transform_id, parent_clip_node->target_effect_id,
           &parent_to_current);
-      // We don't have to apply surface contents scale when target is root.
-      if (clip_node->target_effect_id != EffectTree::kContentsRootNodeId) {
-        const EffectNode* target_effect_node =
-            effect_tree.Node(clip_node->target_effect_id);
-        PostConcatSurfaceContentsScale(target_effect_node, &parent_to_current);
+      const EffectNode* target_effect_node =
+          effect_tree.Node(clip_node->target_effect_id);
+      PostConcatSurfaceContentsScale(target_effect_node, &parent_to_current);
 #if DCHECK_IS_ON()
-        VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
-                                         clip_node->target_transform_id,
-                                         effect_tree, transform_tree);
+      VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
+                                       clip_node->target_transform_id,
+                                       effect_tree, transform_tree);
 #endif
-      }
-      if (parent_clip_node->target_effect_id !=
-          EffectTree::kContentsRootNodeId) {
-        const EffectNode* parent_target_effect_node =
-            effect_tree.Node(parent_clip_node->target_effect_id);
-        ConcatInverseSurfaceContentsScale(parent_target_effect_node,
-                                          &parent_to_current);
+      const EffectNode* parent_target_effect_node =
+          effect_tree.Node(parent_clip_node->target_effect_id);
+      ConcatInverseSurfaceContentsScale(parent_target_effect_node,
+                                        &parent_to_current);
 #if DCHECK_IS_ON()
-        VerifySurfaceContentsScalesMatch(parent_clip_node->target_effect_id,
-                                         parent_clip_node->target_transform_id,
-                                         effect_tree, transform_tree);
+      VerifySurfaceContentsScalesMatch(parent_clip_node->target_effect_id,
+                                       parent_clip_node->target_transform_id,
+                                       effect_tree, transform_tree);
 #endif
-      }
       // If we can't compute a transform, it's because we had to use the inverse
       // of a singular transform. We won't draw in this case, so there's no need
       // to compute clips.
@@ -903,17 +891,14 @@ void ComputeClips(PropertyTrees* property_trees,
       } else {
         success = property_trees->ComputeTransformToTarget(
             transform_node->id, clip_node->target_effect_id, &source_to_target);
-        // We don't have to apply surface contents scale when target is root.
-        if (clip_node->target_effect_id != EffectTree::kContentsRootNodeId) {
-          const EffectNode* target_effect_node =
-              effect_tree.Node(clip_node->target_effect_id);
-          PostConcatSurfaceContentsScale(target_effect_node, &source_to_target);
+        const EffectNode* target_effect_node =
+            effect_tree.Node(clip_node->target_effect_id);
+        PostConcatSurfaceContentsScale(target_effect_node, &source_to_target);
 #if DCHECK_IS_ON()
-          VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
-                                           clip_node->target_transform_id,
-                                           effect_tree, transform_tree);
+        VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
+                                         clip_node->target_transform_id,
+                                         effect_tree, transform_tree);
 #endif
-        }
         // source_to_target computation should be successful as target is an
         // ancestor of the transform node.
         DCHECK(success);
@@ -958,8 +943,8 @@ void UpdateRenderTarget(EffectTree* effect_tree,
   for (int i = 1; i < static_cast<int>(effect_tree->size()); ++i) {
     EffectNode* node = effect_tree->Node(i);
     if (i == 1) {
-      // Render target on the first effect node is root.
-      node->target_id = 0;
+      // Render target on the node corresponding to root is itself.
+      node->target_id = 1;
     } else if (!can_render_to_separate_surface) {
       node->target_id = 1;
     } else if (effect_tree->parent(node)->has_render_surface) {
@@ -1068,15 +1053,12 @@ static void VerifyDrawTransformsMatch(LayerImpl* layer,
   gfx::Transform draw_transform;
   property_trees->ComputeTransformToTarget(source_id, target_effect_node->id,
                                            &draw_transform);
-  // We don't have to apply surface contents scale when target is root.
-  if (target_effect_node->id != EffectTree::kContentsRootNodeId) {
-    PostConcatSurfaceContentsScale(target_effect_node, &draw_transform);
+  PostConcatSurfaceContentsScale(target_effect_node, &draw_transform);
 #if DCHECK_IS_ON()
-    VerifySurfaceContentsScalesMatch(layer->effect_tree_index(), destination_id,
-                                     property_trees->effect_tree,
-                                     property_trees->transform_tree);
+  VerifySurfaceContentsScalesMatch(layer->effect_tree_index(), destination_id,
+                                   property_trees->effect_tree,
+                                   property_trees->transform_tree);
 #endif
-  }
   if (layer->should_flatten_transform_from_property_tree())
     draw_transform.FlattenTo2d();
   draw_transform.Translate(layer->offset_to_transform_parent().x(),
@@ -1304,18 +1286,14 @@ static void SetSurfaceDrawTransform(const PropertyTrees* property_trees,
       effect_tree.Node(effect_node->target_id);
   property_trees->ComputeTransformToTarget(
       transform_node->id, target_effect_node->id, &render_surface_transform);
-  // We don't have to apply surface contents scale when target is root.
-  if (effect_node->target_id != EffectTree::kContentsRootNodeId) {
-    PostConcatSurfaceContentsScale(target_effect_node,
-                                   &render_surface_transform);
+  PostConcatSurfaceContentsScale(target_effect_node, &render_surface_transform);
 #if DCHECK_IS_ON()
-    const TransformNode* target_transform_node =
-        transform_tree.Node(transform_tree.TargetId(transform_node->id));
-    VerifySurfaceContentsScalesMatch(effect_node->target_id,
-                                     target_transform_node->id, effect_tree,
-                                     transform_tree);
+  const TransformNode* target_transform_node =
+      transform_tree.Node(transform_tree.TargetId(transform_node->id));
+  VerifySurfaceContentsScalesMatch(effect_node->target_id,
+                                   target_transform_node->id, effect_tree,
+                                   transform_tree);
 #endif
-  }
 
   ConcatInverseSurfaceContentsScale(effect_node, &render_surface_transform);
 #if DCHECK_IS_ON()
@@ -1368,18 +1346,12 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
     return;
   }
 
-  // We don't have to apply surface contents scale when target is root.
-  if (render_surface->EffectTreeIndex() != EffectTree::kContentsRootNodeId) {
-    const EffectNode* effect_node =
-        effect_tree.Node(render_surface->EffectTreeIndex());
-    PostConcatSurfaceContentsScale(effect_node, &clip_parent_target_to_target);
+  PostConcatSurfaceContentsScale(effect_node, &clip_parent_target_to_target);
 #if DCHECK_IS_ON()
-    VerifySurfaceContentsScalesMatch(
-        render_surface->EffectTreeIndex(),
-        transform_tree.TargetId(transform_node->id), effect_tree,
-        transform_tree);
+  VerifySurfaceContentsScalesMatch(render_surface->EffectTreeIndex(),
+                                   transform_tree.TargetId(transform_node->id),
+                                   effect_tree, transform_tree);
 #endif
-  }
 
   DCHECK_LT(parent_clip_node->target_transform_id,
             transform_tree.TargetId(transform_node->id));

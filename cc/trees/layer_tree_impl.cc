@@ -1033,15 +1033,11 @@ bool LayerTreeImpl::UpdateDrawProperties(
           property_trees()->ComputeTransformToTarget(
               it->render_surface()->TransformTreeIndex(),
               occlusion_surface->EffectTreeIndex(), &draw_transform);
-          // We don't have to apply surface contents scale when target is root.
-          if (occlusion_surface->EffectTreeIndex() !=
-              EffectTree::kContentsRootNodeId) {
-            const EffectNode* occlusion_effect_node =
-                property_trees()->effect_tree.Node(
-                    occlusion_surface->EffectTreeIndex());
-            draw_property_utils::PostConcatSurfaceContentsScale(
-                occlusion_effect_node, &draw_transform);
-          }
+          const EffectNode* occlusion_effect_node =
+              property_trees()->effect_tree.Node(
+                  occlusion_surface->EffectTreeIndex());
+          draw_property_utils::PostConcatSurfaceContentsScale(
+              occlusion_effect_node, &draw_transform);
           const EffectNode* effect_node = property_trees()->effect_tree.Node(
               it->render_surface()->EffectTreeIndex());
           draw_property_utils::ConcatInverseSurfaceContentsScale(

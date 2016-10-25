@@ -86,7 +86,7 @@ TEST(PropertyTreeSerializationTest, TransformTreeSerialization) {
   gfx::Transform transform =
       gfx::Transform(1.05f, 2.15f, 3.14f, 4.13f, 5.12f, 6.11f, 7.1f, 8.9f, 9.8f,
                      10.7f, 11.6f, 12.5f, 13.4f, 14.3f, 15.2f, 16.1f);
-  original.SetDeviceTransformScaleFactor(transform);
+  original.SetRootTransformsAndScales(0.6f, 1.f, transform, gfx::PointF());
   original.AddNodeAffectedByInnerViewportBoundsDelta(0);
   original.AddNodeAffectedByOuterViewportBoundsDelta(1);
 
@@ -1119,6 +1119,9 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     int parent = tree.Insert(TransformNode(), 0);
     int effect_parent = effect_tree.Insert(EffectNode(), 0);
     effect_tree.Node(effect_parent)->has_render_surface = true;
+    effect_tree.Node(effect_parent)->surface_contents_scale =
+        gfx::Vector2dF(1.f, 1.f);
+
     tree.SetTargetId(parent, parent);
     tree.Node(parent)->scrolls = true;
     tree.Node(parent)->source_node_id = 0;

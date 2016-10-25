@@ -580,12 +580,16 @@ void CalculateDrawPropertiesInternal(
           inputs->elastic_overscroll);
       // Similarly, the device viewport and device transform are shared
       // by both trees.
-      inputs->property_trees->clip_tree.SetViewportClip(
+      PropertyTrees* property_trees = inputs->property_trees;
+      property_trees->clip_tree.SetViewportClip(
           gfx::RectF(gfx::SizeF(inputs->device_viewport_size)));
-      inputs->property_trees->transform_tree.SetDeviceTransform(
+      float page_scale_factor_for_root =
+          inputs->page_scale_layer == inputs->root_layer
+              ? inputs->page_scale_factor
+              : 1.f;
+      property_trees->transform_tree.SetRootTransformsAndScales(
+          inputs->device_scale_factor, page_scale_factor_for_root,
           inputs->device_transform, inputs->root_layer->position());
-      inputs->property_trees->transform_tree.SetDeviceTransformScaleFactor(
-          inputs->device_transform);
       draw_property_utils::ComputeVisibleRects(
           inputs->root_layer, inputs->property_trees,
           inputs->can_render_to_separate_surface, &visible_layer_list);

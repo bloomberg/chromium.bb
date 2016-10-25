@@ -611,11 +611,9 @@ void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
     // to the root of the transform tree in ComputeTransform.
     int target_id = target_node->id;
     ComputeTransform(node->id, target_id, &target_space_transform);
-    if (target_id != kRootNodeId) {
-      target_space_transform.matrix().postScale(
-          target_node->surface_contents_scale.x(),
-          target_node->surface_contents_scale.y(), 1.f);
-    }
+    target_space_transform.matrix().postScale(
+        target_node->surface_contents_scale.x(),
+        target_node->surface_contents_scale.y(), 1.f);
   }
 
   gfx::Transform from_target;
@@ -709,30 +707,67 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       node->has_potential_animation || is_invertible;
 }
 
-void TransformTree::SetDeviceTransform(const gfx::Transform& transform,
-                                       gfx::PointF root_position) {
-  gfx::Transform root_post_local = transform;
-  TransformNode* node = Node(1);
-  root_post_local.Scale(node->post_local_scale_factor,
-                        node->post_local_scale_factor);
-  root_post_local.Translate(root_position.x(), root_position.y());
-  if (node->post_local == root_post_local)
-    return;
+void TransformTree::SetContentsRootPostLocalTransform(
+    const gfx::Transform& transform,
+    gfx::PointF root_position) {
+  // The post local transform of the contents root node is set to the device
+  // transform with scale removed and is also offset by the root layer's
+  // position. The scale part of the device transform goes into the screen space
+  // scale stored on the root node.
+  gfx::Transform post_local = transform;
+  post_local.Translate(root_position.x(), root_position.y());
 
-  node->post_local = root_post_local;
+  TransformNode* node = Node(kContentsRootNodeId);
+  if (node->post_local == post_local)
+    return;
+  node->post_local = post_local;
   node->needs_local_transform_update = true;
   set_needs_update(true);
 }
 
-void TransformTree::SetDeviceTransformScaleFactor(
-    const gfx::Transform& transform) {
+void TransformTree::SetScreenSpaceScaleOnRootNode(
+    gfx::Vector2dF screen_space_scale_components) {
+  TransformNode* node = Node(kRootNodeId);
+  if (node->surface_contents_scale == screen_space_scale_components)
+    return;
+  node->needs_surface_contents_scale = true;
+  node->surface_contents_scale = screen_space_scale_components;
+  gfx::Transform to_screen;
+  to_screen.Scale(node->surface_contents_scale.x(),
+                  node->surface_contents_scale.y());
+  SetToScreen(node->id, to_screen);
+  gfx::Transform from_screen;
+  if (!ToScreen(node->id).GetInverse(&from_screen))
+    node->ancestors_are_invertible = false;
+  SetFromScreen(node->id, from_screen);
+  set_needs_update(true);
+}
+
+void TransformTree::SetRootTransformsAndScales(
+    float device_scale_factor,
+    float page_scale_factor_for_root,
+    const gfx::Transform& device_transform,
+    gfx::PointF root_position) {
   gfx::Vector2dF device_transform_scale_components =
-      MathUtil::ComputeTransform2dScaleComponents(transform, 1.f);
+      MathUtil::ComputeTransform2dScaleComponents(device_transform, 1.f);
 
   // Not handling the rare case of different x and y device scale.
   device_transform_scale_factor_ =
       std::max(device_transform_scale_components.x(),
                device_transform_scale_components.y());
+  gfx::Transform device_transform_without_scale = device_transform;
+  device_transform_without_scale.matrix().postScale(
+      1.f / device_transform_scale_components.x(),
+      1.f / device_transform_scale_components.y(), 1.f);
+  SetContentsRootPostLocalTransform(device_transform_without_scale,
+                                    root_position);
+
+  gfx::Vector2dF screen_space_scale_components(
+      device_transform_scale_components.x() * device_scale_factor *
+          page_scale_factor_for_root,
+      device_transform_scale_components.y() * device_scale_factor *
+          page_scale_factor_for_root);
+  SetScreenSpaceScaleOnRootNode(screen_space_scale_components);
 }
 
 void TransformTree::UpdateInnerViewportContainerBoundsDelta() {
@@ -1016,8 +1051,7 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
 }
 
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
-  if (!effect_node->has_render_surface ||
-      effect_node->transform_id == kRootNodeId) {
+  if (!effect_node->has_render_surface) {
     effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
     return;
   }
@@ -1137,11 +1171,8 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
     gfx::Transform transform;
     property_trees()->transform_tree.ComputeTransform(source_id, destination_id,
                                                       &transform);
-    if (effect_node->id != kContentsRootNodeId) {
-      transform.matrix().postScale(effect_node->surface_contents_scale.x(),
-                                   effect_node->surface_contents_scale.y(),
-                                   1.f);
-    }
+    transform.matrix().postScale(effect_node->surface_contents_scale.x(),
+                                 effect_node->surface_contents_scale.y(), 1.f);
     it->set_area(MathUtil::MapEnclosingClippedRect(transform, it->area()));
   }
 }
@@ -2248,10 +2279,9 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
   } else if (transform_id > dest_id) {
     transform_tree.CombineTransformsBetween(transform_id, dest_id,
                                             &target_space_transform);
-    if (dest_id != TransformTree::kRootNodeId)
-      target_space_transform.matrix().postScale(
-          effect_node->surface_contents_scale.x(),
-          effect_node->surface_contents_scale.y(), 1.f);
+    target_space_transform.matrix().postScale(
+        effect_node->surface_contents_scale.x(),
+        effect_node->surface_contents_scale.y(), 1.f);
     data.transforms.to_valid = true;
     data.transforms.from_valid = false;
     data.transforms.might_be_invertible = true;
