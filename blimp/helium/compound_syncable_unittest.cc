@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "blimp/helium/helium_test.h"
 #include "blimp/helium/lww_register.h"
 #include "blimp/helium/revision_generator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,7 +39,7 @@ class SampleCompoundSyncable : public CompoundSyncable {
   DISALLOW_COPY_AND_ASSIGN(SampleCompoundSyncable);
 };
 
-class CompoundSyncableTest : public testing::Test {
+class CompoundSyncableTest : public HeliumTest {
  public:
   CompoundSyncableTest()
       : last_sync_engine_(0),
