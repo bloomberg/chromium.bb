@@ -64,8 +64,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Windows only.
     # We are awesome!
-    self.Fail('deqp/functional/gles3/pixelbufferobject.html',
-        ['win'], bug=1555) # ANGLE bug.
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
