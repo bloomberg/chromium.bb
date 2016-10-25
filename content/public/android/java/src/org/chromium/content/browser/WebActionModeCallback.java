@@ -174,6 +174,10 @@ public class WebActionModeCallback implements ActionMode.Callback {
             new MenuInflater(getContext()).inflate(R.menu.select_action_menu, menu);
         }
 
+        if (!mEditable || !canPaste()) {
+            menu.removeItem(R.id.select_action_menu_paste);
+        }
+
         if (mIsInsertion) {
             menu.removeItem(R.id.select_action_menu_select_all);
             menu.removeItem(R.id.select_action_menu_cut);
@@ -181,10 +185,6 @@ public class WebActionModeCallback implements ActionMode.Callback {
             menu.removeItem(R.id.select_action_menu_share);
             menu.removeItem(R.id.select_action_menu_web_search);
             return;
-        }
-
-        if (!mEditable || !canPaste()) {
-            menu.removeItem(R.id.select_action_menu_paste);
         }
 
         if (!mEditable) {
