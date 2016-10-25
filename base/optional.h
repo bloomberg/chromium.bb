@@ -34,7 +34,20 @@ namespace internal {
 
 template <typename T, bool = base::is_trivially_destructible<T>::value>
 struct OptionalStorage {
-  OptionalStorage() {}
+  constexpr OptionalStorage() {}
+
+  constexpr explicit OptionalStorage(const T& value)
+      : is_null_(false), value_(value) {}
+
+  // TODO(alshabalin): Can't use 'constexpr' with std::move until C++14.
+  explicit OptionalStorage(T&& value)
+      : is_null_(false), value_(std::move(value)) {}
+
+  // TODO(alshabalin): Can't use 'constexpr' with std::forward until C++14.
+  template <class... Args>
+  explicit OptionalStorage(base::in_place_t, Args&&... args)
+      : is_null_(false), value_(std::forward<Args>(args)...) {}
+
   // When T is not trivially destructible we must call its
   // destructor before deallocating its memory.
   ~OptionalStorage() {
@@ -54,7 +67,20 @@ struct OptionalStorage {
 
 template <typename T>
 struct OptionalStorage<T, true> {
-  OptionalStorage() {}
+  constexpr OptionalStorage() {}
+
+  constexpr explicit OptionalStorage(const T& value)
+      : is_null_(false), value_(value) {}
+
+  // TODO(alshabalin): Can't use 'constexpr' with std::move until C++14.
+  explicit OptionalStorage(T&& value)
+      : is_null_(false), value_(std::move(value)) {}
+
+  // TODO(alshabalin): Can't use 'constexpr' with std::forward until C++14.
+  template <class... Args>
+  explicit OptionalStorage(base::in_place_t, Args&&... args)
+      : is_null_(false), value_(std::forward<Args>(args)...) {}
+
   // When T is trivially destructible (i.e. its destructor does nothing) there
   // is no need to call it. Explicitly defaulting the destructor means it's not
   // user-provided. Those two together make this destructor trivial.
@@ -91,7 +117,8 @@ class Optional {
   using value_type = T;
 
   constexpr Optional() = default;
-  Optional(base::nullopt_t) : Optional() {}
+
+  constexpr Optional(base::nullopt_t) {}
 
   Optional(const Optional& other) {
     if (!other.storage_.is_null_)
@@ -103,14 +130,15 @@ class Optional {
       Init(std::move(other.value()));
   }
 
-  Optional(const T& value) { Init(value); }
+  constexpr Optional(const T& value) : storage_(value) {}
 
-  Optional(T&& value) { Init(std::move(value)); }
+  // TODO(alshabalin): Can't use 'constexpr' with std::move until C++14.
+  Optional(T&& value) : storage_(std::move(value)) {}
 
+  // TODO(alshabalin): Can't use 'constexpr' with std::forward until C++14.
   template <class... Args>
-  explicit Optional(base::in_place_t, Args&&... args) {
-    emplace(std::forward<Args>(args)...);
-  }
+  explicit Optional(base::in_place_t, Args&&... args)
+      : storage_(base::in_place, std::forward<Args>(args)...) {}
 
   ~Optional() = default;
 
