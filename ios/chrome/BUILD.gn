@@ -9,6 +9,7 @@ import("//testing/test.gni")
 bundle_data("ios_chrome_unittests_bundle_data") {
   testonly = true
   sources = [
+    "test/data/voice/test_sound.m4a",
     "test/data/webp_transcode/test.jpg",
     "test/data/webp_transcode/test.webp",
     "test/data/webp_transcode/test_alpha.png",
@@ -117,6 +118,8 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser:test_support",
     "//ios/chrome/browser/signin:unit_tests",
+    "//ios/chrome/browser/ui/voice:unit_tests",
+    "//ios/chrome/browser/voice:unit_tests",
     "//ios/chrome/common",
     "//ios/chrome/test",
     "//ios/chrome/test:run_all_unittests",

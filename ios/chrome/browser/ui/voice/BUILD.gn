@@ -1,0 +1,39 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("voice") {
+  sources = [
+    "text_to_speech_player.h",
+    "text_to_speech_player.mm",
+    "voice_search_notification_names.h",
+    "voice_search_notification_names.mm",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  libs = [ "AVFoundation.framework" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "text_to_speech_player_unittest.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/web",
+    "//ios/web:test_support",
+    "//testing/gtest",
+    "//url",
+  ]
+
+  public_deps = [
+    ":voice",
+  ]
+}
