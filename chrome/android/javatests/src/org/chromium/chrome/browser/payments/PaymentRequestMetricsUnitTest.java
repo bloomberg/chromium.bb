@@ -34,7 +34,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
         assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_NONE));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(false, false, false);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, false, false, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_NONE));
@@ -43,7 +43,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
         assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(true, false, false);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, false, false, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL));
@@ -52,7 +52,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
         assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(false, true, false);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, true, false, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE));
@@ -61,7 +61,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
         assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(false, false, true);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, false, true, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING));
@@ -71,7 +71,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
                 | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(true, true, false);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, true, false, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
@@ -82,7 +82,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
                 | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(true, false, true);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, false, true, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
@@ -93,7 +93,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
                 | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(false, true, true);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, true, true, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
@@ -105,11 +105,107 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
                 | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
                 | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING));
-        PaymentRequestMetrics.recordRequestedInformationHistogram(true, true, true);
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, true, true, false);
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.RequestedInformation",
                 PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
                 | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
                 | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING));
+
+                // Name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, false, false, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+
+                // Email and name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, false, false, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+
+                // Phone and name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, true, false, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+
+                // Email, phone and name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, true, false, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+
+                // Shipping address and name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, false, true, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+
+                // Email, shipping address and name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, false, true, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+
+                // Phone shipping address and name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(false, true, true, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+
+                // Email, phone, shipping address and name requested.
+        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
+        PaymentRequestMetrics.recordRequestedInformationHistogram(true, true, true, true);
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                "PaymentRequest.RequestedInformation",
+                PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME));
     }
 }

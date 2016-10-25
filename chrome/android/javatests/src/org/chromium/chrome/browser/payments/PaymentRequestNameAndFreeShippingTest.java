@@ -67,8 +67,8 @@ public class PaymentRequestNameAndFreeShippingTest extends PaymentRequestTestBas
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
-            assertEquals((i == (PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
-                    | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING) ? 1 : 0),
+            assertEquals((i == (PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                    | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME) ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

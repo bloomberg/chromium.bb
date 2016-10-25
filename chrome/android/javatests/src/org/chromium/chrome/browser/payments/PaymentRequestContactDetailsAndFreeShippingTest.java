@@ -59,8 +59,8 @@ public class PaymentRequestContactDetailsAndFreeShippingTest extends PaymentRequ
     }
 
     /**
-     * Test that starting a payment request that requires an email address, a phone number and a
-     * shipping address results in the appropriate metric being logged in the
+     * Test that starting a payment request that requires an email address, a phone number a name
+     * and a shipping address results in the appropriate metric being logged in the
      * PaymentRequest.RequestedInformation histogram.
      */
     @MediumTest
@@ -74,7 +74,8 @@ public class PaymentRequestContactDetailsAndFreeShippingTest extends PaymentRequ
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
             assertEquals((i == (PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
                     | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
-                    | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING) ? 1 : 0),
+                    | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING
+                    | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME) ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

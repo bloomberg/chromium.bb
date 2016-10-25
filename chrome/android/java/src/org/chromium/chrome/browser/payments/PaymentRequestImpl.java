@@ -391,7 +391,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
 
         PaymentRequestMetrics.recordRequestedInformationHistogram(requestPayerEmail,
-                requestPayerPhone, requestShipping);
+                requestPayerPhone, requestShipping, requestPayerName);
     }
 
     /**

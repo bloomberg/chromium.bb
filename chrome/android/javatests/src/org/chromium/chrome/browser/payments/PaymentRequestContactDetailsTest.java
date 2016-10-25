@@ -180,9 +180,9 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     }
 
     /**
-     * Test that starting a payment request that requires the user's email address and phone number
-     * results in the appropriate metric being logged in the PaymentRequest.RequestedInformation
-     * histogram.
+     * Test that starting a payment request that requires the user's email address, phone number and
+     * name results in the appropriate metric being logged in the
+     * PaymentRequest.RequestedInformation histogram.
      */
     @MediumTest
     @Feature({"Payments"})
@@ -194,7 +194,8 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
             assertEquals((i == (PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
-                    | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE) ? 1 : 0),
+                    | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
+                    | PaymentRequestMetrics.REQUESTED_INFORMATION_NAME) ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }
