@@ -892,14 +892,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="Accel_Toggle_High_Contrast">
-  <owner>dmazzoni@chromium.org</owner>
-  <description>
-    Metric recorded when the user toggles Chrome OS High Contrast mode with the
-    keyboard accelerator (Ctrl+Alt+H).
-  </description>
-</action>
-
 <action name="Accel_Toggle_Maximized">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -926,8 +918,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accel_Toggle_Spoken_Feedback">
-  <owner>dmazzoni@chromium.org</owner>
-  <description>Toggles Spoken Feedback (ChromeVox)</description>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="Accel_Toggle_Touchpad">
