@@ -44,14 +44,13 @@ VideoRendererAlgorithm::VideoRendererAlgorithm(
   Reset();
 }
 
-VideoRendererAlgorithm::~VideoRendererAlgorithm() {
-}
+VideoRendererAlgorithm::~VideoRendererAlgorithm() {}
 
 scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max,
     size_t* frames_dropped) {
-  DCHECK_LT(deadline_min, deadline_max);
+  DCHECK_LE(deadline_min, deadline_max);
 
   if (frame_queue_.empty())
     return nullptr;
@@ -77,14 +76,16 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   // all frames currently in the |frame_queue_|.
   UpdateFrameStatistics();
   const bool have_known_duration = average_frame_duration_ > base::TimeDelta();
-  if (!(was_time_moving_ && have_known_duration)) {
+  if (!was_time_moving_ || !have_known_duration || render_interval_.is_zero()) {
     ReadyFrame& ready_frame = frame_queue_[last_frame_index_];
     DCHECK(ready_frame.frame);
 
     // If duration is unknown, we don't have enough frames to make a good guess
     // about which frame to use, so always choose the first.
-    if (was_time_moving_ && !have_known_duration)
+    if ((was_time_moving_ && !have_known_duration) ||
+        render_interval_.is_zero()) {
       ++ready_frame.render_count;
+    }
 
     UpdateEffectiveFramesQueued();
     return ready_frame.frame;
@@ -421,7 +422,8 @@ void VideoRendererAlgorithm::AccountForMissedIntervals(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max) {
   if (last_deadline_max_.is_null() || deadline_min <= last_deadline_max_ ||
-      !have_rendered_frames_ || !was_time_moving_) {
+      !have_rendered_frames_ || !was_time_moving_ ||
+      render_interval_.is_zero()) {
     return;
   }
 

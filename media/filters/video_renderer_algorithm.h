@@ -136,8 +136,6 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
 
   size_t frames_queued() const { return frame_queue_.size(); }
 
-  scoped_refptr<VideoFrame> first_frame() { return frame_queue_.front().frame; }
-
   // Returns the average of the duration of all frames in |frame_queue_|
   // as measured in wall clock (not media) time.
   base::TimeDelta average_frame_duration() const {

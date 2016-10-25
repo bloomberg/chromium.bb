@@ -59,6 +59,7 @@ VideoRendererImpl::VideoRendererImpl(
       last_video_memory_usage_(0),
       have_renderered_frames_(false),
       last_frame_opaque_(false),
+      painted_first_frame_(false),
       weak_factory_(this),
       frame_callback_weak_factory_(this) {
   if (gpu_factories &&
@@ -114,6 +115,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   // will get a bunch of ReusePictureBuffer() calls before the Reset(), which
   // they may use to output more frames that won't be used.
   algorithm_->Reset();
+  painted_first_frame_ = false;
 }
 
 void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -126,6 +128,7 @@ void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
 
   state_ = kPlaying;
   start_timestamp_ = timestamp;
+  painted_first_frame_ = false;
   AttemptRead_Locked();
 }
 
@@ -400,10 +403,9 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   if (!sink_started_)
     UpdateStats_Locked();
 
-  // Paint the first frame if possible and necessary. PaintSingleFrame() will
-  // ignore repeated calls for the same frame. Paint ahead of HAVE_ENOUGH_DATA
-  // to ensure the user sees the frame as early as possible.
-  if (!sink_started_ && algorithm_->frames_queued()) {
+  // Paint the first frame if possible and necessary. Paint ahead of
+  // HAVE_ENOUGH_DATA to ensure the user sees the frame as early as possible.
+  if (!sink_started_ && algorithm_->frames_queued() && !painted_first_frame_) {
     // We want to paint the first frame under two conditions: Either (1) we have
     // enough frames to know it's definitely the first frame or (2) there may be
     // no more frames coming (sometimes unless we paint one of them).
@@ -412,11 +414,14 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
     // must have a timestamp >= |start_timestamp_|, since otherwise we may be
     // prerolling frames before the actual start time that will be dropped.
     if (algorithm_->frames_queued() > 1 || received_end_of_stream_ ||
-        algorithm_->first_frame()->timestamp() >= start_timestamp_ ||
-        low_delay_ || !video_frame_stream_->CanReadWithoutStalling()) {
-      scoped_refptr<VideoFrame> frame = algorithm_->first_frame();
-      CheckForMetadataChanges(frame->format(), frame->natural_size());
-      sink_->PaintSingleFrame(frame);
+        frame->timestamp() >= start_timestamp_ || low_delay_ ||
+        !video_frame_stream_->CanReadWithoutStalling()) {
+      scoped_refptr<VideoFrame> first_frame =
+          algorithm_->Render(base::TimeTicks(), base::TimeTicks(), nullptr);
+      CheckForMetadataChanges(first_frame->format(),
+                              first_frame->natural_size());
+      sink_->PaintSingleFrame(first_frame);
+      painted_first_frame_ = true;
     }
   }
 
@@ -673,6 +678,7 @@ void VideoRendererImpl::RemoveFramesForUnderflowOrBackgroundRendering() {
     frames_dropped_ += algorithm_->frames_queued();
     algorithm_->Reset(
         VideoRendererAlgorithm::ResetFlag::kPreserveNextFrameEstimates);
+    painted_first_frame_ = false;
 
     // It's possible in the background rendering case for us to expire enough
     // frames that we need to transition from HAVE_ENOUGH => HAVE_NOTHING. Just

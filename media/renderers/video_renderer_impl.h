@@ -286,6 +286,9 @@ class MEDIA_EXPORT VideoRendererImpl
   gfx::Size last_frame_natural_size_;
   bool last_frame_opaque_;
 
+  // Indicates if we've painted the first valid frame after StartPlayingFrom().
+  bool painted_first_frame_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
 
