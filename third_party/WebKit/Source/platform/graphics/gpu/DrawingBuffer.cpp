@@ -251,6 +251,8 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
     cc::TextureMailbox* outMailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
     bool forceGpuResult) {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   if (m_destructionInProgress) {
     // It can be hit in the following sequence.
     // 1. WebGL draws something.
@@ -320,6 +322,8 @@ bool DrawingBuffer::finishPrepareTextureMailboxSoftware(
 bool DrawingBuffer::finishPrepareTextureMailboxGpu(
     cc::TextureMailbox* outMailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   if (m_webGLVersion > WebGL1) {
     m_stateRestorer->setPixelUnpackBufferBindingDirty();
     m_gl->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -567,6 +571,8 @@ DrawingBuffer::textureColorBufferParameters() {
 
 PassRefPtr<DrawingBuffer::ColorBuffer>
 DrawingBuffer::createOrRecycleColorBuffer() {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   if (!m_recycledColorBufferQueue.isEmpty()) {
     RefPtr<ColorBuffer> recycled = m_recycledColorBufferQueue.takeLast();
     if (recycled->receiveSyncToken.HasData())
@@ -802,6 +808,8 @@ void DrawingBuffer::beginDestruction() {
 }
 
 bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   // Recreate m_backColorBuffer.
   m_backColorBuffer = createColorBuffer(size);
 
@@ -870,6 +878,8 @@ void DrawingBuffer::clearFramebuffers(GLbitfield clearMask) {
 }
 
 void DrawingBuffer::clearFramebuffersInternal(GLbitfield clearMask) {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   m_stateRestorer->setFramebufferBindingDirty();
   // We will clear the multisample FBO, but we also need to clear the
   // non-multisampled buffer.
@@ -905,6 +915,8 @@ bool DrawingBuffer::resize(const IntSize& newSize) {
 }
 
 bool DrawingBuffer::resizeFramebufferInternal(const IntSize& newSize) {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   CHECK(!newSize.isEmpty());
   IntSize adjustedSize = adjustSize(newSize, m_size, m_maxTextureSize);
   if (adjustedSize.isEmpty())
@@ -960,6 +972,8 @@ void DrawingBuffer::resolveAndBindForReadAndDraw() {
 }
 
 void DrawingBuffer::resolveMultisampleFramebufferInternal() {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   m_stateRestorer->setFramebufferBindingDirty();
   if (wantExplicitResolve() && !m_contentsChangeCommitted) {
     m_stateRestorer->setClearStateDirty();
@@ -1068,6 +1082,8 @@ void DrawingBuffer::readBackFramebuffer(unsigned char* pixels,
                                         int height,
                                         ReadbackOrder readbackOrder,
                                         WebGLImageConversion::AlphaOp op) {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   m_stateRestorer->setPixelPackAlignmentDirty();
   m_gl->PixelStorei(GL_PACK_ALIGNMENT, 1);
   m_gl->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -1112,6 +1128,8 @@ void DrawingBuffer::flipVertically(uint8_t* framebuffer,
 
 RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::createColorBuffer(
     const IntSize& size) {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   m_stateRestorer->setFramebufferBindingDirty();
   m_stateRestorer->setTextureBindingDirty();
 
@@ -1185,6 +1203,8 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::createColorBuffer(
 }
 
 void DrawingBuffer::attachColorBufferToReadFramebuffer() {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(m_stateRestorer);
   m_stateRestorer->setFramebufferBindingDirty();
   m_stateRestorer->setTextureBindingDirty();
 
@@ -1228,11 +1248,14 @@ GLenum DrawingBuffer::getMultisampledRenderbufferFormat() {
 DrawingBuffer::ScopedStateRestorer::ScopedStateRestorer(
     DrawingBuffer* drawingBuffer)
     : m_drawingBuffer(drawingBuffer) {
-  DCHECK(!m_drawingBuffer->m_stateRestorer);
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK(!m_drawingBuffer->m_stateRestorer);
   m_drawingBuffer->m_stateRestorer = this;
 }
 
 DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
+  // TODO(ccameron): Make this a DCHECK after fixing crbug.com/658265
+  CHECK_EQ(m_drawingBuffer->m_stateRestorer, this);
   m_drawingBuffer->m_stateRestorer = nullptr;
   Client* client = m_drawingBuffer->m_client;
   if (!client)
