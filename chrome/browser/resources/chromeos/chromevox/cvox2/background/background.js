@@ -74,7 +74,7 @@ Background = function() {
    * @type {RegExp}
    * @private
    */
-  this.NextCompatRegExp_ = Background.globsToRegExp_([
+  this.nextCompatRegExp_ = Background.globsToRegExp_([
     '*docs.google.com*'
   ]);
 
@@ -250,7 +250,7 @@ Background.prototype = {
           ChromeVoxMode.CLASSIC_COMPAT;
 
     var nextSite = this.isWhitelistedForNext_(topLevelRoot.docUrl);
-    var nextCompat = this.NextCompatRegExp_.test(topLevelRoot.docUrl);
+    var nextCompat = this.nextCompatRegExp_.test(topLevelRoot.docUrl);
     var classicCompat =
         this.isWhitelistedForClassicCompat_(topLevelRoot.docUrl);
     if (nextCompat && useNext)
@@ -560,9 +560,10 @@ Background.prototype = {
    * @private
    */
   shouldEnableClassicForUrl_: function(url) {
-    return this.mode != ChromeVoxMode.FORCE_NEXT &&
-        !this.isBlacklistedForClassic_(url) &&
-        !this.isWhitelistedForNext_(url);
+    return this.nextCompatRegExp_.test(url) ||
+        (this.mode != ChromeVoxMode.FORCE_NEXT &&
+         !this.isBlacklistedForClassic_(url) &&
+         !this.isWhitelistedForNext_(url));
   },
 
   /**
@@ -617,7 +618,7 @@ Background.prototype = {
     };
 
     if (params.forNextCompat) {
-      var reStr = this.NextCompatRegExp_.toString();
+      var reStr = this.nextCompatRegExp_.toString();
       disableChromeVoxCommand['excludeUrlRegExp'] =
           reStr.substring(1, reStr.length - 1);
     }
