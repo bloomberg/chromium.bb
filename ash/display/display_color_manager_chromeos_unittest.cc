@@ -84,17 +84,11 @@ class QuirksManagerDelegateTestImpl : public quirks::QuirksManager::Delegate {
   // Unused by these tests.
   std::string GetApiKey() const override { return std::string(); }
 
-  base::FilePath GetBuiltInDisplayProfileDirectory() const override {
+  base::FilePath GetDisplayProfileDirectory() const override {
     return color_path_;
   }
 
-  // Unused by these tests.
-  base::FilePath GetDownloadDisplayProfileDirectory() const override {
-    return base::FilePath();
-  }
-
-  // |false| prevents attempts at Quirks Server contact.
-  bool DevicePolicyEnabled() const override { return false; }
+  bool DevicePolicyEnabled() const override { return true; }
 
  private:
   ~QuirksManagerDelegateTestImpl() override = default;
@@ -127,7 +121,7 @@ class DisplayColorManagerTest : public testing::Test {
                       .Append(FILE_PATH_LITERAL("display"))
                       .Append(FILE_PATH_LITERAL("test_data"));
     path_override_.reset(new base::ScopedPathOverride(
-        chromeos::DIR_DEVICE_COLOR_CALIBRATION_PROFILES, color_path_));
+        chromeos::DIR_DEVICE_DISPLAY_PROFILES, color_path_));
 
     quirks::QuirksManager::Initialize(
         std::unique_ptr<quirks::QuirksManager::Delegate>(

@@ -32,9 +32,8 @@ class DeviceQuirksPolicyTest : public policy::DevicePolicyCrosBrowserTest {
     // called in ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun().
 
     // Create display_profiles subdirectory under temp profile directory.
-    base::FilePath path = quirks::QuirksManager::Get()
-                              ->delegate()
-                              ->GetDownloadDisplayProfileDirectory();
+    base::FilePath path =
+        quirks::QuirksManager::Get()->delegate()->GetDisplayProfileDirectory();
     base::File::Error error = base::File::FILE_OK;
     bool created = base::CreateDirectoryAndGetError(path, &error);
     ASSERT_TRUE(created) << error;

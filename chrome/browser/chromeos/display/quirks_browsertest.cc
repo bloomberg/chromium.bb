@@ -40,10 +40,8 @@ std::unique_ptr<net::URLFetcher> CreateFakeURLFetcherFailure(
 
 // Full path to fake icc file in <tmp test directory>/display_profiles/.
 base::FilePath GetPathForIccFile(int64_t product_id) {
-  return QuirksManager::Get()
-      ->delegate()
-      ->GetDownloadDisplayProfileDirectory()
-      .Append(quirks::IdToFileName(product_id));
+  return QuirksManager::Get()->delegate()->GetDisplayProfileDirectory().Append(
+      quirks::IdToFileName(product_id));
 }
 
 }  // namespace
@@ -87,7 +85,7 @@ class QuirksBrowserTest : public InProcessBrowserTest {
 
     // Create display_profiles subdirectory under temp profile directory.
     const base::FilePath path =
-        QuirksManager::Get()->delegate()->GetDownloadDisplayProfileDirectory();
+        QuirksManager::Get()->delegate()->GetDisplayProfileDirectory();
     base::File::Error error = base::File::FILE_OK;
     bool created = base::CreateDirectoryAndGetError(path, &error);
     ASSERT_TRUE(created);

@@ -58,9 +58,8 @@ QuirksClient::QuirksClient(int64_t product_id,
     : product_id_(product_id),
       on_request_finished_(on_request_finished),
       manager_(manager),
-      icc_path_(
-          manager->delegate()->GetDownloadDisplayProfileDirectory().Append(
-              IdToFileName(product_id))),
+      icc_path_(manager->delegate()->GetDisplayProfileDirectory().Append(
+          IdToFileName(product_id))),
       backoff_entry_(&kDefaultBackoffPolicy),
       weak_ptr_factory_(this) {}
 

@@ -23,18 +23,9 @@ std::string QuirksManagerDelegateImpl::GetApiKey() const {
   return google_apis::GetAPIKey();
 }
 
-base::FilePath QuirksManagerDelegateImpl::GetBuiltInDisplayProfileDirectory()
-    const {
-  base::FilePath path;
-  if (!PathService::Get(chromeos::DIR_DEVICE_COLOR_CALIBRATION_PROFILES, &path))
-    LOG(ERROR) << "Could not get system path for display calibration profiles.";
-  return path;
-}
-
 // On chrome device, returns /var/cache/display_profiles.
 // On Linux desktop, returns {DIR_USER_DATA}/display_profiles.
-base::FilePath QuirksManagerDelegateImpl::GetDownloadDisplayProfileDirectory()
-    const {
+base::FilePath QuirksManagerDelegateImpl::GetDisplayProfileDirectory() const {
   base::FilePath directory;
   if (base::SysInfo::IsRunningOnChromeOS()) {
     PathService::Get(chromeos::DIR_DEVICE_DISPLAY_PROFILES, &directory);

@@ -18,8 +18,7 @@ class QuirksManagerDelegateImpl : public QuirksManager::Delegate {
 
   // QuirksManager::Delegate implementation.
   std::string GetApiKey() const override;
-  base::FilePath GetBuiltInDisplayProfileDirectory() const override;
-  base::FilePath GetDownloadDisplayProfileDirectory() const override;
+  base::FilePath GetDisplayProfileDirectory() const override;
   bool DevicePolicyEnabled() const override;
 
  private:

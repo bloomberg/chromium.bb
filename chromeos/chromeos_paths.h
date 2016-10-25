@@ -46,8 +46,6 @@ enum {
                                               // policy for extensions.
   DIR_DEVICE_DISPLAY_PROFILES,  // Destination directory for system display
                                 // profiles downloaded from Quirks Server.
-  DIR_DEVICE_COLOR_CALIBRATION_PROFILES,  // Directory where system color
-                                          // calibration files can be found.
   DIR_DEVICE_EXTENSION_LOCAL_CACHE,  // Directory where extension local cache
                                      // is stored.
   PATH_END

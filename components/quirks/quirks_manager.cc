@@ -31,34 +31,13 @@ const char kIccExtension[] = ".icc";
 // How often we query Quirks Server.
 const int kDaysBetweenServerChecks = 30;
 
-// Check if file exists, VLOG results.
-bool CheckAndLogFile(const base::FilePath& path) {
+// Check if QuirksClient has already downloaded icc file from server.
+base::FilePath CheckForIccFile(const base::FilePath& path) {
   const bool exists = base::PathExists(path);
   VLOG(1) << (exists ? "File" : "No File") << " found at " << path.value();
   // TODO(glevin): If file exists, do we want to implement a hash to verify that
   // the file hasn't been corrupted or tampered with?
-  return exists;
-}
-
-base::FilePath CheckForIccFile(base::FilePath built_in_path,
-                               base::FilePath download_path,
-                               bool quirks_enabled) {
-  // First, look for icc file in old read-only location.  If there, we don't use
-  // the Quirks server.
-  if (CheckAndLogFile(built_in_path))
-    return built_in_path;
-
-  // If experimental Quirks flag isn't set, no other icc file is available.
-  if (!quirks_enabled) {
-    VLOG(1) << "Quirks Client disabled, no built-in icc file available.";
-    return base::FilePath();
-  }
-
-  // Check if QuirksClient has already downloaded icc file from server.
-  if (CheckAndLogFile(download_path))
-    return download_path;
-
-  return base::FilePath();
+  return exists ? path : base::FilePath();
 }
 
 }  // namespace
@@ -137,6 +116,12 @@ void QuirksManager::RequestIccProfilePath(
     const RequestFinishedCallback& on_request_finished) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (!QuirksEnabled()) {
+    VLOG(1) << "Quirks Client disabled.";
+    on_request_finished.Run(base::FilePath(), false);
+    return;
+  }
+
   if (!product_id) {
     VLOG(1) << "Could not determine display information (product id = 0)";
     on_request_finished.Run(base::FilePath(), false);
@@ -147,9 +132,7 @@ void QuirksManager::RequestIccProfilePath(
   base::PostTaskAndReplyWithResult(
       blocking_pool_.get(), FROM_HERE,
       base::Bind(&CheckForIccFile,
-                 delegate_->GetBuiltInDisplayProfileDirectory().Append(name),
-                 delegate_->GetDownloadDisplayProfileDirectory().Append(name),
-                 QuirksEnabled()),
+                 delegate_->GetDisplayProfileDirectory().Append(name)),
       base::Bind(&QuirksManager::OnIccFilePathRequestCompleted,
                  weak_ptr_factory_.GetWeakPtr(), product_id,
                  on_request_finished));
@@ -181,8 +164,8 @@ void QuirksManager::OnIccFilePathRequestCompleted(
     base::FilePath path) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If we found a file or client is disabled, inform requester.
-  if (!path.empty() || !QuirksEnabled()) {
+  // If we found a file, just inform requester.
+  if (!path.empty()) {
     on_request_finished.Run(path, false);
     // TODO(glevin): If Quirks files are ever modified on the server, we'll need
     // to modify this logic to check for updates. See crbug.com/595024.
