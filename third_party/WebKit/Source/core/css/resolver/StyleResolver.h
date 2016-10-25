@@ -34,7 +34,6 @@
 #include "core/css/resolver/CSSPropertyPriority.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
-#include "core/dom/DocumentOrderedList.h"
 #include "core/style/CachedUAStyle.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Deque.h"
@@ -113,7 +112,6 @@ class CORE_EXPORT StyleResolver final
   // we factor StyleResolver further.
   // https://bugs.webkit.org/show_bug.cgi?id=108890
   void appendAuthorStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
-  void resetAuthorStyle(TreeScope&);
   void resetRuleFeatures();
   void finishAppendAuthorStyleSheets();
 
@@ -194,7 +192,6 @@ class CORE_EXPORT StyleResolver final
 
   DECLARE_TRACE();
 
-  void addTreeBoundaryCrossingScope(ContainerNode& scope);
   void initWatchedSelectorRules();
 
  private:
@@ -287,8 +284,6 @@ class CORE_EXPORT StyleResolver final
   Member<RuleSet> m_siblingRuleSet;
   Member<RuleSet> m_uncommonAttributeRuleSet;
   Member<RuleSet> m_watchedSelectorsRules;
-
-  DocumentOrderedList m_treeBoundaryCrossingScopes;
 
   bool m_needCollectFeatures;
   bool m_printMediaType;

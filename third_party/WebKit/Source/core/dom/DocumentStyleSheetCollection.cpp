@@ -111,7 +111,7 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(
   } else if (StyleResolver* styleResolver = engine.resolver()) {
     if (change.styleResolverUpdateType != Additive) {
       DCHECK_EQ(change.styleResolverUpdateType, Reset);
-      styleResolver->resetAuthorStyle(treeScope());
+      engine.resetAuthorStyle(treeScope());
       engine.removeFontFaceRules(change.fontFaceRulesToRemove);
       styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
       styleResolver->lazyAppendAuthorStyleSheets(

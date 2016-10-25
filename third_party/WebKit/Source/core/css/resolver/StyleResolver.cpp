@@ -297,28 +297,6 @@ void StyleResolver::resetRuleFeatures() {
   m_needCollectFeatures = true;
 }
 
-void StyleResolver::addTreeBoundaryCrossingScope(ContainerNode& scope) {
-  m_treeBoundaryCrossingScopes.add(&scope);
-}
-
-void StyleResolver::resetAuthorStyle(TreeScope& treeScope) {
-  m_treeBoundaryCrossingScopes.remove(&treeScope.rootNode());
-
-  ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
-  if (!resolver)
-    return;
-
-  resetRuleFeatures();
-
-  if (treeScope.rootNode().isDocumentNode()) {
-    resolver->resetAuthorStyle();
-    return;
-  }
-
-  // resolver is going to be freed below.
-  treeScope.clearScopedStyleResolver();
-}
-
 static RuleSet* makeRuleSet(const HeapVector<RuleFeature>& rules) {
   size_t size = rules.size();
   if (!size)
@@ -394,20 +372,16 @@ void StyleResolver::clearStyleSharingList() {
 static inline ScopedStyleResolver* scopedResolverFor(const Element& element) {
   // Ideally, returning element->treeScope().scopedStyleResolver() should be
   // enough, but ::cue and custom pseudo elements like ::-webkit-meter-bar
-  // pierce through a shadow dom boundary, yet they are not part of
-  // m_treeBoundaryCrossingScopes.  The assumption here is that these rules only
-  // pierce through one boundary and that the scope of these elements do not
-  // have a style resolver due to the fact that VTT scopes and UA shadow trees
-  // don't have <style> elements. This is backed up by the ASSERTs below.
-  //
-  // FIXME: Make ::cue and custom pseudo elements part of boundary crossing
-  // rules when moving those rules to ScopedStyleResolver as part of issue
-  // 401359.
+  // pierce through a shadow dom boundary, yet they are not part of boundary
+  // crossing rules. The assumption here is that these rules only pierce through
+  // one boundary and that the scope of these elements do not have a style
+  // resolver due to the fact that VTT scopes and UA shadow trees don't have
+  // <style> elements. This is backed up by the DCHECKs below.
 
   TreeScope* treeScope = &element.treeScope();
   if (ScopedStyleResolver* resolver = treeScope->scopedStyleResolver()) {
-    ASSERT(element.shadowPseudoId().isEmpty());
-    ASSERT(!element.isVTTElement());
+    DCHECK(element.shadowPseudoId().isEmpty());
+    DCHECK(!element.isVTTElement());
     return resolver;
   }
 
@@ -525,8 +499,10 @@ void StyleResolver::matchScopedRules(const Element& element,
 
   bool matchElementScopeDone = !elementScopeResolver && !element.inlineStyle();
 
-  for (auto it = m_treeBoundaryCrossingScopes.rbegin();
-       it != m_treeBoundaryCrossingScopes.rend(); ++it) {
+  const auto& treeBoundaryCrossingScopes =
+      document().styleEngine().treeBoundaryCrossingScopes();
+  for (auto it = treeBoundaryCrossingScopes.rbegin();
+       it != treeBoundaryCrossingScopes.rend(); ++it) {
     const TreeScope& scope = (*it)->containingTreeScope();
     ScopedStyleResolver* resolver = scope.scopedStyleResolver();
     ASSERT(resolver);
@@ -687,15 +663,17 @@ void StyleResolver::matchAllRules(StyleResolverState& state,
 void StyleResolver::collectTreeBoundaryCrossingRulesV0CascadeOrder(
     const Element& element,
     ElementRuleCollector& collector) {
-  if (m_treeBoundaryCrossingScopes.isEmpty())
+  const auto& treeBoundaryCrossingScopes =
+      document().styleEngine().treeBoundaryCrossingScopes();
+  if (treeBoundaryCrossingScopes.isEmpty())
     return;
 
   // When comparing rules declared in outer treescopes, outer's rules win.
-  CascadeOrder outerCascadeOrder = m_treeBoundaryCrossingScopes.size() * 2;
+  CascadeOrder outerCascadeOrder = treeBoundaryCrossingScopes.size() * 2;
   // When comparing rules declared in inner treescopes, inner's rules win.
-  CascadeOrder innerCascadeOrder = m_treeBoundaryCrossingScopes.size();
+  CascadeOrder innerCascadeOrder = treeBoundaryCrossingScopes.size();
 
-  for (const auto& scopingNode : m_treeBoundaryCrossingScopes) {
+  for (const auto& scopingNode : treeBoundaryCrossingScopes) {
     // Skip rule collection for element when tree boundary crossing rules of
     // scopingNode's scope can never apply to it.
     bool isInnerTreeScope = element.containingTreeScope().isInclusiveAncestorOf(
@@ -1941,7 +1919,6 @@ DEFINE_TRACE(StyleResolver) {
   visitor->trace(m_siblingRuleSet);
   visitor->trace(m_uncommonAttributeRuleSet);
   visitor->trace(m_watchedSelectorsRules);
-  visitor->trace(m_treeBoundaryCrossingScopes);
   visitor->trace(m_styleSharingLists);
   visitor->trace(m_pendingStyleSheets);
   visitor->trace(m_document);

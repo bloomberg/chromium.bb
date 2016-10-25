@@ -381,16 +381,39 @@ void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot) {
 
 void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot) {
   if (StyleResolver* styleResolver = resolver()) {
-    styleResolver->resetAuthorStyle(*shadowRoot);
+    styleResolver->resetRuleFeatures();
 
     if (TreeScopeStyleSheetCollection* collection =
             styleSheetCollectionFor(*shadowRoot))
       styleResolver->removePendingAuthorStyleSheets(
           collection->activeAuthorStyleSheets());
   }
+  shadowRoot->clearScopedStyleResolver();
   m_styleSheetCollectionMap.remove(shadowRoot);
   m_activeTreeScopes.remove(shadowRoot);
   m_dirtyTreeScopes.remove(shadowRoot);
+  m_treeBoundaryCrossingScopes.remove(&shadowRoot->rootNode());
+}
+
+void StyleEngine::addTreeBoundaryCrossingScope(const TreeScope& treeScope) {
+  m_treeBoundaryCrossingScopes.add(&treeScope.rootNode());
+}
+
+void StyleEngine::resetAuthorStyle(TreeScope& treeScope) {
+  m_treeBoundaryCrossingScopes.remove(&treeScope.rootNode());
+
+  ScopedStyleResolver* scopedResolver = treeScope.scopedStyleResolver();
+  if (!scopedResolver)
+    return;
+
+  DCHECK(m_resolver);
+  m_resolver->resetRuleFeatures();
+  if (treeScope.rootNode().isDocumentNode()) {
+    scopedResolver->resetAuthorStyle();
+    return;
+  }
+
+  treeScope.clearScopedStyleResolver();
 }
 
 void StyleEngine::appendActiveAuthorStyleSheets() {
@@ -987,6 +1010,7 @@ DEFINE_TRACE(StyleEngine) {
   visitor->trace(m_styleInvalidator);
   visitor->trace(m_dirtyTreeScopes);
   visitor->trace(m_activeTreeScopes);
+  visitor->trace(m_treeBoundaryCrossingScopes);
   visitor->trace(m_fontSelector);
   visitor->trace(m_textToSheetCache);
   visitor->trace(m_sheetToTextCache);

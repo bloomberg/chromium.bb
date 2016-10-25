@@ -157,6 +157,11 @@ class CORE_EXPORT StyleEngine final
   void didRemoveShadowRoot(ShadowRoot*);
   void shadowRootRemovedFromDocument(ShadowRoot*);
   void appendActiveAuthorStyleSheets();
+  void addTreeBoundaryCrossingScope(const TreeScope&);
+  const DocumentOrderedList& treeBoundaryCrossingScopes() const {
+    return m_treeBoundaryCrossingScopes;
+  }
+  void resetAuthorStyle(TreeScope&);
 
   StyleResolver* resolver() const { return m_resolver.get(); }
 
@@ -303,6 +308,7 @@ class CORE_EXPORT StyleEngine final
   bool m_documentScopeDirty = true;
   UnorderedTreeScopeSet m_dirtyTreeScopes;
   UnorderedTreeScopeSet m_activeTreeScopes;
+  DocumentOrderedList m_treeBoundaryCrossingScopes;
 
   String m_preferredStylesheetSetName;
   String m_selectedStylesheetSetName;

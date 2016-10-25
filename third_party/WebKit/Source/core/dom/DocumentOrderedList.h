@@ -51,11 +51,14 @@ class DocumentOrderedList final {
   size_t size() const { return m_nodes.size(); }
 
   using iterator = HeapListHashSet<Member<Node>, 32>::iterator;
+  using const_iterator = HeapListHashSet<Member<Node>, 32>::const_iterator;
   using const_reverse_iterator =
       HeapListHashSet<Member<Node>, 32>::const_reverse_iterator;
 
   iterator begin() { return m_nodes.begin(); }
   iterator end() { return m_nodes.end(); }
+  const_iterator begin() const { return m_nodes.begin(); }
+  const_iterator end() const { return m_nodes.end(); }
 
   const_reverse_iterator rbegin() const { return m_nodes.rbegin(); }
   const_reverse_iterator rend() const { return m_nodes.rend(); }

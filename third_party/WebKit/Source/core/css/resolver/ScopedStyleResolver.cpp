@@ -297,8 +297,8 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(
 
   if (!m_treeBoundaryCrossingRuleSet) {
     m_treeBoundaryCrossingRuleSet = new CSSStyleSheetRuleSubSet();
-    treeScope().document().styleResolver()->addTreeBoundaryCrossingScope(
-        treeScope().rootNode());
+    treeScope().document().styleEngine().addTreeBoundaryCrossingScope(
+        treeScope());
   }
 
   m_treeBoundaryCrossingRuleSet->append(
