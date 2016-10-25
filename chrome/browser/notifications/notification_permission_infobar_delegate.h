@@ -10,24 +10,14 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
-class InfoBarService;
-
 class NotificationPermissionInfoBarDelegate : public PermissionInfoBarDelegate {
  public:
-  // Creates a Notification permission infobar and delegate and adds the
-  // infobar to |infobar_service|.  Returns the infobar if it was successfully
-  // added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   const GURL& requesting_frame,
-                                   bool user_gesture,
-                                   Profile* profile,
-                                   const PermissionSetCallback& callback);
-
- private:
   NotificationPermissionInfoBarDelegate(const GURL& requesting_frame,
                                         bool user_gesture,
                                         Profile* profile,
                                         const PermissionSetCallback& callback);
+
+ private:
   ~NotificationPermissionInfoBarDelegate() override;
 
   // PermissionInfoBarDelegate:

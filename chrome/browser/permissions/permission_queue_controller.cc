@@ -6,11 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
-#include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
-#include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -123,34 +119,10 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
   PermissionInfoBarDelegate::PermissionSetCallback callback = base::Bind(
       &PermissionQueueController::OnPermissionSet, base::Unretained(controller),
       id_, requesting_frame_, embedder_, user_gesture_);
-  switch (type_) {
-    case content::PermissionType::GEOLOCATION:
-      infobar_ = GeolocationInfoBarDelegateAndroid::Create(
-          GetInfoBarService(id_), requesting_frame_, user_gesture_, profile_,
-          callback);
-      break;
-#if defined(ENABLE_NOTIFICATIONS)
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
-      infobar_ = NotificationPermissionInfoBarDelegate::Create(
-          GetInfoBarService(id_), requesting_frame_, user_gesture_, profile_,
-          callback);
-      break;
-#endif  // ENABLE_NOTIFICATIONS
-    case content::PermissionType::MIDI_SYSEX:
-      infobar_ = MidiPermissionInfoBarDelegateAndroid::Create(
-          GetInfoBarService(id_), requesting_frame_, user_gesture_, profile_,
-          callback);
-      break;
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      infobar_ = ProtectedMediaIdentifierInfoBarDelegateAndroid::Create(
-          GetInfoBarService(id_), requesting_frame_, user_gesture_, profile_,
-          callback);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+
+  infobar_ = PermissionInfoBarDelegate::Create(type_, GetInfoBarService(id_),
+                                               requesting_frame_, user_gesture_,
+                                               profile_, callback);
 }
 
 PermissionQueueController::PermissionQueueController(

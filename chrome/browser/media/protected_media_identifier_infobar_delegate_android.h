@@ -10,29 +10,18 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
-class InfoBarService;
-
 class ProtectedMediaIdentifierInfoBarDelegateAndroid
     : public PermissionInfoBarDelegate {
  public:
-  // Creates a protected media identifier infobar and delegate and adds the
-  // infobar to |infobar_service|.  Returns the infobar if it was successfully
-  // added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   const GURL& requesting_frame,
-                                   bool user_gesture,
-                                   Profile* profile,
-                                   const PermissionSetCallback& callback);
-
- protected:
   ProtectedMediaIdentifierInfoBarDelegateAndroid(
       const GURL& requesting_frame,
       bool user_gesture,
       Profile* profile,
       const PermissionSetCallback& callback);
-  ~ProtectedMediaIdentifierInfoBarDelegateAndroid() override;
 
  private:
+  ~ProtectedMediaIdentifierInfoBarDelegateAndroid() override;
+
   // PermissionInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;

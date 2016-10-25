@@ -5,25 +5,10 @@
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
 
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-
-// static
-infobars::InfoBar* ProtectedMediaIdentifierInfoBarDelegateAndroid::Create(
-    InfoBarService* infobar_service,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    Profile* profile,
-    const PermissionSetCallback& callback) {
-  return infobar_service->AddInfoBar(
-      CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
-          new ProtectedMediaIdentifierInfoBarDelegateAndroid(
-              requesting_frame, user_gesture, profile, callback))));
-}
 
 ProtectedMediaIdentifierInfoBarDelegateAndroid::
     ProtectedMediaIdentifierInfoBarDelegateAndroid(

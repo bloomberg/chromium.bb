@@ -14,7 +14,13 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/permission_type.h"
+#include "url/gurl.h"
 
+namespace infobars {
+class InfoBar;
+}
+
+class InfoBarService;
 class Profile;
 
 // Base class for permission infobars, it implements the default behavior
@@ -25,6 +31,16 @@ class PermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  public:
   using PermissionSetCallback = base::Callback<void(bool, PermissionAction)>;
+
+  // Creates an infobar for |type|. The returned pointer is owned by
+  // |infobar_service| and manages its own lifetime; callers must only use it
+  // for calls to |infobar_service|.
+  static infobars::InfoBar* Create(content::PermissionType type,
+                                   InfoBarService* infobar_service,
+                                   const GURL& requesting_frame,
+                                   bool user_gesture,
+                                   Profile* profile,
+                                   const PermissionSetCallback& callback);
 
   ~PermissionInfoBarDelegate() override;
   virtual std::vector<int> content_settings() const;

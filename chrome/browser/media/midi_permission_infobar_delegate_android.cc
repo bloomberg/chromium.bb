@@ -5,22 +5,7 @@
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/infobars/core/infobar.h"
-
-// static
-infobars::InfoBar* MidiPermissionInfoBarDelegateAndroid::Create(
-    InfoBarService* infobar_service,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    Profile* profile,
-    const PermissionSetCallback& callback) {
-  return infobar_service->AddInfoBar(
-      CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
-          new MidiPermissionInfoBarDelegateAndroid(
-              requesting_frame, user_gesture, profile, callback))));
-}
 
 MidiPermissionInfoBarDelegateAndroid::MidiPermissionInfoBarDelegateAndroid(
     const GURL& requesting_frame,
