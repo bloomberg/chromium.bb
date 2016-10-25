@@ -36,6 +36,7 @@
 #include "core/EventTypeNames.h"
 #include "core/HTMLNames.h"
 #include "core/HTMLTokenizerNames.h"
+#include "core/InputModeNames.h"
 #include "core/InputTypeNames.h"
 #include "core/MathMLNames.h"
 #include "core/MediaFeatureNames.h"
@@ -97,6 +98,7 @@ void CoreInitializer::initialize() {
       FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount +
       FontFamilyNames::FontFamilyNamesCount +
       HTMLTokenizerNames::HTMLTokenizerNamesCount + HTTPNames::HTTPNamesCount +
+      InputModeNames::InputModeNamesCount +
       InputTypeNames::InputTypeNamesCount +
       MediaFeatureNames::MediaFeatureNamesCount +
       MediaTypeNames::MediaTypeNamesCount;
@@ -121,6 +123,7 @@ void CoreInitializer::initialize() {
   FontFamilyNames::init();
   HTMLTokenizerNames::init();
   HTTPNames::init();
+  InputModeNames::init();
   InputTypeNames::init();
   MediaFeatureNames::init();
   MediaTypeNames::init();

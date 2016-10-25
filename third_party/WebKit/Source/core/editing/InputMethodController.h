@@ -141,8 +141,7 @@ class CORE_EXPORT InputMethodController final
                                          int selectionStart,
                                          int selectionEnd);
   int textInputFlags() const;
-  // TODO(dtapuska): Change this from a String to a WebTextInputMode.
-  String inputModeOfFocusedElement() const;
+  WebTextInputMode inputModeOfFocusedElement() const;
 };
 
 }  // namespace blink

@@ -291,8 +291,6 @@ class CONTENT_EXPORT RenderWidget
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
-  virtual ui::TextInputType WebKitToUiTextInputType(
-      blink::WebTextInputType type);
 
 #if defined(OS_ANDROID)
   // Notifies that a tap was not consumed, so showing a UI for the unhandled

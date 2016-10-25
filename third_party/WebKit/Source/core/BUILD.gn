@@ -607,6 +607,14 @@ make_names("make_core_generated_input_type_names") {
   ]
 }
 
+make_names("make_core_generated_input_mode_names") {
+  in_files = [ "editing/InputModeNames.in" ]
+  outputs = [
+    "$blink_core_output_dir/InputModeNames.cpp",
+    "$blink_core_output_dir/InputModeNames.h",
+  ]
+}
+
 # make_qualified_names ---------------------------------------------------------
 
 make_qualified_names("make_core_generated_math_ml_names") {
@@ -861,6 +869,7 @@ target(core_link_small_target_type, "core_generated") {
     ":make_core_generated_html_element_lookup_trie",
     ":make_core_generated_html_entity_table",
     ":make_core_generated_html_tokenizer_names",
+    ":make_core_generated_input_mode_names",
     ":make_core_generated_input_type_names",
     ":make_core_generated_math_ml_names",
     ":make_core_generated_media_feature_names",

@@ -26,6 +26,7 @@
 
 #include "core/editing/InputMethodController.h"
 
+#include "core/InputModeNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -1045,26 +1046,52 @@ int InputMethodController::textInputFlags() const {
   return flags;
 }
 
-String InputMethodController::inputModeOfFocusedElement() const {
+WebTextInputMode InputMethodController::inputModeOfFocusedElement() const {
   if (!RuntimeEnabledFeatures::inputModeAttributeEnabled())
-    return String();
+    return kWebTextInputModeDefault;
 
   Element* element = frame().document()->focusedElement();
   if (!element)
-    return String();
+    return kWebTextInputModeDefault;
 
+  AtomicString mode;
   if (isHTMLInputElement(*element)) {
     const HTMLInputElement& input = toHTMLInputElement(*element);
     if (input.supportsInputModeAttribute())
-      return input.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
-    return String();
+      mode = input.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
   }
   if (isHTMLTextAreaElement(*element)) {
     const HTMLTextAreaElement& textarea = toHTMLTextAreaElement(*element);
-    return textarea.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+    mode = textarea.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
   }
 
-  return String();
+  if (mode.isEmpty())
+    return kWebTextInputModeDefault;
+  if (mode == InputModeNames::verbatim)
+    return kWebTextInputModeVerbatim;
+  if (mode == InputModeNames::latin)
+    return kWebTextInputModeLatin;
+  if (mode == InputModeNames::latin_name)
+    return kWebTextInputModeLatinName;
+  if (mode == InputModeNames::latin_prose)
+    return kWebTextInputModeLatinProse;
+  if (mode == InputModeNames::full_width_latin)
+    return kWebTextInputModeFullWidthLatin;
+  if (mode == InputModeNames::kana)
+    return kWebTextInputModeKana;
+  if (mode == InputModeNames::kana_name)
+    return kWebTextInputModeKanaName;
+  if (mode == InputModeNames::katakana)
+    return kWebTextInputModeKataKana;
+  if (mode == InputModeNames::numeric)
+    return kWebTextInputModeNumeric;
+  if (mode == InputModeNames::tel)
+    return kWebTextInputModeTel;
+  if (mode == InputModeNames::email)
+    return kWebTextInputModeEmail;
+  if (mode == InputModeNames::url)
+    return kWebTextInputModeUrl;
+  return kWebTextInputModeDefault;
 }
 
 WebTextInputType InputMethodController::textInputType() const {

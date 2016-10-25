@@ -238,7 +238,7 @@ class WebViewTest : public ::testing::Test {
 
   void testTextInputType(WebTextInputType expectedType,
                          const std::string& htmlFile);
-  void testInputMode(const WebString& expectedInputMode,
+  void testInputMode(WebTextInputMode expectedInputMode,
                      const std::string& htmlFile);
   bool tapElement(WebInputEvent::Type, Element*);
   bool tapElementById(WebInputEvent::Type, const WebString& id);
@@ -793,7 +793,7 @@ TEST_F(WebViewTest, TextInputInfoUpdateStyleAndLayout) {
   EXPECT_EQ(WebTextInputTypeText, webViewImpl->textInputInfo().type);
 }
 
-void WebViewTest::testInputMode(const WebString& expectedInputMode,
+void WebViewTest::testInputMode(WebTextInputMode expectedInputMode,
                                 const std::string& htmlFile) {
   URLTestHelpers::registerMockedURLFromBaseURL(
       WebString::fromUTF8(m_baseURL.c_str()),
@@ -804,13 +804,40 @@ void WebViewTest::testInputMode(const WebString& expectedInputMode,
 }
 
 TEST_F(WebViewTest, InputMode) {
-  testInputMode(WebString(), "input_mode_default.html");
-  testInputMode(WebString("unknown"), "input_mode_default_unknown.html");
-  testInputMode(WebString("verbatim"), "input_mode_default_verbatim.html");
-  testInputMode(WebString("verbatim"), "input_mode_type_text_verbatim.html");
-  testInputMode(WebString("verbatim"), "input_mode_type_search_verbatim.html");
-  testInputMode(WebString(), "input_mode_type_url_verbatim.html");
-  testInputMode(WebString("verbatim"), "input_mode_textarea_verbatim.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeDefault,
+                "input_mode_default.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeDefault,
+                "input_mode_default_unknown.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeVerbatim,
+                "input_mode_default_verbatim.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeVerbatim,
+                "input_mode_type_text_verbatim.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeVerbatim,
+                "input_mode_type_search_verbatim.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeDefault,
+                "input_mode_type_url_verbatim.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeLatin,
+                "input_mode_type_latin.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeLatinName,
+                "input_mode_type_latin_name.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeLatinProse,
+                "input_mode_type_latin_prose.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeFullWidthLatin,
+                "input_mode_type_full_width_latin.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeKana,
+                "input_mode_type_kana.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeKanaName,
+                "input_mode_type_kana_name.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeKataKana,
+                "input_mode_type_kata_kana.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeNumeric,
+                "input_mode_type_numeric.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeTel,
+                "input_mode_type_tel.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeEmail,
+                "input_mode_type_email.html");
+  testInputMode(WebTextInputMode::kWebTextInputModeUrl,
+                "input_mode_type_url.html");
 }
 
 TEST_F(WebViewTest, TextInputInfoWithReplacedElements) {

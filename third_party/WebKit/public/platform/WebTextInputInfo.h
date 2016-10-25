@@ -28,6 +28,7 @@
 
 #include "WebCommon.h"
 #include "WebString.h"
+#include "WebTextInputMode.h"
 #include "WebTextInputType.h"
 
 namespace blink {
@@ -54,8 +55,7 @@ struct WebTextInputInfo {
   int compositionEnd;
 
   // The inputmode attribute value of the currently focused input field.
-  // This string is lower-case.
-  WebString inputMode;
+  WebTextInputMode inputMode;
 
   BLINK_PLATFORM_EXPORT bool equals(const WebTextInputInfo&) const;
 
@@ -65,7 +65,8 @@ struct WebTextInputInfo {
         selectionStart(0),
         selectionEnd(0),
         compositionStart(-1),
-        compositionEnd(-1) {}
+        compositionEnd(-1),
+        inputMode(kWebTextInputModeDefault) {}
 };
 
 inline bool operator==(const WebTextInputInfo& a, const WebTextInputInfo& b) {
