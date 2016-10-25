@@ -144,6 +144,8 @@ void MediaDocumentParser::createDocumentStructure() {
   HTMLBodyElement* body = HTMLBodyElement::create(*document());
   body->setAttribute(styleAttr, "margin: 0px;");
 
+  document()->willInsertBody();
+
   HTMLDivElement* div = HTMLDivElement::create(*document());
   // Style sheets for media controls are lazily loaded until a media element is
   // encountered.  As a result, elements encountered before the media element
