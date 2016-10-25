@@ -1,17 +1,43 @@
 <!DOCTYPE HTML>
 <html>
 
+<!-- TODO(crbug.com/658814): Localize strings. -->
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bluetooth Internals</title>
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <link rel="stylesheet" href="bluetooth_internals.css">
+  <script src="chrome://resources/js/assert.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
   <script src="bluetooth_internals.js"></script>
 </head>
 
 <body>
   <header>
-    <h1>Bluetooth Internals</h1>
+    <div class="title">
+      Bluetooth Internals
+    </div>
   </header>
+  <table id="device-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Latest RSSI</th>
+      </tr>
+    </thead>
+    <tbody id="device-list">
+    </tbody>
+  </table>
 </body>
+
+<template id="device-row-template">
+  <tr class="device-row">
+    <td class="device-name" data-label="Name"></td>
+    <td class="device-address" data-label="Address"></td>
+    <td class="device-rssi" data-label="Latest RSSI">Unknown</td>
+  </tr>
+</template>
 
 </html>

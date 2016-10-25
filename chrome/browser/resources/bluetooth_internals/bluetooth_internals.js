@@ -10,6 +10,8 @@
 (function() {
   var adapter, adapterClient, bluetoothAdapter, bluetoothDevice, connection;
 
+  var REMOVED_CSS = 'removed';
+
   /*
    * Data model for a cached device.
    * @constructor
@@ -26,32 +28,56 @@
   var AdapterClient = function() { this.devices_ = new Map(); };
   AdapterClient.prototype = {
     /**
-     * Logs added device to console and caches the device info.
-     * @param {!bluetoothDevice.DeviceInfo} device
+     * Caches the device info and updates the device list.
+     * @param {!bluetoothDevice.DeviceInfo} deviceInfo
      */
     deviceAdded: function(deviceInfo) {
-      console.log('Device added', deviceInfo);
-      this.devices_.set(deviceInfo.address, new Device(deviceInfo));
+      if (this.devices_.has(deviceInfo.address)) {
+        var deviceElement = $(deviceInfo.address);
+        deviceElement.classList.remove(REMOVED_CSS);
+      } else {
+        this.devices_.set(deviceInfo.address, new Device(deviceInfo));
+
+        var deviceRowTemplate = $('device-row-template');
+        var deviceRow = document.importNode(
+            deviceRowTemplate.content.children[0], true /* deep */);
+        deviceRow.id = deviceInfo.address;
+
+        var deviceList = $('device-list');
+        deviceList.appendChild(deviceRow);
+      }
+
+      this.deviceChanged(deviceInfo);
     },
 
     /**
-     * Logs removed device to console and removes the cached device.
-     * @param {!bluetoothDevice.DeviceInfo} device
+     * Marks device as removed.
+     * @param {!bluetoothDevice.DeviceInfo} deviceInfo
      */
     deviceRemoved: function(deviceInfo) {
-      console.log('Device removed', deviceInfo);
-      this.devices_.delete(deviceInfo.address);
+      $(deviceInfo.address).classList.add(REMOVED_CSS);
     },
 
     /**
-     * Logs changed device info to console and updates the cached device.
+     * Updates cached device and updates the device list.
      * @param {!bluetoothDevice.DeviceInfo} deviceInfo
      */
     deviceChanged: function(deviceInfo) {
       console.log(new Date(), deviceInfo);
-      if (this.devices_.has(deviceInfo.address)) {
-        this.devices_.get(deviceInfo.address).info = deviceInfo;
-      }
+
+      assert(this.devices_.has(deviceInfo.address), 'Device does not exist.');
+
+      this.devices_.get(deviceInfo.address).info = deviceInfo;
+
+      var deviceRow = $(deviceInfo.address);
+      deviceRow.querySelector('.device-name').textContent =
+          deviceInfo.name_for_display;
+      deviceRow.querySelector('.device-address').textContent =
+          deviceInfo.address;
+
+      var rssi = (deviceInfo.rssi && deviceInfo.rssi.value) ||
+          deviceRow.querySelector('.device-rssi').textContent;
+      deviceRow.querySelector('.device-rssi').textContent = rssi;
     }
   };
 
@@ -81,8 +107,6 @@
       'device/bluetooth/public/interfaces/device.mojom',
       'mojo/public/js/connection',
     ]).then(function([frameInterfaces, ...modules]) {
-      console.log('Loaded modules');
-
       // Destructure here to assign global variables.
       [bluetoothAdapter, bluetoothDevice, connection] = modules;
 
@@ -117,11 +141,7 @@
       .then(function(response) { console.log('adapter', response.info); })
       .then(function() { return adapter.getDevices(); })
       .then(function(response) {
-        console.log('devices', response.devices.length);
-
-        response.devices.forEach(function(deviceInfo) {
-          adapterClient.deviceAdded(deviceInfo);
-        });
+        response.devices.forEach(adapterClient.deviceAdded, adapterClient);
       })
       .catch(function(error) { console.error(error); });
   });
