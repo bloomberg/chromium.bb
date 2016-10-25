@@ -22,6 +22,7 @@ typedef void* GLeglImageOES;
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -32,6 +33,7 @@ typedef void* GLeglImageOES;
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gfx/transform.h"
@@ -67,13 +69,18 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
       gl_renderer_id_(0) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 
-  bool disable_av_sample_buffer_display_layer =
-      stub_->GetFeatureInfo()
-          ->workarounds()
-          .disable_av_sample_buffer_display_layer;
+  static bool av_disabled_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAVFoundationOverlays);
+
+  bool allow_av_sample_buffer_display_layer =
+      !av_disabled_at_command_line &&
+      !stub_->GetFeatureInfo()
+           ->workarounds()
+           .disable_av_sample_buffer_display_layer;
 
   ca_layer_tree_coordinator_.reset(new ui::CALayerTreeCoordinator(
-      use_remote_layer_api_, !disable_av_sample_buffer_display_layer));
+      use_remote_layer_api_, allow_av_sample_buffer_display_layer));
 }
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {

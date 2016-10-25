@@ -143,6 +143,7 @@ static const char* const kSwitchNames[] = {
     switches::kV,
     switches::kVModule,
 #if defined(OS_MACOSX)
+    switches::kDisableAVFoundationOverlays,
     switches::kDisableRemoteCoreAnimation,
     switches::kEnableSandboxLogging,
     switches::kShowMacOverlayBorders,

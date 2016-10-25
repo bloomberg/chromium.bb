@@ -8,6 +8,9 @@
 namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+// Disable use of AVFoundation to draw video content.
+const char kDisableAVFoundationOverlays[] = "disable-avfoundation-overlays";
+
 // Fall back to using CAOpenGLLayers display content, instead of the IOSurface
 // based overlay display path.
 const char kDisableMacOverlays[] = "disable-mac-overlays";
