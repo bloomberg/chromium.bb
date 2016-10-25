@@ -1375,7 +1375,6 @@ crbug.com/626703 imported/wpt/web-animations/timing-model/animations/set-the-tar
 crbug.com/626703 imported/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout Failure ]
-crbug.com/626703 imported/wpt/workers/constructors/SharedWorker/URLMismatchError.htm [ Timeout Failure ]
 crbug.com/626703 imported/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
 
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
@@ -1433,6 +1432,8 @@ crbug.com/655458 imported/wpt/workers/semantics/xhr/004.html [ Failure Timeout ]
 
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/dedicated.html [ Crash Failure Timeout ]
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/shared.html [ Crash Failure Timeout ]
+
+crbug.com/538914 imported/wpt/workers/constructors/SharedWorker/URLMismatchError.htm [ Failure Timeout ]
 
 # Most of these tests fail without wptserve
 crbug.com/602693 imported/wpt/service-workers [ Failure ]
