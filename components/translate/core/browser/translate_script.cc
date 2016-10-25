@@ -145,7 +145,7 @@ void TranslateScript::OnScriptFetchComplete(
       server_params = params[kServerParams];
     }
     base::StringAppendF(
-        &data_, "var gtTimeInfo = {'fetchStart': %f, 'fetchEnd': %f};\n",
+        &data_, "var gtTimeInfo = {'fetchStart': %0.f, 'fetchEnd': %0.f};\n",
         script_fetch_start_time_, base::Time::Now().ToJsTime());
     base::StringAppendF(&data_, "var serverParams = '%s';\n",
                         server_params.c_str());
