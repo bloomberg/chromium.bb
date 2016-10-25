@@ -674,8 +674,9 @@ class GitWrapper(SCMWrapper):
             # whitespace between projects when syncing.
             self.Print('')
 
-      file_list.extend(
-          [os.path.join(self.checkout_path, f) for f in rebase_files])
+      if file_list is not None:
+        file_list.extend(
+            [os.path.join(self.checkout_path, f) for f in rebase_files])
 
     # If the rebase generated a conflict, abort and ask user to fix
     if self._IsRebasing():
