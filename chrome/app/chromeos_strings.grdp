@@ -2685,19 +2685,19 @@ Press any key to continue exploring.
     Delay before click:
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_EXTREMELY_SHORT" desc="Label for an extremely short autoclick delay option in the settings.">
-    extremely short (600 ms)
+    extremely short (0.6s)
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_SHORT" desc="Label for a very short autoclick delay option in the settings.">
-    very short (800 ms)
+    very short (0.8s)
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_SHORT" desc="Label for a short autoclick delay option in the settings.">
-    short (1000 ms)
+    short (1s)
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_LONG" desc="Label for a long autoclick delay option in the settings.">
-    long (2000 ms)
+    long (2s)
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_LONG" desc="Label for a very long autoclick delay option in the settings.">
-    very long (4000 ms)
+    very long (4s)
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CARET_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the caret (the text insertion point) to make it easier to see.">
     Highlight the text caret when it appears or moves

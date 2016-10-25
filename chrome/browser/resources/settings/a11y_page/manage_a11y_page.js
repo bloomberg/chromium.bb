@@ -23,6 +23,9 @@ Polymer({
       readOnly: true,
       type: Array,
       value: function() {
+        // These values correspond to the i18n values in settings_strings.grdp.
+        // If these values get changed then those strings need to be changed as
+        // well.
         return [
           {value: 600,
            name: loadTimeData.getString('delayBeforeClickExtremelyShort')},

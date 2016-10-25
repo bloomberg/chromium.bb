@@ -117,7 +117,8 @@
           <div>$i18n{delayBeforeClickLabel}</div>
           <settings-dropdown-menu
               pref="{{prefs.settings.a11y.autoclick_delay_ms}}"
-              menu-options="[[autoClickDelayOptions_]]">
+              menu-options="[[autoClickDelayOptions_]]"
+              disabled="[[!prefs.settings.a11y.autoclick.value]]">
           </settings-dropdown-menu>
         </div>
         <settings-checkbox label="$i18n{tapDraggingLabel}"
