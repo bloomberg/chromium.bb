@@ -17,7 +17,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/permission_manager.h"
 
-class HostContentSettingsMap;
 class PermissionContextBase;
 class Profile;
 
@@ -59,13 +58,6 @@ class PermissionManager : public KeyedService,
       content::PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
-
-  blink::mojom::PermissionStatus GetPermissionStatus(
-      HostContentSettingsMap* host,
-      content::PermissionType permission,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin);
-
   void RegisterPermissionUsage(content::PermissionType permission,
                                const GURL& requesting_origin,
                                const GURL& embedding_origin) override;

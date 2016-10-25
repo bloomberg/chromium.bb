@@ -5,14 +5,11 @@
 #include "chrome/browser/permissions/permission_manager.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,42 +40,30 @@ class PermissionManagerTest : public testing::Test {
     callback_result_ = permission;
   }
 
-  void TestGetPermissionStatus();
-
  protected:
   PermissionManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        url_("https://example.com"),
+      : url_("https://example.com"),
         other_url_("https://foo.com"),
         callback_called_(false),
-        callback_result_(PermissionStatus::ASK) {
-    host_content_settings_map_ =
-        HostContentSettingsMapFactory::GetForProfile(&profile_);
-  }
+        callback_result_(PermissionStatus::ASK) {}
 
   PermissionManager* GetPermissionManager() {
     return profile_.GetPermissionManager();
   }
 
   HostContentSettingsMap* GetHostContentSettingsMap() {
-    return host_content_settings_map_;
+    return HostContentSettingsMapFactory::GetForProfile(&profile_);
   }
 
   void CheckPermissionStatus(PermissionType type,
                              PermissionStatus expected) {
-    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      EXPECT_EQ(expected, GetPermissionManager()->GetPermissionStatus(
-                              type, url_.GetOrigin(), url_.GetOrigin()));
-    } else {
-      EXPECT_EQ(expected, GetPermissionManager()->GetPermissionStatus(
-                              host_content_settings_map_, type,
-                              url_.GetOrigin(), url_.GetOrigin()));
-    }
+    EXPECT_EQ(expected, GetPermissionManager()->GetPermissionStatus(
+                            type, url_.GetOrigin(), url_.GetOrigin()));
   }
 
   void SetPermission(ContentSettingsType type, ContentSetting value) {
-    GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-        url_, url_, type, std::string(), value);
+    HostContentSettingsMapFactory::GetForProfile(&profile_)
+        ->SetContentSettingDefaultScope(url_, url_, type, std::string(), value);
   }
 
   const GURL& url() const {
@@ -101,16 +86,15 @@ class PermissionManagerTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   const GURL url_;
   const GURL other_url_;
   bool callback_called_;
   PermissionStatus callback_result_;
+  content::TestBrowserThreadBundle thread_bundle_;
   PermissionManagerTestingProfile profile_;
-  HostContentSettingsMap* host_content_settings_map_;
 };
 
-void PermissionManagerTest::TestGetPermissionStatus() {
+TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
   CheckPermissionStatus(PermissionType::MIDI_SYSEX, PermissionStatus::ASK);
   CheckPermissionStatus(PermissionType::PUSH_MESSAGING, PermissionStatus::ASK);
   CheckPermissionStatus(PermissionType::NOTIFICATIONS, PermissionStatus::ASK);
@@ -119,20 +103,6 @@ void PermissionManagerTest::TestGetPermissionStatus() {
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
                         PermissionStatus::ASK);
 #endif
-}
-
-TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
-  TestGetPermissionStatus();
-}
-
-TEST_F(PermissionManagerTest, GetPermissionStatusNonMainThread) {
-  base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&PermissionManagerTest::TestGetPermissionStatus,
-                 base::Unretained(this)),
-      run_loop.QuitClosure());
-  run_loop.Run();
 }
 
 TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {

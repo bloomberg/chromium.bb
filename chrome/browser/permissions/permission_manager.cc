@@ -389,22 +389,6 @@ void PermissionManager::ResetPermission(PermissionType permission,
 }
 
 PermissionStatus PermissionManager::GetPermissionStatus(
-    HostContentSettingsMap* host,
-    content::PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  if (IsConstantPermission(permission))
-    return GetPermissionStatusForConstantPermission(permission);
-
-  PermissionContextBase* context = GetPermissionContext(permission);
-  if (!context)
-    return PermissionStatus::DENIED;
-
-  return ContentSettingToPermissionStatus(context->GetPermissionStatus(
-      host, requesting_origin.GetOrigin(), embedding_origin.GetOrigin()));
-}
-
-PermissionStatus PermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {

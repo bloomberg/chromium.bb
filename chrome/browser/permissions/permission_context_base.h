@@ -21,7 +21,6 @@
 class PermissionQueueController;
 #endif
 class GURL;
-class HostContentSettingsMap;
 class PermissionRequestID;
 class Profile;
 
@@ -83,13 +82,6 @@ class PermissionContextBase : public KeyedService {
 
   // Returns whether the permission has been granted, denied...
   virtual ContentSetting GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const;
-
-  // Thread safe version of GetPermissionStatus for consumers that already have
-  // an associated HostContentSettingsMap.
-  virtual ContentSetting GetPermissionStatus(
-      HostContentSettingsMap* host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const;
 
@@ -156,7 +148,6 @@ class PermissionContextBase : public KeyedService {
                                     ContentSetting content_setting);
 
   // Whether the permission should be restricted to secure origins.
-  // Note: Maybe be called from multiple threads.
   virtual bool IsRestrictedToSecureOrigins() const = 0;
 
   content::PermissionType permission_type() const { return permission_type_; }
