@@ -66,9 +66,9 @@ class ServiceContext : public mojom::Service {
 
  private:
   // mojom::Service:
-  void OnStart(const Identity& identity,
+  void OnStart(const ServiceInfo& info,
                const OnStartCallback& callback) override;
-  void OnConnect(const Identity& source,
+  void OnConnect(const ServiceInfo& source_info,
                  mojom::InterfaceProviderRequest interfaces,
                  const InterfaceSet& allowed_interfaces,
                  const CapabilitySet& allowed_capabilities) override;

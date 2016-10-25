@@ -18,8 +18,8 @@ interface Catalog {
   GetEntries(array<string>? names) => (array<Entry> entries);
 
   // Returns the entry(ies) for applications that export to the caller the
-  // specified class.
-  GetEntriesProvidingClass(string clazz) => (array<Entry> entries);
+  // specified capability.
+  GetEntriesProvidingCapability(string capability) => (array<Entry> entries);
 
   // Returns the entry(ies) for applications that can consume content of the
   // specified MIME type.

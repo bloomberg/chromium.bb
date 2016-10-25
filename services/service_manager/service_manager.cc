@@ -118,12 +118,12 @@ class ServiceManager::Instance
  public:
   Instance(service_manager::ServiceManager* service_manager,
            const Identity& identity,
-           const InterfaceProviderSpec& connection_spec)
+           const InterfaceProviderSpecMap& interface_provider_specs)
       : service_manager_(service_manager),
         id_(GenerateUniqueID()),
         identity_(identity),
-        connection_spec_(connection_spec),
-        allow_any_application_(connection_spec.requires.count("*") == 1),
+        interface_provider_specs_(interface_provider_specs),
+        allow_any_application_(GetConnectionSpec().requires.count("*") == 1),
         pid_receiver_binding_(this),
         weak_factory_(this) {
     if (identity_.name() == kServiceManagerName ||
@@ -177,12 +177,13 @@ class ServiceManager::Instance
                                        identity_.user_id());
     }
 
+    InterfaceProviderSpec connection_spec = GetConnectionSpec();
     CapabilitySet capabilities;
     InterfaceSet interfaces;
     Instance* source = service_manager_->GetExistingInstance(params->source());
     if (source) {
-      GetCapabilitiesAndInterfacesForConnection(source->connection_spec_,
-                                                identity_, connection_spec_,
+      GetCapabilitiesAndInterfacesForConnection(source->GetConnectionSpec(),
+                                                identity_, connection_spec,
                                                 &capabilities, &interfaces);
     } else {
       interfaces.insert("*");
@@ -190,13 +191,17 @@ class ServiceManager::Instance
 
     // The target has specified that sources must request one of its provided
     // classes instead of specifying a wild-card for interfaces.
-    if (HasCapability(connection_spec_, kCapability_ExplicitClass) &&
+    if (HasCapability(connection_spec, kCapability_ExplicitClass) &&
         (interfaces.count("*") != 0)) {
       interfaces.erase("*");
     }
 
-    service_->OnConnect(params->source(), params->TakeRemoteInterfaces(),
-                        interfaces, capabilities);
+    InterfaceProviderSpecMap specs;
+    if (source)
+      specs = source->interface_provider_specs_;
+    service_->OnConnect(ServiceInfo(params->source(), specs),
+                        params->TakeRemoteInterfaces(), interfaces,
+                        capabilities);
     return true;
   }
 
@@ -206,7 +211,7 @@ class ServiceManager::Instance
     service_.set_connection_error_handler(
         base::Bind(&Instance::OnServiceLost, base::Unretained(this),
                    service_manager_->GetWeakPtr()));
-    service_->OnStart(identity_,
+    service_->OnStart(ServiceInfo(identity_, interface_provider_specs_),
                       base::Bind(&Instance::OnInitializeResponse,
                                  base::Unretained(this)));
   }
@@ -232,16 +237,18 @@ class ServiceManager::Instance
     StartWithService(std::move(service));
   }
 
-  mojom::ServiceInfoPtr CreateServiceInfo() const {
-    mojom::ServiceInfoPtr info(mojom::ServiceInfo::New());
+  mojom::RunningServiceInfoPtr CreateRunningServiceInfo() const {
+    mojom::RunningServiceInfoPtr info(mojom::RunningServiceInfo::New());
     info->id = id_;
     info->identity = identity_;
     info->pid = pid_;
     return info;
   }
 
-  const InterfaceProviderSpec& connection_spec() const {
-    return connection_spec_;
+  const InterfaceProviderSpec& GetConnectionSpec() const {
+    auto it = interface_provider_specs_.find(
+        mojom::kServiceManager_ConnectorSpec);
+    return it != interface_provider_specs_.end() ? it->second : empty_spec_;
   }
   const Identity& identity() const { return identity_; }
   uint32_t id() const { return id_; }
@@ -251,7 +258,8 @@ class ServiceManager::Instance
                  InterfaceRegistry* registry) override {
     Instance* source = service_manager_->GetExistingInstance(remote_identity);
     DCHECK(source);
-    if (HasCapability(source->connection_spec_, kCapability_ServiceManager)) {
+    if (HasCapability(source->GetConnectionSpec(),
+                      kCapability_ServiceManager)) {
       registry->AddInterface<mojom::ServiceManager>(this);
       return true;
     }
@@ -331,7 +339,7 @@ class ServiceManager::Instance
       const Identity& target,
       const ConnectCallback& callback) {
     if (!client_process_connection->is_null()) {
-      if (!HasCapability(connection_spec_, kCapability_ClientProcess)) {
+      if (!HasCapability(GetConnectionSpec(), kCapability_ClientProcess)) {
         LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
@@ -365,12 +373,13 @@ class ServiceManager::Instance
 
   bool ValidateConnectionSpec(const Identity& target,
                               const ConnectCallback& callback) {
+    InterfaceProviderSpec connection_spec = GetConnectionSpec();
     // TODO(beng): Need to do the following additional policy validation of
     // whether this instance is allowed to connect using:
     // - a non-null client_process_connection.
     if (target.user_id() != identity_.user_id() &&
         target.user_id() != mojom::kRootUserID &&
-        !HasCapability(connection_spec_, kCapability_UserID)) {
+        !HasCapability(connection_spec, kCapability_UserID)) {
       LOG(ERROR) << "Instance: " << identity_.name()
                  << " running as: " << identity_.user_id()
                  << " attempting to connect to: " << target.name()
@@ -382,7 +391,7 @@ class ServiceManager::Instance
     }
     if (!target.instance().empty() &&
         target.instance() != GetNamePath(target.name()) &&
-        !HasCapability(connection_spec_, kCapability_InstanceName)) {
+        !HasCapability(connection_spec, kCapability_InstanceName)) {
       LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
                  << "connect to " << target.name()
                  << " using Instance name: " << target.instance()
@@ -393,8 +402,8 @@ class ServiceManager::Instance
     }
 
     if (allow_any_application_ ||
-        connection_spec_.requires.find(target.name()) !=
-            connection_spec_.requires.end()) {
+        connection_spec.requires.find(target.name()) !=
+            connection_spec.requires.end()) {
       return true;
     }
     LOG(ERROR) << "InterfaceProviderSpec prevented connection from: "
@@ -461,7 +470,8 @@ class ServiceManager::Instance
   // process is launched.
   const uint32_t id_;
   const Identity identity_;
-  const InterfaceProviderSpec connection_spec_;
+  const InterfaceProviderSpecMap interface_provider_specs_;
+  const InterfaceProviderSpec empty_spec_;
   const bool allow_any_application_;
   std::unique_ptr<NativeRunner> runner_;
   mojom::ServicePtr service_;
@@ -507,9 +517,11 @@ ServiceManager::ServiceManager(
   spec.requires["*"].insert("service_manager:service_factory");
   spec.requires["service:catalog"].insert("service_manager:resolver");
   spec.requires["service:tracing"].insert("app");
+  InterfaceProviderSpecMap specs;
+  specs[mojom::kServiceManager_ConnectorSpec] = spec;
 
   service_manager_instance_ =
-      CreateInstance(Identity(), CreateServiceManagerIdentity(), spec);
+      CreateInstance(Identity(), CreateServiceManagerIdentity(), specs);
   service_manager_instance_->StartWithService(std::move(service));
   singletons_.insert(kServiceManagerName);
   service_context_.reset(new ServiceContext(this, std::move(request)));
@@ -591,8 +603,11 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   spec.provides["service_manager:resolver"].insert(
       "service_manager::mojom::Resolver");
   spec.provides["control"].insert("catalog::mojom::CatalogControl");
+  InterfaceProviderSpecMap specs;
+  specs[mojom::kServiceManager_ConnectorSpec] = spec;
+
   Instance* instance = CreateInstance(
-      CreateServiceManagerIdentity(), CreateCatalogIdentity(), spec);
+      CreateServiceManagerIdentity(), CreateCatalogIdentity(), specs);
   singletons_.insert(kCatalogName);
   instance->StartWithService(std::move(catalog));
 }
@@ -709,11 +724,10 @@ bool ServiceManager::ConnectToExistingInstance(
 ServiceManager::Instance* ServiceManager::CreateInstance(
     const Identity& source,
     const Identity& target,
-    const InterfaceProviderSpec& connection_spec) {
+    const InterfaceProviderSpecMap& specs) {
   CHECK(target.user_id() != mojom::kInheritUserID);
 
-  std::unique_ptr<Instance> instance(
-      new Instance(this, target, connection_spec));
+  auto instance = base::MakeUnique<Instance>(this, target, specs);
   Instance* raw_instance = instance.get();
 
   Instance* source_instance = GetExistingInstance(source);
@@ -729,7 +743,7 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
       identity_to_instance_.insert(std::make_pair(target, raw_instance));
   DCHECK(result.second);
 
-  mojom::ServiceInfoPtr info = raw_instance->CreateServiceInfo();
+  mojom::RunningServiceInfoPtr info = raw_instance->CreateRunningServiceInfo();
   listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
     listener->OnServiceCreated(info.Clone());
   });
@@ -739,10 +753,10 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
 
 void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
   // TODO(beng): filter instances provided by those visible to this service.
-  std::vector<mojom::ServiceInfoPtr> instances;
+  std::vector<mojom::RunningServiceInfoPtr> instances;
   instances.reserve(identity_to_instance_.size());
   for (auto& instance : identity_to_instance_)
-    instances.push_back(instance.second->CreateServiceInfo());
+    instances.push_back(instance.second->CreateRunningServiceInfo());
   listener->OnInit(std::move(instances));
 
   listeners_.AddPtr(std::move(listener));
@@ -795,11 +809,13 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       result->qualifier != GetNamePath(result->resolved_name)) {
     instance_name = result->qualifier;
   }
-  // |result->connection_spec| can be null when there is no manifest, e.g. for
-  // URL types not resolvable by the resolver.
+  // |result->interface_provider_specs| can be empty when there is no manifest,
+  // e.g. for URL types not resolvable by the resolver.
   InterfaceProviderSpec connection_spec = GetPermissiveInterfaceProviderSpec();
-  if (result->connection_spec.has_value())
-    connection_spec = result->connection_spec.value();
+  auto it = result->interface_provider_specs.find(
+      mojom::kServiceManager_ConnectorSpec);
+  if (it != result->interface_provider_specs.end())
+    connection_spec = it->second;
 
   const std::string user_id =
       HasCapability(connection_spec, kCapability_AllUsers)
@@ -832,7 +848,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();
   Instance* instance = CreateInstance(source_identity_for_creation,
-                                      target, connection_spec);
+                                      target, result->interface_provider_specs);
 
   // Below are various paths through which a new Instance can be bound to a
   // Service proxy.
@@ -848,7 +864,17 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   } else {
     // Otherwise we create a new Service pipe.
     mojom::ServiceRequest request = GetProxy(&service);
-    CHECK(!result->package_path.empty() && result->connection_spec.has_value());
+    CHECK(!result->package_path.empty());
+
+    // The catalog was unable to read a manifest for this service. We can't do
+    // anything more.
+    // TODO(beng): There may be some cases where it's valid to have an empty
+    // spec, so we should probably include a return value in |result|.
+    if (result->interface_provider_specs.empty()) {
+      if (!params->connect_callback().is_null())
+        params->connect_callback().Run(mojom::ConnectResult::ACCESS_DENIED, "");
+      return;
+    }
 
     if (target.name() != result->resolved_name) {
       instance->StartWithService(std::move(service));

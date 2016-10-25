@@ -69,7 +69,7 @@ class InstanceState : public mojom::ServiceManagerListener {
 
  private:
   // mojom::ServiceManagerListener:
-  void OnInit(std::vector<mojom::ServiceInfoPtr> instances) override {
+  void OnInit(std::vector<mojom::RunningServiceInfoPtr> instances) override {
     for (const auto& instance : instances) {
       Instance i(instance->identity, instance->pid);
       initial_instances_[i.identity.name()] = i;
@@ -77,7 +77,7 @@ class InstanceState : public mojom::ServiceManagerListener {
     }
     loop_->Quit();
   }
-  void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
+  void OnServiceCreated(mojom::RunningServiceInfoPtr instance) override {
     instances_[instance->identity.name()] =
         Instance(instance->identity, instance->pid);
   }

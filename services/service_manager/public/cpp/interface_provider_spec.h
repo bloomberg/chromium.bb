@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 
 namespace service_manager {
 
@@ -29,6 +30,10 @@ struct InterfaceProviderSpec {
   std::map<Capability, InterfaceSet> provides;
   std::map<Name, CapabilitySet> requires;
 };
+
+// Map of spec name -> spec.
+using InterfaceProviderSpecMap =
+    std::unordered_map<std::string, InterfaceProviderSpec>;
 
 }  // namespace service_manager
 

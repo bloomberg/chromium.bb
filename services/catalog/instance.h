@@ -43,9 +43,9 @@ class Instance : public service_manager::mojom::Resolver,
   // mojom::Catalog:
   void GetEntries(const base::Optional<std::vector<std::string>>& names,
                   const GetEntriesCallback& callback) override;
-  void GetEntriesProvidingClass(
-      const std::string& clazz,
-      const GetEntriesProvidingClassCallback& callback) override;
+  void GetEntriesProvidingCapability(
+      const std::string& capability,
+      const GetEntriesProvidingCapabilityCallback& callback) override;
   void GetEntriesConsumingMIMEType(
       const std::string& mime_type,
       const GetEntriesConsumingMIMETypeCallback& callback) override;

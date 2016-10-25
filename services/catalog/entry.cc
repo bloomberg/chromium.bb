@@ -110,30 +110,28 @@ std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
   value->SetString(Store::kQualifierKey, qualifier_);
 
   auto specs = base::MakeUnique<base::DictionaryValue>();
-  auto connection_spec = base::MakeUnique<base::DictionaryValue>();
+  for (const auto& it : interface_provider_specs_) {
+    auto spec = base::MakeUnique<base::DictionaryValue>();
 
-  auto provides = base::MakeUnique<base::DictionaryValue>();
-  for (const auto& i : connection_spec_.provides) {
-    auto interfaces = base::MakeUnique<base::ListValue>();
-    for (const auto& interface_name : i.second)
-      interfaces->AppendString(interface_name);
-    provides->Set(i.first, std::move(interfaces));
+    auto provides = base::MakeUnique<base::DictionaryValue>();
+    for (const auto& i : it.second.provides) {
+      auto interfaces = base::MakeUnique<base::ListValue>();
+      for (const auto& interface_name : i.second)
+        interfaces->AppendString(interface_name);
+      provides->Set(i.first, std::move(interfaces));
+    }
+    spec->Set(Store::kInterfaceProviderSpecs_ProvidesKey, std::move(provides));
+
+    auto requires = base::MakeUnique<base::DictionaryValue>();
+    for (const auto& i : it.second.requires) {
+      auto capabilities = base::MakeUnique<base::ListValue>();
+      for (const auto& capability : i.second)
+        capabilities->AppendString(capability);
+      requires->Set(i.first, std::move(capabilities));
+    }
+    spec->Set(Store::kInterfaceProviderSpecs_RequiresKey, std::move(requires));
+    specs->Set(it.first, std::move(spec));
   }
-  connection_spec->Set(Store::kInterfaceProviderSpecs_ProvidesKey,
-                       std::move(provides));
-
-  auto requires = base::MakeUnique<base::DictionaryValue>();
-  for (const auto& i : connection_spec_.requires) {
-    auto capabilities = base::MakeUnique<base::ListValue>();
-    for (const auto& class_name : i.second)
-      capabilities->AppendString(class_name);
-    requires->Set(i.first, std::move(capabilities));
-  }
-  connection_spec->Set(Store::kInterfaceProviderSpecs_RequiresKey,
-                       std::move(requires));
-
-  specs->Set(Store::kInterfaceProvider_ConnectionSpecKey,
-             std::move(connection_spec));
   value->Set(Store::kInterfaceProviderSpecsKey, std::move(specs));
   return value;
 }
@@ -187,16 +185,22 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     return nullptr;
   }
 
-  const base::DictionaryValue* connection_spec = nullptr;
-  if (interface_provider_specs->GetDictionary(
-      Store::kInterfaceProvider_ConnectionSpecKey, &connection_spec)) {
-    service_manager::InterfaceProviderSpec spec;
-    if (!BuildInterfaceProviderSpec(*connection_spec, &spec)) {
-      LOG(ERROR) << "Entry::Deserialize: failed to build InterfaceProvider "
-        << "spec for " << entry->name();
+  base::DictionaryValue::Iterator it(*interface_provider_specs);
+  for (; !it.IsAtEnd(); it.Advance()) {
+    const base::DictionaryValue* spec_value = nullptr;
+    if (!interface_provider_specs->GetDictionary(it.key(), &spec_value)) {
+      LOG(ERROR) << "Entry::Deserialize: value of InterfaceProvider map for "
+                 << "key: " << it.key() << " not a dictionary.";
       return nullptr;
     }
-    entry->set_connection_spec(spec);
+
+    service_manager::InterfaceProviderSpec spec;
+    if (!BuildInterfaceProviderSpec(*spec_value, &spec)) {
+      LOG(ERROR) << "Entry::Deserialize: failed to build InterfaceProvider "
+                 << "spec for key: " << it.key();
+      return nullptr;
+    }
+    entry->AddInterfaceProviderSpec(it.key(), spec);
   }
 
   if (value.HasKey(Store::kServicesKey)) {
@@ -217,21 +221,27 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
   return entry;
 }
 
-bool Entry::ProvidesClass(const std::string& clazz) const {
-  return connection_spec_.provides.find(clazz) !=
-      connection_spec_.provides.end();
+bool Entry::ProvidesCapability(const std::string& capability) const {
+  auto it = interface_provider_specs_.find(
+      service_manager::mojom::kServiceManager_ConnectorSpec);
+  if (it == interface_provider_specs_.end())
+    return false;
+
+  auto connection_spec = it->second;
+  return connection_spec.provides.find(capability) !=
+      connection_spec.provides.end();
 }
 
 bool Entry::operator==(const Entry& other) const {
   return other.name_ == name_ && other.qualifier_ == qualifier_ &&
          other.display_name_ == display_name_ &&
-         other.connection_spec_ == connection_spec_;
+         other.interface_provider_specs_ == interface_provider_specs_;
 }
 
-bool Entry::operator<(const Entry& other) const {
-  return std::tie(name_, qualifier_, display_name_, connection_spec_) <
-         std::tie(other.name_, other.qualifier_, other.display_name_,
-                  other.connection_spec_);
+void Entry::AddInterfaceProviderSpec(
+    const std::string& name,
+    const service_manager::InterfaceProviderSpec& spec) {
+  interface_provider_specs_[name] = spec;
 }
 
 }  // catalog
@@ -248,7 +258,7 @@ TypeConverter<service_manager::mojom::ResolveResultPtr,
   const catalog::Entry& package = input.package() ? *input.package() : input;
   result->resolved_name = package.name();
   result->qualifier = input.qualifier();
-  result->connection_spec = input.connection_spec();
+  result->interface_provider_specs = input.interface_provider_specs();
   result->package_path = package.path();
   return result;
 }

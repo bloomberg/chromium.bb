@@ -68,7 +68,6 @@ void Instance::ResolveMojoName(const std::string& mojo_name,
     std::unique_ptr<Entry> entry(new Entry(mojo_name));
     service_manager::mojom::ResolveResultPtr result =
         service_manager::mojom::ResolveResult::From(*entry);
-    result->connection_spec = base::nullopt;
     callback.Run(std::move(result));
     return;
   }
@@ -114,12 +113,12 @@ void Instance::GetEntries(const base::Optional<std::vector<std::string>>& names,
   callback.Run(std::move(entries));
 }
 
-void Instance::GetEntriesProvidingClass(
-    const std::string& clazz,
-    const GetEntriesProvidingClassCallback& callback) {
+void Instance::GetEntriesProvidingCapability(
+    const std::string& capability,
+    const GetEntriesProvidingCapabilityCallback& callback) {
   std::vector<mojom::EntryPtr> entries;
   for (const auto& entry : *system_cache_)
-    if (entry.second->ProvidesClass(clazz))
+    if (entry.second->ProvidesCapability(capability))
       entries.push_back(mojom::Entry::From(*entry.second));
   callback.Run(std::move(entries));
 }

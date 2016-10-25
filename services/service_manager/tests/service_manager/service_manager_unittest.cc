@@ -123,14 +123,14 @@ class ServiceManagerTest : public test::ServiceTest,
   }
 
   // mojom::ServiceManagerListener:
-  void OnInit(std::vector<mojom::ServiceInfoPtr> instances) override {
+  void OnInit(std::vector<mojom::RunningServiceInfoPtr> instances) override {
     for (size_t i = 0; i < instances.size(); ++i)
       initial_instances_.push_back(InstanceInfo(instances[i]->identity));
 
     DCHECK(wait_for_instances_loop_);
     wait_for_instances_loop_->Quit();
   }
-  void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
+  void OnServiceCreated(mojom::RunningServiceInfoPtr instance) override {
     instances_.push_back(InstanceInfo(instance->identity));
   }
   void OnServiceStarted(const service_manager::Identity& identity,

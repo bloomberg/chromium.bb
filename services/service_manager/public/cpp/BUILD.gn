@@ -36,11 +36,13 @@ static_library("sources") {
     "lib/service.cc",
     "lib/service_context.cc",
     "lib/service_context_ref.cc",
+    "lib/service_info.cc",
     "lib/service_runner.cc",
     "names.h",
     "service.h",
     "service_context.h",
     "service_context_ref.h",
+    "service_info.h",
     "service_runner.h",
   ]
 

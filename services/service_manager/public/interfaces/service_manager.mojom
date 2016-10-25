@@ -6,7 +6,7 @@ module service_manager.mojom;
 
 import "services/service_manager/public/interfaces/connector.mojom";
 
-struct ServiceInfo {
+struct RunningServiceInfo {
   uint32 id;
   Identity identity;
   uint32 pid;
@@ -18,12 +18,12 @@ interface ServiceManagerListener {
   // Called once when the listener is added via
   // ServiceManager::AddInstanceListener() to provide the initial list of
   // services that the listener observes changes against.
-  OnInit(array<ServiceInfo> running_services);
+  OnInit(array<RunningServiceInfo> running_services);
 
   // Called when the Service Manager has started tracking a Service. This
   // happens when the Service Manager first handles a request to launch the
   // Service, before a process is created for it.
-  OnServiceCreated(ServiceInfo service);
+  OnServiceCreated(RunningServiceInfo service);
 
   // Called when a pid is available for the service. This could be because the
   // Service Manager created a process for it, or because an existing one was

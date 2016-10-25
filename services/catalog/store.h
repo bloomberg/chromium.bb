@@ -28,8 +28,6 @@ class Store {
   static const char kInterfaceProviderSpecs_ProvidesKey[];
   // Value is a dictionary.
   static const char kInterfaceProviderSpecs_RequiresKey[];
-  // Value is a dictionary.
-  static const char kInterfaceProvider_ConnectionSpecKey[];
   // Value is a list.
   static const char kServicesKey[];
 

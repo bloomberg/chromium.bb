@@ -130,7 +130,7 @@ void AppDriver::OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) {
 
 void AppDriver::AddAccelerators() {
   connector()->ConnectToInterface("service:catalog", &catalog_);
-  catalog_->GetEntriesProvidingClass(
+  catalog_->GetEntriesProvidingCapability(
       "mus:window_manager", base::Bind(&AppDriver::OnAvailableCatalogEntries,
                                        weak_factory_.GetWeakPtr()));
 }

@@ -22,9 +22,12 @@ struct ResolveResult {
   // should be run as different instances.
   string qualifier;
 
-  // The set of capabilities provided and required by |name|.
-  // TODO(beng): Fix comment.
-  InterfaceProviderSpec? connection_spec;
+  // Contains the contents of the interface_provider_specs section in |name|'s
+  // service manifest. If a manifest could be loaded, this map will contain at
+  // least one key: |kServiceManager_ConnectorSpec| as defined in
+  // interface_provider_spec.mojom. If a manifest could not be loaded, this map
+  // will be empty.
+  map<string, InterfaceProviderSpec> interface_provider_specs;
 
   // A path to the package file specified by |name|.
   mojo.common.mojom.FilePath package_path;

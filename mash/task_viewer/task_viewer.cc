@@ -34,7 +34,7 @@ namespace mash {
 namespace task_viewer {
 namespace {
 
-using service_manager::mojom::ServiceInfoPtr;
+using service_manager::mojom::RunningServiceInfoPtr;
 
 class TaskViewerContents
     : public views::WidgetDelegateView,
@@ -150,7 +150,7 @@ class TaskViewerContents
   }
 
   // Overridden from service_manager::mojom::ServiceManagerListener:
-  void OnInit(std::vector<ServiceInfoPtr> instances) override {
+  void OnInit(std::vector<RunningServiceInfoPtr> instances) override {
     // This callback should only be called with an empty model.
     DCHECK(instances_.empty());
     std::vector<std::string> names;
@@ -164,7 +164,7 @@ class TaskViewerContents
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
-  void OnServiceCreated(ServiceInfoPtr instance) override {
+  void OnServiceCreated(RunningServiceInfoPtr instance) override {
     service_manager::Identity identity = instance->identity;
     DCHECK(!ContainsIdentity(identity));
     InsertInstance(identity, instance->pid);

@@ -77,7 +77,9 @@ TEST_F(EntryTest, ConnectionSpec) {
   service_manager::CapabilitySet capabilities;
   capabilities.insert("bar:bar");
   spec.requires["service:bar"] = capabilities;
-  EXPECT_EQ(spec, entry->connection_spec());
+  service_manager::InterfaceProviderSpecMap specs;
+  specs[service_manager::mojom::kServiceManager_ConnectorSpec] = spec;
+  EXPECT_EQ(specs, entry->interface_provider_specs());
 }
 
 TEST_F(EntryTest, Serialization) {

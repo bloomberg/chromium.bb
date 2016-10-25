@@ -37,3 +37,8 @@ struct InterfaceProviderSpec {
   // all services in addition to specific ones specified.
   map<string, CapabilitySet> requires;
 };
+
+// The name of the InterfaceProviderSpec in service manifests used by the
+// Service Manager to control capabilities & interfaces exposed between
+// services via Connector.
+const string kServiceManager_ConnectorSpec = "service_manager:connector";
