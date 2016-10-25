@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
@@ -60,6 +61,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/variations/variations_associated_data.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -148,26 +150,36 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string security_chip;
   if (command_line->HasSwitch(switches::kSecurityChip)) {
-    std::string security_chip_flag =
-        command_line->GetSwitchValueASCII(switches::kSecurityChip);
-    should_show_secure_verbose_ =
-        security_chip_flag == switches::kSecurityChipShowAll;
-    should_show_nonsecure_verbose_ =
-        security_chip_flag == switches::kSecurityChipShowAll ||
-        security_chip_flag == switches::kSecurityChipShowNonSecureOnly;
+    security_chip = command_line->GetSwitchValueASCII(switches::kSecurityChip);
+  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
+    security_chip = variations::GetVariationParamValueByFeature(
+        features::kSecurityChip, kSecurityChipFeatureVisibilityParam);
   }
 
-  if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
-    std::string security_chip_animation_flag =
-        command_line->GetSwitchValueASCII(switches::kSecurityChipAnimation);
-    should_animate_secure_verbose_ =
-        security_chip_animation_flag == switches::kSecurityChipAnimationAll;
+  if (security_chip == switches::kSecurityChipShowNonSecureOnly) {
+    should_show_nonsecure_verbose_ = true;
+  } else if (security_chip == switches::kSecurityChipShowAll) {
+    should_show_secure_verbose_ = true;
+    should_show_nonsecure_verbose_ = true;
+  }
 
-    should_animate_nonsecure_verbose_ =
-        security_chip_animation_flag ==
-            switches::kSecurityChipAnimationNonSecureOnly ||
-        security_chip_animation_flag == switches::kSecurityChipAnimationAll;
+  std::string security_chip_animation;
+  if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
+    security_chip_animation =
+        command_line->GetSwitchValueASCII(switches::kSecurityChipAnimation);
+  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
+    security_chip_animation = variations::GetVariationParamValueByFeature(
+        features::kSecurityChip, kSecurityChipFeatureAnimationParam);
+  }
+
+  if (security_chip_animation ==
+      switches::kSecurityChipAnimationNonSecureOnly) {
+    should_animate_nonsecure_verbose_ = true;
+  } else if (security_chip_animation == switches::kSecurityChipAnimationAll) {
+    should_animate_secure_verbose_ = true;
+    should_animate_nonsecure_verbose_ = true;
   }
 
   // Sets images for the decorations, and performs a layout. This call ensures

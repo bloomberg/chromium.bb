@@ -11,6 +11,8 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+const char LocationBar::kSecurityChipFeatureVisibilityParam[] = "visibility";
+const char LocationBar::kSecurityChipFeatureAnimationParam[] = "animation";
 
 LocationBar::LocationBar(Profile* profile) : profile_(profile) {
 }

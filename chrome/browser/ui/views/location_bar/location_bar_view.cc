@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -65,6 +66,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/variations/variations_associated_data.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -153,27 +155,36 @@ LocationBarView::LocationBarView(Browser* browser,
       ->AddZoomEventManagerObserver(this);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string security_chip_visibility;
   if (command_line->HasSwitch(switches::kSecurityChip)) {
-    std::string security_chip_flag =
-        command_line->GetSwitchValueASCII(switches::kSecurityChip);
-    should_show_secure_state_ =
-        security_chip_flag == switches::kSecurityChipShowAll;
-    should_show_nonsecure_state_ =
-        security_chip_flag == switches::kSecurityChipShowAll ||
-        security_chip_flag == switches::kSecurityChipShowNonSecureOnly;
+    security_chip_visibility =
+      command_line->GetSwitchValueASCII(switches::kSecurityChip);
+  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
+    security_chip_visibility =
+        variations::GetVariationParamValueByFeature(
+            features::kSecurityChip, kSecurityChipFeatureVisibilityParam);
   }
 
+  should_show_secure_state_ =
+      security_chip_visibility == switches::kSecurityChipShowAll;
+  should_show_nonsecure_state_ =
+    should_show_secure_state_ ||
+    security_chip_visibility == switches::kSecurityChipShowNonSecureOnly;
+
+  std::string security_chip_animation;
   if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
-    std::string security_chip_animation_flag =
+    security_chip_animation =
         command_line->GetSwitchValueASCII(switches::kSecurityChipAnimation);
-    should_animate_secure_state_ =
-        security_chip_animation_flag == switches::kSecurityChipAnimationAll;
-
-    should_animate_nonsecure_state_ =
-        security_chip_animation_flag ==
-            switches::kSecurityChipAnimationNonSecureOnly ||
-        security_chip_animation_flag == switches::kSecurityChipAnimationAll;
+  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
+    security_chip_animation = variations::GetVariationParamValueByFeature(
+        features::kSecurityChip, kSecurityChipFeatureAnimationParam);
   }
+
+  should_animate_secure_state_ =
+      security_chip_animation == switches::kSecurityChipAnimationAll;
+  should_animate_nonsecure_state_ =
+      should_animate_secure_state_ ||
+      security_chip_animation == switches::kSecurityChipAnimationNonSecureOnly;
 }
 
 LocationBarView::~LocationBarView() {

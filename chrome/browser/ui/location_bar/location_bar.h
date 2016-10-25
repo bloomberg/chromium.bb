@@ -32,6 +32,10 @@ class Extension;
 // location bar to be mocked for testing.
 class LocationBar {
  public:
+  // The parameters for the Security Chip Feature.
+  static const char kSecurityChipFeatureVisibilityParam[];
+  static const char kSecurityChipFeatureAnimationParam[];
+
   explicit LocationBar(Profile* profile);
 
   // Shows the first run bubble anchored to the location bar.

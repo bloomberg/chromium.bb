@@ -138,6 +138,12 @@ const base::Feature kRunAllFlashInAllowMode{"RunAllFlashInAllowMode",
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Sets the visibility and animation of the security chip.
+const base::Feature kSecurityChip{"SecurityChip",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states.
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
