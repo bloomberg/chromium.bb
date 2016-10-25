@@ -89,6 +89,10 @@ const base::Feature kDHECiphersFeature{
     "DHECiphers", base::FEATURE_DISABLED_BY_DEFAULT,
 };
 
+const base::Feature kTLS13Feature{
+    "NegotiateTLS13", base::FEATURE_DISABLED_BY_DEFAULT,
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -200,6 +204,12 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   if (base::FeatureList::IsEnabled(kDHECiphersFeature)) {
     local_state->SetDefaultPrefValue(ssl_config::prefs::kDHEEnabled,
                                      new base::FundamentalValue(true));
+  }
+
+  if (base::FeatureList::IsEnabled(kTLS13Feature)) {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kSSLVersionMax,
+        new base::StringValue(switches::kSSLVersionTLSv13));
   }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =

@@ -1934,6 +1934,26 @@
             ]
         }
     ],
+    "TLS13Negotiation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NegotiateTLS13"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabManagementExperiment": [
         {
             "platforms": [
