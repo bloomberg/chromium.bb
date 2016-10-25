@@ -1610,8 +1610,8 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapVector<Member<Element>> m_topLayerElements;
 
   int m_loadEventDelayCount;
-  Timer<Document> m_loadEventDelayTimer;
-  Timer<Document> m_pluginLoadingTimer;
+  TaskRunnerTimer<Document> m_loadEventDelayTimer;
+  TaskRunnerTimer<Document> m_pluginLoadingTimer;
 
   ViewportDescription m_viewportDescription;
   ViewportDescription m_legacyViewportDescription;
