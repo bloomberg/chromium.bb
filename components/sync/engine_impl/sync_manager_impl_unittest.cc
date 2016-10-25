@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -25,6 +26,7 @@
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/mock_unrecoverable_error_handler.h"
 #include "components/sync/base/model_type_test_util.h"
+#include "components/sync/base/sync_features.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/model_safe_worker.h"
@@ -502,10 +504,14 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
 TEST_F(SyncApiTest, WriteAndReadPassword) {
   KeyParams params = {"localhost", "username", "passphrase"};
+  base::FeatureList::ClearInstanceForTesting();
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
+
   {
     ReadTransaction trans(FROM_HERE, user_share());
     trans.GetCryptographer()->AddKey(params);
   }
+
   {
     WriteTransaction trans(FROM_HERE, user_share());
     ReadNode root_node(&trans);
@@ -528,10 +534,56 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
     const sync_pb::PasswordSpecificsData& data =
         password_node.GetPasswordSpecifics();
     EXPECT_EQ(kPasswordValue, data.password_value());
-    // Check that nothing has appeared in the unencrypted field.
+    // Check that when feature is disabled nothing appears in the unencrypted
+    // field.
     EXPECT_FALSE(password_node.GetEntitySpecifics()
                      .password()
                      .has_unencrypted_metadata());
+  }
+}
+
+TEST_F(SyncApiTest, WritePasswordAndCheckMetadata) {
+  KeyParams params = {"localhost", "username", "passphrase"};
+  {
+    ReadTransaction trans(FROM_HERE, user_share());
+    trans.GetCryptographer()->AddKey(params);
+  }
+
+  base::FeatureList::ClearInstanceForTesting();
+  base::FieldTrialList field_trial_list(nullptr);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
+                                          std::string());
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
+  {
+    WriteTransaction trans(FROM_HERE, user_share());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    WriteNode password_node(&trans);
+    WriteNode::InitUniqueByCreationResult result =
+        password_node.InitUniqueByCreation(PASSWORDS, root_node, kClientTag);
+    EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value(kPasswordValue);
+    data.set_signon_realm(kUrl);
+    password_node.SetPasswordSpecifics(data);
+  }
+  {
+    ReadTransaction trans(FROM_HERE, user_share());
+
+    ReadNode password_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              password_node.InitByClientTagLookup(PASSWORDS, kClientTag));
+    const sync_pb::PasswordSpecificsData& data =
+        password_node.GetPasswordSpecifics();
+    EXPECT_EQ(kPasswordValue, data.password_value());
+    EXPECT_EQ(kUrl, password_node.GetEntitySpecifics()
+                        .password()
+                        .unencrypted_metadata()
+                        .url());
   }
 }
 
@@ -2048,6 +2100,12 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
 TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   sync_pb::EntitySpecifics entity_specifics;
+  base::FeatureList::ClearInstanceForTesting();
+  base::FieldTrialList field_trial_list(nullptr);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
+                                          std::string());
+  base::FeatureList::SetInstance(std::move(feature_list));
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -2087,12 +2145,45 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
                      .has_unencrypted_metadata());
   }
   EXPECT_TRUE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
+
+  // Check that writing new password doesn't set the metadata.
+  const std::string tag = "newpassentity";
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    WriteNode password_node(&trans);
+    WriteNode::InitUniqueByCreationResult result =
+        password_node.InitUniqueByCreation(PASSWORDS, root_node, tag);
+    EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value(kPasswordValue);
+    data.set_signon_realm(kUrl);
+    password_node.SetPasswordSpecifics(data);
+  }
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    ReadNode password_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              password_node.InitByClientTagLookup(PASSWORDS, tag));
+    const sync_pb::PasswordSpecificsData& data =
+        password_node.GetPasswordSpecifics();
+    EXPECT_EQ(kPasswordValue, data.password_value());
+    EXPECT_FALSE(password_node.GetEntitySpecifics()
+                     .password()
+                     .has_unencrypted_metadata());
+  }
 }
 
 // Passwords have their own handling for encryption. Verify it does not result
 // in unnecessary writes via ReencryptEverything.
 TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
-  std::string client_tag = "title";
+  base::FeatureList::ClearInstanceForTesting();
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
+
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   sync_pb::EntitySpecifics entity_specifics;
   {
@@ -2103,11 +2194,11 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
     cryptographer->Encrypt(
         data, entity_specifics.mutable_password()->mutable_encrypted());
   }
-  MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 syncable::GenerateSyncableHash(PASSWORDS, client_tag),
+  MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
+                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
-  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, client_tag));
+  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 
   // Force a re-encrypt everything. Should not set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
@@ -2116,7 +2207,101 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
   EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
-  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, client_tag));
+  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
+}
+
+// Metadata filling can happen during ReencryptEverything, check that data is
+// written when it's applicable, namely that password specifics entity is marked
+// unsynced, when data was written to the unencrypted metadata field.
+TEST_F(SyncManagerTest, UpdatePasswordReencryptEverythingFillMetadata) {
+  base::FeatureList::ClearInstanceForTesting();
+  base::FieldTrialList field_trial_list(nullptr);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
+                                          std::string());
+  base::FeatureList::SetInstance(std::move(feature_list));
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
+
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  sync_pb::EntitySpecifics entity_specifics;
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret");
+    data.set_signon_realm(kUrl);
+    cryptographer->Encrypt(
+        data, entity_specifics.mutable_password()->mutable_encrypted());
+  }
+  MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
+                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
+
+  // Force a re-encrypt everything. Should set is_unsynced.
+  testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
+  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  sync_manager_.GetEncryptionHandler()->Init();
+  PumpLoop();
+  // Check that unencrypted metadata field was set.
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    ReadNode password_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              password_node.InitByClientTagLookup(PASSWORDS, kClientTag));
+    EXPECT_EQ(kUrl, password_node.GetEntitySpecifics()
+                        .password()
+                        .unencrypted_metadata()
+                        .url());
+  }
+
+  EXPECT_TRUE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
+}
+
+// Check that when the data in PasswordSpecifics hasn't changed during
+// ReEncryption, entity is not marked as unsynced.
+TEST_F(SyncManagerTest,
+       UpdatePasswordReencryptEverythingDontMarkUnsyncWhenNotNeeded) {
+  base::FeatureList::ClearInstanceForTesting();
+  base::FieldTrialList field_trial_list(nullptr);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
+                                          std::string());
+  base::FeatureList::SetInstance(std::move(feature_list));
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
+
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  sync_pb::EntitySpecifics entity_specifics;
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret");
+    data.set_signon_realm(kUrl);
+    cryptographer->Encrypt(
+        data, entity_specifics.mutable_password()->mutable_encrypted());
+  }
+  entity_specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
+      kUrl);
+  MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
+                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
+
+  // Force a re-encrypt everything. Should not set is_unsynced.
+  testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
+  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  sync_manager_.GetEncryptionHandler()->Init();
+  PumpLoop();
+  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 }
 
 // Test that attempting to start up with corrupted password data triggers

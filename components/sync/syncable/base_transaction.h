@@ -12,6 +12,8 @@
 
 namespace syncer {
 
+enum class PassphraseType;
+
 namespace syncable {
 class BaseTransaction;
 class Directory;
@@ -33,6 +35,7 @@ class BaseTransaction {
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
   Cryptographer* GetCryptographer() const;
   ModelTypeSet GetEncryptedTypes() const;
+  PassphraseType GetPassphraseType() const;
 
   syncable::Directory* GetDirectory() const {
     if (!user_share_) {

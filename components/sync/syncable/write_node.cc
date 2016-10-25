@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/sync_features.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
@@ -136,6 +137,14 @@ void WriteNode::SetPasswordSpecifics(
   }
   sync_pb::PasswordSpecifics* password_specifics =
       entity_specifics.mutable_password();
+
+  const std::string metadata_url(data.signon_realm());
+  if (!IsExplicitPassphrase(GetTransaction()->GetPassphraseType()) &&
+      base::FeatureList::IsEnabled(kFillPasswordMetadata) &&
+      password_specifics->unencrypted_metadata().url() != metadata_url) {
+    password_specifics->mutable_unencrypted_metadata()->set_url(metadata_url);
+  }
+
   // This will only update password_specifics if the underlying unencrypted blob
   // was different from |data| or was not encrypted with the proper passphrase.
   if (!cryptographer->Encrypt(data, password_specifics->mutable_encrypted())) {
