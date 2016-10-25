@@ -30,8 +30,6 @@
 // Converts a minidump file to a core file which gdb can read.
 // Large parts lifted from the userspace core dumper:
 //   http://code.google.com/p/google-coredumper/
-//
-// Usage: minidump-2-core [-v] 1234.dmp > core
 
 #include <elf.h>
 #include <errno.h>
@@ -97,12 +95,64 @@ typedef MDTypeHelper<sizeof(ElfW(Addr))>::MDRawDebug MDRawDebug;
 typedef MDTypeHelper<sizeof(ElfW(Addr))>::MDRawLinkMap MDRawLinkMap;
 
 static const MDRVA kInvalidMDRVA = static_cast<MDRVA>(-1);
-static bool verbose;
-static string g_custom_so_basedir;
 
-static int usage(const char* argv0) {
-  fprintf(stderr, "Usage: %s [-v] <minidump file>\n", argv0);
-  return 1;
+struct Options {
+  string minidump_path;
+  bool verbose;
+  string so_basedir;
+};
+
+static void
+Usage(int argc, const char* argv[]) {
+  fprintf(stderr,
+          "Usage: %s [options] <minidump file>\n"
+          "\n"
+          "Convert a minidump file into a core file (often for use by gdb).\n"
+          "\n"
+          "Options:\n"
+          "  -v         Enable verbose output\n"
+          "  -S <dir>   Set soname base directory.  This will force all debug/symbol\n"
+          "             lookups to be done in this directory rather than the filesystem\n"
+          "             layout as it exists in the crashing image.  This path should end\n"
+          "             with a slash if it's a directory.\n"
+          "", basename(argv[0]));
+}
+
+static void
+SetupOptions(int argc, const char* argv[], Options* options) {
+  extern int optind;
+  int ch;
+
+  // Initialize the options struct as needed.
+  options->verbose = false;
+
+  while ((ch = getopt(argc, (char * const *)argv, "hS:v")) != -1) {
+    switch (ch) {
+      case 'h':
+        Usage(argc, argv);
+        exit(0);
+        break;
+      case '?':
+        Usage(argc, argv);
+        exit(1);
+        break;
+
+      case 'S':
+        options->so_basedir = optarg;
+        break;
+      case 'v':
+        options->verbose = true;
+        break;
+    }
+  }
+
+  if ((argc - optind) != 1) {
+    fprintf(stderr, "%s: Missing minidump file\n", argv[0]);
+    Usage(argc, argv);
+    exit(1);
+  }
+
+  options->minidump_path = argv[optind];
 }
 
 // Write all of the given buffer, handling short writes and EINTR. Return true
@@ -429,10 +479,11 @@ ParseThreadRegisters(CrashedProcess::Thread* thread,
 #endif
 
 static void
-ParseThreadList(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
+ParseThreadList(const Options& options, CrashedProcess* crashinfo,
+                const MinidumpMemoryRange& range,
                 const MinidumpMemoryRange& full_file) {
   const uint32_t num_threads = *range.GetData<uint32_t>(0);
-  if (verbose) {
+  if (options.verbose) {
     fprintf(stderr,
             "MD_THREAD_LIST_STREAM:\n"
             "Found %d threads\n"
@@ -459,12 +510,13 @@ ParseThreadList(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
 }
 
 static void
-ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
+ParseSystemInfo(const Options& options, CrashedProcess* crashinfo,
+                const MinidumpMemoryRange& range,
                 const MinidumpMemoryRange& full_file) {
   const MDRawSystemInfo* sysinfo = range.GetData<MDRawSystemInfo>(0);
   if (!sysinfo) {
     fprintf(stderr, "Failed to access MD_SYSTEM_INFO_STREAM\n");
-    _exit(1);
+    exit(1);
   }
 #if defined(__i386__)
   if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_X86) {
@@ -472,7 +524,7 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
             "This version of minidump-2-core only supports x86 (32bit)%s.\n",
             sysinfo->processor_architecture == MD_CPU_ARCHITECTURE_AMD64 ?
             ",\nbut the minidump file is from a 64bit machine" : "");
-    _exit(1);
+    exit(1);
   }
 #elif defined(__x86_64__)
   if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_AMD64) {
@@ -480,32 +532,32 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
             "This version of minidump-2-core only supports x86 (64bit)%s.\n",
             sysinfo->processor_architecture == MD_CPU_ARCHITECTURE_X86 ?
             ",\nbut the minidump file is from a 32bit machine" : "");
-    _exit(1);
+    exit(1);
   }
 #elif defined(__arm__)
   if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM) {
     fprintf(stderr,
             "This version of minidump-2-core only supports ARM (32bit).\n");
-    _exit(1);
+    exit(1);
   }
 #elif defined(__aarch64__)
   if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM64) {
     fprintf(stderr,
             "This version of minidump-2-core only supports ARM (64bit).\n");
-    _exit(1);
+    exit(1);
   }
 #elif defined(__mips__)
 # if _MIPS_SIM == _ABIO32
   if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_MIPS) {
     fprintf(stderr,
             "This version of minidump-2-core only supports mips o32 (32bit).\n");
-    _exit(1);
+    exit(1);
   }
 # elif _MIPS_SIM == _ABI64
   if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_MIPS64) {
     fprintf(stderr,
             "This version of minidump-2-core only supports mips n64 (64bit).\n");
-    _exit(1);
+    exit(1);
   }
 # else
 #  error "This mips ABI is currently not supported (n32)"
@@ -517,10 +569,10 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
               "Linux") &&
       sysinfo->platform_id != MD_OS_NACL) {
     fprintf(stderr, "This minidump was not generated by Linux or NaCl.\n");
-    _exit(1);
+    exit(1);
   }
 
-  if (verbose) {
+  if (options.verbose) {
     fprintf(stderr,
             "MD_SYSTEM_INFO_STREAM:\n"
             "Architecture: %s\n"
@@ -561,8 +613,9 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
 }
 
 static void
-ParseCPUInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
-  if (verbose) {
+ParseCPUInfo(const Options& options, CrashedProcess* crashinfo,
+             const MinidumpMemoryRange& range) {
+  if (options.verbose) {
     fputs("MD_LINUX_CPU_INFO:\n", stderr);
     fwrite(range.data(), range.length(), 1, stderr);
     fputs("\n\n\n", stderr);
@@ -570,9 +623,9 @@ ParseCPUInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
 }
 
 static void
-ParseProcessStatus(CrashedProcess* crashinfo,
+ParseProcessStatus(const Options& options, CrashedProcess* crashinfo,
                    const MinidumpMemoryRange& range) {
-  if (verbose) {
+  if (options.verbose) {
     fputs("MD_LINUX_PROC_STATUS:\n", stderr);
     fwrite(range.data(), range.length(), 1, stderr);
     fputs("\n\n", stderr);
@@ -580,8 +633,9 @@ ParseProcessStatus(CrashedProcess* crashinfo,
 }
 
 static void
-ParseLSBRelease(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
-  if (verbose) {
+ParseLSBRelease(const Options& options, CrashedProcess* crashinfo,
+                const MinidumpMemoryRange& range) {
+  if (options.verbose) {
     fputs("MD_LINUX_LSB_RELEASE:\n", stderr);
     fwrite(range.data(), range.length(), 1, stderr);
     fputs("\n\n", stderr);
@@ -589,8 +643,9 @@ ParseLSBRelease(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
 }
 
 static void
-ParseMaps(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
-  if (verbose) {
+ParseMaps(const Options& options, CrashedProcess* crashinfo,
+          const MinidumpMemoryRange& range) {
+  if (options.verbose) {
     fputs("MD_LINUX_MAPS:\n", stderr);
     fwrite(range.data(), range.length(), 1, stderr);
   }
@@ -629,14 +684,15 @@ ParseMaps(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
     free(permissions);
     free(filename);
   }
-  if (verbose) {
+  if (options.verbose) {
     fputs("\n\n\n", stderr);
   }
 }
 
 static void
-ParseEnvironment(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
-  if (verbose) {
+ParseEnvironment(const Options& options, CrashedProcess* crashinfo,
+                 const MinidumpMemoryRange& range) {
+  if (options.verbose) {
     fputs("MD_LINUX_ENVIRON:\n", stderr);
     char* env = new char[range.length()];
     memcpy(env, range.data(), range.length());
@@ -673,7 +729,8 @@ ParseEnvironment(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
 }
 
 static void
-ParseAuxVector(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
+ParseAuxVector(const Options& options, CrashedProcess* crashinfo,
+               const MinidumpMemoryRange& range) {
   // Some versions of Chrome erroneously used the MD_LINUX_AUXV stream value
   // when dumping /proc/$x/maps
   if (range.length() > 17) {
@@ -684,7 +741,7 @@ ParseAuxVector(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
     memcpy(addresses, range.data(), 17);
     addresses[17] = '\000';
     if (strspn(addresses, "0123456789abcdef-") == 17) {
-      ParseMaps(crashinfo, range);
+      ParseMaps(options, crashinfo, range);
       return;
     }
   }
@@ -694,12 +751,13 @@ ParseAuxVector(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
 }
 
 static void
-ParseCmdLine(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
+ParseCmdLine(const Options& options, CrashedProcess* crashinfo,
+             const MinidumpMemoryRange& range) {
   // The command line is supposed to use NUL bytes to separate arguments.
   // As Chrome rewrites its own command line and (incorrectly) substitutes
   // spaces, this is often not the case in our minidump files.
   const char* cmdline = (const char*) range.data();
-  if (verbose) {
+  if (options.verbose) {
     fputs("MD_LINUX_CMD_LINE:\n", stderr);
     unsigned i = 0;
     for (; i < range.length() && cmdline[i] && cmdline[i] != ' '; ++i) { }
@@ -742,13 +800,14 @@ ParseCmdLine(CrashedProcess* crashinfo, const MinidumpMemoryRange& range) {
 }
 
 static void
-ParseDSODebugInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
+ParseDSODebugInfo(const Options& options, CrashedProcess* crashinfo,
+                  const MinidumpMemoryRange& range,
                   const MinidumpMemoryRange& full_file) {
   const MDRawDebug* debug = range.GetData<MDRawDebug>(0);
   if (!debug) {
     return;
   }
-  if (verbose) {
+  if (options.verbose) {
     fprintf(stderr,
             "MD_LINUX_DSO_DEBUG:\n"
             "Version: %d\n"
@@ -773,7 +832,7 @@ ParseDSODebugInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
       const MDRawLinkMap* link_map =
           full_file.GetArrayElement<MDRawLinkMap>(debug->map, i);
       if (link_map) {
-        if (verbose) {
+        if (options.verbose) {
           fprintf(stderr,
                   "#%03d: %" PRIx64 ", %" PRIx64 ", \"%s\"\n",
                   i, static_cast<uint64_t>(link_map->addr),
@@ -784,13 +843,13 @@ ParseDSODebugInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
       }
     }
   }
-  if (verbose) {
+  if (options.verbose) {
     fputs("\n\n", stderr);
   }
 }
 
 static void
-ParseExceptionStream(CrashedProcess* crashinfo,
+ParseExceptionStream(const Options& options, CrashedProcess* crashinfo,
                      const MinidumpMemoryRange& range) {
   const MDRawExceptionStream* exp = range.GetData<MDRawExceptionStream>(0);
   crashinfo->crashing_tid = exp->thread_id;
@@ -846,9 +905,10 @@ WriteThread(const CrashedProcess::Thread& thread, int fatal_signal) {
 }
 
 static void
-ParseModuleStream(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
+ParseModuleStream(const Options& options, CrashedProcess* crashinfo,
+                  const MinidumpMemoryRange& range,
                   const MinidumpMemoryRange& full_file) {
-  if (verbose) {
+  if (options.verbose) {
     fputs("MD_MODULE_LIST_STREAM:\n", stderr);
   }
   const uint32_t num_mappings = *range.GetData<uint32_t>(0);
@@ -883,15 +943,15 @@ ParseModuleStream(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
         filename : filename.substr(slash + 1);
     if (strcmp(guid, "00000000-0000-0000-0000-000000000000")) {
       string prefix;
-      if (!g_custom_so_basedir.empty())
-        prefix = g_custom_so_basedir;
+      if (!options.so_basedir.empty())
+        prefix = options.so_basedir;
       else
         prefix = string("/var/lib/breakpad/") + guid + "-" + basename;
 
       crashinfo->signatures[rawmodule->base_of_image] = prefix + basename;
     }
 
-    if (verbose) {
+    if (options.verbose) {
       fprintf(stderr, "0x%08llX-0x%08llX, ChkSum: 0x%08X, GUID: %s, \"%s\"\n",
               (unsigned long long)rawmodule->base_of_image,
               (unsigned long long)rawmodule->base_of_image +
@@ -899,7 +959,7 @@ ParseModuleStream(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
               rawmodule->checksum, guid, filename.c_str());
     }
   }
-  if (verbose) {
+  if (options.verbose) {
     fputs("\n\n", stderr);
   }
 }
@@ -954,7 +1014,7 @@ AddDataToMapping(CrashedProcess* crashinfo, const string& data,
 }
 
 static void
-AugmentMappings(CrashedProcess* crashinfo,
+AugmentMappings(const Options& options, CrashedProcess* crashinfo,
                 const MinidumpMemoryRange& full_file) {
   // For each thread, find the memory mapping that matches the thread's stack.
   // Then adjust the mapping to include the stack dump.
@@ -1019,7 +1079,7 @@ AugmentMappings(CrashedProcess* crashinfo,
       ElfW(Dyn) dyn;
       if ((i+1)*sizeof(dyn) > crashinfo->dynamic_data.length()) {
       no_dt_debug:
-        if (verbose) {
+        if (options.verbose) {
           fprintf(stderr, "No DT_DEBUG entry found\n");
         }
         return;
@@ -1042,31 +1102,14 @@ AugmentMappings(CrashedProcess* crashinfo,
 }
 
 int
-main(int argc, char** argv) {
-  int argi = 1;
-  while (argi < argc && argv[argi][0] == '-') {
-    if (!strcmp(argv[argi], "-v")) {
-      verbose = true;
-    } else if (!strcmp(argv[argi], "--sobasedir")) {
-      argi++;
-      if (argi >= argc) {
-        fprintf(stderr, "--sobasedir expects an argument.");
-        return usage(argv[0]);
-      }
+main(int argc, const char* argv[]) {
+  Options options;
+  SetupOptions(argc, argv, &options);
 
-      g_custom_so_basedir = argv[argi];
-    } else {
-      return usage(argv[0]);
-    }
-    argi++;
-  }
-
-  if (argc != argi + 1)
-    return usage(argv[0]);
-
-  MemoryMappedFile mapped_file(argv[argi], 0);
+  MemoryMappedFile mapped_file(options.minidump_path.c_str(), 0);
   if (!mapped_file.data()) {
-    fprintf(stderr, "Failed to mmap dump file\n");
+    fprintf(stderr, "Failed to mmap dump file: %s: %s\n",
+            options.minidump_path.c_str(), strerror(errno));
     return 1;
   }
 
@@ -1084,7 +1127,8 @@ main(int argc, char** argv) {
         dump.GetArrayElement<MDRawDirectory>(header->stream_directory_rva, i);
     switch (dirent->stream_type) {
       case MD_SYSTEM_INFO_STREAM:
-        ParseSystemInfo(&crashinfo, dump.Subrange(dirent->location), dump);
+        ParseSystemInfo(options, &crashinfo, dump.Subrange(dirent->location),
+                        dump);
         ok = true;
         break;
       default:
@@ -1093,7 +1137,7 @@ main(int argc, char** argv) {
   }
   if (!ok) {
     fprintf(stderr, "Cannot determine input file format.\n");
-    _exit(1);
+    exit(1);
   }
 
   for (unsigned i = 0; i < header->stream_count; ++i) {
@@ -1101,45 +1145,50 @@ main(int argc, char** argv) {
         dump.GetArrayElement<MDRawDirectory>(header->stream_directory_rva, i);
     switch (dirent->stream_type) {
       case MD_THREAD_LIST_STREAM:
-        ParseThreadList(&crashinfo, dump.Subrange(dirent->location), dump);
+        ParseThreadList(options, &crashinfo, dump.Subrange(dirent->location),
+                        dump);
         break;
       case MD_LINUX_CPU_INFO:
-        ParseCPUInfo(&crashinfo, dump.Subrange(dirent->location));
+        ParseCPUInfo(options, &crashinfo, dump.Subrange(dirent->location));
         break;
       case MD_LINUX_PROC_STATUS:
-        ParseProcessStatus(&crashinfo, dump.Subrange(dirent->location));
+        ParseProcessStatus(options, &crashinfo,
+                           dump.Subrange(dirent->location));
         break;
       case MD_LINUX_LSB_RELEASE:
-        ParseLSBRelease(&crashinfo, dump.Subrange(dirent->location));
+        ParseLSBRelease(options, &crashinfo, dump.Subrange(dirent->location));
         break;
       case MD_LINUX_ENVIRON:
-        ParseEnvironment(&crashinfo, dump.Subrange(dirent->location));
+        ParseEnvironment(options, &crashinfo, dump.Subrange(dirent->location));
         break;
       case MD_LINUX_MAPS:
-        ParseMaps(&crashinfo, dump.Subrange(dirent->location));
+        ParseMaps(options, &crashinfo, dump.Subrange(dirent->location));
         break;
       case MD_LINUX_AUXV:
-        ParseAuxVector(&crashinfo, dump.Subrange(dirent->location));
+        ParseAuxVector(options, &crashinfo, dump.Subrange(dirent->location));
         break;
       case MD_LINUX_CMD_LINE:
-        ParseCmdLine(&crashinfo, dump.Subrange(dirent->location));
+        ParseCmdLine(options, &crashinfo, dump.Subrange(dirent->location));
         break;
       case MD_LINUX_DSO_DEBUG:
-        ParseDSODebugInfo(&crashinfo, dump.Subrange(dirent->location), dump);
+        ParseDSODebugInfo(options, &crashinfo, dump.Subrange(dirent->location),
+                          dump);
         break;
       case MD_EXCEPTION_STREAM:
-        ParseExceptionStream(&crashinfo, dump.Subrange(dirent->location));
+        ParseExceptionStream(options, &crashinfo,
+                             dump.Subrange(dirent->location));
         break;
       case MD_MODULE_LIST_STREAM:
-        ParseModuleStream(&crashinfo, dump.Subrange(dirent->location), dump);
+        ParseModuleStream(options, &crashinfo, dump.Subrange(dirent->location),
+                          dump);
         break;
       default:
-        if (verbose)
+        if (options.verbose)
           fprintf(stderr, "Skipping %x\n", dirent->stream_type);
     }
   }
 
-  AugmentMappings(&crashinfo, dump);
+  AugmentMappings(options, &crashinfo, dump);
 
   // Write the ELF header. The file will look like:
   //   ELF header
