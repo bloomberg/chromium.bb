@@ -17,6 +17,7 @@ source_set("app") {
   deps = [
     "//base",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 
   allow_circular_includes_from = [ "//ios/web/app" ]
 }
