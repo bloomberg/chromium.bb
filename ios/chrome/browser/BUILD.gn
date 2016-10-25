@@ -403,6 +403,7 @@ source_set("browser") {
     "snapshots/lru_cache.mm",
     "snapshots/snapshot_cache.h",
     "snapshots/snapshot_cache.mm",
+    "snapshots/snapshot_cache_internal.h",
     "snapshots/snapshot_manager.h",
     "snapshots/snapshot_manager.mm",
     "snapshots/snapshot_overlay.h",
