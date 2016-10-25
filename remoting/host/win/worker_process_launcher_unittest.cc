@@ -481,7 +481,8 @@ TEST_F(WorkerProcessLauncherTest, PermanentError) {
 }
 
 // Requests the worker to crash and expects it to honor the request.
-TEST_F(WorkerProcessLauncherTest, Crash) {
+// Disabled: http://crbug.com/659219
+TEST_F(WorkerProcessLauncherTest, DISABLED_Crash) {
   EXPECT_CALL(*launcher_delegate_, LaunchProcess(_))
       .Times(2)
       .WillRepeatedly(Invoke(
