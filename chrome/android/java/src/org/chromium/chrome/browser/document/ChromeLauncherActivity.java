@@ -354,7 +354,8 @@ public class ChromeLauncherActivity extends Activity
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 // Force a new document L+ to ensure the proper task/stack creation.
-                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT
+                        | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                 newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
             } else {
                 int activityIndex =

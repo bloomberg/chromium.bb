@@ -328,6 +328,8 @@ by a child template that "extends" this file.
             android:exported="false"
             android:taskAffinity=""
             android:windowSoftInputMode="adjustResize"
+            android:persistableMode="persistNever"
+            android:autoRemoveFromRecents="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false">
         </activity>
