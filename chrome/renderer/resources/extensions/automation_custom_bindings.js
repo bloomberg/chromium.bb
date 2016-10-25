@@ -25,7 +25,7 @@ var StartCachingAccessibilityTrees =
 var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
 var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
-var GetFocus = nativeAutomationInternal.GetFocus;
+var GetFocusNative = nativeAutomationInternal.GetFocus;
 var schema = GetSchemaAdditions();
 
 /**
@@ -74,18 +74,23 @@ automationUtil.nextTreeChangeObserverId = 1;
 automationUtil.focusedNode = null;
 
 /**
+ * Gets the currently focused AutomationNode.
+ * @return {AutomationNode}
+ */
+automationUtil.getFocus = function() {
+  var focusedNodeInfo = GetFocusNative(DESKTOP_TREE_ID);
+  if (!focusedNodeInfo)
+    return null;
+  var tree = AutomationRootNode.getOrCreate(focusedNodeInfo.treeId);
+  if (tree)
+    return privates(tree).impl.get(focusedNodeInfo.nodeId);
+};
+
+/**
  * Update automationUtil.focusedNode to be the node that currently has focus.
  */
 automationUtil.updateFocusedNode = function() {
-  automationUtil.focusedNode = null;
-  var focusedNodeInfo = GetFocus(DESKTOP_TREE_ID);
-  if (!focusedNodeInfo)
-    return;
-  var tree = AutomationRootNode.getOrCreate(focusedNodeInfo.treeId);
-  if (tree) {
-    automationUtil.focusedNode =
-        privates(tree).impl.get(focusedNodeInfo.nodeId);
-  }
+  automationUtil.focusedNode = automationUtil.getFocus();
 };
 
 automation.registerCustomHook(function(bindingsAPI) {
@@ -141,8 +146,7 @@ automation.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('getFocus', function(callback) {
-    automationUtil.updateFocusedNode();
-    callback(automationUtil.focusedNode);
+    callback(automationUtil.getFocus());
   });
 
   function removeTreeChangeObserver(observer) {
