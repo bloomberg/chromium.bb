@@ -50,7 +50,6 @@
       'dependencies': [
         '../compiled_resources2.gyp:global_scroll_target_behavior',
         '../compiled_resources2.gyp:settings_action_menu',
-        '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:cr_scrollable_behavior',
         '<(EXTERNS_GYP):passwords_private',
         'password_edit_dialog',
       ],
