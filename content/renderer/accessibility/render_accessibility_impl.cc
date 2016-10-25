@@ -186,17 +186,19 @@ void RenderAccessibilityImpl::HandleAXEvent(
   if (document.isNull())
     return;
 
-  gfx::Size scroll_offset = document.frame()->scrollOffset();
-  if (scroll_offset != last_scroll_offset_) {
-    // Make sure the browser is always aware of the scroll position of
-    // the root document element by posting a generic notification that
-    // will update it.
-    // TODO(dmazzoni): remove this as soon as
-    // https://bugs.webkit.org/show_bug.cgi?id=73460 is fixed.
-    last_scroll_offset_ = scroll_offset;
-    if (!obj.equals(document.accessibilityObject())) {
-      HandleAXEvent(document.accessibilityObject(),
-                    ui::AX_EVENT_LAYOUT_COMPLETE);
+  if (document.frame()) {
+    gfx::Size scroll_offset = document.frame()->scrollOffset();
+    if (scroll_offset != last_scroll_offset_) {
+      // Make sure the browser is always aware of the scroll position of
+      // the root document element by posting a generic notification that
+      // will update it.
+      // TODO(dmazzoni): remove this as soon as
+      // https://bugs.webkit.org/show_bug.cgi?id=73460 is fixed.
+      last_scroll_offset_ = scroll_offset;
+      if (!obj.equals(document.accessibilityObject())) {
+        HandleAXEvent(document.accessibilityObject(),
+                      ui::AX_EVENT_LAYOUT_COMPLETE);
+      }
     }
   }
 
