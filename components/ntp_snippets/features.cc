@@ -31,7 +31,7 @@ const base::Feature kContentSuggestionsFeature{
     "NTPSnippets", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSectionDismissalFeature{
-    "NTPSuggestionsSectionDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPSuggestionsSectionDismissal", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kForeignSessionsSuggestionsFeature{
     "NTPForeignSessionsSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
