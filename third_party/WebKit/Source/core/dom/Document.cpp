@@ -643,6 +643,7 @@ AtomicString Document::convertLocalName(const AtomicString& name) {
   return isHTMLDocument() ? name.lower() : name;
 }
 
+// https://dom.spec.whatwg.org/#dom-document-createelement
 Element* Document::createElement(const AtomicString& name,
                                  ExceptionState& exceptionState) {
   if (!isValidName(name)) {
@@ -653,11 +654,14 @@ Element* Document::createElement(const AtomicString& name,
   }
 
   if (isXHTMLDocument() || isHTMLDocument()) {
-    if (CustomElement::shouldCreateCustomElement(name))
-      return CustomElement::createCustomElementSync(*this, name,
+    // 2. If the context object is an HTML document, let localName be
+    // converted to ASCII lowercase.
+    AtomicString localName = convertLocalName(name);
+    if (CustomElement::shouldCreateCustomElement(localName))
+      return CustomElement::createCustomElementSync(*this, localName,
                                                     exceptionState);
-    return HTMLElementFactory::createHTMLElement(convertLocalName(name), *this,
-                                                 0, CreatedByCreateElement);
+    return HTMLElementFactory::createHTMLElement(localName, *this, 0,
+                                                 CreatedByCreateElement);
   }
 
   return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
@@ -675,9 +679,9 @@ Element* Document::createElement(const AtomicString& localName,
 
   Element* element;
 
-  if (CustomElement::shouldCreateCustomElement(localName)) {
-    element = CustomElement::createCustomElementSync(*this, localName,
-                                                     exceptionState);
+  if (CustomElement::shouldCreateCustomElement(convertLocalName(localName))) {
+    element = CustomElement::createCustomElementSync(
+        *this, convertLocalName(localName), exceptionState);
   } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
     element = registrationContext()->createCustomTagElement(
         *this, QualifiedName(nullAtom, convertLocalName(localName),

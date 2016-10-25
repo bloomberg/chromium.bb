@@ -8,7 +8,11 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementDefinitionOptions.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/custom/CEReactionsScope.h"
+#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDefinitionBuilder.h"
 #include "core/html/HTMLDocument.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
@@ -17,6 +21,81 @@
 #include <vector>
 
 namespace blink {
+
+class CustomElementDescriptor;
+
+class TestCustomElementDefinitionBuilder
+    : public CustomElementDefinitionBuilder {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(TestCustomElementDefinitionBuilder);
+
+ public:
+  TestCustomElementDefinitionBuilder() {}
+  bool checkConstructorIntrinsics() override { return true; }
+  bool checkConstructorNotRegistered() override { return true; }
+  bool checkPrototype() override { return true; }
+  bool rememberOriginalProperties() override { return true; }
+  CustomElementDefinition* build(const CustomElementDescriptor&) override;
+};
+
+class TestCustomElementDefinition : public CustomElementDefinition {
+  WTF_MAKE_NONCOPYABLE(TestCustomElementDefinition);
+
+ public:
+  TestCustomElementDefinition(const CustomElementDescriptor& descriptor)
+      : CustomElementDefinition(descriptor) {}
+
+  TestCustomElementDefinition(const CustomElementDescriptor& descriptor,
+                              const HashSet<AtomicString>& observedAttributes)
+      : CustomElementDefinition(descriptor, observedAttributes) {}
+
+  ~TestCustomElementDefinition() override = default;
+
+  ScriptValue getConstructorForScript() override { return ScriptValue(); }
+
+  bool runConstructor(Element* element) override {
+    if (constructionStack().isEmpty() || constructionStack().last() != element)
+      return false;
+    constructionStack().last().clear();
+    return true;
+  }
+
+  HTMLElement* createElementSync(Document& document,
+                                 const QualifiedName&) override {
+    return createElementForConstructor(document);
+  }
+
+  HTMLElement* createElementSync(Document& document,
+                                 const QualifiedName&,
+                                 ExceptionState&) override {
+    return createElementForConstructor(document);
+  }
+
+  bool hasConnectedCallback() const override { return false; }
+  bool hasDisconnectedCallback() const override { return false; }
+  bool hasAdoptedCallback() const override { return false; }
+
+  void runConnectedCallback(Element*) override {
+    NOTREACHED() << "definition does not have connected callback";
+  }
+
+  void runDisconnectedCallback(Element*) override {
+    NOTREACHED() << "definition does not have disconnected callback";
+  }
+
+  void runAdoptedCallback(Element*,
+                          Document* oldOwner,
+                          Document* newOwner) override {
+    NOTREACHED() << "definition does not have adopted callback";
+  }
+
+  void runAttributeChangedCallback(Element*,
+                                   const QualifiedName&,
+                                   const AtomicString& oldValue,
+                                   const AtomicString& newValue) override {
+    NOTREACHED() << "definition does not have attribute changed callback";
+  }
+};
 
 class CreateElement {
   STACK_ALLOCATED()

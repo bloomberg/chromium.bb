@@ -7,6 +7,9 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementRegistry.h"
+#include "core/dom/custom/CustomElementTestHelpers.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -199,6 +202,31 @@ TEST(CustomElementTest, StateByCreateElement) {
         << data.name;
     EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
   }
+}
+
+TEST(CustomElementTest,
+     CreateElement_TagNameCaseHandlingCreatingCustomElement) {
+  // register a definition
+  std::unique_ptr<DummyPageHolder> holder(DummyPageHolder::create());
+  CustomElementRegistry* registry =
+      holder->frame().localDOMWindow()->customElements();
+  NonThrowableExceptionState shouldNotThrow;
+  {
+    CEReactionsScope reactions;
+    TestCustomElementDefinitionBuilder builder;
+    registry->define("a-a", builder, ElementDefinitionOptions(),
+                     shouldNotThrow);
+  }
+  CustomElementDefinition* definition =
+      registry->definitionFor(CustomElementDescriptor("a-a", "a-a"));
+  EXPECT_NE(nullptr, definition) << "a-a should be registered";
+
+  // create an element with an uppercase tag name
+  Document& document = holder->document();
+  EXPECT_TRUE(document.isHTMLDocument())
+      << "this test requires a HTML document";
+  Element* element = document.createElement("A-A", shouldNotThrow);
+  EXPECT_EQ(definition, element->customElementDefinition());
 }
 
 }  // namespace blink

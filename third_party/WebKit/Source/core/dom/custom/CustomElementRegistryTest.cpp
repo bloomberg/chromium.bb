@@ -5,7 +5,6 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementDefinitionOptions.h"
@@ -161,39 +160,6 @@ TEST_F(CustomElementRegistryTest, collectCandidates_shouldBeInDocumentOrder) {
   EXPECT_EQ(elementC, elements[2].get());
 }
 
-class TestCustomElementDefinition : public CustomElementDefinition {
-  WTF_MAKE_NONCOPYABLE(TestCustomElementDefinition);
-
- public:
-  TestCustomElementDefinition(const CustomElementDescriptor& descriptor)
-      : CustomElementDefinition(descriptor) {}
-
-  TestCustomElementDefinition(const CustomElementDescriptor& descriptor,
-                              const HashSet<AtomicString>& observedAttributes)
-      : CustomElementDefinition(descriptor, observedAttributes) {}
-
-  ~TestCustomElementDefinition() override = default;
-
-  ScriptValue getConstructorForScript() override { return ScriptValue(); }
-
-  bool runConstructor(Element* element) override {
-    if (constructionStack().isEmpty() || constructionStack().last() != element)
-      return false;
-    constructionStack().last().clear();
-    return true;
-  }
-
-  HTMLElement* createElementSync(Document&, const QualifiedName&) override {
-    return nullptr;
-  }
-
-  HTMLElement* createElementSync(Document&,
-                                 const QualifiedName&,
-                                 ExceptionState&) override {
-    return nullptr;
-  }
-};
-
 // Classes which use trace macros cannot be local because of the
 // traceImpl template.
 class LogUpgradeDefinition : public TestCustomElementDefinition {
@@ -289,18 +255,15 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
   }
 };
 
-class LogUpgradeBuilder final : public CustomElementDefinitionBuilder {
+class LogUpgradeBuilder final : public TestCustomElementDefinitionBuilder {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(LogUpgradeBuilder);
 
  public:
   LogUpgradeBuilder() {}
 
-  bool checkConstructorIntrinsics() override { return true; }
-  bool checkConstructorNotRegistered() override { return true; }
-  bool checkPrototype() override { return true; }
-  bool rememberOriginalProperties() override { return true; }
-  CustomElementDefinition* build(const CustomElementDescriptor& descriptor) {
+  CustomElementDefinition* build(
+      const CustomElementDescriptor& descriptor) override {
     return new LogUpgradeDefinition(descriptor);
   }
 };

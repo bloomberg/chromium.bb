@@ -1058,6 +1058,7 @@ source_set("unit_tests") {
     "dom/custom/CustomElementReactionTestHelpers.h",
     "dom/custom/CustomElementRegistryTest.cpp",
     "dom/custom/CustomElementTest.cpp",
+    "dom/custom/CustomElementTestHelpers.cpp",
     "dom/custom/CustomElementTestHelpers.h",
     "dom/custom/CustomElementUpgradeSorterTest.cpp",
     "dom/shadow/FlatTreeTraversalTest.cpp",
