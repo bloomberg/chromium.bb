@@ -29,8 +29,7 @@ public class ConnectivityCheckerTestBase extends NativeLibraryTestBase {
         super.setUp();
         loadNativeLibraryAndInitBrowserProcess();
 
-        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(
-                getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mGenerate200Url = mTestServer.getURL("/echo?status=200");
         mGenerate204Url = mTestServer.getURL("/echo?status=204");
         mGenerate302Url = mTestServer.getURL("/echo?status=302");

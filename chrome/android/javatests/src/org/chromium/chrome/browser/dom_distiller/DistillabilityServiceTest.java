@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -48,8 +47,8 @@ public class DistillabilityServiceTest extends ChromeActivityTestCaseBase<Chrome
     public void testServiceAliveAfterNativePage()
             throws InterruptedException, TimeoutException {
 
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
 
         final ReaderModePanel panel = getActivity().getReaderModeManager().getPanelForTesting();
 

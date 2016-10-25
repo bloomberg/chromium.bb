@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.os.Environment;
 import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
@@ -91,8 +90,7 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
         LocationProviderFactory.setLocationProviderImpl(new MockLocationProvider());
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

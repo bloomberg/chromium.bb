@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.translate;
 
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.DisabledTest;
@@ -53,8 +52,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
         mInfoBarContainer = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         mInfoBarContainer.setAnimationListener(mListener);
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

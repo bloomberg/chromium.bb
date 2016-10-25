@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Base64;
@@ -42,8 +41,7 @@ public class CustomTabFromChromeExternalNavigationTest extends CustomTabActivity
 
     @Override
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         super.setUp();
 
         ChromePreferenceManager.getInstance(getInstrumentation().getTargetContext())

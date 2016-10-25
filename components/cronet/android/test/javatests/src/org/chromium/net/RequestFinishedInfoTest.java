@@ -32,7 +32,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getContext());
         mUrl = mTestServer.getURL("/echo?status=200");
     }
 

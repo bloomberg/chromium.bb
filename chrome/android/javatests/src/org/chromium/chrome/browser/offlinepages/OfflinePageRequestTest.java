@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -81,8 +80,8 @@ public class OfflinePageRequestTest extends ChromeActivityTestCaseBase<ChromeAct
     @SmallTest
     @RetryOnFailure
     public void testLoadOfflinePageOnDisconnectedNetwork() throws Exception {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
         String aboutUrl = testServer.getURL(ABOUT_PAGE);
 
@@ -116,8 +115,8 @@ public class OfflinePageRequestTest extends ChromeActivityTestCaseBase<ChromeAct
     @SmallTest
     @RetryOnFailure
     public void testLoadOfflinePageWithFragmentOnDisconnectedNetwork() throws Exception {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
         String testUrlWithFragment = testUrl + "#ref";
 

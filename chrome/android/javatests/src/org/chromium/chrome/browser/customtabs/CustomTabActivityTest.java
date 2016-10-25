@@ -24,7 +24,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
@@ -114,8 +113,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                appContext, Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(appContext);
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);

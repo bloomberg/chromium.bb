@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -76,8 +75,7 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
         });
         super.setUp();
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

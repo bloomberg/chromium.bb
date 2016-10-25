@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.media.ui;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_HAS_CAMERA;
 
-import android.os.Environment;
 import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
@@ -82,8 +81,7 @@ public class MediaPermissionsTest extends ChromeActivityTestCaseBase<ChromeActiv
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

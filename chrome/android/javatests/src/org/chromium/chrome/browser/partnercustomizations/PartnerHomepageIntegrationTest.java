@@ -9,7 +9,6 @@ import android.annotation.TargetApi;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
@@ -78,8 +77,8 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
     @MediumTest
     @Feature({"Homepage"})
     public void testHomepageButtonClick() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
         try {
             // Load non-homepage URL.
             loadUrl(testServer.getURL(TEST_PAGE));

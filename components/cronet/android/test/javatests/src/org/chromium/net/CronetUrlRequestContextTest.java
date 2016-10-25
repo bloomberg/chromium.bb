@@ -58,7 +58,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getContext());
         mUrl = mTestServer.getURL("/echo?status=200");
         mUrl404 = mTestServer.getURL("/echo?status=404");
         mUrl500 = mTestServer.getURL("/echo?status=500");

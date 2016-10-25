@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextmenu;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ContextMenu;
@@ -58,8 +57,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @Override
     protected void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mTestUrl = mTestServer.getURL(TEST_PATH);
         deleteTestFiles();
         super.setUp();

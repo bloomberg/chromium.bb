@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.infobar;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Context;
-import android.os.Environment;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
@@ -104,8 +103,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
 
         // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
         Context context = new AdvancedMockContext(

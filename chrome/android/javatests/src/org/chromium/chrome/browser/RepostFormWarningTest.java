@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -50,8 +49,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
         mTab = getActivity().getActivityTab();
         mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

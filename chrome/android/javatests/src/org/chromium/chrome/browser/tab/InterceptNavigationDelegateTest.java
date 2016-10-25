@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -114,8 +113,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
                 tab.setInterceptNavigationDelegate(mInterceptNavigationDelegate);
             }
         });
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

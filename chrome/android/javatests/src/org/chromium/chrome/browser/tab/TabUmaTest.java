@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -44,8 +43,7 @@ public class TabUmaTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mTestUrl = mTestServer.getURL(TEST_PATH);
     }
 

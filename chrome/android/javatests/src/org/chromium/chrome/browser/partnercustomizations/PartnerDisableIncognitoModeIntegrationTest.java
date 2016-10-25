@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.partnercustomizations;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -141,8 +140,8 @@ public class PartnerDisableIncognitoModeIntegrationTest extends
     @MediumTest
     @Feature({"DisableIncognitoMode"})
     public void testEnabledParentalControlsClosesIncognitoTabs() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
 
         try {
             String[] testUrls = {

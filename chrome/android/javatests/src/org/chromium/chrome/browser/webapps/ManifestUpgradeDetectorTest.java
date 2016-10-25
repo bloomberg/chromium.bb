@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -98,8 +97,7 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         Context context = getInstrumentation().getTargetContext();
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                context, Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(context);
         mTab = getActivity().getActivityTab();
     }
 

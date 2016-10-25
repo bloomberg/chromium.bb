@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.os.Environment;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
@@ -649,8 +648,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         super.setUp();
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

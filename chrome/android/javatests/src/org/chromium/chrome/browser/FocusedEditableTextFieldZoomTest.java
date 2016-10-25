@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import static org.chromium.content.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
-import android.os.Environment;
 import android.view.KeyEvent;
 
 import org.chromium.base.test.util.DisabledTest;
@@ -37,8 +36,7 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
 
     @Override
     protected void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         super.setUp();
     }
 

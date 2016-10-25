@@ -10,7 +10,6 @@ package org.chromium.chrome.browser.fullscreen;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.os.Build;
-import android.os.Environment;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -298,8 +297,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         startMainActivityOnBlankPage();
         disableBrowserOverrides();
 
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
         try {
             final Tab tab = getActivity().getActivityTab();
             final String testUrl = testServer.getURL(

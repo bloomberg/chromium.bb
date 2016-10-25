@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox;
 import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
 import android.os.Build;
-import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.view.ViewCompat;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -563,8 +562,8 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @FlakyTest(message = "crbug.com/414353")
     public void testSecurityIcon() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
         try {
             final String testUrl = testServer.getURL("/chrome/test/data/android/omnibox/one.html");
             final String securedExternalUrl = "https://www.google.com";

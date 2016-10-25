@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.content.Context;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.Callback;
@@ -94,8 +93,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
 
         initializeBridgeForProfile(false);
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE);
     }
 

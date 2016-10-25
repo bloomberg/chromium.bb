@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.os.Environment;
 import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -49,8 +48,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

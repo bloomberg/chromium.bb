@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.preferences.privacy;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
@@ -53,8 +52,7 @@ public class ClearBrowsingDataPreferencesTest
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

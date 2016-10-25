@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.media.router;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.app.Dialog;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
+
+import org.json.JSONObject;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -27,8 +28,6 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
-
-import org.json.JSONObject;
 
 import java.io.StringWriter;
 import java.util.concurrent.TimeoutException;
@@ -85,8 +84,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 StrictMode.allowThreadDiskWrites();
             }
         });
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-            getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

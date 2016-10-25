@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.os.Environment;
-
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -29,8 +27,7 @@ public class AudioTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

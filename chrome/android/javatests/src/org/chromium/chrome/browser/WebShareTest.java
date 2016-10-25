@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -65,8 +64,7 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     protected void setUp() throws Exception {
         super.setUp();
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
 
         mUrl = mTestServer.getURL(TEST_FILE);
 

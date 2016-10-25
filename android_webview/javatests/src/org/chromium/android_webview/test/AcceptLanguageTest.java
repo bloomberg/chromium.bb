@@ -31,8 +31,7 @@ public class AcceptLanguageTest extends AwTestBase {
         mContentsClient = new TestAwContentsClient();
         mAwContents = createAwTestContainerViewOnMainSync(mContentsClient).getAwContents();
 
-        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(
-                getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

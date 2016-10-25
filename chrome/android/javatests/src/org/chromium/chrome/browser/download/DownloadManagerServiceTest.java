@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.app.DownloadManager;
 import android.content.Context;
-import android.os.Environment;
+
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -572,8 +572,8 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
     @MediumTest
     @Feature({"Download"})
     public void testEnqueueOMADownloads() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
 
         try {
             DownloadInfo info = new DownloadInfo.Builder()

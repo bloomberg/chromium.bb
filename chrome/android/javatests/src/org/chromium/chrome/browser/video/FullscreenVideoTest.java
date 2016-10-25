@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.video;
 
-import android.os.Environment;
 import android.view.KeyEvent;
 
 import org.chromium.base.test.util.FlakyTest;
@@ -49,8 +48,8 @@ public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivi
      */
     @FlakyTest(message = "crbug.com/458368")
     public void testExitFullscreenNotifiesTabObservers() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
         try {
             String url = testServer.getURL(
                     "/chrome/test/data/android/media/video-fullscreen.html");

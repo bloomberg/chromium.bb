@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -166,8 +165,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     public void setUp() throws Exception {
         super.setUp();
         ChromeWebApkHost.initForTesting(false);
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         // Register handler for "slow?10000" URL.
         mTestServer.addDefaultHandlers(mTestServer.getURL("/chrome/test/data"));
         mShortcutHelperDelegate = new TestShortcutHelperDelegate();

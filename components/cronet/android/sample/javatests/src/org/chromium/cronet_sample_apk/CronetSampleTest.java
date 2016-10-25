@@ -32,8 +32,7 @@ public class CronetSampleTest extends
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestServer =
-                EmbeddedTestServer.createAndStartDefaultServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mUrl = mTestServer.getURL("/echo?status=200");
     }
 

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Rect;
 import android.graphics.Region;
-import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -75,8 +74,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
 
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override

@@ -57,8 +57,7 @@ public class DownloadTest extends DownloadTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         deleteTestFiles();
-        mTestServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override
