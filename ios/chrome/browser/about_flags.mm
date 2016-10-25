@@ -24,6 +24,7 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
+#include "components/ntp_tiles/switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -183,6 +184,10 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       command_line->AppendSwitchASCII(switches::kReaderModeHeuristics,
                                       switches::reader_mode_heuristics::kNone);
     }
+  }
+
+  if ([defaults boolForKey:@"EnablePopularSites"]) {
+    command_line->AppendSwitch(ntp_tiles::switches::kEnableNTPPopularSites);
   }
 
   // Set the UA flag if UseMobileSafariUA is enabled.

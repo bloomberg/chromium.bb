@@ -751,6 +751,7 @@ source_set("about_flags") {
     "//components/dom_distiller/core",
     "//components/flags_ui",
     "//components/flags_ui:switches",
+    "//components/ntp_tiles",
     "//components/strings",
     "//components/sync",
     "//components/variations",
