@@ -83,8 +83,8 @@ var CrSearchFieldBehavior = {
     if (newValue == this.lastValue_)
       return;
 
-    this.fire('search-changed', newValue);
     this.lastValue_ = newValue;
+    this.fire('search-changed', newValue);
   },
 
   onSearchTermKeydown: function(e) {

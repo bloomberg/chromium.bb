@@ -93,6 +93,23 @@ cr.define('cr_toolbar_search_field', function() {
         assertEquals(['foo', '', 'bar', 'baz'].join(), searches.join());
       });
 
+      // Tests that calling setValue() from within a 'search-changed' callback
+      // does not result in an infinite loop.
+      test('no infinite loop', function() {
+        var counter = 0;
+        field.addEventListener('search-changed', function(event) {
+          counter++;
+          // Calling setValue() with the already existing value should not
+          // trigger another 'search-changed' event.
+          field.setValue(event.detail);
+        });
+
+        MockInteractions.tap(field);
+        field.setValue('bar');
+        assertEquals(1, counter);
+        assertEquals(['bar'].join(), searches.join());
+      });
+
       test('blur does not close field when a search is active', function() {
         MockInteractions.tap(field);
         simulateSearch('test');
