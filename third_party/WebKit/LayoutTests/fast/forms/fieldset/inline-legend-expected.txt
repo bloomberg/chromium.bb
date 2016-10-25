@@ -1,3 +1,0 @@
-This test confirms that legend element can be made inline. The next two sentences should be on the same line.
-
-Mary had a little lamb. It was white as snow.

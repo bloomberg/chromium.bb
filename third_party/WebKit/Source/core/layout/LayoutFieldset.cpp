@@ -221,10 +221,8 @@ LayoutBox* LayoutFieldset::findInFlowLegend() const {
     if (legend->isFloatingOrOutOfFlowPositioned())
       continue;
 
-    if (isHTMLLegendElement(legend->node())) {
-      if (legend->isBox())
-        return toLayoutBox(legend);
-    }
+    if (isHTMLLegendElement(legend->node()))
+      return toLayoutBox(legend);
   }
   return nullptr;
 }

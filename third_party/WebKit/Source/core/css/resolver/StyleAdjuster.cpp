@@ -230,6 +230,11 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
+  if (isHTMLLegendElement(element)) {
+    style.setDisplay(EDisplay::Block);
+    return;
+  }
+
   if (isHTMLMarqueeElement(element)) {
     // For now, <marquee> requires an overflow clip to work properly.
     style.setOverflowX(OverflowHidden);
