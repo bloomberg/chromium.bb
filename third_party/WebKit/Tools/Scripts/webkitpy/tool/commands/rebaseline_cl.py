@@ -158,8 +158,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         builds_to_tests = self._builds_to_tests(issue_number)
         if only_changed_tests:
             files_in_cl = self.rietveld.changed_files(issue_number)
-            finder = WebKitFinder(self._tool.filesystem)
-            tests_in_cl = [finder.layout_test_name(f) for f in files_in_cl]
+            # Note, in the changed files list from Rietveld, paths always
+            # use / as the separator, and they're always relative to repo root.
+            # TODO(qyearsley): Do this without using a hard-coded constant.
+            test_base = 'third_party/WebKit/LayoutTests/'
+            tests_in_cl = [f[len(test_base):] for f in files_in_cl if f.startswith(test_base)]
         result = {}
         for build, tests in builds_to_tests.iteritems():
             for test in tests:

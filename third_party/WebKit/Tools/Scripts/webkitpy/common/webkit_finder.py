@@ -88,6 +88,12 @@ class WebKitFinder(object):
     def layout_test_name(self, file_path):
         """Returns a layout test name, given the path from the repo root.
 
+        Note: this appears to not work on Windows; see crbug.com/658795.
+        Also, this function duplicates functionality that's in
+        Port.relative_test_filename.
+        TODO(qyearsley): De-duplicate this and Port.relative_test_filename,
+        and ensure that it works properly with Windows paths.
+
         Args:
             file_path: A relative path from the root of the Chromium repo.
 
