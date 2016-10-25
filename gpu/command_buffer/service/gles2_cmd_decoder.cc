@@ -16768,17 +16768,6 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
 }
 
 void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
-  Framebuffer* bound_framebuffer =
-      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
-  // TODO(dshwang): support it even after glBindFrameBuffer(GL_FRAMEBUFFER, 0).
-  // skia will need to render to the window. crbug.com/656618
-  if (!bound_framebuffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glApplyScreenSpaceAntialiasingCHROMIUM",
-                       "no bound framebuffer object");
-    return;
-  }
-
   // Apply CMAA(Conservative Morphological Anti-Aliasing) algorithm to the
   // color attachments of currently bound draw framebuffer.
   // Reference GL_INTEL_framebuffer_CMAA for details.
@@ -16801,7 +16790,8 @@ void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
         return;
     }
     apply_framebuffer_attachment_cmaa_intel_
-        ->ApplyFramebufferAttachmentCMAAINTEL(this, bound_framebuffer);
+        ->ApplyFramebufferAttachmentCMAAINTEL(
+            this, GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER));
   }
 }
 
