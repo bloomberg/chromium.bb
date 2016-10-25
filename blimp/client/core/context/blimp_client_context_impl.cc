@@ -138,9 +138,16 @@ std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents(
 }
 
 void BlimpClientContextImpl::Connect() {
-  // Start Blimp authentication flow. The OAuth2 token will be used in
-  // assignment source.
-  GetIdentitySource()->Connect();
+  if (!assignment_fetcher_) {
+    assignment_fetcher_ = base::MakeUnique<AssignmentFetcher>(
+        io_thread_task_runner_, file_thread_task_runner_,
+        delegate_->CreateIdentityProvider(), GetAssignerURL(),
+        base::Bind(&BlimpClientContextImpl::OnAssignmentReceived,
+                   weak_factory_.GetWeakPtr()),
+        base::Bind(&BlimpClientContextDelegate::OnAuthenticationError,
+                   base::Unretained(delegate_)));
+  }
+  assignment_fetcher_->Fetch();
 }
 
 void BlimpClientContextImpl::ConnectWithAssignment(
@@ -156,33 +163,16 @@ BlimpClientContextImpl::CreateFeedbackData() {
   return CreateBlimpFeedbackData(blimp_contents_manager_.get());
 }
 
-void BlimpClientContextImpl::OnAuthTokenReceived(
-    const std::string& client_auth_token) {
-  if (!assignment_source_) {
-    assignment_source_.reset(new AssignmentSource(
-        GetAssignerURL(), io_thread_task_runner_, file_thread_task_runner_));
-  }
-
-  VLOG(1) << "Trying to get assignment.";
-  assignment_source_->GetAssignment(
-      client_auth_token,
-      base::Bind(&BlimpClientContextImpl::OnAssignmentReceived,
-                 weak_factory_.GetWeakPtr()));
-}
-
-GURL BlimpClientContextImpl::GetAssignerURL() {
-  return GURL(kDefaultAssignerUrl);
-}
-
 IdentitySource* BlimpClientContextImpl::GetIdentitySource() {
-  if (!identity_source_) {
-    CreateIdentitySource();
-  }
-  return identity_source_.get();
+  return assignment_fetcher_->GetIdentitySource();
 }
 
 ConnectionStatus* BlimpClientContextImpl::GetConnectionStatus() {
   return &connection_status_;
+}
+
+GURL BlimpClientContextImpl::GetAssignerURL() {
+  return GURL(kDefaultAssignerUrl);
 }
 
 void BlimpClientContextImpl::OnAssignmentReceived(
@@ -244,12 +234,6 @@ void BlimpClientContextImpl::InitializeSettings() {
 void BlimpClientContextImpl::DropConnection() {
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DropConnectionOnIOThread, net_components_.get()));
-}
-
-void BlimpClientContextImpl::CreateIdentitySource() {
-  identity_source_ = base::MakeUnique<IdentitySource>(
-      delegate_, base::Bind(&BlimpClientContextImpl::OnAuthTokenReceived,
-                            base::Unretained(this)));
 }
 
 void BlimpClientContextImpl::OnImageDecodeError() {

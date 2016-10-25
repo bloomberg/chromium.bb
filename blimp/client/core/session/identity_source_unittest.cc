@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -23,9 +24,11 @@ namespace {
 
 class MockIdentitySource : public IdentitySource {
  public:
-  explicit MockIdentitySource(BlimpClientContextDelegate* delegate,
-                              const IdentitySource::TokenCallback& callback)
-      : IdentitySource(delegate, callback),
+  MockIdentitySource(
+      std::unique_ptr<IdentityProvider> identity_provider,
+      base::Callback<void(const GoogleServiceAuthError&)> error_callback,
+      const IdentitySource::TokenCallback& callback)
+      : IdentitySource(std::move(identity_provider), error_callback, callback),
         success_(0),
         fail_(0),
         refresh_(0),
@@ -101,7 +104,9 @@ class IdentitySourceTest : public testing::Test {
 TEST_F(IdentitySourceTest, TestConnect) {
   TestBlimpClientContextDelegate mock_blimp_delegate;
   MockIdentitySource auth(
-      &mock_blimp_delegate,
+      mock_blimp_delegate.CreateIdentityProvider(),
+      base::Bind(&TestBlimpClientContextDelegate::OnAuthenticationError,
+                 base::Unretained(&mock_blimp_delegate)),
       base::Bind(&MockIdentitySource::MockTokenCall, base::Unretained(&auth)));
   FakeIdentityProvider* id_provider =
       static_cast<FakeIdentityProvider*>(auth.GetIdentityProvider());
@@ -187,7 +192,9 @@ TEST_F(IdentitySourceTest, TestConnect) {
 TEST_F(IdentitySourceTest, TestConnectRetry) {
   TestBlimpClientContextDelegate mock_blimp_delegate;
   MockIdentitySource auth(
-      &mock_blimp_delegate,
+      mock_blimp_delegate.CreateIdentityProvider(),
+      base::Bind(&TestBlimpClientContextDelegate::OnAuthenticationError,
+                 base::Unretained(&mock_blimp_delegate)),
       base::Bind(&MockIdentitySource::MockTokenCall, base::Unretained(&auth)));
   FakeOAuth2TokenService* token_service = mock_blimp_delegate.GetTokenService();
   FakeIdentityProvider* id_provider =
@@ -227,7 +234,9 @@ TEST_F(IdentitySourceTest, TestConnectRetry) {
 TEST_F(IdentitySourceTest, TestConnectFailDelegateCallback) {
   TestBlimpClientContextDelegate mock_blimp_delegate;
   MockIdentitySource auth(
-      &mock_blimp_delegate,
+      mock_blimp_delegate.CreateIdentityProvider(),
+      base::Bind(&TestBlimpClientContextDelegate::OnAuthenticationError,
+                 base::Unretained(&mock_blimp_delegate)),
       base::Bind(&MockIdentitySource::MockTokenCall, base::Unretained(&auth)));
   FakeOAuth2TokenService* token_service = mock_blimp_delegate.GetTokenService();
   FakeIdentityProvider* id_provider =

@@ -4,6 +4,8 @@
 
 #include "blimp/client/core/session/identity_source.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/switches/blimp_client_switches.h"
@@ -20,17 +22,16 @@ const char kOAuth2TokenScope[] =
 const int kTokenRequestCancelMaxRetry = 3;
 }  // namespace
 
-IdentitySource::IdentitySource(BlimpClientContextDelegate* delegate,
-                               const TokenCallback& callback)
+IdentitySource::IdentitySource(
+    std::unique_ptr<IdentityProvider> identity_provider,
+    const base::Callback<void(const GoogleServiceAuthError&)>& error_callback,
+    const TokenCallback& callback)
     : OAuth2TokenService::Consumer("blimp_client"),
+      identity_provider_(std::move(identity_provider)),
+      error_callback_(error_callback),
       token_callback_(callback),
       is_fetching_token_(false),
-      retry_times_(0),
-      delegate_(delegate) {
-  DCHECK(delegate_);
-
-  // Create identity provider.
-  identity_provider_ = delegate_->CreateIdentityProvider();
+      retry_times_(0) {
   DCHECK(identity_provider_.get());
   identity_provider_->AddObserver(this);
 }
@@ -115,10 +116,7 @@ void IdentitySource::OnGetTokenFailure(
   is_fetching_token_ = false;
   retry_times_ = 0;
   VLOG(1) << "OAuth2 token error: " << error.state();
-
-  // Propagate the error.
-  DCHECK(delegate_);
-  delegate_->OnAuthenticationError(error);
+  error_callback_.Run(error);
 }
 
 void IdentitySource::OnRefreshTokenAvailable(const std::string& account_id) {

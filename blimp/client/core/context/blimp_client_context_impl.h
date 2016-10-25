@@ -15,9 +15,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
+#include "blimp/client/core/context/assignment_fetcher.h"
 #include "blimp/client/core/session/client_network_components.h"
 #include "blimp/client/core/session/connection_status.h"
-#include "blimp/client/core/session/identity_source.h"
 #include "blimp/client/core/settings/blimp_settings_delegate.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
@@ -77,10 +77,6 @@ class BlimpClientContextImpl
   ConnectionStatus* GetConnectionStatus() override;
 
  private:
-  // Called when an OAuth2 token is received.  Will then ask the
-  // AssignmentSource for an Assignment with this token.
-  virtual void OnAuthTokenReceived(const std::string& client_auth_token);
-
   // Called when the AssignmentSource is finished getting an Assignment.  Will
   // then call |ConnectWithAssignment| to initiate the actual connection.
   virtual void OnAssignmentReceived(AssignmentRequestResult result,
@@ -92,10 +88,6 @@ class BlimpClientContextImpl
   // Terminates the active connection held by |net_connections_|.
   // May be called on any thread.
   void DropConnection();
-
-  // Create IdentitySource which provides user sign in states and OAuth2 token
-  // service.
-  void CreateIdentitySource();
 
   // BlobImageSerializationProcessor::ErrorDelegate implementation.
   void OnImageDecodeError() override;
@@ -112,10 +104,6 @@ class BlimpClientContextImpl
 
   // The task runner to use for file operations.
   scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner_;
-
-  // The AssignmentSource is used when the user of BlimpClientContextImpl calls
-  // Connect() to get a valid assignment and later connect to the engine.
-  std::unique_ptr<AssignmentSource> assignment_source_;
 
   // A set of dependencies required by all BlimpCompositor instances.
   std::unique_ptr<BlimpCompositorDependencies> blimp_compositor_dependencies_;
@@ -137,8 +125,7 @@ class BlimpClientContextImpl
 
   std::unique_ptr<ThreadPipeManager> thread_pipe_manager_;
 
-  // Provide OAuth2 token and propagate account sign in states change.
-  std::unique_ptr<IdentitySource> identity_source_;
+  std::unique_ptr<AssignmentFetcher> assignment_fetcher_;
 
   // Connection status to the engine.
   ConnectionStatus connection_status_;

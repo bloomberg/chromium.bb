@@ -16,6 +16,8 @@ source_set("context") {
   ]
 
   sources = [
+    "assignment_fetcher.cc",
+    "assignment_fetcher.h",
     "blimp_client_context_impl.cc",
     "blimp_client_context_impl.h",
   ]
