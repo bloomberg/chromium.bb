@@ -15,7 +15,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
@@ -103,6 +105,9 @@ class PreviewsBlackList {
 
   // Whether the black list is done being loaded from the backing store.
   bool loaded_;
+
+  // The time of the last opt out for this session.
+  base::Optional<base::Time> last_opt_out_time_;
 
   // The backing store of the black list information.
   std::unique_ptr<PreviewsOptOutStore> opt_out_store_;

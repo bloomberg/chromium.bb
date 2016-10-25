@@ -77,11 +77,15 @@ TEST_F(PreviewsBlackListTest, BlackListNoStore) {
   const size_t history = 4;
   const int threshold = 2;
   const int duration_in_days = 365;
+  // Disable single opt out by setting duration to 0.
+  const int single_opt_out_duration = 0;
   base::FieldTrialList field_trial_list(nullptr);
   std::map<std::string, std::string> params;
   params["stored_history_length"] = base::SizeTToString(history);
   params["opt_out_threshold"] = base::IntToString(threshold);
   params["black_list_duration_in_days"] = base::IntToString(duration_in_days);
+  params["single_opt_out_duration_in_seconds"] =
+      base::IntToString(single_opt_out_duration);
   ASSERT_TRUE(
       variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
                                            params) &&
@@ -133,11 +137,15 @@ TEST_F(PreviewsBlackListTest, BlackListWithStore) {
   const size_t history = 4;
   const int threshold = 2;
   const int duration_in_days = 365;
+  // Disable single opt out by setting duration to 0.
+  const int single_opt_out_duration = 0;
   base::FieldTrialList field_trial_list(nullptr);
   std::map<std::string, std::string> params;
   params["stored_history_length"] = base::SizeTToString(history);
   params["opt_out_threshold"] = base::IntToString(threshold);
   params["black_list_duration_in_days"] = base::IntToString(duration_in_days);
+  params["single_opt_out_duration_in_seconds"] =
+      base::IntToString(single_opt_out_duration);
   ASSERT_TRUE(
       variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
                                            params) &&
@@ -211,9 +219,13 @@ TEST_F(PreviewsBlackListTest, QueueBehavior) {
   const GURL url("http://www.url.com");
   const GURL url2("http://www.url2.com");
   const int duration_in_days = 365;
+  // Disable single opt out by setting duration to 0.
+  const int single_opt_out_duration = 0;
   base::FieldTrialList field_trial_list(nullptr);
   std::map<std::string, std::string> params;
   params["black_list_duration_in_days"] = base::IntToString(duration_in_days);
+  params["single_opt_out_duration_in_seconds"] =
+      base::IntToString(single_opt_out_duration);
   ASSERT_TRUE(
       variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
                                            params) &&
@@ -272,6 +284,8 @@ TEST_F(PreviewsBlackListTest, MaxHosts) {
   const size_t stored_history_length = 1;
   const int opt_out_threshold = 1;
   const int black_list_duration_in_days = 365;
+  // Disable single opt out by setting duration to 0.
+  const int single_opt_out_duration = 0;
   const size_t max_hosts_in_blacklist = 2;
   base::FieldTrialList field_trial_list(nullptr);
   std::map<std::string, std::string> params;
@@ -281,6 +295,8 @@ TEST_F(PreviewsBlackListTest, MaxHosts) {
       base::IntToString(black_list_duration_in_days);
   params["max_hosts_in_blacklist"] =
       base::SizeTToString(max_hosts_in_blacklist);
+  params["single_opt_out_duration_in_seconds"] =
+      base::IntToString(single_opt_out_duration);
   ASSERT_TRUE(
       variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
                                            params) &&
@@ -311,6 +327,63 @@ TEST_F(PreviewsBlackListTest, MaxHosts) {
   EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
   EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_d, PreviewsType::OFFLINE));
   EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_e, PreviewsType::OFFLINE));
+
+  variations::testing::ClearAllVariationParams();
+}
+
+TEST_F(PreviewsBlackListTest, SingleOptOut) {
+  // Test that when a user opts out of a preview, previews won't be shown until
+  // |single_opt_out_duration| has elapsed.
+  const GURL url_a("http://www.url_a.com");
+  const GURL url_b("http://www.url_b.com");
+  const GURL url_c("http://www.url_c.com");
+  const size_t stored_history_length = 1;
+  const int opt_out_threshold = 2;
+  const int black_list_duration_in_days = 365;
+  const int single_opt_out_duration = 5;
+  const size_t max_hosts_in_blacklist = 10;
+  base::FieldTrialList field_trial_list(nullptr);
+  std::map<std::string, std::string> params;
+  params["stored_history_length"] = base::SizeTToString(stored_history_length);
+  params["opt_out_threshold"] = base::IntToString(opt_out_threshold);
+  params["black_list_duration_in_days"] =
+      base::IntToString(black_list_duration_in_days);
+  params["max_hosts_in_blacklist"] =
+      base::SizeTToString(max_hosts_in_blacklist);
+  params["single_opt_out_duration_in_seconds"] =
+      base::IntToString(single_opt_out_duration);
+  ASSERT_TRUE(
+      variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
+                                           params) &&
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+
+  base::SimpleTestClock* test_clock = new base::SimpleTestClock();
+
+  std::unique_ptr<PreviewsBlackList> black_list(
+      new PreviewsBlackList(nullptr, base::WrapUnique(test_clock)));
+
+  black_list->AddPreviewNavigation(url_a, false, PreviewsType::OFFLINE);
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+
+  test_clock->Advance(
+      base::TimeDelta::FromSeconds(single_opt_out_duration + 1));
+
+  black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+
+  test_clock->Advance(
+      base::TimeDelta::FromSeconds(single_opt_out_duration - 1));
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+
+  test_clock->Advance(
+      base::TimeDelta::FromSeconds(single_opt_out_duration + 1));
+
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
   variations::testing::ClearAllVariationParams();
 }

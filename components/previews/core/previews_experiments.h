@@ -25,6 +25,9 @@ int BlackListOptOutThreshold();
 // The amount of time a host remains blacklisted due to opt outs.
 base::TimeDelta BlackListDuration();
 
+// The amount of time after any opt out that no previews should be shown.
+base::TimeDelta SingleOptOutDuration();
+
 }  // namespace params
 
 enum class PreviewsType {

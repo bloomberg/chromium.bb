@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
-#include "base/time/time.h"
 #include "components/previews/core/previews_black_list_item.h"
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
@@ -62,6 +61,9 @@ void PreviewsBlackList::AddPreviewNavigation(const GURL& url,
                                              PreviewsType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(url.has_host());
+  if (opt_out) {
+    last_opt_out_time_ = clock_->Now();
+  }
   // If the |black_list_item_map_| has been loaded from |opt_out_store_|,
   // synchronous operations will be accurate. Otherwise, queue the task to run
   // asynchronously.
@@ -97,6 +99,11 @@ bool PreviewsBlackList::IsLoadedAndAllowed(const GURL& url,
   DCHECK(url.has_host());
   if (!loaded_)
     return false;
+  if (last_opt_out_time_ &&
+      clock_->Now() <
+          last_opt_out_time_.value() + params::SingleOptOutDuration()) {
+    return false;
+  }
   PreviewsBlackListItem* black_list_item =
       GetBlackListItem(*black_list_item_map_, url.host());
   return !black_list_item || !black_list_item->IsBlackListed(clock_->Now());
