@@ -14,7 +14,7 @@ const base::Feature kLocalDatabaseManagerEnabled{
     "SafeBrowsingV4LocalDatabaseManagerEnabled",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kV4HybridEnabled{"SafeBrowingV4HybridEnabled",
+const base::Feature kV4HybridEnabled{"SafeBrowsingV4HybridEnabled",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace

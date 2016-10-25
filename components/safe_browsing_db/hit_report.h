@@ -16,9 +16,9 @@ namespace safe_browsing {
 enum class ThreatSource {
   UNKNOWN,
   DATA_SAVER,             // From the Data Reduction service.
-  LOCAL_PVER3,            // From LocalSafeBrowingDatabaseManager, protocol v3
-  LOCAL_PVER4,            // From LocalSafeBrowingDatabaseManager, protocol v4
-  REMOTE,                 // From RemoteSafeBrowingDatabaseManager
+  LOCAL_PVER3,            // From LocalSafeBrowsingDatabaseManager, protocol v3
+  LOCAL_PVER4,            // From V4LocalDatabaseManager, protocol v4
+  REMOTE,                 // From RemoteSafeBrowsingDatabaseManager
   CLIENT_SIDE_DETECTION,  // From ClientSideDetectionHost
 };
 
