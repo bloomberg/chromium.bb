@@ -705,6 +705,9 @@ class CONTENT_EXPORT RenderWidget
   // Stores information about the current text input.
   blink::WebTextInputInfo text_input_info_;
 
+  // Stores the current text input type of |webwidget_|.
+  ui::TextInputType text_input_type_;
+
   // Stores the current text input mode of |webwidget_|.
   ui::TextInputMode text_input_mode_;
 
