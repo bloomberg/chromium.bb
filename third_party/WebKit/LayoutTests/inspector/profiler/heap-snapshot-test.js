@@ -520,13 +520,13 @@ InspectorTest.checkArrayIsSorted = function(contents, sortType, sortOrder)
 InspectorTest.clickColumn = function(column, callback)
 {
     callback = InspectorTest.safeWrap(callback);
-    var cell = this._currentGrid()._headerTableHeaders[column.identifier];
+    var cell = this._currentGrid()._headerTableHeaders[column.id];
     var event = { target: { enclosingNodeOrSelfWithNodeName: function() { return cell; } } };
 
     function sortingComplete()
     {
         InspectorTest._currentGrid().removeEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, this);
-        InspectorTest.assertEquals(column.identifier, this._currentGrid().sortColumnIdentifier(), "unexpected sorting");
+        InspectorTest.assertEquals(column.id, this._currentGrid().sortColumnId(), "unexpected sorting");
         column.sort = this._currentGrid().sortOrder();
         function callCallback()
         {
