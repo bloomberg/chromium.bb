@@ -625,7 +625,14 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkServerError) {
   histograms.ExpectTotalCount(kFetchValidHistogram, 0);
 }
 
-TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkNetworkError) {
+#if defined(OS_IOS)
+// http://crbug.com/658619
+#define MAYBE_UpdateFromNetworkNetworkError     \
+    DISABLED_UpdateFromNetworkNetworkError
+#else
+#define MAYBE_UpdateFromNetworkNetworkError UpdateFromNetworkNetworkError
+#endif
+TEST_F(NetworkTimeTrackerTest, MAYBE_UpdateFromNetworkNetworkError) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
   histograms.ExpectTotalCount(kFetchValidHistogram, 0);

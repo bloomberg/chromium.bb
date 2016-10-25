@@ -293,7 +293,14 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
 }
 
 // Test first time sync scenario. All types should be properly configured.
-TEST_F(SyncBackendHostTest, FirstTimeSync) {
+
+#if defined(OS_IOS)
+// http://crbug.com/658619
+#define MAYBE_FirstTimeSync DISABLED_FirstTimeSync
+#else
+#define MAYBE_FirstTimeSync FirstTimeSync
+#endif
+TEST_F(SyncBackendHostTest, MAYBE_FirstTimeSync) {
   InitializeBackend(true);
   EXPECT_EQ(ControlTypes(), fake_manager_->GetAndResetDownloadedTypes());
   EXPECT_EQ(ControlTypes(), fake_manager_->InitialSyncEndedTypes());
