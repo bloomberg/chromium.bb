@@ -29,8 +29,9 @@ like this:
   ...
   <b>"browser_action": {
     "default_icon": {                    <em>// optional</em>
-      "19": "images/icon19.png",           <em>// optional</em>
-      "38": "images/icon38.png"            <em>// optional</em>
+      "16": "images/icon16.png",           <em>// optional</em>
+      "24": "images/icon24.png",           <em>// optional</em>
+      "32": "images/icon32.png"            <em>// optional</em>
     },
     "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
     "default_popup": "popup.html"        <em>// optional</em>
@@ -40,10 +41,21 @@ like this:
 </pre>
 
 <p>
-If you only provide one of the 19px or 38px icon size, the extension system will
-scale the icon you provide to the pixel density of the user's display, which
-can lose detail or make it look fuzzy. The old syntax for registering the
-default icon is still supported:
+You can provide any size icon to be used in Chrome, and Chrome will select the
+closest one and scale it to the appropriate size to fill the 16-dip space.
+However, if the exact size isn't provided, this scaling can cause the icon to
+lose detail or look fuzzy.
+</p>
+
+<p>
+Since devices with less-common scale factors like 1.5x or 1.2x are becoming more
+common, you are encouraged to provide multiple sizes for your icons. This also
+ensures that if the icon display size is ever changed, you don't need to do any
+more work to provide different icons!
+</p>
+
+<p>
+The old syntax for registering the default icon is still supported:
 </p>
 
 <pre data-filename="manifest.json">
@@ -52,8 +64,8 @@ default icon is still supported:
   ...
   <b>"browser_action": {
     ...
-    "default_icon": "images/icon38.png"  <em>// optional</em>
-    <em>// equivalent to "default_icon": { "38": "images/icon38.png" }</em>
+    "default_icon": "images/icon32.png"  <em>// optional</em>
+    <em>// equivalent to "default_icon": { "32": "images/icon32.png" }</em>
   }</b>,
   ...
 }
@@ -70,9 +82,9 @@ and a <a href="#popups">popup</a>.
 
 <h3 id="icon">Icon</h3>
 
-<p>Browser action icons can be up to 19 dips (device-independent pixels)
+<p>The browser action icons in Chrome are 16 dips (device-independent pixels)
   wide and high. Larger icons are resized to fit, but for best results,
-  use a 19-dip square icon.</p>
+  use a 16-dip square icon.</p>
 
 <p>You can set the icon in two ways:
   using a static image or using the
@@ -98,9 +110,10 @@ and a <a href="#popups">popup</a>.
   <code>size_in_pixel / size_in_dip</code>) is different than 1,
   the icon can be defined as set of images with different sizes.
   The actual image to display will be selected from the set to
-  best fit the pixel size of 19 dip icon.
-  At the moment, the icon set can contain images with pixel sizes 19 and 38.
-  </p>
+  best fit the pixel size of 16 dip.
+  The icon set can contain any size icon specification, and Chrome will
+  select the most appropriate one.
+</p>
 
 <h3 id="tooltip">Tooltip</h3>
 
@@ -162,7 +175,7 @@ $(ref:browserAction.setPopup) method.
     that make sense for only a few pages.
     Use <a href="pageAction">page actions</a> instead.
   <li><b>Do</b> use big, colorful icons that make the most of
-    the 38x38-pixel space.
+    the 16x16-dip space.
     Browser action icons should seem a little bigger
     and heavier than page action icons.
   <li><b>Don't</b> attempt to mimic
