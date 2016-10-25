@@ -74,7 +74,10 @@ void OnIntentPickerClosed(int render_process_host_id,
                           ArcNavigationThrottle::CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  size_t selected_app_index = handlers.size();
+  // If the user selected an app to continue the navigation, confirm that the
+  // |package_name| matches a valid option and return the index.
+  const size_t selected_app_index =
+      ArcNavigationThrottle::GetAppIndex(handlers, selected_app_package);
   // Make sure that the instance at least supports HandleUrl.
   auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
       "HandleUrl", kMinVersionForHandleUrl);
@@ -84,15 +87,6 @@ void OnIntentPickerClosed(int render_process_host_id,
                  ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED ||
              close_reason ==
                  ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED) {
-    // If the user selected an app to continue the navigation, confirm that the
-    // |package_name| matches a valid option and return the index.
-    for (size_t i = 0; i < handlers.size(); ++i) {
-      if (handlers[i]->package_name == selected_app_package) {
-        selected_app_index = i;
-        break;
-      }
-    }
-
     if (selected_app_index == handlers.size())
       close_reason = ArcNavigationThrottle::CloseReason::ERROR;
   }

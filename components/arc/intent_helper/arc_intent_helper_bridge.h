@@ -88,6 +88,8 @@ class ArcIntentHelperBridge
       const std::string& method_name_for_logging,
       uint32_t min_instance_version);
 
+  static const char kArcIntentHelperPackageName[];
+
  private:
   mojo::Binding<mojom::IntentHelperHost> binding_;
   scoped_refptr<ActivityIconLoader> icon_loader_;

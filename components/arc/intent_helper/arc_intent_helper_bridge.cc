@@ -23,11 +23,9 @@
 
 namespace arc {
 
-namespace {
-
-constexpr char kArcIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
-
-}  // namespace
+// static
+const char ArcIntentHelperBridge::kArcIntentHelperPackageName[] =
+    "org.chromium.arc.intent_helper";
 
 ArcIntentHelperBridge::ArcIntentHelperBridge(
     ArcBridgeService* bridge_service,

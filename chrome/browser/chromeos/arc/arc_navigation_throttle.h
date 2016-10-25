@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "ui/gfx/image/image.h"
 
 class GURL;
@@ -65,6 +66,20 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
 
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
                                                  const GURL& current_url);
+
+  // Finds |selected_app_package| from the |handlers| array and returns the
+  // index. If the app is not found, returns |handlers.size()|.
+  static size_t GetAppIndex(
+      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+      const std::string& selected_app_package);
+
+  static bool IsAppAvailableForTesting(
+      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
+  static size_t FindPreferredAppForTesting(
+      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
+  static bool IsSwapElementsNeededForTesting(
+      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+      std::pair<size_t, size_t>* out_indices);
 
  private:
   // content::Navigation implementation:

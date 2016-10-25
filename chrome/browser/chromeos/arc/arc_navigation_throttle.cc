@@ -58,6 +58,59 @@ bool ShouldOverrideUrlLoading(const GURL& previous_url,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
+// Returns true if |handlers| contain one or more apps. When this function is
+// called from OnAppCandidatesReceived, |handlers| always contain Chrome (aka
+// intent_helper), but the function doesn't treat it as an app.
+bool IsAppAvailable(const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+  return handlers.size() > 1 || (handlers.size() == 1 &&
+                                 !ArcIntentHelperBridge::IsIntentHelperPackage(
+                                     handlers[0]->package_name));
+}
+
+// Searches for a preferred app in |handlers| and returns its index. If not
+// found, returns |handlers.size()|.
+size_t FindPreferredApp(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    const GURL& url_for_logging) {
+  for (size_t i = 0; i < handlers.size(); ++i) {
+    if (!handlers[i]->is_preferred)
+      continue;
+    if (ArcIntentHelperBridge::IsIntentHelperPackage(
+            handlers[i]->package_name)) {
+      // If Chrome browser was selected as the preferred app, we shouldn't
+      // create a throttle.
+      DVLOG(1)
+          << "Chrome browser is selected as the preferred app for this URL: "
+          << url_for_logging;
+    }
+    return i;
+  }
+  return handlers.size();  // not found
+}
+
+// Swaps Chrome app with any app in row |kMaxAppResults-1| iff its index is
+// bigger, thus ensuring the user can always see Chrome without scrolling.
+// When swap is needed, fills |out_indices| and returns true. If |handlers|
+// do not have Chrome, returns false.
+bool IsSwapElementsNeeded(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    std::pair<size_t, size_t>* out_indices) {
+  size_t chrome_app_index = 0;
+  for (size_t i = 0; i < handlers.size(); ++i) {
+    if (ArcIntentHelperBridge::IsIntentHelperPackage(
+            handlers[i]->package_name)) {
+      chrome_app_index = i;
+      break;
+    }
+  }
+  if (chrome_app_index < ArcNavigationThrottle::kMaxAppResults)
+    return false;
+
+  *out_indices = std::make_pair(ArcNavigationThrottle::kMaxAppResults - 1,
+                                chrome_app_index);
+  return true;
+}
+
 }  // namespace
 
 ArcNavigationThrottle::ArcNavigationThrottle(
@@ -163,49 +216,29 @@ ArcNavigationThrottle::HandleRequest() {
 void ArcNavigationThrottle::OnAppCandidatesReceived(
     mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (handlers.empty() ||
-      (handlers.size() == 1 && ArcIntentHelperBridge::IsIntentHelperPackage(
-                                   handlers[0]->package_name))) {
+  if (!IsAppAvailable(handlers)) {
     // This scenario shouldn't be accesed as ArcNavigationThrottle is created
     // iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: "
-             << navigation_handle()->GetURL().spec();
+             << navigation_handle()->GetURL();
     navigation_handle()->Resume();
     return;
   }
 
   // If one of the apps is marked as preferred, use it right away without
   // showing the UI.
-  for (size_t i = 0; i < handlers.size(); ++i) {
-    if (!handlers[i]->is_preferred)
-      continue;
-    if (ArcIntentHelperBridge::IsIntentHelperPackage(
-            handlers[i]->package_name)) {
-      // If Chrome browser was selected as the preferred app, we should't
-      // create a throttle.
-      DVLOG(1)
-          << "Chrome browser is selected as the preferred app for this URL: "
-          << navigation_handle()->GetURL().spec();
-    }
-    std::string package_name = handlers[i]->package_name;
+  const size_t index =
+      FindPreferredApp(handlers, navigation_handle()->GetURL());
+  if (index != handlers.size()) {
+    const std::string package_name = handlers[index]->package_name;
     OnIntentPickerClosed(std::move(handlers), package_name,
                          CloseReason::PREFERRED_ACTIVITY_FOUND);
     return;
   }
 
-  // Swap Chrome app with any app in row |kMaxAppResults-1| iff its index is
-  // bigger, thus ensuring the user can always see Chrome without scrolling.
-  size_t chrome_app_index = 0;
-  for (size_t i = 0; i < handlers.size(); ++i) {
-    if (ArcIntentHelperBridge::IsIntentHelperPackage(
-            handlers[i]->package_name)) {
-      chrome_app_index = i;
-      break;
-    }
-  }
-
-  if (chrome_app_index >= kMaxAppResults)
-    std::swap(handlers[kMaxAppResults - 1], handlers[chrome_app_index]);
+  std::pair<size_t, size_t> indices;
+  if (IsSwapElementsNeeded(handlers, &indices))
+    std::swap(handlers[indices.first], handlers[indices.second]);
 
   scoped_refptr<ActivityIconLoader> icon_loader = GetIconLoader();
   if (!icon_loader) {
@@ -214,9 +247,8 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
     return;
   }
   std::vector<ActivityIconLoader::ActivityName> activities;
-  for (const auto& handler : handlers) {
+  for (const auto& handler : handlers)
     activities.emplace_back(handler->package_name, handler->activity_name);
-  }
   icon_loader->GetActivityIcons(
       activities,
       base::Bind(&ArcNavigationThrottle::OnAppIconsReceived,
@@ -258,21 +290,14 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
   // Make sure that the instance at least supports HandleUrl.
   auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
       "HandleUrl", kMinVersionForHandleUrl);
-  size_t selected_app_index = handlers.size();
+  // Since we are selecting an app by its package name, we need to locate it
+  // on the |handlers| structure before sending the IPC to ARC.
+  const size_t selected_app_index = GetAppIndex(handlers, selected_app_package);
   if (!instance) {
     close_reason = CloseReason::ERROR;
   } else if (close_reason == CloseReason::JUST_ONCE_PRESSED ||
              close_reason == CloseReason::ALWAYS_PRESSED ||
              close_reason == CloseReason::PREFERRED_ACTIVITY_FOUND) {
-    // Since we are selecting an app by its package name, we need to locate it
-    // on the |handlers| structure before sending the IPC to ARC.
-    for (size_t i = 0; i < handlers.size(); ++i) {
-      if (handlers[i]->package_name == selected_app_package) {
-        selected_app_index = i;
-        break;
-      }
-    }
-
     if (selected_app_index == handlers.size())
       close_reason = CloseReason::ERROR;
   }
@@ -323,10 +348,40 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
 }
 
 // static
+size_t ArcNavigationThrottle::GetAppIndex(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    const std::string& selected_app_package) {
+  for (size_t i = 0; i < handlers.size(); ++i) {
+    if (handlers[i]->package_name == selected_app_package)
+      return i;
+  }
+  return handlers.size();
+}
+
+// static
 bool ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
     const GURL& previous_url,
     const GURL& current_url) {
   return ShouldOverrideUrlLoading(previous_url, current_url);
+}
+
+// static
+bool ArcNavigationThrottle::IsAppAvailableForTesting(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+  return IsAppAvailable(handlers);
+}
+
+// static
+size_t ArcNavigationThrottle::FindPreferredAppForTesting(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+  return FindPreferredApp(handlers, GURL());
+}
+
+// static
+bool ArcNavigationThrottle::IsSwapElementsNeededForTesting(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    std::pair<size_t, size_t>* out_indices) {
+  return IsSwapElementsNeeded(handlers, out_indices);
 }
 
 }  // namespace arc

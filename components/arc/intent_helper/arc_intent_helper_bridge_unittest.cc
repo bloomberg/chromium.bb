@@ -11,22 +11,17 @@
 
 namespace arc {
 
-namespace {
-
-constexpr char kArcIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
-
-}  // namespace
-
 // Tests if IsIntentHelperPackage works as expected. Probably too trivial
 // to test but just in case.
 TEST(ArcIntentHelperTest, TestIsIntentHelperPackage) {
   EXPECT_FALSE(ArcIntentHelperBridge::IsIntentHelperPackage(""));
   EXPECT_FALSE(ArcIntentHelperBridge::IsIntentHelperPackage(
-      kArcIntentHelperPackageName + std::string("a")));
+      ArcIntentHelperBridge::kArcIntentHelperPackageName + std::string("a")));
   EXPECT_FALSE(ArcIntentHelperBridge::IsIntentHelperPackage(
-      kArcIntentHelperPackageName + std::string("/.ArcIntentHelperActivity")));
+      ArcIntentHelperBridge::kArcIntentHelperPackageName +
+      std::string("/.ArcIntentHelperActivity")));
   EXPECT_TRUE(ArcIntentHelperBridge::IsIntentHelperPackage(
-      kArcIntentHelperPackageName));
+      ArcIntentHelperBridge::kArcIntentHelperPackageName));
 }
 
 // Tests if FilterOutIntentHelper removes handlers as expected.
@@ -57,7 +52,7 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
     mojo::Array<mojom::IntentHandlerInfoPtr> orig;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[0]->name = "0";
-    orig[0]->package_name = kArcIntentHelperPackageName;
+    orig[0]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[1]->name = "1";
     orig[1]->package_name = "package_name1";
@@ -74,13 +69,13 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
     mojo::Array<mojom::IntentHandlerInfoPtr> orig;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[0]->name = "0";
-    orig[0]->package_name = kArcIntentHelperPackageName;
+    orig[0]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[1]->name = "1";
     orig[1]->package_name = "package_name1";
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[2]->name = "2";
-    orig[2]->package_name = kArcIntentHelperPackageName;
+    orig[2]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
 
     // FilterOutIntentHelper should remove two elements.
     mojo::Array<mojom::IntentHandlerInfoPtr> filtered =
@@ -94,10 +89,10 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
     mojo::Array<mojom::IntentHandlerInfoPtr> orig;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[0]->name = "0";
-    orig[0]->package_name = kArcIntentHelperPackageName;
+    orig[0]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[1]->name = "1";
-    orig[1]->package_name = kArcIntentHelperPackageName;
+    orig[1]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
 
     // FilterOutIntentHelper should remove all elements.
     mojo::Array<mojom::IntentHandlerInfoPtr> filtered =
