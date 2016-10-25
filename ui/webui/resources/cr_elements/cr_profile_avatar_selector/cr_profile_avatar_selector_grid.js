@@ -35,6 +35,15 @@ Polymer({
   },
 
   /**
+   * Handler that is called when the esc key is pressed.
+   * @param {CustomEvent} event A key combination event.
+   * @private
+   */
+  _onEscKey: function(event) {
+    // Override the original behavior by doing nothing.
+  },
+
+  /**
    * Focuses an item on the same column as the currently focused item and on a
    * row below or above the focus row by the given offset. Focus wraps if
    * necessary.
