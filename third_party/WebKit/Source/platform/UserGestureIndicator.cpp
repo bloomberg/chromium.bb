@@ -114,7 +114,6 @@ static void RecordUserGestureMerge(const UserGestureToken& oldToken,
 }
 
 UserGestureToken* UserGestureIndicator::s_rootToken = nullptr;
-bool UserGestureIndicator::s_processedUserGestureSinceLoad = false;
 
 UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
     : m_token(token) {
@@ -128,7 +127,6 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
     RecordUserGestureMerge(*s_rootToken, *m_token);
     m_token->transferGestureTo(s_rootToken);
   }
-  s_processedUserGestureSinceLoad = true;
 }
 
 UserGestureIndicator::~UserGestureIndicator() {
@@ -173,19 +171,6 @@ UserGestureToken* UserGestureIndicator::currentToken() {
   if (!isMainThread() || !s_rootToken)
     return nullptr;
   return s_rootToken;
-}
-
-// static
-void UserGestureIndicator::clearProcessedUserGestureSinceLoad() {
-  if (isMainThread())
-    s_processedUserGestureSinceLoad = false;
-}
-
-// static
-bool UserGestureIndicator::processedUserGestureSinceLoad() {
-  if (!isMainThread())
-    return false;
-  return s_processedUserGestureSinceLoad;
 }
 
 }  // namespace blink

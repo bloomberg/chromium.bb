@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -75,8 +76,8 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   EXPECT_CALL(*resolve, call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, call(::testing::_)).Times(1);
 
-  UserGestureIndicator indicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator indicator(DocumentUserGestureToken::create(
+      &pageHolder->document(), UserGestureToken::NewGesture));
   remotePlayback->prompt().then(resolve->bind(), reject->bind());
   cancelPrompt(remotePlayback);
 }
@@ -131,8 +132,8 @@ TEST_F(RemotePlaybackTest,
   EXPECT_CALL(*resolve, call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, call(::testing::_)).Times(1);
 
-  UserGestureIndicator indicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator indicator(DocumentUserGestureToken::create(
+      &pageHolder->document(), UserGestureToken::NewGesture));
   remotePlayback->prompt().then(resolve->bind(), reject->bind());
   HTMLMediaElementRemotePlayback::setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, *element, true);

@@ -30,6 +30,7 @@
 
 #include "web/WebFrameWidgetImpl.h"
 
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -349,8 +350,9 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
         break;
       case WebInputEvent::MouseDown:
         eventType = EventTypeNames::mousedown;
-        gestureIndicator = wrapUnique(new UserGestureIndicator(
-            UserGestureToken::create(UserGestureToken::NewGesture)));
+        gestureIndicator = wrapUnique(
+            new UserGestureIndicator(DocumentUserGestureToken::create(
+                &node->document(), UserGestureToken::NewGesture)));
         m_mouseCaptureGestureToken = gestureIndicator->currentToken();
         break;
       case WebInputEvent::MouseUp:
@@ -523,8 +525,8 @@ bool WebFrameWidgetImpl::setComposition(
   if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
     return text.isEmpty();
 
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      focused->document(), UserGestureToken::NewGesture));
 
   // When the range of composition underlines overlap with the range between
   // selectionStart and selectionEnd, WebKit somehow won't paint the selection
@@ -541,11 +543,12 @@ bool WebFrameWidgetImpl::setComposition(
 // This code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::commitText(const WebString& text,
                                     int relativeCaretPosition) {
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
   LocalFrame* focused = focusedLocalFrameAvailableForIme();
   if (!focused)
     return false;
+
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      focused->document(), UserGestureToken::NewGesture));
 
   if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
     return plugin->commitText(text, relativeCaretPosition);

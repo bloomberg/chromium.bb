@@ -17,6 +17,7 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -136,8 +137,8 @@ void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context,
 }
 
 void ThreadDebugger::beginUserGesture() {
-  m_userGestureIndicator =
-      wrapUnique(new UserGestureIndicator(UserGestureToken::create()));
+  m_userGestureIndicator = wrapUnique(
+      new UserGestureIndicator(DocumentUserGestureToken::create(nullptr)));
 }
 
 void ThreadDebugger::endUserGesture() {

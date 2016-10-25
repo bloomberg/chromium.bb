@@ -1314,6 +1314,14 @@ class CORE_EXPORT Document : public ContainerNode,
 
   PropertyRegistry* propertyRegistry();
 
+  // Indicates whether the user has interacted with this particular Document.
+  void setHasReceivedUserGesture() { m_hasReceivedUserGesture = true; }
+  // Consume user interaction state. Used for an experiment that restricts
+  // adding history entries to Documents that have had a user gesture since
+  // last history state change.
+  void clearHasReceivedUserGesture() { m_hasReceivedUserGesture = false; }
+  bool hasReceivedUserGesture() const { return m_hasReceivedUserGesture; }
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1558,6 +1566,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool m_designMode;
   bool m_isRunningExecCommand;
+  bool m_hasReceivedUserGesture;
 
   HeapHashSet<WeakMember<const LiveNodeListBase>> m_listsInvalidatedAtDocument;
   // Oilpan keeps track of all registered NodeLists.

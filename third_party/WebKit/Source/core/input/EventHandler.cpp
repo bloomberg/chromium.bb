@@ -34,6 +34,7 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -572,10 +573,6 @@ WebInputEventResult EventHandler::handleMousePressEvent(
       WebPointerProperties::Button::NoButton)
     return WebInputEventResult::HandledSuppressed;
 
-  UserGestureIndicator gestureIndicator(UserGestureToken::create());
-  m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken =
-      UserGestureIndicator::currentToken();
-
   if (m_eventHandlerWillResetCapturingMouseEventsNode)
     m_capturingMouseEventsNode = nullptr;
   m_mouseEventManager->handleMousePressEventUpdateStates(mouseEvent);
@@ -618,6 +615,11 @@ WebInputEventResult EventHandler::handleMousePressEvent(
     m_mouseEventManager->invalidateClick();
     return result;
   }
+
+  UserGestureIndicator gestureIndicator(
+      DocumentUserGestureToken::create(m_frame->document()));
+  m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken =
+      UserGestureIndicator::currentToken();
 
   if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
     // We store whether middle click autoscroll is in progress before calling
@@ -897,20 +899,6 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
   if (!mouseEvent.fromTouch())
     m_frame->selection().setCaretBlinkingSuspended(false);
 
-  std::unique_ptr<UserGestureIndicator> gestureIndicator;
-
-  if (m_frame->localFrameRoot()
-          ->eventHandler()
-          .m_lastMouseDownUserGestureToken) {
-    gestureIndicator = wrapUnique(new UserGestureIndicator(
-        m_frame->localFrameRoot()
-            ->eventHandler()
-            .m_lastMouseDownUserGestureToken.release()));
-  } else {
-    gestureIndicator =
-        wrapUnique(new UserGestureIndicator(UserGestureToken::create()));
-  }
-
   if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
     if (Page* page = m_frame->page())
       page->autoscrollController().handleMouseReleaseForMiddleClickAutoscroll(
@@ -950,6 +938,24 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
     m_capturingMouseEventsNode = nullptr;
   if (subframe)
     return passMouseReleaseEventToSubframe(mev, subframe);
+
+  // Mouse events will be associated with the Document where mousedown
+  // occurred. If, e.g., there is a mousedown, then a drag to a different
+  // Document and mouseup there, the mouseup's gesture will be associated with
+  // the mousedown's Document. It's not absolutely certain that this is the
+  // correct behavior.
+  std::unique_ptr<UserGestureIndicator> gestureIndicator;
+  if (m_frame->localFrameRoot()
+          ->eventHandler()
+          .m_lastMouseDownUserGestureToken) {
+    gestureIndicator = wrapUnique(new UserGestureIndicator(
+        m_frame->localFrameRoot()
+            ->eventHandler()
+            .m_lastMouseDownUserGestureToken.release()));
+  } else {
+    gestureIndicator = wrapUnique(new UserGestureIndicator(
+        DocumentUserGestureToken::create(m_frame->document())));
+  }
 
   WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(
       EventTypeNames::mouseup, mev.innerNode(), mev.event());

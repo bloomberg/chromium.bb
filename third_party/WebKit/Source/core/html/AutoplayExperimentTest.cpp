@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/html/AutoplayExperimentHelper.h"
 #include "platform/UserGestureIndicator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -134,7 +135,7 @@ class AutoplayExperimentTest : public ::testing::Test {
   }
 
   void startPlaybackWithUserGesture() {
-    UserGestureIndicator indicator(UserGestureToken::create());
+    UserGestureIndicator indicator(DocumentUserGestureToken::create(nullptr));
     EXPECT_TRUE(UserGestureIndicator::processingUserGesture());
     startPlayback();
   }

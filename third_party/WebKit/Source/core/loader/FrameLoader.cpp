@@ -393,10 +393,6 @@ void FrameLoader::setHistoryItemStateForCommit(
     FrameLoadType loadType,
     HistoryCommitType historyCommitType,
     HistoryNavigationType navigationType) {
-  if (m_frame->settings()->historyEntryRequiresUserGesture() &&
-      historyCommitType == StandardCommit)
-    UserGestureIndicator::clearProcessedUserGestureSinceLoad();
-
   HistoryItem* oldItem = m_currentItem;
   if (isBackForwardLoadType(loadType) && m_provisionalItem)
     m_currentItem = m_provisionalItem.release();
@@ -789,10 +785,12 @@ void FrameLoader::updateForSameDocumentNavigation(
   HistoryCommitType historyCommitType = loadTypeToCommitType(type);
   if (!m_currentItem)
     historyCommitType = HistoryInertCommit;
-  if (m_frame->settings()->historyEntryRequiresUserGesture() &&
-      !UserGestureIndicator::processedUserGestureSinceLoad() &&
-      initiatingDocument)
-    historyCommitType = HistoryInertCommit;
+  if (m_frame->settings()->historyEntryRequiresUserGesture()) {
+    if (initiatingDocument && !initiatingDocument->hasReceivedUserGesture())
+      historyCommitType = HistoryInertCommit;
+    else if (historyCommitType == StandardCommit)
+      m_frame->document()->clearHasReceivedUserGesture();
+  }
 
   setHistoryItemStateForCommit(
       type, historyCommitType,
@@ -937,8 +935,8 @@ FrameLoadType FrameLoader::determineFrameLoadType(
     return FrameLoadTypeReload;
 
   if (m_frame->settings()->historyEntryRequiresUserGesture() &&
-      !UserGestureIndicator::processedUserGestureSinceLoad() &&
-      request.originDocument())
+      request.originDocument() &&
+      !request.originDocument()->hasReceivedUserGesture())
     return FrameLoadTypeReplaceCurrentItem;
 
   return FrameLoadTypeStandard;

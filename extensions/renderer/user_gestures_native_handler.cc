@@ -36,7 +36,7 @@ void UserGesturesNativeHandler::IsProcessingUserGesture(
 
 void UserGesturesNativeHandler::RunWithUserGesture(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  blink::WebScopedUserGesture user_gesture;
+  blink::WebScopedUserGesture user_gesture(context()->web_frame());
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
   v8::Local<v8::Value> no_args;

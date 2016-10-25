@@ -35,6 +35,7 @@
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/modules/v8/V8NotificationAction.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScopedWindowFocusAllowedIndicator.h"
@@ -208,8 +209,10 @@ void Notification::dispatchShowEvent() {
 }
 
 void Notification::dispatchClickEvent() {
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  ExecutionContext* context = getExecutionContext();
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      context->isDocument() ? toDocument(context) : nullptr,
+      UserGestureToken::NewGesture));
   ScopedWindowFocusAllowedIndicator windowFocusAllowed(getExecutionContext());
   dispatchEvent(Event::create(EventTypeNames::click));
 }

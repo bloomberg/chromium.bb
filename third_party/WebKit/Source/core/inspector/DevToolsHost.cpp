@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/clipboard/Pasteboard.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
@@ -132,7 +133,8 @@ void DevToolsHost::evaluateScript(const String& expression) {
   if (!scriptState)
     return;
   ScriptState::Scope scope(scriptState);
-  UserGestureIndicator gestureIndicator(UserGestureToken::create());
+  UserGestureIndicator gestureIndicator(
+      DocumentUserGestureToken::create(m_frontendFrame->document()));
   v8::MicrotasksScope microtasks(scriptState->isolate(),
                                  v8::MicrotasksScope::kRunMicrotasks);
   v8::Local<v8::String> source =

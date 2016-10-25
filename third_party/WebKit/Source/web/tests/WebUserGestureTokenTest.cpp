@@ -30,6 +30,7 @@
 
 #include "public/web/WebUserGestureToken.h"
 
+#include "core/dom/DocumentUserGestureToken.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/web/WebScopedUserGesture.h"
 #include "public/web/WebUserGestureIndicator.h"
@@ -40,8 +41,6 @@ namespace blink {
 TEST(WebUserGestureTokenTest, Basic) {
   WebUserGestureToken token;
   EXPECT_FALSE(token.hasGestures());
-  UserGestureIndicator::clearProcessedUserGestureSinceLoad();
-  EXPECT_FALSE(UserGestureIndicator::processedUserGestureSinceLoad());
 
   {
     WebScopedUserGesture indicator(token);
@@ -49,11 +48,10 @@ TEST(WebUserGestureTokenTest, Basic) {
   }
 
   {
-    UserGestureIndicator indicator(
-        UserGestureToken::create(UserGestureToken::NewGesture));
+    UserGestureIndicator indicator(DocumentUserGestureToken::create(
+        nullptr, UserGestureToken::NewGesture));
     EXPECT_TRUE(WebUserGestureIndicator::isProcessingUserGesture());
     token = WebUserGestureIndicator::currentUserGestureToken();
-    EXPECT_TRUE(UserGestureIndicator::processedUserGestureSinceLoad());
   }
 
   EXPECT_TRUE(token.hasGestures());
@@ -72,8 +70,6 @@ TEST(WebUserGestureTokenTest, Basic) {
     WebScopedUserGesture indicator(token);
     EXPECT_FALSE(WebUserGestureIndicator::isProcessingUserGesture());
   }
-
-  EXPECT_TRUE(UserGestureIndicator::processedUserGestureSinceLoad());
 }
 
 }  // namespace blink

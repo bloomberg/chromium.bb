@@ -30,6 +30,7 @@
 
 #include "SkMatrix44.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/FrameView.h"
@@ -1347,8 +1348,8 @@ bool AXObject::press() const {
   Element* actionElem = actionElement();
   if (!actionElem)
     return false;
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      &actionElem->document(), UserGestureToken::NewGesture));
   actionElem->accessKeyAction(true);
   return true;
 }

@@ -5,6 +5,7 @@
 #include "core/input/TouchEventManager.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/events/TouchEvent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -524,10 +525,10 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
 
   std::unique_ptr<UserGestureIndicator> gestureIndicator;
   if (isTap || isSameOrigin) {
-    gestureIndicator = wrapUnique(
-        new UserGestureIndicator(m_touchSequenceUserGestureToken
-                                     ? m_touchSequenceUserGestureToken.release()
-                                     : UserGestureToken::create()));
+    gestureIndicator = wrapUnique(new UserGestureIndicator(
+        m_touchSequenceUserGestureToken
+            ? m_touchSequenceUserGestureToken.release()
+            : DocumentUserGestureToken::create(m_touchSequenceDocument)));
 
     m_touchSequenceUserGestureToken = UserGestureIndicator::currentToken();
     // These are cases we'd like to migrate to not hold a user gesture.

@@ -34,6 +34,7 @@
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
@@ -243,6 +244,8 @@ bool DragController::performDrag(DragData* dragData) {
   DCHECK(dragData);
   m_documentUnderMouse = m_page->deprecatedLocalMainFrame()->documentAtPoint(
       dragData->clientPosition());
+  UserGestureIndicator gesture(DocumentUserGestureToken::create(
+      m_documentUnderMouse, UserGestureToken::NewGesture));
   if ((m_dragDestinationAction & DragDestinationActionDHTML) &&
       m_documentIsHandlingDrag) {
     LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();

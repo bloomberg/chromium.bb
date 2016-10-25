@@ -4,6 +4,7 @@
 
 #include "KeyboardEventManager.h"
 
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/editing/Editor.h"
 #include "core/events/KeyboardEvent.h"
@@ -104,7 +105,8 @@ WebInputEventResult KeyboardEventManager::keyEvent(
   if (!node)
     return WebInputEventResult::NotHandled;
 
-  UserGestureIndicator gestureIndicator(UserGestureToken::create());
+  UserGestureIndicator gestureIndicator(
+      DocumentUserGestureToken::create(m_frame->document()));
 
   // In IE, access keys are special, they are handled after default keydown
   // processing, but cannot be canceled - this is hard to match.  On Mac OS X,

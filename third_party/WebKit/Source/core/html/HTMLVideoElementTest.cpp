@@ -5,6 +5,7 @@
 #include "core/html/HTMLVideoElement.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "core/testing/DummyPageHolder.h"
@@ -139,7 +140,8 @@ TEST_F(HTMLVideoElementTest, setBufferingStrategy_UserPause) {
   EXPECT_CALL(*player, setBufferingStrategy(
                            WebMediaPlayer::BufferingStrategy::Aggressive));
   {
-    UserGestureIndicator gesture(UserGestureToken::create());
+    UserGestureIndicator gesture(
+        DocumentUserGestureToken::create(&m_video->document()));
     m_video->pause();
   }
   ::testing::Mock::VerifyAndClearExpectations(player);

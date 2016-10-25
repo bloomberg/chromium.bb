@@ -100,6 +100,7 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/Node.h"
@@ -1900,8 +1901,8 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url) {
 
   String script = decodeURLEscapeSequences(
       url.getString().substring(strlen("javascript:")));
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      frame()->document(), UserGestureToken::NewGesture));
   v8::HandleScope handleScope(toIsolate(frame()));
   v8::Local<v8::Value> result =
       frame()->script().executeScriptInMainWorldAndReturnValue(

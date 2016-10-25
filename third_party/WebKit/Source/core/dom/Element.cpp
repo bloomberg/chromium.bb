@@ -138,7 +138,6 @@
 #include "core/svg/SVGElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -2607,7 +2606,7 @@ void Element::focus(const FocusParams& params) {
     return;
 
   if (document().focusedElement() == this &&
-      UserGestureIndicator::processedUserGestureSinceLoad()) {
+      document().hasReceivedUserGesture()) {
     // Bring up the keyboard in the context of anything triggered by a user
     // gesture. Since tracking that across arbitrary boundaries (eg.
     // animations) is difficult, for now we match IE's heuristic and bring

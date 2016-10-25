@@ -427,7 +427,7 @@ void GuestViewInternalCustomBindings::RegisterView(
 void GuestViewInternalCustomBindings::RunWithGesture(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Gesture is required to request fullscreen.
-  blink::WebScopedUserGesture user_gesture;
+  blink::WebScopedUserGesture user_gesture(context()->web_frame());
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
   v8::Local<v8::Value> no_args;

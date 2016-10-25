@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8PersistentValueVector.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/WebVector.h"
@@ -54,8 +55,9 @@ WebScriptExecutor::WebScriptExecutor(
 Vector<v8::Local<v8::Value>> WebScriptExecutor::execute(LocalFrame* frame) {
   std::unique_ptr<UserGestureIndicator> indicator;
   if (m_userGesture) {
-    indicator = wrapUnique(new UserGestureIndicator(
-        UserGestureToken::create(UserGestureToken::NewGesture)));
+    indicator =
+        wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+            frame->document(), UserGestureToken::NewGesture)));
   }
 
   Vector<v8::Local<v8::Value>> results;

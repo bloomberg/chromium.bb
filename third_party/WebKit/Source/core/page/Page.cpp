@@ -463,7 +463,6 @@ void Page::didCommitLoad(LocalFrame* frame) {
     frameHost().visualViewport().setScrollOffset(ScrollOffset(),
                                                  ProgrammaticScroll);
     m_hostsUsingFeatures.updateMeasurementsAndClear();
-    UserGestureIndicator::clearProcessedUserGestureSinceLoad();
   }
 }
 

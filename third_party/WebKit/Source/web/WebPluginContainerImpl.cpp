@@ -37,6 +37,7 @@
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/Fullscreen.h"
 #include "core/events/DragEvent.h"
@@ -478,7 +479,8 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url,
       kurl.getString().substring(strlen("javascript:")));
 
   UserGestureIndicator gestureIndicator(
-      popupsAllowed ? UserGestureToken::create(UserGestureToken::NewGesture)
+      popupsAllowed ? DocumentUserGestureToken::create(
+                          frame->document(), UserGestureToken::NewGesture)
                     : nullptr);
   v8::HandleScope handleScope(toIsolate(frame));
   v8::Local<v8::Value> result =

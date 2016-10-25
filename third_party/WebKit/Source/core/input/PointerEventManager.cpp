@@ -4,6 +4,7 @@
 
 #include "core/input/PointerEventManager.h"
 
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
@@ -172,7 +173,8 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
     if (eventType == EventTypeNames::pointerup &&
         pointerEvent->pointerType() == "touch") {
       gestureIndicator =
-          wrapUnique(new UserGestureIndicator(UserGestureToken::create()));
+          wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+              target->toNode() ? &target->toNode()->document() : nullptr)));
     }
 
     DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);

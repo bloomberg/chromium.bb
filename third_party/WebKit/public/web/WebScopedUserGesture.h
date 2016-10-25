@@ -37,6 +37,7 @@
 namespace blink {
 
 class UserGestureIndicator;
+class WebLocalFrame;
 class WebUserGestureToken;
 
 // An instance of this class, while kept alive, will indicate that we are in
@@ -55,7 +56,7 @@ class WebUserGestureToken;
 class WebScopedUserGesture {
  public:
   BLINK_EXPORT explicit WebScopedUserGesture(const WebUserGestureToken& token);
-  BLINK_EXPORT WebScopedUserGesture();
+  BLINK_EXPORT WebScopedUserGesture(WebLocalFrame*);
   BLINK_EXPORT ~WebScopedUserGesture();
 
  private:

@@ -34,6 +34,7 @@
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Text.h"
@@ -260,26 +261,26 @@ class UserGestureNotifier {
   // If a UserGestureIndicator is created for a user gesture since the last
   // page load and *userGestureObserved is false, the UserGestureNotifier
   // will notify the client and set *userGestureObserved to true.
-  UserGestureNotifier(WebAutofillClient*, bool* userGestureObserved);
+  UserGestureNotifier(WebLocalFrameImpl*, bool* userGestureObserved);
   ~UserGestureNotifier();
 
  private:
-  WebAutofillClient* const m_client;
+  Persistent<WebLocalFrameImpl> m_frame;
   bool* const m_userGestureObserved;
 };
 
-UserGestureNotifier::UserGestureNotifier(WebAutofillClient* client,
+UserGestureNotifier::UserGestureNotifier(WebLocalFrameImpl* frame,
                                          bool* userGestureObserved)
-    : m_client(client), m_userGestureObserved(userGestureObserved) {
+    : m_frame(frame), m_userGestureObserved(userGestureObserved) {
   DCHECK(m_userGestureObserved);
 }
 
 UserGestureNotifier::~UserGestureNotifier() {
   if (!*m_userGestureObserved &&
-      UserGestureIndicator::processedUserGestureSinceLoad()) {
+      m_frame->frame()->document()->hasReceivedUserGesture()) {
     *m_userGestureObserved = true;
-    if (m_client)
-      m_client->firstUserGestureObserved();
+    if (m_frame && m_frame->autofillClient())
+      m_frame->autofillClient()->firstUserGestureObserved();
   }
 }
 
@@ -2223,7 +2224,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
     return WebInputEventResult::NotHandled;
 
   WebAutofillClient* autofillClient = mainFrameImpl()->autofillClient();
-  UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);
+  UserGestureNotifier notifier(mainFrameImpl(), &m_userGestureObserved);
   // On the first input event since page load, |notifier| instructs the
   // autofill client to unblock values of password input fields of any forms
   // on the page. There is a single input event, GestureTap, which can both
@@ -2294,8 +2295,9 @@ WebInputEventResult WebViewImpl::handleInputEvent(
         break;
       case WebInputEvent::MouseDown:
         eventType = EventTypeNames::mousedown;
-        gestureIndicator = wrapUnique(new UserGestureIndicator(
-            UserGestureToken::create(UserGestureToken::NewGesture)));
+        gestureIndicator = wrapUnique(
+            new UserGestureIndicator(DocumentUserGestureToken::create(
+                &node->document(), UserGestureToken::NewGesture)));
         m_mouseCaptureGestureToken = gestureIndicator->currentToken();
         break;
       case WebInputEvent::MouseUp:
@@ -2468,8 +2470,8 @@ bool WebViewImpl::setComposition(
   if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
     return text.isEmpty();
 
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      focused->document(), UserGestureToken::NewGesture));
 
   // When the range of composition underlines overlap with the range between
   // selectionStart and selectionEnd, WebKit somehow won't paint the selection
@@ -2500,12 +2502,12 @@ bool WebViewImpl::finishComposingText(
 }
 
 bool WebViewImpl::commitText(const WebString& text, int relativeCaretPosition) {
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
-
   LocalFrame* focused = focusedLocalFrameAvailableForIme();
   if (!focused)
     return false;
+
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      focused->document(), UserGestureToken::NewGesture));
 
   if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
     return plugin->commitText(text, relativeCaretPosition);
@@ -3661,10 +3663,7 @@ void WebViewImpl::dragTargetDrop(const WebDragData& webDragData,
 
   DCHECK(m_currentDragData);
   m_currentDragData = DataObject::create(webDragData);
-
-  WebAutofillClient* autofillClient =
-      mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
-  UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);
+  UserGestureNotifier notifier(mainFrameImpl(), &m_userGestureObserved);
 
   // If this webview transitions from the "drop accepting" state to the "not
   // accepting" state, then our IPC message reply indicating that may be in-
@@ -3683,8 +3682,6 @@ void WebViewImpl::dragTargetDrop(const WebDragData& webDragData,
   DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
                     static_cast<DragOperation>(m_operationsAllowed));
 
-  UserGestureIndicator gesture(
-      UserGestureToken::create(UserGestureToken::NewGesture));
   m_page->dragController().performDrag(&dragData);
 
   m_dragOperation = WebDragOperationNone;
@@ -4481,8 +4478,12 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event) {
   switch (event.type) {
     case WebInputEvent::MouseDown:
       eventType = EventTypeNames::mousedown;
-      gestureIndicator = wrapUnique(new UserGestureIndicator(
-          UserGestureToken::create(UserGestureToken::NewGesture)));
+      if (!page() || !page()->pointerLockController().element())
+        break;
+      gestureIndicator =
+          wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+              &page()->pointerLockController().element()->document(),
+              UserGestureToken::NewGesture)));
       m_pointerLockGestureToken = gestureIndicator->currentToken();
       break;
     case WebInputEvent::MouseUp:

@@ -203,7 +203,8 @@ void DeliverMessageToScriptContext(const Message& message,
   std::unique_ptr<blink::WebScopedWindowFocusAllowedIndicator>
       allow_window_focus;
   if (message.user_gesture) {
-    web_user_gesture.reset(new blink::WebScopedUserGesture);
+    web_user_gesture.reset(
+        new blink::WebScopedUserGesture(script_context->web_frame()));
 
     if (script_context->web_frame()) {
       blink::WebDocument document = script_context->web_frame()->document();

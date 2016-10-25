@@ -29,6 +29,7 @@
 #include "modules/accessibility/AXNodeObject.h"
 
 #include "core/InputTypeNames.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
@@ -2154,14 +2155,14 @@ void AXNodeObject::setFocused(bool on) {
 }
 
 void AXNodeObject::increment() {
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      getDocument(), UserGestureToken::NewGesture));
   alterSliderValue(true);
 }
 
 void AXNodeObject::decrement() {
-  UserGestureIndicator gestureIndicator(
-      UserGestureToken::create(UserGestureToken::NewGesture));
+  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
+      getDocument(), UserGestureToken::NewGesture));
   alterSliderValue(false);
 }
 

@@ -643,8 +643,11 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
                                           const base::ListValue& args,
                                           bool user_gesture) {
   std::unique_ptr<WebScopedUserGesture> web_user_gesture;
-  if (user_gesture)
-    web_user_gesture.reset(new WebScopedUserGesture);
+  if (user_gesture) {
+    blink::WebLocalFrame* web_frame =
+        render_frame ? render_frame->GetWebFrame() : nullptr;
+    web_user_gesture.reset(new WebScopedUserGesture(web_frame));
+  }
 
   script_context_set_->ForEach(
       extension_id, render_frame,

@@ -60,12 +60,7 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   enum Status { NewGesture, PossiblyExistingGesture };
   enum TimeoutPolicy { Default, OutOfProcess, HasPaused };
 
-  static PassRefPtr<UserGestureToken> create(
-      Status status = PossiblyExistingGesture) {
-    return adoptRef(new UserGestureToken(status));
-  }
-
-  ~UserGestureToken() {}
+  virtual ~UserGestureToken() {}
   bool hasGestures() const;
   void transferGestureTo(UserGestureToken*);
   bool consumeGesture();
@@ -81,9 +76,10 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   void setUserGestureUtilizedCallback(UserGestureUtilizedCallback*);
   void userGestureUtilized();
 
- private:
+ protected:
   UserGestureToken(Status);
 
+ private:
   bool hasTimedOut() const;
 
   size_t m_consumableGestures;
@@ -117,17 +113,10 @@ class PLATFORM_EXPORT UserGestureIndicator final {
 
   static UserGestureToken* currentToken();
 
-  // Reset the notion of "since load".
-  static void clearProcessedUserGestureSinceLoad();
-
-  // Returns whether a user gesture has occurred since page load.
-  static bool processedUserGestureSinceLoad();
-
   explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
   ~UserGestureIndicator();
 
  private:
-  static bool s_processedUserGestureSinceLoad;
   static UserGestureToken* s_rootToken;
 
   RefPtr<UserGestureToken> m_token;
