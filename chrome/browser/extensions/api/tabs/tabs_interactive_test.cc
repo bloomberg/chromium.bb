@@ -69,8 +69,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
 }
 
-// Flaky: http://crbug.com/136562
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
   const size_t kExtraWindows = 2;
   for (size_t i = 0; i < kExtraWindows; ++i)
     CreateBrowser(browser()->profile());
@@ -82,11 +81,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
       focused_window->window()->GetNativeWindow()));
 #endif
+  ui_test_utils::BrowserActivationWaiter waiter(focused_window);
+  waiter.WaitForActivation();
 
-  // Needed on Mac and Linux so that the BrowserWindow::IsActive calls work.
-  content::RunAllPendingInMessageLoop();
-
-  GURL url;
+  GURL url("about:blank");
   AddTabAtIndexToBrowser(focused_window, 0, url, ui::PAGE_TRANSITION_LINK,
                          true);
   int focused_window_id =
@@ -95,6 +93,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   // Get tabs in the 'last focused' window called from non-focused browser.
   scoped_refptr<extensions::TabsQueryFunction> function =
       new extensions::TabsQueryFunction();
+  scoped_refptr<extensions::Extension> extension(
+      extensions::test_util::CreateEmptyExtension());
+  function->set_extension(extension.get());
   std::unique_ptr<base::ListValue> result(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           function.get(), "[{\"lastFocusedWindow\":true}]", browser())));
@@ -111,6 +112,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
 
   // Get tabs NOT in the 'last focused' window called from the focused browser.
   function = new extensions::TabsQueryFunction();
+  function->set_extension(extension.get());
   result.reset(utils::ToList(
       utils::RunFunctionAndReturnSingleResult(function.get(),
                                               "[{\"lastFocusedWindow\":false}]",
