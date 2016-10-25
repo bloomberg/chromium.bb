@@ -640,18 +640,19 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefs(
   std::vector<AppLauncherId>::const_reverse_iterator it;
   for (it = policy_apps.app_list().rbegin();
        it != policy_apps.app_list().rend(); ++it) {
-    const std::string& app_id = (*it).ToString();
-    if (app_id == kPinnedAppsPlaceholder)
+    const std::string& app_launcher_id_str = (*it).ToString();
+    if (app_launcher_id_str == kPinnedAppsPlaceholder)
       continue;
 
     // Check if we already processed current app.
-    if (app_service->GetPinPosition(app_id).IsValid())
+    if (app_service->GetPinPosition(app_launcher_id_str).IsValid())
       continue;
 
     // Now move it to the front.
     pin_infos.insert(pin_infos.begin(),
-                     PinInfo(AppLauncherId(app_id), front_position));
-    app_service->SetPinPosition(app_id, front_position);
+                     PinInfo(AppLauncherId((*it).app_id(), (*it).launch_id()),
+                             front_position));
+    app_service->SetPinPosition(app_launcher_id_str, front_position);
     front_position = front_position.CreateBefore();
   }
 

@@ -196,9 +196,10 @@ class LauncherPlatformAppBrowserTest
 
   ash::ShelfModel* shelf_model() { return ash::WmShell::Get()->shelf_model(); }
 
-  ash::ShelfID CreateAppShortcutLauncherItem(const std::string& name) {
+  ash::ShelfID CreateAppShortcutLauncherItem(
+      const ash::launcher::AppLauncherId& app_launcher_id) {
     return controller_->CreateAppShortcutLauncherItem(
-        name, shelf_model()->item_count());
+        app_launcher_id, shelf_model()->item_count());
   }
 
   const ash::ShelfItem& GetLastLauncherItem() {
@@ -302,8 +303,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     // Then create a shortcut.
     int item_count = model_->item_count();
     ash::ShelfID shortcut_id = controller_->CreateAppShortcutLauncherItem(
-        app_id,
-        item_count);
+        ash::launcher::AppLauncherId(app_id), item_count);
     controller_->SyncPinPosition(shortcut_id);
     EXPECT_EQ(++item_count, model_->item_count());
     const ash::ShelfItem& item = *model_->ItemByID(shortcut_id);
@@ -315,9 +315,9 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     controller_->Unpin(id);
   }
 
-  ash::ShelfID PinFakeApp(const std::string& name) {
+  ash::ShelfID PinFakeApp(const std::string& app_id) {
     return controller_->CreateAppShortcutLauncherItem(
-        name, model_->item_count());
+        ash::launcher::AppLauncherId(app_id), model_->item_count());
   }
 
   // Get the index of an item which has the given type.
@@ -423,7 +423,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   const std::string app_id = extension->id();
 
   // Then create a shortcut.
-  ash::ShelfID shortcut_id = CreateAppShortcutLauncherItem(app_id);
+  ash::ShelfID shortcut_id =
+      CreateAppShortcutLauncherItem(ash::launcher::AppLauncherId(app_id));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   ash::ShelfItem item = *shelf_model()->ItemByID(shortcut_id);
@@ -459,7 +460,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   // Create a shortcut. The app item should be after it.
-  ash::ShelfID foo_id = CreateAppShortcutLauncherItem("foo");
+  ash::ShelfID foo_id =
+      CreateAppShortcutLauncherItem(ash::launcher::AppLauncherId("foo"));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   EXPECT_LT(shelf_model()->ItemIndexByID(foo_id),
@@ -473,7 +475,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
 
   // New shortcuts should come after the item.
-  ash::ShelfID bar_id = CreateAppShortcutLauncherItem("bar");
+  ash::ShelfID bar_id =
+      CreateAppShortcutLauncherItem(ash::launcher::AppLauncherId("bar"));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   EXPECT_LT(shelf_model()->ItemIndexByID(id),
@@ -492,7 +495,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
   const std::string app_id = extension->id();
 
   // Then create a shortcut.
-  ash::ShelfID shortcut_id = CreateAppShortcutLauncherItem(app_id);
+  ash::ShelfID shortcut_id =
+      CreateAppShortcutLauncherItem(ash::launcher::AppLauncherId(app_id));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   ash::ShelfItem item = *shelf_model()->ItemByID(shortcut_id);
@@ -501,7 +505,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
 
   // Create a second shortcut. This will be needed to force the first one to
   // move once it gets unpinned.
-  ash::ShelfID foo_id = CreateAppShortcutLauncherItem("foo");
+  ash::ShelfID foo_id =
+      CreateAppShortcutLauncherItem(ash::launcher::AppLauncherId("foo"));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   EXPECT_LT(shelf_model()->ItemIndexByID(shortcut_id),

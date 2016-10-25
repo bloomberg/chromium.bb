@@ -79,6 +79,7 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
       const AccountId& account_id) const override;
   void OnUserProfileReadyToSwitch(Profile* profile) override;
   ArcAppDeferredLauncherController* GetArcDeferredLauncher() override;
+  const std::string& GetLaunchIDForShelfID(ash::ShelfID id) override;
 
   // AppIconLoaderDelegate:
   void OnAppImageUpdated(const std::string& app_id,

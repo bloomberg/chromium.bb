@@ -251,6 +251,9 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Controller to launch Arc apps in deferred mode.
   virtual ArcAppDeferredLauncherController* GetArcDeferredLauncher() = 0;
 
+  // Get the launch ID for a given shelf ID.
+  virtual const std::string& GetLaunchIDForShelfID(ash::ShelfID id) = 0;
+
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
   // Sets the shelf auto-hide and/or alignment behavior from prefs.

@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -126,6 +127,7 @@ class ChromeLauncherControllerImpl
       const AccountId& account_id) const override;
   void OnUserProfileReadyToSwitch(Profile* profile) override;
   ArcAppDeferredLauncherController* GetArcDeferredLauncher() override;
+  const std::string& GetLaunchIDForShelfID(ash::ShelfID id) override;
   void AttachProfile(Profile* profile_to_attach) override;
 
   // Access to the BrowserStatusMonitor for tests.
@@ -161,8 +163,9 @@ class ChromeLauncherControllerImpl
  protected:
   // Creates a new app shortcut item and controller on the shelf at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
-  ash::ShelfID CreateAppShortcutLauncherItem(const std::string& app_id,
-                                             int index);
+  ash::ShelfID CreateAppShortcutLauncherItem(
+      const ash::launcher::AppLauncherId& app_launcher_id,
+      int index);
 
   const std::string& GetAppIdFromShelfIdForTest(ash::ShelfID id);
 
@@ -184,7 +187,7 @@ class ChromeLauncherControllerImpl
   // Creates a new app shortcut item and controller on the shelf at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
   ash::ShelfID CreateAppShortcutLauncherItemWithType(
-      const std::string& app_id,
+      const ash::launcher::AppLauncherId& app_launcher_id,
       int index,
       ash::ShelfItemType shelf_item_type);
 

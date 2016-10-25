@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -268,6 +269,12 @@ ChromeLauncherControllerMus::GetArcDeferredLauncher() {
   return nullptr;
 }
 
+const std::string& ChromeLauncherControllerMus::GetLaunchIDForShelfID(
+    ash::ShelfID id) {
+  NOTIMPLEMENTED();
+  return base::EmptyString();
+}
+
 void ChromeLauncherControllerMus::OnAppImageUpdated(
     const std::string& app_id,
     const gfx::ImageSkia& image) {
@@ -284,31 +291,29 @@ void ChromeLauncherControllerMus::PinAppsFromPrefs() {
                                             launcher_controller_helper());
 
   for (const auto& app_launcher_id : pinned_apps) {
-    const std::string app_launcher_id_str = app_launcher_id.ToString();
-    if (app_launcher_id_str == ash::launcher::kPinnedAppsPlaceholder)
+    const std::string app_id = app_launcher_id.app_id();
+    if (app_launcher_id.ToString() == ash::launcher::kPinnedAppsPlaceholder)
       continue;
 
     ash::mojom::ShelfItemPtr item(ash::mojom::ShelfItem::New());
-    item->app_id = app_launcher_id_str;
-    item->app_title =
-        mojo::String::From(launcher_controller_helper()->GetAppTitle(
-            profile(), app_launcher_id_str));
+    item->app_id = app_id;
+    item->app_title = mojo::String::From(
+        launcher_controller_helper()->GetAppTitle(profile(), app_id));
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Image& image = rb.GetImageNamed(IDR_APP_DEFAULT_ICON);
     item->image = *image.ToSkBitmap();
     std::unique_ptr<ChromeShelfItemDelegate> delegate(
-        new ChromeShelfItemDelegate(app_launcher_id_str, this));
+        new ChromeShelfItemDelegate(app_id, this));
     shelf_controller()->PinItem(std::move(item),
                                 delegate->CreateInterfacePtrInfoAndBind(
                                     shelf_controller().associated_group()));
     app_id_to_item_delegate_.insert(
-        std::make_pair(app_launcher_id_str, std::move(delegate)));
+        std::make_pair(app_id, std::move(delegate)));
 
-    AppIconLoader* app_icon_loader =
-        GetAppIconLoaderForApp(app_launcher_id_str);
+    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
     if (app_icon_loader) {
-      app_icon_loader->FetchImage(app_launcher_id_str);
-      app_icon_loader->UpdateImage(app_launcher_id_str);
+      app_icon_loader->FetchImage(app_id);
+      app_icon_loader->UpdateImage(app_id);
     }
   }
 }
