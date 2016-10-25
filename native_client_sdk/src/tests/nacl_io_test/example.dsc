@@ -13,6 +13,8 @@
         'fake_ppapi/fake_core_interface.h',
         'fake_ppapi/fake_file_io_interface.cc',
         'fake_ppapi/fake_file_io_interface.h',
+        'fake_ppapi/fake_file_ref_interface.cc',
+        'fake_ppapi/fake_file_ref_interface.h',
         'fake_ppapi/fake_host_resolver_interface.cc',
         'fake_ppapi/fake_host_resolver_interface.h',
         'fake_ppapi/fake_messaging_interface.cc',

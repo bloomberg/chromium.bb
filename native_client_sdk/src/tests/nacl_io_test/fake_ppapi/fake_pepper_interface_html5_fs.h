@@ -13,6 +13,7 @@
 
 #include "fake_ppapi/fake_core_interface.h"
 #include "fake_ppapi/fake_file_io_interface.h"
+#include "fake_ppapi/fake_file_ref_interface.h"
 #include "fake_ppapi/fake_var_interface.h"
 #include "fake_ppapi/fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
@@ -96,35 +97,6 @@ class FakeHtml5FsFilesystem {
   typedef std::map<Path, FakeHtml5FsNode> NodeMap;
   NodeMap node_map_;
   PP_FileSystemType filesystem_type_;
-};
-
-class FakeFileRefInterface : public nacl_io::FileRefInterface {
- public:
-  FakeFileRefInterface(FakeCoreInterface* core_interface,
-                       FakeVarInterface* var_interface);
-
-  virtual PP_Resource Create(PP_Resource file_system, const char* path);
-  virtual PP_Var GetName(PP_Resource file_ref);
-  virtual int32_t MakeDirectory(PP_Resource directory_ref,
-                                PP_Bool make_parents,
-                                PP_CompletionCallback callback);
-  virtual int32_t Delete(PP_Resource file_ref, PP_CompletionCallback callback);
-  virtual int32_t Query(PP_Resource file_ref,
-                        PP_FileInfo* info,
-                        PP_CompletionCallback callback);
-  virtual int32_t ReadDirectoryEntries(PP_Resource file_ref,
-                                       const PP_ArrayOutput& output,
-                                       PP_CompletionCallback callback);
-  virtual int32_t Rename(PP_Resource file_ref,
-                         PP_Resource new_file_ref,
-                         PP_CompletionCallback callback);
-
- private:
-  FakeCoreInterface* core_interface_;  // Weak reference.
-  FakeVarInterface* var_interface_;    // Weak reference.
-  FakeVarManager* var_manager_;        // Weak reference
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFileRefInterface);
 };
 
 class FakeFileSystemInterface : public nacl_io::FileSystemInterface {

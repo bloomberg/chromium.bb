@@ -22,6 +22,16 @@ class FakeFileRefResource : public FakeResource {
   std::string contents;
 };
 
+class FakeFileSystemResource : public FakeResource {
+ public:
+  FakeFileSystemResource() : filesystem(NULL), opened(false) {}
+  ~FakeFileSystemResource() { delete filesystem; }
+  static const char* classname() { return "FakeFileSystemResource"; }
+
+  FakeHtml5FsFilesystem* filesystem;  // Owned.
+  bool opened;
+};
+
 int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result);
 
 #endif  // LIBRARIES_NACL_IO_TEST_FAKE_UTIL_H_
