@@ -888,12 +888,14 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Post-check for stateful update for CrOS host."""
     logging.debug('Start post check for stateful update...')
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
-    check_file_cmd = 'test -f %s; echo $?'
+    check_file_cmd = 'test -f %s'
     for folder in self.STATEFUL_FOLDER_TO_CHECK:
       test_file_path = os.path.join(folder, self.STATEFUL_TEST_FILE)
       result = self.device.RunCommand([check_file_cmd % test_file_path],
                                       **self._cmd_kwargs_omit_error)
-      if result.returncode == 1:
+
+      # If stateful update succeeds, these test files should not exist.
+      if result.returncode == 0:
         raise StatefulUpdateError('failed to post-check stateful update.')
 
   def PreSetupRootfsUpdate(self):
