@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -33,6 +35,13 @@ void RecordSettingsEnabledState(
       data_reduction_proxy::DATA_REDUCTION_SETTINGS_ACTION_BOUNDARY);
 }
 
+// Record the number of days since data reduction proxy was enabled by the
+// user.
+void RecordDaysSinceEnabledMetric(int days_since_enabled) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("DataReductionProxy.DaysSinceEnabled",
+                              days_since_enabled, 0, 365 * 10, 100);
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -49,7 +58,8 @@ DataReductionProxySettings::DataReductionProxySettings()
       lo_fi_load_image_requested_(false),
       data_reduction_proxy_enabled_pref_name_(),
       prefs_(NULL),
-      config_(nullptr) {
+      config_(nullptr),
+      clock_(new base::DefaultClock()) {
   lo_fi_user_requests_for_images_per_session_ =
       params::GetFieldTrialParameterAsInteger(
           params::GetLoFiFieldTrialName(), "load_images_requests_per_session",
@@ -247,16 +257,38 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
   // related prefs.
   if (!prefs)
     return;
+
+  if (spdy_proxy_auth_enabled_.GetValue() && at_startup) {
+    // Record the number of days since data reduction proxy has been enabled.
+    int64_t last_enabled_time =
+        prefs->GetInt64(prefs::kDataReductionProxyLastEnabledTime);
+    if (last_enabled_time != 0) {
+      // Record the metric only if the time when data reduction proxy was
+      // enabled is available.
+      RecordDaysSinceEnabledMetric(
+          (clock_->Now() - base::Time::FromInternalValue(last_enabled_time))
+              .InDays());
+    }
+  }
+
   if (spdy_proxy_auth_enabled_.GetValue() &&
       !prefs->GetBoolean(prefs::kDataReductionProxyWasEnabledBefore)) {
     prefs->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, true);
     ResetDataReductionStatistics();
   }
   if (!at_startup) {
-    if (IsDataReductionProxyEnabled())
+    if (IsDataReductionProxyEnabled()) {
       RecordSettingsEnabledState(DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON);
-    else
+
+      // Data reduction proxy has been enabled by the user. Record the number of
+      // days since the data reduction proxy has been enabled as zero, and
+      // store the current time in the pref.
+      prefs->SetInt64(prefs::kDataReductionProxyLastEnabledTime,
+                      clock_->Now().ToInternalValue());
+      RecordDaysSinceEnabledMetric(0);
+    } else {
       RecordSettingsEnabledState(DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF);
+    }
   }
   // Configure use of the data reduction proxy if it is enabled.
   if (at_startup && !data_reduction_proxy_service_->Initialized())

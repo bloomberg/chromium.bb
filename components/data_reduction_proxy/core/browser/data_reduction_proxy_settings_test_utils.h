@@ -10,6 +10,8 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/log/test_net_log.h"
@@ -51,11 +53,14 @@ class DataReductionProxySettingsTestBase : public testing::Test {
 
   void SetUp() override;
 
-  template <class C> void ResetSettings(bool allowed,
-                                        bool fallback_allowed,
-                                        bool promo_allowed,
-                                        bool holdback);
-  virtual void ResetSettings(bool allowed,
+  template <class C>
+  void ResetSettings(std::unique_ptr<base::Clock> clock,
+                     bool allowed,
+                     bool fallback_allowed,
+                     bool promo_allowed,
+                     bool holdback);
+  virtual void ResetSettings(std::unique_ptr<base::Clock> clock,
+                             bool allowed,
                              bool fallback_allowed,
                              bool promo_allowed,
                              bool holdback) = 0;
@@ -93,12 +98,13 @@ class ConcreteDataReductionProxySettingsTest
     : public DataReductionProxySettingsTestBase {
  public:
   typedef MockDataReductionProxySettings<C> MockSettings;
-  void ResetSettings(bool allowed,
+  void ResetSettings(std::unique_ptr<base::Clock> clock,
+                     bool allowed,
                      bool fallback_allowed,
                      bool promo_allowed,
                      bool holdback) override {
     return DataReductionProxySettingsTestBase::ResetSettings<C>(
-        allowed, fallback_allowed, promo_allowed, holdback);
+        std::move(clock), allowed, fallback_allowed, promo_allowed, holdback);
   }
 };
 

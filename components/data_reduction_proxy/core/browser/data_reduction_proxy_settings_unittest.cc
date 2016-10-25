@@ -16,6 +16,8 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -642,6 +644,93 @@ TEST_F(DataReductionProxySettingsTest, TestSettingsEnabledStateHistograms) {
       kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF, 1);
 }
 
+// Verify that the UMA metric and the pref is recorded correctly when the user
+// enables the data reduction proxy.
+TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
+  const char kUMAEnabledState[] = "DataReductionProxy.DaysSinceEnabled";
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
+  base::SimpleTestClock* clock_ptr = clock.get();
+  clock_ptr->Advance(base::TimeDelta::FromDays(1));
+  ResetSettings(std::move(clock), true, true, false, false);
+
+  base::Time last_enabled_time = clock_ptr->Now();
+
+  InitPrefMembers();
+  {
+    base::HistogramTester histogram_tester;
+    settings_->data_reduction_proxy_service_->SetIOData(
+        test_context_->io_data()->GetWeakPtr());
+
+    test_context_->RunUntilIdle();
+    histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
+
+    // Enable data reduction proxy. The metric should be recorded.
+    settings_->SetDataReductionProxyEnabled(true /* enabled */);
+    test_context_->RunUntilIdle();
+
+    last_enabled_time = clock_ptr->Now();
+
+    EXPECT_EQ(
+        last_enabled_time,
+        base::Time::FromInternalValue(test_context_->pref_service()->GetInt64(
+            prefs::kDataReductionProxyLastEnabledTime)));
+    histogram_tester.ExpectUniqueSample(kUMAEnabledState, 0, 1);
+  }
+
+  {
+    // Simulate turning off and on of data reduction proxy while Chromium is
+    // running.
+    settings_->SetDataReductionProxyEnabled(false /* enabled */);
+    clock_ptr->Advance(base::TimeDelta::FromDays(1));
+    base::HistogramTester histogram_tester;
+    last_enabled_time = clock_ptr->Now();
+
+    settings_->spdy_proxy_auth_enabled_.SetValue(true);
+    settings_->MaybeActivateDataReductionProxy(false);
+    test_context_->RunUntilIdle();
+    histogram_tester.ExpectUniqueSample(kUMAEnabledState, 0, 1);
+    EXPECT_EQ(
+        last_enabled_time,
+        base::Time::FromInternalValue(test_context_->pref_service()->GetInt64(
+            prefs::kDataReductionProxyLastEnabledTime)));
+  }
+
+  {
+    // Advance clock by a random number of days.
+    int advance_clock_days = 42;
+    clock_ptr->Advance(base::TimeDelta::FromDays(advance_clock_days));
+    base::HistogramTester histogram_tester;
+    // Simulate Chromium start up. Data reduction proxy was enabled
+    // |advance_clock_days| ago.
+    settings_->MaybeActivateDataReductionProxy(true);
+    test_context_->RunUntilIdle();
+    histogram_tester.ExpectUniqueSample(kUMAEnabledState, advance_clock_days,
+                                        1);
+    EXPECT_EQ(
+        last_enabled_time,
+        base::Time::FromInternalValue(test_context_->pref_service()->GetInt64(
+            prefs::kDataReductionProxyLastEnabledTime)));
+  }
+}
+
+// Verify that the pref and the UMA metric are not recorded for existing users
+// that already have data reduction proxy on.
+TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledExistingUser) {
+  InitPrefMembers();
+  base::HistogramTester histogram_tester;
+  settings_->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
+  test_context_->RunUntilIdle();
+
+  // Simulate Chromium startup with data reduction proxy already enabled.
+  settings_->spdy_proxy_auth_enabled_.SetValue(true);
+  settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
+  test_context_->RunUntilIdle();
+  histogram_tester.ExpectTotalCount("DataReductionProxy.DaysSinceEnabled", 0);
+  EXPECT_EQ(0, test_context_->pref_service()->GetInt64(
+                   prefs::kDataReductionProxyLastEnabledTime));
+}
+
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
   ContentLengthList result =
       settings_->GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);
@@ -662,7 +751,7 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   // Clear the command line. Setting flags can force the proxy to be allowed.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
 
-  ResetSettings(false, false, false, false);
+  ResetSettings(nullptr, false, false, false, false);
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_FALSE(settings->allowed_);
   EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));

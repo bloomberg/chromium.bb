@@ -36,6 +36,8 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
 
+  registry->RegisterInt64Pref(prefs::kDataReductionProxyLastEnabledTime, 0L);
+
   registry->RegisterBooleanPref(prefs::kDataUsageReportingEnabled, false);
 
   registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
@@ -124,6 +126,7 @@ void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
 // |list_pref_map_| in Init() of DataReductionProxyCompressionStats.
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDataReductionProxy, std::string());
+  registry->RegisterInt64Pref(prefs::kDataReductionProxyLastEnabledTime, 0L);
   registry->RegisterInt64Pref(
       prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(

@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -55,8 +54,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
   pref_service->registry()->RegisterDictionaryPref(kProxy);
   pref_service->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, false);
 
-  //AddProxyToCommandLine();
-  ResetSettings(true, true, true, false);
+  ResetSettings(nullptr, true, true, true, false);
 
   ListPrefUpdate original_update(test_context_->pref_service(),
                                  prefs::kDailyHttpOriginalContentLength);
@@ -74,10 +72,12 @@ void DataReductionProxySettingsTestBase::SetUp() {
 }
 
 template <class C>
-void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
-                                                       bool fallback_allowed,
-                                                       bool promo_allowed,
-                                                       bool holdback) {
+void DataReductionProxySettingsTestBase::ResetSettings(
+    std::unique_ptr<base::Clock> clock,
+    bool allowed,
+    bool fallback_allowed,
+    bool promo_allowed,
+    bool holdback) {
   int flags = 0;
   if (allowed)
     flags |= DataReductionProxyParams::kAllowed;
@@ -93,6 +93,8 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   settings->prefs_ = test_context_->pref_service();
   settings->data_reduction_proxy_service_ =
       test_context_->CreateDataReductionProxyService(settings);
+  if (clock)
+    settings->clock_ = std::move(clock);
   test_context_->config()->ResetParamFlagsForTest(flags);
   settings->UpdateConfigValues();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
@@ -105,12 +107,12 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
 }
 
 // Explicitly generate required instantiations.
-template void
-DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>(
-    bool allowed,
-    bool fallback_allowed,
-    bool promo_allowed,
-    bool holdback);
+template void DataReductionProxySettingsTestBase::ResetSettings<
+    DataReductionProxySettings>(std::unique_ptr<base::Clock> clock,
+                                bool allowed,
+                                bool fallback_allowed,
+                                bool promo_allowed,
+                                bool holdback);
 
 void DataReductionProxySettingsTestBase::ExpectSetProxyPrefs(
     bool expected_enabled,

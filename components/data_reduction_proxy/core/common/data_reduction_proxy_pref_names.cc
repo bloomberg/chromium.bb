@@ -185,6 +185,12 @@ const char kDataUsageReportingEnabled[] = "data_usage_reporting.enabled";
 const char kDataReductionProxyWasEnabledBefore[] =
     "spdy_proxy.was_enabled_before";
 
+// An integer pref that contains the time when the data reduction proxy was last
+// enabled. Recorded only if the data reduction proxy was last enabled since
+// this pref was added.
+const char kDataReductionProxyLastEnabledTime[] =
+    "data_reduction.last_enabled_time";
+
 // An int64_t pref that contains the total size of all HTTP content received
 // from the network.
 const char kHttpReceivedContentLength[] = "http_received_content_length";
