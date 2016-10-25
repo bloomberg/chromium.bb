@@ -31,13 +31,14 @@ class VM(object):
 
 
   def __init__(self, image_path=None, qemu_path=None, enable_kvm=True,
-               ssh_port=SSH_PORT, dry_run=False):
+               display=True, ssh_port=SSH_PORT, dry_run=False):
     """Initialize VM.
 
     Args:
       image_path: path of vm image.
       qemu_path: path to qemu binary.
       enable_kvm: enable kvm (kernel support for virtualization).
+      display: display video output.
       ssh_port: ssh port to use.
       dry_run: disable VM commands.
     """
@@ -46,6 +47,7 @@ class VM(object):
     self.enable_kvm = enable_kvm
     # Software emulation doesn't need sudo access.
     self.use_sudo = enable_kvm
+    self.display = display
     self.image_path = image_path
     self.ssh_port = ssh_port
     self.dry_run = dry_run
@@ -144,6 +146,8 @@ class VM(object):
             % self.image_path]
     if self.enable_kvm:
       args.append('-enable-kvm')
+    if not self.display:
+      args.extend(['-display', 'none'])
     logging.info(' '.join(args))
     logging.info('Pid file: %s', self.pidfile)
     if not self.dry_run:
@@ -197,7 +201,7 @@ class VM(object):
 
     self._CleanupFiles(recreate=False)
 
-  def WaitForBoot(self, timeout=120, poll_interval=0.1):
+  def WaitForBoot(self, timeout=180, poll_interval=1):
     """Wait for the VM to boot up.
 
     If there is no VM running, start one.
@@ -210,6 +214,7 @@ class VM(object):
       self.Start()
 
     start_time = time.time()
+    error = 'timed out after %d sec' % timeout
     while time.time() - start_time < timeout:
       result = self.RemoteCommand(cmd=['echo'])
       if result.returncode == 255:
@@ -218,8 +223,9 @@ class VM(object):
       elif result.returncode == 0:
         return
       else:
+        error = self.error
         break
-    raise VMError('WaitForBoot failed')
+    raise VMError('WaitForBoot failed: %s.' % error)
 
   def RemoteCommand(self, cmd):
     """Run a remote command in the VM.
@@ -262,8 +268,12 @@ def ParseCommandLine(argv):
                       help='Path to VM image to launch with --start.')
   parser.add_argument('--qemu-path', type='path',
                       help='Path of qemu binary to launch with --start.')
-  parser.add_argument('--disable-kvm', action='store_true', default=False,
+  parser.add_argument('--disable-kvm', dest='enable_kvm',
+                      action='store_false', default=True,
                       help='Disable KVM, use software emulation.')
+  parser.add_argument('--no-display', dest='display',
+                      action='store_false', default=True,
+                      help='Do not display video output.')
   parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
                       help='ssh port to communicate with VM.')
   parser.add_argument('--dry-run', action='store_true', default=False,
@@ -273,7 +283,7 @@ def ParseCommandLine(argv):
 
 def main(argv):
   args = ParseCommandLine(argv)
-  vm = VM(image_path=args.image_path,
-          qemu_path=args.qemu_path, enable_kvm=not args.disable_kvm,
+  vm = VM(image_path=args.image_path, qemu_path=args.qemu_path,
+          enable_kvm=args.enable_kvm, display=args.display,
           ssh_port=args.ssh_port, dry_run=args.dry_run)
   vm.PerformAction(start=args.start, stop=args.stop, cmd=args.cmd)
