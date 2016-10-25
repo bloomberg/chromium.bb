@@ -23,6 +23,16 @@
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
+// The audio repetition detector is by default only used on non-official
+// ChromeOS builds for debugging purposes. http://crbug.com/658719.
+#if !defined(ENABLE_AUDIO_REPETITION_DETECTOR)
+#if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
+#define ENABLE_AUDIO_REPETITION_DETECTOR 1
+#else
+#define ENABLE_AUDIO_REPETITION_DETECTOR 0
+#endif
+#endif
+
 namespace blink {
 class WebMediaConstraints;
 }
@@ -176,8 +186,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // both the capture audio thread and the render audio thread.
   base::subtle::Atomic32 render_delay_ms_;
 
+#if ENABLE_AUDIO_REPETITION_DETECTOR
   // Module to detect and report (to UMA) bit exact audio repetition.
   std::unique_ptr<AudioRepetitionDetector> audio_repetition_detector_;
+#endif  // ENABLE_AUDIO_REPETITION_DETECTOR
 
   // Module to handle processing and format conversion.
   std::unique_ptr<webrtc::AudioProcessing> audio_processing_;
