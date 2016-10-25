@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/test/histogram_tester.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "sql/connection.h"
@@ -201,6 +200,17 @@ void ErrorCallbackResetHelper(sql::Connection* db,
   EXPECT_GT(*counter, 0u);
 }
 
+// Handle errors by blowing away the database.
+void RazeErrorCallback(sql::Connection* db,
+                       int expected_error,
+                       int error,
+                       sql::Statement* stmt) {
+  // Nothing here needs extended errors at this time.
+  EXPECT_EQ(expected_error, expected_error&0xff);
+  EXPECT_EQ(expected_error, error&0xff);
+  db->RazeAndClose();
+}
+
 #if defined(OS_POSIX)
 // Set a umask and restore the old mask on destruction.  Cribbed from
 // shared_memory_unittest.cc.  Used by POSIX-only UserPermission test.
@@ -239,24 +249,7 @@ const char kQueryTime[] = "Sqlite.QueryTime.Test";
 
 }  // namespace
 
-class SQLConnectionTest : public sql::SQLTestBase {
- public:
-  void SetUp() override {
-    // Any macro histograms which fire before the recorder is initialized cannot
-    // be tested.  So this needs to be ahead of Open().
-    base::StatisticsRecorder::Initialize();
-
-    SQLTestBase::SetUp();
-  }
-
-  // Handle errors by blowing away the database.
-  void RazeErrorCallback(int expected_error, int error, sql::Statement* stmt) {
-    // Nothing here needs extended errors at this time.
-    EXPECT_EQ(expected_error, expected_error&0xff);
-    EXPECT_EQ(expected_error, error&0xff);
-    db().RazeAndClose();
-  }
-};
+using SQLConnectionTest = sql::SQLTestBase;
 
 TEST_F(SQLConnectionTest, Execute) {
   // Valid statement should return true.
@@ -692,8 +685,8 @@ TEST_F(SQLConnectionTest, RazeCallbackReopen) {
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
-  db().set_error_callback(base::Bind(&SQLConnectionTest::RazeErrorCallback,
-                                     base::Unretained(this),
+  db().set_error_callback(base::Bind(&RazeErrorCallback,
+                                     &db(),
                                      SQLITE_CORRUPT));
 
   // When the PRAGMA calls in Open() raise SQLITE_CORRUPT, the error
@@ -938,8 +931,8 @@ TEST_F(SQLConnectionTest, Poison) {
   // Test that poisoning the database during a transaction works (with errors).
   // RazeErrorCallback() poisons the database, the extra COMMIT causes
   // CommitTransaction() to throw an error while commiting.
-  db().set_error_callback(base::Bind(&SQLConnectionTest::RazeErrorCallback,
-                                     base::Unretained(this),
+  db().set_error_callback(base::Bind(&RazeErrorCallback,
+                                     &db(),
                                      SQLITE_ERROR));
   db().Close();
   ASSERT_TRUE(db().Open(db_path()));
