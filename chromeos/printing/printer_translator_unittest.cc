@@ -104,8 +104,6 @@ TEST(PrinterTranslatorTest, PrinterToPrefPpdReferenceLazy) {
   EXPECT_FALSE(actual->HasKey("ppd_reference.effective_model"));
 }
 
-// FIXME add a test that we don't set fields that are empty.
-
 TEST(PrinterTranslatorTest, PrefToPrinterRoundTrip) {
   base::DictionaryValue preference;
   preference.SetString("id", kGUID);

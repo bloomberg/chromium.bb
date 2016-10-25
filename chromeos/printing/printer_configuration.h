@@ -16,6 +16,18 @@ namespace chromeos {
 class CHROMEOS_EXPORT Printer {
  public:
   // Information needed to find the PPD file for this printer.
+  //
+  // If you add fields to this struct, you almost certainly will
+  // want to update PpdResolver and PpdCache::GetCachePath.
+  //
+  // At resolution time, we look for a cached PPD that used the same
+  // PpdReference before.
+  //
+  // If one is not found and user_supplied_ppd_url is set, we'll fail
+  // out with NOT FOUND
+  //
+  // Otherwise, we'll hit QuirksServer to see if we can resolve a Ppd
+  // using manufacturer/model
   struct PpdReference {
     // If non-empty, this is the url of a specific PPD the user has specified
     // for use with this printer.
