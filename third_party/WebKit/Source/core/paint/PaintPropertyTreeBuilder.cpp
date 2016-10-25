@@ -270,76 +270,85 @@ static FloatPoint3D transformOrigin(const LayoutBox& box) {
       style.transformOriginZ());
 }
 
+// SVG does not use the general transform update of |updateTransform|, instead
+// creating a transform node for SVG-specific transforms without 3D.
+void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
+    const LayoutObject& object,
+    PaintPropertyTreeBuilderContext& context) {
+  DCHECK(object.isSVG() && !object.isSVGRoot());
+  // SVG (other than SVGForeignObject) does not use paint offset internally.
+  DCHECK(object.isSVGForeignObject() ||
+         context.current.paintOffset == LayoutPoint());
+
+  // FIXME(pdr): Refactor this so all non-root SVG objects use the same
+  // transform function.
+  const AffineTransform& transform = object.isSVGForeignObject()
+                                         ? object.localSVGTransform()
+                                         : object.localToSVGParentTransform();
+
+  // FIXME(pdr): Check for the presence of a transform instead of the value.
+  // Checking for an identity matrix will cause the property tree structure to
+  // change during animations if the animation passes through the identity
+  // matrix.
+  if (!transform.isIdentity()) {
+    // The origin is included in the local transform, so leave origin empty.
+    context.current.transform =
+        object.getMutableForPainting().ensurePaintProperties().updateTransform(
+            context.current.transform, TransformationMatrix(transform),
+            FloatPoint3D());
+    context.current.renderingContextID = 0;
+    context.current.shouldFlattenInheritedTransform = false;
+  } else {
+    if (auto* properties = object.getMutableForPainting().paintProperties())
+      properties->clearTransform();
+  }
+}
+
 void PaintPropertyTreeBuilder::updateTransform(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
   if (object.isSVG() && !object.isSVGRoot()) {
-    // SVG (other than SVGForeignObject) does not use paint offset internally.
-    DCHECK(object.isSVGForeignObject() ||
-           context.current.paintOffset == LayoutPoint());
-
-    // FIXME(pdr): Check for the presence of a transform instead of the value.
-    // Checking for an identity matrix will cause the property tree structure to
-    // change during animations if the animation passes through the identity
-    // matrix.
-    // FIXME(pdr): Refactor this so all non-root SVG objects use the same
-    // transform function.
-    const AffineTransform& transform = object.isSVGForeignObject()
-                                           ? object.localSVGTransform()
-                                           : object.localToSVGParentTransform();
-    if (!transform.isIdentity()) {
-      // The origin is included in the local transform, so leave origin empty.
-      context.current.transform =
-          object.getMutableForPainting()
-              .ensurePaintProperties()
-              .updateTransform(context.current.transform,
-                               TransformationMatrix(transform), FloatPoint3D());
-      context.current.renderingContextID = 0;
-      context.current.shouldFlattenInheritedTransform = false;
-      return;
-    }
-  } else {
-    const ComputedStyle& style = object.styleRef();
-    if (object.isBox() && (style.hasTransform() || style.preserves3D())) {
-      TransformationMatrix matrix;
-      style.applyTransform(
-          matrix, toLayoutBox(object).size(),
-          ComputedStyle::ExcludeTransformOrigin,
-          ComputedStyle::IncludeMotionPath,
-          ComputedStyle::IncludeIndependentTransformProperties);
-      FloatPoint3D origin = transformOrigin(toLayoutBox(object));
-
-      unsigned renderingContextID = context.current.renderingContextID;
-      unsigned renderingContextIDForChildren = 0;
-      bool flattensInheritedTransform =
-          context.current.shouldFlattenInheritedTransform;
-      bool childrenFlattenInheritedTransform = true;
-
-      // TODO(trchen): transform-style should only be respected if a PaintLayer
-      // is created.
-      if (style.preserves3D()) {
-        // If a node with transform-style: preserve-3d does not exist in an
-        // existing rendering context, it establishes a new one.
-        if (!renderingContextID)
-          renderingContextID = PtrHash<const LayoutObject>::hash(&object);
-        renderingContextIDForChildren = renderingContextID;
-        childrenFlattenInheritedTransform = false;
-      }
-
-      context.current.transform =
-          object.getMutableForPainting()
-              .ensurePaintProperties()
-              .updateTransform(context.current.transform, matrix, origin,
-                               flattensInheritedTransform, renderingContextID);
-      context.current.renderingContextID = renderingContextIDForChildren;
-      context.current.shouldFlattenInheritedTransform =
-          childrenFlattenInheritedTransform;
-      return;
-    }
+    updateTransformForNonRootSVG(object, context);
+    return;
   }
 
-  if (auto* properties = object.getMutableForPainting().paintProperties())
-    properties->clearTransform();
+  const ComputedStyle& style = object.styleRef();
+  if (object.isBox() && (style.hasTransform() || style.preserves3D())) {
+    TransformationMatrix matrix;
+    style.applyTransform(matrix, toLayoutBox(object).size(),
+                         ComputedStyle::ExcludeTransformOrigin,
+                         ComputedStyle::IncludeMotionPath,
+                         ComputedStyle::IncludeIndependentTransformProperties);
+    FloatPoint3D origin = transformOrigin(toLayoutBox(object));
+
+    unsigned renderingContextID = context.current.renderingContextID;
+    unsigned renderingContextIDForChildren = 0;
+    bool flattensInheritedTransform =
+        context.current.shouldFlattenInheritedTransform;
+    bool childrenFlattenInheritedTransform = true;
+
+    // TODO(trchen): transform-style should only be respected if a PaintLayer
+    // is created.
+    if (style.preserves3D()) {
+      // If a node with transform-style: preserve-3d does not exist in an
+      // existing rendering context, it establishes a new one.
+      if (!renderingContextID)
+        renderingContextID = PtrHash<const LayoutObject>::hash(&object);
+      renderingContextIDForChildren = renderingContextID;
+      childrenFlattenInheritedTransform = false;
+    }
+
+    context.current.transform =
+        object.getMutableForPainting().ensurePaintProperties().updateTransform(
+            context.current.transform, matrix, origin,
+            flattensInheritedTransform, renderingContextID);
+    context.current.renderingContextID = renderingContextIDForChildren;
+    context.current.shouldFlattenInheritedTransform =
+        childrenFlattenInheritedTransform;
+  } else {
+    if (auto* properties = object.getMutableForPainting().paintProperties())
+      properties->clearTransform();
+  }
 }
 
 void PaintPropertyTreeBuilder::updateEffect(

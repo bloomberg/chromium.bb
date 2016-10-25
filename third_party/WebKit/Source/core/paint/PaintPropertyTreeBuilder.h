@@ -94,6 +94,8 @@ class PaintPropertyTreeBuilder {
                                            PaintPropertyTreeBuilderContext&);
   static void updateTransform(const LayoutObject&,
                               PaintPropertyTreeBuilderContext&);
+  static void updateTransformForNonRootSVG(const LayoutObject&,
+                                           PaintPropertyTreeBuilderContext&);
   static void updateEffect(const LayoutObject&,
                            PaintPropertyTreeBuilderContext&);
   static void updateCssClip(const LayoutObject&,
