@@ -23,7 +23,7 @@
 namespace blink {
 
 // Retrieves the custom elements constructor -> name map, creating it
-// if necessary. The same map is used to keep prototypes alive.
+// if necessary.
 static v8::Local<v8::Map> ensureCustomElementRegistryMap(
     ScriptState* scriptState,
     CustomElementRegistry* registry) {
@@ -101,14 +101,13 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     CustomElementRegistry* registry,
     const CustomElementDescriptor& descriptor,
     const v8::Local<v8::Object>& constructor,
-    const v8::Local<v8::Object>& prototype,
     const v8::Local<v8::Function>& connectedCallback,
     const v8::Local<v8::Function>& disconnectedCallback,
     const v8::Local<v8::Function>& adoptedCallback,
     const v8::Local<v8::Function>& attributeChangedCallback,
     const HashSet<AtomicString>& observedAttributes) {
   ScriptCustomElementDefinition* definition = new ScriptCustomElementDefinition(
-      scriptState, descriptor, constructor, prototype, connectedCallback,
+      scriptState, descriptor, constructor, connectedCallback,
       disconnectedCallback, adoptedCallback, attributeChangedCallback,
       observedAttributes);
 
@@ -120,17 +119,16 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
   map->Set(scriptState->context(), constructor, nameValue).ToLocalChecked();
   definition->m_constructor.setPhantom();
 
-  // We add the prototype and callbacks here to keep them alive. We use the
-  // name as the key because it is unique per-registry.
+  // We add the callbacks here to keep them alive. We use the name as
+  // the key because it is unique per-registry.
   v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), 5);
-  keepAlive(array, 0, prototype, definition->m_prototype, scriptState);
-  keepAlive(array, 1, connectedCallback, definition->m_connectedCallback,
+  keepAlive(array, 0, connectedCallback, definition->m_connectedCallback,
             scriptState);
-  keepAlive(array, 2, disconnectedCallback, definition->m_disconnectedCallback,
+  keepAlive(array, 1, disconnectedCallback, definition->m_disconnectedCallback,
             scriptState);
-  keepAlive(array, 3, adoptedCallback, definition->m_adoptedCallback,
+  keepAlive(array, 2, adoptedCallback, definition->m_adoptedCallback,
             scriptState);
-  keepAlive(array, 4, attributeChangedCallback,
+  keepAlive(array, 3, attributeChangedCallback,
             definition->m_attributeChangedCallback, scriptState);
   map->Set(scriptState->context(), nameValue, array).ToLocalChecked();
 
@@ -141,7 +139,6 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     ScriptState* scriptState,
     const CustomElementDescriptor& descriptor,
     const v8::Local<v8::Object>& constructor,
-    const v8::Local<v8::Object>& prototype,
     const v8::Local<v8::Function>& connectedCallback,
     const v8::Local<v8::Function>& disconnectedCallback,
     const v8::Local<v8::Function>& adoptedCallback,
@@ -264,11 +261,6 @@ Element* ScriptCustomElementDefinition::runConstructor() {
 v8::Local<v8::Object> ScriptCustomElementDefinition::constructor() const {
   DCHECK(!m_constructor.isEmpty());
   return m_constructor.newLocal(m_scriptState->isolate());
-}
-
-v8::Local<v8::Object> ScriptCustomElementDefinition::prototype() const {
-  DCHECK(!m_prototype.isEmpty());
-  return m_prototype.newLocal(m_scriptState->isolate());
 }
 
 // CustomElementDefinition

@@ -941,7 +941,6 @@ crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
-crbug.com/649158 imported/wpt/custom-elements/HTMLElement-constructor.html [ Failure ]
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.

@@ -15,23 +15,38 @@ function finishJSTest() {}
 
 if (fork()) {
   // The controlling parent frame.
-  let t = async_test('context is destroyed; call across context');
+  let t = async_test('constructor destroys the context retrieving prototype');
   let watcher = new EventWatcher(t, window, 'message');
   watcher.wait_for('message').then(t.step_func((event) => {
     assert_equals(event.data, 'PASS destroyed context');
     return watcher.wait_for('message');
   })).then(t.step_func((event) => {
     assert_equals(event.data, 'PASS child done');
-    assert_throws(null, () => new window.C());
     t.done();
   }));
 } else {
   // The child frame.
-  class C extends HTMLElement {}
-  window.customElements.define('a-a', C);
-  window.parent.C = C;
-  destroyContext();
-  done();
+  let should_destroy = false;
+  let proxy;
+  function BadConstructor() {
+    should_destroy = true;
+    return Reflect.construct(HTMLElement, [], proxy);
+  }
+  proxy = new Proxy(BadConstructor, {
+    get(receiver, name) {
+      if (should_destroy && name == 'prototype') {
+        destroyContext();
+        return 42;
+      }
+      return receiver[name];
+    }
+  });
+  window.customElements.define('x-x', proxy);
+  try {
+    new proxy();
+  } finally {
+    done();
+  }
 }
 
 })();

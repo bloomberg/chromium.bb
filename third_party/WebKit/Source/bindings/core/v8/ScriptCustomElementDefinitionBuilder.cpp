@@ -154,7 +154,7 @@ bool ScriptCustomElementDefinitionBuilder::rememberOriginalProperties() {
 CustomElementDefinition* ScriptCustomElementDefinitionBuilder::build(
     const CustomElementDescriptor& descriptor) {
   return ScriptCustomElementDefinition::create(
-      m_scriptState.get(), m_registry, descriptor, m_constructor, m_prototype,
+      m_scriptState.get(), m_registry, descriptor, m_constructor,
       m_connectedCallback, m_disconnectedCallback, m_adoptedCallback,
       m_attributeChangedCallback, m_observedAttributes);
 }

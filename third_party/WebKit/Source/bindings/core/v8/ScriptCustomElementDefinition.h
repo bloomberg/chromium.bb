@@ -33,7 +33,6 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       CustomElementRegistry*,
       const CustomElementDescriptor&,
       const v8::Local<v8::Object>& constructor,
-      const v8::Local<v8::Object>& prototype,
       const v8::Local<v8::Function>& connectedCallback,
       const v8::Local<v8::Function>& disconnectedCallback,
       const v8::Local<v8::Function>& adoptedCallback,
@@ -43,7 +42,6 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   virtual ~ScriptCustomElementDefinition() = default;
 
   v8::Local<v8::Object> constructor() const;
-  v8::Local<v8::Object> prototype() const;
 
   HTMLElement* createElementSync(Document&, const QualifiedName&) override;
 
@@ -66,7 +64,6 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       ScriptState*,
       const CustomElementDescriptor&,
       const v8::Local<v8::Object>& constructor,
-      const v8::Local<v8::Object>& prototype,
       const v8::Local<v8::Function>& connectedCallback,
       const v8::Local<v8::Function>& disconnectedCallback,
       const v8::Local<v8::Function>& adoptedCallback,
@@ -90,7 +87,6 @@ class CORE_EXPORT ScriptCustomElementDefinition final
 
   RefPtr<ScriptState> m_scriptState;
   ScopedPersistent<v8::Object> m_constructor;
-  ScopedPersistent<v8::Object> m_prototype;
   ScopedPersistent<v8::Function> m_connectedCallback;
   ScopedPersistent<v8::Function> m_disconnectedCallback;
   ScopedPersistent<v8::Function> m_adoptedCallback;
