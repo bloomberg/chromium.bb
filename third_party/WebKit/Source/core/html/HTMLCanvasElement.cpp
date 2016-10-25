@@ -323,12 +323,21 @@ void HTMLCanvasElement::didFinalizeFrame() {
   // Propagate the m_dirtyRect accumulated so far to the compositor
   // before restarting with a blank dirty rect.
   FloatRect srcRect(0, 0, size().width(), size().height());
-  m_dirtyRect.intersect(srcRect);
+
   LayoutBox* ro = layoutBox();
   // Canvas content updates do not need to be propagated as
   // paint invalidations if the canvas is accelerated, since
   // the canvas contents are sent separately through a texture layer.
   if (ro && (!m_context || !m_context->isAccelerated())) {
+    // If ro->contentBoxRect() is larger than srcRect the canvas's image is
+    // being stretched, so we need to account for color bleeding caused by the
+    // interpollation filter.
+    if (ro->contentBoxRect().width() > srcRect.width() ||
+        ro->contentBoxRect().height() > srcRect.height()) {
+      m_dirtyRect.inflate(0.5);
+    }
+
+    m_dirtyRect.intersect(srcRect);
     LayoutRect mappedDirtyRect(enclosingIntRect(
         mapRect(m_dirtyRect, srcRect, FloatRect(ro->contentBoxRect()))));
     // For querying PaintLayer::compositingState()
