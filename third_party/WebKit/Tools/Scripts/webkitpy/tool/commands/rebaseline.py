@@ -70,6 +70,19 @@ class AbstractRebaseliningCommand(Command):
     def _print_expectation_line_changes(self):
         print(json.dumps(self.expectation_line_changes.to_dict()))
 
+    def _baseline_directory(self, builder_name):
+        port = self._tool.port_factory.get_from_builder_name(builder_name)
+        return port.baseline_version_dir()
+
+    def _test_root(self, test_name):
+        return self._tool.filesystem.splitext(test_name)[0]
+
+    def _file_name_for_actual_result(self, test_name, suffix):
+        return "%s-actual.%s" % (self._test_root(test_name), suffix)
+
+    def _file_name_for_expected_result(self, test_name, suffix):
+        return "%s-expected.%s" % (self._test_root(test_name), suffix)
+
 
 class ChangeSet(object):
     """A record of TestExpectation lines to remove.
@@ -126,19 +139,6 @@ class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
             optparse.make_option("--build-number", default=None, type="int",
                                  help="Optional build number; if not given, the latest build is used."),
         ])
-
-    def _baseline_directory(self, builder_name):
-        port = self._tool.port_factory.get_from_builder_name(builder_name)
-        return port.baseline_version_dir()
-
-    def _test_root(self, test_name):
-        return self._tool.filesystem.splitext(test_name)[0]
-
-    def _file_name_for_actual_result(self, test_name, suffix):
-        return "%s-actual.%s" % (self._test_root(test_name), suffix)
-
-    def _file_name_for_expected_result(self, test_name, suffix):
-        return "%s-expected.%s" % (self._test_root(test_name), suffix)
 
 
 class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
@@ -223,13 +223,6 @@ class RebaselineTest(BaseInternalRebaselineCommand):
             return
 
         filesystem = self._tool.filesystem
-        if is_all_pass_testharness_result(data):
-            _log.debug("The new baseline is a passing testharness result with "
-                       "no console warnings or errors, so it will not be saved.")
-            if filesystem.exists(target_baseline):
-                filesystem.remove(target_baseline)
-            return
-
         filesystem.maybe_make_directory(filesystem.dirname(target_baseline))
         filesystem.write_binary_file(target_baseline, data)
 
@@ -524,7 +517,63 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             # auto-rebaseline itself.
             self._run_in_parallel(self._optimize_baselines(test_prefix_list, options.verbose))
 
+        self._remove_all_pass_testharness_baselines(test_prefix_list)
+
         self._tool.scm().add_all(pathspec=self._layout_tests_dir())
+
+    def _remove_all_pass_testharness_baselines(self, test_prefix_list):
+        """Removes all of the all-PASS baselines for the given builders and tests.
+
+        In general, for testharness.js tests, the absence of a baseline
+        indicates that the test is expected to pass. When rebaselining,
+        new all-PASS baselines may be downloaded, but they should not be kept.
+        """
+        filesystem = self._tool.filesystem
+        baseline_paths = self._all_baseline_paths(test_prefix_list)
+        for path in baseline_paths:
+            if not (filesystem.exists(path) and
+                    filesystem.splitext(path)[1] == '.txt'):
+                continue
+            contents = filesystem.read_text_file(path)
+            if is_all_pass_testharness_result(contents):
+                _log.info('Removing all-PASS testharness baseline: %s', path)
+                filesystem.remove(path)
+
+    def _all_baseline_paths(self, test_prefix_list):
+        """Return file paths for all baselines for the given tests and builders.
+
+        Args:
+            test_prefix_list: A dict mapping test prefixes, which could be
+                directories or full test paths, to builds to baseline suffixes.
+                TODO(qyearsley): If a class is added to replace test_prefix_list,
+                then this can be made a method on that class.
+
+        Returns:
+            A list of absolute paths to possible baseline files,
+            which may or may not exist on the local filesystem.
+        """
+        filesystem = self._tool.filesystem
+        baseline_paths = []
+        port = self._tool.port_factory.get()
+
+        for test_prefix in test_prefix_list:
+            tests = port.tests([test_prefix])
+            all_suffixes = set()
+
+            for build, suffixes in test_prefix_list[test_prefix].iteritems():
+                all_suffixes.update(suffixes)
+                port_baseline_dir = self._baseline_directory(build.builder_name)
+                baseline_paths.extend([
+                    filesystem.join(port_baseline_dir, self._file_name_for_expected_result(test, suffix))
+                    for test in tests for suffix in suffixes
+                ])
+
+            baseline_paths.extend([
+                filesystem.join(self._layout_tests_dir(), self._file_name_for_expected_result(test, suffix))
+                for test in tests for suffix in all_suffixes
+            ])
+
+        return sorted(baseline_paths)
 
     def _layout_tests_dir(self):
         return self._tool.port_factory.get().layout_tests_dir()

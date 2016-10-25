@@ -281,39 +281,6 @@ class TestRebaselineTest(BaseTestCase):
         self.command._rebaseline_test("MOCK Trusty", "userscripts/another-test.html", "txt", self.WEB_PREFIX)
         self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
 
-    def test_rebaseline_all_pass_testharness_result_removes_baseline(self):
-        self.tool.web.urls = {
-            ('https://storage.googleapis.com/chromium-layout-test-archives'
-             '/MOCK_Win7/results/layout-test-results/failures/unexpected'
-             '/text-actual.txt'): 'This is a testharness.js-based test.\n PASS: foo \n Harness: the test ran to completion.'
-        }
-        self._write(
-            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt',
-            'original baseline')
-        oc = OutputCapture()
-        oc.capture_output()
-        self.command.execute(self.options(builder='MOCK Win7', test="failures/unexpected/text.html"), [], self.tool)
-        out, _, _ = oc.restore_output()
-        self.assertEqual('{"remove-lines": [{"test": "failures/unexpected/text.html", "builder": "MOCK Win7"}]}\n', out)
-        self.assertFalse(self.tool.filesystem.exists(
-            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt'))
-
-    def test_rebaseline_test_non_all_pass_testharness_result(self):
-        self.tool.web.urls = {
-            ('https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Win7'
-             '/results/layout-test-results/failures/unexpected/text-actual.txt'):
-            ('This is some other baseline content, not an all-pass testharness.js result.')}
-        self._write(
-            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt',
-            'original baseline')
-        oc = OutputCapture()
-        oc.capture_output()
-        self.command.execute(self.options(builder='MOCK Win7', test="failures/unexpected/text.html"), [], self.tool)
-        out, _, _ = oc.restore_output()
-        self.assertEqual('{"remove-lines": [{"test": "failures/unexpected/text.html", "builder": "MOCK Win7"}]}\n', out)
-        self.assertTrue(self.tool.filesystem.exists(
-            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt'))
-
     def test_rebaseline_test_with_results_directory(self):
         self._write("userscripts/another-test.html", "test data")
         self._write(
@@ -375,6 +342,39 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
         builders_to_fetch = self.command._builders_to_fetch_from(
             ["MOCK Win10", "MOCK Win7 (dbg)(1)", "MOCK Win7 (dbg)(2)", "MOCK Win7"])
         self.assertEqual(builders_to_fetch, ["MOCK Win7", "MOCK Win10"])
+
+    def test_all_baseline_paths(self):
+        test_prefix_list = {
+            'passes/text.html': {
+                Build('MOCK Win7'): ('txt', 'png'),
+                Build('MOCK Win10'): ('txt',),
+            }
+        }
+        # pylint: disable=protected-access
+        baseline_paths = self.command._all_baseline_paths(test_prefix_list)
+        self.assertEqual(baseline_paths, [
+            '/test.checkout/LayoutTests/passes/text-expected.png',
+            '/test.checkout/LayoutTests/passes/text-expected.txt',
+            '/test.checkout/LayoutTests/platform/test-win-win10/passes/text-expected.txt',
+            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.png',
+            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.txt',
+        ])
+
+    def test_remove_all_pass_testharness_baselines(self):
+        self.tool.filesystem.write_text_file(
+            '/test.checkout/LayoutTests/passes/text-expected.txt',
+            ('This is a testharness.js-based test.\n'
+             'PASS: foo\n'
+             'Harness: the test ran to completion.\n'))
+        test_prefix_list = {
+            'passes/text.html': {
+                Build('MOCK Win7'): ('txt', 'png'),
+                Build('MOCK Win10'): ('txt',),
+            }
+        }
+        self.command._remove_all_pass_testharness_baselines(test_prefix_list)
+        self.assertFalse(self.tool.filesystem.exists(
+            '/test.checkout/LayoutTests/passes/text-expected.txt'))
 
 
 class TestRebaselineJson(BaseTestCase):
