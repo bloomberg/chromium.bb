@@ -29,34 +29,8 @@
 
 namespace {
 
-// Execute |sql|, and stringify the results with |column_sep| between
-// columns and |row_sep| between rows.
-// TODO(shess): Promote this to a central testing helper.
-std::string ExecuteWithResults(sql::Connection* db,
-                               const char* sql,
-                               const char* column_sep,
-                               const char* row_sep) {
-  sql::Statement s(db->GetUniqueStatement(sql));
-  std::string ret;
-  while (s.Step()) {
-    if (!ret.empty())
-      ret += row_sep;
-    for (int i = 0; i < s.ColumnCount(); ++i) {
-      if (i > 0)
-        ret += column_sep;
-      if (s.ColumnType(i) == sql::COLUMN_TYPE_NULL) {
-        ret += "<null>";
-      } else if (s.ColumnType(i) == sql::COLUMN_TYPE_BLOB) {
-        ret += "<x'";
-        ret += base::HexEncode(s.ColumnBlob(i), s.ColumnByteLength(i));
-        ret += "'>";
-      } else {
-        ret += s.ColumnString(i);
-      }
-    }
-  }
-  return ret;
-}
+using sql::test::ExecuteWithResults;
+using sql::test::ExecuteWithResult;
 
 // Dump consistent human-readable representation of the database
 // schema.  For tables or indices, this will contain the sql command
@@ -153,8 +127,7 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
   ASSERT_EQ("CREATE TABLE x (t TEXT)", GetSchema(&db()));
 
   const char* kXSql = "SELECT * FROM x ORDER BY 1";
-  ASSERT_EQ("That was a test",
-            ExecuteWithResults(&db(), kXSql, "|", "\n"));
+  ASSERT_EQ("That was a test", ExecuteWithResult(&db(), kXSql));
 
   // Reset the database contents.
   ASSERT_TRUE(db().Execute("DELETE FROM x"));
@@ -176,8 +149,7 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
   EXPECT_TRUE(db().is_open());
   ASSERT_EQ("CREATE TABLE x (t TEXT)", GetSchema(&db()));
 
-  ASSERT_EQ("This is a test",
-            ExecuteWithResults(&db(), kXSql, "|", "\n"));
+  ASSERT_EQ("This is a test", ExecuteWithResult(&db(), kXSql));
 }
 
 // Test operation of the virtual table used by sql::Recovery.
@@ -340,12 +312,12 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
 
   // Index shows one less than originally inserted.
   const char kCountSql[] = "SELECT COUNT (*) FROM x";
-  EXPECT_EQ("9", ExecuteWithResults(&db(), kCountSql, "|", ","));
+  EXPECT_EQ("9", ExecuteWithResult(&db(), kCountSql));
 
   // A full table scan shows all of the original data.  Using column [v] to
   // force use of the table rather than the index.
   const char kDistinctSql[] = "SELECT DISTINCT COUNT (v) FROM x";
-  EXPECT_EQ("10", ExecuteWithResults(&db(), kDistinctSql, "|", ","));
+  EXPECT_EQ("10", ExecuteWithResult(&db(), kDistinctSql));
 
   // Insert id 0 again.  Since it is not in the index, the insert
   // succeeds, but results in a duplicate value in the table.
@@ -353,8 +325,8 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   ASSERT_TRUE(db().Execute(kInsertSql));
 
   // Duplication is visible.
-  EXPECT_EQ("10", ExecuteWithResults(&db(), kCountSql, "|", ","));
-  EXPECT_EQ("11", ExecuteWithResults(&db(), kDistinctSql, "|", ","));
+  EXPECT_EQ("10", ExecuteWithResult(&db(), kCountSql));
+  EXPECT_EQ("11", ExecuteWithResult(&db(), kDistinctSql));
 
   // This works before the callback is called.
   const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
@@ -374,12 +346,12 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   ASSERT_TRUE(Reopen());
 
   // The recovered table has consistency between the index and the table.
-  EXPECT_EQ("10", ExecuteWithResults(&db(), kCountSql, "|", ","));
-  EXPECT_EQ("10", ExecuteWithResults(&db(), kDistinctSql, "|", ","));
+  EXPECT_EQ("10", ExecuteWithResult(&db(), kCountSql));
+  EXPECT_EQ("10", ExecuteWithResult(&db(), kDistinctSql));
 
   // Only one of the values is retained.
   const char kSelectSql[] = "SELECT v FROM x WHERE id = 0";
-  const std::string results = ExecuteWithResults(&db(), kSelectSql, "|", ",");
+  const std::string results = ExecuteWithResult(&db(), kSelectSql);
   EXPECT_TRUE(results=="100" || results=="0") << "Actual results: " << results;
 }
 

@@ -270,5 +270,28 @@ std::string IntegrityCheck(sql::Connection* db) {
   return statement.ColumnString(0);
 }
 
+std::string ExecuteWithResult(sql::Connection* db, const char* sql) {
+  sql::Statement s(db->GetUniqueStatement(sql));
+  return s.Step() ? s.ColumnString(0) : std::string();
+}
+
+std::string ExecuteWithResults(sql::Connection* db,
+                               const char* sql,
+                               const char* column_sep,
+                               const char* row_sep) {
+  sql::Statement s(db->GetUniqueStatement(sql));
+  std::string ret;
+  while (s.Step()) {
+    if (!ret.empty())
+      ret += row_sep;
+    for (int i = 0; i < s.ColumnCount(); ++i) {
+      if (i > 0)
+        ret += column_sep;
+      ret += s.ColumnString(i);
+    }
+  }
+  return ret;
+}
+
 }  // namespace test
 }  // namespace sql

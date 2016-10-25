@@ -98,6 +98,27 @@ bool CreateDatabaseFromSQL(const base::FilePath& db_path,
 // same, but not as convenient for testing.  Maybe combine.
 std::string IntegrityCheck(sql::Connection* db) WARN_UNUSED_RESULT;
 
+// ExecuteWithResult() executes |sql| and returns the first column of the first
+// row as a string.  The empty string is returned for no rows.  This makes it
+// easier to test simple query results using EXPECT_EQ().  For instance:
+//   EXPECT_EQ("1024", ExecuteWithResult(db, "PRAGMA page_size"));
+//
+// ExecuteWithResults() stringifies a larger result set by putting |column_sep|
+// between columns and |row_sep| between rows.  For instance:
+//   EXPECT_EQ("1,3,5", ExecuteWithResults(
+//       db, "SELECT id FROM t ORDER BY id", "|", ","));
+// Note that EXPECT_EQ() can nicely diff when using \n as |row_sep|.
+//
+// To test NULL, use the COALESCE() function:
+//   EXPECT_EQ("<NULL>", ExecuteWithResult(
+//       db, "SELECT c || '<NULL>' FROM t WHERE id = 1"));
+// To test blobs use the HEX() function.
+std::string ExecuteWithResult(sql::Connection* db, const char* sql);
+std::string ExecuteWithResults(sql::Connection* db,
+                               const char* sql,
+                               const char* column_sep,
+                               const char* row_sep);
+
 }  // namespace test
 }  // namespace sql
 
