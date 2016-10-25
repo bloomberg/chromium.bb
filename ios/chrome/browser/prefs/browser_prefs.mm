@@ -10,6 +10,7 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/remote/ntp_snippets_service.h"
 #include "components/ntp_tiles/most_visited_sites.h"
@@ -29,7 +30,7 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
-#include "ios/chrome/browser/application_context_impl.h"
+#include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
@@ -41,16 +42,6 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-// TODO(crbug.com/525079): those preferences are not used on iOS but are
-// required to be able to run unit_tests until componentization of
-// chrome/browser/prefs is complete.
-const char kURLsToRestoreOnStartup[] = "session.startup_urls";
-const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
-
-}  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
@@ -77,7 +68,13 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kBrowsingDataMigrationHasBeenPossible,
                                 false);
 
-  ApplicationContextImpl::RegisterPrefs(registry);
+  // Preferences related to the application context.
+  registry->RegisterStringPref(prefs::kApplicationLocale, std::string());
+  registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
+  registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
+                                false);
+  registry->RegisterBooleanPref(prefs::kLastSessionExitedCleanly, true);
+  registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -130,13 +127,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // This comes from components/bookmarks/core/browser/bookmark_model.h
   // Defaults to 3, which is the id of bookmarkModel_->mobile_node()
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
-
-  // TODO(crbug.com/525079): those preferences are not used on iOS but are
-  // required to be able to run unit_tests until componentization of
-  // chrome/browser/prefs is complete.
-  registry->RegisterListPref(kURLsToRestoreOnStartup,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterListPref(kURLsToRestoreOnStartupOld);
 
   // Register prefs used by Clear Browsing Data UI.
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);

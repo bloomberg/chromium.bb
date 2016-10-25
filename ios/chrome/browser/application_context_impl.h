@@ -27,9 +27,6 @@ class ApplicationContextImpl : public ApplicationContext {
                          const std::string& locale);
   ~ApplicationContextImpl() override;
 
-  // Registers local state prefs.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Called before the browser threads are created.
   void PreCreateThreads();
 

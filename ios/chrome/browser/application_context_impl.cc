@@ -23,7 +23,6 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
@@ -35,7 +34,6 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
-#include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
 #include "ios/chrome/browser/chrome_paths.h"
@@ -81,16 +79,6 @@ ApplicationContextImpl::~ApplicationContextImpl() {
   DCHECK_EQ(this, GetApplicationContext());
   tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
   SetApplicationContext(nullptr);
-}
-
-// static
-void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kApplicationLocale, std::string());
-  registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
-  registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
-                                false);
-  registry->RegisterBooleanPref(prefs::kLastSessionExitedCleanly, true);
-  registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
 }
 
 void ApplicationContextImpl::PreCreateThreads() {
