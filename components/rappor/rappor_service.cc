@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/rappor/log_uploader.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
@@ -65,7 +64,6 @@ RapporService::RapporService(
 }
 
 RapporService::~RapporService() {
-  base::STLDeleteValues(&metrics_map_);
 }
 
 void RapporService::AddDailyObserver(
@@ -136,7 +134,7 @@ void RapporService::InitializeInternal(
 
 void RapporService::CancelNextLogRotation() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::STLDeleteValues(&metrics_map_);
+  metrics_map_.clear();
   log_rotation_timer_.Stop();
 }
 
@@ -170,14 +168,14 @@ bool RapporService::ExportMetrics(RapporReports* reports) {
   reports->set_cohort(cohort_);
 
   for (const auto& kv : metrics_map_) {
-    const RapporMetric* metric = kv.second;
+    const RapporMetric* metric = kv.second.get();
     RapporReports::Report* report = reports->add_report();
     report->set_name_hash(base::HashMetricName(kv.first));
     ByteVector bytes = metric->GetReport(secret_);
     report->set_bits(std::string(bytes.begin(), bytes.end()));
     DVLOG(2) << "Exporting metric " << kv.first;
   }
-  base::STLDeleteValues(&metrics_map_);
+  metrics_map_.clear();
 
   sampler_.ExportMetrics(secret_, reports);
 
@@ -235,16 +233,15 @@ RapporMetric* RapporService::LookUpMetric(const std::string& metric_name,
                                           const RapporParameters& parameters) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
-  std::map<std::string, RapporMetric*>::const_iterator it =
-      metrics_map_.find(metric_name);
+  auto it = metrics_map_.find(metric_name);
   if (it != metrics_map_.end()) {
-    RapporMetric* metric = it->second;
+    RapporMetric* metric = it->second.get();
     DCHECK_EQ(parameters.ToString(), metric->parameters().ToString());
     return metric;
   }
 
   RapporMetric* new_metric = new RapporMetric(metric_name, parameters, cohort_);
-  metrics_map_[metric_name] = new_metric;
+  metrics_map_[metric_name] = base::WrapUnique(new_metric);
   return new_metric;
 }
 

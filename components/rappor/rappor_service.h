@@ -80,7 +80,7 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   //
   // This will result in a report setting two metrics "MyMetric.Field1" and
   // "MyMetric.Field2", and they will both be generated from the same sample,
-  // to allow for correllations to be computed.
+  // to allow for correlations to be computed.
   virtual void RecordSampleObj(const std::string& metric_name,
                                std::unique_ptr<Sample> sample);
 
@@ -162,8 +162,7 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   int recording_groups_;
 
   // We keep all registered metrics in a map, from name to metric.
-  // The map owns the metrics it contains.
-  std::map<std::string, RapporMetric*> metrics_map_;
+  std::map<std::string, std::unique_ptr<RapporMetric>> metrics_map_;
 
   internal::Sampler sampler_;
 
