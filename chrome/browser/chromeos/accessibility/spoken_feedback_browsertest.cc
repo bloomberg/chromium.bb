@@ -132,12 +132,6 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
         true, ash::A11Y_NOTIFICATION_NONE);
     EXPECT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
     DisableEarcons();
-
-    // Ensure we skip all other startup messages by sending an additional speak
-    // call.
-    RunJavaScriptInChromeVoxBackgroundPage(
-        "cvox.ChromeVox.tts.speak('ready to test');");
-    EXPECT_TRUE(speech_monitor_.SkipChromeVoxMessage("ready to test"));
   }
 
   void PressRepeatedlyUntilUtterance(ui::KeyboardCode key,
@@ -210,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
   EXPECT_EQ("button", speech_monitor_.GetNextUtterance());
 }
 
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
+                       DISABLED_NavigateNotificationCenter) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_MESSAGE_CENTER_BUBBLE));
@@ -293,7 +288,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TypeInOmnibox) {
   EnableChromeVox();
 
   // Location bar has focus by default so just start typing.
@@ -495,7 +490,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
     if (base::MatchPattern(utterance, "Edit text"))
       break;
   }
-  EXPECT_EQ("Alert", speech_monitor_.GetNextUtterance());
+
   EXPECT_EQ("Entered window overview mode", speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_TAB);
