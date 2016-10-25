@@ -63,7 +63,4 @@ const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUIResourcesURL[] = "chrome://resources/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang";
 
-const char kHttpSuboriginScheme[] = "http-so";
-const char kHttpsSuboriginScheme[] = "https-so";
-
 }  // namespace content

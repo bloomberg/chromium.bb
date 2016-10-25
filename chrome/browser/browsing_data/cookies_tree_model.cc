@@ -22,7 +22,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -31,6 +30,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -90,7 +91,9 @@ std::string CanonicalizeHost(const GURL& url) {
            url::kStandardSchemeSeparator;
   }
 
-  std::string host = content::StripSuboriginFromUrl(url).host();
+  // Pass through url::Origin to get the real host, which has the effect of
+  // stripping the suborigin from the URL.
+  std::string host = url::Origin(url).host();
   std::string retval =
       net::registry_controlled_domains::GetDomainAndRegistry(
           host,
@@ -659,9 +662,8 @@ CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
 base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
   const std::string file_origin_node_name(
       std::string(url::kFileScheme) + url::kStandardSchemeSeparator);
-  return base::UTF8ToUTF16(url.SchemeIsFile()
-                               ? file_origin_node_name
-                               : content::StripSuboriginFromUrl(url).host());
+  return base::UTF8ToUTF16(url.SchemeIsFile() ? file_origin_node_name
+                                              : url::Origin(url).host());
 }
 
 CookieTreeHostNode::CookieTreeHostNode(const GURL& url)

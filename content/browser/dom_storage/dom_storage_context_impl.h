@@ -133,7 +133,8 @@ class CONTENT_EXPORT DOMStorageContextImpl
   void GetLocalStorageUsage(std::vector<LocalStorageUsageInfo>* infos,
                             bool include_file_info);
   void GetSessionStorageUsage(std::vector<SessionStorageUsageInfo>* infos);
-  void DeleteLocalStorage(const GURL& origin);
+  void DeleteLocalStorageForPhysicalOrigin(const GURL& origin_url);
+  void DeleteLocalStorage(const GURL& origin_url);
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info);
 
   // Used by content settings to alter the behavior around
@@ -222,9 +223,6 @@ class CONTENT_EXPORT DOMStorageContextImpl
       const std::set<std::string>& protected_persistent_session_ids);
   void DeleteNextUnusedNamespace();
   void DeleteNextUnusedNamespaceInCommitSequence();
-
-  void DeleteAndClearStorageNamespaceForOrigin(const GURL& origin,
-                                               DOMStorageNamespace* local);
 
   // Collection of namespaces keyed by id.
   StorageNamespaceMap namespaces_;

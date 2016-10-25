@@ -30,8 +30,9 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
-#include "content/public/common/origin_util.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -201,27 +202,41 @@ void DOMStorageContextImpl::GetSessionStorageUsage(
   }
 }
 
-void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin) {
+void DOMStorageContextImpl::DeleteLocalStorageForPhysicalOrigin(
+    const GURL& origin_url) {
   DCHECK(!is_shutdown_);
+  url::Origin origin(origin_url);
   DOMStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
   std::vector<GURL> origins;
   local->GetOriginsWithAreas(&origins);
-  // Suborigin storage should be deleted in tandem with the physical origin's
-  // storage. https://w3c.github.io/webappsec-suborigins/
-  for (auto origin_candidate : origins) {
+  // Suborigin at the physical origin of |origin_url| should have their storage
+  // deleted as well.
+  // https://w3c.github.io/webappsec-suborigins/
+  for (const auto& origin_candidate_url : origins) {
+    url::Origin origin_candidate(origin_candidate_url);
     // |origin| is guaranteed to be deleted below, so don't delete it until
-    // then.
-    if (origin_candidate == origin ||
-        StripSuboriginFromUrl(origin_candidate) != origin) {
-      continue;
+    // then. That is, only suborigins at the same physical origin as |origin|
+    // should be deleted at this point.
+    if (!origin_candidate.IsSameOriginWith(origin) &&
+        origin_candidate.IsSamePhysicalOriginWith(origin)) {
+      DeleteLocalStorage(origin_candidate_url);
     }
-    DeleteAndClearStorageNamespaceForOrigin(origin_candidate, local);
   }
   // It is important to always explicitly delete |origin|. If it does not appear
   // it |origins| above, there still may be a directory open in the namespace in
   // preparation for this storage, and this call will make sure that the
   // directory is deleted.
-  DeleteAndClearStorageNamespaceForOrigin(origin, local);
+  DeleteLocalStorage(origin_url);
+}
+
+void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin_url) {
+  DOMStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
+  local->DeleteLocalStorageOrigin(origin_url);
+  // Synthesize a 'cleared' event if the area is open so CachedAreas in
+  // renderers get emptied out too.
+  DOMStorageArea* area = local->GetOpenStorageArea(origin_url);
+  if (area)
+    NotifyAreaCleared(area, origin_url);
 }
 
 void DOMStorageContextImpl::DeleteSessionStorage(
@@ -618,17 +633,6 @@ void DOMStorageContextImpl::DeleteNextUnusedNamespaceInCommitSequence() {
             this),
         base::TimeDelta::FromSeconds(kSessionStoraceScavengingSeconds));
   }
-}
-
-void DOMStorageContextImpl::DeleteAndClearStorageNamespaceForOrigin(
-    const GURL& origin,
-    DOMStorageNamespace* local) {
-  local->DeleteLocalStorageOrigin(origin);
-  // Synthesize a 'cleared' event if the area is open so CachedAreas in
-  // renderers get emptied out too.
-  DOMStorageArea* area = local->GetOpenStorageArea(origin);
-  if (area)
-    NotifyAreaCleared(area, origin);
 }
 
 }  // namespace content

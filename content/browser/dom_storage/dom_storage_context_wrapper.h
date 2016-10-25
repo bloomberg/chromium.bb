@@ -54,6 +54,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
       const GetLocalStorageUsageCallback& callback) override;
   void GetSessionStorageUsage(
       const GetSessionStorageUsageCallback& callback) override;
+  void DeleteLocalStorageForPhysicalOrigin(const GURL& origin) override;
   void DeleteLocalStorage(const GURL& origin) override;
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info) override;
   void SetSaveSessionStorageOnDisk() override;

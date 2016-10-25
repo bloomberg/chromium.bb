@@ -193,7 +193,7 @@ void ClearLocalStorageOnUIThread(
                       origin_matcher.Run(storage_origin,
                                          special_storage_policy.get());
     if (can_delete)
-      dom_storage_context->DeleteLocalStorage(storage_origin);
+      dom_storage_context->DeleteLocalStorageForPhysicalOrigin(storage_origin);
 
     callback.Run();
     return;

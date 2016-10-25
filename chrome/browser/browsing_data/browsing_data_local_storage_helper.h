@@ -48,8 +48,8 @@ class BrowsingDataLocalStorageHelper
   // callback. This must be called only in the UI thread.
   virtual void StartFetching(const FetchCallback& callback);
 
-  // Deletes the local storage for the |origin|.
-  virtual void DeleteOrigin(const GURL& origin);
+  // Deletes the local storage for the |origin_url|.
+  virtual void DeleteOrigin(const GURL& origin_url);
 
  protected:
   friend class base::RefCounted<BrowsingDataLocalStorageHelper>;
@@ -71,7 +71,7 @@ class CannedBrowsingDataLocalStorageHelper
 
   // Add a local storage to the set of canned local storages that is returned
   // by this helper.
-  void AddLocalStorage(const GURL& origin);
+  void AddLocalStorage(const GURL& origin_url);
 
   // Clear the list of canned local storages.
   void Reset();
@@ -87,7 +87,7 @@ class CannedBrowsingDataLocalStorageHelper
 
   // BrowsingDataLocalStorageHelper implementation.
   void StartFetching(const FetchCallback& callback) override;
-  void DeleteOrigin(const GURL& origin) override;
+  void DeleteOrigin(const GURL& origin_url) override;
 
  private:
   ~CannedBrowsingDataLocalStorageHelper() override;

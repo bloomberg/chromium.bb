@@ -141,8 +141,8 @@ TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
   EXPECT_TRUE(p->IsPseudoScheme(url::kAboutScheme));
   EXPECT_TRUE(p->IsPseudoScheme(url::kJavaScriptScheme));
   EXPECT_TRUE(p->IsPseudoScheme(kViewSourceScheme));
-  EXPECT_TRUE(p->IsPseudoScheme(kHttpSuboriginScheme));
-  EXPECT_TRUE(p->IsPseudoScheme(kHttpsSuboriginScheme));
+  EXPECT_TRUE(p->IsPseudoScheme(url::kHttpSuboriginScheme));
+  EXPECT_TRUE(p->IsPseudoScheme(url::kHttpsSuboriginScheme));
 
   EXPECT_FALSE(p->IsPseudoScheme("registered-pseudo-scheme"));
   p->RegisterPseudoScheme("registered-pseudo-scheme");

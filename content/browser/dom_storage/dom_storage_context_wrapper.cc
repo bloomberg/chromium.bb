@@ -318,6 +318,15 @@ void DOMStorageContextWrapper::GetSessionStorageUsage(
                  base::RetainedRef(context_), callback));
 }
 
+void DOMStorageContextWrapper::DeleteLocalStorageForPhysicalOrigin(
+    const GURL& origin) {
+  DCHECK(context_.get());
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&DOMStorageContextImpl::DeleteLocalStorageForPhysicalOrigin,
+                 context_, origin));
+}
+
 void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin) {
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(

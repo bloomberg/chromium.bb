@@ -72,11 +72,6 @@ CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
 CONTENT_EXPORT extern const char kChromeUIResourcesURL[];
 CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
-// Special HTTP and HTTPS schemes for serialization of suborigins. See
-// https://w3c.github.io/webappsec-suborigins/.
-CONTENT_EXPORT extern const char kHttpSuboriginScheme[];
-CONTENT_EXPORT extern const char kHttpsSuboriginScheme[];
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
