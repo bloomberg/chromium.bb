@@ -163,8 +163,7 @@ void WebGLRenderingContext::setOffscreenCanvasGetContextResult(
   result.setWebGLRenderingContext(this);
 }
 
-ImageBitmap* WebGLRenderingContext::transferToImageBitmap(
-    ExceptionState& exceptionState) {
+ImageBitmap* WebGLRenderingContext::transferToImageBitmap() {
   return transferToImageBitmapBase();
 }
 

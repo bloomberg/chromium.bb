@@ -63,7 +63,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   CanvasRenderingContext::ContextType getContextType() const override {
     return CanvasRenderingContext::ContextWebgl;
   }
-  ImageBitmap* transferToImageBitmap(ExceptionState&) final;
+  ImageBitmap* transferToImageBitmap() final;
   String contextName() const override { return "WebGLRenderingContext"; }
   void registerContextExtensions() override;
   void setCanvasGetContextResult(RenderingContext&) final;

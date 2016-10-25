@@ -137,8 +137,7 @@ OffscreenCanvasRenderingContext2D::transferToStaticBitmapImage() {
   return image;
 }
 
-ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(
-    ExceptionState& exceptionState) {
+ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap() {
   RefPtr<StaticBitmapImage> image = transferToStaticBitmapImage();
   if (!image)
     return nullptr;

@@ -165,9 +165,7 @@ class CORE_EXPORT CanvasRenderingContext
 
   // OffscreenCanvas-specific methods
   OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
-  virtual ImageBitmap* transferToImageBitmap(ExceptionState&) {
-    return nullptr;
-  }
+  virtual ImageBitmap* transferToImageBitmap() { return nullptr; }
 
   bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
   void didMoveToNewDocument(Document*);

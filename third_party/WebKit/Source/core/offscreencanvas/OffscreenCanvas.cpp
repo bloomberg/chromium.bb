@@ -76,7 +76,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
                                      "OffscreenCanvas with no context");
     return nullptr;
   }
-  ImageBitmap* image = m_context->transferToImageBitmap(exceptionState);
+  ImageBitmap* image = m_context->transferToImageBitmap();
   if (!image) {
     // Undocumented exception (not in spec)
     exceptionState.throwDOMException(V8Error, "Out of memory");
