@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <assert.h>
-#include <netinet/in.h>
 #include <stddef.h>
 #include <stdint.h>
 
