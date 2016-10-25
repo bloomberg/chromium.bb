@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="device-mode-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    var phone0 = InspectorTest.buildFakePhone();
+    var phone1 = InspectorTest.buildFakePhone();
+
+    var view = new WebInspector.DeviceModeView();
+    var toolbar = view._toolbar;
+    var model = view._model;
+    var viewportSize = new Size(800, 600);
+    model.setAvailableSize(viewportSize, viewportSize);
+
+    InspectorTest.addResult("\nTest that devices remember their scale.");
+    InspectorTest.addResult("Switch to phone 0");
+    toolbar._emulateDevice(phone0);
+    InspectorTest.addResult("Setting scale to 0.5");
+    toolbar._onScaleMenuChanged(0.5);
+    InspectorTest.addResult("Phone0 Scale: " + model._scaleSetting.get());
+    InspectorTest.addResult("Switch to phone 1");
+    toolbar._emulateDevice(phone1);
+    InspectorTest.addResult("Phone1 Scale: " + model._scaleSetting.get());
+    InspectorTest.addResult("Switch to phone 0");
+    toolbar._emulateDevice(phone0);
+    InspectorTest.addResult("Phone0 Scale: " + model._scaleSetting.get());
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Test preservation of orientation and scale when that switching devices in device mode.</p>
+</body>
+</html>

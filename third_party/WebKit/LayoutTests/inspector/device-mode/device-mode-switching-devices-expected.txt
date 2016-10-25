@@ -1,0 +1,12 @@
+Test preservation of orientation and scale when that switching devices in device mode.
+
+
+Test that devices remember their scale.
+Switch to phone 0
+Setting scale to 0.5
+Phone0 Scale: 0.5
+Switch to phone 1
+Phone1 Scale: 1
+Switch to phone 0
+Phone0 Scale: 0.5
+
