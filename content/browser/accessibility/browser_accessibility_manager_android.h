@@ -108,6 +108,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   jboolean IsEditableText(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jint id);
+  jboolean IsFocused(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     jint id);
   jint GetEditableTextSelectionStart(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

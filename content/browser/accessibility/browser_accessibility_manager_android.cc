@@ -362,6 +362,17 @@ jboolean BrowserAccessibilityManagerAndroid::IsEditableText(
   return node->IsEditableText();
 }
 
+jboolean BrowserAccessibilityManagerAndroid::IsFocused(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint id) {
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
+  if (!node)
+    return false;
+
+  return node->IsFocused();
+}
+
 jint BrowserAccessibilityManagerAndroid::GetEditableTextSelectionStart(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

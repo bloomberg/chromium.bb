@@ -431,7 +431,8 @@ public class BrowserAccessibilityManager {
             mSelectionEndIndex = -1;
         }
         mSelectionGranularity = granularity;
-        if (nativeIsEditableText(mNativeObj, mAccessibilityFocusId)) {
+        if (nativeIsEditableText(mNativeObj, mAccessibilityFocusId)
+                && nativeIsFocused(mNativeObj, mAccessibilityFocusId)) {
             mSelectionStartIndex = nativeGetEditableTextSelectionStart(
                     mNativeObj, mAccessibilityFocusId);
             mSelectionEndIndex = nativeGetEditableTextSelectionEnd(
@@ -479,7 +480,8 @@ public class BrowserAccessibilityManager {
         if (!extendSelection) {
             mSelectionStartIndex = mSelectionEndIndex;
         }
-        if (nativeIsEditableText(mNativeObj, mAccessibilityFocusId)) {
+        if (nativeIsEditableText(mNativeObj, mAccessibilityFocusId)
+                && nativeIsFocused(mNativeObj, mAccessibilityFocusId)) {
             nativeSetSelection(mNativeObj, mAccessibilityFocusId,
                     mSelectionStartIndex, mSelectionEndIndex);
         }
@@ -1162,6 +1164,8 @@ public class BrowserAccessibilityManager {
     private native int nativeGetRootId(long nativeBrowserAccessibilityManagerAndroid);
     private native boolean nativeIsNodeValid(long nativeBrowserAccessibilityManagerAndroid, int id);
     private native boolean nativeIsEditableText(
+            long nativeBrowserAccessibilityManagerAndroid, int id);
+    private native boolean nativeIsFocused(
             long nativeBrowserAccessibilityManagerAndroid, int id);
     private native int nativeGetEditableTextSelectionStart(
             long nativeBrowserAccessibilityManagerAndroid, int id);
