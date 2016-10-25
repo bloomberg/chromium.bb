@@ -76,6 +76,7 @@ class NetExportMessageHandler
   void FileSelected(const base::FilePath& path,
                     int index,
                     void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
  private:
   // Calls NetLogFileWriter's ProcessCommand with DO_START and DO_STOP commands.
@@ -311,18 +312,18 @@ void NetExportMessageHandler::OnExportNetLogInfoChanged(base::Value* arg) {
 
 void NetExportMessageHandler::ShowSelectFileDialog(
     const base::FilePath& default_path) {
-  DCHECK(!select_file_dialog_);
+  // User may have clicked more than once before the save dialog appears.
+  // This prevents creating more than one save dialog.
+  if (select_file_dialog_)
+    return;
 
-  WebContents* webcontents = nullptr;
+  WebContents* webcontents = web_ui()->GetWebContents();
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(webcontents));
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions = {{FILE_PATH_LITERAL("json")}};
-  gfx::NativeWindow owning_window =
-      webcontents ? platform_util::GetTopLevel(webcontents->GetNativeView())
-                  : nullptr;
-
+  gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), default_path,
       &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
@@ -331,6 +332,9 @@ void NetExportMessageHandler::ShowSelectFileDialog(
 void NetExportMessageHandler::FileSelected(const base::FilePath& path,
                                            int index,
                                            void* params) {
+  DCHECK(select_file_dialog_);
+  select_file_dialog_ = nullptr;
+
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
       base::Bind(&net_log::NetLogFileWriter::SetUpNetExportLogPath,
@@ -341,6 +345,11 @@ void NetExportMessageHandler::FileSelected(const base::FilePath& path,
       // weak pointer is used to adjust for this.
       base::Bind(&NetExportMessageHandler::StartNetLog,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NetExportMessageHandler::FileSelectionCanceled(void* params) {
+  DCHECK(select_file_dialog_);
+  select_file_dialog_ = nullptr;
 }
 
 }  // namespace
