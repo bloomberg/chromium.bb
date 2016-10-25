@@ -93,6 +93,11 @@ class TestRequestPeer : public RequestPeer {
     EXPECT_FALSE(context_->complete);
     context_->data.append(data->payload(), data->length());
     context_->total_encoded_data_length += data->encoded_data_length();
+
+    if (context_->cancel_on_receive_data) {
+      dispatcher_->Cancel(context_->request_id);
+      context_->cancelled = true;
+    }
   }
 
   void OnCompletedRequest(int error_code,
@@ -117,6 +122,7 @@ class TestRequestPeer : public RequestPeer {
     int seen_redirects = 0;
 
     bool cancel_on_receive_response = false;
+    bool cancel_on_receive_data = false;
     bool received_response = false;
 
     // Data received. If downloading to file, remains empty.
@@ -808,6 +814,113 @@ TEST_F(ResourceDispatcherTest, CancelDeferredRequest) {
   EXPECT_EQ("", peer_context.data);
   EXPECT_FALSE(peer_context.complete);
   EXPECT_EQ(0, peer_context.seen_redirects);
+}
+
+// Checks cancelling a request while flushing deferred requests from
+// the FlushDeferredMessages() task.
+TEST_F(ResourceDispatcherTest, CancelWhileFlushingDeferredRequests) {
+  std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
+  TestRequestPeer::Context peer_context;
+  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+
+  // Cancel the request when the data message is handled.
+  peer_context.cancel_on_receive_data = true;
+
+  int id = ConsumeRequestResource();
+  EXPECT_EQ(0u, queued_messages());
+
+  dispatcher()->SetDefersLoading(request_id, true);
+  NotifyReceivedResponse(id);
+  NotifySetDataBuffer(id, strlen(kTestPageContents));
+  NotifyDataReceived(id, kTestPageContents);
+
+  // None of the messages should have been processed yet.
+  EXPECT_EQ("", peer_context.data);
+  EXPECT_FALSE(peer_context.complete);
+  EXPECT_EQ(0u, queued_messages());
+
+  dispatcher()->SetDefersLoading(request_id, false);
+
+  // Make sure that the FlushDeferredMessages() task posted from
+  // SetDefersLoading() is run. It should dispatch all the deferred
+  // messages.
+  base::RunLoop().RunUntilIdle();
+
+  // When the deferred DataReceived is dispatched, the handler will
+  // cancel the request, but the ACK is sent after the handler
+  // returns, so the cancel request ends up before the ACK in the
+  // message queue.
+  ConsumeCancelRequest(id);
+  ConsumeDataReceived_ACK(id);
+
+  // The data was consumed before the handler canceled
+  // the request, so the data should have been received.
+  EXPECT_EQ(kTestPageContents, peer_context.data);
+  EXPECT_FALSE(peer_context.complete);
+  EXPECT_EQ(0u, queued_messages());
+}
+
+// Checks cancelling a request while flushing deferred requests from
+// OnMessageReceived().
+TEST_F(ResourceDispatcherTest,
+       CancelWhileFlushingDeferredRequestsFromOnMessageReceived) {
+  std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
+  TestRequestPeer::Context peer_context;
+  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+
+  // Cancel the request when the data message is handled.
+  peer_context.cancel_on_receive_data = true;
+
+  int id = ConsumeRequestResource();
+  EXPECT_EQ(0u, queued_messages());
+
+  dispatcher()->SetDefersLoading(request_id, true);
+  NotifyReceivedResponse(id);
+  NotifySetDataBuffer(id, strlen(kTestPageContents));
+  NotifyDataReceived(id, kTestPageContents);
+
+  // None of the messages should have been processed yet.
+  EXPECT_EQ("", peer_context.data);
+  EXPECT_FALSE(peer_context.complete);
+  EXPECT_EQ(0u, queued_messages());
+
+  dispatcher()->SetDefersLoading(request_id, false);
+
+  // SetDefersLoading() posts a task to run FlushDeferredMessages() to dispatch
+  // the deferred messages. Since the message loop hasn't been run yet the
+  // task hasn't been run either and no IPC-messages should have been
+  // dispatched.
+  EXPECT_EQ("", peer_context.data);
+  EXPECT_FALSE(peer_context.complete);
+  EXPECT_EQ(0u, queued_messages());
+
+  // Calling NotifyRequestComplete() here, before the task from
+  // SetDefersLoading() has been run, triggers the flush in
+  // OnMessageReceived().
+  NotifyRequestComplete(id, strlen(kTestPageContents));
+
+  // When the deferred DataReceived is dispatched, the handler will
+  // cancel the request, but the ACK is sent after the handler
+  // returns, so the cancel request ends up before the ACK in the
+  // message queue.
+  ConsumeCancelRequest(id);
+  ConsumeDataReceived_ACK(id);
+
+  // The data was consumed before the handler canceled
+  // the request, so the data should have been received.
+  EXPECT_EQ(kTestPageContents, peer_context.data);
+  EXPECT_FALSE(peer_context.complete);
+  EXPECT_EQ(0u, queued_messages());
+
+  // Make sure that the FlushDeferredMessages() task posted from
+  // SetDefersLoading() is run. The messages should already have been
+  // flushed above, so it should be a NOOP.
+  base::RunLoop().RunUntilIdle();
+
+  // Check that the task didn't change anything.
+  EXPECT_EQ(kTestPageContents, peer_context.data);
+  EXPECT_FALSE(peer_context.complete);
+  EXPECT_EQ(0u, queued_messages());
 }
 
 TEST_F(ResourceDispatcherTest, DownloadToFile) {

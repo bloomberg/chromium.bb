@@ -173,15 +173,12 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
     request_info->deferred_message_queue.push_back(new IPC::Message(message));
     return true;
   }
+
   // Make sure any deferred messages are dispatched before we dispatch more.
   if (!request_info->deferred_message_queue.empty()) {
+    request_info->deferred_message_queue.push_back(new IPC::Message(message));
     FlushDeferredMessages(request_id);
-    request_info = GetPendingRequestInfo(request_id);
-    DCHECK(request_info);
-    if (request_info->is_deferred) {
-      request_info->deferred_message_queue.push_back(new IPC::Message(message));
-      return true;
-    }
+    return true;
   }
 
   DispatchMessage(message);
@@ -580,11 +577,8 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
 }
 
 void ResourceDispatcher::FlushDeferredMessages(int request_id) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
-  if (it == pending_requests_.end())  // The request could have become invalid.
-    return;
-  PendingRequestInfo* request_info = it->second.get();
-  if (request_info->is_deferred)
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (!request_info || request_info->is_deferred)
     return;
   // Because message handlers could result in request_info being destroyed,
   // we need to work with a stack reference to the deferred queue.
@@ -595,17 +589,21 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
     q.pop_front();
     DispatchMessage(*m);
     delete m;
-    // If this request is deferred in the context of the above message, then
-    // we should honor the same and stop dispatching further messages.
     // We need to find the request again in the list as it may have completed
     // by now and the request_info instance above may be invalid.
-    PendingRequestMap::iterator index = pending_requests_.find(request_id);
-    if (index != pending_requests_.end()) {
-      PendingRequestInfo* pending_request = index->second.get();
-      if (pending_request->is_deferred) {
-        pending_request->deferred_message_queue.swap(q);
-        return;
-      }
+    request_info = GetPendingRequestInfo(request_id);
+    if (!request_info) {
+      // The recipient is gone, the messages won't be handled and
+      // resources they might hold won't be released. Explicitly release
+      // them from here so that they won't leak.
+      ReleaseResourcesInMessageQueue(&q);
+      return;
+    }
+    // If this request is deferred in the context of the above message, then
+    // we should honor the same and stop dispatching further messages.
+    if (request_info->is_deferred) {
+      request_info->deferred_message_queue.swap(q);
+      return;
     }
   }
 }
