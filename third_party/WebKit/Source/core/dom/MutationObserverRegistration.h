@@ -31,6 +31,7 @@
 #ifndef MutationObserverRegistration_h
 #define MutationObserverRegistration_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/MutationObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -42,7 +43,8 @@ namespace blink {
 class QualifiedName;
 
 class MutationObserverRegistration final
-    : public GarbageCollectedFinalized<MutationObserverRegistration> {
+    : public GarbageCollectedFinalized<MutationObserverRegistration>,
+      public TraceWrapperBase {
  public:
   static MutationObserverRegistration* create(
       MutationObserver&,
@@ -77,11 +79,10 @@ class MutationObserverRegistration final
 
   void addRegistrationNodesToSet(HeapHashSet<Member<Node>>&) const;
 
-  DECLARE_TRACE();
-
-  DECLARE_TRACE_WRAPPERS();
-
   void dispose();
+
+  DECLARE_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   MutationObserverRegistration(MutationObserver&,

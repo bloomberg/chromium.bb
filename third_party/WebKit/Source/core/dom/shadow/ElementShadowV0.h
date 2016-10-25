@@ -27,6 +27,7 @@
 #ifndef ElementShadowV0_h
 #define ElementShadowV0_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
@@ -36,7 +37,8 @@
 namespace blink {
 
 class CORE_EXPORT ElementShadowV0 final
-    : public GarbageCollectedFinalized<ElementShadowV0> {
+    : public GarbageCollectedFinalized<ElementShadowV0>,
+      public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(ElementShadowV0);
 
  public:

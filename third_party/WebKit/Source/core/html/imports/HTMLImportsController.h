@@ -31,6 +31,7 @@
 #ifndef HTMLImportsController_h
 #define HTMLImportsController_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
@@ -47,7 +48,8 @@ class HTMLImportTreeRoot;
 class KURL;
 
 class HTMLImportsController final
-    : public GarbageCollected<HTMLImportsController> {
+    : public GarbageCollected<HTMLImportsController>,
+      public TraceWrapperBase {
  public:
   static HTMLImportsController* create(Document& master) {
     return new HTMLImportsController(master);

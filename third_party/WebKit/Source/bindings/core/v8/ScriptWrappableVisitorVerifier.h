@@ -20,9 +20,6 @@ namespace blink {
 
 class ScriptWrappableVisitorVerifier : public WrapperVisitor {
  public:
-  void dispatchTraceWrappers(const ScriptWrappable* t) const override {
-    t->traceWrappers(this);
-  }
   void dispatchTraceWrappers(const TraceWrapperBase* t) const override {
     t->traceWrappers(this);
   }

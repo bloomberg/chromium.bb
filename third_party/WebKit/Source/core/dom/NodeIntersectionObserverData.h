@@ -5,6 +5,7 @@
 #ifndef NodeIntersectionObserverData_h
 #define NodeIntersectionObserverData_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 
@@ -15,7 +16,8 @@ class IntersectionObservation;
 class IntersectionObserver;
 
 class NodeIntersectionObserverData
-    : public GarbageCollected<NodeIntersectionObserverData> {
+    : public GarbageCollected<NodeIntersectionObserverData>,
+      public TraceWrapperBase {
  public:
   NodeIntersectionObserverData();
 
@@ -26,7 +28,6 @@ class NodeIntersectionObserverData
   void deactivateAllIntersectionObservers(Node&);
 
   DECLARE_TRACE();
-
   DECLARE_TRACE_WRAPPERS();
 
  private:

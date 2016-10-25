@@ -26,20 +26,13 @@ template <typename T>
 class ScopedPersistent;
 class TraceWrapperBase;
 
-// TODO(hlopko): Find a way to remove special-casing using templates
+// Only add a special class here if the class cannot derive from
+// TraceWrapperBase.
 #define WRAPPER_VISITOR_SPECIAL_CLASSES(V) \
-  V(DocumentStyleSheetCollection)          \
   V(ElementRareData)                       \
-  V(ElementShadow)                         \
-  V(ElementShadowV0)                       \
-  V(HTMLImportsController)                 \
-  V(MutationObserverRegistration)          \
-  V(NodeIntersectionObserverData)          \
   V(NodeListsNodeData)                     \
   V(NodeMutationObserverData)              \
-  V(NodeRareData)                          \
-  V(StyleEngine)                           \
-  V(V8AbstractEventListener)
+  V(NodeRareData)
 
 #define FORWARD_DECLARE_SPECIAL_CLASSES(className) class className;
 
@@ -129,10 +122,9 @@ class PLATFORM_EXPORT WrapperVisitor {
   virtual void markWrapper(
       const v8::PersistentBase<v8::Object>* persistent) const = 0;
 
-  virtual void dispatchTraceWrappers(const ScriptWrappable*) const = 0;
   virtual void dispatchTraceWrappers(const TraceWrapperBase*) const = 0;
-#define DECLARE_DISPATCH_TRACE_WRAPPERS(className) \
-  virtual void dispatchTraceWrappers(const className*) const = 0;
+#define DECLARE_DISPATCH_TRACE_WRAPPERS(ClassName) \
+  virtual void dispatchTraceWrappers(const ClassName*) const = 0;
 
   WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
 

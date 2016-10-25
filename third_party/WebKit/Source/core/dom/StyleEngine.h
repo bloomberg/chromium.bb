@@ -30,6 +30,7 @@
 #ifndef StyleEngine_h
 #define StyleEngine_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSFontSelectorClient.h"
@@ -62,7 +63,8 @@ class ViewportStyleResolver;
 
 class CORE_EXPORT StyleEngine final
     : public GarbageCollectedFinalized<StyleEngine>,
-      public CSSFontSelectorClient {
+      public CSSFontSelectorClient,
+      public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
 
  public:
@@ -231,7 +233,6 @@ class CORE_EXPORT StyleEngine final
   void setStatsEnabled(bool);
 
   DECLARE_VIRTUAL_TRACE();
-
   DECLARE_TRACE_WRAPPERS();
 
  private:

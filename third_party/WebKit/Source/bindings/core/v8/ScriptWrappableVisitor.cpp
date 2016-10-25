@@ -232,11 +232,6 @@ void ScriptWrappableVisitor::markWrapper(
 }
 
 void ScriptWrappableVisitor::dispatchTraceWrappers(
-    const ScriptWrappable* wrappable) const {
-  wrappable->traceWrappers(this);
-}
-
-void ScriptWrappableVisitor::dispatchTraceWrappers(
     const TraceWrapperBase* wrapperBase) const {
   wrapperBase->traceWrappers(this);
 }
