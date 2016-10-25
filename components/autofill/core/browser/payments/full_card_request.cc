@@ -68,6 +68,7 @@ bool FullCardRequest::IsGettingFullCard() const {
   return !!request_;
 }
 
+// TODO(crbug.com/656981): Update the credit card expiration on file.
 void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
   if (!response.exp_month.empty())
     request_->card.SetRawInfo(CREDIT_CARD_EXP_MONTH, response.exp_month);

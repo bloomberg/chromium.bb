@@ -20,7 +20,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.payments.ui.Completable;
 import org.chromium.chrome.browser.payments.ui.LineItem;
@@ -70,7 +69,7 @@ import java.util.Set;
  */
 public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Client,
         PaymentApp.InstrumentsCallback, PaymentInstrument.InstrumentDetailsCallback,
-        NormalizedAddressRequestDelegate {
+        PaymentResponseHelper.PaymentResponseRequesterDelegate {
     /**
      * Observer to be notified when PaymentRequest UI has been dismissed.
      */
@@ -193,8 +192,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     /** True if show() was called. */
     private boolean mIsShowing;
 
-    private boolean mIsWaitingForNormalization;
-    private PaymentResponse mPendingPaymentResponse;
+    /** The helper to create and fill the response to send to the merchant. */
+    private PaymentResponseHelper mPaymentResponseHelper;
 
     /**
      * Builds the PaymentRequest service implementation.
@@ -888,11 +887,23 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
+    public void loadingInstrumentDetails() {
+        mUI.showProcessingMessage();
+        mPaymentResponseHelper.onInstrumentsDetailsLoading();
+    }
+
+    @Override
     public boolean onPayClicked(PaymentOption selectedShippingAddress,
             PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
         assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
         mPaymentAppRunning = true;
+
+        PaymentOption selectedContact =
+                mContactSection != null ? mContactSection.getSelectedItem() : null;
+        mPaymentResponseHelper = new PaymentResponseHelper(
+                selectedShippingAddress, selectedShippingOption, selectedContact, this);
+
         instrument.getInstrumentDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
                 mMethodData.get(instrument.getInstrumentMethodName()), this);
         recordSuccessFunnelHistograms("PayClicked");
@@ -991,6 +1002,21 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
+        // Load the validation rules for each unique region code in the credit card billing
+        // addresses.
+        Set<String> uniqueCountryCodes = new HashSet<>();
+        for (int i = 0; i < mPendingAutofillInstruments.size(); ++i) {
+            assert mPendingAutofillInstruments.get(i) instanceof AutofillPaymentInstrument;
+
+            String countryCode = AutofillAddress.getCountryCode((
+                    (AutofillPaymentInstrument) mPendingAutofillInstruments.get(
+                            i)).getBillingAddress());
+            if (!uniqueCountryCodes.contains(countryCode)) {
+                uniqueCountryCodes.add(countryCode);
+                PersonalDataManager.getInstance().loadRulesForRegion(countryCode);
+            }
+        }
+
         // List order:
         // > Non-autofill instruments.
         // > Complete autofill instruments.
@@ -1080,29 +1106,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
-        if (mClient == null) return;
-
-        PaymentResponse response = new PaymentResponse();
-        response.methodName = methodName;
-        response.stringifiedDetails = stringifiedDetails;
-
-        if (mContactSection != null) {
-            PaymentOption selectedContact = mContactSection.getSelectedItem();
-            if (selectedContact != null) {
-                // Contacts are created in show(). These should all be instances of AutofillContact.
-                assert selectedContact instanceof AutofillContact;
-                response.payerName = ((AutofillContact) selectedContact).getPayerName();
-                response.payerPhone = ((AutofillContact) selectedContact).getPayerPhone();
-                response.payerEmail = ((AutofillContact) selectedContact).getPayerEmail();
-            }
-        }
-
-        if (mUiShippingOptions != null) {
-            PaymentOption selectedShippingOption = mUiShippingOptions.getSelectedItem();
-            if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
-                response.shippingOption = selectedShippingOption.getIdentifier();
-            }
-        }
+        if (mClient == null || mPaymentResponseHelper == null) return;
 
         // Record the payment method used to complete the transaction. If the payment method was an
         // Autofill credit card with an identifier, record its use.
@@ -1122,84 +1126,16 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     PaymentRequestMetrics.SELECTED_METHOD_OTHER_PAYMENT_APP);
         }
 
-        mUI.showProcessingMessage();
-
-        if (mShippingAddressesSection != null) {
-            PaymentOption selectedShippingAddress = mShippingAddressesSection.getSelectedItem();
-            if (selectedShippingAddress != null) {
-                // Shipping addresses are created in show(). These should all be instances of
-                // AutofillAddress.
-                assert selectedShippingAddress instanceof AutofillAddress;
-                AutofillAddress selectedAutofillAddress = (AutofillAddress) selectedShippingAddress;
-
-                // Addresses to be sent to the merchant should always be complete.
-                assert selectedAutofillAddress.isComplete();
-
-                // Record the use of the profile.
-                PersonalDataManager.getInstance().recordAndLogProfileUse(
-                        selectedAutofillAddress.getProfile().getGUID());
-
-                response.shippingAddress = selectedAutofillAddress.toPaymentAddress();
-
-                // Create the normalization task.
-                mPendingPaymentResponse = response;
-                mIsWaitingForNormalization = true;
-                boolean willNormalizeAsync = PersonalDataManager.getInstance().normalizeAddress(
-                        selectedAutofillAddress.getProfile().getGUID(),
-                        AutofillAddress.getCountryCode(selectedAutofillAddress.getProfile()), this);
-
-                if (willNormalizeAsync) {
-                    // If the normalization was not done synchronously, start a timer to cancel the
-                    // asynchronous normalization if it takes too long.
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            onAddressNormalized(null);
-                        }
-                    }, PersonalDataManager.getInstance().getNormalizationTimeoutMS());
-                }
-
-                // The payment response will be sent to the merchant in onAddressNormalized instead.
-                return;
-            }
-        }
-
-        mClient.onPaymentResponse(response);
         recordSuccessFunnelHistograms("ReceivedInstrumentDetails");
+
+        mPaymentResponseHelper.onInstrumentDetailsReceived(methodName, stringifiedDetails);
     }
 
-    /**
-     * Callback method called either when the address has finished normalizing or when the timeout
-     * triggers. Replaces the address in the response with the normalized version if present and
-     * sends the response to the merchant.
-     *
-     * @param profile The profile with the address normalized or a null profile if the timeout
-     *                triggered first.
-     */
     @Override
-    public void onAddressNormalized(AutofillProfile profile) {
-        // Check if the other task finished first.
-        if (!mIsWaitingForNormalization) return;
-        mIsWaitingForNormalization = false;
-
-        // Check if the response was already sent to the merchant.
-        if (mClient == null || mPendingPaymentResponse == null) return;
-
-        if (profile != null && !TextUtils.isEmpty(profile.getGUID())) {
-            // The normalization finished first: use the normalized address.
-            mPendingPaymentResponse.shippingAddress =
-                    new AutofillAddress(profile, true /* isComplete */).toPaymentAddress();
-        } else {
-            // The timeout triggered first: cancel the normalization task.
-            PersonalDataManager.getInstance().cancelPendingAddressNormalization();
-        }
-
-        // Send the payment response to the merchant.
-        mClient.onPaymentResponse(mPendingPaymentResponse);
-
-        mPendingPaymentResponse = null;
-
-        recordSuccessFunnelHistograms("ReceivedInstrumentDetails");
+    public void onPaymentResponseReady(PaymentResponse response) {
+        mClient.onPaymentResponse(response);
+        mPaymentResponseHelper = null;
+        PersonalDataManager.getInstance().cancelPendingAddressNormalizations();
     }
 
     /**

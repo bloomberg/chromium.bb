@@ -761,10 +761,10 @@ public class PersonalDataManager {
                 mPersonalDataManagerAndroid, guid, regionCode, delegate);
     }
 
-    /** Cancels the pending address normalization. */
-    public void cancelPendingAddressNormalization() {
+    /** Cancels the pending address normalizations. */
+    public void cancelPendingAddressNormalizations() {
         ThreadUtils.assertOnUiThread();
-        nativeCancelPendingAddressNormalization(mPersonalDataManagerAndroid);
+        nativeCancelPendingAddressNormalizations(mPersonalDataManagerAndroid);
     }
 
     /**
@@ -872,7 +872,7 @@ public class PersonalDataManager {
             long nativePersonalDataManagerAndroid, String regionCode);
     private native boolean nativeStartAddressNormalization(long nativePersonalDataManagerAndroid,
             String guid, String regionCode, NormalizedAddressRequestDelegate delegate);
-    private native void nativeCancelPendingAddressNormalization(
+    private native void nativeCancelPendingAddressNormalizations(
             long nativePersonalDataManagerAndroid);
     private static native boolean nativeIsAutofillEnabled();
     private static native void nativeSetAutofillEnabled(boolean enable);

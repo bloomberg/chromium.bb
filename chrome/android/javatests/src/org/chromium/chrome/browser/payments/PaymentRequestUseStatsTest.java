@@ -43,7 +43,7 @@ public class PaymentRequestUseStatsTest extends PaymentRequestTestBase {
                 mBillingAddressId, "" /* serverId */));
         // Set specific use stats for the profile and credit card.
         mHelper.setProfileUseStatsForTesting(mBillingAddressId, 20, 5000);
-        mHelper.setCreditCardUseStatsForTesting(mCreditCardId, 10, 5000);
+        mHelper.setCreditCardUseStatsForTesting(mCreditCardId, 1, 5000);
     }
 
     /** Expect that using a profile and credit card to pay updates their usage stats. */
@@ -68,7 +68,7 @@ public class PaymentRequestUseStatsTest extends PaymentRequestTestBase {
         assertEquals(21, mHelper.getProfileUseCountForTesting(mBillingAddressId));
         assertTrue(timeBeforeRecord <= mHelper.getProfileUseDateForTesting(mBillingAddressId));
         assertTrue(timeAfterRecord >= mHelper.getProfileUseDateForTesting(mBillingAddressId));
-        assertEquals(11, mHelper.getCreditCardUseCountForTesting(mCreditCardId));
+        assertEquals(2, mHelper.getCreditCardUseCountForTesting(mCreditCardId));
         assertTrue(timeBeforeRecord <= mHelper.getCreditCardUseDateForTesting(mCreditCardId));
         assertTrue(timeAfterRecord >= mHelper.getCreditCardUseDateForTesting(mCreditCardId));
     }

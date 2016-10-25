@@ -28,6 +28,7 @@ class PersonalDataManagerAndroid
   class Delegate {
    public:
     virtual void OnRulesSuccessfullyLoaded() = 0;
+    virtual ~Delegate() {}
   };
 
   PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
@@ -298,7 +299,7 @@ class PersonalDataManagerAndroid
       JNIEnv* env);
 
   // Cancels the pending address normalization task.
-  void CancelPendingAddressNormalization(
+  void CancelPendingAddressNormalizations(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj);
 
@@ -340,8 +341,9 @@ class PersonalDataManagerAndroid
   // The address validator used to normalize addresses.
   AddressValidator address_validator_;
 
-  // Map associating a region code to a pending normalization.
-  std::map<std::string, Delegate*> pending_normalization_;
+  // Map associating a region code to pending normalizations.
+  std::map<std::string, std::vector<std::unique_ptr<Delegate>>>
+      pending_normalization_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerAndroid);
 };

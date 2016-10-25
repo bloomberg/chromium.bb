@@ -22,6 +22,12 @@ public abstract class PaymentInstrument extends PaymentOption {
      */
     public interface InstrumentDetailsCallback {
         /**
+         * Called by the credit card payment instrument when CVC has been unmasked, but billing
+         * address has not been normalized yet.
+         */
+        void loadingInstrumentDetails();
+
+        /**
          * Called after retrieving instrument details.
          *
          * @param methodName         Method name. For example, "visa".
