@@ -1011,6 +1011,8 @@ crbug.com/654999 [ Win Linux ] fast/forms/color/color-suggestion-picker-appearan
 
 crbug.com/658304 [ Win Linux ] fast/forms/select/input-select-after-resize.html [ Crash Timeout Pass ]
 
+crbug.com/659192 fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsManualRebaseline ]
+
 # We render the expectation incorrectly for these five tests
 crbug.com/310004 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-canvas-vert-001.xhtml [ Failure ]
 crbug.com/310004 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-iframe-vert-001.xhtml [ Failure ]
