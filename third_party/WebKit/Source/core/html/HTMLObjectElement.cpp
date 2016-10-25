@@ -239,7 +239,7 @@ bool HTMLObjectElement::hasFallbackContent() const {
   return false;
 }
 
-bool HTMLObjectElement::hasValidClassId() {
+bool HTMLObjectElement::hasValidClassId() const {
   if (MIMETypeRegistry::isJavaAppletMIMEType(m_serviceType) &&
       classId().startsWith("java:", TextCaseInsensitive))
     return true;
@@ -459,6 +459,10 @@ bool HTMLObjectElement::isInteractiveContent() const {
 
 bool HTMLObjectElement::useFallbackContent() const {
   return HTMLPlugInElement::useFallbackContent() || m_useFallbackContent;
+}
+
+bool HTMLObjectElement::willUseFallbackContentAtLayout() const {
+  return !hasValidClassId() && hasFallbackContent();
 }
 
 }  // namespace blink

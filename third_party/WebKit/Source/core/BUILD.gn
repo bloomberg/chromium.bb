@@ -1131,6 +1131,7 @@ source_set("unit_tests") {
     "html/AutoplayExperimentTest.cpp",
     "html/FormDataTest.cpp",
     "html/HTMLDimensionTest.cpp",
+    "html/HTMLEmbedElementTest.cpp",
     "html/HTMLFormControlElementTest.cpp",
     "html/HTMLIFrameElementPermissionsTest.cpp",
     "html/HTMLIFrameElementTest.cpp",

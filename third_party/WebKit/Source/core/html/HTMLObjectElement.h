@@ -73,6 +73,8 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   bool isExposed() const;
 
+  bool willUseFallbackContentAtLayout() const;
+
  private:
   HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
 
@@ -110,7 +112,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
                            String& url,
                            String& serviceType);
 
-  bool hasValidClassId();
+  bool hasValidClassId() const;
 
   void reloadPluginOnAttributeChange(const QualifiedName&);
 

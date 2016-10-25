@@ -23,11 +23,12 @@
 #ifndef HTMLEmbedElement_h
 #define HTMLEmbedElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLPlugInElement.h"
 
 namespace blink {
 
-class HTMLEmbedElement final : public HTMLPlugInElement {
+class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
