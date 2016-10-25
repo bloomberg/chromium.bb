@@ -15,6 +15,7 @@
 namespace views {
 class Button;
 class ButtonListener;
+class CustomButton;
 class Label;
 class ToggleButton;
 }
@@ -50,10 +51,10 @@ class ASH_EXPORT SpecialPopupRow : public views::View {
   // the view hierarchy rooted at |this|. Returns a pointer to the created
   // view.
   views::Button* AddBackButton(views::ButtonListener* listener);
-  views::Button* AddSettingsButton(views::ButtonListener* listener,
-                                   LoginStatus status);
-  views::Button* AddHelpButton(views::ButtonListener* listener,
-                               LoginStatus status);
+  views::CustomButton* AddSettingsButton(views::ButtonListener* listener,
+                                         LoginStatus status);
+  views::CustomButton* AddHelpButton(views::ButtonListener* listener,
+                                     LoginStatus status);
   views::ToggleButton* AddToggleButton(views::ButtonListener* listener);
 
   // Adds |view| after this row's content.

@@ -23,6 +23,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/label.h"
@@ -104,7 +105,7 @@ views::Button* SpecialPopupRow::AddBackButton(views::ButtonListener* listener) {
   return button;
 }
 
-views::Button* SpecialPopupRow::AddSettingsButton(
+views::CustomButton* SpecialPopupRow::AddSettingsButton(
     views::ButtonListener* listener,
     LoginStatus status) {
   SystemMenuButton* button = new SystemMenuButton(
@@ -115,8 +116,9 @@ views::Button* SpecialPopupRow::AddSettingsButton(
   return button;
 }
 
-views::Button* SpecialPopupRow::AddHelpButton(views::ButtonListener* listener,
-                                              LoginStatus status) {
+views::CustomButton* SpecialPopupRow::AddHelpButton(
+    views::ButtonListener* listener,
+    LoginStatus status) {
   SystemMenuButton* button = new SystemMenuButton(listener, kSystemMenuHelpIcon,
                                                   IDS_ASH_STATUS_TRAY_HELP);
   if (!CanOpenWebUISettings(status))
