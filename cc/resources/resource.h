@@ -24,7 +24,7 @@ class CC_EXPORT Resource {
       : id_(id), size_(size), format_(format), color_space_(color_space) {}
 
   ResourceId id() const { return id_; }
-  gfx::Size size() const { return size_; }
+  const gfx::Size& size() const { return size_; }
   ResourceFormat format() const { return format_; }
   const gfx::ColorSpace& color_space() const { return color_space_; }
 

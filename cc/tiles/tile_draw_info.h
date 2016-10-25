@@ -54,7 +54,7 @@ class CC_EXPORT TileDrawInfo {
     return resource_->id();
   }
 
-  gfx::Size resource_size() const {
+  const gfx::Size& resource_size() const {
     DCHECK(mode_ == RESOURCE_MODE);
     DCHECK(resource_);
     return resource_->size();
