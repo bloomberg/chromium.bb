@@ -398,7 +398,11 @@ NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
 void MostVisitedSites::NotifyMostVisitedURLsObserver() {
   if (!waiting_for_most_visited_sites_ && !waiting_for_popular_sites_ &&
       !recorded_impressions_) {
-    metrics::RecordImpressions(current_tiles_);
+    // TODO(treib): Move this out of here. crbug.com/514752
+    int num_tiles = static_cast<int>(current_tiles_.size());
+    for (int i = 0; i < num_tiles; i++)
+      metrics::RecordTileImpression(i, current_tiles_[i].source);
+    metrics::RecordPageImpression(num_tiles);
     recorded_impressions_ = true;
   }
 

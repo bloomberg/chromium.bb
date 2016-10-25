@@ -28,20 +28,29 @@ enum MostVisitedTileType {
   ICON_COLOR,
   // The item displays a default gray box in place of an icon.
   ICON_DEFAULT,
-  NUM_TILE_TYPES,
+  // The number of different tile types that get recorded. Entries below this
+  // are not recorded in UMA.
+  NUM_RECORDED_TILE_TYPES,
+  // The item displays a thumbnail of the page. Used on desktop.
+  THUMBNAIL,
 };
 
-// TODO(treib): Split into individual impressions for desktop.
-void RecordImpressions(const NTPTilesVector& tiles);
+// Records an impression of an individual tile.
+void RecordTileImpression(int index, NTPTileSource source);
 
+// Records an impression of the page itself, after all tiles have loaded.
+void RecordPageImpression(int number_of_tiles);
+
+// Records the visual types (see above) of all visible tiles.
+// TODO(treib): Merge this with RecordPageImpression.
 void RecordImpressionTileTypes(
     const std::vector<MostVisitedTileType>& tile_types,
     const std::vector<NTPTileSource>& sources);
 
-// TODO(treib): Split into "base" click and tile type for desktop.
-void RecordClick(int index,
-                 MostVisitedTileType tile_type,
-                 NTPTileSource source);
+// Records a click on a tile.
+void RecordTileClick(int index,
+                     NTPTileSource source,
+                     MostVisitedTileType tile_type);
 
 }  // namespace metrics
 }  // namespace ntp_tiles

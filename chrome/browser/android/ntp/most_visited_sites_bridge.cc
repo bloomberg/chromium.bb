@@ -234,9 +234,9 @@ void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
     jint index,
     jint tile_type,
     jint source) {
-  ntp_tiles::metrics::RecordClick(index,
-                                  static_cast<MostVisitedTileType>(tile_type),
-                                  static_cast<NTPTileSource>(source));
+  ntp_tiles::metrics::RecordTileClick(
+      index, static_cast<NTPTileSource>(source),
+      static_cast<MostVisitedTileType>(tile_type));
 }
 
 // static

@@ -16,6 +16,7 @@
 #include "chrome/common/search/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/ntp_tiles/metrics.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_metrics.h"
 #include "content/public/browser/navigation_details.h"
@@ -24,35 +25,6 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
-
-// Name of the histogram keeping track of suggestion impressions.
-const char kMostVisitedImpressionHistogramName[] =
-    "NewTabPage.SuggestionsImpression";
-
-// Format string to generate the name for the histogram keeping track of
-// suggestion impressions.
-const char kMostVisitedImpressionHistogramWithProvider[] =
-    "NewTabPage.SuggestionsImpression.%s";
-
-// Name of the histogram keeping track of suggestion navigations.
-const char kMostVisitedNavigationHistogramName[] =
-    "NewTabPage.MostVisited";
-
-// Format string to generate the name for the histogram keeping track of
-// suggestion navigations.
-const char kMostVisitedNavigationHistogramWithProvider[] =
-    "NewTabPage.MostVisited.%s";
-
-std::string GetSourceName(NTPLoggingTileSource tile_source) {
-  switch (tile_source) {
-    case NTPLoggingTileSource::CLIENT:
-      return "client";
-    case NTPLoggingTileSource::SERVER:
-      return "server";
-  }
-  NOTREACHED();
-  return std::string();
-}
 
 void RecordSyncSessionMetrics(content::WebContents* contents) {
   if (!contents)
@@ -67,6 +39,17 @@ void RecordSyncSessionMetrics(content::WebContents* contents) {
           sync->GetSessionsSyncableService());
   sync_sessions::SyncSessionsMetrics::RecordYoungestForeignTabAgeOnNTP(
       sessions);
+}
+
+ntp_tiles::NTPTileSource ConvertTileSource(NTPLoggingTileSource tile_source) {
+  switch (tile_source) {
+    case NTPLoggingTileSource::CLIENT:
+      return ntp_tiles::NTPTileSource::TOP_SITES;
+    case NTPLoggingTileSource::SERVER:
+      return ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE;
+  }
+  NOTREACHED();
+  return ntp_tiles::NTPTileSource::TOP_SITES;
 }
 
 }  // namespace
@@ -142,36 +125,14 @@ void NTPUserDataLogger::LogMostVisitedImpression(
       break;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(kMostVisitedImpressionHistogramName, position,
-                            kNumMostVisited);
-
-  // Cannot rely on UMA histograms macro because the name of the histogram is
-  // generated dynamically.
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      base::StringPrintf(kMostVisitedImpressionHistogramWithProvider,
-                         GetSourceName(tile_source).c_str()),
-      1,
-      kNumMostVisited,
-      kNumMostVisited + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(position);
+  ntp_tiles::metrics::RecordTileImpression(position,
+                                           ConvertTileSource(tile_source));
 }
 
 void NTPUserDataLogger::LogMostVisitedNavigation(
     int position, NTPLoggingTileSource tile_source) {
-  UMA_HISTOGRAM_ENUMERATION(kMostVisitedNavigationHistogramName, position,
-                            kNumMostVisited);
-
-  // Cannot rely on UMA histograms macro because the name of the histogram is
-  // generated dynamically.
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      base::StringPrintf(kMostVisitedNavigationHistogramWithProvider,
-                         GetSourceName(tile_source).c_str()),
-      1,
-      kNumMostVisited,
-      kNumMostVisited + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(position);
+  ntp_tiles::metrics::RecordTileClick(position, ConvertTileSource(tile_source),
+                                      ntp_tiles::metrics::THUMBNAIL);
 
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.
@@ -219,12 +180,15 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
            << "number of tiles: " << number_of_tiles;
 
+  ntp_tiles::metrics::RecordPageImpression(number_of_tiles);
+
   LogLoadTimeHistogram("NewTabPage.LoadTime", load_time);
 
   // Split between ML and MV.
   std::string type = has_server_side_suggestions_ ?
       "MostLikely" : "MostVisited";
   LogLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time);
+
   // Split between Web and Local.
   std::string source = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
   LogLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time);
@@ -233,9 +197,6 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   std::string status = during_startup_ ? "Startup" : "NewTab";
   LogLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time);
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "NewTabPage.NumberOfTiles", number_of_tiles, 1, kNumMostVisited,
-      kNumMostVisited + 1);
   has_emitted_ = true;
   during_startup_ = false;
 }

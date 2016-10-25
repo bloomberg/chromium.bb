@@ -55,33 +55,35 @@ std::string GetSourceHistogramName(NTPTileSource source) {
 
 }  // namespace
 
-void RecordImpressions(const NTPTilesVector& tiles) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", tiles.size());
+void RecordTileImpression(int index, NTPTileSource source) {
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression",
+                            static_cast<int>(index), kMaxNumTiles);
 
-  for (size_t i = 0; i < tiles.size(); i++) {
-    UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression",
-                              static_cast<int>(i), kMaxNumTiles);
+  std::string histogram =
+      base::StringPrintf("NewTabPage.SuggestionsImpression.%s",
+                         GetSourceHistogramName(source).c_str());
+  LogHistogramEvent(histogram, static_cast<int>(index), kMaxNumTiles);
+}
 
-    std::string histogram =
-        base::StringPrintf("NewTabPage.SuggestionsImpression.%s",
-                           GetSourceHistogramName(tiles[i].source).c_str());
-    LogHistogramEvent(histogram, static_cast<int>(i), kMaxNumTiles);
-  }
+void RecordPageImpression(int number_of_tiles) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", number_of_tiles);
 }
 
 void RecordImpressionTileTypes(
     const std::vector<MostVisitedTileType>& tile_types,
     const std::vector<NTPTileSource>& sources) {
-  int counts_per_type[NUM_TILE_TYPES] = {0};
+  int counts_per_type[NUM_RECORDED_TILE_TYPES] = {0};
   for (size_t i = 0; i < tile_types.size(); ++i) {
     MostVisitedTileType tile_type = tile_types[i];
+    DCHECK_LT(tile_type, NUM_RECORDED_TILE_TYPES);
     ++counts_per_type[tile_type];
 
-    UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type, NUM_TILE_TYPES);
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type,
+                              NUM_RECORDED_TILE_TYPES);
 
     std::string histogram = base::StringPrintf(
         "NewTabPage.TileType.%s", GetSourceHistogramName(sources[i]).c_str());
-    LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
+    LogHistogramEvent(histogram, tile_type, NUM_RECORDED_TILE_TYPES);
   }
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
@@ -92,21 +94,24 @@ void RecordImpressionTileTypes(
                               counts_per_type[ICON_DEFAULT]);
 }
 
-void RecordClick(int index,
-                 MostVisitedTileType tile_type,
-                 NTPTileSource source) {
+void RecordTileClick(int index,
+                     NTPTileSource source,
+                     MostVisitedTileType tile_type) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", index, kMaxNumTiles);
 
   std::string histogram = base::StringPrintf(
       "NewTabPage.MostVisited.%s", GetSourceHistogramName(source).c_str());
   LogHistogramEvent(histogram, index, kMaxNumTiles);
 
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTypeClicked", tile_type,
-                            NUM_TILE_TYPES);
+  if (tile_type < NUM_RECORDED_TILE_TYPES) {
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTypeClicked", tile_type,
+                              NUM_RECORDED_TILE_TYPES);
 
-  histogram = base::StringPrintf("NewTabPage.TileTypeClicked.%s",
-                                 GetSourceHistogramName(source).c_str());
-  LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
+    std::string histogram =
+        base::StringPrintf("NewTabPage.TileTypeClicked.%s",
+                           GetSourceHistogramName(source).c_str());
+    LogHistogramEvent(histogram, tile_type, NUM_RECORDED_TILE_TYPES);
+  }
 }
 
 }  // namespace metrics
