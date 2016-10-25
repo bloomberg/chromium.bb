@@ -896,6 +896,9 @@ bool RenderProcessHostImpl::Init() {
 
     g_in_process_thread = in_process_renderer_->message_loop();
 
+    // Make sure any queued messages on the channel are flushed in the case
+    // where we aren't launching a child process.
+    channel_->Flush();
   } else {
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.
