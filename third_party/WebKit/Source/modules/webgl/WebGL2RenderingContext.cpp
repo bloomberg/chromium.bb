@@ -102,7 +102,8 @@ void WebGL2RenderingContext::setOffscreenCanvasGetContextResult(
   result.setWebGL2RenderingContext(this);
 }
 
-ImageBitmap* WebGL2RenderingContext::transferToImageBitmap() {
+ImageBitmap* WebGL2RenderingContext::transferToImageBitmap(
+    ScriptState* scriptState) {
   NOTIMPLEMENTED();
   return nullptr;
 }

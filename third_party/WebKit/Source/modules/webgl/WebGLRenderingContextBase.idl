@@ -706,5 +706,5 @@ typedef unrestricted float GLclampf;
 
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void commit();
+    [RuntimeEnabled=ExperimentalCanvasFeatures, CallWith=ScriptState, RaisesException] void commit();
 };

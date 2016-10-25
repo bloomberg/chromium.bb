@@ -41,7 +41,7 @@ class CORE_EXPORT OffscreenCanvas final
   void setHeight(unsigned, ExceptionState&);
 
   // API Methods
-  ImageBitmap* transferToImageBitmap(ExceptionState&);
+  ImageBitmap* transferToImageBitmap(ScriptState*, ExceptionState&);
   ScriptPromise convertToBlob(ScriptState*,
                               const ImageEncodeOptions&,
                               ExceptionState&);

@@ -11,6 +11,6 @@
     [RaisesException=Setter, EnforceRange] attribute unsigned long width;
     [RaisesException=Setter, EnforceRange] attribute unsigned long height;
 
-    [RaisesException] ImageBitmap transferToImageBitmap();
+    [CallWith=ScriptState, RaisesException] ImageBitmap transferToImageBitmap();
     [RaisesException, CallWith=ScriptState] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
 };

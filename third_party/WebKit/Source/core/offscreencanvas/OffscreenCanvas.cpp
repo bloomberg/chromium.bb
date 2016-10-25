@@ -63,6 +63,7 @@ void OffscreenCanvas::setNeutered() {
 }
 
 ImageBitmap* OffscreenCanvas::transferToImageBitmap(
+    ScriptState* scriptState,
     ExceptionState& exceptionState) {
   if (m_isNeutered) {
     exceptionState.throwDOMException(
@@ -76,7 +77,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
                                      "OffscreenCanvas with no context");
     return nullptr;
   }
-  ImageBitmap* image = m_context->transferToImageBitmap();
+  ImageBitmap* image = m_context->transferToImageBitmap(scriptState);
   if (!image) {
     // Undocumented exception (not in spec)
     exceptionState.throwDOMException(V8Error, "Out of memory");

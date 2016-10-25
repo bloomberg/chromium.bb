@@ -37,7 +37,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     }
   };
 
-  void commit(ExceptionState&);
+  void commit(ScriptState*, ExceptionState&);
 
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
@@ -82,7 +82,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool hasAlpha() const final { return creationAttributes().alpha(); }
   bool isContextLost() const override;
 
-  ImageBitmap* transferToImageBitmap() final;
+  ImageBitmap* transferToImageBitmap(ScriptState*) final;
 
  protected:
   OffscreenCanvasRenderingContext2D(

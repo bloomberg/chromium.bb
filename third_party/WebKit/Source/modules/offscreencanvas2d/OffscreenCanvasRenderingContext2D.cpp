@@ -45,7 +45,10 @@ DEFINE_TRACE(OffscreenCanvasRenderingContext2D) {
   BaseRenderingContext2D::trace(visitor);
 }
 
-void OffscreenCanvasRenderingContext2D::commit(ExceptionState& exceptionState) {
+void OffscreenCanvasRenderingContext2D::commit(ScriptState* scriptState,
+                                               ExceptionState& exceptionState) {
+  UseCounter::Feature feature = UseCounter::OffscreenCanvasCommit2D;
+  UseCounter::count(scriptState->getExecutionContext(), feature);
   if (getOffscreenCanvas()->getAssociatedCanvasId() < 0) {
     // If an OffscreenCanvas has no associated canvas Id, it indicates that
     // it is not an OffscreenCanvas created by transfering control from html
@@ -137,7 +140,11 @@ OffscreenCanvasRenderingContext2D::transferToStaticBitmapImage() {
   return image;
 }
 
-ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap() {
+ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(
+    ScriptState* scriptState) {
+  UseCounter::Feature feature =
+      UseCounter::OffscreenCanvasTransferToImageBitmap2D;
+  UseCounter::count(scriptState->getExecutionContext(), feature);
   RefPtr<StaticBitmapImage> image = transferToStaticBitmapImage();
   if (!image)
     return nullptr;

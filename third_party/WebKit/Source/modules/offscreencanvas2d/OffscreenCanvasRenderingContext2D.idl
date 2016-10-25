@@ -11,7 +11,7 @@
     // back-reference to the canvas
     [ImplementedAs=getOffscreenCanvas] readonly attribute OffscreenCanvas canvas;
 
-    [RaisesException] void commit();
+    [CallWith=ScriptState, RaisesException] void commit();
 
     // colors and styles
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)

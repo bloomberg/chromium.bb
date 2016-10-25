@@ -601,7 +601,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
 
-  void commit(ExceptionState&);
+  void commit(ScriptState*, ExceptionState&);
 
  protected:
   friend class EXTDisjointTimerQuery;
@@ -1458,7 +1458,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   static WebGLRenderingContextBase* oldestContext();
   static WebGLRenderingContextBase* oldestEvictedContext();
 
-  ImageBitmap* transferToImageBitmapBase();
+  ImageBitmap* transferToImageBitmapBase(ScriptState*);
 
   // Helper functions for tex(Sub)Image2D && texSubImage3D
   void texImageHelperDOMArrayBufferView(TexImageFunctionID,

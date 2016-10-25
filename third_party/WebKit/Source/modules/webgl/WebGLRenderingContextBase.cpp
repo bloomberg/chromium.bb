@@ -678,13 +678,20 @@ void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail() {
   shouldFailContextCreationForTesting = true;
 }
 
-ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase() {
+ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase(
+    ScriptState* scriptState) {
+  UseCounter::Feature feature =
+      UseCounter::OffscreenCanvasTransferToImageBitmapWebGL;
+  UseCounter::count(scriptState->getExecutionContext(), feature);
   if (!drawingBuffer())
     return nullptr;
   return ImageBitmap::create(drawingBuffer()->transferToStaticBitmapImage());
 }
 
-void WebGLRenderingContextBase::commit(ExceptionState& exceptionState) {
+void WebGLRenderingContextBase::commit(ScriptState* scriptState,
+                                       ExceptionState& exceptionState) {
+  UseCounter::Feature feature = UseCounter::OffscreenCanvasCommitWebGL;
+  UseCounter::count(scriptState->getExecutionContext(), feature);
   if (!getOffscreenCanvas()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Commit() was called on a rendering "
