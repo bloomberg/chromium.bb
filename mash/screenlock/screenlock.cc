@@ -73,8 +73,8 @@ class ScreenlockView : public views::WidgetDelegateView,
 Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::OnStart(const service_manager::Identity& identity) {
-  tracing_.Initialize(connector(), identity.name());
+void Screenlock::OnStart(const service_manager::ServiceInfo& info) {
+  tracing_.Initialize(connector(), info.identity.name());
 
   mash::session::mojom::SessionPtr session;
   connector()->ConnectToInterface("service:mash_session", &session);
@@ -84,7 +84,7 @@ void Screenlock::OnStart(const service_manager::Identity& identity) {
   aura_init_.reset(
       new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), identity);
+      views::WindowManagerConnection::Create(connector(), info.identity);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(

@@ -17,12 +17,12 @@ TestIMEApplication::TestIMEApplication() {}
 TestIMEApplication::~TestIMEApplication() {}
 
 bool TestIMEApplication::OnConnect(
-    const service_manager::Identity& remote_identity,
+    const service_manager::ServiceInfo& remote_info,
     service_manager::InterfaceRegistry* registry) {
   return true;
 }
 
-void TestIMEApplication::OnStart(const service_manager::Identity& identity) {
+void TestIMEApplication::OnStart(const service_manager::ServiceInfo& info) {
   mojom::IMEDriverPtr ime_driver_ptr;
   mojo::MakeStrongBinding(base::MakeUnique<TestIMEDriver>(),
                           GetProxy(&ime_driver_ptr));

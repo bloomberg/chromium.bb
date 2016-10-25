@@ -23,11 +23,11 @@ class Target : public service_manager::Service {
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::Identity& identity) override {
+  void OnStart(const service_manager::ServiceInfo& info) override {
     CreateInstanceTestPtr service;
     connector()->ConnectToInterface("service:service_manager_unittest",
                                     &service);
-    service->SetTargetIdentity(identity);
+    service->SetTargetIdentity(info.identity);
   }
 
   DISALLOW_COPY_AND_ASSIGN(Target);

@@ -15,7 +15,7 @@ AppClient::AppClient(service_manager::mojom::ServiceRequest request)
     : context_(new ServiceContext(this, std::move(request))) {}
 AppClient::~AppClient() {}
 
-bool AppClient::OnConnect(const Identity& remote_identity,
+bool AppClient::OnConnect(const ServiceInfo& remote_info,
                           InterfaceRegistry* registry) {
   registry->AddInterface<LifecycleControl>(this);
   return true;

@@ -88,14 +88,14 @@ FileService::~FileService() {
   leveldb_service_runner_->DeleteSoon(FROM_HERE, leveldb_objects_.release());
 }
 
-void FileService::OnStart(const service_manager::Identity& identity) {
+void FileService::OnStart(const service_manager::ServiceInfo& info) {
   file_system_objects_.reset(new FileService::FileSystemObjects(
-      GetUserDirForUserId(identity.user_id())));
+      GetUserDirForUserId(info.identity.user_id())));
   leveldb_objects_.reset(
       new FileService::LevelDBServiceObjects(leveldb_service_runner_));
 }
 
-bool FileService::OnConnect(const service_manager::Identity& remote_identity,
+bool FileService::OnConnect(const service_manager::ServiceInfo& remote_info,
                             service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<leveldb::mojom::LevelDBService>(this);
   registry->AddInterface<mojom::FileSystem>(this);

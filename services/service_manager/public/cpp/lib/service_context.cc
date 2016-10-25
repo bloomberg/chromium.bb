@@ -57,7 +57,7 @@ void ServiceContext::OnStart(const ServiceInfo& info,
 
   callback.Run(std::move(pending_connector_request_));
 
-  service_->OnStart(identity_);
+  service_->OnStart(info);
 }
 
 void ServiceContext::OnConnect(
@@ -70,7 +70,7 @@ void ServiceContext::OnConnect(
       identity_, source_info.identity, allowed_interfaces);
   registry->Bind(std::move(interfaces));
 
-  if (!service_->OnConnect(source_info.identity, registry.get()))
+  if (!service_->OnConnect(source_info, registry.get()))
     return;
 
   // TODO(beng): it appears we never prune this list. We should, when the

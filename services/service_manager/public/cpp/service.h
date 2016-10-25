@@ -17,6 +17,7 @@ class Connector;
 class Identity;
 class InterfaceRegistry;
 class ServiceContext;
+struct ServiceInfo;
 
 // The primary contract between a Service and the Service Manager, receiving
 // lifecycle notifications and connection requests.
@@ -27,16 +28,17 @@ class Service {
 
   // Called once a bidirectional connection with the Service Manager has been
   // established.
-  // |identity| is the identity of the service instance.
+  // |info| contains information about this instance from the Service Manager
+  // and the service manifest.
   // Called exactly once before any calls to OnConnect().
-  virtual void OnStart(const Identity& identity);
+  virtual void OnStart(const ServiceInfo& info);
 
   // Called when a connection to this service is brokered by the Service
-  // Manager. Override to expose interfaces to the remote service. Return true
+  // Manager. Implement to expose interfaces to the remote service. Return true
   // if the connection should succeed. Return false if the connection should
   // be rejected and the underlying pipe closed. The default implementation
   // returns false.
-  virtual bool OnConnect(const Identity& remote_identity,
+  virtual bool OnConnect(const ServiceInfo& remote_info,
                          InterfaceRegistry* registry);
 
   // Called when the Service Manager has stopped tracking this instance. The

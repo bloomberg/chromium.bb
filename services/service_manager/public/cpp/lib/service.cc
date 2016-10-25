@@ -5,15 +5,16 @@
 #include "services/service_manager/public/cpp/service.h"
 
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_info.h"
 
 namespace service_manager {
 
 Service::Service() {}
 Service::~Service() {}
 
-void Service::OnStart(const Identity& identity) {}
+void Service::OnStart(const ServiceInfo& info) {}
 
-bool Service::OnConnect(const Identity& remote_identity,
+bool Service::OnConnect(const ServiceInfo& remote_info,
                         InterfaceRegistry* registry) {
   return false;
 }

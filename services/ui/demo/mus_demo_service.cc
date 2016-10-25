@@ -14,11 +14,11 @@ MusDemoService::MusDemoService() : mus_demo_(base::MakeUnique<MusDemo>()) {}
 
 MusDemoService::~MusDemoService() {}
 
-void MusDemoService::OnStart(const service_manager::Identity& identity) {
+void MusDemoService::OnStart(const service_manager::ServiceInfo& info) {
   mus_demo_->Start(connector());
 }
 
-bool MusDemoService::OnConnect(const service_manager::Identity& remote_identity,
+bool MusDemoService::OnConnect(const service_manager::ServiceInfo& remote_info,
                                service_manager::InterfaceRegistry* registry) {
   return true;
 }

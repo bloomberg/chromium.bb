@@ -61,25 +61,25 @@ class ProvidedService
 
  private:
   // service_manager::Service:
-  void OnStart(const Identity& identity) override {
-    identity_ = identity;
+  void OnStart(const ServiceInfo& info) override {
+    identity_ = info.identity;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedService::OnConnectionError,
                    base::Unretained(this)));
   }
-  bool OnConnect(const Identity& remote_identity,
+  bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<test::mojom::ConnectTestService>(this);
     registry->AddInterface<test::mojom::BlockedInterface>(this);
     registry->AddInterface<test::mojom::UserIdTest>(this);
 
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
-    state->connection_remote_name = remote_identity.name();
-    state->connection_remote_userid = remote_identity.user_id();
+    state->connection_remote_name = remote_info.identity.name();
+    state->connection_remote_userid = remote_info.identity.user_id();
     state->initialize_local_name = identity_.name();
     state->initialize_userid = identity_.user_id();
 
-    connector()->ConnectToInterface(remote_identity, &caller_);
+    connector()->ConnectToInterface(remote_info.identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
 
     return true;
@@ -169,13 +169,13 @@ class ConnectTestService
 
  private:
   // service_manager::Service:
-  void OnStart(const Identity& identity) override {
-    identity_ = identity;
+  void OnStart(const ServiceInfo& info) override {
+    identity_ = info.identity;
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestService::OnConnectionError,
                    base::Unretained(this)));
   }
-  bool OnConnect(const Identity& remote_identity,
+  bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<ServiceFactory>(this);
     registry->AddInterface<test::mojom::ConnectTestService>(this);

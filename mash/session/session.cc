@@ -27,7 +27,7 @@ namespace session {
 Session::Session() : screen_locked_(false) {}
 Session::~Session() {}
 
-void Session::OnStart(const service_manager::Identity& identity) {
+void Session::OnStart(const service_manager::ServiceInfo& info) {
   StartAppDriver();
   StartWindowManager();
   StartQuickLaunch();
@@ -35,7 +35,7 @@ void Session::OnStart(const service_manager::Identity& identity) {
   connector()->Connect("service:content_browser");
 }
 
-bool Session::OnConnect(const service_manager::Identity& remote_identity,
+bool Session::OnConnect(const service_manager::ServiceInfo& remote_info,
                         service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Session>(this);
   return true;

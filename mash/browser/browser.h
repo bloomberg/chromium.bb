@@ -43,8 +43,8 @@ class Browser : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::Identity& identity) override;
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  void OnStart(const service_manager::ServiceInfo& info) override;
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
   // mojom::Launchable:

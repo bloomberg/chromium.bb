@@ -19,7 +19,7 @@ namespace tracing {
 Service::Service() : collector_binding_(this), tracing_active_(false) {}
 Service::~Service() {}
 
-bool Service::OnConnect(const service_manager::Identity& remote_identity,
+bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
                         service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Factory>(this);
   registry->AddInterface<mojom::Collector>(this);

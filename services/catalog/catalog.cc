@@ -115,7 +115,7 @@ void Catalog::ScanSystemPackageDir() {
                                   weak_factory_.GetWeakPtr()));
 }
 
-bool Catalog::OnConnect(const service_manager::Identity& remote_identity,
+bool Catalog::OnConnect(const service_manager::ServiceInfo& remote_info,
                         service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Catalog>(this);
   registry->AddInterface<mojom::CatalogControl>(this);

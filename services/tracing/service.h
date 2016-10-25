@@ -36,7 +36,7 @@ class Service : public service_manager::Service,
 
  private:
   // service_manager::Service implementation.
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
   bool OnStop() override;
 

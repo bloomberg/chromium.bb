@@ -218,19 +218,19 @@ class ServiceManagerConnectionImpl::IOThreadContext
   /////////////////////////////////////////////////////////////////////////////
   // service_manager::Service implementation
 
-  void OnStart(const service_manager::Identity& identity) override {
+  void OnStart(const service_manager::ServiceInfo& info) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(!initialize_handler_.is_null());
-    id_ = identity;
+    id_ = info.identity;
 
     InitializeCallback handler = base::ResetAndReturn(&initialize_handler_);
-    callback_task_runner_->PostTask(FROM_HERE, base::Bind(handler, identity));
+    callback_task_runner_->PostTask(FROM_HERE, base::Bind(handler, id_));
   }
 
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    std::string remote_service = remote_identity.name();
+    std::string remote_service = remote_info.identity.name();
     if (remote_service == "service:service_manager") {
       // Only expose the ServiceFactory interface to the Service Manager.
       registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
@@ -241,12 +241,12 @@ class ServiceManagerConnectionImpl::IOThreadContext
     {
       base::AutoLock lock(lock_);
       for (auto& entry : connection_filters_) {
-        accept |= entry.second->OnConnect(remote_identity, registry,
+        accept |= entry.second->OnConnect(remote_info.identity, registry,
                                           service_context_->connector());
       }
     }
 
-    if (remote_identity.name() == "service:content_browser" &&
+    if (remote_service == "service:content_browser" &&
         !has_browser_connection_) {
       has_browser_connection_ = true;
       registry->set_default_binder(default_browser_binder_);

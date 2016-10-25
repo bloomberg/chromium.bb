@@ -30,7 +30,7 @@ class Screenlock : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::Identity& identity) override;
+  void OnStart(const service_manager::ServiceInfo& info) override;
 
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;

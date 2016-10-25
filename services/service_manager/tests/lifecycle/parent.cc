@@ -35,7 +35,7 @@ class Parent : public service_manager::Service,
 
  private:
   // Service:
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<service_manager::test::mojom::Parent>(this);
     return true;

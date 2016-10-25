@@ -16,9 +16,9 @@ namespace test {
 ServiceTestClient::ServiceTestClient(ServiceTest* test) : test_(test) {}
 ServiceTestClient::~ServiceTestClient() {}
 
-void ServiceTestClient::OnStart(const Identity& identity) {
-  test_->OnStartCalled(connector(), identity.name(),
-                       identity.user_id());
+void ServiceTestClient::OnStart(const ServiceInfo& info) {
+  test_->OnStartCalled(connector(), info.identity.name(),
+                       info.identity.user_id());
 }
 
 ServiceTest::ServiceTest() {}

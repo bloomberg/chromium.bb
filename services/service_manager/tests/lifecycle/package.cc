@@ -41,7 +41,7 @@ class PackagedApp : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<LifecycleControl>(this);
     return true;
@@ -104,10 +104,10 @@ class Package : public service_manager::Service,
 
  private:
   // service_manager::test::AppClient:
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
-    return app_client_.OnConnect(remote_identity, registry);
+    return app_client_.OnConnect(remote_info, registry);
   }
 
   // service_manager::InterfaceFactory<service_manager::mojom::ServiceFactory>:

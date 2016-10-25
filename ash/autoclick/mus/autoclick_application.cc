@@ -75,16 +75,16 @@ AutoclickApplication::AutoclickApplication()
 
 AutoclickApplication::~AutoclickApplication() {}
 
-void AutoclickApplication::OnStart(const service_manager::Identity& identity) {
+void AutoclickApplication::OnStart(const service_manager::ServiceInfo& info) {
   aura_init_.reset(new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), identity);
+      views::WindowManagerConnection::Create(connector(), info.identity);
   autoclick_controller_common_.reset(new AutoclickControllerCommon(
       base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this));
 }
 
 bool AutoclickApplication::OnConnect(
-    const service_manager::Identity& remote_identity,
+    const service_manager::ServiceInfo& remote_info,
     service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mash::mojom::Launchable>(this);
   registry->AddInterface<mojom::AutoclickController>(this);

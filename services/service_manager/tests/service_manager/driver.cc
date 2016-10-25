@@ -46,7 +46,7 @@ class Driver : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::Identity& identity) override {
+  void OnStart(const service_manager::ServiceInfo& info) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
 #if defined(OS_WIN)
@@ -102,7 +102,7 @@ class Driver : public service_manager::Service,
                                     child_token);
   }
 
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<service_manager::test::mojom::Driver>(this);
     return true;

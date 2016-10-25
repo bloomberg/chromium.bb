@@ -37,7 +37,7 @@ class MashPackagedService : public service_manager::Service,
   ~MashPackagedService() override;
 
   // service_manager::Service:
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
   // service_manager::InterfaceFactory<ServiceFactory>

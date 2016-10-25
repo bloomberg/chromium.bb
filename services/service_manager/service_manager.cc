@@ -254,9 +254,10 @@ class ServiceManager::Instance
   uint32_t id() const { return id_; }
 
   // Service:
-  bool OnConnect(const Identity& remote_identity,
+  bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
-    Instance* source = service_manager_->GetExistingInstance(remote_identity);
+    Instance* source =
+        service_manager_->GetExistingInstance(remote_info.identity);
     DCHECK(source);
     if (HasCapability(source->GetConnectionSpec(),
                       kCapability_ServiceManager)) {
@@ -574,7 +575,7 @@ mojom::ServiceRequest ServiceManager::StartEmbedderService(
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceManager, Service implementation:
 
-bool ServiceManager::OnConnect(const Identity& remote_identity,
+bool ServiceManager::OnConnect(const ServiceInfo& remote_info,
                                InterfaceRegistry* registry) {
   // The only interface we expose is mojom::ServiceManager, and access to this
   // interface is brokered by a policy specific to each caller, managed by the
@@ -582,13 +583,13 @@ bool ServiceManager::OnConnect(const Identity& remote_identity,
   // caller's instance to continue.
   Instance* instance = nullptr;
   for (const auto& entry : identity_to_instance_) {
-    if (entry.first == remote_identity) {
+    if (entry.first == remote_info.identity) {
       instance = entry.second;
       break;
     }
   }
   DCHECK(instance);
-  return instance->OnConnect(remote_identity, registry);
+  return instance->OnConnect(remote_info, registry);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -38,8 +38,8 @@ class MEDIA_MOJO_EXPORT MediaService
 
  private:
   // service_manager::Service implementation.
-  void OnStart(const service_manager::Identity& identity) final;
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  void OnStart(const service_manager::ServiceInfo& info) final;
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) final;
   bool OnStop() final;
 

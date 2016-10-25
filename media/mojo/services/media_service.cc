@@ -26,11 +26,11 @@ MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client,
 
 MediaService::~MediaService() {}
 
-void MediaService::OnStart(const service_manager::Identity& identity) {
+void MediaService::OnStart(const service_manager::ServiceInfo& info) {
   mojo_media_client_->Initialize();
 }
 
-bool MediaService::OnConnect(const service_manager::Identity& remote_identity,
+bool MediaService::OnConnect(const service_manager::ServiceInfo& remote_info,
                              service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::MediaService>(this);
   return true;

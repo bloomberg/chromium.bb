@@ -284,16 +284,16 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void TaskViewer::OnStart(const service_manager::Identity& identity) {
-  tracing_.Initialize(connector(), identity.name());
+void TaskViewer::OnStart(const service_manager::ServiceInfo& info) {
+  tracing_.Initialize(connector(), info.identity.name());
 
   aura_init_.reset(
       new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), identity);
+      views::WindowManagerConnection::Create(connector(), info.identity);
 }
 
-bool TaskViewer::OnConnect(const service_manager::Identity& remote_identity,
+bool TaskViewer::OnConnect(const service_manager::ServiceInfo& remote_info,
                            service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Launchable>(this);
   return true;

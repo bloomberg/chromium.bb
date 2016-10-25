@@ -20,7 +20,7 @@ class TestClient : public Service,
 
  private:
   // Service:
-  bool OnConnect(const Identity& remote_identity,
+  bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface(this);
     return true;

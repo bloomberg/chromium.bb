@@ -29,9 +29,9 @@ class WindowServerServiceTestClient
 
  private:
   // service_manager::test::ServiceTestClient:
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
-    return test_->OnConnect(remote_identity, registry);
+    return test_->OnConnect(remote_info.identity, registry);
   }
 
   WindowServerServiceTestBase* test_;

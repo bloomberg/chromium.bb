@@ -16,7 +16,7 @@ class ConnectTestSingletonApp : public Service {
 
  private:
   // service_manager::Service:
-  bool OnConnect(const Identity& remote_identity,
+  bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     return true;
   }

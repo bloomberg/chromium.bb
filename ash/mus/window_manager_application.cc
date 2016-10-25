@@ -130,7 +130,7 @@ void WindowManagerApplication::ShutdownComponents() {
 }
 
 void WindowManagerApplication::OnStart(
-    const service_manager::Identity& identity) {
+    const service_manager::ServiceInfo& info) {
   aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak",
                                        "ash_mus_resources_200.pak"));
   gpu_service_ = ui::GpuService::Create(connector());
@@ -142,7 +142,7 @@ void WindowManagerApplication::OnStart(
 
   MaterialDesignController::Initialize();
 
-  tracing_.Initialize(connector(), identity.name());
+  tracing_.Initialize(connector(), info.identity.name());
 
   std::unique_ptr<ui::WindowTreeClient> window_tree_client =
       base::MakeUnique<ui::WindowTreeClient>(window_manager_.get(),
@@ -157,15 +157,15 @@ void WindowManagerApplication::OnStart(
 }
 
 bool WindowManagerApplication::OnConnect(
-    const service_manager::Identity& remote_identity,
+    const service_manager::ServiceInfo& remote_info,
     service_manager::InterfaceRegistry* registry) {
   // Register services used in both classic ash and mash.
   mojo_interface_factory::RegisterInterfaces(
       registry, base::ThreadTaskRunnerHandle::Get());
 
   registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
-  if (remote_identity.name() == "service:mash_session") {
-    connector()->ConnectToInterface(remote_identity, &session_);
+  if (remote_info.identity.name() == "service:mash_session") {
+    connector()->ConnectToInterface(remote_info.identity, &session_);
     session_->AddScreenlockStateListener(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
   }

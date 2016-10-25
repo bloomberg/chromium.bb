@@ -17,9 +17,9 @@ class TestIMEApplication : public service_manager::Service {
 
  private:
   // service_manager::Service:
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
-  void OnStart(const service_manager::Identity& identity) override;
+  void OnStart(const service_manager::ServiceInfo& info) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEApplication);
 };

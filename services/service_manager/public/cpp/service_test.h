@@ -35,7 +35,7 @@ class ServiceTestClient : public Service {
   ~ServiceTestClient() override;
 
  protected:
-  void OnStart(const Identity& identity) override;
+  void OnStart(const ServiceInfo& info) override;
 
  private:
   ServiceTest* test_;

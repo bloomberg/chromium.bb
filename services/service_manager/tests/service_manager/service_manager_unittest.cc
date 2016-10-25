@@ -38,7 +38,7 @@ class ServiceManagerTestClient
 
  private:
   // test::ServiceTestClient:
-  bool OnConnect(const Identity& remote_identity,
+  bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<test::mojom::CreateInstanceTest>(this);
     return true;

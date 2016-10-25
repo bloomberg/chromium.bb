@@ -29,7 +29,7 @@ VideoCaptureService::VideoCaptureService() = default;
 VideoCaptureService::~VideoCaptureService() = default;
 
 bool VideoCaptureService::OnConnect(
-    const service_manager::Identity& remote_identity,
+    const service_manager::ServiceInfo& remote_info,
     service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::VideoCaptureService>(this);
   return true;

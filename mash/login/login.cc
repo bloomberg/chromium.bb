@@ -146,17 +146,17 @@ class Login : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::Identity& identity) override {
-    identity_ = identity;
-    tracing_.Initialize(connector(), identity.name());
+  void OnStart(const service_manager::ServiceInfo& info) override {
+    identity_ = info.identity;
+    tracing_.Initialize(connector(), identity_.name());
 
     aura_init_.reset(
         new views::AuraInit(connector(), "views_mus_resources.pak"));
 
     connector()->ConnectToInterface("service:ui", &user_access_manager_);
-    user_access_manager_->SetActiveUser(identity.user_id());
+    user_access_manager_->SetActiveUser(identity_.user_id());
   }
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<mojom::Login>(this);
     return true;

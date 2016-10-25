@@ -48,11 +48,11 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::OnStart(const service_manager::Identity& identity) {
-  tracing_.Initialize(connector(), identity.name());
+void FontServiceApp::OnStart(const service_manager::ServiceInfo& info) {
+  tracing_.Initialize(connector(), info.identity.name());
 }
 
-bool FontServiceApp::OnConnect(const service_manager::Identity& remote_identity,
+bool FontServiceApp::OnConnect(const service_manager::ServiceInfo& remote_info,
                                service_manager::InterfaceRegistry* registry) {
   registry->AddInterface(this);
   return true;

@@ -32,10 +32,10 @@ class ConnectTestClassApp
 
  private:
   // service_manager::Service:
-  void OnStart(const Identity& identity) override {
-    identity_ = identity;
+  void OnStart(const ServiceInfo& info) override {
+    identity_ = info.identity;
   }
-  bool OnConnect(const Identity& remote_identity,
+  bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<test::mojom::ConnectTestService>(this);
     registry->AddInterface<test::mojom::ClassInterface>(this);

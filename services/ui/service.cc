@@ -135,9 +135,9 @@ void Service::AddUserIfNecessary(
   window_server_->user_id_tracker()->AddUserId(remote_identity.user_id());
 }
 
-void Service::OnStart(const service_manager::Identity& identity) {
+void Service::OnStart(const service_manager::ServiceInfo& info) {
   base::PlatformThread::SetName("mus");
-  tracing_.Initialize(connector(), identity.name());
+  tracing_.Initialize(connector(), info.identity.name());
   TRACE_EVENT0("mus", "Service::Initialize started");
 
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -194,7 +194,7 @@ void Service::OnStart(const service_manager::Identity& identity) {
   ime_server_.Init(connector());
 }
 
-bool Service::OnConnect(const service_manager::Identity& remote_identity,
+bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
                         service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::AccessibilityManager>(this);
   registry->AddInterface<mojom::Clipboard>(this);

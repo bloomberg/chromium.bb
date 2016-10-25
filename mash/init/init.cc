@@ -17,13 +17,13 @@ namespace init {
 Init::Init() {}
 Init::~Init() {}
 
-void Init::OnStart(const service_manager::Identity& identity) {
+void Init::OnStart(const service_manager::ServiceInfo& info) {
   connector()->Connect("service:ui");
   StartTracing();
   StartLogin();
 }
 
-bool Init::OnConnect(const service_manager::Identity& remote_identity,
+bool Init::OnConnect(const service_manager::ServiceInfo& remote_info,
                      service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Init>(this);
   return true;

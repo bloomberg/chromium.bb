@@ -33,14 +33,14 @@ class ViewsExamples
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::Identity& identity) override {
-    tracing_.Initialize(connector(), identity.name());
+  void OnStart(const service_manager::ServiceInfo& info) override {
+    tracing_.Initialize(connector(), info.identity.name());
     aura_init_.reset(
         new views::AuraInit(connector(), "views_mus_resources.pak"));
     window_manager_connection_ =
-        views::WindowManagerConnection::Create(connector(), identity);
+        views::WindowManagerConnection::Create(connector(), info.identity);
   }
-  bool OnConnect(const service_manager::Identity& remote_identity,
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<mash::mojom::Launchable>(this);
     return true;
