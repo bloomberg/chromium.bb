@@ -113,7 +113,11 @@ class TestHooks : public AnimationDelegate {
                                std::unique_ptr<AnimationCurve> curve) override {
   }
 
+  // OutputSurface indirections to the LayerTreeTest, that can be further
+  // overridden.
   virtual void RequestNewCompositorFrameSink() = 0;
+  virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
+      scoped_refptr<ContextProvider> compositor_context_provider) = 0;
 };
 
 }  // namespace cc

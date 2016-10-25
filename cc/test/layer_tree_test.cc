@@ -493,6 +493,11 @@ class LayerTreeTestCompositorFrameSinkClient
       : hooks_(hooks) {}
 
   // TestCompositorFrameSinkClient implementation.
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider) override {
+    return hooks_->CreateDisplayOutputSurfaceOnThread(
+        std::move(compositor_context_provider));
+  }
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {
     hooks_->DisplayReceivedCompositorFrameOnThread(frame);
   }
@@ -872,8 +877,7 @@ void LayerTreeTest::RequestNewCompositorFrameSink() {
   auto compositor_frame_sink = CreateCompositorFrameSink(
       std::move(shared_context_provider), std::move(worker_context_provider));
   compositor_frame_sink->SetClient(compositor_frame_sink_client_.get());
-
-    layer_tree_host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  layer_tree_host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
 std::unique_ptr<TestCompositorFrameSink>
@@ -888,13 +892,13 @@ LayerTreeTest::CreateCompositorFrameSink(
   bool force_disable_reclaim_resources = true;
   return base::MakeUnique<TestCompositorFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
-      CreateDisplayOutputSurface(compositor_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(),
       layer_tree_host()->GetSettings().renderer_settings, impl_task_runner_,
       synchronous_composite, force_disable_reclaim_resources);
 }
 
-std::unique_ptr<OutputSurface> LayerTreeTest::CreateDisplayOutputSurface(
+std::unique_ptr<OutputSurface>
+LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
     scoped_refptr<ContextProvider> compositor_context_provider) {
   // By default the Display shares a context with the LayerTreeHostImpl.
   return FakeOutputSurface::Create3d(std::move(compositor_context_provider));

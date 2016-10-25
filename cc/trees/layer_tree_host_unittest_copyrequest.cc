@@ -129,7 +129,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 
   void AfterTest() override { EXPECT_EQ(4u, callbacks_.size()); }
 
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) override {
     if (!use_gl_renderer_) {
       return FakeOutputSurface::CreateSoftware(
@@ -466,11 +466,11 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
-    auto surface = LayerTreeHostCopyRequestTest::CreateCompositorFrameSink(
+    auto frame_sink = LayerTreeHostCopyRequestTest::CreateCompositorFrameSink(
         std::move(compositor_context_provider),
         std::move(worker_context_provider));
-    display_ = surface->display();
-    return surface;
+    frame_sink_ = frame_sink.get();
+    return frame_sink;
   }
 
   void BeginTest() override {
@@ -507,7 +507,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
   }
 
   void DisplayDidDrawAndSwapOnThread() override {
-    DirectRenderer* renderer = display_->renderer_for_testing();
+    DirectRenderer* renderer = frame_sink_->display()->renderer_for_testing();
 
     // |parent| owns a surface, but it was hidden and not part of the copy
     // request so it should not allocate any resource.
@@ -533,7 +533,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   RenderPassId parent_render_pass_id;
   RenderPassId copy_layer_render_pass_id;
-  Display* display_ = nullptr;
+  TestCompositorFrameSink* frame_sink_ = nullptr;
   bool did_swap_ = false;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
@@ -731,7 +731,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw);
 class LayerTreeHostCopyRequestTestDeleteTexture
     : public LayerTreeHostCopyRequestTest {
  protected:
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) override {
     display_context_provider_ = TestContextProvider::Create();
     return FakeOutputSurface::Create3d(display_context_provider_);
@@ -789,6 +789,9 @@ class LayerTreeHostCopyRequestTestDeleteTexture
     // to be destroyed by the compositor, so we should have 1 less by now.
     EXPECT_EQ(num_textures_after_readback_ - 1,
               display_context_provider_->TestContext3d()->NumTextures());
+
+    // Drop the reference to the context provider on the compositor thread.
+    display_context_provider_ = nullptr;
     EndTest();
   }
 
@@ -847,7 +850,7 @@ class LayerTreeHostCopyRequestTestCountTextures
     settings->renderer_settings.texture_id_allocation_chunk_size = 1;
   }
 
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) override {
     // These tests expect the LayerTreeHostImpl to share a context with
     // the Display so that sync points are not needed and the texture counts

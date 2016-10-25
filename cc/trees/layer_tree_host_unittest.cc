@@ -2914,7 +2914,6 @@ class OnDrawCompositorFrameSink : public TestCompositorFrameSink {
   explicit OnDrawCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
-      std::unique_ptr<OutputSurface> display_output_surface,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const RendererSettings& renderer_settings,
@@ -2924,7 +2923,6 @@ class OnDrawCompositorFrameSink : public TestCompositorFrameSink {
       base::Closure invalidate_callback)
       : TestCompositorFrameSink(std::move(compositor_context_provider),
                                 std::move(worker_context_provider),
-                                std::move(display_output_surface),
                                 shared_bitmap_manager,
                                 gpu_memory_buffer_manager,
                                 renderer_settings,
@@ -2961,16 +2959,15 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
         &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
             CallOnDraw,
         base::Unretained(this));
-    auto output_surface = base::MakeUnique<OnDrawCompositorFrameSink>(
+    auto frame_sink = base::MakeUnique<OnDrawCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
-        CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
         ImplThreadTaskRunner(), false /* synchronous_composite */,
         false /* force_disable_reclaim_resources */,
         std::move(on_draw_callback));
-    output_surface_ = output_surface.get();
-    return std::move(output_surface);
+    compositor_frame_sink_ = frame_sink.get();
+    return std::move(frame_sink);
   }
 
   void CallOnDraw() {
@@ -2980,12 +2977,12 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
       bool resourceless_software_draw = false;
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE, base::Bind(&OnDrawCompositorFrameSink::OnDraw,
-                                base::Unretained(output_surface_),
+                                base::Unretained(compositor_frame_sink_),
                                 resourceless_software_draw));
     }
   }
 
-  OnDrawCompositorFrameSink* output_surface_ = nullptr;
+  OnDrawCompositorFrameSink* compositor_frame_sink_ = nullptr;
 };
 
 MULTI_THREAD_TEST_F(
@@ -3100,16 +3097,15 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     auto on_draw_callback =
         base::Bind(&LayerTreeHostTestResourcelessSoftwareDraw::CallOnDraw,
                    base::Unretained(this));
-    auto output_surface = base::MakeUnique<OnDrawCompositorFrameSink>(
+    auto frame_sink = base::MakeUnique<OnDrawCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
-        CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
         ImplThreadTaskRunner(), false /* synchronous_composite */,
         false /* force_disable_reclaim_resources */,
         std::move(on_draw_callback));
-    output_surface_ = output_surface.get();
-    return std::move(output_surface);
+    compositor_frame_sink_ = frame_sink.get();
+    return std::move(frame_sink);
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -3121,7 +3117,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
       bool resourceless_software_draw = true;
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE, base::Bind(&OnDrawCompositorFrameSink::OnDraw,
-                                base::Unretained(output_surface_),
+                                base::Unretained(compositor_frame_sink_),
                                 resourceless_software_draw));
     }
   }
@@ -3162,7 +3158,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   void AfterTest() override {}
 
  private:
-  OnDrawCompositorFrameSink* output_surface_ = nullptr;
+  OnDrawCompositorFrameSink* compositor_frame_sink_ = nullptr;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<Layer> parent_layer_;
@@ -5675,7 +5671,6 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     bool force_disable_reclaim_resources = !reclaim_resources_;
     return base::MakeUnique<TestCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
-        CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
         ImplThreadTaskRunner(), synchronous_composite,
@@ -6002,7 +5997,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
 class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     : public LayerTreeHostTestCrispUpAfterPinchEnds {
  protected:
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) override {
     scoped_refptr<TestContextProvider> display_context_provider =
         TestContextProvider::Create();
@@ -6012,7 +6007,7 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
 #if defined(OS_MACOSX)
     context3d->set_support_texture_rectangle(true);
 #endif
-    return LayerTreeTest::CreateDisplayOutputSurface(
+    return LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
         std::move(display_context_provider));
   }
 };

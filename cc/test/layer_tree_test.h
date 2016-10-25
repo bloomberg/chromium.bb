@@ -152,8 +152,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   // CompositorFrameSink. Or override it and create your own OutputSurface to
   // change what type of OutputSurface is used, such as a real OutputSurface for
   // pixel tests or a software-compositing OutputSurface.
-  virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
-      scoped_refptr<ContextProvider> compositor_context_provider);
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
+      scoped_refptr<ContextProvider> compositor_context_provider) override;
 
   bool IsRemoteTest() const;
 

@@ -21,7 +21,6 @@ static constexpr FrameSinkId kCompositorFrameSinkId(1, 1);
 TestCompositorFrameSink::TestCompositorFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
-    std::unique_ptr<OutputSurface> display_output_surface,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
@@ -30,38 +29,17 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     bool force_disable_reclaim_resources)
     : CompositorFrameSink(std::move(compositor_context_provider),
                           std::move(worker_context_provider)),
+      synchronous_composite_(synchronous_composite),
+      renderer_settings_(renderer_settings),
+      shared_bitmap_manager_(shared_bitmap_manager),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kCompositorFrameSinkId),
       surface_manager_(new SurfaceManager),
       surface_id_allocator_(new SurfaceIdAllocator()),
       surface_factory_(
           new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
-      display_context_shared_with_compositor_(
-          display_output_surface->context_provider() == context_provider()),
       weak_ptr_factory_(this) {
-  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
-  std::unique_ptr<DisplayScheduler> scheduler;
-  if (!synchronous_composite) {
-    if (renderer_settings.disable_display_vsync) {
-      begin_frame_source.reset(new BackToBackBeginFrameSource(
-          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
-    } else {
-      begin_frame_source.reset(new DelayBasedBeginFrameSource(
-          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
-      begin_frame_source->SetAuthoritativeVSyncInterval(
-          base::TimeDelta::FromMilliseconds(1000.f /
-                                            renderer_settings.refresh_rate));
-    }
-    scheduler.reset(new DisplayScheduler(
-        begin_frame_source.get(), task_runner_.get(),
-        display_output_surface->capabilities().max_frames_pending));
-  }
-  display_.reset(
-      new Display(shared_bitmap_manager, gpu_memory_buffer_manager,
-                  renderer_settings, std::move(begin_frame_source),
-                  std::move(display_output_surface), std::move(scheduler),
-                  base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
-
   // Since this CompositorFrameSink and the Display are tightly coupled and in
   // the same process/thread, the LayerTreeHostImpl can reclaim resources from
   // the Display. But we allow tests to disable this to mimic an out-of-process
@@ -85,10 +63,39 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   if (!CompositorFrameSink::BindToClient(client))
     return false;
 
+  std::unique_ptr<OutputSurface> display_output_surface =
+      test_client_->CreateDisplayOutputSurface(context_provider());
+  bool display_context_shared_with_compositor =
+      display_output_surface->context_provider() == context_provider();
+
+  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
+  std::unique_ptr<DisplayScheduler> scheduler;
+  if (!synchronous_composite_) {
+    if (renderer_settings_.disable_display_vsync) {
+      begin_frame_source.reset(new BackToBackBeginFrameSource(
+          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
+    } else {
+      begin_frame_source.reset(new DelayBasedBeginFrameSource(
+          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
+      begin_frame_source->SetAuthoritativeVSyncInterval(
+          base::TimeDelta::FromMilliseconds(1000.f /
+                                            renderer_settings_.refresh_rate));
+    }
+    scheduler.reset(new DisplayScheduler(
+        begin_frame_source.get(), task_runner_.get(),
+        display_output_surface->capabilities().max_frames_pending));
+  }
+
+  display_.reset(
+      new Display(shared_bitmap_manager_, gpu_memory_buffer_manager_,
+                  renderer_settings_, std::move(begin_frame_source),
+                  std::move(display_output_surface), std::move(scheduler),
+                  base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
+
   // We want the Display's OutputSurface to hear about lost context, and when
   // this shares a context with it we should not be listening for lost context
   // callbacks on the context here.
-  if (display_context_shared_with_compositor_ && context_provider())
+  if (display_context_shared_with_compositor && context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
@@ -108,18 +115,18 @@ void TestCompositorFrameSink::DetachFromClient() {
       surface_factory_->Destroy(delegated_local_frame_id_);
     surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
+    display_ = nullptr;
     bound_ = false;
   }
-  display_ = nullptr;
   surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
+  test_client_ = nullptr;
   CompositorFrameSink::DetachFromClient();
 }
 
 void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
-  if (test_client_)
-    test_client_->DisplayReceivedCompositorFrame(frame);
+  test_client_->DisplayReceivedCompositorFrame(frame);
 
   if (delegated_local_frame_id_.is_null()) {
     delegated_local_frame_id_ = surface_id_allocator_->GenerateId();
@@ -195,13 +202,11 @@ void TestCompositorFrameSink::DisplayOutputSurfaceLost() {
 void TestCompositorFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {
-  if (test_client_)
-    test_client_->DisplayWillDrawAndSwap(will_draw_and_swap, render_passes);
+  test_client_->DisplayWillDrawAndSwap(will_draw_and_swap, render_passes);
 }
 
 void TestCompositorFrameSink::DisplayDidDrawAndSwap() {
-  if (test_client_)
-    test_client_->DisplayDidDrawAndSwap();
+  test_client_->DisplayDidDrawAndSwap();
 }
 
 }  // namespace cc

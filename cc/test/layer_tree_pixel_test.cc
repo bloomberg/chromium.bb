@@ -56,7 +56,6 @@ std::unique_ptr<TestCompositorFrameSink>
   bool force_disable_reclaim_resources = false;
   auto delegating_output_surface = base::MakeUnique<TestCompositorFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
-      CreateDisplayOutputSurface(compositor_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(), RendererSettings(),
       ImplThreadTaskRunner(), synchronous_composite,
       force_disable_reclaim_resources);
@@ -65,7 +64,8 @@ std::unique_ptr<TestCompositorFrameSink>
   return delegating_output_surface;
 }
 
-std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateDisplayOutputSurface(
+std::unique_ptr<OutputSurface>
+LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     scoped_refptr<ContextProvider> compositor_context_provider) {
   std::unique_ptr<PixelTestOutputSurface> display_output_surface;
   if (test_type_ == PIXEL_TEST_GL) {

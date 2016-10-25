@@ -645,7 +645,6 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     bool force_disable_reclaim_resources = false;
     return base::MakeUnique<TestCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
-        CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
         ImplThreadTaskRunner(), synchronous_composite,

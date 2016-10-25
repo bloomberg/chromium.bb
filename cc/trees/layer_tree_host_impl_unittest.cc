@@ -8225,18 +8225,39 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
 void ShutdownReleasesContext_Callback(
     std::unique_ptr<CopyOutputResult> result) {}
 
+class FrameSinkClient : public TestCompositorFrameSinkClient {
+ public:
+  explicit FrameSinkClient(
+      scoped_refptr<ContextProvider> display_context_provider)
+      : display_context_provider_(std::move(display_context_provider)) {}
+
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider) override {
+    return FakeOutputSurface::Create3d(std::move(display_context_provider_));
+  }
+
+  void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {}
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              const RenderPassList& render_passes) override {}
+  void DisplayDidDrawAndSwap() override {}
+
+ private:
+  scoped_refptr<ContextProvider> display_context_provider_;
+};
+
 TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
+  FrameSinkClient test_client_(context_provider);
 
-  CreateHostImpl(
-      DefaultSettings(),
-      base::MakeUnique<TestCompositorFrameSink>(
-          context_provider, TestContextProvider::CreateWorker(),
-          FakeOutputSurface::Create3d(context_provider), nullptr, nullptr,
-          RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
-          true /* synchronous_composite */,
-          false /* force_disable_reclaim_resources */));
+  auto compositor_frame_sink = base::MakeUnique<TestCompositorFrameSink>(
+      context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
+      RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
+      true /* synchronous_composite */,
+      false /* force_disable_reclaim_resources */);
+  compositor_frame_sink->SetClient(&test_client_);
+
+  CreateHostImpl(DefaultSettings(), std::move(compositor_frame_sink));
 
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
 

@@ -321,7 +321,8 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
 
 }  // namespace
 
-class LayoutTestDependenciesImpl : public LayoutTestDependencies {
+class LayoutTestDependenciesImpl : public LayoutTestDependencies,
+                                   public cc::TestCompositorFrameSinkClient {
  public:
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
       int32_t routing_id,
@@ -329,31 +330,10 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       CompositorDependencies* deps) override {
-    // This is for an offscreen context for the compositor. So the default
-    // framebuffer doesn't need alpha, depth, stencil, antialiasing.
-    gpu::gles2::ContextCreationAttribHelper attributes;
-    attributes.alpha_size = -1;
-    attributes.depth_size = 0;
-    attributes.stencil_size = 0;
-    attributes.samples = 0;
-    attributes.sample_buffers = 0;
-    attributes.bind_generates_resource = false;
-    attributes.lose_context_when_out_of_memory = true;
-    const bool automatic_flushes = false;
-    const bool support_locking = false;
-
-    bool flipped_output_surface = false;
-    std::unique_ptr<cc::OutputSurface> display_output_surface(
-        new cc::PixelTestOutputSurface(
-            make_scoped_refptr(new ContextProviderCommandBuffer(
-                std::move(gpu_channel), gpu::GPU_STREAM_DEFAULT,
-                gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
-                GURL("chrome://gpu/"
-                     "LayoutTestDependenciesImpl::CreateOutputSurface"),
-                automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
-                attributes, nullptr,
-                command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING)),
-            flipped_output_surface));
+    // This could override the GpuChannel for a CompositorFrameSink that was
+    // previously being created but in that case the old GpuChannel would be
+    // lost as would the CompositorFrameSink.
+    gpu_channel_ = gpu_channel;
 
     auto* task_runner = deps->GetCompositorImplThreadTaskRunner().get();
     bool synchronous_composite = !task_runner;
@@ -366,10 +346,11 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
 
     auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(
         std::move(compositor_context_provider),
-        std::move(worker_context_provider), std::move(display_output_surface),
-        deps->GetSharedBitmapManager(), deps->GetGpuMemoryBufferManager(),
-        settings.renderer_settings, task_runner, synchronous_composite,
+        std::move(worker_context_provider), deps->GetSharedBitmapManager(),
+        deps->GetGpuMemoryBufferManager(), settings.renderer_settings,
+        task_runner, synchronous_composite,
         false /* force_disable_reclaim_resources */);
+    compositor_frame_sink->SetClient(this);
     compositor_frame_sinks_[routing_id] = compositor_frame_sink.get();
     return std::move(compositor_frame_sink);
   }
@@ -390,6 +371,41 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
             base::Unretained(this), routing_id));
   }
 
+  // TestCompositorFrameSinkClient implementation.
+  std::unique_ptr<cc::OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<cc::ContextProvider> compositor_context_provider) override {
+    // This is for an offscreen context for the compositor. So the default
+    // framebuffer doesn't need alpha, depth, stencil, antialiasing.
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = -1;
+    attributes.depth_size = 0;
+    attributes.stencil_size = 0;
+    attributes.samples = 0;
+    attributes.sample_buffers = 0;
+    attributes.bind_generates_resource = false;
+    attributes.lose_context_when_out_of_memory = true;
+    const bool automatic_flushes = false;
+    const bool support_locking = false;
+
+    bool flipped_output_surface = false;
+    return base::MakeUnique<cc::PixelTestOutputSurface>(
+        make_scoped_refptr(new ContextProviderCommandBuffer(
+            gpu_channel_, gpu::GPU_STREAM_DEFAULT,
+            gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+            GURL("chrome://gpu/"
+                 "LayoutTestDependenciesImpl::CreateOutputSurface"),
+            automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
+            attributes, nullptr,
+            command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING)),
+        flipped_output_surface);
+  }
+  void DisplayReceivedCompositorFrame(
+      const cc::CompositorFrame& frame) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      const cc::RenderPassList& render_passes) override {}
+  void DisplayDidDrawAndSwap() override {}
+
  private:
   cc::TestCompositorFrameSink* FindCompositorFrameSink(int32_t routing_id) {
     auto it = compositor_frame_sinks_.find(routing_id);
@@ -402,6 +418,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
   // owned by RenderThreadImpl, which outlives layout test execution.
   std::unordered_map<int32_t, cc::TestCompositorFrameSink*>
       compositor_frame_sinks_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 };
 
 void EnableRendererLayoutTestMode() {

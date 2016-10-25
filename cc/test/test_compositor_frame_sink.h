@@ -29,6 +29,11 @@ class TestCompositorFrameSinkClient {
  public:
   virtual ~TestCompositorFrameSinkClient() {}
 
+  // This passes the ContextProvider being used by LayerTreeHostImpl which
+  // can be used for the OutputSurface optionally.
+  virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider) = 0;
+
   virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                                       const RenderPassList& render_passes) = 0;
@@ -45,7 +50,6 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   TestCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
-      std::unique_ptr<OutputSurface> display_output_surface,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const RendererSettings& renderer_settings,
@@ -54,6 +58,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
       bool force_disable_reclaim_resources);
   ~TestCompositorFrameSink() override;
 
+  // This client must be set before BindToClient() happens.
   void SetClient(TestCompositorFrameSinkClient* client) {
     test_client_ = client;
   }
@@ -85,6 +90,11 @@ class TestCompositorFrameSink : public CompositorFrameSink,
  private:
   void DidDrawCallback();
 
+  const bool synchronous_composite_;
+  const RendererSettings renderer_settings_;
+  SharedBitmapManager* const shared_bitmap_manager_;
+  gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   FrameSinkId frame_sink_id_;
@@ -99,8 +109,6 @@ class TestCompositorFrameSink : public CompositorFrameSink,
 
   // Uses surface_manager_.
   std::unique_ptr<Display> display_;
-
-  const bool display_context_shared_with_compositor_;
 
   bool bound_ = false;
   TestCompositorFrameSinkClient* test_client_ = nullptr;

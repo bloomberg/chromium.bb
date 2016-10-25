@@ -44,7 +44,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override;
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) override;
 
   virtual std::unique_ptr<CopyOutputRequest> CreateCopyOutputRequest();
