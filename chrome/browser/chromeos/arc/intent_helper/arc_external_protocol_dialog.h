@@ -5,11 +5,23 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_
 
+#include <string>
+#include <utility>
+
+#include "components/arc/common/intent_helper.mojom.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
 
 namespace arc {
+
+enum class GetActionResult {
+  SHOW_CHROME_OS_DIALOG,
+  OPEN_URL_IN_CHROME,
+  HANDLE_URL_IN_ARC,
+  ASK_USER,
+};
 
 // Shows ARC version of the dialog. Returns true if ARC is supported, running,
 // and in a context where it is allowed to handle external protocol.
@@ -18,6 +30,12 @@ bool RunArcExternalProtocolDialog(const GURL& url,
                                   int routing_id,
                                   ui::PageTransition page_transition,
                                   bool has_user_gesture);
+
+GetActionResult GetActionForTesting(
+    const GURL& original_url,
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    size_t selected_app_index,
+    std::pair<GURL, std::string>* out_url_and_package);
 
 }  // namespace arc
 

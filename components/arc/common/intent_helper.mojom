@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 module arc.mojom;
 
@@ -57,6 +57,9 @@ struct IntentHandlerInfo {
   [MinVersion=4] ActionType action_type;
   [MinVersion=6] bool is_preferred;
   [MinVersion=11] string? action;  // e.g. "android.intent.action.VIEW"
+  // RequestUrlHandlerList may fill |fallback_url| when it is called with an
+  // intent: URL.
+  [MinVersion=14] string? fallback_url;
 };
 
 // Describes an activity.
