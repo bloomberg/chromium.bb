@@ -13,21 +13,17 @@
 #undef None
 
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
@@ -121,23 +117,15 @@ void DispatchMouseMotionEvent(DesktopWindowTreeHostX11* desktop_host,
 
 }  // namespace
 
-class DesktopWindowTreeHostX11Test : public ViewsTestBase {
+class DesktopWindowTreeHostX11Test : public ViewsInteractiveUITestBase {
  public:
   DesktopWindowTreeHostX11Test() {
   }
   ~DesktopWindowTreeHostX11Test() override {}
 
-  static void SetUpTestCase() {
-    gl::GLSurfaceTestSupport::InitializeOneOff();
-    ui::RegisterPathProvider();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-  }
-
   // testing::Test
   void SetUp() override {
-    ViewsTestBase::SetUp();
+    ViewsInteractiveUITestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
@@ -146,7 +134,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
 
   void TearDown() override {
     XSynchronize(gfx::GetXDisplay(), False);
-    ViewsTestBase::TearDown();
+    ViewsInteractiveUITestBase::TearDown();
   }
 
  private:

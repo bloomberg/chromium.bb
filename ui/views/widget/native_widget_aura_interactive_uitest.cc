@@ -4,21 +4,18 @@
 
 #include "ui/views/widget/native_widget_aura.h"
 
-#include "base/path_service.h"
 #include "ui/aura/window.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/native_widget_factory.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/focus_controller.h"
 
 namespace views {
 namespace test {
+
+namespace {
 
 class TestFocusRules : public wm::BaseFocusRules {
  public:
@@ -42,29 +39,9 @@ class TestFocusRules : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(TestFocusRules);
 };
 
-class NativeWidgetAuraTest : public ViewsTestBase {
- public:
-  NativeWidgetAuraTest() {}
-  ~NativeWidgetAuraTest() override {}
+}  // namespace
 
-  void SetUp() override {
-    gl::GLSurfaceTestSupport::InitializeOneOff();
-    ui::RegisterPathProvider();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-
-    ViewsTestBase::SetUp();
-  }
-
-  NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
-                                   Widget* widget) {
-    return CreatePlatformNativeWidgetImpl(params, widget, kDefault, nullptr);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
-};
+using NativeWidgetAuraTest = ViewsInteractiveUITestBase;
 
 // When requesting view focus from a non-active top level widget, focus is not
 // instantly given. Instead, the view is firstly stored and then it is attempted
@@ -80,7 +57,8 @@ TEST_F(NativeWidgetAuraTest, NonActiveWindowRequestImeFocus) {
   Widget* widget1 = new Widget;
   Widget::InitParams params1(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params1.context = GetContext();
-  params1.native_widget = CreateNativeWidget(params1, widget1);
+  params1.native_widget =
+      CreatePlatformNativeWidgetImpl(params1, widget1, kDefault, nullptr);
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget1->Init(params1);
   Textfield* textfield1 = new Textfield;
@@ -89,7 +67,8 @@ TEST_F(NativeWidgetAuraTest, NonActiveWindowRequestImeFocus) {
   Widget* widget2 = new Widget;
   Widget::InitParams params2(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params2.context = GetContext();
-  params2.native_widget = CreateNativeWidget(params2, widget2);
+  params2.native_widget =
+      CreatePlatformNativeWidgetImpl(params2, widget2, kDefault, nullptr);
   params2.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget2->Init(params2);
   Textfield* textfield2a = new Textfield;

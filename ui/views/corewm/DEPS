@@ -21,7 +21,7 @@ specific_include_rules = {
   ],
 
   "desktop_capture_controller_unittest.cc": [
-    "+ui/views/test/views_test_base.h",
+    "+ui/views/test/views_interactive_ui_test_base.h",
     "+ui/views/view.h",
     "+ui/views/widget/desktop_aura/desktop_native_widget_aura.h",
     "+ui/views/widget/desktop_aura/desktop_screen_position_client.h",

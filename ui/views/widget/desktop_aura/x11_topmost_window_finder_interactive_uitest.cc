@@ -18,19 +18,15 @@
 #undef None
 
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
-#include "ui/gl/test/gl_surface_test_support.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
@@ -110,7 +106,7 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
 
 }  // namespace
 
-class X11TopmostWindowFinderTest : public ViewsTestBase {
+class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
  public:
   X11TopmostWindowFinderTest() {
   }
@@ -193,17 +189,9 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
                                            ignore);
   }
 
-  static void SetUpTestCase() {
-    gl::GLSurfaceTestSupport::InitializeOneOff();
-    ui::RegisterPathProvider();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-  }
-
-  // ViewsTestBase:
+  // ViewsInteractiveUITestBase:
   void SetUp() override {
-    ViewsTestBase::SetUp();
+    ViewsInteractiveUITestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
@@ -216,7 +204,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
 
   void TearDown() override {
     XSynchronize(xdisplay(), False);
-    ViewsTestBase::TearDown();
+    ViewsInteractiveUITestBase::TearDown();
   }
 
  private:

@@ -6,17 +6,13 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gl/test/gl_surface_test_support.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
@@ -28,21 +24,7 @@
 
 namespace views {
 
-class DesktopCaptureControllerTest : public ViewsTestBase {
- public:
-  DesktopCaptureControllerTest() {}
-  ~DesktopCaptureControllerTest() override {}
-
-  void SetUp() override {
-    gl::GLSurfaceTestSupport::InitializeOneOff();
-    ui::RegisterPathProvider();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-
-    ViewsTestBase::SetUp();
-  }
-};
+using DesktopCaptureControllerTest = ViewsInteractiveUITestBase;
 
 // This class provides functionality to verify whether the View instance
 // received the gesture event.
