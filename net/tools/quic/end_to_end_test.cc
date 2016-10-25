@@ -2612,6 +2612,14 @@ TEST_P(EndToEndTestServerPush, ServerPush) {
   DVLOG(1) << "send request for /push_example";
   EXPECT_EQ(kBody, client_->SendSynchronousRequest(
                        "https://example.com/push_example"));
+  QuicHeadersStream* headers_stream =
+      QuicSpdySessionPeer::GetHeadersStream(client_->client()->session());
+  QuicStreamSequencer* sequencer =
+      ReliableQuicStreamPeer::sequencer(headers_stream);
+  // Headers stream's sequencer buffer shouldn't be released because server push
+  // hasn't finished yet.
+  EXPECT_TRUE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+
   for (const string& url : push_urls) {
     DVLOG(1) << "send request for pushed stream on url " << url;
     string expected_body = "This is server push response body for " + url;
@@ -2619,6 +2627,9 @@ TEST_P(EndToEndTestServerPush, ServerPush) {
     DVLOG(1) << "response body " << response_body;
     EXPECT_EQ(expected_body, response_body);
   }
+  EXPECT_NE(FLAGS_quic_headers_stream_release_sequencer_buffer &&
+                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,
+            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
 TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
@@ -2906,6 +2917,20 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   if (!BothSidesSupportStatelessRejects()) {
     VerifyCleanConnection(true);
   }
+}
+
+TEST_P(EndToEndTest, ReleaseHeadersStreamBufferWhenIdle) {
+  // Tests that when client side has no active request and no waiting
+  // PUSH_PROMISE, its headers stream's sequencer buffer should be released.
+  ASSERT_TRUE(Initialize());
+  client_->SendSynchronousRequest("/foo");
+  QuicHeadersStream* headers_stream =
+      QuicSpdySessionPeer::GetHeadersStream(client_->client()->session());
+  QuicStreamSequencer* sequencer =
+      ReliableQuicStreamPeer::sequencer(headers_stream);
+  EXPECT_NE(FLAGS_quic_headers_stream_release_sequencer_buffer &&
+                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,
+            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
 class EndToEndBufferedPacketsTest : public EndToEndTest {

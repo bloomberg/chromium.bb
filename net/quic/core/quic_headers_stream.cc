@@ -461,6 +461,7 @@ void QuicHeadersStream::OnDataAvailable() {
       return;
     }
     sequencer()->MarkConsumed(iov.iov_len);
+    MaybeReleaseSequencerBuffer();
   }
 }
 
@@ -567,6 +568,13 @@ void QuicHeadersStream::UpdateHeaderEncoderTableSize(uint32_t value) {
 
 void QuicHeadersStream::UpdateEnableServerPush(bool value) {
   spdy_session_->set_server_push_enabled(value);
+}
+
+void QuicHeadersStream::MaybeReleaseSequencerBuffer() {
+  if (FLAGS_quic_headers_stream_release_sequencer_buffer &&
+      spdy_session_->ShouldReleaseHeadersStreamSequencerBuffer()) {
+    sequencer()->ReleaseBufferIfEmpty();
+  }
 }
 
 bool QuicHeadersStream::OnDataFrameHeader(QuicStreamId stream_id,

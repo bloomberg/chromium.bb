@@ -95,6 +95,9 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   // server side.
   void UpdateEnableServerPush(bool value);
 
+  // Release underlying buffer if allowed.
+  void MaybeReleaseSequencerBuffer();
+
   // Sets how much encoded data the hpack decoder of spdy_framer_ is willing to
   // buffer.
   void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
