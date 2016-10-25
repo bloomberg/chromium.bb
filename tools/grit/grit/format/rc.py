@@ -12,6 +12,7 @@ import re
 from functools import partial
 
 from grit import util
+from grit.format import rc_header
 from grit.node import misc
 
 
@@ -448,8 +449,10 @@ def FormatInclude(item, lang, output_dir, type=None, process_html=False):
 
   if isinstance(item, structure.StructureNode) and item.IsExcludedFromRc():
     return ''
-  else:
-    return '%-18s %-18s "%s"\n' % (item.attrs['name'], type, filename)
+
+  name = item.attrs['name']
+  item_id = rc_header.GetIds(item.GetRoot())[name]
+  return '// ID: %d\n%-18s %-18s "%s"\n' % (item_id, name, type, filename)
 
 
 def _DoNotFormat(item, lang, output_dir):
