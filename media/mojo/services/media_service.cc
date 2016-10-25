@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "media/base/media_log.h"
+#include "media/mojo/services/interface_factory_impl.h"
 #include "media/mojo/services/mojo_media_client.h"
-#include "media/mojo/services/service_factory_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -46,17 +46,17 @@ void MediaService::Create(const service_manager::Identity& remote_identity,
   bindings_.AddBinding(this, std::move(request));
 }
 
-void MediaService::CreateServiceFactory(
-    mojom::ServiceFactoryRequest request,
+void MediaService::CreateInterfaceFactory(
+    mojom::InterfaceFactoryRequest request,
     service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
   // Ignore request if service has already stopped.
   if (!mojo_media_client_)
     return;
 
   mojo::MakeStrongBinding(
-      base::MakeUnique<ServiceFactoryImpl>(std::move(remote_interfaces),
-                                           media_log_, ref_factory_.CreateRef(),
-                                           mojo_media_client_.get()),
+      base::MakeUnique<InterfaceFactoryImpl>(
+          std::move(remote_interfaces), media_log_, ref_factory_.CreateRef(),
+          mojo_media_client_.get()),
       std::move(request));
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/service_factory_impl.h"
+#include "media/mojo/services/interface_factory_impl.h"
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,7 +33,7 @@
 
 namespace media {
 
-ServiceFactoryImpl::ServiceFactoryImpl(
+InterfaceFactoryImpl::InterfaceFactoryImpl(
     service_manager::mojom::InterfaceProviderPtr interfaces,
     scoped_refptr<MediaLog> media_log,
     std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
@@ -49,13 +49,13 @@ ServiceFactoryImpl::ServiceFactoryImpl(
   DCHECK(mojo_media_client_);
 }
 
-ServiceFactoryImpl::~ServiceFactoryImpl() {
+InterfaceFactoryImpl::~InterfaceFactoryImpl() {
   DVLOG(1) << __FUNCTION__;
 }
 
-// mojom::ServiceFactory implementation.
+// mojom::InterfaceFactory implementation.
 
-void ServiceFactoryImpl::CreateAudioDecoder(
+void InterfaceFactoryImpl::CreateAudioDecoder(
     mojo::InterfaceRequest<mojom::AudioDecoder> request) {
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
@@ -75,7 +75,7 @@ void ServiceFactoryImpl::CreateAudioDecoder(
 #endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
 }
 
-void ServiceFactoryImpl::CreateVideoDecoder(
+void InterfaceFactoryImpl::CreateVideoDecoder(
     mojom::VideoDecoderRequest request) {
 #if defined(ENABLE_MOJO_VIDEO_DECODER)
   mojo::MakeStrongBinding(
@@ -84,7 +84,7 @@ void ServiceFactoryImpl::CreateVideoDecoder(
 #endif  // defined(ENABLE_MOJO_VIDEO_DECODER)
 }
 
-void ServiceFactoryImpl::CreateRenderer(
+void InterfaceFactoryImpl::CreateRenderer(
     const std::string& audio_device_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {
 #if defined(ENABLE_MOJO_RENDERER)
@@ -112,7 +112,7 @@ void ServiceFactoryImpl::CreateRenderer(
 #endif  // defined(ENABLE_MOJO_RENDERER)
 }
 
-void ServiceFactoryImpl::CreateCdm(
+void InterfaceFactoryImpl::CreateCdm(
     mojo::InterfaceRequest<mojom::ContentDecryptionModule> request) {
 #if defined(ENABLE_MOJO_CDM)
   CdmFactory* cdm_factory = GetCdmFactory();
@@ -126,7 +126,7 @@ void ServiceFactoryImpl::CreateCdm(
 }
 
 #if defined(ENABLE_MOJO_RENDERER)
-RendererFactory* ServiceFactoryImpl::GetRendererFactory() {
+RendererFactory* InterfaceFactoryImpl::GetRendererFactory() {
   if (!renderer_factory_) {
     renderer_factory_ = mojo_media_client_->CreateRendererFactory(media_log_);
     LOG_IF(ERROR, !renderer_factory_) << "RendererFactory not available.";
@@ -136,7 +136,7 @@ RendererFactory* ServiceFactoryImpl::GetRendererFactory() {
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
 #if defined(ENABLE_MOJO_CDM)
-CdmFactory* ServiceFactoryImpl::GetCdmFactory() {
+CdmFactory* InterfaceFactoryImpl::GetCdmFactory() {
   if (!cdm_factory_) {
     cdm_factory_ = mojo_media_client_->CreateCdmFactory(interfaces_.get());
     LOG_IF(ERROR, !cdm_factory_) << "CdmFactory not available.";

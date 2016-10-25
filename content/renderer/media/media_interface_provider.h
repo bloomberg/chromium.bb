@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "url/gurl.h"
 
@@ -34,12 +34,12 @@ class CONTENT_EXPORT MediaInterfaceProvider
                     mojo::ScopedMessagePipeHandle pipe) final;
 
  private:
-  media::mojom::ServiceFactory* GetMediaServiceFactory();
+  media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
   void OnConnectionError();
 
   base::ThreadChecker thread_checker_;
   service_manager::InterfaceProvider* remote_interfaces_;
-  media::mojom::ServiceFactoryPtr media_service_factory_;
+  media::mojom::InterfaceFactoryPtr media_interface_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceProvider);
 };

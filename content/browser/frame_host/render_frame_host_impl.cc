@@ -96,7 +96,6 @@
 #include "device/wake_lock/wake_lock_service_context.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -811,7 +810,7 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
 
 void RenderFrameHostImpl::Create(
     const service_manager::Identity& remote_identity,
-    media::mojom::ServiceFactoryRequest request) {
+    media::mojom::InterfaceFactoryRequest request) {
   std::unique_ptr<service_manager::InterfaceRegistry> registry(
       new service_manager::InterfaceRegistry);
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
@@ -829,8 +828,8 @@ void RenderFrameHostImpl::Create(
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->ConnectToInterface("service:media", &media_service);
-  media_service->CreateServiceFactory(std::move(request),
-                                      std::move(interfaces));
+  media_service->CreateInterfaceFactory(std::move(request),
+                                        std::move(interfaces));
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
@@ -2187,7 +2186,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Unretained(this)));
   }
 
-  GetInterfaceRegistry()->AddInterface<media::mojom::ServiceFactory>(this);
+  GetInterfaceRegistry()->AddInterface<media::mojom::InterfaceFactory>(this);
 
   // This is to support usage of WebSockets in cases in which there is an
   // associated RenderFrame. This is important for showing the correct security

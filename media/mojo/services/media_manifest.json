@@ -6,7 +6,7 @@
     "service_manager:connector": {
       "provides": {
         "media:media": [ "media::mojom::MediaService" ],
-        "media:service_factory": [ "media::mojom::ServiceFactory" ]
+        "media:interface_factory": [ "media::mojom::InterfaceFactory" ]
       },
       "requires": {
         "*": [ "app" ]

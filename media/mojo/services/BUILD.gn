@@ -52,6 +52,8 @@ component("services") {
   sources = [
     "demuxer_stream_provider_shim.cc",
     "demuxer_stream_provider_shim.h",
+    "interface_factory_impl.cc",
+    "interface_factory_impl.h",
     "media_mojo_export.h",
     "media_service.cc",
     "media_service.h",
@@ -77,8 +79,6 @@ component("services") {
     "mojo_renderer_service.h",
     "mojo_video_decoder_service.cc",
     "mojo_video_decoder_service.h",
-    "service_factory_impl.cc",
-    "service_factory_impl.h",
     "test_mojo_media_client.cc",
     "test_mojo_media_client.h",
   ]

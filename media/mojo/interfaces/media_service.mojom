@@ -4,10 +4,10 @@
 
 module media.mojom;
 
-import "media/mojo/interfaces/service_factory.mojom";
+import "media/mojo/interfaces/interface_factory.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 
 interface MediaService {
-  CreateServiceFactory(ServiceFactory& factory,
+  CreateInterfaceFactory(InterfaceFactory& factory,
                        service_manager.mojom.InterfaceProvider frame_interfaces);
 };

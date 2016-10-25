@@ -36,7 +36,7 @@
 #include "content/common/navigation_params.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -107,7 +107,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
       public NON_EXPORTED_BASE(
-          service_manager::InterfaceFactory<media::mojom::ServiceFactory>) {
+          service_manager::InterfaceFactory<media::mojom::InterfaceFactory>) {
  public:
   using AXTreeSnapshotCallback =
       base::Callback<void(
@@ -195,9 +195,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstanceImpl::Observer
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
 
-  // service_manager::InterfaceFactory<media::mojom::ServiceFactory>
+  // service_manager::InterfaceFactory<media::mojom::InterfaceFactory>
   void Create(const service_manager::Identity& remote_identity,
-              media::mojom::ServiceFactoryRequest request) override;
+              media::mojom::InterfaceFactoryRequest request) override;
 
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(int proxy_routing_id,

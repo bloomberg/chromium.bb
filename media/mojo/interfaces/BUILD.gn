@@ -12,11 +12,11 @@ mojom("interfaces") {
     "content_decryption_module.mojom",
     "decryptor.mojom",
     "demuxer_stream.mojom",
+    "interface_factory.mojom",
     "media_service.mojom",
     "media_types.mojom",
     "output_protection.mojom",
     "renderer.mojom",
-    "service_factory.mojom",
     "video_decoder.mojom",
   ]
 

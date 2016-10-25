@@ -38,8 +38,8 @@
 
 #if defined(MOJO_RENDERER)
 #include "media/mojo/clients/mojo_renderer.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/cpp/service_test.h"
 
@@ -690,18 +690,18 @@ class PipelineIntegrationTestHost : public service_manager::test::ServiceTest,
 
  protected:
   std::unique_ptr<Renderer> CreateRenderer() override {
-    connector()->ConnectToInterface("service:media", &media_service_factory_);
+    connector()->ConnectToInterface("service:media", &media_interface_factory_);
 
     mojom::RendererPtr mojo_renderer;
-    media_service_factory_->CreateRenderer(std::string(),
-                                           mojo::GetProxy(&mojo_renderer));
+    media_interface_factory_->CreateRenderer(std::string(),
+                                             mojo::GetProxy(&mojo_renderer));
 
     return base::MakeUnique<MojoRenderer>(message_loop_.task_runner(),
                                           std::move(mojo_renderer));
   }
 
  private:
-  mojom::ServiceFactoryPtr media_service_factory_;
+  mojom::InterfaceFactoryPtr media_interface_factory_;
 };
 #else
 class PipelineIntegrationTestHost : public testing::Test,

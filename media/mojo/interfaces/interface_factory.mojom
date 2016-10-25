@@ -11,7 +11,7 @@ import "media/mojo/interfaces/video_decoder.mojom";
 
 // A factory interface to create media services. Renderers can only access
 // ContentDecryptionModules created in the same factory.
-interface ServiceFactory {
+interface InterfaceFactory {
   // Creates an AudioDecoder service.
   CreateAudioDecoder(AudioDecoder& audio_decoder);
 

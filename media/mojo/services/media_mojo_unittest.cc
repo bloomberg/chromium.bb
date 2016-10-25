@@ -18,8 +18,8 @@
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,7 +77,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     connection_->SetConnectionLostClosure(base::Bind(
         &MediaServiceTest::ConnectionClosed, base::Unretained(this)));
 
-    connection_->GetInterface(&service_factory_);
+    connection_->GetInterface(&interface_factory_);
 
     run_loop_.reset(new base::RunLoop());
   }
@@ -94,7 +94,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   void InitializeCdm(const std::string& key_system,
                      bool expected_result,
                      int cdm_id) {
-    service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
+    interface_factory_->CreateCdm(mojo::GetProxy(&cdm_));
 
     EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result, cdm_id))
         .Times(Exactly(1))
@@ -109,7 +109,8 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
 
   void InitializeRenderer(const VideoDecoderConfig& video_config,
                           bool expected_result) {
-    service_factory_->CreateRenderer(std::string(), mojo::GetProxy(&renderer_));
+    interface_factory_->CreateRenderer(std::string(),
+                                       mojo::GetProxy(&renderer_));
 
     video_stream_.set_video_decoder_config(video_config);
 
@@ -135,7 +136,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
  protected:
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  mojom::ServiceFactoryPtr service_factory_;
+  mojom::InterfaceFactoryPtr interface_factory_;
   mojom::ContentDecryptionModulePtr cdm_;
   mojom::RendererPtr renderer_;
 
@@ -192,12 +193,12 @@ TEST_F(MediaServiceTest, Lifetime) {
   cdm_.reset();
   renderer_.reset();
 
-  // Disconnecting ServiceFactory service should terminate the app, which will
+  // Disconnecting InterfaceFactory service should terminate the app, which will
   // close the connection.
   EXPECT_CALL(*this, ConnectionClosed())
       .Times(Exactly(1))
       .WillOnce(Invoke(run_loop_.get(), &base::RunLoop::Quit));
-  service_factory_.reset();
+  interface_factory_.reset();
 
   run_loop_->Run();
 }

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_SERVICE_FACTORY_IMPL_H_
-#define MEDIA_MOJO_SERVICES_SERVICE_FACTORY_IMPL_H_
+#ifndef MEDIA_MOJO_SERVICES_INTERFACE_FACTORY_IMPL_H_
+#define MEDIA_MOJO_SERVICES_INTERFACE_FACTORY_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -26,16 +26,16 @@ class MediaLog;
 class MojoMediaClient;
 class RendererFactory;
 
-class ServiceFactoryImpl : public mojom::ServiceFactory {
+class InterfaceFactoryImpl : public mojom::InterfaceFactory {
  public:
-  ServiceFactoryImpl(
+  InterfaceFactoryImpl(
       service_manager::mojom::InterfaceProviderPtr interfaces,
       scoped_refptr<MediaLog> media_log,
       std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
       MojoMediaClient* mojo_media_client);
-  ~ServiceFactoryImpl() final;
+  ~InterfaceFactoryImpl() final;
 
-  // mojom::ServiceFactory implementation.
+  // mojom::InterfaceFactory implementation.
   void CreateAudioDecoder(mojom::AudioDecoderRequest request) final;
   void CreateVideoDecoder(mojom::VideoDecoderRequest request) final;
   void CreateRenderer(const std::string& audio_device_id,
@@ -66,9 +66,9 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
   std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(InterfaceFactoryImpl);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_SERVICE_FACTORY_IMPL_H_
+#endif  // MEDIA_MOJO_SERVICES_INTERFACE_FACTORY_IMPL_H_

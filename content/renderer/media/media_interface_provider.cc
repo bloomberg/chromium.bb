@@ -28,42 +28,43 @@ void MediaInterfaceProvider::GetInterface(const std::string& interface_name,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (interface_name == media::mojom::ContentDecryptionModule::Name_) {
-    GetMediaServiceFactory()->CreateCdm(
+    GetMediaInterfaceFactory()->CreateCdm(
         mojo::MakeRequest<media::mojom::ContentDecryptionModule>(
             std::move(pipe)));
   } else if (interface_name == media::mojom::Renderer::Name_) {
-    GetMediaServiceFactory()->CreateRenderer(
+    GetMediaInterfaceFactory()->CreateRenderer(
         std::string(),
         mojo::MakeRequest<media::mojom::Renderer>(std::move(pipe)));
   } else if (interface_name == media::mojom::AudioDecoder::Name_) {
-    GetMediaServiceFactory()->CreateAudioDecoder(
+    GetMediaInterfaceFactory()->CreateAudioDecoder(
         mojo::MakeRequest<media::mojom::AudioDecoder>(std::move(pipe)));
   } else if (interface_name == media::mojom::VideoDecoder::Name_) {
-    GetMediaServiceFactory()->CreateVideoDecoder(
+    GetMediaInterfaceFactory()->CreateVideoDecoder(
         mojo::MakeRequest<media::mojom::VideoDecoder>(std::move(pipe)));
   } else {
     NOTREACHED();
   }
 }
 
-media::mojom::ServiceFactory* MediaInterfaceProvider::GetMediaServiceFactory() {
+media::mojom::InterfaceFactory*
+MediaInterfaceProvider::GetMediaInterfaceFactory() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!media_service_factory_) {
-    remote_interfaces_->GetInterface(&media_service_factory_);
-    media_service_factory_.set_connection_error_handler(base::Bind(
+  if (!media_interface_factory_) {
+    remote_interfaces_->GetInterface(&media_interface_factory_);
+    media_interface_factory_.set_connection_error_handler(base::Bind(
         &MediaInterfaceProvider::OnConnectionError, base::Unretained(this)));
   }
 
-  return media_service_factory_.get();
+  return media_interface_factory_.get();
 }
 
 void MediaInterfaceProvider::OnConnectionError() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  media_service_factory_.reset();
+  media_interface_factory_.reset();
 }
 
 }  // namespace content

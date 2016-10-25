@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
-#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -48,8 +48,8 @@ class MEDIA_MOJO_EXPORT MediaService
               mojom::MediaServiceRequest request) final;
 
   // mojom::MediaService implementation.
-  void CreateServiceFactory(
-      mojom::ServiceFactoryRequest request,
+  void CreateInterfaceFactory(
+      mojom::InterfaceFactoryRequest request,
       service_manager::mojom::InterfaceProviderPtr remote_interfaces) final;
 
   // Note: Since each instance runs on a different thread, do not share a common
