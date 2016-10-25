@@ -54,8 +54,8 @@ const AtomicString& FontCache::systemFontFamily() {
 }
 
 // static
-void FontCache::setSystemFontFamily(const char* familyName) {
-  DCHECK(familyName && *familyName);
+void FontCache::setSystemFontFamily(const AtomicString& familyName) {
+  DCHECK(!familyName.isEmpty());
   mutableSystemFontFamily() = familyName;
 }
 

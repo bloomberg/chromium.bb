@@ -69,6 +69,12 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
       prefs.default_font_size <= kMaxDefaultFontSize) {
     WebFontRendering::setDefaultFontSize(prefs.default_font_size);
   }
+#if !defined(OS_ANDROID)
+  if (!prefs.system_font_family_name.empty()) {
+    WebFontRendering::setSystemFontFamily(
+        blink::WebString::fromUTF8(prefs.system_font_family_name));
+  }
+#endif
 }
 
 }  // namespace content

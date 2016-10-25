@@ -81,4 +81,9 @@ void WebFontRendering::setDefaultFontSize(int size) {
   LayoutThemeFontProvider::setDefaultFontSize(size);
 }
 
+// static
+void WebFontRendering::setSystemFontFamily(const WebString& name) {
+  FontCache::setSystemFontFamily(name);
+}
+
 }  // namespace blink

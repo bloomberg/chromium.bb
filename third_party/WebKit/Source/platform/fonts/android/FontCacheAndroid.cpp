@@ -60,6 +60,9 @@ const AtomicString& FontCache::systemFontFamily() {
   return systemFontFamily;
 }
 
+// static
+void FontCache::setSystemFontFamily(const AtomicString&) {}
+
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     const FontDescription& fontDescription,
     UChar32 c,

@@ -120,8 +120,8 @@ class PLATFORM_EXPORT FontCache {
 #else
   static const AtomicString& legacySystemFontFamily();
 #endif
-#if OS(LINUX)
-  static void setSystemFontFamily(const char*);
+#if OS(LINUX) || OS(ANDROID)
+  static void setSystemFontFamily(const AtomicString&);
 #endif
 
 #if OS(WIN)

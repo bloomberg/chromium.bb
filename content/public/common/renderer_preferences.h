@@ -139,6 +139,10 @@ struct CONTENT_EXPORT RendererPreferences {
   // Country iso of the mobile network for content detection purpose.
   std::string network_contry_iso;
 
+#if defined(OS_LINUX)
+  std::string system_font_family_name;
+#endif
+
 #if defined(OS_WIN)
   // The default system font settings for caption, small caption, menu and
   // status messages. Used only by Windows.

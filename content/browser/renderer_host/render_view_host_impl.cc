@@ -113,8 +113,8 @@ using blink::WebPluginAction;
 namespace content {
 namespace {
 
+void GetPlatformSpecificPrefs(RendererPreferences* prefs) {
 #if defined(OS_WIN)
-void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
   NONCLIENTMETRICS_XP metrics = {0};
   base::win::GetNonClientMetrics(&metrics);
 
@@ -146,8 +146,10 @@ void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYVSCROLL);
   prefs->arrow_bitmap_width_horizontal_scroll_bar_in_dips =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXHSCROLL);
-}
+#elif defined(OS_LINUX)
+  prefs->system_font_family_name = gfx::Font().GetFontName();
 #endif
+}
 
 std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   std::vector<DropData::Metadata> metadata;
@@ -341,9 +343,7 @@ bool RenderViewHostImpl::CreateRenderView(
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
   params->renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
-#if defined(OS_WIN)
-  GetWindowsSpecificPrefs(&params->renderer_preferences);
-#endif
+  GetPlatformSpecificPrefs(&params->renderer_preferences);
   params->web_preferences = GetWebkitPreferences();
   params->view_id = GetRoutingID();
   params->main_frame_routing_id = main_frame_routing_id_;
@@ -409,9 +409,7 @@ bool RenderViewHostImpl::IsRenderViewLive() const {
 void RenderViewHostImpl::SyncRendererPrefs() {
   RendererPreferences renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
-#if defined(OS_WIN)
-  GetWindowsSpecificPrefs(&renderer_preferences);
-#endif
+  GetPlatformSpecificPrefs(&renderer_preferences);
   Send(new ViewMsg_SetRendererPrefs(GetRoutingID(), renderer_preferences));
 }
 
