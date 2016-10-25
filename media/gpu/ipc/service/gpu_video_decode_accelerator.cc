@@ -471,7 +471,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     }
     textures.push_back(current_textures);
     buffers.push_back(PictureBuffer(buffer_ids[i], texture_dimensions_,
-                                    service_ids, buffer_texture_ids));
+                                    buffer_texture_ids, service_ids));
   }
   {
     DebugAutoLock auto_lock(debug_uncleared_textures_lock_);

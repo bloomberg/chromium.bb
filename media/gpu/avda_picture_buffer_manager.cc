@@ -202,9 +202,9 @@ gpu::gles2::TextureRef* AVDAPictureBufferManager::GetTextureForPicture(
       gles_decoder->GetContextGroup()->texture_manager();
   RETURN_NULL_IF_NULL(texture_manager);
 
-  DCHECK_LE(1u, picture_buffer.internal_texture_ids().size());
+  DCHECK_LE(1u, picture_buffer.client_texture_ids().size());
   gpu::gles2::TextureRef* texture_ref =
-      texture_manager->GetTexture(picture_buffer.internal_texture_ids()[0]);
+      texture_manager->GetTexture(picture_buffer.client_texture_ids()[0]);
   RETURN_NULL_IF_NULL(texture_ref);
 
   return texture_ref;
@@ -297,8 +297,8 @@ void AVDAPictureBufferManager::AssignOnePictureBuffer(
     // unless we make the texture transparent.
     static const uint8_t rgba[] = {0, 0, 0, 0};
     const gfx::Size size(1, 1);
-    DCHECK_LE(1u, picture_buffer.texture_ids().size());
-    glBindTexture(GL_TEXTURE_2D, picture_buffer.texture_ids()[0]);
+    DCHECK_LE(1u, picture_buffer.service_texture_ids().size());
+    glBindTexture(GL_TEXTURE_2D, picture_buffer.service_texture_ids()[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, rgba);
   }

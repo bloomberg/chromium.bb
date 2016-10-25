@@ -17,20 +17,22 @@
 
 namespace media {
 
-// A picture buffer that is composed of a GLES2 texture.
+// A picture buffer that is composed of one or more GLES2 textures.
 // This is the media-namespace equivalent of PP_PictureBuffer_Dev.
 class MEDIA_EXPORT PictureBuffer {
  public:
   using TextureIds = std::vector<uint32_t>;
 
-  PictureBuffer(int32_t id, gfx::Size size, const TextureIds& texture_ids);
   PictureBuffer(int32_t id,
                 gfx::Size size,
-                const TextureIds& texture_ids,
-                const TextureIds& internal_texture_ids);
+                const TextureIds& client_texture_ids);
   PictureBuffer(int32_t id,
                 gfx::Size size,
-                const TextureIds& texture_ids,
+                const TextureIds& client_texture_ids,
+                const TextureIds& service_texture_ids);
+  PictureBuffer(int32_t id,
+                gfx::Size size,
+                const TextureIds& client_texture_ids,
                 const std::vector<gpu::Mailbox>& texture_mailboxes);
   PictureBuffer(const PictureBuffer& other);
   ~PictureBuffer();
@@ -39,19 +41,16 @@ class MEDIA_EXPORT PictureBuffer {
   int32_t id() const { return id_; }
 
   // Returns the size of the buffer.
-  gfx::Size size() const {
-    return size_;
-  }
+  gfx::Size size() const { return size_; }
+
   void set_size(const gfx::Size& size) { size_ = size; }
 
-  // Returns the id of the texture.
-  // NOTE: The texture id in the renderer process corresponds to a different
-  // texture id in the GPU process.
-  const TextureIds& texture_ids() const { return texture_ids_; }
+  // The client texture ids, i.e., those returned by Chrome's GL service.
+  const TextureIds& client_texture_ids() const { return client_texture_ids_; }
 
-  const TextureIds& internal_texture_ids() const {
-    return internal_texture_ids_;
-  }
+  // The service texture ids, i.e., the real platform ids corresponding to
+  // |client_texture_ids|.
+  const TextureIds& service_texture_ids() const { return service_texture_ids_; }
 
   const gpu::Mailbox& texture_mailbox(size_t plane) const {
     return texture_mailboxes_[plane];
@@ -60,8 +59,8 @@ class MEDIA_EXPORT PictureBuffer {
  private:
   int32_t id_;
   gfx::Size size_;
-  TextureIds texture_ids_;
-  TextureIds internal_texture_ids_;
+  TextureIds client_texture_ids_;
+  TextureIds service_texture_ids_;
   std::vector<gpu::Mailbox> texture_mailboxes_;
 };
 

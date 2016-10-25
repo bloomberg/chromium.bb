@@ -860,7 +860,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
   // Copy the picture buffers provided by the client to the available list,
   // and mark these buffers as available for use.
   for (size_t buffer_index = 0; buffer_index < buffers.size(); ++buffer_index) {
-    DCHECK_LE(1u, buffers[buffer_index].texture_ids().size());
+    DCHECK_LE(1u, buffers[buffer_index].client_texture_ids().size());
     linked_ptr<DXVAPictureBuffer> picture_buffer =
         DXVAPictureBuffer::Create(*this, buffers[buffer_index], egl_config_);
     RETURN_AND_NOTIFY_ON_FAILURE(picture_buffer.get(),

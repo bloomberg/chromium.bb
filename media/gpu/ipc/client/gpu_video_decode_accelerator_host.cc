@@ -133,7 +133,7 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
       PostNotifyError(INVALID_ARGUMENT);
       return;
     }
-    texture_ids.push_back(buffer.texture_ids());
+    texture_ids.push_back(buffer.client_texture_ids());
     buffer_ids.push_back(buffer.id());
   }
   Send(new AcceleratedVideoDecoderMsg_AssignPictureBuffers(

@@ -882,12 +882,12 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(!picture_info_map_.count(picture.id()));
     assigned_picture_ids_.insert(picture.id());
     available_picture_ids_.push_back(picture.id());
-    DCHECK_LE(1u, picture.internal_texture_ids().size());
-    DCHECK_LE(1u, picture.texture_ids().size());
+    DCHECK_LE(1u, picture.client_texture_ids().size());
+    DCHECK_LE(1u, picture.service_texture_ids().size());
     picture_info_map_.insert(std::make_pair(
         picture.id(),
-        base::MakeUnique<PictureInfo>(picture.internal_texture_ids()[0],
-                                      picture.texture_ids()[0])));
+        base::MakeUnique<PictureInfo>(picture.client_texture_ids()[0],
+                                      picture.service_texture_ids()[0])));
   }
 
   // Pictures are not marked as uncleared until after this method returns, and

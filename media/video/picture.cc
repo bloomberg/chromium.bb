@@ -9,29 +9,29 @@ namespace media {
 
 PictureBuffer::PictureBuffer(int32_t id,
                              gfx::Size size,
-                             const TextureIds& texture_ids)
-    : id_(id), size_(size), texture_ids_(texture_ids) {}
+                             const TextureIds& client_texture_ids)
+    : id_(id), size_(size), client_texture_ids_(client_texture_ids) {}
 
 PictureBuffer::PictureBuffer(int32_t id,
                              gfx::Size size,
-                             const TextureIds& texture_ids,
-                             const TextureIds& internal_texture_ids)
+                             const TextureIds& client_texture_ids,
+                             const TextureIds& service_texture_ids)
     : id_(id),
       size_(size),
-      texture_ids_(texture_ids),
-      internal_texture_ids_(internal_texture_ids) {
-  DCHECK_EQ(texture_ids.size(), internal_texture_ids.size());
+      client_texture_ids_(client_texture_ids),
+      service_texture_ids_(service_texture_ids) {
+  DCHECK_EQ(client_texture_ids.size(), service_texture_ids.size());
 }
 
 PictureBuffer::PictureBuffer(int32_t id,
                              gfx::Size size,
-                             const TextureIds& texture_ids,
+                             const TextureIds& client_texture_ids,
                              const std::vector<gpu::Mailbox>& texture_mailboxes)
     : id_(id),
       size_(size),
-      texture_ids_(texture_ids),
+      client_texture_ids_(client_texture_ids),
       texture_mailboxes_(texture_mailboxes) {
-  DCHECK_EQ(texture_ids.size(), texture_mailboxes.size());
+  DCHECK_EQ(client_texture_ids.size(), texture_mailboxes.size());
 }
 
 PictureBuffer::PictureBuffer(const PictureBuffer& other) = default;

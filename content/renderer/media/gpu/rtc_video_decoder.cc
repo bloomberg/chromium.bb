@@ -383,7 +383,7 @@ void RTCVideoDecoder::DismissPictureBuffer(int32_t id) {
 
   if (!picture_buffers_at_display_.count(id)) {
     // We can delete the texture immediately as it's not being displayed.
-    factories_->DeleteTexture(buffer_to_dismiss.texture_ids()[0]);
+    factories_->DeleteTexture(buffer_to_dismiss.client_texture_ids()[0]);
     return;
   }
   // Not destroying a texture in display in |picture_buffers_at_display_|.
@@ -424,7 +424,7 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   }
   bool inserted = picture_buffers_at_display_
                       .insert(std::make_pair(picture.picture_buffer_id(),
-                                             pb.texture_ids()[0]))
+                                             pb.client_texture_ids()[0]))
                       .second;
   DCHECK(inserted);
 
@@ -470,7 +470,8 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
           pixel_format, holders,
           media::BindToCurrentLoop(base::Bind(
               &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
-              factories_, picture.picture_buffer_id(), pb.texture_ids()[0])),
+              factories_, picture.picture_buffer_id(),
+              pb.client_texture_ids()[0])),
           pb.size(), visible_rect, visible_rect.size(), timestamp_ms);
   if (frame && picture.allow_overlay()) {
     frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
@@ -760,7 +761,8 @@ void RTCVideoDecoder::DestroyTextures() {
     assigned_picture_buffers_.erase(picture_buffer_at_display.first);
 
   for (const auto& assigned_picture_buffer : assigned_picture_buffers_)
-    factories_->DeleteTexture(assigned_picture_buffer.second.texture_ids()[0]);
+    factories_->DeleteTexture(
+        assigned_picture_buffer.second.client_texture_ids()[0]);
 
   assigned_picture_buffers_.clear();
 }

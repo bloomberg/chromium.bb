@@ -1629,7 +1629,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   output_buffer_map_.resize(buffers.size());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     DCHECK(buffers[i].size() == coded_size_);
-    DCHECK_EQ(1u, buffers[i].texture_ids().size());
+    DCHECK_EQ(1u, buffers[i].service_texture_ids().size());
 
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK(!output_record.at_device);
@@ -1641,7 +1641,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     DCHECK_EQ(output_record.cleared, false);
 
     output_record.picture_id = buffers[i].id();
-    output_record.texture_id = buffers[i].texture_ids()[0];
+    output_record.texture_id = buffers[i].service_texture_ids()[0];
     // This will remain true until ImportBufferForPicture is called, either by
     // the client, or by ourselves, if we are allocating.
     output_record.at_client = true;

@@ -103,8 +103,8 @@ void FakeVideoDecodeAccelerator::AssignPictureBuffers(
     return;
   }
   for (size_t index = 0; index < buffers.size(); ++index) {
-    DCHECK_LE(1u, buffers[index].texture_ids().size());
-    glBindTexture(GL_TEXTURE_2D, buffers[index].texture_ids()[0]);
+    DCHECK_LE(1u, buffers[index].service_texture_ids().size());
+    glBindTexture(GL_TEXTURE_2D, buffers[index].service_texture_ids()[0]);
     // Every other frame white and the rest black.
     uint8_t* data = index % 2 ? white_data.get() : black_data.get();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_size_.width(),

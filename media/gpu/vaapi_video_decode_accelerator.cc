@@ -796,15 +796,16 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
-    uint32_t texture_id =
-        buffers[i].texture_ids().size() > 0 ? buffers[i].texture_ids()[0] : 0;
-    uint32_t internal_texture_id = buffers[i].internal_texture_ids().size() > 0
-                                       ? buffers[i].internal_texture_ids()[0]
-                                       : 0;
+    uint32_t client_id = !buffers[i].client_texture_ids().empty()
+                             ? buffers[i].client_texture_ids()[0]
+                             : 0;
+    uint32_t service_id = !buffers[i].service_texture_ids().empty()
+                              ? buffers[i].service_texture_ids()[0]
+                              : 0;
 
     linked_ptr<VaapiPicture> picture(VaapiPicture::CreatePicture(
         vaapi_wrapper_, make_context_current_cb_, bind_image_cb_,
-        buffers[i].id(), requested_pic_size_, texture_id, internal_texture_id));
+        buffers[i].id(), requested_pic_size_, service_id, client_id));
     RETURN_AND_NOTIFY_ON_FAILURE(
         picture.get(), "Failed creating a VaapiPicture", PLATFORM_FAILURE, );
 
