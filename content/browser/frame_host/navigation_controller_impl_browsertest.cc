@@ -6759,6 +6759,35 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
 }
 
+// Check that the referrer is stored inside FrameNavigationEntry for subframes.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       RefererStoredForSubFrame) {
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  GURL url_simple(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe_simple.html"));
+  GURL url_redirect(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe_redirect.html"));
+
+  // Run this test twice: with and without a redirection.
+  for (const GURL& url : {url_simple, url_redirect}) {
+    // Navigate to a page with an iframe.
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    // Check the FrameNavigationEntry's referrer.
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[0]->frame_entry.get();
+    EXPECT_EQ(frame_entry->referrer().url, url);
+  }
+}
+
 namespace {
 
 class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {

@@ -4810,6 +4810,16 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   params.is_srcdoc = params.url == content::kAboutSrcDocURL;
 
+  // If the page contained a client redirect (meta refresh, document.loc...),
+  // set the referrer appropriately.
+  if (ds->isClientRedirect()) {
+    params.referrer =
+        Referrer(params.redirects[0], ds->request().referrerPolicy());
+  } else {
+    params.referrer =
+        RenderViewImpl::GetReferrerFromRequest(frame, ds->request());
+  }
+
   if (!frame->parent()) {
     // Top-level navigation.
 
@@ -4862,15 +4872,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     }
 
     // If the page contained a client redirect (meta refresh, document.loc...),
-    // set the referrer and transition appropriately.
+    // set the transition appropriately.
     if (ds->isClientRedirect()) {
-      params.referrer =
-          Referrer(params.redirects[0], ds->request().referrerPolicy());
       params.transition = ui::PageTransitionFromInt(
           params.transition | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-    } else {
-      params.referrer = RenderViewImpl::GetReferrerFromRequest(
-          frame, ds->request());
     }
 
     // When using subframe navigation entries, method and post id have already
