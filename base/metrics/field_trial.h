@@ -69,7 +69,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/process/launch.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -263,6 +265,12 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // filled in; otherwise, the result is false and |field_trial_state| is left
   // untouched.
   bool GetState(State* field_trial_state);
+
+  // Adds the field trial to the allocator whose memory is to be shared with
+  // child processes. Assumes the calling code has a lock around the call to
+  // this function, since the check for the allocator is not thread-safe.
+  void AddToAllocatorWhileLocked(
+      base::SharedPersistentMemoryAllocator* allocator);
 
   // Returns the group_name. A winner need not have been chosen.
   std::string group_name_internal() const { return group_name_; }
@@ -479,14 +487,21 @@ class BASE_EXPORT FieldTrialList {
       const base::CommandLine& cmd_line,
       const char* field_trial_handle_switch);
 
+#if defined(OS_WIN)
+  // On Windows, we need to explicitly pass down any handles to be inherited.
+  // This function adds the shared memory handle to field trial state to the
+  // list of handles to be inherited.
+  static void AppendFieldTrialHandleIfNeeded(
+      base::HandlesToInheritVector* handles);
+#endif
+
   // Adds a switch to the command line containing the field trial state as a
   // string (if not using shared memory to share field trial state), or the
   // shared memory handle + length.
   // Needs the |field_trial_handle_switch| argument to be passed in since base/
   // can't depend on content/.
-  static std::unique_ptr<base::SharedMemory> CopyFieldTrialStateToFlags(
-      const char* field_trial_handle_switch,
-      base::CommandLine* cmd_line);
+  static void CopyFieldTrialStateToFlags(const char* field_trial_handle_switch,
+                                         base::CommandLine* cmd_line);
 
   // Create a FieldTrial with the given |name| and using 100% probability for
   // the FieldTrial, force FieldTrial to have the same group string as
@@ -512,6 +527,22 @@ class BASE_EXPORT FieldTrialList {
   static size_t GetFieldTrialCount();
 
  private:
+  // Allow tests to access our innards for testing purposes.
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, InstantiateAllocator);
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, AddTrialsToAllocator);
+
+  // Expects a mapped piece of shared memory |shm| that was created from the
+  // browser process's field_trial_allocator and shared via the command line.
+  // This function recreates the allocator, iterates through all the field
+  // trials in it, and creates them via CreateFieldTrial().
+  static void CreateTrialsFromSharedMemory(
+      std::unique_ptr<base::SharedMemory> shm);
+
+  // Instantiate the field trial allocator, add all existing field trials to it,
+  // and duplicates its handle to a read-only handle, which gets stored in
+  // |readonly_allocator_handle|.
+  static void InstantiateFieldTrialAllocatorIfNeeded();
+
   // A map from FieldTrial names to the actual instances.
   typedef std::map<std::string, FieldTrial*> RegistrationMap;
 
@@ -548,6 +579,19 @@ class BASE_EXPORT FieldTrialList {
 
   // List of observers to be notified when a group is selected for a FieldTrial.
   scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
+
+  // Allocator used to instantiate field trial in child processes. In the
+  // future, we may want to move this to a more generic place if we want to
+  // start passing more data other than field trials.
+  std::unique_ptr<base::SharedPersistentMemoryAllocator>
+      field_trial_allocator_ = nullptr;
+
+#if defined(OS_WIN)
+  // Readonly copy of the handle to the allocator. Needs to be a member variable
+  // because it's needed from both CopyFieldTrialStateToFlags() and
+  // AppendFieldTrialHandleIfNeeded().
+  HANDLE readonly_allocator_handle_ = nullptr;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialList);
 };

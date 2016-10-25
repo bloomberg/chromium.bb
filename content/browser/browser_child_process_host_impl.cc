@@ -208,8 +208,7 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 }
 
 // static
-std::unique_ptr<base::SharedMemory>
-BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
+void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
     base::CommandLine* cmd_line) {
   std::string enabled_features;
   std::string disabled_features;
@@ -222,14 +221,13 @@ BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
 
   // If we run base::FieldTrials, we want to pass to their state to the
   // child process so that it can act in accordance with each state.
-  return base::FieldTrialList::CopyFieldTrialStateToFlags(
-      switches::kFieldTrialHandle, cmd_line);
+  base::FieldTrialList::CopyFieldTrialStateToFlags(switches::kFieldTrialHandle,
+                                                   cmd_line);
 }
 
 void BrowserChildProcessHostImpl::Launch(
     SandboxedProcessLauncherDelegate* delegate,
     base::CommandLine* cmd_line,
-    const base::SharedMemory* field_trial_state,
     bool terminate_on_shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -257,7 +255,7 @@ void BrowserChildProcessHostImpl::Launch(
 
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
-      delegate, cmd_line, data_.id, this, field_trial_state, child_token_,
+      delegate, cmd_line, data_.id, this, child_token_,
       base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
                  weak_factory_.GetWeakPtr(),
                  base::ThreadTaskRunnerHandle::Get()),

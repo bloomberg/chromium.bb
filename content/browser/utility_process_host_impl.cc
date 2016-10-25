@@ -344,7 +344,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     process_->Launch(new UtilitySandboxedProcessLauncherDelegate(
                          exposed_dir_, run_elevated_, no_sandbox_, env_,
                          process_->GetHost()),
-                     cmd_line, nullptr, true);
+                     cmd_line, true);
   }
 
   return true;

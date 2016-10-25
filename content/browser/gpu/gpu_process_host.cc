@@ -974,8 +974,7 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
 
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
 
-  field_trial_state_ =
-      BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
+  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
 
 #if defined(OS_WIN)
   cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
@@ -1020,7 +1019,7 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
 
   process_->Launch(
       new GpuSandboxedProcessLauncherDelegate(cmd_line, process_->GetHost()),
-      cmd_line, field_trial_state_.get(), true);
+      cmd_line, true);
   process_launched_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",

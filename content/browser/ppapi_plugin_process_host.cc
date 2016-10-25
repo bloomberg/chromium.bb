@@ -449,7 +449,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // to use another process instead of just forking the zygote.
   process_->Launch(new PpapiPluginSandboxedProcessLauncherDelegate(
                        is_broker_, process_->GetHost()),
-                   cmd_line, nullptr, true);
+                   cmd_line, true);
   return true;
 }
 

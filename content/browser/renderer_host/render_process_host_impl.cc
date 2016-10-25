@@ -912,7 +912,7 @@ bool RenderProcessHostImpl::Init() {
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
         new RendererSandboxedProcessLauncherDelegate(channel_.get()), cmd_line,
-        GetID(), this, field_trial_state_.get(), child_token_,
+        GetID(), this, child_token_,
         base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
     channel_->Pause();
 
@@ -1835,8 +1835,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
 
-  field_trial_state_ =
-      BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(renderer_cmd);
+  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(renderer_cmd);
 
   if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
       BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {

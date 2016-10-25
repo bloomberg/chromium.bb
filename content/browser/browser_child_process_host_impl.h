@@ -66,14 +66,12 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Copies kEnableFeatures and kDisableFeatures to the command line. Generates
   // them from the FeatureList override state, to take into account overrides
   // from FieldTrials.
-  static std::unique_ptr<base::SharedMemory> CopyFeatureAndFieldTrialFlags(
-      base::CommandLine* cmd_line);
+  static void CopyFeatureAndFieldTrialFlags(base::CommandLine* cmd_line);
 
   // BrowserChildProcessHost implementation:
   bool Send(IPC::Message* message) override;
   void Launch(SandboxedProcessLauncherDelegate* delegate,
               base::CommandLine* cmd_line,
-              const base::SharedMemory* field_trial_state,
               bool terminate_on_shutdown) override;
   const ChildProcessData& GetData() const override;
   ChildProcessHost* GetHost() const override;
