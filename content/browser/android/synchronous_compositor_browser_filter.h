@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_BROWSER_FILTER_H_
 #define CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_BROWSER_FILTER_H_
 
+#include <deque>
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
@@ -59,8 +61,10 @@ class SynchronousCompositorBrowserFilter : public ui::WindowAndroidObserver,
       compositor_host_pending_renderer_state_;
 
   base::Lock future_map_lock_;  // Protects |future_map_|.
-  using FrameFutureMap =
-      std::map<int, scoped_refptr<SynchronousCompositor::FrameFuture>>;
+  using FrameFutureQueue =
+      std::deque<scoped_refptr<SynchronousCompositor::FrameFuture>>;
+  // This object is per renderer process, so routing_id is unique.
+  using FrameFutureMap = std::map<int, FrameFutureQueue>;
   FrameFutureMap future_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorBrowserFilter);

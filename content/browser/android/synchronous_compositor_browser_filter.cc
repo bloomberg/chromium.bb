@@ -4,7 +4,7 @@
 
 #include "content/browser/android/synchronous_compositor_browser_filter.h"
 
-#include <map>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
@@ -67,14 +67,16 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
   {
     base::AutoLock lock(future_map_lock_);
     auto itr = future_map_.find(routing_id);
-    if (itr == future_map_.end()) {
+    if (itr == future_map_.end() || itr->second.empty()) {
       bad_message::ReceivedBadMessage(render_process_host_,
                                       bad_message::SCO_INVALID_ARGUMENT);
       return true;
     }
-    future = std::move(itr->second);
+    future = std::move(itr->second.front());
     DCHECK(future);
-    future_map_.erase(itr);
+    itr->second.pop_front();
+    if (itr->second.empty())
+      future_map_.erase(itr);
   }
 
   auto frame_ptr = base::MakeUnique<SynchronousCompositor::Frame>();
@@ -92,10 +94,22 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
 void SynchronousCompositorBrowserFilter::SetFrameFuture(
     int routing_id,
     scoped_refptr<SynchronousCompositor::FrameFuture> frame_future) {
-  // TODO(boliu): Need a sequenced id, to queue previous frames.
   DCHECK(frame_future);
   base::AutoLock lock(future_map_lock_);
-  future_map_[routing_id] = std::move(frame_future);
+  auto itr = future_map_.find(routing_id);
+  if (itr == future_map_.end()) {
+    auto emplace_result = future_map_.emplace(routing_id, FrameFutureQueue());
+    DCHECK(emplace_result.second);
+    itr = emplace_result.first;
+  }
+
+  // Allowing arbitrary number of pending futures can lead to increase in frame
+  // latency. Due to this, Android platform already ensures that here that there
+  // can be at most 2 pending frames. Here, we rely on Android to do the
+  // necessary blocking, which allows more parallelism without increasing
+  // latency. But DCHECK Android blocking is working.
+  DCHECK_LT(itr->second.size(), 2u);
+  itr->second.emplace_back(std::move(frame_future));
 }
 
 void SynchronousCompositorBrowserFilter::OnCompositingDidCommit() {
