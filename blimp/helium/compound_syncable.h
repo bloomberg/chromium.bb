@@ -51,7 +51,7 @@ class BLIMP_HELIUM_EXPORT CompoundSyncable : public Syncable {
     RegisteredMember(RegisteredMember<T>&& other) = default;
 
     T* get() const { return member_.get(); }
-    T& operator->() const { return *member_; }
+    T* operator->() const { return member_.get(); }
 
    private:
     friend class CompoundSyncable;
