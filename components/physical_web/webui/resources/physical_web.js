@@ -17,8 +17,8 @@ function requestNearbyURLs() {
   chrome.send('requestNearbyURLs');
 }
 
-function handleClickPhysicalWebItem(node) {
-  // do something
+function physicalWebItemClicked(index) {
+  chrome.send('physicalWebItemClicked', [index]);
 }
 
 function returnNearbyURLs(nearbyUrlsData) {

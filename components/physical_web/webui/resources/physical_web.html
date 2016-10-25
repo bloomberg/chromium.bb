@@ -24,7 +24,8 @@
 
   <h1 i18n-content="title"></h1>
 
-  <a class="physicalWebTemplate" id="physicalWebTemplate" jsvalues="href:resolvedUrl" jsselect="metadata">
+  <a class="physicalWebTemplate" id="physicalWebTemplate" jsselect="metadata"
+      jsvalues="href:resolvedUrl;onclick:'physicalWebItemClicked(' + index + ')'">
     <div class="physicalWebIcon">
       <img jsvalues="src:icon" />
     </div>

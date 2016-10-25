@@ -12,6 +12,7 @@ const char kPhysicalWebCSS[] = "physical_web.css";
 
 // Message handlers.
 const char kRequestNearbyUrls[] = "requestNearbyURLs";
+const char kPhysicalWebItemClicked[] = "physicalWebItemClicked";
 
 // Strings.
 const char kTitle[] = "title";
@@ -21,6 +22,7 @@ const char kPageInfoIcon[] = "pageInfoIcon";
 const char kPageInfoTitle[] = "pageInfoTitle";
 const char kResolvedUrl[] = "resolvedUrl";
 const char kScannedUrl[] = "scannedUrl";
+const char kIndex[] = "index";
 const char kReturnNearbyUrls[] = "returnNearbyURLs";
 const char kMetadata[] = "metadata";
 

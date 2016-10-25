@@ -13024,6 +13024,15 @@ should be able to be added at any place in this file.
   <description>A Physical Web URL was selected.</description>
 </action>
 
+<action name="PhysicalWeb.WebUI.ListViewUrlSelected">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The user tapped an URL in the Physical Web list view.
+  </description>
+</action>
+
 <action name="PhysicalWeb.WebUI.Open">
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
