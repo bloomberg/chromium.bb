@@ -50,6 +50,9 @@ class CleanCommand(command.CliCommand):
         '--cache', default=False, action='store_true',
         help='Clean up our shared cache dir.')
     group.add_argument(
+        '--chromite', default=False, action='store_true',
+        help='Clean up chromite working directories.')
+    group.add_argument(
         '--deploy', default=False, action='store_true',
         help='Clean files cached by cros deploy.')
     group.add_argument(
@@ -105,6 +108,7 @@ class CleanCommand(command.CliCommand):
 
     if self.options.safe:
       self.options.cache = True
+      self.options.chromite = True
       self.options.deploy = True
       self.options.flash = True
       self.options.images = True
@@ -148,6 +152,11 @@ class CleanCommand(command.CliCommand):
         logging.debug('Ignoring bind mounted cache dir: %s',
                       self.options.cache_dir)
 
+    if self.options.chromite:
+      logging.debug('Clean chromite workdirs')
+      Clean(os.path.join(constants.CHROMITE_DIR, 'venv', 'venv'))
+      Clean(os.path.join(constants.CHROMITE_DIR, 'venv', '.venv_lock'))
+
     if self.options.deploy:
       logging.debug('Clean up the cros deploy cache.')
       for subdir in ('custom-packages', 'gmerge-packages'):
@@ -184,6 +193,7 @@ class CleanCommand(command.CliCommand):
     if self.options.workdirs:
       logging.debug('Clean package workdirs')
       Clean(os.path.join(chroot_dir, 'var', 'tmp', 'portage'))
+      Clean(os.path.join(constants.CHROMITE_DIR, 'venv', 'venv'))
       for d in glob.glob(os.path.join(chroot_dir, 'build', '*', 'tmp',
                                       'portage')):
         Clean(d)
