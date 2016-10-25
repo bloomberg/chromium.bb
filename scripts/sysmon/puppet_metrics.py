@@ -2,10 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Copyright (c) 2015 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 """Puppet metrics"""
 
 from __future__ import print_function
@@ -14,90 +10,98 @@ import time
 
 import yaml
 
-from infra_libs import ts_mon
 from chromite.lib import cros_logging as logging
+from infra_libs import ts_mon
 
+LAST_RUN_FILE = '/var/lib/puppet/state/last_run_summary.yaml'
 
-config_version = ts_mon.GaugeMetric(
+_config_version_metric = ts_mon.GaugeMetric(
     'puppet/version/config',
     description='The version of the puppet configuration.'
     '  By default this is the time that the configuration was parsed')
-puppet_version = ts_mon.StringMetric(
+_puppet_version_metric = ts_mon.StringMetric(
     'puppet/version/puppet',
     description='Version of puppet client installed.')
-events = ts_mon.GaugeMetric(
+_events_metric = ts_mon.GaugeMetric(
     'puppet/events',
     description='Number of changes the puppet client made to the system in its'
     ' last run, by success or failure')
-resources = ts_mon.GaugeMetric(
+_resources_metric = ts_mon.GaugeMetric(
     'puppet/resources',
     description='Number of resources known by the puppet client in its last'
     ' run')
-times = ts_mon.FloatMetric(
+_times_metric = ts_mon.FloatMetric(
     'puppet/times',
     description='Time taken to perform various parts of the last puppet run',
     units=ts_mon.MetricsDataUnits.SECONDS)
-age = ts_mon.FloatMetric('puppet/age',
-                         description='Time since last run',
-                         units=ts_mon.MetricsDataUnits.SECONDS)
+_age_metric = ts_mon.FloatMetric(
+    'puppet/age',
+    description='Time since last run',
+    units=ts_mon.MetricsDataUnits.SECONDS)
 
 
-_LAST_RUN_FILE = '/var/lib/puppet_last_run_summary.yaml'
+class PuppetRunSummary(object):
+  """Puppet run summary information."""
+
+  def __init__(self, summary_file):
+    self.filename = summary_file
+    with open(self.filename) as file_:
+      self._data = yaml.safe_load(file_)
+
+  @property
+  def versions(self):
+    """Return mapping of version information."""
+    return self._data.get('version', {})
+
+  @property
+  def config_version(self):
+    """Return config version as int or None."""
+    return self.versions.get('config', None)
+
+  @property
+  def puppet_version(self):
+    """Return Puppet version as string or None."""
+    return self.versions.get('puppet', None)
+
+  @property
+  def events(self):
+    """Return mapping of events information."""
+    return self._data.get('events', {})
+
+  @property
+  def resources(self):
+    """Return mapping of resources information."""
+    return self._data.get('resources', {})
+
+  @property
+  def times(self):
+    """Return mapping of time information."""
+    return self._data.get(time, {})
+
+  @property
+  def last_run_time(self):
+    """Return last run time as UNIX seconds or None."""
+    return self.times.get('last_run')
 
 
-def get_puppet_summary(time_fn=time.time):
-  path = _LAST_RUN_FILE
-
+def get_puppet_summary():
+  """Send Puppet run summary metrics."""
   try:
-    with open(path) as fh:
-      data = yaml.safe_load(fh)
-  except IOError:
-    # This is fine - the system probably isn't managed by puppet.
-    return
-  except yaml.YAMLError:
-    # This is less fine - the file exists but is invalid.
-    logging.exception('Failed to read puppet lastrunfile %s', path)
-    return
+    summary = PuppetRunSummary(LAST_RUN_FILE)
+  except Exception as e:
+    logging.warning('Error loading Puppet run summary: %s', e)
+  else:
+    _config_version_metric.set(str(summary.config_version))
+    _puppet_version_metric.set(str(summary.puppet_version))
 
-  if not isinstance(data, dict):
-    return
+    for key, value in summary.events.iteritems():
+      _events_metric.set(value, {'result': key})
 
-  try:
-    config_version.set(data['version']['config'])
-  except ts_mon.MonitoringInvalidValueTypeError:
-    # https://crbug.com/581749
-    logging.exception('lastrunfile contains invalid "config" value. '
-                      'Please fix Puppet.')
-  except KeyError:
-    logging.warning('version/config not found in %s', path)
+    for key, value in summary.resources.iteritems():
+      _resources_metric.set(value, {'action': key})
 
-  try:
-    puppet_version.set(data['version']['puppet'])
-  except ts_mon.MonitoringInvalidValueTypeError:
-    # https://crbug.com/581749
-    logging.exception('lastrunfile contains invalid puppet version. '
-                      'Please fix Puppet.')
-  except KeyError:
-    logging.warning('version/puppet not found in %s', path)
+    for key, value in summary.times.iteritems():
+      _times_metric.set(value, {'step': key})
 
-  try:
-    for key, value in data['events'].iteritems():
-      if key != 'total':
-        events.set(value, {'result': key})
-  except KeyError:
-    logging.warning('events not found in %s', path)
-
-  try:
-    for key, value in data['resources'].iteritems():
-      resources.set(value, {'action': key})
-  except KeyError:
-    logging.warning('resources not found in %s', path)
-
-  try:
-    for key, value in data['time'].iteritems():
-      if key == 'last_run':
-        age.set(time_fn() - value)
-      elif key != 'total':
-        times.set(value, {'step': key})
-  except KeyError:
-    logging.warning('time not found in %s', path)
+    if summary.last_run_time is not None:
+      _age_metric.set(time.time() - summary.last_run_time)
