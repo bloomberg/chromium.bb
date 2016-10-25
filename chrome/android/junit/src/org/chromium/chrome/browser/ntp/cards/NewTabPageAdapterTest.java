@@ -26,14 +26,14 @@ import android.view.MenuItem.OnMenuItemClickListener;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils
-        .createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createInfo;
 
 import org.chromium.base.Callback;
@@ -41,6 +41,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -55,7 +56,6 @@ import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -67,7 +67,6 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -77,6 +76,9 @@ import java.util.Set;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NewTabPageAdapterTest {
+    @Rule
+    public EnableFeatures.Processor mEnableFeatureProcessor = new EnableFeatures.Processor();
+
     private FakeSuggestionsSource mSource;
     private NewTabPageAdapter mAdapter;
     private SigninManager mMockSigninManager;
@@ -248,7 +250,6 @@ public class NewTabPageAdapterTest {
         SigninManager.setInstanceForTesting(null);
         ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
                 .setNewTabPageSigninPromoDismissed(false);
-        SnippetsConfig.setTestEnabledFeatures(null);
     }
 
     /**
@@ -847,10 +848,8 @@ public class NewTabPageAdapterTest {
 
     @Test
     @Feature({"Ntp"})
+    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testAllDismissedVisibility() {
-        SnippetsConfig.setTestEnabledFeatures(new HashSet<String>() {
-            { add(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL); }
-        });
         SigninObserver signinObserver = (SigninObserver) mNtpManager.mDestructionObserver;
 
         // By default, there is no All Dismissed item.

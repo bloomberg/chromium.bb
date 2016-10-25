@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+
+import java.util.Set;
 
 /**
  * Java accessor for base/feature_list.h state.
@@ -13,8 +16,23 @@ import org.chromium.base.annotations.MainDex;
 @JNINamespace("chrome::android")
 @MainDex
 public abstract class ChromeFeatureList {
+    /** Map that stores substitution feature flags for tests. */
+    private static Set<String> sTestEnabledFeatures;
+
     // Prevent instantiation.
     private ChromeFeatureList() {}
+
+    /**
+     * Sets the feature flags to use in JUnit tests, since native calls are not available there.
+     * Do not use directly, prefer using the {@link EnableFeatures} annotation.
+     *
+     * @see EnableFeatures
+     * @see EnableFeatures.Processor
+     */
+    @VisibleForTesting
+    public static void setTestEnabledFeatures(Set<String> featureList) {
+        sTestEnabledFeatures = featureList;
+    }
 
     /**
      * Returns whether the specified feature is enabled or not.
@@ -26,7 +44,8 @@ public abstract class ChromeFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        return nativeIsEnabled(featureName);
+        if (sTestEnabledFeatures == null) return nativeIsEnabled(featureName);
+        return sTestEnabledFeatures.contains(featureName);
     }
 
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
