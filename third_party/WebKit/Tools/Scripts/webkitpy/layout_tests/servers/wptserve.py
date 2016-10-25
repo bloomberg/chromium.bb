@@ -4,6 +4,8 @@
 
 """Start and stop the WPTserve servers as they're used by the layout tests."""
 
+import datetime
+import logging
 from webkitpy.layout_tests.servers import server_base
 
 
@@ -49,6 +51,13 @@ class WPTServe(server_base.ServerBase):
         self._env.update({'PYTHONPATH': path_to_thirdparty})
         self._keep_process_reference = True
         self._start_cmd = start_cmd
+
+        expiration_date = datetime.date(2025, 1, 4)
+        if datetime.date.today() > expiration_date - datetime.timedelta(30):
+            logging.getLogger(__name__).error(
+                'Pre-generated keys and certificates are going to be expired at %s.'
+                ' Please re-generate them by following steps in %s/README.chromium.'
+                % (expiration_date.strftime('%b %d %Y'), path_to_wpt_support))
 
     def _stop_running_server(self):
         # Clean up the pid file.
