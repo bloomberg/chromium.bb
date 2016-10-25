@@ -7,6 +7,7 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/Platform.h"
 
 using namespace device::mojom::blink;
 
@@ -121,6 +122,10 @@ void SensorProxy::SensorReadingChanged() {
 void SensorProxy::handleSensorError(ExceptionCode code,
                                     const String& sanitizedMessage,
                                     const String& unsanitizedMessage) {
+  if (!Platform::current()) {
+    // TODO(rockot): Remove this hack once renderer shutdown sequence is fixed.
+    return;
+  }
   m_state = Uninitialized;
   m_sensor.reset();
   m_sharedBuffer.reset();
