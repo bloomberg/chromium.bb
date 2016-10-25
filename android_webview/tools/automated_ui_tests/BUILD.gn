@@ -37,6 +37,7 @@ android_resources("webview_ui_test_app_apk_resources") {
 }
 
 instrumentation_test_apk("webview_ui_test_app_test_apk") {
+  additional_apks = [ "//android_webview:system_webview_apk" ]
   apk_name = "WebViewUiTestAppTest"
   android_manifest = "javatests/AndroidManifest.xml"
   java_files = [
