@@ -88,11 +88,23 @@ void HideTaskManager();
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
+#endif  // !defined(OS_MACOSX)
 
+#if defined(USE_ASH)
+// Creates and shows an HTML dialog with the given delegate and browser context.
+// The dialog is placed in the ash window hierarchy in the given container.
+// See ash/public/cpp/shell_window_ids.h for |container_id| values. The window
+// is destroyed when it is closed. See also chrome::ShowWebDialog().
+void ShowWebDialogInContainer(int container_id,
+                              content::BrowserContext* context,
+                              ui::WebDialogDelegate* delegate);
+#endif  // defined(USE_ASH)
+
+#if !defined(OS_MACOSX)
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      content::WebContents* web_contents);
-#endif
+#endif  // !defined(OS_MACOSX)
 
 // Shows the create chrome app shortcut dialog box.
 // |close_callback| may be null.

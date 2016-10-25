@@ -8,17 +8,22 @@
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
-namespace chrome {
+#if defined(USE_ASH)
+#include "ash/public/cpp/shell_window_ids.h"  // nogncheck
+#include "ash/shell.h"                        // nogncheck
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/mus/mus_util.h"
+#endif  // defined(USE_ASH)
 
-// Declared in browser_dialogs.h so that others don't need to depend on our .h.
-gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
-                                content::BrowserContext* context,
-                                ui::WebDialogDelegate* delegate) {
-  views::WebDialogView* view =
-      new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
-  // NOTE: The |parent| may be null, which will result in the default window
-  // placement on Aura.
-  views::Widget* widget = views::Widget::CreateWindowWithParent(view, parent);
+namespace chrome {
+namespace {
+
+gfx::NativeWindow ShowWebDialogWidget(const views::Widget::InitParams& params,
+                                      views::WebDialogView* view) {
+  views::Widget* widget = new views::Widget;
+  widget->Init(params);
 
   // Observer is needed for ChromeVox extension to send messages between content
   // and background scripts.
@@ -28,5 +33,46 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
   widget->Show();
   return widget->GetNativeWindow();
 }
+
+}  // namespace
+
+// Declared in browser_dialogs.h so that others don't need to depend on our .h.
+gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
+                                content::BrowserContext* context,
+                                ui::WebDialogDelegate* delegate) {
+  views::WebDialogView* view =
+      new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
+  views::Widget::InitParams params;
+  params.delegate = view;
+  // NOTE: The |parent| may be null, which will result in the default window
+  // placement on Aura.
+  params.parent = parent;
+#if defined(USE_ASH)
+  if (chrome::IsRunningInMash())
+    params.parent_mus = aura::GetMusWindow(parent);
+#endif  // defined(USE_ASH)
+  return ShowWebDialogWidget(params, view);
+}
+
+#if defined(USE_ASH)
+void ShowWebDialogInContainer(int container_id,
+                              content::BrowserContext* context,
+                              ui::WebDialogDelegate* delegate) {
+  DCHECK(container_id != ash::kShellWindowId_Invalid);
+  views::WebDialogView* view =
+      new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
+  views::Widget::InitParams params;
+  params.delegate = view;
+  if (chrome::IsRunningInMash()) {
+    using ui::mojom::WindowManager;
+    params.mus_properties[WindowManager::kInitialContainerId_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
+  } else {
+    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                             container_id);
+  }
+  ShowWebDialogWidget(params, view);
+}
+#endif  // defined(USE_ASH)
 
 }  // namespace chrome

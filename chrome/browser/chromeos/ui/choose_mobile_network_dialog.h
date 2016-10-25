@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_CHOOSE_MOBILE_NETWORK_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_UI_CHOOSE_MOBILE_NETWORK_DIALOG_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -15,8 +14,13 @@ namespace chromeos {
 // Dialog for manual selection of cellular network.
 class ChooseMobileNetworkDialog : public ui::WebDialogDelegate {
  public:
-  // Shows the dialog box.
-  static void ShowDialog(gfx::NativeWindow owning_window);
+  // Shows the dialog box. The dialog is created as a child of |parent|. If the
+  // |parent| is null the dialog is created in the default modal container.
+  static void ShowDialog(gfx::NativeWindow parent);
+
+  // Shows the dialog in an ash window container (which must be a system modal
+  // container) on the primary display.
+  static void ShowDialogInContainer(int container_id);
 
  private:
   ChooseMobileNetworkDialog();

@@ -564,7 +564,8 @@ void SystemTrayDelegateChromeOS::ToggleBluetooth() {
 void SystemTrayDelegateChromeOS::ShowOtherNetworkDialog(
     const std::string& type) {
   if (type == shill::kTypeCellular) {
-    ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
+    ChooseMobileNetworkDialog::ShowDialogInContainer(
+        SystemTrayClient::GetDialogParentContainerId());
     return;
   }
   NetworkConfigView::ShowForTypeInContainer(

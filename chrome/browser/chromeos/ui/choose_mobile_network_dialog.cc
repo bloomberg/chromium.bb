@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
@@ -23,10 +24,19 @@ const int kDefaultHeight = 225;
 namespace chromeos {
 
 // static
-void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
-  chrome::ShowWebDialog(owning_window,
-                        ProfileManager::GetActiveUserProfile(),
+void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow parent) {
+  chrome::ShowWebDialog(parent, ProfileManager::GetActiveUserProfile(),
                         new ChooseMobileNetworkDialog);
+}
+
+// static
+void ChooseMobileNetworkDialog::ShowDialogInContainer(int container_id) {
+  // Dialog should be in a modal window container.
+  DCHECK(container_id == ash::kShellWindowId_SystemModalContainer ||
+         container_id == ash::kShellWindowId_LockSystemModalContainer);
+  chrome::ShowWebDialogInContainer(container_id,
+                                   ProfileManager::GetActiveUserProfile(),
+                                   new ChooseMobileNetworkDialog);
 }
 
 ChooseMobileNetworkDialog::ChooseMobileNetworkDialog() {

@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/web_dialog_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/gfx/geometry/size.h"
@@ -26,28 +26,24 @@ const int kDefaultHeight = 235;
 // static
 void SetTimeDialog::ShowDialogInParent(gfx::NativeWindow parent) {
   DCHECK(parent);
-  ShowDialogImpl(parent, ash::kShellWindowId_Invalid);
+  content::RecordAction(base::UserMetricsAction("Options_SetTimeDialog_Show"));
+  chrome::ShowWebDialog(parent, ProfileManager::GetActiveUserProfile(),
+                        new SetTimeDialog());
 }
 
 // static
 void SetTimeDialog::ShowDialogInContainer(int container_id) {
   DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
-  ShowDialogImpl(nullptr, container_id);
+  content::RecordAction(base::UserMetricsAction("Options_SetTimeDialog_Show"));
+  chrome::ShowWebDialogInContainer(container_id,
+                                   ProfileManager::GetActiveUserProfile(),
+                                   new SetTimeDialog());
 }
 
 SetTimeDialog::SetTimeDialog() {
 }
 
 SetTimeDialog::~SetTimeDialog() {
-}
-
-// static
-void SetTimeDialog::ShowDialogImpl(gfx::NativeWindow parent, int container_id) {
-  DCHECK(parent || container_id != ash::kShellWindowId_Invalid);
-  content::RecordAction(base::UserMetricsAction("Options_SetTimeDialog_Show"));
-  chrome::ShowWebDialogWithContainer(parent, container_id,
-                                     ProfileManager::GetActiveUserProfile(),
-                                     new SetTimeDialog());
 }
 
 ui::ModalType SetTimeDialog::GetDialogModalType() const {

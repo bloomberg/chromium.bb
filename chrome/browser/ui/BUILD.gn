@@ -1383,8 +1383,6 @@ split_static_library("ui") {
       "ash/volume_controller_chromeos.h",
       "ash/vpn_delegate_chromeos.cc",
       "ash/vpn_delegate_chromeos.h",
-      "ash/web_dialog_util.cc",
-      "ash/web_dialog_util.h",
       "views/ash/chrome_browser_main_extra_parts_ash.cc",
       "views/ash/chrome_browser_main_extra_parts_ash.h",
       "views/ash/tab_scrubber.cc",
