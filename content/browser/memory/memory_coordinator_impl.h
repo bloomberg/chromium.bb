@@ -12,6 +12,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "content/browser/memory/memory_coordinator.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace content {
 
@@ -35,6 +37,7 @@ struct MemoryCoordinatorSingletonTraits;
 //   back to a relaxed state. (e.g. THROTTLED -> NORMAL)
 // * Once a state is changed, it remains the same for a certain period of time.
 class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
+                                             public NotificationObserver,
                                              public base::NonThreadSafe {
  public:
   MemoryCoordinatorImpl(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -48,6 +51,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   MemoryMonitor* memory_monitor() { return memory_monitor_.get(); }
 
   base::MemoryState GetCurrentMemoryState() const override;
+
+  // NotificationObserver implementation:
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextState);
@@ -76,6 +84,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   void ScheduleUpdateState(base::TimeDelta delay);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  NotificationRegistrar notification_registrar_;
   std::unique_ptr<MemoryMonitor> memory_monitor_;
   base::Closure update_state_callback_;
   base::MemoryState current_state_ = MemoryState::NORMAL;

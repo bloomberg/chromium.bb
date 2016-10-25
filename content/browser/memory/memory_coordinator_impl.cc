@@ -6,6 +6,10 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/memory/memory_monitor.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -94,6 +98,10 @@ void MemoryCoordinatorImpl::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK(last_state_change_.is_null());
   DCHECK(ValidateParameters());
+
+  notification_registrar_.Add(
+      this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      NotificationService::AllBrowserContextsAndSources());
   ScheduleUpdateState(base::TimeDelta());
 }
 
@@ -104,6 +112,24 @@ void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
 
 base::MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
   return current_state_;
+}
+
+void MemoryCoordinatorImpl::Observe(int type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  DCHECK(type == NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED);
+  RenderWidgetHost* render_widget_host = Source<RenderWidgetHost>(source).ptr();
+  RenderProcessHost* process = render_widget_host->GetProcess();
+  if (!process)
+    return;
+  auto iter = children().find(process->GetID());
+  if (iter == children().end())
+    return;
+  bool is_visible = *Details<bool>(details).ptr();
+  // We don't throttle/suspend a visible renderer for now.
+  auto new_state = is_visible ? mojom::MemoryState::NORMAL
+                              : ToMojomMemoryState(current_state_);
+  SetMemoryState(iter->first, new_state);
 }
 
 base::MemoryState MemoryCoordinatorImpl::CalculateNextState() {
@@ -174,9 +200,6 @@ void MemoryCoordinatorImpl::NotifyStateToChildren() {
   auto mojo_state = ToMojomMemoryState(current_state_);
   // It's OK to call SetMemoryState() unconditionally because it checks whether
   // this state transition is valid.
-  // TODO(bashi): In SUSPENDED state, we should update children's state
-  // accordingly when the foreground tab is changed (e.g. resume a renderer
-  // which becomes foreground and suspend a renderer which goes to background).
   for (auto& iter : children())
     SetMemoryState(iter.first, mojo_state);
 }
