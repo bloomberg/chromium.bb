@@ -111,7 +111,7 @@ class IdlReader(object):
         if not ast:
             raise Exception('Failed to parse %s' % idl_filename)
         idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
-        definitions = IdlDefinitions(idl_file_basename, ast)
+        definitions = IdlDefinitions(ast)
 
         validate_blink_idl_definitions(
             idl_filename, idl_file_basename, definitions)

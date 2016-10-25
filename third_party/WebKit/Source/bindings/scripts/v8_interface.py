@@ -446,7 +446,7 @@ def methods_context(interface):
     compute_method_overloads_context(interface, methods)
 
     def generated_method(return_type, name, arguments=None, extended_attributes=None, implemented_as=None):
-        operation = IdlOperation(interface.idl_name)
+        operation = IdlOperation()
         operation.idl_type = return_type
         operation.name = name
         if arguments:
@@ -459,7 +459,7 @@ def methods_context(interface):
         return v8_methods.method_context(interface, operation)
 
     def generated_argument(idl_type, name, is_optional=False, extended_attributes=None):
-        argument = IdlArgument(interface.idl_name)
+        argument = IdlArgument()
         argument.idl_type = idl_type
         argument.name = name
         argument.is_optional = is_optional
