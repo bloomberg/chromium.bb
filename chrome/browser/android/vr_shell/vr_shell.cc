@@ -446,6 +446,19 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   if (webvr_mode_) {
     DrawWebVr();
+
+    // When using async reprojection, we need to know which pose was used in
+    // the WebVR app for drawing this frame. Due to unknown amounts of
+    // buffering in the compositor and SurfaceTexture, we read the pose number
+    // from a corner pixel. There's no point in doing this for legacy
+    // distortion rendering since that doesn't need a pose, and reading back
+    // pixels is an expensive operation. TODO(klausw): stop doing this once we
+    // have working no-compositor rendering for WebVR.
+    if (gvr_api_->GetAsyncReprojectionEnabled()) {
+      uint32_t webvr_pose_frame = GetPixelEncodedPoseIndex();
+      head_pose = webvr_head_pose_[webvr_pose_frame % kPoseRingBufferSize];
+    }
+
     // Wait for the DOM contents to be loaded before rendering to avoid drawing
     // white rectangles with no content.
     if (!webvr_secure_origin_ && IsUiTextureReady()) {
@@ -458,18 +471,6 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
       // Bind the headlocked framebuffer.
       frame.BindBuffer(kFrameHeadlockedBuffer);
       DrawWebVrOverlay(target_time.monotonic_system_time_nanos);
-    }
-
-    // When using async reprojection, we need to know which pose was used in
-    // the WebVR app for drawing this frame. Due to unknown amounts of
-    // buffering in the compositor and SurfaceTexture, we read the pose number
-    // from a corner pixel. There's no point in doing this for legacy
-    // distortion rendering since that doesn't need a pose, and reading back
-    // pixels is an expensive operation. TODO(klausw): stop doing this once we
-    // have working no-compositor rendering for WebVR.
-    if (gvr_api_->GetAsyncReprojectionEnabled()) {
-      uint32_t webvr_pose_frame = GetPixelEncodedPoseIndex();
-      head_pose = webvr_head_pose_[webvr_pose_frame % kPoseRingBufferSize];
     }
   } else {
     DrawVrShell(head_pose);
