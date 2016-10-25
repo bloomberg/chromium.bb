@@ -121,9 +121,8 @@ const std::string& CertificateReportingTest::GetLatestHostnameReported() const {
 }
 
 void SetCertReportingOptIn(Browser* browser, OptIn opt_in) {
-  browser->profile()->GetPrefs()->SetBoolean(
-      safe_browsing::GetExtendedReportingPrefName(),
-      opt_in == EXTENDED_REPORTING_OPT_IN);
+  safe_browsing::SetExtendedReportingPref(browser->profile()->GetPrefs(),
+                                          opt_in == EXTENDED_REPORTING_OPT_IN);
 }
 
 std::unique_ptr<SSLCertReporter> SetUpMockSSLCertReporter(

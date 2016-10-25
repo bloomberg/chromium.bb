@@ -10,7 +10,17 @@
 class PrefService;
 
 namespace prefs {
+// Boolean that tell us whether Safe Browsing extended reporting is enabled.
 extern const char kSafeBrowsingExtendedReportingEnabled[];
+
+// Boolean indicating whether Safe Browsing Scout reporting is enabled, which
+// collects data for malware detection.
+extern const char kSafeBrowsingScoutReportingEnabled[];
+
+// Boolean indicating whether the Scout reporting workflow is enabled. This
+// affects which of SafeBrowsingExtendedReporting or SafeBrowsingScoutReporting
+// is used.
+extern const char kSafeBrowsingScoutGroupSelected[];
 }
 
 namespace safe_browsing {
@@ -21,7 +31,7 @@ bool ExtendedReportingPrefExists(const PrefService& prefs);
 
 // Returns the name of the Safe Browsing Extended Reporting pref that is
 // currently in effect. The specific pref in-use may change through experiments.
-const char* GetExtendedReportingPrefName();
+const char* GetExtendedReportingPrefName(const PrefService& prefs);
 
 // Returns whether Safe Browsing Extended Reporting is currently enabled.
 // This should be used to decide if any of the reporting preferences are set,

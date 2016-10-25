@@ -7,25 +7,28 @@
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 
 namespace prefs {
-
-// Boolean that tell us whether Safe Browsing extended reporting is enabled.
 const char kSafeBrowsingExtendedReportingEnabled[] =
     "safebrowsing.extended_reporting_enabled";
-
+const char kSafeBrowsingScoutReportingEnabled[] =
+    "safebrowsing.scout_reporting_enabled";
+const char kSafeBrowsingScoutGroupSelected[] =
+    "safebrowsing.scout_group_selected";
 }  // namespace prefs
 
 namespace safe_browsing {
 
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
-  return prefs.HasPrefPath(GetExtendedReportingPrefName());
+  return prefs.HasPrefPath(GetExtendedReportingPrefName(prefs));
 }
 
-const char* GetExtendedReportingPrefName() {
-  return prefs::kSafeBrowsingExtendedReportingEnabled;
+const char* GetExtendedReportingPrefName(const PrefService& prefs) {
+  return prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)
+             ? prefs::kSafeBrowsingScoutReportingEnabled
+             : prefs::kSafeBrowsingExtendedReportingEnabled;
 }
 
 bool IsExtendedReportingEnabled(const PrefService& prefs) {
-  return prefs.GetBoolean(GetExtendedReportingPrefName());
+  return prefs.GetBoolean(GetExtendedReportingPrefName(prefs));
 }
 
 void RecordExtendedReportingMetrics(const PrefService& prefs) {
@@ -34,7 +37,7 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
 }
 
 void SetExtendedReportingPref(PrefService* prefs, bool value) {
-  prefs->SetBoolean(GetExtendedReportingPrefName(), value);
+  prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
 }
 
 }  // namespace safe_browsing

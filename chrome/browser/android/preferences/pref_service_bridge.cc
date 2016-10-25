@@ -323,15 +323,15 @@ static void SetSafeBrowsingExtendedReportingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
-  GetPrefService()->SetBoolean(safe_browsing::GetExtendedReportingPrefName(),
-                               enabled);
+  safe_browsing::SetExtendedReportingPref(GetPrefService(), enabled);
 }
 
 static jboolean GetSafeBrowsingExtendedReportingManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      safe_browsing::GetExtendedReportingPrefName());
+  PrefService* pref_service = GetPrefService();
+  return pref_service->IsManagedPreference(
+      safe_browsing::GetExtendedReportingPrefName(*pref_service));
 }
 
 static jboolean GetSafeBrowsingEnabled(JNIEnv* env,

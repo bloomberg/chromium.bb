@@ -874,8 +874,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ProceedDisabled) {
 // TODO(mattm): Should also verify that no report is sent, but there isn't a
 // good way to do that in the current design.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
-  browser()->profile()->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(),
-                                               true);
+  SetExtendedReportingPref(browser()->profile()->GetPrefs(), true);
 
   TestReportingDisabledAndDontProceed(
       net::URLRequestMockHTTPJob::GetMockHttpsUrl(kEmptyPage));
@@ -885,8 +884,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
 // disabled by policy.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        ReportingDisabledByPolicy) {
-  browser()->profile()->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(),
-                                               true);
+  SetExtendedReportingPref(browser()->profile()->GetPrefs(), true);
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
 

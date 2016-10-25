@@ -186,5 +186,5 @@ PrefService* ChromeControllerClient::GetPrefService() {
 }
 
 const std::string ChromeControllerClient::GetExtendedReportingPrefName() {
-  return safe_browsing::GetExtendedReportingPrefName();
+  return safe_browsing::GetExtendedReportingPrefName(*GetPrefService());
 }

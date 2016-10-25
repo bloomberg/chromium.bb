@@ -313,7 +313,7 @@ class SRTFetcherTest : public InProcessBrowserTest,
     ASSERT_NE(browser, nullptr);
     Profile* profile = browser->profile();
     ASSERT_NE(profile, nullptr);
-    profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+    SetExtendedReportingPref(profile->GetPrefs(), true);
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
