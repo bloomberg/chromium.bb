@@ -41,7 +41,8 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/filter/filter.h"
+#include "net/filter/gzip_source_stream.h"
+#include "net/filter/source_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_util.h"
@@ -143,7 +144,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   bool GetMimeType(std::string* mime_type) const override;
   int GetResponseCode() const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
-  std::unique_ptr<net::Filter> SetupFilter() const override;
+  std::unique_ptr<net::SourceStream> SetUpSourceStream() override;
 
   // Used to notify that the requested data's |mime_type| is ready.
   void MimeTypeAvailable(const std::string& mime_type);
@@ -393,8 +394,12 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
     info->headers->AddHeader("Content-Encoding: gzip");
 }
 
-std::unique_ptr<net::Filter> URLRequestChromeJob::SetupFilter() const {
-  return is_gzipped_ ? net::Filter::GZipFactory() : nullptr;
+std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
+  std::unique_ptr<net::SourceStream> source =
+      net::URLRequestJob::SetUpSourceStream();
+  return is_gzipped_ ? net::GzipSourceStream::Create(
+                           std::move(source), net::SourceStream::TYPE_GZIP)
+                     : std::move(source);
 }
 
 void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {

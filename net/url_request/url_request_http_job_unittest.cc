@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -47,20 +48,116 @@ namespace {
 
 using ::testing::Return;
 
+const char kSimpleGetMockWrite[] =
+    "GET / HTTP/1.1\r\n"
+    "Host: www.example.com\r\n"
+    "Connection: keep-alive\r\n"
+    "User-Agent:\r\n"
+    "Accept-Encoding: gzip, deflate\r\n"
+    "Accept-Language: en-us,fr\r\n\r\n";
+
 // Inherit from URLRequestHttpJob to expose the priority and some
 // other hidden functions.
 class TestURLRequestHttpJob : public URLRequestHttpJob {
  public:
   explicit TestURLRequestHttpJob(URLRequest* request)
-      : URLRequestHttpJob(request, request->context()->network_delegate(),
-                          request->context()->http_user_agent_settings()) {}
+      : URLRequestHttpJob(request,
+                          request->context()->network_delegate(),
+                          request->context()->http_user_agent_settings()),
+        use_null_source_stream_(false) {}
+
   ~TestURLRequestHttpJob() override {}
+
+  // URLRequestJob implementation:
+  std::unique_ptr<SourceStream> SetUpSourceStream() override {
+    if (use_null_source_stream_)
+      return nullptr;
+    return URLRequestHttpJob::SetUpSourceStream();
+  }
+
+  void set_use_null_source_stream(bool use_null_source_stream) {
+    use_null_source_stream_ = use_null_source_stream;
+  }
 
   using URLRequestHttpJob::SetPriority;
   using URLRequestHttpJob::Start;
   using URLRequestHttpJob::Kill;
   using URLRequestHttpJob::priority;
+
+ private:
+  bool use_null_source_stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestURLRequestHttpJob);
 };
+
+class URLRequestHttpJobSetUpSourceTest : public ::testing::Test {
+ public:
+  URLRequestHttpJobSetUpSourceTest() : context_(true) {
+    test_job_interceptor_ = new TestJobInterceptor();
+    EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
+        url::kHttpScheme, base::WrapUnique(test_job_interceptor_)));
+    context_.set_job_factory(&test_job_factory_);
+    context_.set_client_socket_factory(&socket_factory_);
+    context_.Init();
+  }
+
+ protected:
+  MockClientSocketFactory socket_factory_;
+  // |test_job_interceptor_| is owned by |test_job_factory_|.
+  TestJobInterceptor* test_job_interceptor_;
+  URLRequestJobFactoryImpl test_job_factory_;
+
+  TestURLRequestContext context_;
+  TestDelegate delegate_;
+};
+
+// Tests that if SetUpSourceStream() returns nullptr, the request fails.
+TEST_F(URLRequestHttpJobSetUpSourceTest, SetUpSourceFails) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  std::unique_ptr<URLRequest> request = context_.CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate_);
+  std::unique_ptr<TestURLRequestHttpJob> job(
+      new TestURLRequestHttpJob(request.get()));
+  job->set_use_null_source_stream(true);
+  test_job_interceptor_->set_main_intercept_job(std::move(job));
+  request->Start();
+
+  base::RunLoop().Run();
+  EXPECT_EQ(ERR_CONTENT_DECODING_INIT_FAILED, delegate_.request_status());
+}
+
+// Tests that if there is an unknown content-encoding type, the raw response
+// body is passed through.
+TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Encoding: foo, gzip\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  std::unique_ptr<URLRequest> request = context_.CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate_);
+  std::unique_ptr<TestURLRequestHttpJob> job(
+      new TestURLRequestHttpJob(request.get()));
+  test_job_interceptor_->set_main_intercept_job(std::move(job));
+  request->Start();
+
+  base::RunLoop().Run();
+  EXPECT_EQ(OK, delegate_.request_status());
+  EXPECT_EQ("Test Content", delegate_.data_received());
+}
 
 class URLRequestHttpJobTest : public ::testing::Test {
  protected:
@@ -135,14 +232,6 @@ class URLRequestHttpJobWithMockSocketsTest : public ::testing::Test {
   TestNetworkDelegate network_delegate_;
   std::unique_ptr<TestURLRequestContext> context_;
 };
-
-const char kSimpleGetMockWrite[] =
-    "GET / HTTP/1.1\r\n"
-    "Host: www.example.com\r\n"
-    "Connection: keep-alive\r\n"
-    "User-Agent:\r\n"
-    "Accept-Encoding: gzip, deflate\r\n"
-    "Accept-Language: en-us,fr\r\n\r\n";
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
        TestContentLengthSuccessfulRequest) {
@@ -821,7 +910,7 @@ class URLRequestHttpJobWebSocketTest
 class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
   // GoogleMock does not appear to play nicely with move-only types like
-  // scoped_ptr, so this forwarding method acts as a workaround.
+  // std::unique_ptr, so this forwarding method acts as a workaround.
   WebSocketHandshakeStreamBase* CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {

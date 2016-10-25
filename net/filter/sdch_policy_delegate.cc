@@ -399,7 +399,7 @@ void SdchPolicyDelegate::OnStreamDestroyed(
   }
   switch (input_state) {
     case SdchSourceStream::STATE_DECODE: {
-      job_->RecordPacketStats(FilterContext::StatisticSelector::SDCH_DECODE);
+      job_->RecordPacketStats(StatisticSelector::SDCH_DECODE);
       // Allow latency experiments to proceed.
       sdch_manager_->SetAllowLatencyExperiment(url_, true);
 
@@ -412,8 +412,7 @@ void SdchPolicyDelegate::OnStreamDestroyed(
       SdchManager::LogSdchProblem(net_log_, SDCH_PRIOR_TO_DICTIONARY);
       return;
     case SdchSourceStream::STATE_PASS_THROUGH:
-      job_->RecordPacketStats(
-          FilterContext::StatisticSelector::SDCH_PASSTHROUGH);
+      job_->RecordPacketStats(StatisticSelector::SDCH_PASSTHROUGH);
       return;
     case SdchSourceStream::STATE_OUTPUT_REPLACE:
       // This is meta refresh case. Already accounted for when set.

@@ -176,6 +176,7 @@ class TestDelegate : public URLRequest::Delegate {
   }
   bool auth_required_called() const { return auth_required_; }
   bool have_full_request_headers() const { return have_full_request_headers_; }
+  bool response_completed() const { return response_completed_; }
   const HttpRequestHeaders& full_request_headers() const {
     return full_request_headers_;
   }
@@ -225,6 +226,7 @@ class TestDelegate : public URLRequest::Delegate {
   std::string data_received_;
   bool have_full_request_headers_;
   HttpRequestHeaders full_request_headers_;
+  bool response_completed_;
 
   // tracks status of request
   int request_status_;

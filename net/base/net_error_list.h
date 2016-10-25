@@ -679,6 +679,9 @@ NET_ERROR(PAC_SCRIPT_TERMINATED, -367)
 // than treat it as HTTP/0.9, this error is returned.
 NET_ERROR(INVALID_HTTP_RESPONSE, -370)
 
+// Initializing content decoding failed.
+NET_ERROR(CONTENT_DECODING_INIT_FAILED, -371)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

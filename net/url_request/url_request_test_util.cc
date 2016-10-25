@@ -194,6 +194,7 @@ TestDelegate::TestDelegate()
       certificate_errors_are_fatal_(false),
       auth_required_(false),
       have_full_request_headers_(false),
+      response_completed_(false),
       request_status_(ERR_IO_PENDING),
       buf_(new IOBuffer(kBufferSize)) {}
 
@@ -317,6 +318,7 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 }
 
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
+  response_completed_ = true;
   if (quit_on_complete_)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
