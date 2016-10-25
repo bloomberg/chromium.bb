@@ -610,8 +610,7 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
     gfx::Rect op_rect;
     switch (operation.type) {
       case QueuedOperation::TRANSFORM:
-        ExecuteTransform(operation.scale, operation.translation);
-        no_update_visible = false;
+        ExecuteTransform(operation.scale, operation.translation, &op_rect);
         break;
       case QueuedOperation::PAINT:
         ExecutePaintImageData(operation.paint_image.get(),
@@ -703,8 +702,10 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
 }
 
 void PepperGraphics2DHost::ExecuteTransform(const float& scale,
-                                            const gfx::PointF& translate) {
+                                            const gfx::PointF& translate,
+                                            gfx::Rect* invalidated_rect) {
   bound_instance_->SetGraphics2DTransform(scale, translate);
+  *invalidated_rect = PP_ToGfxRect(bound_instance_->view_data().clip_rect);
 }
 
 void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,

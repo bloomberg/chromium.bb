@@ -138,7 +138,9 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // rect argument will be filled by each function with the area affected by
   // the update that requires invalidation. If there were no pixels changed,
   // this rect can be untouched.
-  void ExecuteTransform(const float& scale, const gfx::PointF& translate);
+  void ExecuteTransform(const float& scale,
+                        const gfx::PointF& translate,
+                        gfx::Rect* invalidated_rect);
   void ExecutePaintImageData(PPB_ImageData_Impl* image,
                              int x,
                              int y,
