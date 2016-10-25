@@ -69,10 +69,6 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif
 
-#if defined(ENABLE_MOJO_MEDIA)
-#include "media/mojo/interfaces/service_factory.mojom.h"  // nogncheck
-#endif
-
 class TransportDIB;
 struct FrameMsg_PostMessage_Params;
 struct FrameMsg_SerializeAsMHTML_Params;
