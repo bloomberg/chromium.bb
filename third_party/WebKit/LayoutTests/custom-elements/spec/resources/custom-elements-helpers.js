@@ -48,3 +48,25 @@ function assert_is_upgraded(element, className, description) {
   assert_true(element.matches(':defined'), description);
   assert_equals(Object.getPrototypeOf(element), className.prototype, description);
 }
+
+// Asserts that func synchronously invokes the error event handler in w
+// with the expected error.
+function assert_reports(w, expected_error, func, description) {
+  let old_onerror = w.onerror;
+  let errors = [];
+  w.onerror = (event, source, line_number, column_number, error) => {
+    errors.push(error);
+    return true; // the error is handled
+  };
+  try {
+    func();
+  } catch (e) {
+    assert_unreached(`should report, not throw, an exception: ${e}`);
+  } finally {
+    w.onerror = old_onerror;
+  }
+  assert_equals(1, errors.length);
+  // assert_throws has an error expectation matcher that can only be
+  // accessed by throwing the error
+  assert_throws(expected_error, () => { throw errors[0]; });
+}

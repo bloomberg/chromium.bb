@@ -151,43 +151,6 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
       m_scriptState(scriptState),
       m_constructor(scriptState->isolate(), constructor) {}
 
-HTMLElement* ScriptCustomElementDefinition::createElementSync(
-    Document& document,
-    const QualifiedName& tagName,
-    ExceptionState& exceptionState) {
-  DCHECK(ScriptState::current(m_scriptState->isolate()) == m_scriptState);
-
-  // Create an element
-  // https://dom.spec.whatwg.org/#concept-create-element
-  // 6. If definition is non-null
-  // 6.1. If the synchronous custom elements flag is set:
-  // 6.1.2. Set result to Construct(C). Rethrow any exceptions.
-
-  // Create an element and push to the construction stack.
-  // V8HTMLElement::constructorCustom() can only refer to
-  // window.document(), but it is different from the document here
-  // when it is an import document.  This is not exactly what the
-  // spec defines, but the public behavior matches to the spec.
-  Element* element = createElementForConstructor(document);
-  {
-    ConstructionStackScope constructionStackScope(this, element);
-    v8::TryCatch tryCatch(m_scriptState->isolate());
-    element = runConstructor();
-    if (tryCatch.HasCaught()) {
-      exceptionState.rethrowV8Exception(tryCatch.Exception());
-      return nullptr;
-    }
-  }
-
-  // 6.1.3. through 6.1.9.
-  checkConstructorResult(element, document, tagName, exceptionState);
-  if (exceptionState.hadException())
-    return nullptr;
-
-  DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
-  return toHTMLElement(element);
-}
-
 static void dispatchErrorEvent(v8::Isolate* isolate,
                                v8::Local<v8::Value> exception,
                                v8::Local<v8::Object> constructor) {
@@ -197,29 +160,59 @@ static void dispatchErrorEvent(v8::Isolate* isolate,
       isolate, exception, constructor.As<v8::Function>()->GetScriptOrigin());
 }
 
+HTMLElement* ScriptCustomElementDefinition::handleCreateElementSyncException(
+    Document& document,
+    const QualifiedName& tagName,
+    v8::Isolate* isolate,
+    ExceptionState& exceptionState) {
+  DCHECK(exceptionState.hadException());
+  // 6.1."If any of these subsubsteps threw an exception".1
+  // Report the exception.
+  dispatchErrorEvent(isolate, exceptionState.getException(), constructor());
+  exceptionState.clearException();
+  // ... .2 Return HTMLUnknownElement.
+  return CustomElement::createFailedElement(document, tagName);
+}
+
 HTMLElement* ScriptCustomElementDefinition::createElementSync(
     Document& document,
     const QualifiedName& tagName) {
+  if (!m_scriptState->contextIsValid())
+    return CustomElement::createFailedElement(document, tagName);
   ScriptState::Scope scope(m_scriptState.get());
   v8::Isolate* isolate = m_scriptState->isolate();
 
-  // When invoked from "create an element for a token":
-  // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
-
   ExceptionState exceptionState(ExceptionState::ConstructionContext,
                                 "CustomElement", constructor(), isolate);
-  HTMLElement* element = createElementSync(document, tagName, exceptionState);
 
-  if (exceptionState.hadException()) {
-    DCHECK(!element);
-    // 7. If this step throws an exception, then report the exception, ...
-    dispatchErrorEvent(isolate, exceptionState.getException(), constructor());
-    exceptionState.clearException();
-    // and return HTMLUnknownElement.
-    return CustomElement::createFailedElement(document, tagName);
+  // Create an element with the synchronous custom elements flag set.
+  // https://dom.spec.whatwg.org/#concept-create-element
+
+  // Create an element and push to the construction stack.
+  // V8HTMLElement::constructorCustom() can only refer to
+  // window.document(), but it is different from the document here
+  // when it is an import document. This is not exactly what the
+  // spec defines, but the non-imports behavior matches to the spec.
+  Element* element = createElementForConstructor(document);
+  {
+    ConstructionStackScope constructionStackScope(this, element);
+    v8::TryCatch tryCatch(m_scriptState->isolate());
+    element = runConstructor();
+    if (tryCatch.HasCaught()) {
+      exceptionState.rethrowV8Exception(tryCatch.Exception());
+      return handleCreateElementSyncException(document, tagName, isolate,
+                                              exceptionState);
+    }
   }
-  DCHECK(element);
-  return element;
+
+  // 6.1.3. through 6.1.9.
+  checkConstructorResult(element, document, tagName, exceptionState);
+  if (exceptionState.hadException()) {
+    return handleCreateElementSyncException(document, tagName, isolate,
+                                            exceptionState);
+  }
+  DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
+  return toHTMLElement(element);
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#upgrades

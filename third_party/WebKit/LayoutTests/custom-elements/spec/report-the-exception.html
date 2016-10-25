@@ -7,17 +7,17 @@
 <!--
 The spec has two places where it says to [report the exception]:
 
-1. In [create an element for a token], step 7.
-   This can occur only when [create an element] is invoked from
+1. In [create an element for a token], step 6.1
+   This can occur when [create an element] is invoked from
    [create an element for a token] with the synchronous custom elements flag
-   set. The document parser uses this algorithm.
+   set, or from createElement.
 2. In [invoke custom element reactions], step 2.1.
 
 There are different code paths when:
 1. Author script throws an exception that is rethrown.
 2. The user agent throws an exception.
 
-This test contains 4 tests for the combination of the above 2x2.
+This test contains tests for the combination of the above 2x2.
 
 [create an element]: https://dom.spec.whatwg.org/#concept-create-element
 [create an element for a token]: https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
@@ -55,6 +55,11 @@ customElements.define('a-a', class extends HTMLElement {
 <template id="instantiate">
   <a-a></a-a>
 </template>
+<template id="createElement">
+  <script>
+    window.e = document.createElement('a-a');
+  </script>
+</template>
 <script>
 'use strict';
 const rethrowErrorName = 'rethrown';
@@ -74,7 +79,7 @@ function assert_not_muted_error_event(error) {
   assert_false(!error.error, 'error (5th arg) should not be null');
 }
 
-function assert_rethrown_error_event(error) {
+function assert_reported_error_event(error) {
   assert_not_muted_error_event(error);
   assert_equals(error.error.name, rethrowErrorName);
   assert_equals(error.error.message, rethrowErrorMessage);
@@ -83,17 +88,26 @@ function assert_rethrown_error_event(error) {
 const constructor_throws =
     document.getElementById('constructor-throws').innerHTML;
 const instantiate = document.getElementById('instantiate').innerHTML;
+const create_element = document.getElementById('createElement').innerHTML;
 
 test_with_window((w) => {
-  assert_rethrown_error_event(w.errors[0]);
+  assert_reported_error_event(w.errors[0]);
 }, 'Document parser invokes the constructor that throws',
   constructor_throws + instantiate);
 
 test_with_window((w) => {
   w.document.body.innerHTML = instantiate;
-  assert_rethrown_error_event(w.errors[0]);
+  assert_reported_error_event(w.errors[0]);
 }, 'Upgrade reaction invokes the constructor that throws',
   constructor_throws);
+
+test_with_window((w) => {
+  assert_reported_error_event(w.errors[0]);
+  assert_true(
+      w.e instanceof w.HTMLUnknownElement,
+      'the created element should be HTMLUnknownElement');
+}, 'createElement invokes the constructor that throws',
+  constructor_throws + create_element);
 </script>
 
 <!--

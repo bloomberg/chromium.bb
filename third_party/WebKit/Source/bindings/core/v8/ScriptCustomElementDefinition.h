@@ -46,9 +46,6 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   v8::Local<v8::Object> prototype() const;
 
   HTMLElement* createElementSync(Document&, const QualifiedName&) override;
-  HTMLElement* createElementSync(Document&,
-                                 const QualifiedName&,
-                                 ExceptionState&) override;
 
   bool hasConnectedCallback() const override;
   bool hasDisconnectedCallback() const override;
@@ -85,6 +82,11 @@ class CORE_EXPORT ScriptCustomElementDefinition final
                    Element*,
                    int argc = 0,
                    v8::Local<v8::Value> argv[] = nullptr);
+
+  HTMLElement* handleCreateElementSyncException(Document&,
+                                                const QualifiedName& tagName,
+                                                v8::Isolate*,
+                                                ExceptionState&);
 
   RefPtr<ScriptState> m_scriptState;
   ScopedPersistent<v8::Object> m_constructor;

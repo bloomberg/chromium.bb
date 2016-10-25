@@ -49,9 +49,6 @@ class CORE_EXPORT CustomElementDefinition
 
   HTMLElement* createElementForConstructor(Document&);
   virtual HTMLElement* createElementSync(Document&, const QualifiedName&) = 0;
-  virtual HTMLElement* createElementSync(Document&,
-                                         const QualifiedName&,
-                                         ExceptionState&) = 0;
   HTMLElement* createElementAsync(Document&, const QualifiedName&);
 
   void upgrade(Element*);

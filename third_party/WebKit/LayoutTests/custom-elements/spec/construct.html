@@ -78,16 +78,18 @@ test_with_window((w) => {
 
 test_with_window((w) => {
   w.customElements.define('a-a', w.HTMLButtonElement);
-  assert_throws(TypeError.prototype, () => {
+  assert_reports(w, TypeError.prototype, () => {
     w.document.createElement('a-a');
-  }, 'If NewTarget is equal to active function object, TypeError should be thrown');
+  }, 'If NewTarget is equal to active function object, TypeError should be ' +
+     'reported');
 }, 'Custom element constructor, NewTarget is equal to active function object');
 
 test_with_window((w) => {
   w.customElements.define('a-a', class extends w.HTMLButtonElement {} );
-  assert_throws(TypeError.prototype, () => {
+  assert_reports(w, TypeError.prototype, () => {
     w.document.createElement('a-a');
-  }, 'If NewTarget is equal to active function object, TypeError should be thrown');
+  }, 'If NewTarget is equal to active function object, TypeError should be ' +
+     'reported');
 }, 'Custom element constructor, active function object is not equal to HTMLElement');
 
 test_with_window((w) => {
@@ -120,9 +122,10 @@ test_with_window((w) => {
     }
   }
   w.customElements.define('a-a', A);
-  assert_throws_dom_exception(w, 'INVALID_STATE_ERR', () => {
+  assert_reports(w, 'INVALID_STATE_ERR', () => {
     w.document.createElement('a-a');
-  }, 'Creating an element that is already constructed marker should throw InvalidStateError');
+  }, 'Creating an element that is already constructed marker should report ' +
+     'InvalidStateError');
 }, 'Already constructed marker, create element');
 
 test_with_window((w) => {

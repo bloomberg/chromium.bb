@@ -658,8 +658,7 @@ Element* Document::createElement(const AtomicString& name,
     // converted to ASCII lowercase.
     AtomicString localName = convertLocalName(name);
     if (CustomElement::shouldCreateCustomElement(localName))
-      return CustomElement::createCustomElementSync(*this, localName,
-                                                    exceptionState);
+      return CustomElement::createCustomElementSync(*this, localName);
     return HTMLElementFactory::createHTMLElement(localName, *this, 0,
                                                  CreatedByCreateElement);
   }
@@ -681,7 +680,7 @@ Element* Document::createElement(const AtomicString& localName,
 
   if (CustomElement::shouldCreateCustomElement(convertLocalName(localName))) {
     element = CustomElement::createCustomElementSync(
-        *this, convertLocalName(localName), exceptionState);
+        *this, convertLocalName(localName));
   } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
     element = registrationContext()->createCustomTagElement(
         *this, QualifiedName(nullAtom, convertLocalName(localName),
@@ -730,7 +729,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI,
     return nullptr;
 
   if (CustomElement::shouldCreateCustomElement(qName))
-    return CustomElement::createCustomElementSync(*this, qName, exceptionState);
+    return CustomElement::createCustomElementSync(*this, qName);
   return createElement(qName, CreatedByCreateElement);
 }
 
@@ -745,8 +744,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI,
 
   Element* element;
   if (CustomElement::shouldCreateCustomElement(qName))
-    element =
-        CustomElement::createCustomElementSync(*this, qName, exceptionState);
+    element = CustomElement::createCustomElementSync(*this, qName);
   else if (V0CustomElement::isValidName(qName.localName()) &&
            registrationContext())
     element = registrationContext()->createCustomTagElement(*this, qName);

@@ -66,11 +66,7 @@ class CORE_EXPORT CustomElement {
   static bool shouldCreateCustomElement(const QualifiedName&);
 
   static HTMLElement* createCustomElementSync(Document&,
-                                              const AtomicString& localName,
-                                              ExceptionState&);
-  static HTMLElement* createCustomElementSync(Document&,
-                                              const QualifiedName&,
-                                              ExceptionState&);
+                                              const AtomicString& localName);
   static HTMLElement* createCustomElementSync(Document&, const QualifiedName&);
   static HTMLElement* createCustomElementAsync(Document&, const QualifiedName&);
 

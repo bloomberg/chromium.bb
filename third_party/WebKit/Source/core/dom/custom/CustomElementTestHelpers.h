@@ -65,12 +65,6 @@ class TestCustomElementDefinition : public CustomElementDefinition {
     return createElementForConstructor(document);
   }
 
-  HTMLElement* createElementSync(Document& document,
-                                 const QualifiedName&,
-                                 ExceptionState&) override {
-    return createElementForConstructor(document);
-  }
-
   bool hasConnectedCallback() const override { return false; }
   bool hasDisconnectedCallback() const override { return false; }
   bool hasAdoptedCallback() const override { return false; }
