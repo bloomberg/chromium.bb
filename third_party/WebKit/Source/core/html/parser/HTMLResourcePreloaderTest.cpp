@@ -49,11 +49,12 @@ class HTMLResourcePreloaderTest : public testing::Test {
     // TODO(yoav): Need a mock loader here to verify things are happenning
     // beyond preconnect.
     PreloaderNetworkHintsMock networkHints;
-    std::unique_ptr<PreloadRequest> preloadRequest = PreloadRequest::create(
+    auto preloadRequest = PreloadRequest::createIfNeeded(
         String(), TextPosition(), testCase.url,
         KURL(ParsedURLStringTag(), testCase.baseURL), Resource::Image,
         ReferrerPolicy(), FetchRequest::ResourceWidth(),
         ClientHintsPreferences(), PreloadRequest::RequestTypePreconnect);
+    DCHECK(preloadRequest);
     if (testCase.isCORS)
       preloadRequest->setCrossOrigin(CrossOriginAttributeAnonymous);
     HTMLResourcePreloader* preloader =

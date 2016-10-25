@@ -725,4 +725,19 @@ TEST_F(HTMLPreloadScannerTest, testLinkRelPreload) {
     test(testCase);
 }
 
+TEST_F(HTMLPreloadScannerTest, testNoDataUrls) {
+  TestCase testCases[] = {
+      {"http://example.test",
+       "<link rel=preload href='data:text/html,<p>data</data>'>", nullptr,
+       "http://example.test/", Resource::Raw, 0},
+      {"http://example.test", "<img src='data:text/html,<p>data</data>'>",
+       nullptr, "http://example.test/", Resource::Image, 0},
+      {"data:text/html,<a>anchor</a>", "<img src='#anchor'>", nullptr,
+       "http://example.test/", Resource::Image, 0},
+  };
+
+  for (const auto& testCase : testCases)
+    test(testCase);
+}
+
 }  // namespace blink

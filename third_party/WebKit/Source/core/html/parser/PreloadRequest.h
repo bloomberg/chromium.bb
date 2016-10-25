@@ -30,7 +30,9 @@ class PreloadRequest {
     RequestTypeLinkRelPreload
   };
 
-  static std::unique_ptr<PreloadRequest> create(
+  // TODO(csharrison): Move the implementation to the cpp file when core/html
+  // gets its own testing source set in html/BUILD.gn.
+  static std::unique_ptr<PreloadRequest> createIfNeeded(
       const String& initiatorName,
       const TextPosition& initiatorPosition,
       const String& resourceURL,
@@ -42,6 +44,14 @@ class PreloadRequest {
       const ClientHintsPreferences& clientHintsPreferences =
           ClientHintsPreferences(),
       RequestType requestType = RequestTypePreload) {
+    // Never preload data URLs. We also disallow relative ref URLs which become
+    // data URLs if the document's URL is a data URL. We don't want to create
+    // extra resource requests with data URLs to avoid copy / initialization
+    // overhead, which can be significant for large URLs.
+    if (resourceURL.isEmpty() || resourceURL.startsWith("#") ||
+        protocolIs(resourceURL, "data")) {
+      return nullptr;
+    }
     return wrapUnique(new PreloadRequest(
         initiatorName, initiatorPosition, resourceURL, baseURL, resourceType,
         resourceWidth, clientHintsPreferences, requestType, referrerPolicy));

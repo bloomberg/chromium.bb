@@ -231,13 +231,12 @@ static String parseCSSStringOrURL(const String& string) {
 void CSSPreloadScanner::emitRule(const SegmentedString& source) {
   if (equalIgnoringCase(m_rule, "import")) {
     String url = parseCSSStringOrURL(m_ruleValue.toString());
-    if (!url.isEmpty()) {
-      TextPosition position =
-          TextPosition(source.currentLine(), source.currentColumn());
-      std::unique_ptr<PreloadRequest> request =
-          PreloadRequest::create(FetchInitiatorTypeNames::css, position, url,
-                                 *m_predictedBaseElementURL,
-                                 Resource::CSSStyleSheet, m_referrerPolicy);
+    TextPosition position =
+        TextPosition(source.currentLine(), source.currentColumn());
+    auto request = PreloadRequest::createIfNeeded(
+        FetchInitiatorTypeNames::css, position, url, *m_predictedBaseElementURL,
+        Resource::CSSStyleSheet, m_referrerPolicy);
+    if (request) {
       // FIXME: Should this be including the charset in the preload request?
       m_requests->append(std::move(request));
     }

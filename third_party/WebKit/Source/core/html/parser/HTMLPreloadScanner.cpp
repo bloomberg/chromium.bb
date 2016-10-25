@@ -241,9 +241,12 @@ class TokenPreloadScanner::StartTagScanner {
     ReferrerPolicy referrerPolicy = (m_referrerPolicy != ReferrerPolicyDefault)
                                         ? m_referrerPolicy
                                         : documentReferrerPolicy;
-    std::unique_ptr<PreloadRequest> request = PreloadRequest::create(
+    auto request = PreloadRequest::createIfNeeded(
         initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, type,
         referrerPolicy, resourceWidth, clientHintsPreferences, requestType);
+    if (!request)
+      return nullptr;
+
     request->setCrossOrigin(m_crossOrigin);
     request->setNonce(m_nonce);
     request->setCharset(charset());
