@@ -16,8 +16,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/interstitials/ios_chrome_controller_client.h"
 #include "ios/chrome/browser/interstitials/ios_chrome_metrics_helper.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/browser_constants.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -138,27 +136,6 @@ void IOSSSLBlockingPage::AfterShow() {
 void IOSSSLBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) const {
   ssl_error_ui_->PopulateStringsForHTML(load_time_data);
-  // Spoofing attempts have a custom message on iOS.
-  // This code will no longer be necessary once UIWebView is gone.
-  if (ssl_info_.cert->subject().GetDisplayName() == ios::kSpoofingAttemptFlag) {
-    load_time_data->SetString(
-        "errorCode", base::string16(base::ASCIIToUTF16("Unverified URL")));
-    load_time_data->SetString(
-        "tabTitle", l10n_util::GetStringUTF16(
-                        IDS_IOS_INTERSTITIAL_HEADING_SPOOFING_ATTEMPT_ERROR));
-    load_time_data->SetString(
-        "heading", l10n_util::GetStringUTF16(
-                       IDS_IOS_INTERSTITIAL_HEADING_SPOOFING_ATTEMPT_ERROR));
-    load_time_data->SetString(
-        "primaryParagraph",
-        l10n_util::GetStringUTF16(
-            IDS_IOS_INTERSTITIAL_SUMMARY_SPOOFING_ATTEMPT_ERROR));
-    load_time_data->SetString(
-        "explanationParagraph",
-        l10n_util::GetStringUTF16(
-            IDS_IOS_INTERSTITIAL_DETAILS_SPOOFING_ATTEMPT_ERROR));
-    load_time_data->SetString("finalParagraph", base::string16());
-  }
 }
 
 // This handles the commands sent from the interstitial JavaScript.
