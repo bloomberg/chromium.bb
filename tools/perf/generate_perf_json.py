@@ -23,7 +23,9 @@ from telemetry.util import bot_utils
 SCRIPT_TESTS = [
   {
     'args': [
-      'gpu_perftests'
+      'gpu_perftests',
+      '--adb-path',
+      'src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb',
     ],
     'name': 'gpu_perftests',
     'script': 'gtest_perf_test.py',
@@ -56,7 +58,9 @@ SCRIPT_TESTS = [
   },
   {
     'args': [
-      'cc_perftests'
+      'cc_perftests',
+      '--adb-path',
+      'src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb',
     ],
     'name': 'cc_perftests',
     'script': 'gtest_perf_test.py',
