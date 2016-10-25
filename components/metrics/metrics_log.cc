@@ -352,7 +352,7 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
     stability->set_uptime_sec(uptime_sec);
 }
 
-void MetricsLog::RecordEnvironment(
+std::string MetricsLog::RecordEnvironment(
     const std::vector<MetricsProvider*>& metrics_providers,
     const std::vector<variations::ActiveGroupId>& synthetic_trials,
     int64_t install_date,
@@ -429,6 +429,8 @@ void MetricsLog::RecordEnvironment(
     local_state->SetString(prefs::kStabilitySavedSystemProfileHash,
                            ComputeSHA1(serialized_system_profile));
   }
+
+  return serialized_system_profile;
 }
 
 bool MetricsLog::LoadSavedEnvironmentFromPrefs(std::string* app_version) {

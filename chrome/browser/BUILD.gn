@@ -3388,6 +3388,7 @@ split_static_library("browser") {
     deps += [
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
+      "//third_party/crashpad/crashpad/client:client",
       "//third_party/google_toolbox_for_mac",
       "//third_party/mozilla",
     ]
@@ -3432,6 +3433,7 @@ split_static_library("browser") {
       "//components/browser_watcher",
       "//components/browser_watcher:browser_watcher_client",
       "//google_update",
+      "//third_party/crashpad/crashpad/client:client",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",

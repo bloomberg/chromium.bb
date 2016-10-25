@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -104,6 +106,10 @@
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "third_party/crashpad/crashpad/client/crashpad_info.h"
+#endif
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/chrome_signin_status_metrics_provider_delegate.h"
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
@@ -118,6 +124,19 @@ const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 // Needs to be kept in sync with the writer in
 // third_party/crashpad/crashpad/handler/handler_main.cc.
 const char kCrashpadHistogramAllocatorName[] = "CrashpadMetrics";
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// The stream type assigned to the minidump stream that holds the serialized
+// system profile proto.
+const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
+
+// A serialized environment (SystemProfileProto) that was registered with the
+// crash reporter, or the empty string if no environment was registered yet.
+// Ownership must be maintained after registration as the crash reporter does
+// not assume it.
+// TODO(manzagop): revisit this if the Crashpad API evolves.
+base::LazyInstance<std::string>::Leaky g_environment_for_crash_reporter;
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
   metrics::FileMetricsProvider::RegisterPrefs(
@@ -340,6 +359,31 @@ metrics::SystemProfileProto::Channel ChromeMetricsServiceClient::GetChannel() {
 
 std::string ChromeMetricsServiceClient::GetVersionString() {
   return metrics::GetVersionString();
+}
+
+void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  DCHECK(environment);
+
+  // Register the environment with the crash reporter. Note this only registers
+  // the first environment, meaning ulterior updates to the environment are not
+  // reflected in crash report environments (e.g. fieldtrial information). This
+  // approach is due to the Crashpad API at time of implementation (registered
+  // data cannot be updated). It would however be unwise to rely on such a
+  // mechanism to retrieve the value of the dynamic fields due to the
+  // environment update lag. Also note there is a window from startup to this
+  // point during which crash reports will not have an environment set.
+  if (!g_environment_for_crash_reporter.Get().empty())
+    return;
+
+  g_environment_for_crash_reporter.Get() = std::move(*environment);
+
+  crashpad::CrashpadInfo::GetCrashpadInfo()->AddUserDataMinidumpStream(
+      kSystemProfileMinidumpStreamType,
+      reinterpret_cast<const void*>(
+          g_environment_for_crash_reporter.Get().data()),
+      g_environment_for_crash_reporter.Get().size());
+#endif  // OS_WIN || OS_MACOSX
 }
 
 void ChromeMetricsServiceClient::OnLogUploadComplete() {

@@ -90,8 +90,9 @@ class MetricsLog {
   // the specified set of |metrics_providers|.  Takes the list of synthetic
   // trial IDs as a parameter. A synthetic trial is one that is set up
   // dynamically by code in Chrome. For example, a pref may be mapped to a
-  // synthetic trial such that the group is determined by the pref value.
-  void RecordEnvironment(
+  // synthetic trial such that the group is determined by the pref value. The
+  // current environment is returned serialized as a string.
+  std::string RecordEnvironment(
       const std::vector<MetricsProvider*>& metrics_providers,
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
       int64_t install_date,

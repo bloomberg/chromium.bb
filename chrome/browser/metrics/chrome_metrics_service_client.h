@@ -18,6 +18,7 @@
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
+#include "components/metrics/proto/system_profile.pb.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -68,6 +69,7 @@ class ChromeMetricsServiceClient
   bool GetBrand(std::string* brand_code) override;
   metrics::SystemProfileProto::Channel GetChannel() override;
   std::string GetVersionString() override;
+  void OnEnvironmentUpdate(std::string* serialized_environment) override;
   void OnLogUploadComplete() override;
   void InitializeSystemProfileMetrics(
       const base::Closure& done_callback) override;
