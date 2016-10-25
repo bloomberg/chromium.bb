@@ -2,7 +2,7 @@
   "name": "Manifest test app",
   "icons": [
     {
-      "src": "corrupted_icon.png",
+      "src": "bad_icon.png",
       "type": "image/png",
       "sizes": "192x192"
     }
