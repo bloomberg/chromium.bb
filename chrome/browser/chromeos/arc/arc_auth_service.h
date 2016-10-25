@@ -263,6 +263,7 @@ class ArcAuthService : public ArcService,
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
 };
 
+// Outputs the stringified |state| to |os|. This is only for logging purposes.
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state);
 
 }  // namespace arc

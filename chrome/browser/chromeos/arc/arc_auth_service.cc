@@ -72,11 +72,6 @@ bool g_enable_check_android_management_for_testing = false;
 // but present the UI to try again.
 constexpr base::TimeDelta kArcSignInTimeout = base::TimeDelta::FromMinutes(5);
 
-const char kStateNotInitialized[] = "NOT_INITIALIZED";
-const char kStateStopped[] = "STOPPED";
-const char kStateFetchingCode[] = "FETCHING_CODE";
-const char kStateActive[] = "ACTIVE";
-
 ash::ShelfDelegate* GetShelfDelegate() {
   if (g_shelf_delegate_for_testing)
     return g_shelf_delegate_for_testing;
@@ -958,13 +953,13 @@ void ArcAuthService::OnAndroidManagementPassed() {
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {
   switch (state) {
     case ArcAuthService::State::NOT_INITIALIZED:
-      return os << kStateNotInitialized;
+      return os << "NOT_INITIALIZED";
     case ArcAuthService::State::STOPPED:
-      return os << kStateStopped;
+      return os << "STOPPED";
     case ArcAuthService::State::FETCHING_CODE:
-      return os << kStateFetchingCode;
+      return os << "FETCHING_CODE";
     case ArcAuthService::State::ACTIVE:
-      return os << kStateActive;
+      return os << "ACTIVE";
     default:
       NOTREACHED();
       return os;
