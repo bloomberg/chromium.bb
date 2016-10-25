@@ -95,25 +95,17 @@ inline WindowId RootWindowId(uint16_t index) {
   return WindowId(kInvalidClientId, 2 + index);
 }
 
+struct ClientWindowIdHash {
+  size_t operator()(const ClientWindowId& id) const { return id.id; }
+};
+
+struct WindowIdHash {
+  size_t operator()(const WindowId& id) const {
+    return WindowIdToTransportId(id);
+  }
+};
+
 }  // namespace ws
 }  // namespace ui
-
-namespace BASE_HASH_NAMESPACE {
-
-template <>
-struct hash<ui::ws::ClientWindowId> {
-  size_t operator()(const ui::ws::ClientWindowId& id) const {
-    return hash<ui::Id>()(id.id);
-  }
-};
-
-template <>
-struct hash<ui::ws::WindowId> {
-  size_t operator()(const ui::ws::WindowId& id) const {
-    return hash<ui::Id>()(WindowIdToTransportId(id));
-  }
-};
-
-}  // namespace BASE_HASH_NAMESPACE
 
 #endif  // SERVICES_UI_WS_IDS_H_

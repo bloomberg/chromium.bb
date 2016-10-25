@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame_sink_client.h"
@@ -87,7 +87,7 @@ class BitmapUploader : public cc::CompositorFrameSinkClient {
   Format format_;
   std::unique_ptr<std::vector<unsigned char>> bitmap_;
   uint32_t next_resource_id_;
-  base::hash_map<uint32_t, uint32_t> resource_to_texture_id_map_;
+  std::unordered_map<uint32_t, uint32_t> resource_to_texture_id_map_;
 
   base::WeakPtrFactory<BitmapUploader> weak_factory_;
 

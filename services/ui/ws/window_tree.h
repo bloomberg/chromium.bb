@@ -12,10 +12,10 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "cc/ipc/surface_id.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -542,13 +542,15 @@ class WindowTree : public mojom::WindowTree,
   std::set<const ServerWindow*> roots_;
 
   // The windows created by this tree. This tree owns these objects.
-  base::hash_map<WindowId, ServerWindow*> created_window_map_;
+  std::unordered_map<WindowId, ServerWindow*, WindowIdHash> created_window_map_;
 
   // The client is allowed to assign ids. These two maps providing the mapping
   // from the ids native to the server (WindowId) to those understood by the
   // client (ClientWindowId).
-  base::hash_map<ClientWindowId, WindowId> client_id_to_window_id_map_;
-  base::hash_map<WindowId, ClientWindowId> window_id_to_client_id_map_;
+  std::unordered_map<ClientWindowId, WindowId, ClientWindowIdHash>
+      client_id_to_window_id_map_;
+  std::unordered_map<WindowId, ClientWindowId, WindowIdHash>
+      window_id_to_client_id_map_;
 
   uint32_t event_ack_id_;
 

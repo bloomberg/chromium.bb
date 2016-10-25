@@ -1053,7 +1053,8 @@ void WindowTree::DestroyWindows() {
   // If we get here from the destructor we're not going to get
   // ProcessWindowDeleted(). Copy the map and delete from the copy so that we
   // don't have to worry about whether |created_window_map_| changes or not.
-  base::hash_map<WindowId, ServerWindow*> created_window_map_copy;
+  std::unordered_map<WindowId, ServerWindow*, WindowIdHash>
+      created_window_map_copy;
   created_window_map_.swap(created_window_map_copy);
   // A sibling can be a transient parent of another window so we detach windows
   // from their transient parents to avoid double deletes.
