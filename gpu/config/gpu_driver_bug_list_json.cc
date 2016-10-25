@@ -2153,6 +2153,21 @@ LONG_STRING_CONST(
       "features": [
         "adjust_src_dst_region_for_blitframebuffer"
       ]
+    },
+    {
+      "id": 200,
+      "description": "ES3 support is unreliable on some older drivers",
+      "cr_bugs": [657925],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "4.4"
+        }
+      },
+      "features": [
+        "disable_es3_gl_context"
+      ]
     }
   ]
   // Please update the version number at beginning of this file whenever you
