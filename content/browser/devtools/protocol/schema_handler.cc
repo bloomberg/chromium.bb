@@ -25,7 +25,7 @@ Response SchemaHandler::GetDomains(
     "Network", "Database", "IndexedDB", "CacheStorage", "DOMStorage", "CSS",
     "ApplicationCache", "DOM", "IO", "DOMDebugger", "Worker", "ServiceWorker",
     "Input", "LayerTree", "DeviceOrientation", "Tracing", "Animation",
-    "Accessibility", "Storage", "Log", "Browser", "Runtime", "Debugger",
+    "Accessibility", "Storage", "Log", "Runtime", "Debugger",
     "Profiler", "HeapProfiler", "Schema", "Target"
   };
   for (size_t i = 0; i < arraysize(kDomains); ++i) {

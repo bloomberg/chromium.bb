@@ -49,6 +49,16 @@ class TargetHandler : public DevToolsAgentHostClient,
   Response GetTargetInfo(const std::string& target_id,
                          scoped_refptr<TargetInfo>* target_info);
   Response ActivateTarget(const std::string& target_id);
+  Response CloseTarget(const std::string& target_id, bool* out_success);
+  Response CreateBrowserContext(std::string* out_context_id);
+  Response DisposeBrowserContext(const std::string& context_id,
+                                 bool* out_success);
+  Response CreateTarget(const std::string& url,
+                        const int* width,
+                        const int* height,
+                        const std::string* context_id,
+                        std::string* out_target_id);
+  Response GetTargets(std::vector<scoped_refptr<TargetInfo>>* target_infos);
 
  private:
   using HostsMap = std::map<std::string, scoped_refptr<DevToolsAgentHost>>;

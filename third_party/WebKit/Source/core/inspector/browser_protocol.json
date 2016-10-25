@@ -3324,6 +3324,10 @@
                 "type": "string"
             },
             {
+                "id": "BrowserContextID",
+                "type": "string"
+            },
+            {
                 "id": "TargetInfo",
                 "type": "object",
                 "properties": [
@@ -3369,15 +3373,15 @@
             },
             {
                 "name": "setRemoteLocations",
+                "description": "Enables target discovery for the specified locations, when <code>setDiscoverTargets</code> was set to <code>true</code>.",
                 "parameters": [
-
                     { "name": "locations", "type": "array", "items": { "$ref": "RemoteLocation" }, "description": "List of remote locations." }
                 ],
-                "description": "Enables target discovery for the specified locations, when <code>setDiscoverTargets</code> was set to <code>true</code>.",
                 "handlers": ["browser"]
             },
             {
                 "name": "sendMessageToTarget",
+                "description": "Sends protocol message to the target with given id.",
                 "parameters": [
                     { "name": "targetId", "type": "string" },
                     { "name": "message", "type": "string" }
@@ -3386,6 +3390,7 @@
             },
             {
                 "name": "getTargetInfo",
+                "description": "Returns information about a target.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
@@ -3396,13 +3401,26 @@
             },
             {
                 "name": "activateTarget",
+                "description": "Activates (focuses) the target.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
                 "handlers": ["browser"]
             },
             {
+                "name": "closeTarget",
+                "description": "Closes the target. If the target is a page that gets closed too.",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
                 "name": "attachToTarget",
+                "description": "Attaches to the target with given id.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
@@ -3413,8 +3431,50 @@
             },
             {
                 "name": "detachFromTarget",
+                "description": "Detaches from the target with given id.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "createBrowserContext",
+                "description": "Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.",
+                "returns": [
+                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The id of the context created." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "disposeBrowserContext",
+                "description": "Deletes a BrowserContext, will fail of any open page uses it.",
+                "parameters": [
+                    { "name": "browserContextId", "$ref": "BrowserContextID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "createTarget",
+                "description": "Creates a new page.",
+                "parameters": [
+                    { "name": "url", "type": "string", "description": "The initial URL the page will be navigated to." },
+                    { "name": "width", "type": "integer", "description": "Frame width in DIP (headless chrome only).", "optional": true },
+                    { "name": "height", "type": "integer", "description": "Frame height in DIP (headless chrome only).", "optional": true },
+                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The browser context to create the page in (headless chrome only).", "optional": true }
+                ],
+                "returns": [
+                    { "name": "targetId", "$ref": "TargetID", "description": "The id of the page opened." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "getTargets",
+                "description": "Retrieves a list of available targets.",
+                "returns": [
+                    { "name": "targetInfos", "type": "array", "items": { "$ref": "TargetInfo" }, "description": "The list of targets." }
                 ],
                 "handlers": ["browser"]
             }
@@ -3422,6 +3482,7 @@
         "events": [
             {
                 "name": "targetCreated",
+                "description": "Issued when a possible inspection target is created.",
                 "parameters": [
                     { "name": "targetInfo", "$ref": "TargetInfo" }
                 ],
@@ -3429,6 +3490,7 @@
             },
             {
                 "name": "targetDestroyed",
+                "description": "Issued when a target is destroyed.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
@@ -3436,6 +3498,7 @@
             },
             {
                 "name": "attachedToTarget",
+                "description": "Issued when attached to target because of auto-attach or <code>attachToTarget</code> command.",
                 "parameters": [
                     { "name": "targetInfo", "$ref": "TargetInfo" },
                     { "name": "waitingForDebugger", "type": "boolean" }
@@ -3444,6 +3507,7 @@
             },
             {
                 "name": "detachedFromTarget",
+                "description": "Issued when detached from target for any reason (including <code>detachFromTarget</code> command).",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
@@ -3451,6 +3515,7 @@
             },
             {
                 "name": "receivedMessageFromTarget",
+                "description": "Notifies about new protocol message from attached target.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" },
                     { "name": "message", "type": "string" }
@@ -4457,129 +4522,6 @@
                     { "name": "entry", "$ref": "LogEntry", "description": "The entry." }
                 ],
                 "description": "Issued when new message was logged."
-            }
-        ]
-    },
-    {
-        "domain": "Browser",
-        "description": "The Browser domain allows listing, creating, activating and attaching to the targets.",
-        "experimental": true,
-        "types": [
-            {
-                "id": "BrowserContextID",
-                "type": "string"
-            },
-            {
-                "id": "TargetID",
-                "type": "string"
-            },
-            {
-                "id": "TargetInfo",
-                "type": "object",
-                "properties": [
-                    { "name": "targetId", "$ref": "TargetID" },
-                    { "name": "type", "type": "string" },
-                    { "name": "title", "type": "string" },
-                    { "name": "url", "type": "string" }
-                ]
-            }
-        ],
-        "commands": [
-            {
-                "name": "createBrowserContext",
-                "description": "Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.",
-                "returns": [
-                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The id of the context created." }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "disposeBrowserContext",
-                "description": "Deletes a BrowserContext, will fail of any open page uses it.",
-                "parameters": [
-                    { "name": "browserContextId", "$ref": "BrowserContextID" }
-                ],
-                "returns": [
-                    { "name": "success", "type": "boolean" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "createTarget",
-                "description": "Creates a new page.",
-                "parameters": [
-                    { "name": "url", "type": "string", "description": "The initial URL the page will be navigated to." },
-                    { "name": "width", "type": "integer", "description": "Frame width in DIP (headless chrome only).", "optional": true },
-                    { "name": "height", "type": "integer", "description": "Frame height in DIP (headless chrome only).", "optional": true },
-                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The browser context to create the page in (headless chrome only).", "optional": true }
-                ],
-                "returns": [
-                    { "name": "targetId", "$ref": "TargetID", "description": "The id of the page opened." }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "closeTarget",
-                "description": "Closes the target. If the target is a page that gets closed too.",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" }
-                ],
-                "returns": [
-                    { "name": "success", "type": "boolean" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "getTargets",
-                "returns": [
-                    { "name": "targetInfo", "type": "array", "items": { "$ref": "TargetInfo" } }
-                ],
-                "description": "Returns target information for all potential targets.",
-                "handlers": ["browser"],
-                "async": true
-            },
-            {
-                "name": "attach",
-                "description": "Attaches to the target with given id.",
-                "parameters": [
-                    {"name": "targetId", "$ref": "TargetID", "description": "Target id." }
-                ],
-                "returns": [
-                    { "name": "success", "type": "boolean", "description": "Whether attach succeeded." }
-                ],
-                "handlers": ["browser"],
-                "async": true
-            },
-            {
-                "name": "detach",
-                "description": "Detaches from the target with given id.",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" }
-                ],
-                "returns": [
-                    { "name": "success", "type": "boolean", "description": "Whether detach succeeded." }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "sendMessage",
-                "description": "Sends protocol message to the target with given id.",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" },
-                    { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            }
-        ],
-        "events": [
-            {
-                "name": "dispatchMessage",
-                "description": "Dispatches protocol message from the target with given id.",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" },
-                    { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser"]
             }
         ]
     },

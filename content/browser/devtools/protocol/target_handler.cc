@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/protocol/target_handler.h"
 
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -81,6 +82,14 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
     AddEligibleHosts(*it.second.get(), &result);
 
   return result;
+}
+
+scoped_refptr<TargetInfo> CreateInfo(DevToolsAgentHost* host) {
+  return TargetInfo::Create()
+      ->set_target_id(host->GetId())
+      ->set_title(host->GetTitle())
+      ->set_url(host->GetURL().spec())
+      ->set_type(host->GetType());
 }
 
 }  // namespace
@@ -190,11 +199,7 @@ void TargetHandler::TargetCreatedInternal(DevToolsAgentHost* host) {
   if (reported_hosts_.find(host->GetId()) != reported_hosts_.end())
     return;
   client_->TargetCreated(
-      TargetCreatedParams::Create()->set_target_info(
-          TargetInfo::Create()->set_target_id(host->GetId())
-                              ->set_title(host->GetTitle())
-                              ->set_url(host->GetURL().spec())
-                              ->set_type(host->GetType())));
+      TargetCreatedParams::Create()->set_target_info(CreateInfo(host)));
   reported_hosts_[host->GetId()] = host;
 }
 
@@ -214,11 +219,7 @@ bool TargetHandler::AttachToTargetInternal(
     return false;
   attached_hosts_[host->GetId()] = host;
   client_->AttachedToTarget(AttachedToTargetParams::Create()
-      ->set_target_info(
-          TargetInfo::Create()->set_target_id(host->GetId())
-                              ->set_title(host->GetTitle())
-                              ->set_url(host->GetURL().spec())
-                              ->set_type(host->GetType()))
+      ->set_target_info(CreateInfo(host))
       ->set_waiting_for_debugger(waiting_for_debugger));
   return true;
 }
@@ -289,10 +290,12 @@ Response TargetHandler::SetRemoteLocations(
 
 Response TargetHandler::AttachToTarget(const std::string& target_id,
                                        bool* out_success) {
-  auto it = reported_hosts_.find(target_id);
-  if (it == reported_hosts_.end())
-    return Response::InvalidParams("No target with such id");
-  *out_success = AttachToTargetInternal(it->second, false);
+  // TODO(dgozman): only allow reported hosts.
+  scoped_refptr<DevToolsAgentHost> agent_host =
+      DevToolsAgentHost::GetForId(target_id);
+  if (!agent_host)
+    return Response::ServerError("No target with given id found");
+  *out_success = AttachToTargetInternal(agent_host.get(), false);
   return Response::OK();
 }
 
@@ -322,12 +325,8 @@ Response TargetHandler::GetTargetInfo(
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForId(target_id));
   if (!agent_host)
-    return Response::InvalidParams("No target with such id");
-  *target_info = TargetInfo::Create()
-      ->set_target_id(agent_host->GetId())
-      ->set_type(agent_host->GetType())
-      ->set_title(agent_host->GetTitle())
-      ->set_url(agent_host->GetURL().spec());
+    return Response::InvalidParams("No target with given id found");
+  *target_info = CreateInfo(agent_host.get());
   return Response::OK();
 }
 
@@ -336,8 +335,51 @@ Response TargetHandler::ActivateTarget(const std::string& target_id) {
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForId(target_id));
   if (!agent_host)
-    return Response::InvalidParams("No target with such id");
+    return Response::InvalidParams("No target with given id found");
   agent_host->Activate();
+  return Response::OK();
+}
+
+Response TargetHandler::CloseTarget(const std::string& target_id,
+                                    bool* out_success) {
+  scoped_refptr<DevToolsAgentHost> agent_host =
+      DevToolsAgentHost::GetForId(target_id);
+  if (!agent_host)
+    return Response::ServerError("No target with given id found");
+  *out_success = agent_host->Close();
+  return Response::OK();
+}
+
+Response TargetHandler::CreateBrowserContext(std::string* out_context_id) {
+  return Response::ServerError("Not supported");
+}
+
+Response TargetHandler::DisposeBrowserContext(const std::string& context_id,
+                                              bool* out_success) {
+  return Response::ServerError("Not supported");
+}
+
+Response TargetHandler::CreateTarget(const std::string& url,
+                                     const int* width,
+                                     const int* height,
+                                     const std::string* context_id,
+                                     std::string* out_target_id) {
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!delegate)
+    return Response::ServerError("Not supported");
+  scoped_refptr<content::DevToolsAgentHost> agent_host =
+      delegate->CreateNewTarget(GURL(url));
+  if (!agent_host)
+    return Response::ServerError("Not supported");
+  *out_target_id = agent_host->GetId();
+  return Response::OK();
+}
+
+Response TargetHandler::GetTargets(
+    std::vector<scoped_refptr<TargetInfo>>* target_infos) {
+  for (const auto& host : DevToolsAgentHost::GetOrCreateAll())
+    target_infos->push_back(CreateInfo(host.get()));
   return Response::OK();
 }
 

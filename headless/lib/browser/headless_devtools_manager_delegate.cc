@@ -15,7 +15,7 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "headless/public/domains/browser.h"
+#include "headless/public/domains/target.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
@@ -23,13 +23,13 @@ namespace headless {
 HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
     base::WeakPtr<HeadlessBrowserImpl> browser)
     : browser_(std::move(browser)), default_browser_context_(nullptr) {
-  command_map_["Browser.createTarget"] =
+  command_map_["Target.createTarget"] =
       &HeadlessDevToolsManagerDelegate::CreateTarget;
-  command_map_["Browser.closeTarget"] =
+  command_map_["Target.closeTarget"] =
       &HeadlessDevToolsManagerDelegate::CloseTarget;
-  command_map_["Browser.createBrowserContext"] =
+  command_map_["Target.createBrowserContext"] =
       &HeadlessDevToolsManagerDelegate::CreateBrowserContext;
-  command_map_["Browser.disposeBrowserContext"] =
+  command_map_["Target.disposeBrowserContext"] =
       &HeadlessDevToolsManagerDelegate::DisposeBrowserContext;
 }
 
@@ -103,7 +103,7 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
                                         .SetWindowSize(gfx::Size(width, height))
                                         .Build());
 
-  return browser::CreateTargetResult::Builder()
+  return target::CreateTargetResult::Builder()
       .SetTargetId(web_contents_impl->GetDevToolsAgentHostId())
       .Build()
       ->Serialize();
@@ -122,7 +122,7 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CloseTarget(
     web_contents->Close();
     success = true;
   }
-  return browser::CloseTargetResult::Builder()
+  return target::CloseTargetResult::Builder()
       .SetSuccess(success)
       .Build()
       ->Serialize();
@@ -135,7 +135,7 @@ HeadlessDevToolsManagerDelegate::CreateBrowserContext(
       browser_->CreateBrowserContextBuilder().Build();
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  return browser::CreateBrowserContextResult::Builder()
+  return target::CreateBrowserContextResult::Builder()
       .SetBrowserContextId(browser_context->Id())
       .Build()
       ->Serialize();
@@ -158,7 +158,7 @@ HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
     context->Close();
   }
 
-  return browser::DisposeBrowserContextResult::Builder()
+  return target::DisposeBrowserContextResult::Builder()
       .SetSuccess(success)
       .Build()
       ->Serialize();

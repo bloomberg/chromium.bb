@@ -11,7 +11,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "headless/public/domains/browser.h"
 #include "headless/public/domains/emulation.h"
 #include "headless/public/domains/network.h"
 #include "headless/public/domains/page.h"

@@ -944,7 +944,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserCreateAndCloseTarget) {
   EXPECT_EQ(1u, shell()->windows().size());
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetString("url", "about:blank");
-  SendCommand("Browser.createTarget", std::move(params), true);
+  SendCommand("Target.createTarget", std::move(params), true);
   std::string target_id;
   EXPECT_TRUE(result_->GetString("targetId", &target_id));
   EXPECT_EQ(2u, shell()->windows().size());
@@ -954,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserCreateAndCloseTarget) {
   bool success;
   params.reset(new base::DictionaryValue());
   params->SetString("targetId", target_id);
-  SendCommand("Browser.closeTarget", std::move(params), true);
+  SendCommand("Target.closeTarget", std::move(params), true);
   EXPECT_TRUE(result_->GetBoolean("success", &success));
   EXPECT_TRUE(success);
 }
@@ -962,9 +962,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserCreateAndCloseTarget) {
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserGetTargets) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
-  SendCommand("Browser.getTargets", nullptr, true);
+  SendCommand("Target.getTargets", nullptr, true);
   base::ListValue* target_infos;
-  EXPECT_TRUE(result_->GetList("targetInfo", &target_infos));
+  EXPECT_TRUE(result_->GetList("targetInfos", &target_infos));
   EXPECT_EQ(1u, target_infos->GetSize());
   base::DictionaryValue* target_info;
   EXPECT_TRUE(target_infos->GetDictionary(0u, &target_info));

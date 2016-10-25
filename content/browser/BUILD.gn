@@ -408,8 +408,6 @@ source_set("browser") {
     "devtools/forwarding_agent_host.h",
     "devtools/page_navigation_throttle.cc",
     "devtools/page_navigation_throttle.h",
-    "devtools/protocol/browser_handler.cc",
-    "devtools/protocol/browser_handler.h",
     "devtools/protocol/color_picker.cc",
     "devtools/protocol/color_picker.h",
     "devtools/protocol/devtools_protocol_client.cc",
