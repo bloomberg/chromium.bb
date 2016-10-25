@@ -66,13 +66,6 @@ DEFINE_TRACE(SelectionController) {
 
 namespace {
 
-void setSelectionIfNeeded(FrameSelection& selection,
-                          const VisibleSelectionInFlatTree& newSelection) {
-  if (selection.visibleSelection<EditingInFlatTreeStrategy>() == newSelection)
-    return;
-  selection.setSelection(newSelection);
-}
-
 DispatchEventResult dispatchSelectStart(Node* node) {
   if (!node || !node->layoutObject())
     return DispatchEventResult::NotCanceled;
@@ -682,7 +675,10 @@ bool SelectionController::handleMouseReleaseEvent(
       }
     }
 
-    setSelectionIfNeeded(selection(), newSelection);
+    if (selection().visibleSelection<EditingInFlatTreeStrategy>() !=
+        newSelection) {
+      selection().setSelection(newSelection);
+    }
 
     handled = true;
   }
