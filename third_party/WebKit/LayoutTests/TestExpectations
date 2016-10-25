@@ -809,10 +809,6 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-# Reftests that needs investigation.
-crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ Failure ]
-crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ Failure ]
-
 crbug.com/474987 [ Win Mac ] css3/flexbox/auto-margins.html [ Failure ]
 
 crbug.com/658305 css3/filters/effect-reference-after.html [ Failure Pass ]
