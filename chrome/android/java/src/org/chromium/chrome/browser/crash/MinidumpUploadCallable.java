@@ -87,7 +87,7 @@ public class MinidumpUploadCallable implements Callable<Integer> {
     @Override
     public Integer call() {
         // TODO(jchinlee): address proper cleanup procedures for command line flag-disabled uploads.
-        if (mPermManager.isUploadCommandLineDisabled()) {
+        if (mPermManager.isCrashUploadDisabledByCommandLine()) {
             Log.i(TAG, "Minidump upload is disabled by command line flag. Retaining file.");
             return UPLOAD_COMMANDLINE_DISABLED;
         }
@@ -95,7 +95,7 @@ public class MinidumpUploadCallable implements Callable<Integer> {
         if (mPermManager.isUploadEnabledForTests()) {
             Log.i(TAG, "Minidump upload enabled for tests, skipping other checks.");
         } else if (!CrashFileManager.isForcedUpload(mFileToUpload)) {
-            if (!mPermManager.isUploadUserPermitted()) {
+            if (!mPermManager.isUsageAndCrashReportingPermittedByUser()) {
                 Log.i(TAG, "Minidump upload is not permitted by user. Marking file as skipped for "
                                 + "cleanup to prevent future uploads.");
                 CrashFileManager.markUploadSkipped(mFileToUpload);
@@ -109,11 +109,13 @@ public class MinidumpUploadCallable implements Callable<Integer> {
                 return UPLOAD_DISABLED_BY_SAMPLING;
             }
 
-            boolean isLimited = mPermManager.isUploadLimited();
-            if (isLimited || !mPermManager.isUploadPermitted()) {
-                Log.i(TAG, "Minidump cannot currently be uploaded due to constraints.");
+            if (!mPermManager.isNetworkAvailableForCrashUploads()) {
+                Log.i(TAG, "Minidump cannot currently be uploaded due to network constraints.");
                 return UPLOAD_FAILURE;
             }
+
+            // The above checks should be at least as strict as the requirements for UMA uploads.
+            assert mPermManager.isMetricsUploadPermitted();
         }
 
         HttpURLConnection connection =

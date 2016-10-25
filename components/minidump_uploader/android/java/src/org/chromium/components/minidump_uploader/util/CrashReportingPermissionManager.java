@@ -9,7 +9,7 @@ package org.chromium.components.minidump_uploader.util;
  */
 public interface CrashReportingPermissionManager {
     /**
-     * Checks whether this client is in-sample for crashes. See
+     * Checks whether this client is in-sample for usage metrics and crash reporting. See
      * {@link org.chromium.chrome.browser.metrics.UmaUtils#isClientInMetricsSample} for details.
      *
      * @returns boolean Whether client is in-sample.
@@ -17,45 +17,39 @@ public interface CrashReportingPermissionManager {
     public boolean isClientInMetricsSample();
 
     /**
-     * Check whether to allow uploading crash dump now based on user consent and connectivity.
+     * Checks whether uploading of crash dumps is permitted for the available network(s).
      *
-     * @return whether to allow uploading crash dump now.
+     * @return whether uploading crash dumps is permitted.
      */
-    public boolean isUploadPermitted();
+    public boolean isNetworkAvailableForCrashUploads();
 
     /**
-     * Check whether to allow UMA uploading.
+     * Checks whether uploading of crash dumps is permitted, based on the corresponding command line
+     * flag only.
      *
-     * @return whether to allow UMA uploading.
+     * @return whether uploading of crash dumps is enabled or disabled by a command line flag.
      */
-    public boolean isUmaUploadPermitted();
+    public boolean isCrashUploadDisabledByCommandLine();
 
     /**
-     * Check whether to allow uploading crash dump now based on command line flag only.
+     * Checks whether uploading of usage metrics is currently permitted. This is a combination of
+     * the below checks, plus networking restrictions.
      *
-     * @return whether experimental flag doesn't disable uploading crash dump.
+     * @return whether uploading usage metrics is currently permitted.
      */
-    public boolean isUploadCommandLineDisabled();
+    public boolean isMetricsUploadPermitted();
 
     /**
-     * Check whether to allow uploading crash dump now based on user consent only.
+     * Checks whether uploading of usage metrics and crash dumps is currently permitted, based on
+     * user consent only.
      *
-     * @return whether user allows uploading crash dump.
+     * @return whether the user has consented to reporting usage metrics and crash dumps.
      */
-    public boolean isUploadUserPermitted();
+    public boolean isUsageAndCrashReportingPermittedByUser();
 
     /**
-     * Check whether uploading crash dump should be in constrained mode based on user experiments
-     * and current connection type. This function shows whether in general uploads should be limited
-     * for this user and does not determine whether crash uploads are currently possible or not. Use
-     * |isUploadPermitted| function for that before calling |isUploadLimited|.
-     *
-     * @return whether uploading logic should be constrained.
-     */
-    public boolean isUploadLimited();
-
-    /**
-     * Check whether to ignore all consent and upload, used by test devices to avoid UI dependency.
+     * Checks whether to ignore all consent and upload limitations for usage metrics and crash
+     * reporting. Used by test devices to avoid a UI dependency.
      *
      * @return whether crash dumps should be uploaded if at all possible.
      */

@@ -169,7 +169,7 @@ public class UmaSessionStats {
         // Ensure Android and Chrome local state prefs are in sync.
         privacyManager.syncUsageAndCrashReportingPrefs();
 
-        boolean mayUploadStats = privacyManager.isUmaUploadPermitted();
+        boolean mayUploadStats = privacyManager.isMetricsUploadPermitted();
 
         // Re-start the MetricsService with the given parameter, and current consent.
         nativeUpdateMetricsServiceState(mayUploadStats);

@@ -176,7 +176,8 @@ public class PrivacyPreferences extends PreferenceFragment
         Preference usageAndCrashPref = findPreference(PREF_USAGE_AND_CRASH_REPORTING);
         if (usageAndCrashPref != null) {
             usageAndCrashPref.setSummary(
-                    privacyPrefManager.isUsageAndCrashReportingEnabled() ? textOn : textOff);
+                    privacyPrefManager.isUsageAndCrashReportingPermittedByUser() ? textOn
+                                                                                 : textOff);
         }
     }
 

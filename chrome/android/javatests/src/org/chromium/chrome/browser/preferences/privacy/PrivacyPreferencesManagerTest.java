@@ -25,8 +25,11 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
     private static final boolean WIFI_ON = true;
     private static final boolean WIFI_OFF = false;
 
-    private static final boolean UPLOAD_OK = true;
-    private static final boolean UPLOAD_NOT_PERMITTED = false;
+    private static final boolean METRICS_UPLOAD_OK = true;
+    private static final boolean METRICS_UPLOAD_NOT_PERMITTED = false;
+
+    private static final boolean CRASH_NETWORK_OK = true;
+    private static final boolean CRASH_NETWORK_NOT_PERMITTED = false;
 
     private static final boolean METRIC_REPORTING_ENABLED = true;
     private static final boolean METRIC_REPORTING_DISABLED = false;
@@ -40,17 +43,23 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
     @UiThreadTest
     public void testAllowCrashDumpUploadNowCellDev() {
         CommandLine.init(null);
-        runTest(CONNECTED, WIFI_ON, METRIC_REPORTING_ENABLED, UPLOAD_OK);
-        runTest(CONNECTED, WIFI_OFF, METRIC_REPORTING_ENABLED, UPLOAD_OK);
-        runTest(DISCONNECTED, WIFI_OFF, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CONNECTED, WIFI_ON, METRIC_REPORTING_ENABLED, METRICS_UPLOAD_OK, CRASH_NETWORK_OK);
+        runTest(CONNECTED, WIFI_OFF, METRIC_REPORTING_ENABLED, METRICS_UPLOAD_OK,
+                CRASH_NETWORK_NOT_PERMITTED);
+        runTest(DISCONNECTED, WIFI_OFF, METRIC_REPORTING_ENABLED, METRICS_UPLOAD_NOT_PERMITTED,
+                CRASH_NETWORK_NOT_PERMITTED);
 
-        runTest(CONNECTED, WIFI_ON, METRIC_REPORTING_DISABLED, UPLOAD_NOT_PERMITTED);
-        runTest(CONNECTED, WIFI_OFF, METRIC_REPORTING_DISABLED, UPLOAD_NOT_PERMITTED);
-        runTest(DISCONNECTED, WIFI_OFF, METRIC_REPORTING_DISABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CONNECTED, WIFI_ON, METRIC_REPORTING_DISABLED, METRICS_UPLOAD_NOT_PERMITTED,
+                CRASH_NETWORK_OK);
+        runTest(CONNECTED, WIFI_OFF, METRIC_REPORTING_DISABLED, METRICS_UPLOAD_NOT_PERMITTED,
+                CRASH_NETWORK_NOT_PERMITTED);
+        runTest(DISCONNECTED, WIFI_OFF, METRIC_REPORTING_DISABLED, METRICS_UPLOAD_NOT_PERMITTED,
+                CRASH_NETWORK_NOT_PERMITTED);
     }
 
     private void runTest(boolean isConnected, boolean wifiOn, boolean isMetricsReportingEnabled,
-            boolean uploadPermitted) {
+            boolean expectedMetricsUploadPermitted,
+            boolean expectedNetworkAvailableForCrashUploads) {
         PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
         ContextUtils.initApplicationContextForTests(context.getApplicationContext());
         PrivacyPreferencesManager preferenceManager = new MockPrivacyPreferencesManager(
@@ -60,12 +69,15 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
         for (int i = 0; i < REPS; i++) {
             String state = String.format("[connected = %b, wifi = %b, reporting = %b]", isConnected,
                     wifiOn, isMetricsReportingEnabled);
-            String msg = String.format(
-                    "Metrics and crash reporting should be %1$b for %2$s", uploadPermitted, state);
-            assertEquals(msg, uploadPermitted, preferenceManager.isUploadPermitted());
+            String msg = String.format("Metrics reporting should be %1$b for %2$s",
+                    expectedMetricsUploadPermitted, state);
+            assertEquals(msg, expectedMetricsUploadPermitted,
+                    preferenceManager.isMetricsUploadPermitted());
 
-            msg = String.format("Crash reporting should be %1$b for wifi %2$b", !wifiOn, wifiOn);
-            assertEquals(msg, !wifiOn, preferenceManager.isUploadLimited());
+            msg = String.format("Crash reporting should be %1$b for wifi %2$s",
+                    expectedNetworkAvailableForCrashUploads, wifiOn);
+            assertEquals(msg, expectedNetworkAvailableForCrashUploads,
+                    preferenceManager.isNetworkAvailableForCrashUploads());
         }
     }
 
