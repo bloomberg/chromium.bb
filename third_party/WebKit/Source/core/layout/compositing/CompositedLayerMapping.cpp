@@ -1234,7 +1234,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
   ASSERT(m_scrollingContentsLayer);
   LayoutBox* layoutBox = toLayoutBox(layoutObject());
   IntRect overflowClipRect =
-      enclosingIntRect(layoutBox->overflowClipRect(LayoutPoint()));
+      pixelSnappedIntRect(layoutBox->overflowClipRect(LayoutPoint()));
   FloatPoint scrollPosition =
       m_owningLayer.getScrollableArea()->scrollPosition();
   m_scrollingLayer->setPosition(FloatPoint(

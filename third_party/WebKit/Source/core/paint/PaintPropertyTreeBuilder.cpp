@@ -462,7 +462,8 @@ void PaintPropertyTreeBuilder::updateOverflowClip(
   } else if (box.hasOverflowClip() || box.styleRef().containsPaint() ||
              (box.isSVGRoot() &&
               toLayoutSVGRoot(box).shouldApplyViewportClip())) {
-    clipRect = box.overflowClipRect(context.current.paintOffset);
+    clipRect = LayoutRect(
+        pixelSnappedIntRect(box.overflowClipRect(context.current.paintOffset)));
   } else {
     if (auto* properties = object.getMutableForPainting().paintProperties()) {
       properties->clearInnerBorderRadiusClip();

@@ -479,8 +479,7 @@ IntSize PaintLayerScrollableArea::maximumScrollOffsetInt() const {
   IntSize contentSize;
   IntSize visibleSize;
   if (box().hasOverflowClip()) {
-    contentSize =
-        IntSize(pixelSnappedScrollWidth(), pixelSnappedScrollHeight());
+    contentSize = contentsSize();
     visibleSize =
         pixelSnappedIntRect(box().overflowClipRect(box().location())).size();
 
