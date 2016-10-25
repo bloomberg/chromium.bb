@@ -217,12 +217,8 @@ using device::BluetoothSocket;
 namespace device {
 namespace {
 
-// It's safe to use 0 to represent an unregistered service, as implied by the
-// documentation at [ http://goo.gl/YRtCkF ].
-const BluetoothSDPServiceRecordHandle kInvalidServiceRecordHandle = 0;
-
-// Likewise, it's safe to use 0 to represent invalid channel or PSM port
-// numbers, as both are required to be non-zero for valid services.
+// It's safe to use 0 to represent invalid channel or PSM port numbers, as both
+// are required to be non-zero for valid services.
 const BluetoothRFCOMMChannelID kInvalidRfcommChannelId = 0;
 const BluetoothL2CAPPSM kInvalidL2capPsm = 0;
 
@@ -342,41 +338,25 @@ NSDictionary* BuildL2capServiceDefinition(
 }
 
 // Registers a Bluetooth service with the specified |service_definition| in the
-// system SDP server. Returns a handle to the registered service on success. If
-// the service could not be registered, or if |verify_service_callback|
-// indicates that the to-be-registered service is not configured correctly,
-// returns |kInvalidServiceRecordHandle|.
-BluetoothSDPServiceRecordHandle RegisterService(
+// system SDP server. Returns the registered service on success. If the service
+// could not be registered, or if |verify_service_callback| indicates that the
+// to-be-registered service was not configured correctly, returns nil.
+IOBluetoothSDPServiceRecord* RegisterService(
     NSDictionary* service_definition,
     const base::Callback<bool(IOBluetoothSDPServiceRecord*)>&
         verify_service_callback) {
   // Attempt to register the service.
-  IOBluetoothSDPServiceRecordRef service_record_ref;
-  IOReturn result =
-      IOBluetoothAddServiceDict((CFDictionaryRef)service_definition,
-                                &service_record_ref);
-  if (result != kIOReturnSuccess)
-    return kInvalidServiceRecordHandle;
-  // Transfer ownership to a scoped object, to simplify memory management.
-  base::ScopedCFTypeRef<IOBluetoothSDPServiceRecordRef>
-      scoped_service_record_ref(service_record_ref);
-
-  // Extract the service record handle.
-  BluetoothSDPServiceRecordHandle service_record_handle;
-  IOBluetoothSDPServiceRecord* service_record =
-      [IOBluetoothSDPServiceRecord withSDPServiceRecordRef:service_record_ref];
-  result = [service_record getServiceRecordHandle:&service_record_handle];
-  if (result != kIOReturnSuccess)
-    return kInvalidServiceRecordHandle;
+  IOBluetoothSDPServiceRecord* service_record = [IOBluetoothSDPServiceRecord
+      publishedServiceRecordWithDictionary:service_definition];
 
   // Verify that the registered service was configured correctly. If not,
   // withdraw the service.
-  if (!verify_service_callback.Run(service_record)) {
-    IOBluetoothRemoveServiceWithRecordHandle(service_record_handle);
-    return kInvalidServiceRecordHandle;
+  if (!service_record || !verify_service_callback.Run(service_record)) {
+    [service_record removeServiceRecord];
+    service_record = nil;
   }
 
-  return service_record_handle;
+  return service_record;
 }
 
 // Returns true iff the |requested_channel_id| was registered in the RFCOMM
@@ -403,9 +383,9 @@ bool VerifyRfcommService(const int* requested_channel_id,
 // and |options.name| in the system SDP server. Automatically allocates a
 // channel if |options.channel_id| is null. Does not specify a name if
 // |options.name| is null. Returns a handle to the registered service and
-// updates |registered_channel_id| to the actual channel id, or returns
-// |kInvalidServiceRecordHandle| if the service could not be registered.
-BluetoothSDPServiceRecordHandle RegisterRfcommService(
+// updates |registered_channel_id| to the actual channel id, or returns nil if
+// the service could not be registered.
+IOBluetoothSDPServiceRecord* RegisterRfcommService(
     const BluetoothUUID& uuid,
     const BluetoothAdapter::ServiceOptions& options,
     BluetoothRFCOMMChannelID* registered_channel_id) {
@@ -439,9 +419,8 @@ bool VerifyL2capService(const int* requested_psm,
 // |options.name| in the system SDP server. Automatically allocates a PSM if
 // |options.psm| is null. Does not register a name if |options.name| is null.
 // Returns a handle to the registered service and updates |registered_psm| to
-// the actual PSM, or returns |kInvalidServiceRecordHandle| if the service could
-// not be registered.
-BluetoothSDPServiceRecordHandle RegisterL2capService(
+// the actual PSM, or returns nil if the service could not be registered.
+IOBluetoothSDPServiceRecord* RegisterL2capService(
     const BluetoothUUID& uuid,
     const BluetoothAdapter::ServiceOptions& options,
     BluetoothL2CAPPSM* registered_psm) {
@@ -493,9 +472,9 @@ void BluetoothSocketMac::ListenUsingRfcomm(
 
   DVLOG(1) << uuid_.canonical_value() << ": Registering RFCOMM service.";
   BluetoothRFCOMMChannelID registered_channel_id;
-  service_record_handle_ =
-      RegisterRfcommService(uuid, options, &registered_channel_id);
-  if (service_record_handle_ == kInvalidServiceRecordHandle) {
+  service_record_.reset(
+      RegisterRfcommService(uuid, options, &registered_channel_id));
+  if (!service_record_.get()) {
     error_callback.Run(kInvalidOrUsedChannel);
     return;
   }
@@ -521,8 +500,8 @@ void BluetoothSocketMac::ListenUsingL2cap(
 
   DVLOG(1) << uuid_.canonical_value() << ": Registering L2CAP service.";
   BluetoothL2CAPPSM registered_psm;
-  service_record_handle_ = RegisterL2capService(uuid, options, &registered_psm);
-  if (service_record_handle_ == kInvalidServiceRecordHandle) {
+  service_record_.reset(RegisterL2capService(uuid, options, &registered_psm));
+  if (!service_record_.get()) {
     error_callback.Run(kInvalidOrUsedPsm);
     return;
   }
@@ -664,7 +643,7 @@ void BluetoothSocketMac::Close() {
 
   if (channel_)
     ReleaseChannel();
-  else if (service_record_handle_ != kInvalidServiceRecordHandle)
+  else if (service_record_.get())
     ReleaseListener();
 }
 
@@ -909,9 +888,7 @@ BluetoothSocketMac::ConnectCallbacks::ConnectCallbacks() {}
 
 BluetoothSocketMac::ConnectCallbacks::~ConnectCallbacks() {}
 
-BluetoothSocketMac::BluetoothSocketMac()
-    : service_record_handle_(kInvalidServiceRecordHandle) {
-}
+BluetoothSocketMac::BluetoothSocketMac() {}
 
 BluetoothSocketMac::~BluetoothSocketMac() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -933,9 +910,10 @@ void BluetoothSocketMac::ReleaseChannel() {
 
 void BluetoothSocketMac::ReleaseListener() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(service_record_handle_, kInvalidServiceRecordHandle);
+  DCHECK(service_record_.get());
 
-  IOBluetoothRemoveServiceWithRecordHandle(service_record_handle_);
+  [service_record_ removeServiceRecord];
+  service_record_.reset();
   rfcomm_connection_listener_.reset();
   l2cap_connection_listener_.reset();
 

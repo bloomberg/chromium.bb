@@ -173,9 +173,9 @@ class BluetoothSocketMac : public BluetoothSocket {
   base::scoped_nsobject<BluetoothL2capConnectionListener>
       l2cap_connection_listener_;
 
-  // A handle to the service record registered in the system SDP server.
-  // Used to eventually unregister the service.
-  BluetoothSDPServiceRecordHandle service_record_handle_;
+  // The service record registered in the system SDP server, used to
+  // eventually unregister the service.
+  base::scoped_nsobject<IOBluetoothSDPServiceRecord> service_record_;
 
   // The channel used to issue commands.
   std::unique_ptr<BluetoothChannelMac> channel_;
