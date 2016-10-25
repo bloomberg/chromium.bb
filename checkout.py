@@ -77,24 +77,21 @@ def align_stdout(stdout):
 
 class PatchApplicationFailed(Exception):
   """Patch failed to be applied."""
-  def __init__(self, p, status):
-    super(PatchApplicationFailed, self).__init__(p, status)
-    self.patch = p
-    self.status = status
-
-  @property
-  def filename(self):
-    if self.patch:
-      return self.patch.filename
+  def __init__(self, errors, verbose):
+    super(PatchApplicationFailed, self).__init__(errors, verbose)
+    self.errors = errors
+    self.verbose = verbose
 
   def __str__(self):
     out = []
-    if self.filename:
-      out.append('Failed to apply patch for %s:' % self.filename)
-    if self.status:
-      out.append(self.status)
-    if self.patch:
-      out.append('Patch: %s' % self.patch.dump())
+    for e in self.errors:
+      p, status = e
+      if p and p.filename:
+        out.append('Failed to apply patch for %s:' % p.filename)
+      if status:
+        out.append(status)
+      if p and self.verbose:
+        out.append('Patch: %s' % p.dump())
     return '\n'.join(out)
 
 
@@ -251,6 +248,7 @@ class GitCheckout(CheckoutBase):
           ['checkout', '-b', self.working_branch, '-t', self.remote_branch,
            '--quiet'])
 
+    errors = []
     for index, p in enumerate(patches):
       stdout = []
       try:
@@ -293,14 +291,15 @@ class GitCheckout(CheckoutBase):
           print p.filename
           print align_stdout(stdout)
       except OSError, e:
-        raise PatchApplicationFailed(p, '%s%s' % (align_stdout(stdout), e))
+        errors.append((p, '%s%s' % (align_stdout(stdout), e)))
       except subprocess.CalledProcessError, e:
-        raise PatchApplicationFailed(
-            p,
+        errors.append((p,
             'While running %s;\n%s%s' % (
               ' '.join(e.cmd),
               align_stdout(stdout),
-              align_stdout([getattr(e, 'stdout', '')])))
+              align_stdout([getattr(e, 'stdout', '')]))))
+    if errors:
+      raise PatchApplicationFailed(errors, verbose)
     found_files = self._check_output_git(
         ['diff', '--ignore-submodules',
          '--name-only', '--staged']).splitlines(False)
