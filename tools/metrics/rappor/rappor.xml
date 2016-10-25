@@ -60,8 +60,7 @@ components/rappor/rappor_parameters.h.
   <summary>
     Stricter parameters for metrics collected from a broader population.
   </summary>
-  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="1" hash-functions="2"
       reporting-level="COARSE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
@@ -70,8 +69,7 @@ components/rappor/rappor_parameters.h.
     Deprecated parameters for collecting the domain and registry of a URL from
     UMA opt-in users. Should use UMA_RAPPOR_TYPE instead.
   </summary>
-  <parameters num-cohorts="128" bytes="16" hash-functions="2" fake-prob="0.5"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="16" hash-functions="2"
       reporting-level="FINE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
@@ -83,8 +81,7 @@ components/rappor/rappor_parameters.h.
     from the Chrome Privacy and Rappor teams is required to use this type. New
     metrics should also consider LOW_FREQUENCY_UMA_RAPPOR_TYPE instead.
   </summary>
-  <parameters num-cohorts="128" bytes="16" hash-functions="2" fake-prob="0.25"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="16" hash-functions="2"
       reporting-level="FINE" noise-level="SPARSE_NOISE"/>
 </rappor-parameters>
 
@@ -96,8 +93,7 @@ components/rappor/rappor_parameters.h.
     Explicit approval from the Chrome Privacy and Rappor teams is required to
     use this type.
   </summary>
-  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.25"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="1" hash-functions="2"
       reporting-level="COARSE" noise-level="SPARSE_NOISE"/>
 </rappor-parameters>
 
@@ -108,8 +104,7 @@ components/rappor/rappor_parameters.h.
     500,000 reports per day). Explicit approval from the Chrome Privacy and
     Rappor teams is required to use this type.
   </summary>
-  <parameters num-cohorts="128" bytes="4" hash-functions="2" fake-prob="0.25"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="4" hash-functions="2"
       reporting-level="FINE" noise-level="SPARSE_NOISE"/>
 </rappor-parameters>
 
@@ -118,8 +113,7 @@ components/rappor/rappor_parameters.h.
     Parameters for metrics related to Safe Browsing, collected from all users
     with safe browsing enabled.
   </summary>
-  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="1" hash-functions="2"
       reporting-level="COARSE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
@@ -127,8 +121,7 @@ components/rappor/rappor_parameters.h.
   <summary>
     Parameters suitable for metrics from UMA opt-in users.
   </summary>
-  <parameters num-cohorts="128" bytes="4" hash-functions="2" fake-prob="0.5"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="4" hash-functions="2"
       reporting-level="FINE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
