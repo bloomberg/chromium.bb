@@ -11,7 +11,7 @@
 #if defined(HELIUM_IMPLEMENTATION)
 #define BLIMP_HELIUM_EXPORT __declspec(dllexport)
 #else
-#define BLIMP_HEIULM_EXPORT __declspec(dllimport)
+#define BLIMP_HELIUM_EXPORT __declspec(dllimport)
 #endif  // defined(HELIUM_IMPLEMENTATION)
 
 #else  // defined(WIN32)
