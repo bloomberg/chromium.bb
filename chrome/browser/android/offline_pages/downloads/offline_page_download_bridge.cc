@@ -198,7 +198,7 @@ void ModelDuplicateCheckDone(const GURL& original_url,
   if (has_duplicates) {
     OfflinePageInfoBarDelegate::Create(
         base::Bind(&OnInfoBarAction, original_url, j_tab_ref), downloads_label,
-        original_url.spec(), web_contents);
+        original_url, web_contents);
     return;
   }
 

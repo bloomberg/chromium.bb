@@ -5,8 +5,11 @@
 #include "chrome/browser/android/offline_pages/downloads/offline_page_infobar_delegate.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
+#include "components/url_formatter/url_formatter.h"
+#include "ui/gfx/text_elider.h"
 
 namespace offline_pages {
 
@@ -14,12 +17,30 @@ namespace offline_pages {
 void OfflinePageInfoBarDelegate::Create(
     const base::Callback<void(Action)>& confirm_continuation,
     const std::string& downloads_label,
-    const std::string& page_name,
+    const GURL& page_to_download,
     content::WebContents* web_contents) {
+  // The URL could be very long, especially since we are including query
+  // parameters, path, etc.  Elide the URL to a shorter length because the
+  // infobar cannot handle scrolling and completely obscures Chrome if the text
+  // is too long.
+  //
+  // 150 was chosen as it does not cause the infobar to overrun the screen on a
+  // test Android One device with 480 x 854 resolution.  At this resolution the
+  // infobar covers approximately 2/3 of the screen, and all controls are still
+  // visible.
+  //
+  // TODO(dewittj): Display something better than an elided URL string in the
+  // infobar.
+  const size_t kMaxLengthOfDisplayedPageUrl = 150;
+
+  base::string16 formatted_url = url_formatter::FormatUrl(page_to_download);
+  base::string16 elided_url;
+  gfx::ElideString(formatted_url, kMaxLengthOfDisplayedPageUrl, &elided_url);
+
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(DownloadOverwriteInfoBar::CreateInfoBar(
-          base::WrapUnique(new OfflinePageInfoBarDelegate(
-              confirm_continuation, downloads_label, page_name))));
+      ->AddInfoBar(DownloadOverwriteInfoBar::CreateInfoBar(base::WrapUnique(
+          new OfflinePageInfoBarDelegate(confirm_continuation, downloads_label,
+                                         base::UTF16ToUTF8(elided_url)))));
 }
 
 OfflinePageInfoBarDelegate::~OfflinePageInfoBarDelegate() {}

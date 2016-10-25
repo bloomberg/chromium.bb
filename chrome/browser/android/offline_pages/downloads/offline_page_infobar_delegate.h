@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/android/download/download_overwrite_infobar_delegate.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -31,7 +32,7 @@ class OfflinePageInfoBarDelegate
   // shown for this file in the infobar text.
   static void Create(const base::Callback<void(Action)>& confirm_continuation,
                      const std::string& downloads_label,
-                     const std::string& page_name,
+                     const GURL& page_to_download,
                      content::WebContents* web_contents);
   ~OfflinePageInfoBarDelegate() override;
 
