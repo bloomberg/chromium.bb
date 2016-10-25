@@ -246,10 +246,6 @@ bool IsGpuRasterizationEnabled() {
     return false;
   }
 
-#if defined(OS_ANDROID)
-  return true;
-#endif
-
   // Gpu Rasterization on platforms that are not fully enabled is controlled by
   // a finch experiment.
   return base::FeatureList::IsEnabled(features::kDefaultEnableGpuRasterization);

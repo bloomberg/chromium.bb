@@ -36,8 +36,14 @@ const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
 
 // Enable GPU Rasterization by default. This can still be overridden by
 // --force-gpu-rasterization or --disable-gpu-rasterization.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+// DefaultEnableGpuRasterization has launched on Android and Mac.
+const base::Feature kDefaultEnableGpuRasterization{
+    "DefaultEnableGpuRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kDefaultEnableGpuRasterization{
     "DefaultEnableGpuRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Speculatively pre-evaluate Javascript which will likely use document.write to
 // load an external script. The feature extracts the written markup and sends it
