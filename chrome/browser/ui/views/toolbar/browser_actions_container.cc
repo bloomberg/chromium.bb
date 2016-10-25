@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -121,9 +121,9 @@ std::string BrowserActionsContainer::GetIdAt(size_t index) const {
 
 ToolbarActionView* BrowserActionsContainer::GetViewForId(
     const std::string& id) {
-  for (ToolbarActionView* view : toolbar_action_views_) {
+  for (const auto& view : toolbar_action_views_) {
     if (view->view_controller()->GetId() == id)
-      return view;
+      return view.get();
   }
   return nullptr;
 }
@@ -134,7 +134,7 @@ void BrowserActionsContainer::RefreshToolbarActionViews() {
 
 size_t BrowserActionsContainer::VisibleBrowserActions() const {
   size_t visible_actions = 0;
-  for (const ToolbarActionView* view : toolbar_action_views_) {
+  for (const auto& view : toolbar_action_views_) {
     if (view->visible())
       ++visible_actions;
   }
@@ -165,7 +165,8 @@ void BrowserActionsContainer::AddViewForAction(
    ToolbarActionViewController* view_controller,
    size_t index) {
   ToolbarActionView* view = new ToolbarActionView(view_controller, this);
-  toolbar_action_views_.insert(toolbar_action_views_.begin() + index, view);
+  toolbar_action_views_.insert(toolbar_action_views_.begin() + index,
+                               base::WrapUnique(view));
   AddChildViewAt(view, index);
 }
 
@@ -174,7 +175,6 @@ void BrowserActionsContainer::RemoveViewForAction(
   for (ToolbarActionViews::iterator iter = toolbar_action_views_.begin();
        iter != toolbar_action_views_.end(); ++iter) {
     if ((*iter)->view_controller() == action) {
-      delete *iter;
       toolbar_action_views_.erase(iter);
       break;
     }
@@ -182,7 +182,7 @@ void BrowserActionsContainer::RemoveViewForAction(
 }
 
 void BrowserActionsContainer::RemoveAllViews() {
-  base::STLDeleteElements(&toolbar_action_views_);
+  toolbar_action_views_.clear();
 }
 
 void BrowserActionsContainer::Redraw(bool order_changed) {
@@ -210,7 +210,7 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
           ++j;
         std::swap(toolbar_action_views_[i], toolbar_action_views_[j]);
         // Also move the view in the child views vector.
-        ReorderChildView(toolbar_action_views_[i], i);
+        ReorderChildView(toolbar_action_views_[i].get(), i);
       }
     }
   }
@@ -360,7 +360,7 @@ void BrowserActionsContainer::Layout() {
   // variables are in place, the layout works equally well for the main and
   // overflow container.
   for (size_t i = 0u; i < toolbar_action_views_.size(); ++i) {
-    ToolbarActionView* view = toolbar_action_views_[i];
+    ToolbarActionView* view = toolbar_action_views_[i].get();
     if (i < start_index || i >= end_index) {
       view->SetVisible(false);
     } else {
@@ -514,8 +514,11 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
   toolbar_actions_bar_->OnDragStarted();
   DCHECK(data);
 
-  auto it = std::find(toolbar_action_views_.cbegin(),
-                      toolbar_action_views_.cend(), sender);
+  auto it =
+      std::find_if(toolbar_action_views_.cbegin(), toolbar_action_views_.cend(),
+                   [sender](const std::unique_ptr<ToolbarActionView>& ptr) {
+                     return ptr.get() == sender;
+                   });
   DCHECK(it != toolbar_action_views_.cend());
   ToolbarActionViewController* view_controller = (*it)->view_controller();
   gfx::Size size(ToolbarActionsBar::IconWidth(false),

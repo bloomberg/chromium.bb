@@ -5,13 +5,13 @@
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
@@ -50,7 +50,7 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
  public:
   DiagnosticsModelImpl() : tests_run_(0) {}
 
-  ~DiagnosticsModelImpl() override { base::STLDeleteElements(&tests_); }
+  ~DiagnosticsModelImpl() override {}
 
   int GetTestRunCount() const override { return tests_run_; }
 
@@ -63,7 +63,7 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
       // If one of the diagnostic steps returns false, we want to
       // mark the rest of them as "skipped" in the UMA stats.
       if (continue_running) {
-        continue_running = RunTest(tests_[i], observer, i);
+        continue_running = RunTest(tests_[i].get(), observer, i);
         ++tests_run_;
       } else {
 #if defined(OS_CHROMEOS)  // Only collecting UMA stats on ChromeOS
@@ -87,7 +87,7 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
       // If one of the recovery steps returns false, we want to
       // mark the rest of them as "skipped" in the UMA stats.
       if (continue_running) {
-        continue_running = RunRecovery(tests_[i], observer, i);
+        continue_running = RunRecovery(tests_[i].get(), observer, i);
       } else {
 #if defined(OS_CHROMEOS)  // Only collecting UMA stats on ChromeOS
         RecordUMARecoveryResult(
@@ -110,9 +110,9 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
   bool GetTestInfo(int id, const TestInfo** result) const override {
     DCHECK(id < DIAGNOSTICS_TEST_ID_COUNT);
     DCHECK(id >= 0);
-    for (size_t i = 0; i < tests_.size(); i++) {
-      if (tests_[i]->GetId() == id) {
-        *result = tests_[i];
+    for (const auto& test : tests_) {
+      if (test->GetId() == id) {
+        *result = test.get();
         return true;
       }
     }
@@ -136,8 +136,7 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
     return test->Recover(observer, this, index);
   }
 
-  typedef std::vector<DiagnosticsTest*> TestArray;
-  TestArray tests_;
+  std::vector<std::unique_ptr<DiagnosticsTest>> tests_;
   int tests_run_;
 
  private:

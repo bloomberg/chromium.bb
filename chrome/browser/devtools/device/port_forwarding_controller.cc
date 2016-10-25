@@ -467,9 +467,9 @@ PortForwardingController::DeviceListChanged(
 }
 
 void PortForwardingController::CloseAllConnections() {
-  std::vector<Connection*> registry_copy;
   Registry copy(registry_);
-  base::STLDeleteValues(&copy);
+  for (auto& entry : copy)
+    delete entry.second;
 }
 
 void PortForwardingController::OnPrefsChange() {

@@ -115,13 +115,13 @@ class TemplateURLTableModel : public ui::TableModel,
   // Removes the entry at |index| from |entries_| and returns the removed item.
   std::unique_ptr<ModelEntry> RemoveEntry(int index);
 
-  // Adds |entry| to |entries_| at |index| and takes ownership.
+  // Adds |entry| to |entries_| at |index|.
   void AddEntry(int index, std::unique_ptr<ModelEntry> entry);
 
   ui::TableModelObserver* observer_;
 
   // The entries.
-  std::vector<ModelEntry*> entries_;
+  std::vector<std::unique_ptr<ModelEntry>> entries_;
 
   // The model we're displaying entries from.
   TemplateURLService* template_url_service_;

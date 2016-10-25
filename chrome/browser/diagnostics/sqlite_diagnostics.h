@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_SQLITE_DIAGNOSTICS_H_
 #define CHROME_BROWSER_DIAGNOSTICS_SQLITE_DIAGNOSTICS_H_
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 
@@ -22,18 +24,18 @@ enum SQLiteIntegrityOutcomeCode {
 };
 
 // Factories for the database integrity tests we run in diagnostic mode.
-DiagnosticsTest* MakeSqliteCookiesDbTest();
-DiagnosticsTest* MakeSqliteFaviconsDbTest();
-DiagnosticsTest* MakeSqliteHistoryDbTest();
-DiagnosticsTest* MakeSqliteTopSitesDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteCookiesDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteFaviconsDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteHistoryDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteTopSitesDbTest();
 
 #if defined(OS_CHROMEOS)
-DiagnosticsTest* MakeSqliteNssCertDbTest();
-DiagnosticsTest* MakeSqliteNssKeyDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteNssCertDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteNssKeyDbTest();
 #endif  // defined(OS_CHROMEOS)
 
-DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest();
-DiagnosticsTest* MakeSqliteWebDataDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteWebDatabaseTrackerDbTest();
+std::unique_ptr<DiagnosticsTest> MakeSqliteWebDataDbTest();
 
 }  // namespace diagnostics
 

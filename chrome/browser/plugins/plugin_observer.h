@@ -71,7 +71,7 @@ class PluginObserver : public content::WebContentsObserver,
 
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   // Stores all PluginPlaceholderHosts, keyed by their routing ID.
-  std::map<int, PluginPlaceholderHost*> plugin_placeholders_;
+  std::map<int, std::unique_ptr<PluginPlaceholderHost>> plugin_placeholders_;
 #endif
 
   // Stores all ComponentObservers, keyed by their routing ID.

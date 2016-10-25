@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_RECON_DIAGNOSTICS_H_
 #define CHROME_BROWSER_DIAGNOSTICS_RECON_DIAGNOSTICS_H_
 
+#include <memory>
+
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 
 namespace diagnostics {
@@ -43,17 +45,17 @@ enum OutcomeCodes {
   DIAG_RECON_PARSE_ERROR,
 };
 
-DiagnosticsTest* MakeBookMarksTest();
-DiagnosticsTest* MakeDictonaryDirTest();
-DiagnosticsTest* MakeDiskSpaceTest();
-DiagnosticsTest* MakeInstallTypeTest();
-DiagnosticsTest* MakeLocalStateFileTest();
-DiagnosticsTest* MakeLocalStateTest();
-DiagnosticsTest* MakeOperatingSystemTest();
-DiagnosticsTest* MakePreferencesTest();
-DiagnosticsTest* MakeResourcesFileTest();
-DiagnosticsTest* MakeUserDirTest();
-DiagnosticsTest* MakeVersionTest();
+std::unique_ptr<DiagnosticsTest> MakeBookMarksTest();
+std::unique_ptr<DiagnosticsTest> MakeDictonaryDirTest();
+std::unique_ptr<DiagnosticsTest> MakeDiskSpaceTest();
+std::unique_ptr<DiagnosticsTest> MakeInstallTypeTest();
+std::unique_ptr<DiagnosticsTest> MakeLocalStateFileTest();
+std::unique_ptr<DiagnosticsTest> MakeLocalStateTest();
+std::unique_ptr<DiagnosticsTest> MakeOperatingSystemTest();
+std::unique_ptr<DiagnosticsTest> MakePreferencesTest();
+std::unique_ptr<DiagnosticsTest> MakeResourcesFileTest();
+std::unique_ptr<DiagnosticsTest> MakeUserDirTest();
+std::unique_ptr<DiagnosticsTest> MakeVersionTest();
 
 }  // namespace diagnostics
 

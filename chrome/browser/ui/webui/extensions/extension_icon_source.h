@@ -122,7 +122,7 @@ class ExtensionIconSource : public content::URLDataSource,
   //  3) If still no matches, load the default extension / application icon.
   void LoadIconFailed(int request_id);
 
-  // Parses and savse an ExtensionIconRequest for the URL |path| for the
+  // Parses and saves an ExtensionIconRequest for the URL |path| for the
   // specified |request_id|.
   bool ParseData(const std::string& path,
                  int request_id,
@@ -149,7 +149,7 @@ class ExtensionIconSource : public content::URLDataSource,
   std::map<int, int> tracker_map_;
 
   // Maps request_ids to ExtensionIconRequests.
-  std::map<int, ExtensionIconRequest*> request_map_;
+  std::map<int, std::unique_ptr<ExtensionIconRequest>> request_map_;
 
   std::unique_ptr<SkBitmap> default_app_data_;
 

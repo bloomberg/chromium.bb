@@ -80,10 +80,10 @@ class PluginFinder {
   static base::DictionaryValue* LoadBuiltInPluginList();
 
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-  std::map<std::string, PluginInstaller*> installers_;
+  std::map<std::string, std::unique_ptr<PluginInstaller>> installers_;
 #endif
 
-  std::map<std::string, PluginMetadata*> identifier_plugin_;
+  std::map<std::string, std::unique_ptr<PluginMetadata>> identifier_plugin_;
 
   // Version of the metadata information. We use this to consolidate multiple
   // sources (baked into resource and fetched from a URL), making sure that we

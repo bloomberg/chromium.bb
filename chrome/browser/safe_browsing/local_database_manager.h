@@ -45,7 +45,7 @@ class ClientSideDetectionService;
 class DownloadProtectionService;
 struct V4ProtocolConfig;
 
-// Implemetation that manages a local database on disk.
+// Implementation that manages a local database on disk.
 //
 // Construction needs to happen on the main thread.
 class LocalSafeBrowsingDatabaseManager
@@ -158,7 +158,6 @@ class LocalSafeBrowsingDatabaseManager
   FRIEND_TEST_ALL_PREFIXES(LocalDatabaseManagerTest,
                            ServiceStopWithPendingChecks);
 
-  typedef std::set<SafeBrowsingCheck*> CurrentChecks;
   typedef std::vector<SafeBrowsingCheck*> GetHashRequestors;
   typedef base::hash_map<SBPrefix, GetHashRequestors> GetHashRequests;
 
@@ -304,7 +303,7 @@ class LocalSafeBrowsingDatabaseManager
   // browsing check with timeout of |timeout|. |task| will be called on
   // success, otherwise TimeoutCallback will be called.
   void StartSafeBrowsingCheck(
-      SafeBrowsingCheck* check,
+      std::unique_ptr<SafeBrowsingCheck> check,
       const base::Callback<std::vector<SBPrefix>(void)>& task);
 
   // SafeBrowsingProtocolManageDelegate override
@@ -321,7 +320,7 @@ class LocalSafeBrowsingDatabaseManager
 
   scoped_refptr<SafeBrowsingService> sb_service_;
 
-  CurrentChecks checks_;
+  std::map<SafeBrowsingCheck*, std::unique_ptr<SafeBrowsingCheck>> checks_;
 
   // Used for issuing only one GetHash request for a given prefix.
   GetHashRequests gethash_requests_;
@@ -338,7 +337,7 @@ class LocalSafeBrowsingDatabaseManager
   bool enabled_;
 
   // Indicate if download_protection is enabled by command switch
-  // so we allow this feature to be exersized.
+  // so we allow this feature to be exercised.
   bool enable_download_protection_;
 
   // Indicate if client-side phishing detection whitelist should be enabled

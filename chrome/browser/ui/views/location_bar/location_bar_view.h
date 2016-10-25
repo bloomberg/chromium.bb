@@ -258,12 +258,12 @@ class LocationBarView : public LocationBar,
   void OnDefaultZoomLevelChanged() override;
 
  private:
-  typedef std::vector<ContentSettingImageView*> ContentSettingViews;
+  using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
   friend class PageActionImageView;
   friend class PageActionWithBadgeView;
-  typedef std::vector<ExtensionAction*> PageActions;
-  typedef std::vector<PageActionWithBadgeView*> PageActionViews;
+  using PageActions = std::vector<ExtensionAction*>;
+  using PageActionViews = std::vector<std::unique_ptr<PageActionWithBadgeView>>;
 
   // Helper for GetMinimumWidth().  Calculates the incremental minimum width
   // |view| should add to the trailing width after the omnibox.

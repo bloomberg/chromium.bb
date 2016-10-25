@@ -131,45 +131,42 @@ TemplateURLTableModel::TemplateURLTableModel(
 
 TemplateURLTableModel::~TemplateURLTableModel() {
   template_url_service_->RemoveObserver(this);
-  base::STLDeleteElements(&entries_);
 }
 
 void TemplateURLTableModel::Reload() {
-  base::STLDeleteElements(&entries_);
+  entries_.clear();
 
   TemplateURLService::TemplateURLVector urls =
       template_url_service_->GetTemplateURLs();
 
-  std::vector<ModelEntry*> default_entries, other_entries, extension_entries;
+  std::vector<std::unique_ptr<ModelEntry>> default_entries, other_entries,
+      extension_entries;
   // Keywords that can be made the default first.
-  for (TemplateURLService::TemplateURLVector::iterator i = urls.begin();
-       i != urls.end(); ++i) {
-    TemplateURL* template_url = *i;
+  for (auto* template_url : urls) {
     // NOTE: we don't use ShowInDefaultList here to avoid items bouncing around
     // the lists while editing.
     if (template_url->show_in_default_list())
-      default_entries.push_back(new ModelEntry(this, template_url));
+      default_entries.push_back(
+          base::MakeUnique<ModelEntry>(this, template_url));
     else if (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)
-      extension_entries.push_back(new ModelEntry(this, template_url));
+      extension_entries.push_back(
+          base::MakeUnique<ModelEntry>(this, template_url));
     else
-      other_entries.push_back(new ModelEntry(this, template_url));
+      other_entries.push_back(base::MakeUnique<ModelEntry>(this, template_url));
   }
 
   last_search_engine_index_ = static_cast<int>(default_entries.size());
   last_other_engine_index_ = last_search_engine_index_ +
       static_cast<int>(other_entries.size());
 
-  entries_.insert(entries_.end(),
-                  default_entries.begin(),
-                  default_entries.end());
+  std::move(default_entries.begin(), default_entries.end(),
+            std::back_inserter(entries_));
 
-  entries_.insert(entries_.end(),
-                  other_entries.begin(),
-                  other_entries.end());
+  std::move(other_entries.begin(), other_entries.end(),
+            std::back_inserter(entries_));
 
-  entries_.insert(entries_.end(),
-                  extension_entries.begin(),
-                  extension_entries.end());
+  std::move(extension_entries.begin(), extension_entries.end(),
+            std::back_inserter(entries_));
 
   if (observer_)
     observer_->OnModelChanged();
@@ -305,9 +302,8 @@ TemplateURL* TemplateURLTableModel::GetTemplateURL(int index) {
 
 int TemplateURLTableModel::IndexOfTemplateURL(
     const TemplateURL* template_url) {
-  for (std::vector<ModelEntry*>::iterator i = entries_.begin();
-       i != entries_.end(); ++i) {
-    ModelEntry* entry = *i;
+  for (auto i = entries_.begin(); i != entries_.end(); ++i) {
+    ModelEntry* entry = i->get();
     if (entry->template_url() == template_url)
       return static_cast<int>(i - entries_.begin());
   }
@@ -364,8 +360,10 @@ void TemplateURLTableModel::NotifyChanged(int index) {
 }
 
 void TemplateURLTableModel::FaviconAvailable(ModelEntry* entry) {
-  std::vector<ModelEntry*>::iterator i =
-      std::find(entries_.begin(), entries_.end(), entry);
+  auto i = std::find_if(entries_.begin(), entries_.end(),
+                        [entry](const std::unique_ptr<ModelEntry>& ptr) {
+                          return ptr.get() == entry;
+                        });
   DCHECK(i != entries_.end());
   NotifyChanged(static_cast<int>(i - entries_.begin()));
 }
@@ -376,7 +374,7 @@ void TemplateURLTableModel::OnTemplateURLServiceChanged() {
 
 std::unique_ptr<TemplateURLTableModel::ModelEntry>
 TemplateURLTableModel::RemoveEntry(int index) {
-  std::unique_ptr<ModelEntry> entry(entries_[index]);
+  std::unique_ptr<ModelEntry> entry = std::move(entries_[index]);
   entries_.erase(index + entries_.begin());
   if (index < last_search_engine_index_)
     --last_search_engine_index_;
@@ -389,7 +387,7 @@ TemplateURLTableModel::RemoveEntry(int index) {
 
 void TemplateURLTableModel::AddEntry(int index,
                                      std::unique_ptr<ModelEntry> entry) {
-  entries_.insert(entries_.begin() + index, entry.release());
+  entries_.insert(entries_.begin() + index, std::move(entry));
   if (index <= last_other_engine_index_)
     ++last_other_engine_index_;
   if (observer_)

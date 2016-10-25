@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -145,8 +145,6 @@ void ExtensionIconSource::StartDataRequest(
 }
 
 ExtensionIconSource::~ExtensionIconSource() {
-  // Clean up all the temporary data we're holding for requests.
-  base::STLDeleteValues(&request_map_);
 }
 
 const SkBitmap* ExtensionIconSource::GetDefaultAppImage() {
@@ -324,28 +322,23 @@ void ExtensionIconSource::SetData(
     bool grayscale,
     int size,
     ExtensionIconSet::MatchType match) {
-  ExtensionIconRequest* request = new ExtensionIconRequest();
+  std::unique_ptr<ExtensionIconRequest> request =
+      base::MakeUnique<ExtensionIconRequest>();
   request->callback = callback;
   request->extension = extension;
   request->grayscale = grayscale;
   request->size = size;
   request->match = match;
-  request_map_[request_id] = request;
+  request_map_[request_id] = std::move(request);
 }
 
 ExtensionIconSource::ExtensionIconRequest* ExtensionIconSource::GetData(
     int request_id) {
-  return request_map_[request_id];
+  return request_map_[request_id].get();
 }
 
 void ExtensionIconSource::ClearData(int request_id) {
-  std::map<int, ExtensionIconRequest*>::iterator i =
-      request_map_.find(request_id);
-  if (i == request_map_.end())
-    return;
-
-  delete i->second;
-  request_map_.erase(i);
+  request_map_.erase(request_id);
 }
 
 }  // namespace extensions

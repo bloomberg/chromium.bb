@@ -14,9 +14,9 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -333,9 +333,9 @@ void SafeBrowsingService::Initialize() {
 }
 
 void SafeBrowsingService::ShutDown() {
-  // Deletes the PrefChangeRegistrars, whose dtors also unregister |this| as an
+  // Delete the PrefChangeRegistrars, whose dtors also unregister |this| as an
   // observer of the preferences.
-  base::STLDeleteValues(&prefs_map_);
+  prefs_map_.clear();
 
   // Remove Profile creation/destruction observers.
   prefs_registrar_.RemoveAll();
@@ -623,7 +623,8 @@ void SafeBrowsingService::Observe(int type,
 
 void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   DCHECK(prefs_map_.find(pref_service) == prefs_map_.end());
-  PrefChangeRegistrar* registrar = new PrefChangeRegistrar();
+  std::unique_ptr<PrefChangeRegistrar> registrar =
+      base::MakeUnique<PrefChangeRegistrar>();
   registrar->Init(pref_service);
   registrar->Add(prefs::kSafeBrowsingEnabled,
                  base::Bind(&SafeBrowsingService::RefreshState,
@@ -633,7 +634,7 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   registrar->Add(
       GetExtendedReportingPrefName(),
       base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
-  prefs_map_[pref_service] = registrar;
+  prefs_map_[pref_service] = std::move(registrar);
   RefreshState();
 
   // Record the current pref state.
@@ -645,7 +646,6 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
 
 void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {
   if (prefs_map_.find(pref_service) != prefs_map_.end()) {
-    delete prefs_map_[pref_service];
     prefs_map_.erase(pref_service);
     RefreshState();
   } else {
@@ -664,9 +664,8 @@ void SafeBrowsingService::RefreshState() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Check if any profile requires the service to be active.
   bool enable = false;
-  std::map<PrefService*, PrefChangeRegistrar*>::iterator iter;
-  for (iter = prefs_map_.begin(); iter != prefs_map_.end(); ++iter) {
-    if (iter->first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+  for (const auto& pref : prefs_map_) {
+    if (pref.first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
       enable = true;
       break;
     }

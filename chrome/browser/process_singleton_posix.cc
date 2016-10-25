@@ -64,6 +64,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -74,7 +75,6 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -546,7 +546,6 @@ class ProcessSingleton::LinuxWatcher
 
   ~LinuxWatcher() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    base::STLDeleteElements(&readers_);
   }
 
   void OnSocketCanReadWithoutBlocking(int socket);
@@ -563,7 +562,7 @@ class ProcessSingleton::LinuxWatcher
   // The ProcessSingleton that owns us.
   ProcessSingleton* const parent_;
 
-  std::set<SocketReader*> readers_;
+  std::set<std::unique_ptr<SocketReader>> readers_;
 
   DISALLOW_COPY_AND_ASSIGN(LinuxWatcher);
 };
@@ -582,9 +581,8 @@ void ProcessSingleton::LinuxWatcher::OnSocketCanReadWithoutBlocking(
   }
   DCHECK(base::SetNonBlocking(connection_socket))
       << "Failed to make non-blocking socket.";
-  SocketReader* reader =
-      new SocketReader(this, ui_task_runner_, connection_socket);
-  readers_.insert(reader);
+  readers_.insert(
+      base::MakeUnique<SocketReader>(this, ui_task_runner_, connection_socket));
 }
 
 void ProcessSingleton::LinuxWatcher::StartListening(int socket) {
@@ -618,8 +616,11 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
 void ProcessSingleton::LinuxWatcher::RemoveSocketReader(SocketReader* reader) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(reader);
-  readers_.erase(reader);
-  delete reader;
+  auto it = std::find_if(readers_.begin(), readers_.end(),
+                         [reader](const std::unique_ptr<SocketReader>& ptr) {
+                           return ptr.get() == reader;
+                         });
+  readers_.erase(it);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

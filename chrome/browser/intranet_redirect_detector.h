@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_INTRANET_REDIRECT_DETECTOR_H_
 #define CHROME_BROWSER_INTRANET_REDIRECT_DETECTOR_H_
 
-#include <set>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -56,8 +57,6 @@ class IntranetRedirectDetector
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  typedef std::set<net::URLFetcher*> Fetchers;
-
   // Called when the seven second startup sleep or the one second network
   // switch sleep has finished.  Runs any pending fetch.
   void FinishSleep();
@@ -69,7 +68,7 @@ class IntranetRedirectDetector
   void OnIPAddressChanged() override;
 
   GURL redirect_origin_;
-  Fetchers fetchers_;
+  std::map<net::URLFetcher*, std::unique_ptr<net::URLFetcher>> fetchers_;
   std::vector<GURL> resulting_origins_;
   bool in_sleep_;  // True if we're in the seven-second "no fetching" period
                    // that begins at browser start, or the one-second "no

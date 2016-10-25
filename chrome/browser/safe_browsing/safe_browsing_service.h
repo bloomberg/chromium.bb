@@ -237,7 +237,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Process the observed resource requests on the UI thread.
   void ProcessResourceRequest(const ResourceRequestInfo& request);
 
-  // The factory used to instanciate a SafeBrowsingService object.
+  // The factory used to instantiate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
   static SafeBrowsingServiceFactory* factory_;
@@ -267,7 +267,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // This is used to determine if any profile is currently using the safe
   // browsing service, and to start it up or shut it down accordingly.
   // Accessed on UI thread.
-  std::map<PrefService*, PrefChangeRegistrar*> prefs_map_;
+  std::map<PrefService*, std::unique_ptr<PrefChangeRegistrar>> prefs_map_;
 
   // Used to track creation and destruction of profiles on the UI thread.
   content::NotificationRegistrar prefs_registrar_;

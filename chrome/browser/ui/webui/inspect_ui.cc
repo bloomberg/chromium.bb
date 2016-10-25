@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/inspect_ui.h"
 
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -447,7 +447,7 @@ void InspectUI::StopListeningNotifications() {
   if (target_handlers_.empty())
     return;
 
-  base::STLDeleteValues(&target_handlers_);
+  target_handlers_.clear();
 
   port_status_serializer_.reset();
 
@@ -534,19 +534,19 @@ const base::Value* InspectUI::GetPrefValue(const char* name) {
 
 void InspectUI::AddTargetUIHandler(
     std::unique_ptr<DevToolsTargetsUIHandler> handler) {
-  DevToolsTargetsUIHandler* handler_ptr = handler.release();
-  target_handlers_[handler_ptr->source_id()] = handler_ptr;
+  std::string id = handler->source_id();
+  target_handlers_[id] = std::move(handler);
 }
 
 DevToolsTargetsUIHandler* InspectUI::FindTargetHandler(
     const std::string& source_id) {
-  TargetHandlerMap::iterator it = target_handlers_.find(source_id);
-     return it != target_handlers_.end() ? it->second : nullptr;
+  auto it = target_handlers_.find(source_id);
+  return it != target_handlers_.end() ? it->second.get() : nullptr;
 }
 
 scoped_refptr<content::DevToolsAgentHost> InspectUI::FindTarget(
     const std::string& source_id, const std::string& target_id) {
-  TargetHandlerMap::iterator it = target_handlers_.find(source_id);
+  auto it = target_handlers_.find(source_id);
   return it != target_handlers_.end() ?
       it->second->GetTarget(target_id) : nullptr;
 }

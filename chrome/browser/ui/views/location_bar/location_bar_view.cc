@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -399,10 +399,9 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
 PageActionWithBadgeView* LocationBarView::GetPageActionView(
     ExtensionAction* page_action) {
   DCHECK(page_action);
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i) {
-    if ((*i)->image_view()->extension_action() == page_action)
-      return *i;
+  for (const auto& action_view : page_action_views_) {
+    if (action_view->image_view()->extension_action() == page_action)
+      return action_view.get();
   }
   return nullptr;
 }
@@ -530,12 +529,12 @@ gfx::Size LocationBarView::GetPreferredSize() const {
                     IncrementalMinimumWidth(save_credit_card_icon_view_) +
                     IncrementalMinimumWidth(manage_passwords_icon_view_) +
                     IncrementalMinimumWidth(zoom_view_);
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i)
+  for (const auto& action_view : page_action_views_)
+    trailing_width += IncrementalMinimumWidth(action_view.get());
+  for (auto i = content_setting_views_.begin();
+       i != content_setting_views_.end(); ++i) {
     trailing_width += IncrementalMinimumWidth((*i));
-  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
-       i != content_setting_views_.end(); ++i)
-    trailing_width += IncrementalMinimumWidth((*i));
+  }
 
   min_size.set_width(leading_width + omnibox_view_->GetMinimumSize().width() +
                      2 * padding - omnibox_view_->GetInsets().width() +
@@ -622,11 +621,10 @@ void LocationBarView::Layout() {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
                                        manage_passwords_icon_view_);
   }
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i) {
-    if ((*i)->visible()) {
+  for (const auto& action_view : page_action_views_) {
+    if (action_view->visible()) {
       trailing_decorations.AddDecoration(vertical_padding, location_height,
-                                         (*i));
+                                         action_view.get());
     }
   }
   if (zoom_view_->visible()) {
@@ -851,10 +849,9 @@ bool LocationBarView::RefreshContentSettingViews() {
 }
 
 void LocationBarView::DeletePageActionViews() {
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i)
-    RemoveChildView(*i);
-  base::STLDeleteElements(&page_action_views_);
+  for (const auto& action_view : page_action_views_)
+    RemoveChildView(action_view.get());
+  page_action_views_.clear();
 }
 
 bool LocationBarView::RefreshPageActionViews() {
@@ -884,10 +881,11 @@ bool LocationBarView::RefreshPageActionViews() {
     // Create the page action views.
     for (PageActions::const_iterator i = new_page_actions.begin();
          i != new_page_actions.end(); ++i) {
-      PageActionWithBadgeView* page_action_view = new PageActionWithBadgeView(
-          delegate_->CreatePageActionImageView(this, *i));
+      std::unique_ptr<PageActionWithBadgeView> page_action_view =
+          base::MakeUnique<PageActionWithBadgeView>(
+              delegate_->CreatePageActionImageView(this, *i));
       page_action_view->SetVisible(false);
-      page_action_views_.push_back(page_action_view);
+      page_action_views_.push_back(std::move(page_action_view));
     }
 
     View* right_anchor = open_pdf_in_reader_view_;
@@ -900,15 +898,14 @@ bool LocationBarView::RefreshPageActionViews() {
     // accessibility purposes.
     for (PageActionViews::reverse_iterator i = page_action_views_.rbegin();
          i != page_action_views_.rend(); ++i)
-      AddChildViewAt(*i, GetIndexOf(right_anchor));
+      AddChildViewAt(i->get(), GetIndexOf(right_anchor));
   }
 
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i) {
-    bool old_visibility = (*i)->visible();
-    (*i)->UpdateVisibility(
+  for (const auto& action_view : page_action_views_) {
+    bool old_visibility = action_view->visible();
+    action_view->UpdateVisibility(
         GetToolbarModel()->input_in_progress() ? nullptr : web_contents);
-    changed |= old_visibility != (*i)->visible();
+    changed |= old_visibility != action_view->visible();
   }
   return changed;
 }
@@ -919,7 +916,7 @@ bool LocationBarView::PageActionsDiffer(
     return true;
 
   for (size_t index = 0; index < page_actions.size(); ++index) {
-    PageActionWithBadgeView* view = page_action_views_[index];
+    PageActionWithBadgeView* view = page_action_views_[index].get();
     if (view->image_view()->extension_action() != page_actions[index])
       return true;
   }
@@ -1178,8 +1175,8 @@ int LocationBarView::PageActionCount() {
 
 int LocationBarView::PageActionVisibleCount() {
   int result = 0;
-  for (size_t i = 0; i < page_action_views_.size(); i++) {
-    if (page_action_views_[i]->visible())
+  for (const auto& action_view : page_action_views_) {
+    if (action_view->visible())
       ++result;
   }
   return result;
@@ -1195,10 +1192,10 @@ ExtensionAction* LocationBarView::GetPageAction(size_t index) {
 
 ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
   size_t current = 0;
-  for (size_t i = 0; i < page_action_views_.size(); ++i) {
-    if (page_action_views_[i]->visible()) {
+  for (const auto& action_view : page_action_views_) {
+    if (action_view->visible()) {
       if (current == index)
-        return page_action_views_[i]->image_view()->extension_action();
+        return action_view->image_view()->extension_action();
 
       ++current;
     }
@@ -1210,11 +1207,10 @@ ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
 
 void LocationBarView::TestPageActionPressed(size_t index) {
   size_t current = 0;
-  for (size_t i = 0; i < page_action_views_.size(); ++i) {
-    if (page_action_views_[i]->visible()) {
+  for (const auto& action_view : page_action_views_) {
+    if (action_view->visible()) {
       if (current == index) {
-        page_action_views_[i]->image_view()->view_controller()->
-            ExecuteAction(true);
+        action_view->image_view()->view_controller()->ExecuteAction(true);
         return;
       }
       ++current;

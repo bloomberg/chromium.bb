@@ -37,7 +37,7 @@ class ResizeArea;
 
 // The BrowserActionsContainer is a container view, responsible for drawing the
 // toolbar action icons (including extension icons and icons for component
-// toolbar actions). It comes intwo flavors, a main container (when residing on
+// toolbar actions). It comes in two flavors, a main container (when residing on
 // the toolbar) and an overflow container (that resides in the main application
 // menu, aka the Chrome menu).
 //
@@ -135,7 +135,7 @@ class BrowserActionsContainer : public views::View,
 
   // Get a particular toolbar action view.
   ToolbarActionView* GetToolbarActionViewAt(int index) {
-    return toolbar_action_views_[index];
+    return toolbar_action_views_[index].get();
   }
 
   // Whether we are performing resize animation on the container.
@@ -235,7 +235,7 @@ class BrowserActionsContainer : public views::View,
   // A struct representing the position at which an action will be dropped.
   struct DropPosition;
 
-  typedef std::vector<ToolbarActionView*> ToolbarActionViews;
+  typedef std::vector<std::unique_ptr<ToolbarActionView>> ToolbarActionViews;
 
   // Clears the |active_bubble_|, and unregisters the container as an observer.
   void ClearActiveBubble(views::Widget* widget);

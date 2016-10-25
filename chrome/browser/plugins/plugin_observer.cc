@@ -11,7 +11,6 @@
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -304,9 +303,6 @@ PluginObserver::PluginObserver(content::WebContents* web_contents)
 }
 
 PluginObserver::~PluginObserver() {
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-  base::STLDeleteValues(&plugin_placeholders_);
-#endif
 }
 
 void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
@@ -391,8 +387,9 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   PluginInstaller* installer = NULL;
   std::unique_ptr<PluginMetadata> plugin;
   if (finder->FindPluginWithIdentifier(identifier, &installer, &plugin)) {
-    plugin_placeholders_[placeholder_id] = new PluginPlaceholderHost(
-        this, placeholder_id, plugin->name(), installer);
+    plugin_placeholders_[placeholder_id] =
+        base::MakeUnique<PluginPlaceholderHost>(this, placeholder_id,
+                                                plugin->name(), installer);
     OutdatedPluginInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()), installer,
         std::move(plugin));
@@ -424,13 +421,11 @@ void PluginObserver::RemoveComponentObserver(int placeholder_id) {
 
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
-  std::map<int, PluginPlaceholderHost*>::iterator it =
-      plugin_placeholders_.find(placeholder_id);
+  auto it = plugin_placeholders_.find(placeholder_id);
   if (it == plugin_placeholders_.end()) {
     NOTREACHED();
     return;
   }
-  delete it->second;
   plugin_placeholders_.erase(it);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)

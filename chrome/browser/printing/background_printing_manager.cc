@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -61,7 +62,6 @@ BackgroundPrintingManager::~BackgroundPrintingManager() {
   // preview WebContents trying to print). In such a case it will fail to print,
   // but we should at least clean up the observers.
   // TODO(thestig): Handle this case better.
-  base::STLDeleteValues(&printing_contents_map_);
 }
 
 void BackgroundPrintingManager::OwnPrintPreviewDialog(
@@ -70,7 +70,8 @@ void BackgroundPrintingManager::OwnPrintPreviewDialog(
   DCHECK(PrintPreviewDialogController::IsPrintPreviewDialog(preview_dialog));
   CHECK(!HasPrintPreviewDialog(preview_dialog));
 
-  printing_contents_map_[preview_dialog] = new Observer(this, preview_dialog);
+  printing_contents_map_[preview_dialog] =
+      base::MakeUnique<Observer>(this, preview_dialog);
 
   // Watch for print jobs finishing. Everything else is watched for by the
   // Observer. TODO(avi, cait): finish the job of removing this last
@@ -99,8 +100,7 @@ void BackgroundPrintingManager::Observe(
 
 void BackgroundPrintingManager::DeletePreviewContents(
     WebContents* preview_contents) {
-  WebContentsObserverMap::iterator i =
-      printing_contents_map_.find(preview_contents);
+  auto i = printing_contents_map_.find(preview_contents);
   if (i == printing_contents_map_.end()) {
     // Everyone is racing to be the first to delete the |preview_contents|. If
     // this case is hit, someone else won the race, so there is no need to
@@ -111,9 +111,7 @@ void BackgroundPrintingManager::DeletePreviewContents(
   // Stop all observation ...
   registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
                     content::Source<WebContents>(preview_contents));
-  Observer* observer = i->second;
   printing_contents_map_.erase(i);
-  delete observer;
 
   // ... and mortally wound the contents. (Deletion immediately is not a good
   // idea in case this was called from RenderViewGone.)
@@ -122,10 +120,9 @@ void BackgroundPrintingManager::DeletePreviewContents(
 
 std::set<content::WebContents*> BackgroundPrintingManager::CurrentContentSet() {
   std::set<content::WebContents*> result;
-  for (WebContentsObserverMap::iterator i = printing_contents_map_.begin();
-       i != printing_contents_map_.end(); ++i) {
-    result.insert(i->first);
-  }
+  for (const auto& entry : printing_contents_map_)
+    result.insert(entry.first);
+
   return result;
 }
 
