@@ -632,7 +632,7 @@ void RecordUnPackMetrics(UnPackStatus unpack_status, UnPackConsumer consumer) {
 
   switch (consumer) {
     case UnPackConsumer::CHROME_ARCHIVE_PATCH:
-      consumer_name = "ChromeArchivePath";
+      consumer_name = "ChromeArchivePatch";
       break;
     case UnPackConsumer::COMPRESSED_CHROME_ARCHIVE:
       consumer_name = "CompressedChromeArchive";
