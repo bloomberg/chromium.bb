@@ -13,12 +13,6 @@ Polymer({
   options_: null,
 
   /**
-   * Index of the currently focused item.
-   * @private {number}
-   */
-  focusedIndex_: -1,
-
-  /**
    * Reference to the bound window's resize listener, such that it can be
    * removed on detach.
    * @private {?Function}
@@ -93,11 +87,12 @@ Polymer({
     var counter = 0;
     var nextOption = null;
     var numOptions = this.options_.length;
+    var focusedIndex = Array.prototype.indexOf.call(
+        this.options_, this.root.activeElement);
 
     do {
-      this.focusedIndex_ =
-          (numOptions + this.focusedIndex_ + step) % numOptions;
-      nextOption = this.options_[this.focusedIndex_];
+      focusedIndex = (numOptions + focusedIndex + step) % numOptions;
+      nextOption = this.options_[focusedIndex];
       if (nextOption.disabled || nextOption.hidden)
         nextOption = null;
       counter++;
@@ -119,23 +114,6 @@ Polymer({
    * @param {!Element} anchorElement
    */
   showAt: function(anchorElement) {
-    var rect = anchorElement.getBoundingClientRect();
-
-    // Ensure that the correct item is focused when the dialog is shown, by
-    // setting the 'autofocus' attribute.
-    this.focusedIndex_ = -1;
-    var nextOption = this.getNextOption_(1);
-
-    /** @suppress {checkTypes} */
-    (function(options) {
-      options.forEach(function(option) {
-        option.removeAttribute('autofocus');
-      });
-    })(this.options_);
-
-    if (nextOption)
-      nextOption.setAttribute('autofocus', true);
-
     this.onWindowResize_ = this.onWindowResize_ || function() {
       if (this.open)
         this.close();
@@ -144,6 +122,7 @@ Polymer({
 
     this.showModal();
 
+    var rect = anchorElement.getBoundingClientRect();
     if (new settings.DirectionDelegateImpl().isRtl()) {
       var right = window.innerWidth - rect.left - this.offsetWidth;
       this.style.right = right + 'px';

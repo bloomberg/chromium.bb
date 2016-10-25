@@ -17,6 +17,7 @@ suite('SettingsActionMenu', function() {
       <button id="dots">...</button>
       <dialog is="settings-action-menu">
         <button class="dropdown-item">Un</button>
+        <hr>
         <button class="dropdown-item">Dos</button>
         <button class="dropdown-item">Tres</button>
       </dialog>
@@ -33,32 +34,23 @@ suite('SettingsActionMenu', function() {
   });
 
   test('focus after showing', function() {
-    /** @param {!HTMLElement} element */
-    function assertFocused(element) {
-      assertEquals(element, menu.root.activeElement);
-      items.forEach(function(item, i) {
-        assertEquals(element === item, item.hasAttribute('autofocus'));
-      });
-    }
-
     menu.showAt(document.querySelector('#dots'));
-    assertFocused(items[0]);
+    assertEquals(menu.root.activeElement, items[0]);
 
     menu.close();
     items[0].hidden = true;
     menu.showAt(document.querySelector('#dots'));
-    assertFocused(items[1]);
+    assertEquals(menu.root.activeElement, items[1]);
 
     menu.close();
     items[1].hidden = true;
     menu.showAt(document.querySelector('#dots'));
-    assertFocused(items[2]);
+    assertEquals(menu.root.activeElement, items[2]);
 
     menu.close();
     items[2].disabled = true;
     menu.showAt(document.querySelector('#dots'));
     assertEquals(null, menu.root.activeElement);
-    assertEquals(0, menu.querySelectorAll('[autofocus]').length);
   });
 
   test('focus after down/up arrow', function() {
