@@ -133,7 +133,8 @@ void IMM32Manager::SetInputLanguage() {
   WCHAR keyboard_layout[KL_NAMELENGTH];
   if (::GetKeyboardLayoutNameW(keyboard_layout)) {
     input_language_id_ =
-        static_cast<LANGID>(_wtoi(&keyboard_layout[KL_NAMELENGTH >> 1]));
+        static_cast<LANGID>(
+            wcstol(&keyboard_layout[KL_NAMELENGTH >> 1], nullptr, 16));
   } else {
     input_language_id_ = 0x0409;  // Fallback to en-US.
   }

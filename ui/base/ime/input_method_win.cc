@@ -52,6 +52,7 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       composing_window_handle_(NULL),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
+  imm32_manager_.SetInputLanguage();
 }
 
 InputMethodWin::~InputMethodWin() {}
@@ -275,6 +276,7 @@ void InputMethodWin::OnInputLocaleChanged() {
   // TODO(shuchen): Use ITfLanguageProfileNotifySink instead.
   OnInputMethodChanged();
   imm32_manager_.SetInputLanguage();
+  UpdateIMEState();
 }
 
 bool InputMethodWin::IsInputLocaleCJK() const {
