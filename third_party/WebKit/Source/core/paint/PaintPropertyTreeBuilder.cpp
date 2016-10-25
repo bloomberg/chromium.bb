@@ -222,6 +222,12 @@ void PaintPropertyTreeBuilder::buildTreeNodes(
 void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
+  // LayoutView's paint offset is updated in the FrameView property update.
+  if (object.isLayoutView()) {
+    DCHECK(context.current.paintOffset == LayoutPoint());
+    return;
+  }
+
   if (object.isBoxModelObject() &&
       context.current.paintOffset != LayoutPoint()) {
     // TODO(trchen): Eliminate PaintLayer dependency.
@@ -253,9 +259,6 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
       return;
     }
   }
-
-  if (object.isLayoutView())
-    return;
 
   if (auto* properties = object.getMutableForPainting().paintProperties())
     properties->clearPaintOffsetTranslation();
