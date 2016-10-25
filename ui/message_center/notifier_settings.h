@@ -30,6 +30,7 @@ class MessagePopupCollectionTest;
 }
 
 class MessageCenterNotificationManagerTest;
+class Notification;
 class NotifierSettingsDelegate;
 class NotifierSettingsProvider;
 
@@ -79,6 +80,7 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
  private:
   friend class MessageCenterNotificationManagerTest;
   friend class MessageCenterTrayTest;
+  friend class Notification;
   friend class NotificationControllerTest;
   friend class PopupCollectionTest;
   friend class TrayViewControllerTest;

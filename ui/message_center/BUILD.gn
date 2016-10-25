@@ -251,5 +251,14 @@ test("message_center_unittests") {
         "//ui/views:test_support",
       ]
     }
+
+    if (!is_ios) {
+      sources += [ "mojo/struct_traits_unittest.cc" ]
+      deps += [
+        "//mojo/edk/system",
+        "//ui/gfx:test_support",
+        "//ui/message_center/mojo:test_interfaces",
+      ]
+    }
   }  # enable_notifications && !is_android
 }

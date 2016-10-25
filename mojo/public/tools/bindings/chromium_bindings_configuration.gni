@@ -29,6 +29,7 @@ _typemap_imports = [
   "//ui/events/devices/mojo/typemaps.gni",
   "//ui/events/mojo/typemaps.gni",
   "//ui/gfx/typemaps.gni",
+  "//ui/message_center/mojo/typemaps.gni",
   "//url/mojo/typemaps.gni",
 ]
 

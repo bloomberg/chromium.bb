@@ -69,6 +69,8 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
 
 RichNotificationData::~RichNotificationData() {}
 
+Notification::Notification() {}
+
 Notification::Notification(NotificationType type,
                            const std::string& id,
                            const base::string16& title,

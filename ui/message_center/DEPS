@@ -1,5 +1,6 @@
 include_rules = [
   "+components/url_formatter",
+  "+mojo/public",
   "+skia/ext",
   "+third_party/skia",
   "+ui/accessibility",

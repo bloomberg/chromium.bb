@@ -20,6 +20,10 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "mojo/edk/embedder/embedder.h"  // nogncheck
+#endif
+
 namespace {
 
 class MessageCenterTestSuite : public base::TestSuite {
@@ -59,6 +63,10 @@ class MessageCenterTestSuite : public base::TestSuite {
 
 int main(int argc, char** argv) {
   MessageCenterTestSuite test_suite(argc, argv);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  mojo::edk::Init();
+#endif
 
   return base::LaunchUnitTests(
       argc,
