@@ -65,6 +65,13 @@ def GenTests(api):
          api.properties.tryserver(test_patch_root='sub/project') +
          description_step)
 
+  yield (api.test('with_gerrit_patch_deprecated') +
+         api.properties.tryserver_gerrit(
+           full_project_name='infra/infra'))
+
+  yield (api.test('with_gerrit_patch') +
+         api.properties.tryserver(gerrit_project='infra/infra'))
+
   yield (api.test('with_wrong_patch_new') + api.platform('win', 32) +
          api.properties(test_patch_root='sub\\project'))
 

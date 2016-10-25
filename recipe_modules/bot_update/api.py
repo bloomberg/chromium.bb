@@ -10,13 +10,15 @@ from recipe_engine import recipe_api
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
-  def __init__(self, issue, patchset, repository, gerrit_ref, rietveld,
-               revision, parent_got_revision, deps_revision_overrides,
-               fail_patch, *args, **kwargs):
-    self._issue = issue
-    self._patchset = patchset
-    self._repository = repository
-    self._gerrit_ref = gerrit_ref
+  def __init__(self, issue, patch_issue, patchset, patch_set, patch_project,
+               repository, patch_repository_url, gerrit_ref, patch_ref,
+               patch_gerrit_url, rietveld, revision, parent_got_revision,
+               deps_revision_overrides, fail_patch, *args, **kwargs):
+    self._issue = issue or patch_issue
+    self._patchset = patchset or patch_set
+    self._repository = repository or patch_repository_url
+    self._gerrit_ref = gerrit_ref or patch_ref
+    self._gerrit = patch_gerrit_url
     self._rietveld = rietveld
     self._revision = revision
     self._parent_got_revision = parent_got_revision
@@ -124,6 +126,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
     if not gerrit_ref or not gerrit_repo:
       gerrit_repo = gerrit_ref = None
     assert (gerrit_ref != None) == (gerrit_repo != None)
+    if gerrit_ref:
+      # Gerrit patches have historically not specified issue and patchset.
+      # resourece/bot_update has as a result implicit assumption that set issue
+      # implies Rietveld patch.
+      # TODO(tandrii): fix this madness.
+      issue = patchset = None
 
     # Point to the oauth2 auth files if specified.
     # These paths are where the bots put their credential files.

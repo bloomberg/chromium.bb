@@ -15,14 +15,27 @@ from recipe_engine.recipe_api import Property
 from recipe_engine.types import freeze
 
 PROPERTIES = {
+  # Gerrit patches will have all properties about them prefixed with patch_.
+  'patch_issue': Property(default=None),  # TODO(tandrii): add kind=int.
+  'patch_set': Property(default=None),  # TODO(tandrii): add kind=int.
+  'patch_project': Property(default=None),  # Also used by Rietveld.
+  'patch_gerrit_url': Property(default=None),
+  'patch_repository_url': Property(default=None),
+  'patch_ref': Property(default=None),
+
+  # TODO(tAndrii): remove legacy Gerrit fields.
+  # Legacy Gerrit fields.
+  'event.patchSet.ref': Property(default=None, param_name='gerrit_ref'),
+
+  # Rietveld-only fields.
+  'rietveld': Property(default=None),  # Stores Url of Rietveld server.
   'issue': Property(default=None),
   'patchset': Property(default=None),
-  'patch_project': Property(default=None),
   'repository': Property(default=None),
-  'event.patchSet.ref': Property(default=None, param_name="gerrit_ref"),
-  'rietveld': Property(default=None),
-  'revision': Property(default=None),
-  'parent_got_revision': Property(default=None),
+
+  # Common fields for both systems.
   'deps_revision_overrides': Property(default=freeze({})),
   'fail_patch': Property(default=None, kind=str),
+  'parent_got_revision': Property(default=None),
+  'revision': Property(default=None),
 }

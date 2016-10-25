@@ -141,6 +141,11 @@ def GenTests(api):
   yield api.test('tryjob_v8_head_by_default') + api.properties.tryserver(
       patch_project='v8',
   )
-  yield api.test('tryjob_gerrit_angle') + api.properties.tryserver_gerrit(
-      full_project_name='angle/angle',
+  yield api.test('tryjob_gerrit_angle') + api.properties.tryserver(
+      gerrit_project='angle/angle',
+      patch_issue=338811,
+      patch_set=3,
+  )
+  yield (api.test('tryjob_gerrit_angle_deprecated') +
+         api.properties.tryserver_gerrit(full_project_name='angle/angle')
   )
