@@ -806,7 +806,6 @@ void Resource::setEncodedSizeMemoryUsage(size_t encodedSize) {
 
 void Resource::didAccessDecodedData() {
   memoryCache()->updateDecodedResource(this, UpdateForAccess);
-  memoryCache()->prune();
 }
 
 void Resource::finishPendingClients() {
