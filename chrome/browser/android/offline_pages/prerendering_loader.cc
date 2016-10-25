@@ -130,11 +130,6 @@ void PrerenderingLoader::OnPrerenderDomContentLoaded() {
   if (!adapter_->GetWebContents()) {
     // Without a WebContents object at this point, we are done.
     HandleLoadingStopped();
-  } else {
-    // Inform SnapshotController of DomContentContent event so it can
-    // determine when to consider it really LOADED (e.g., some multiple
-    // second delay from this event).
-    snapshot_controller_->DocumentAvailableInMainFrame();
   }
 }
 
