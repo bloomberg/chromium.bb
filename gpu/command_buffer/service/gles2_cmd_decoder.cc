@@ -16545,18 +16545,22 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     GLsizei level_width = width;
     GLsizei level_height = height;
     GLsizei level_depth = depth;
+    GLenum adjusted_format =
+        feature_info_->IsES3Enabled() ? internal_format : format;
     for (int ii = 0; ii < levels; ++ii) {
       if (target == GL_TEXTURE_CUBE_MAP) {
         for (int jj = 0; jj < 6; ++jj) {
           GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + jj;
-          texture_manager()->SetLevelInfo(
-              texture_ref, face, ii, internal_format, level_width, level_height,
-              1, 0, format, type, gfx::Rect());
+          texture_manager()->SetLevelInfo(texture_ref, face, ii,
+                                          adjusted_format,
+                                          level_width, level_height, 1,
+                                          0, format, type, gfx::Rect());
         }
       } else {
-        texture_manager()->SetLevelInfo(
-            texture_ref, target, ii, internal_format, level_width, level_height,
-            level_depth, 0, format, type, gfx::Rect());
+        texture_manager()->SetLevelInfo(texture_ref, target, ii,
+                                        adjusted_format,
+                                        level_width, level_height, level_depth,
+                                        0, format, type, gfx::Rect());
       }
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);

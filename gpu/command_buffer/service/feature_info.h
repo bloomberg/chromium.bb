@@ -92,8 +92,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_read_format_bgra;
     bool desktop_srgb_support;
     bool arb_es3_compatibility;
-    bool chromium_color_buffer_float_rgb = false;
-    bool chromium_color_buffer_float_rgba = false;
   };
 
   FeatureInfo();
@@ -199,6 +197,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   bool unsafe_es3_apis_enabled_;
 
+  bool chromium_color_buffer_float_rgba_available_;
+  bool chromium_color_buffer_float_rgb_available_;
   bool ext_color_buffer_float_available_;
   bool oes_texture_float_linear_available_;
   bool oes_texture_half_float_linear_available_;

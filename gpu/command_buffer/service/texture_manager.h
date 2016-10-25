@@ -500,13 +500,11 @@ class GPU_EXPORT Texture final : public TextureBase {
                                  GLenum type);
 
   static bool ColorRenderable(const FeatureInfo* feature_info,
-                              GLenum internal_format,
-                              bool immutable);
+                              GLenum internal_format);
 
   static bool TextureFilterable(const FeatureInfo* feature_info,
                                 GLenum internal_format,
-                                GLenum type,
-                                bool immutable);
+                                GLenum type);
 
   // Sets the Texture's target
   // Parameters:

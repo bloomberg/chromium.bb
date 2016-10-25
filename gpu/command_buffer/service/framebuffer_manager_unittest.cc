@@ -135,18 +135,14 @@ class FramebufferInfoTestBase : public GpuServiceTest {
 
  protected:
   void SetUp() override {
-    bool is_es3 = false;
-    if (context_type_ == CONTEXT_TYPE_WEBGL2 ||
-        context_type_ == CONTEXT_TYPE_OPENGLES3)
-      is_es3 = true;
-    InitializeContext(is_es3 ? "3.0" : "2.0", "GL_EXT_framebuffer_object");
+    InitializeContext("2.0", "GL_EXT_framebuffer_object");
   }
 
   void InitializeContext(const char* gl_version, const char* extensions) {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
         extensions, "", gl_version, context_type_);
-    feature_info_->InitializeForTesting(context_type_);
+    feature_info_->InitializeForTesting();
     decoder_.reset(new MockGLES2Decoder());
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
@@ -494,7 +490,7 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
   const GLsizei kWidth3 = 75;
   const GLsizei kHeight3 = 123;
   const GLint kLevel3 = 0;
-  const GLenum kFormat3 = GL_RGBA;
+  const GLenum kFormat3 = GL_RGB565;
   const GLsizei kSamples3 = 0;
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
@@ -1282,10 +1278,11 @@ TEST_F(FramebufferInfoTest, DrawBufferMasks) {
       framebuffer_->ValidateAndAdjustDrawBuffers(0x310u, 0x330u));
 }
 
-class FramebufferInfoFloatTest : public FramebufferInfoTestBase {
+class FramebufferInfoFloatTest : public FramebufferInfoTest {
  public:
   FramebufferInfoFloatTest()
-      : FramebufferInfoTestBase(CONTEXT_TYPE_OPENGLES2) {}
+    : FramebufferInfoTest() {
+  }
   ~FramebufferInfoFloatTest() override {}
 
  protected:
@@ -1549,6 +1546,18 @@ class FramebufferInfoES3Test : public FramebufferInfoTestBase {
  protected:
   void SetUp() override {
     InitializeContext("OpenGL ES 3.0", "");
+  }
+
+  void InitializeContext(const char* gl_version, const char* extensions) {
+    GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
+    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
+        extensions, "", gl_version, context_type_);
+    feature_info_->InitializeForTesting(CONTEXT_TYPE_OPENGLES3);
+    decoder_.reset(new MockGLES2Decoder());
+    manager_.CreateFramebuffer(kClient1Id, kService1Id);
+    error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
+    framebuffer_ = manager_.GetFramebuffer(kClient1Id);
+    ASSERT_TRUE(framebuffer_ != nullptr);
   }
 };
 

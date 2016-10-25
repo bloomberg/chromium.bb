@@ -231,8 +231,6 @@ class FormatTypeValidator {
         {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
         {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL,
          GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
-        // Exposed by GL_APPLE_texture_format_BGRA8888
-        {GL_BGRA8_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
     };
 
     for (size_t ii = 0; ii < arraysize(kSupportedFormatTypes); ++ii) {
@@ -308,24 +306,6 @@ GLenum GetSwizzleForChannel(GLenum channel,
       NOTREACHED();
       return GL_NONE;
   }
-}
-
-bool SizedFormatAvailable(const FeatureInfo* feature_info,
-                          bool immutable,
-                          GLenum internal_format) {
-  if (immutable)
-    return true;
-
-  // TODO(dshwang): check if it's possible to remove
-  // CHROMIUM_color_buffer_float_rgb. crbug.com/329605
-  if ((feature_info->feature_flags().chromium_color_buffer_float_rgb &&
-       internal_format == GL_RGB32F) ||
-      (feature_info->feature_flags().chromium_color_buffer_float_rgba &&
-       internal_format == GL_RGBA32F)) {
-    return true;
-  }
-
-  return feature_info->IsES3Enabled();
 }
 
 // A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
@@ -621,8 +601,9 @@ bool Texture::CanRenderWithSampler(const FeatureInfo* feature_info,
       // TODO(zmo): The assumption that compressed textures are all filterable
       // may not be true in the future.
     } else {
-      if (!Texture::TextureFilterable(feature_info, first_level.internal_format,
-                                      first_level.type, immutable_)) {
+      if (!Texture::TextureFilterable(feature_info,
+                                      first_level.internal_format,
+                                      first_level.type)) {
         return false;
       }
     }
@@ -748,10 +729,9 @@ bool Texture::CanGenerateMipmaps(const FeatureInfo* feature_info) const {
     return false;
   }
 
-  if (!Texture::ColorRenderable(feature_info, base.internal_format,
-                                immutable_) ||
-      !Texture::TextureFilterable(feature_info, base.internal_format, base.type,
-                                  immutable_)) {
+  if (!Texture::ColorRenderable(feature_info, base.internal_format) ||
+      !Texture::TextureFilterable(
+          feature_info, base.internal_format, base.type)) {
     return false;
   }
 
@@ -828,24 +808,19 @@ bool Texture::TextureMipComplete(const Texture::LevelInfo& base_level_face,
 
 // static
 bool Texture::ColorRenderable(const FeatureInfo* feature_info,
-                              GLenum internal_format,
-                              bool immutable) {
+                              GLenum internal_format) {
   if (feature_info->validators()->texture_unsized_internal_format.IsValid(
       internal_format)) {
     return true;
   }
-
-  return SizedFormatAvailable(feature_info, immutable, internal_format) &&
-         feature_info->validators()
-             ->texture_sized_color_renderable_internal_format.IsValid(
-                 internal_format);
+  return feature_info->validators()->
+      texture_sized_color_renderable_internal_format.IsValid(internal_format);
 }
 
 // static
 bool Texture::TextureFilterable(const FeatureInfo* feature_info,
                                 GLenum internal_format,
-                                GLenum type,
-                                bool immutable) {
+                                GLenum type) {
   if (feature_info->validators()->texture_unsized_internal_format.IsValid(
       internal_format)) {
     switch (type) {
@@ -858,10 +833,8 @@ bool Texture::TextureFilterable(const FeatureInfo* feature_info,
         return true;
     }
   }
-  return SizedFormatAvailable(feature_info, immutable, internal_format) &&
-         feature_info->validators()
-             ->texture_sized_texture_filterable_internal_format.IsValid(
-                 internal_format);
+  return feature_info->validators()->
+      texture_sized_texture_filterable_internal_format.IsValid(internal_format);
 }
 
 void Texture::SetLevelClearedRect(GLenum target,
@@ -1738,15 +1711,15 @@ bool Texture::CanRenderTo(const FeatureInfo* feature_info, GLint level) const {
          level < static_cast<GLint>(face_infos_[0].level_infos.size()));
   GLenum internal_format = face_infos_[0].level_infos[level].internal_format;
   bool color_renderable =
-      ((feature_info->validators()->texture_unsized_internal_format.IsValid(
-            internal_format) &&
-        internal_format != GL_ALPHA && internal_format != GL_LUMINANCE &&
+      ((feature_info->validators()->texture_unsized_internal_format.
+            IsValid(internal_format) &&
+        internal_format != GL_ALPHA &&
+        internal_format != GL_LUMINANCE &&
         internal_format != GL_LUMINANCE_ALPHA &&
         internal_format != GL_SRGB_EXT) ||
-       (SizedFormatAvailable(feature_info, immutable_, internal_format) &&
-        feature_info->validators()
-            ->texture_sized_color_renderable_internal_format.IsValid(
-                internal_format)));
+       feature_info->validators()->
+           texture_sized_color_renderable_internal_format.IsValid(
+               internal_format));
   bool depth_renderable = feature_info->validators()->
       texture_depth_renderable_internal_format.IsValid(internal_format);
   bool stencil_renderable = feature_info->validators()->

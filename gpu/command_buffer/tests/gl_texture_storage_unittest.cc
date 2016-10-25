@@ -156,17 +156,6 @@ TEST_F(TextureStorageTest, CannotRedefine) {
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 }
 
-TEST_F(TextureStorageTest, InternalFormatBleedingToTexImage) {
-  if (!extension_available_)
-    return;
-
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  // The context is ES2 context.
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8_OES, 4, 4, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, nullptr);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
-}
-
 }  // namespace gpu
 
 
