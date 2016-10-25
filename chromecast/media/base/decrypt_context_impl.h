@@ -31,20 +31,8 @@ class DecryptContextImpl : public DecryptContext {
   // DecryptContext implementation:
   CastKeySystem GetKeySystem() override;
   bool Decrypt(CastDecoderBuffer* buffer,
-               std::vector<uint8_t>* output) final;
-
-  // TODO(smcgruer): Replace DecryptContext::Decrypt with this one in next
-  // public api releasing.
-  // Decrypts the given buffer. Returns true/false for success/failure.
-  //
-  // The decrypted data will be of size |buffer.data_size()| and there must be
-  // enough space in |output| to store that data.
-  //
-  // If non-zero, |data_offset| specifies an offset to be applied to |output|
-  // before the decrypted data is written.
-  virtual bool Decrypt(CastDecoderBuffer* buffer,
-                       uint8_t* output,
-                       size_t data_offset);
+               uint8_t* output,
+               size_t data_offset) override;
 
   // Similar as the above one. Decryption success or not will be returned in
   // |decrypt_cb|. |decrypt_cb| will be called on caller's thread.

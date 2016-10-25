@@ -32,12 +32,6 @@ CastKeySystem DecryptContextImpl::GetKeySystem() {
 }
 
 bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
-                                 std::vector<uint8_t>* output) {
-  output->resize(buffer->data_size());
-  return Decrypt(buffer, output->data(), 0);
-}
-
-bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
                                  uint8_t* output,
                                  size_t data_offset) {
   bool called = false;
