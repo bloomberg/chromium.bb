@@ -7,6 +7,7 @@
 
 #include <array>
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -36,7 +37,11 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
     virtual std::unique_ptr<DesktopMediaPicker> CreatePicker() = 0;
 
    protected:
+    PickerFactory() = default;
     virtual ~PickerFactory() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PickerFactory);
   };
 
   // Used to set PickerFactory used to create mock DesktopMediaPicker instances
@@ -61,6 +66,9 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
       content::WebContents* web_contents,
       const GURL& origin,
       const base::string16 target_name);
+
+  // Returns the calling application name to show in the picker.
+  std::string GetCallerDisplayName() const;
 
   int request_id_;
 

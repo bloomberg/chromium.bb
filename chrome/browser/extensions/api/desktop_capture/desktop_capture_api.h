@@ -22,6 +22,10 @@ class DesktopCaptureChooseDesktopMediaFunction
 
   // ExtensionFunction overrides.
   bool RunAsync() override;
+
+  // Returns the target name to show in the picker when capture is requested for
+  // an extension.  Currently this is the same as the application name.
+  std::string GetExtensionTargetName() const;
 };
 
 class DesktopCaptureCancelChooseDesktopMediaFunction

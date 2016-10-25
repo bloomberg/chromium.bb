@@ -17,14 +17,16 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
-#include "components/version_info/version_info.h"
+#include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
@@ -186,11 +188,21 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
       this);
 
   picker_->Show(web_contents, parent_window, parent_window,
-                base::UTF8ToUTF16(extension()->name()), target_name,
+                base::UTF8ToUTF16(GetCallerDisplayName()), target_name,
                 std::move(screen_list), std::move(window_list),
                 std::move(tab_list), request_audio, callback);
   origin_ = origin;
   return true;
+}
+
+std::string DesktopCaptureChooseDesktopMediaFunctionBase::GetCallerDisplayName()
+    const {
+  if (extension()->location() == Manifest::COMPONENT ||
+      extension()->location() == Manifest::EXTERNAL_COMPONENT) {
+    return l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME);
+  } else {
+    return extension()->name();
+  }
 }
 
 void DesktopCaptureChooseDesktopMediaFunctionBase::WebContentsDestroyed() {

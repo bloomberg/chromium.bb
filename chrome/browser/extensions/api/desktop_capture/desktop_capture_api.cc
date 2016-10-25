@@ -88,12 +88,17 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     DCHECK(web_contents);
   } else {
     origin = extension()->url();
-    target_name = base::UTF8ToUTF16(extension()->name());
+    target_name = base::UTF8ToUTF16(GetExtensionTargetName());
     web_contents = GetSenderWebContents();
     DCHECK(web_contents);
   }
 
   return Execute(params->sources, web_contents, origin, target_name);
+}
+
+std::string DesktopCaptureChooseDesktopMediaFunction::GetExtensionTargetName()
+    const {
+  return GetCallerDisplayName();
 }
 
 DesktopCaptureCancelChooseDesktopMediaFunction::
