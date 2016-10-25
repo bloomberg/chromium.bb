@@ -62,6 +62,7 @@ public abstract class ChromeFeatureList {
     public static final String SCAN_CARDS_IN_WEB_PAYMENTS = "ScanCardsInWebPayments";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String WEB_PAYMENTS = "WebPayments";
+    public static final String WEBAPKS = "WebApks";
 
     private static native boolean nativeIsEnabled(String featureName);
 }

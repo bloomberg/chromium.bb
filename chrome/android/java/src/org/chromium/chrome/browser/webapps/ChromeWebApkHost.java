@@ -8,9 +8,9 @@ import android.os.StrictMode;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -20,12 +20,6 @@ import org.chromium.webapk.lib.client.WebApkValidator;
  */
 public class ChromeWebApkHost {
     private static final String TAG = "ChromeWebApkHost";
-
-    /** Finch experiment name. */
-    private static final String WEBAPK_DISABLE_EXPERIMENT_NAME = "WebApkKillSwitch";
-
-    /** Finch experiment group which forces WebAPKs off. */
-    private static final String WEBAPK_RUNTIME_DISABLED = "Disabled";
 
     private static Boolean sEnabledForTesting;
 
@@ -72,9 +66,8 @@ public class ChromeWebApkHost {
     public static void cacheEnabledStateForNextLaunch() {
         boolean wasEnabled = isEnabledInPrefs();
         CommandLine instance = CommandLine.getInstance();
-        String experiment = FieldTrialList.findFullName(WEBAPK_DISABLE_EXPERIMENT_NAME);
-        boolean isEnabled = (!WEBAPK_RUNTIME_DISABLED.equals(experiment)
-                && instance.hasSwitch(ChromeSwitches.ENABLE_WEBAPK));
+        boolean isEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.WEBAPKS)
+                && instance.hasSwitch(ChromeSwitches.ENABLE_WEBAPK);
 
         if (isEnabled != wasEnabled) {
             Log.d(TAG, "WebApk setting changed (%s => %s)", wasEnabled, isEnabled);

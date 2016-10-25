@@ -50,6 +50,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabReparenting,
+    &kWebApks,
     &ntp_snippets::kContentSuggestionsFeature,
     &ntp_snippets::kSaveToOfflineFeature,
     &ntp_snippets::kSectionDismissalFeature,
@@ -106,6 +107,10 @@ const base::Feature kTabReparenting{"TabReparenting",
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Makes "Add to Home screen" in the app menu generate an APK for the shortcut
+// URL which opens Chrome in fullscreen.
+const base::Feature kWebApks{"WebApks", base::FEATURE_DISABLED_BY_DEFAULT};
 
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
