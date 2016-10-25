@@ -59,7 +59,7 @@ TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
   // Check that the observer requests a suspend-readiness callback when it hears
   // that the system is about to suspend.
   test::TestSessionStateDelegate::SetCanLockScreen(true);
-  SetShouldLockScreenBeforeSuspending(true);
+  SetShouldLockScreenAutomatically(true);
   observer_->SuspendImminent();
   EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
 
@@ -80,7 +80,7 @@ TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
   // It also shouldn't request a callback if it isn't instructed to lock the
   // screen.
   observer_->SuspendDone(base::TimeDelta());
-  SetShouldLockScreenBeforeSuspending(false);
+  SetShouldLockScreenAutomatically(false);
   observer_->SuspendImminent();
   EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 }
@@ -97,7 +97,7 @@ TEST_F(PowerEventObserverTest, SetInvisibleBeforeSuspend) {
   // Tests that all the Compositors are marked invisible _after_ the screen lock
   // animations have completed.
   test::TestSessionStateDelegate::SetCanLockScreen(true);
-  SetShouldLockScreenBeforeSuspending(true);
+  SetShouldLockScreenAutomatically(true);
 
   observer_->SuspendImminent();
   EXPECT_EQ(1, GetNumVisibleCompositors());
@@ -116,7 +116,7 @@ TEST_F(PowerEventObserverTest, CanceledSuspend) {
   // Tests that the Compositors are not marked invisible if a suspend is
   // canceled or the system resumes before the lock screen is ready.
   test::TestSessionStateDelegate::SetCanLockScreen(true);
-  SetShouldLockScreenBeforeSuspending(true);
+  SetShouldLockScreenAutomatically(true);
   observer_->SuspendImminent();
   EXPECT_EQ(1, GetNumVisibleCompositors());
 
@@ -138,7 +138,7 @@ TEST_F(PowerEventObserverTest, DelayResuspendForLockAnimations) {
   // In this case, the observer should block the second suspend request until
   // the animations have completed.
   test::TestSessionStateDelegate::SetCanLockScreen(true);
-  SetShouldLockScreenBeforeSuspending(true);
+  SetShouldLockScreenAutomatically(true);
 
   chromeos::PowerManagerClient* client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();

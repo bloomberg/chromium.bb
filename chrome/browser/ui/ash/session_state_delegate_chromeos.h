@@ -33,7 +33,7 @@ class SessionStateDelegateChromeos
   bool IsActiveUserSessionStarted() const override;
   bool CanLockScreen() const override;
   bool IsScreenLocked() const override;
-  bool ShouldLockScreenBeforeSuspending() const override;
+  bool ShouldLockScreenAutomatically() const override;
   void LockScreen() override;
   void UnlockScreen() override;
   bool IsUserSessionBlocked() const override;

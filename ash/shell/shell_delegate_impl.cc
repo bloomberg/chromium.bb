@@ -124,7 +124,7 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   bool IsActiveUserSessionStarted() const override { return true; }
   bool CanLockScreen() const override { return true; }
   bool IsScreenLocked() const override { return screen_locked_; }
-  bool ShouldLockScreenBeforeSuspending() const override { return false; }
+  bool ShouldLockScreenAutomatically() const override { return false; }
   void LockScreen() override {
     shell::CreateLockScreen();
     screen_locked_ = true;

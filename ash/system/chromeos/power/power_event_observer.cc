@@ -80,9 +80,9 @@ void PowerEventObserver::SuspendImminent() {
 
   // This class is responsible for disabling all rendering requests at suspend
   // time and then enabling them at resume time.  When the
-  // lock-before-suspending pref is not set this is easy to do since
+  // auto-screen-lock pref is not set this is easy to do since
   // StopRenderingRequests() is just called directly from this function.  If the
-  // lock-before-suspending pref _is_ set, then the suspend needs to be delayed
+  // auto-screen-lock pref _is_ set, then the suspend needs to be delayed
   // until the lock screen is fully visible.  While it is sufficient from a
   // security perspective to block only until the lock screen is ready, which
   // guarantees that the contents of the user's screen are no longer visible,
@@ -91,7 +91,7 @@ void PowerEventObserver::SuspendImminent() {
   // process starts rendering again.  To deal with this, the suspend is delayed
   // until all the lock screen animations have completed and the suspend request
   // is unblocked from OnLockAnimationsComplete().
-  if (!screen_locked_ && delegate->ShouldLockScreenBeforeSuspending() &&
+  if (!screen_locked_ && delegate->ShouldLockScreenAutomatically() &&
       delegate->CanLockScreen()) {
     screen_lock_callback_ = chromeos::DBusThreadManager::Get()
                                 ->GetPowerManagerClient()

@@ -103,7 +103,7 @@ bool SessionStateDelegateChromeos::IsScreenLocked() const {
          chromeos::ScreenLocker::default_screen_locker()->locked();
 }
 
-bool SessionStateDelegateChromeos::ShouldLockScreenBeforeSuspending() const {
+bool SessionStateDelegateChromeos::ShouldLockScreenAutomatically() const {
   const user_manager::UserList logged_in_users =
       user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = logged_in_users.begin();

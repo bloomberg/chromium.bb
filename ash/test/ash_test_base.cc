@@ -327,9 +327,9 @@ void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
       user_logged_in);
 }
 
-void AshTestBase::SetShouldLockScreenBeforeSuspending(bool should_lock) {
+void AshTestBase::SetShouldLockScreenAutomatically(bool should_lock) {
   AshTestHelper::GetTestSessionStateDelegate()
-      ->SetShouldLockScreenBeforeSuspending(should_lock);
+      ->SetShouldLockScreenAutomatically(should_lock);
 }
 
 void AshTestBase::SetUserAddingScreenRunning(bool user_adding_screen_running) {

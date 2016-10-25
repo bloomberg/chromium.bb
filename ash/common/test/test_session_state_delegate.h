@@ -38,7 +38,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   bool IsActiveUserSessionStarted() const override;
   bool CanLockScreen() const override;
   bool IsScreenLocked() const override;
-  bool ShouldLockScreenBeforeSuspending() const override;
+  bool ShouldLockScreenAutomatically() const override;
   void LockScreen() override;
   void UnlockScreen() override;
   bool IsUserSessionBlocked() const override;
@@ -72,8 +72,8 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // is an active user.
   static void SetCanLockScreen(bool can_lock_screen);
 
-  // Updates |should_lock_screen_before_suspending_|.
-  void SetShouldLockScreenBeforeSuspending(bool should_lock);
+  // Updates |should_lock_screen_automatically_|.
+  void SetShouldLockScreenAutomatically(bool should_lock);
 
   // Updates the internal state that indicates whether user adding screen is
   // running now.
@@ -89,8 +89,8 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // when this is |true| and there is an active user.
   bool can_lock_screen_;
 
-  // Return value for ShouldLockScreenBeforeSuspending().
-  bool should_lock_screen_before_suspending_;
+  // Return value for ShouldLockScreenAutomatically().
+  bool should_lock_screen_automatically_;
 
   // Whether the screen is currently locked.
   bool screen_locked_;

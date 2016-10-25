@@ -300,7 +300,7 @@ base::Value* CoreChromeOSOptionsHandler::CreateValueForPref(
     ash::SessionStateDelegate* delegate =
         ash::WmShell::Get()->GetSessionStateDelegate();
     if (pref && pref->IsUserModifiable() &&
-        delegate->ShouldLockScreenBeforeSuspending()) {
+        delegate->ShouldLockScreenAutomatically()) {
       bool screen_lock = false;
       bool success = pref->GetValue()->GetAsBoolean(&screen_lock);
       DCHECK(success);
