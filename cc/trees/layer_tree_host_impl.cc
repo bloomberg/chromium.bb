@@ -207,8 +207,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lock_scrolling_layer_(false),
       wheel_scrolling_(false),
       scroll_affects_scroll_handler_(false),
-      scroll_layer_id_when_mouse_over_scrollbar_(Layer::INVALID_ID),
-      captured_scrollbar_layer_id_(Layer::INVALID_ID),
+      scroll_layer_id_mouse_currently_over_(Layer::INVALID_ID),
       tile_priorities_dirty_(false),
       settings_(settings),
       visible_(false),
@@ -3215,93 +3214,77 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
 }
 
 void LayerTreeHostImpl::MouseDown() {
-  if (scroll_layer_id_when_mouse_over_scrollbar_ == Layer::INVALID_ID)
-    return;
-
-  captured_scrollbar_layer_id_ = scroll_layer_id_when_mouse_over_scrollbar_;
   ScrollbarAnimationController* animation_controller =
-      ScrollbarAnimationControllerForId(captured_scrollbar_layer_id_);
+      ScrollbarAnimationControllerForId(scroll_layer_id_mouse_currently_over_);
   if (animation_controller)
-    animation_controller->DidCaptureScrollbarBegin();
+    animation_controller->DidMouseDown();
 }
 
 void LayerTreeHostImpl::MouseUp() {
-  if (captured_scrollbar_layer_id_ == Layer::INVALID_ID)
-    return;
-
   ScrollbarAnimationController* animation_controller =
-      ScrollbarAnimationControllerForId(captured_scrollbar_layer_id_);
+      ScrollbarAnimationControllerForId(scroll_layer_id_mouse_currently_over_);
   if (animation_controller)
-    animation_controller->DidCaptureScrollbarEnd();
-  captured_scrollbar_layer_id_ = Layer::INVALID_ID;
+    animation_controller->DidMouseUp();
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
+  float distance_to_scrollbar = std::numeric_limits<float>::max();
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
-  HandleMouseOverScrollbar(layer_impl);
-  if (scroll_layer_id_when_mouse_over_scrollbar_ != Layer::INVALID_ID)
+
+  // Check if mouse is over a scrollbar or not.
+  // TODO(sahel): get rid of this extera checking when
+  // FindScrollLayerForDeviceViewportPoint finds the proper layer for
+  // scrolling on main thread, as well.
+  int new_id = Layer::INVALID_ID;
+  if (layer_impl && layer_impl->ToScrollbarLayer())
+    new_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
+  if (new_id != Layer::INVALID_ID) {
+    // Mouse over a scrollbar.
+    distance_to_scrollbar = 0;
+  } else {
+    bool scroll_on_main_thread = false;
+    uint32_t main_thread_scrolling_reasons;
+    LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
+        device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
+        &scroll_on_main_thread, &main_thread_scrolling_reasons);
+
+    // Scrollbars for the viewport are registered with the outer viewport layer.
+    if (scroll_layer_impl == InnerViewportScrollLayer())
+      scroll_layer_impl = OuterViewportScrollLayer();
+
+    new_id = scroll_layer_impl ? scroll_layer_impl->id() : Layer::INVALID_ID;
+  }
+
+  if (new_id != scroll_layer_id_mouse_currently_over_) {
+    ScrollbarAnimationController* old_animation_controller =
+        ScrollbarAnimationControllerForId(
+            scroll_layer_id_mouse_currently_over_);
+    if (old_animation_controller) {
+      old_animation_controller->DidMouseLeave();
+    }
+    scroll_layer_id_mouse_currently_over_ = new_id;
+  }
+
+  ScrollbarAnimationController* new_animation_controller =
+      ScrollbarAnimationControllerForId(new_id);
+  if (!new_animation_controller)
     return;
 
-  bool scroll_on_main_thread = false;
-  uint32_t main_thread_scrolling_reasons;
-  LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
-      device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
-      &scroll_on_main_thread, &main_thread_scrolling_reasons);
-
-  // Scrollbars for the viewport are registered with the outer viewport layer.
-  if (scroll_layer_impl == InnerViewportScrollLayer())
-    scroll_layer_impl = OuterViewportScrollLayer();
-
-  if (scroll_on_main_thread || !scroll_layer_impl)
-    return;
-
-  ScrollbarAnimationController* animation_controller =
-      ScrollbarAnimationControllerForId(scroll_layer_impl->id());
-  if (!animation_controller)
-    return;
-
-  float distance_to_scrollbar = std::numeric_limits<float>::max();
-  for (ScrollbarLayerImplBase* scrollbar :
-       ScrollbarsFor(scroll_layer_impl->id()))
+  for (ScrollbarLayerImplBase* scrollbar : ScrollbarsFor(new_id))
     distance_to_scrollbar =
         std::min(distance_to_scrollbar,
                  DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar));
-
-  animation_controller->DidMouseMoveNear(distance_to_scrollbar /
-                                         active_tree_->device_scale_factor());
+  new_animation_controller->DidMouseMoveNear(
+      distance_to_scrollbar / active_tree_->device_scale_factor());
 }
 
 void LayerTreeHostImpl::MouseLeave() {
   for (auto& pair : scrollbar_animation_controllers_)
-    pair.second->DidMouseMoveOffScrollbar();
-
-  scroll_layer_id_when_mouse_over_scrollbar_ = Layer::INVALID_ID;
-}
-
-void LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl) {
-  int new_id = Layer::INVALID_ID;
-  if (layer_impl && layer_impl->ToScrollbarLayer())
-    new_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
-
-  if (new_id == scroll_layer_id_when_mouse_over_scrollbar_)
-    return;
-
-  ScrollbarAnimationController* old_animation_controller =
-      ScrollbarAnimationControllerForId(
-          scroll_layer_id_when_mouse_over_scrollbar_);
-  if (old_animation_controller)
-    old_animation_controller->DidMouseMoveOffScrollbar();
-
-  scroll_layer_id_when_mouse_over_scrollbar_ = new_id;
-
-  ScrollbarAnimationController* new_animation_controller =
-      ScrollbarAnimationControllerForId(
-          scroll_layer_id_when_mouse_over_scrollbar_);
-  if (new_animation_controller)
-    new_animation_controller->DidMouseMoveNear(0);
+    pair.second->DidMouseLeave();
+  scroll_layer_id_mouse_currently_over_ = Layer::INVALID_ID;
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {

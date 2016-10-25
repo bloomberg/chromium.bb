@@ -3229,15 +3229,13 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   EXPECT_TRUE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
   did_request_redraw_ = false;
-  EXPECT_EQ(Layer::INVALID_ID,
-            host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_over_scrollbar());
   host_impl_->MouseMoveAt(gfx::Point(10, 100));
-  EXPECT_EQ(117, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_over_scrollbar());
   host_impl_->MouseMoveAt(gfx::Point(10, 120));
-  EXPECT_EQ(117, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_over_scrollbar());
   host_impl_->MouseMoveAt(gfx::Point(150, 120));
-  EXPECT_EQ(Layer::INVALID_ID,
-            host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_over_scrollbar());
 }
 
 TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf1) {
@@ -11476,6 +11474,131 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnCompositorFrameSinkChange) {
   compositor_frame_sink_ = FakeCompositorFrameSink::CreateSoftware();
   host_impl_->InitializeRenderer(compositor_frame_sink_.get());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+}
+
+TEST_F(LayerTreeHostImplTest, LayerTreeHostImplTestScrollbarStates) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
+  settings.scrollbar_animator = LayerTreeSettings::THINNING;
+
+  gfx::Size viewport_size(300, 200);
+  gfx::Size content_size(1000, 1000);
+  gfx::Size child_layer_size(250, 150);
+  gfx::Size scrollbar_size_1(gfx::Size(15, viewport_size.height()));
+  gfx::Size scrollbar_size_2(gfx::Size(15, child_layer_size.height()));
+
+  const int scrollbar_1_id = 10;
+  const int scrollbar_2_id = 11;
+  const int child_clip_id = 12;
+  const int child_scroll_id = 13;
+
+  CreateHostImpl(settings, CreateCompositorFrameSink());
+  host_impl_->active_tree()->SetDeviceScaleFactor(1);
+  host_impl_->SetViewportSize(viewport_size);
+  CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
+      viewport_size);
+  LayerImpl* root_scroll =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+
+  // scrollbar_1 on root scroll.
+  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_1 =
+      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(),
+                                           scrollbar_1_id, VERTICAL, 5, 5, true,
+                                           true);
+  scrollbar_1->SetScrollLayerId(root_scroll->id());
+  scrollbar_1->SetDrawsContent(true);
+  scrollbar_1->SetBounds(scrollbar_size_1);
+  scrollbar_1->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size_1));
+  host_impl_->active_tree()
+      ->InnerViewportContainerLayer()
+      ->test_properties()
+      ->AddChild(std::move(scrollbar_1));
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->DidBecomeActive();
+
+  DrawFrame();
+  host_impl_->active_tree()->UpdateDrawProperties(false);
+
+  ScrollbarAnimationControllerThinning* scrollbar_1_animation_controller =
+      static_cast<ScrollbarAnimationControllerThinning*>(
+          host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+  EXPECT_TRUE(scrollbar_1_animation_controller);
+  scrollbar_1_animation_controller->set_mouse_move_distance_for_test(40.f);
+
+  // Mouse moves close to the scrollbar, goes over the scrollbar, and
+  // moves back to where it was.
+  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(40, 150));
+  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(10, 150));
+  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(40, 150));
+  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+
+  // scrollbar_2 on child.
+  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_2 =
+      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(),
+                                           scrollbar_2_id, VERTICAL, 5, 5, true,
+                                           true);
+  std::unique_ptr<LayerImpl> child_clip =
+      LayerImpl::Create(host_impl_->active_tree(), child_clip_id);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl_->active_tree(), child_scroll_id);
+  child->SetPosition(gfx::PointF(50, 50));
+  child->SetBounds(child_layer_size);
+  child->SetDrawsContent(true);
+  child->SetScrollClipLayer(child_clip_id);
+
+  scrollbar_2->SetScrollLayerId(child_scroll_id);
+  scrollbar_2->SetDrawsContent(true);
+  scrollbar_2->SetBounds(scrollbar_size_2);
+
+  child->test_properties()->AddChild(std::move(scrollbar_2));
+  child_clip->test_properties()->AddChild(std::move(child));
+  root_scroll->test_properties()->AddChild(std::move(child_clip));
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->DidBecomeActive();
+
+  ScrollbarAnimationControllerThinning* scrollbar_2_animation_controller =
+      static_cast<ScrollbarAnimationControllerThinning*>(
+          host_impl_->ScrollbarAnimationControllerForId(child_scroll_id));
+  EXPECT_TRUE(scrollbar_2_animation_controller);
+  scrollbar_2_animation_controller->set_mouse_move_distance_for_test(40.f);
+
+  // Mouse goes over scrollbar_2, moves close to scrollbar_2, moves close to
+  // scrollbar_1, goes over scrollbar_1.
+  host_impl_->MouseMoveAt(gfx::Point(60, 150));
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_TRUE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_TRUE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(40, 150));
+  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(10, 150));
+  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
+  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
+  EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
 }
 
 }  // namespace

@@ -41,9 +41,9 @@ class CC_EXPORT ScrollbarAnimationController {
   virtual void DidScrollBegin();
   virtual void DidScrollUpdate(bool on_resize);
   virtual void DidScrollEnd();
-  virtual void DidCaptureScrollbarBegin() {}
-  virtual void DidCaptureScrollbarEnd() {}
-  virtual void DidMouseMoveOffScrollbar() {}
+  virtual void DidMouseDown() {}
+  virtual void DidMouseUp() {}
+  virtual void DidMouseLeave() {}
   virtual void DidMouseMoveNear(float distance) {}
 
  protected:

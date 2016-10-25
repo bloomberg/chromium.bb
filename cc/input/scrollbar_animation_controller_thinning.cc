@@ -84,18 +84,20 @@ const base::TimeDelta& ScrollbarAnimationControllerThinning::Duration() {
     return thinning_duration_;
 }
 
-void ScrollbarAnimationControllerThinning::DidCaptureScrollbarBegin() {
-  if (opacity_ == 0.0f)
+void ScrollbarAnimationControllerThinning::DidMouseDown() {
+  if (!mouse_is_over_scrollbar_ || opacity_ == 0.0f)
     return;
+
   StopAnimation();
   captured_ = true;
   ApplyOpacity(1.f);
   ApplyThumbThicknessScale(1.f);
 }
 
-void ScrollbarAnimationControllerThinning::DidCaptureScrollbarEnd() {
-  if (opacity_ == 0.0f)
+void ScrollbarAnimationControllerThinning::DidMouseUp() {
+  if (!captured_ || opacity_ == 0.0f)
     return;
+
   captured_ = false;
   StopAnimation();
 
@@ -109,7 +111,7 @@ void ScrollbarAnimationControllerThinning::DidCaptureScrollbarEnd() {
   }
 }
 
-void ScrollbarAnimationControllerThinning::DidMouseMoveOffScrollbar() {
+void ScrollbarAnimationControllerThinning::DidMouseLeave() {
   if (!mouse_is_over_scrollbar_ && !mouse_is_near_scrollbar_)
     return;
 

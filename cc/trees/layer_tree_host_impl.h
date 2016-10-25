@@ -439,9 +439,6 @@ class CC_EXPORT LayerTreeHostImpl
   LayerImpl* OuterViewportScrollLayer() const;
   LayerImpl* CurrentlyScrollingLayer() const;
 
-  int scroll_layer_id_when_mouse_over_scrollbar() const {
-    return scroll_layer_id_when_mouse_over_scrollbar_;
-  }
   bool scroll_affects_scroll_handler() const {
     return scroll_affects_scroll_handler_;
   }
@@ -671,8 +668,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ClearCurrentlyScrollingLayer();
 
-  void HandleMouseOverScrollbar(LayerImpl* layer_impl);
-
   LayerImpl* FindScrollLayerForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
       InputHandler::ScrollInputType type,
@@ -748,8 +743,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool did_lock_scrolling_layer_;
   bool wheel_scrolling_;
   bool scroll_affects_scroll_handler_;
-  int scroll_layer_id_when_mouse_over_scrollbar_;
-  int captured_scrollbar_layer_id_;
+  int scroll_layer_id_mouse_currently_over_;
 
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;

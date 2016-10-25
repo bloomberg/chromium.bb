@@ -37,9 +37,9 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
 
   void DidScrollUpdate(bool on_resize) override;
 
-  void DidCaptureScrollbarBegin() override;
-  void DidCaptureScrollbarEnd() override;
-  void DidMouseMoveOffScrollbar() override;
+  void DidMouseDown() override;
+  void DidMouseUp() override;
+  void DidMouseLeave() override;
   void DidMouseMoveNear(float distance) override;
 
  protected:
