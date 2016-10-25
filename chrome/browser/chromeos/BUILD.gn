@@ -237,6 +237,8 @@ source_set("chromeos") {
     "arc/policy/arc_android_management_checker_delegate.h",
     "arc/policy/arc_policy_bridge.cc",
     "arc/policy/arc_policy_bridge.h",
+    "arc/policy/arc_policy_util.cc",
+    "arc/policy/arc_policy_util.h",
     "arc/print/arc_print_service.cc",
     "arc/print/arc_print_service.h",
     "arc/process/arc_process.cc",

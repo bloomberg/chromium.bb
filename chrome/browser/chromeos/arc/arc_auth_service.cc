@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -75,16 +76,6 @@ const char kStateNotInitialized[] = "NOT_INITIALIZED";
 const char kStateStopped[] = "STOPPED";
 const char kStateFetchingCode[] = "FETCHING_CODE";
 const char kStateActive[] = "ACTIVE";
-
-bool IsAccountManaged(Profile* profile) {
-  return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
-      ->IsManaged();
-}
-
-bool IsArcDisabledForEnterprise() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnterpriseDisableArc);
-}
 
 ash::ShelfDelegate* GetShelfDelegate() {
   if (g_shelf_delegate_for_testing)
@@ -368,9 +359,9 @@ void ArcAuthService::OnSignInComplete() {
   profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
   CloseUI();
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, true,
-                           IsAccountManaged(profile_));
+                           policy_util::IsAccountManaged(profile_));
   UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS,
-                              IsAccountManaged(profile_));
+                              policy_util::IsAccountManaged(profile_));
 
   for (auto& observer : observer_list_)
     observer.OnInitialStart();
@@ -389,9 +380,9 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
   arc_sign_in_timer_.Stop();
 
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
-                           IsAccountManaged(profile_));
+                           policy_util::IsAccountManaged(profile_));
   UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
-  UpdateProvisioningResultUMA(result, IsAccountManaged(profile_));
+  UpdateProvisioningResultUMA(result, policy_util::IsAccountManaged(profile_));
 
   int error_message_id;
   switch (result) {
@@ -451,7 +442,7 @@ void ArcAuthService::GetIsAccountManaged(
     const GetIsAccountManagedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  callback.Run(IsAccountManaged(profile_));
+  callback.Run(policy_util::IsAccountManaged(profile_));
 }
 
 void ArcAuthService::SetState(State state) {
@@ -478,7 +469,8 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
     return;
 
   // TODO(khmel): Move this to IsAllowedForProfile.
-  if (IsArcDisabledForEnterprise() && IsAccountManaged(profile)) {
+  if (policy_util::IsArcDisabledForEnterprise() &&
+      policy_util::IsAccountManaged(profile)) {
     VLOG(2) << "Enterprise users are not supported in ARC.";
     return;
   }
@@ -881,7 +873,7 @@ void ArcAuthService::OnAuthCodeFailed() {
 
 void ArcAuthService::CheckAndroidManagement(bool background_mode) {
   // Do not send requests for Chrome OS managed users.
-  if (IsAccountManaged(profile_)) {
+  if (policy_util::IsAccountManaged(profile_)) {
     OnAndroidManagementPassed();
     return;
   }
