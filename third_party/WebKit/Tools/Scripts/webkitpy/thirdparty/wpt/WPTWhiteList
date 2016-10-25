@@ -15,9 +15,8 @@
 ./tools/sslutils/openssl.py
 ./tools/sslutils/pregenerated.py
 ./tools/wptserve/.gitignore
-./tools/wptserve/README.md
-./tools/wptserve/__init__.py
 ./tools/wptserve/LICENSE
+./tools/wptserve/README.md
 ./tools/wptserve/wptserve/__init__.py
 ./tools/wptserve/wptserve/constants.py
 ./tools/wptserve/wptserve/handlers.py

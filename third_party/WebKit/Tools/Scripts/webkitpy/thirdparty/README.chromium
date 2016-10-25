@@ -71,7 +71,7 @@ Local Modifications: None
 Name: web-platform-tests - Test Suites for Web Platform specifications
 Short Name: wpt
 URL: https://github.com/w3c/web-platform-tests/
-Version: a4e187e1296cb981648202a0d7567aa81d869d91 (Also check wpt/WPTHeads)
+Version: 8ef8dfe89f5c09b7367cef28cbd55709c141b592 (Also check wpt/WPTHeads)
 License: LICENSES FOR W3C TEST SUITES (http://www.w3.org/Consortium/Legal/2008/04-testsuite-copyright.html)
 License File: wpt/wpt/LICENSE
 Security Critical: no
@@ -83,7 +83,7 @@ Local Modifications: Removed all files except for those listed in wpt/WPTWhiteLi
 Name: wpt-tools - Tools for Web Platform Tests
 Short Name: wpt-tools
 URL: https://github.com/w3c/wpt-tools
-Version: 72c8068067c68dcaa0768c1d1f394738b4e60eb9 (Also check wpt/WPTHeads)
+Version: 9dc91ab4e181595e074a1dbb1408c84f80367896 (Also check wpt/WPTHeads)
 License: W3C 3-clause BSD License (http://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
 License File: wpt/wpt/tools/LICENSE
 Security Critical: no
@@ -94,7 +94,7 @@ Local Modifications: Removed all files except for those listed in wpt/WPTWhiteLi
 Name: wptserve - Web server designed for use with web-platform-tests
 Short Name: wptserve
 URL: https://github.com/w3c/wptserve
-Version: 0cd3531e2d26c71de39431ebac62be18b2da8af3 (Also check wpt/WPTHeads)
+Version: 69298c6f089633b5bc10b16196ef42fa339f6a2f (Also check wpt/WPTHeads)
 License: W3C 3-clause BSD License (http://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
 License File: wpt/wpt/tools/wptserve/LICENSE
 Security Critical: no

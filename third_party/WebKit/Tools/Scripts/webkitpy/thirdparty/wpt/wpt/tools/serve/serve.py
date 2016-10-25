@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
 import argparse
 import json
 import os
-import signal
 import socket
 import sys
 import threading
@@ -10,10 +12,10 @@ import time
 import traceback
 import urllib2
 import uuid
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from multiprocessing import Process, Event
 
-from .. import localpaths
+from ..localpaths import repo_root
 
 import sslutils
 from wptserve import server as wptserve, handlers
@@ -21,7 +23,14 @@ from wptserve import stash
 from wptserve.logger import set_logger
 from mod_pywebsocket import standalone as pywebsocket
 
-repo_root = localpaths.repo_root
+def replace_end(s, old, new):
+    """
+    Given a string `s` that ends with `old`, replace that occurrence of `old`
+    with `new`.
+    """
+    assert s.endswith(old)
+    return s[:-len(old)] + new
+
 
 class WorkersHandler(object):
     def __init__(self):
@@ -31,7 +40,7 @@ class WorkersHandler(object):
         return self.handler(request, response)
 
     def handle_request(self, request, response):
-        worker_path = request.url_parts.path.replace(".worker", ".worker.js")
+        worker_path = replace_end(request.url_parts.path, ".worker.html", ".worker.js")
         return """<!doctype html>
 <meta charset=utf-8>
 <script src="/resources/testharness.js"></script>
@@ -42,6 +51,52 @@ fetch_tests_from_worker(new Worker("%s"));
 </script>
 """ % (worker_path,)
 
+
+class AnyHtmlHandler(object):
+    def __init__(self):
+        self.handler = handlers.handler(self.handle_request)
+
+    def __call__(self, request, response):
+        return self.handler(request, response)
+
+    def handle_request(self, request, response):
+        test_path = replace_end(request.url_parts.path, ".any.html", ".any.js")
+        return """\
+<!doctype html>
+<meta charset=utf-8>
+<script>
+self.GLOBAL = {
+  isWindow: function() { return true; },
+  isWorker: function() { return false; },
+};
+</script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<div id=log></div>
+<script src="%s"></script>
+""" % (test_path,)
+
+
+class AnyWorkerHandler(object):
+    def __init__(self):
+        self.handler = handlers.handler(self.handle_request)
+
+    def __call__(self, request, response):
+        return self.handler(request, response)
+
+    def handle_request(self, request, response):
+        test_path = replace_end(request.url_parts.path, ".any.worker.js", ".any.js")
+        return """\
+self.GLOBAL = {
+  isWindow: function() { return false; },
+  isWorker: function() { return true; },
+};
+importScripts("/resources/testharness.js");
+importScripts("%s");
+done();
+""" % (test_path,)
+
+
 rewrites = [("GET", "/resources/WebIDLParser.js", "/resources/webidl2/lib/webidl2.js")]
 
 subdomains = [u"www",
@@ -50,17 +105,73 @@ subdomains = [u"www",
               u"天気の良い日",
               u"élève"]
 
-def default_routes():
-    return [("GET", "/tools/runner/*", handlers.file_handler),
-            ("POST", "/tools/runner/update_manifest.py", handlers.python_script_handler),
-            ("*", "/_certs/*", handlers.ErrorHandler(404)),
-            ("*", "/tools/*", handlers.ErrorHandler(404)),
-            ("*", "{spec}/tools/*", handlers.ErrorHandler(404)),
-            ("*", "/serve.py", handlers.ErrorHandler(404)),
-            ("*", "*.py", handlers.python_script_handler),
-            ("GET", "*.asis", handlers.as_is_handler),
-            ("GET", "*.worker", WorkersHandler()),
-            ("GET", "*", handlers.file_handler),]
+class RoutesBuilder(object):
+    def __init__(self):
+        self.forbidden_override = [("GET", "/tools/runner/*", handlers.file_handler),
+                                   ("POST", "/tools/runner/update_manifest.py",
+                                    handlers.python_script_handler)]
+
+        self.forbidden = [("*", "/_certs/*", handlers.ErrorHandler(404)),
+                          ("*", "/tools/*", handlers.ErrorHandler(404)),
+                          ("*", "{spec}/tools/*", handlers.ErrorHandler(404)),
+                          ("*", "/serve.py", handlers.ErrorHandler(404))]
+
+        self.static = [
+            ("GET", "*.worker.html", WorkersHandler()),
+            ("GET", "*.any.html", AnyHtmlHandler()),
+            ("GET", "*.any.worker.js", AnyWorkerHandler()),
+        ]
+
+        self.mountpoint_routes = OrderedDict()
+
+        self.add_mount_point("/", None)
+
+    def get_routes(self):
+        routes = self.forbidden_override + self.forbidden + self.static
+        # Using reversed here means that mount points that are added later
+        # get higher priority. This makes sense since / is typically added
+        # first.
+        for item in reversed(self.mountpoint_routes.values()):
+            routes.extend(item)
+        return routes
+
+    def add_static(self, path, format_args, content_type, route):
+        handler = handlers.StaticHandler(path, format_args, content_type)
+        self.static.append((b"GET", str(route), handler))
+
+    def add_mount_point(self, url_base, path):
+        url_base = "/%s/" % url_base.strip("/") if url_base != "/" else "/"
+
+        self.mountpoint_routes[url_base] = []
+
+        routes = [("GET", "*.asis", handlers.AsIsHandler),
+                  ("*", "*.py", handlers.PythonScriptHandler),
+                  ("GET", "*", handlers.FileHandler)]
+
+        for (method, suffix, handler_cls) in routes:
+            self.mountpoint_routes[url_base].append(
+                (method,
+                 b"%s%s" % (str(url_base) if url_base != "/" else "", str(suffix)),
+                 handler_cls(base_path=path, url_base=url_base)))
+
+    def add_file_mount_point(self, file_url, base_path):
+        assert file_url.startswith("/")
+        url_base = file_url[0:file_url.rfind("/") + 1]
+        self.mountpoint_routes[file_url] = [("GET", file_url, handlers.FileHandler(base_path=base_path, url_base=url_base))]
+
+
+def build_routes(aliases):
+    builder = RoutesBuilder()
+    for url, directory in aliases.items():
+        if not url.startswith("/") or len(directory) == 0:
+            logger.error("A map entry of 'aliases' must be \"/<url-path>\": \"<local-directory>\"")
+            continue
+        if url.endswith("/"):
+            builder.add_mount_point(url, directory)
+        else:
+            builder.add_file_mount_point(url, directory)
+    return builder.get_routes()
+
 
 def setup_logger(level):
     import logging
@@ -107,10 +218,10 @@ class ServerProc(object):
             self.daemon = init_func(host, port, paths, routes, bind_hostname, external_config,
                                     ssl_config, **kwargs)
         except socket.error:
-            print >> sys.stderr, "Socket error on port %s" % port
+            print("Socket error on port %s" % port, file=sys.stderr)
             raise
         except:
-            print >> sys.stderr, traceback.format_exc()
+            print(traceback.format_exc(), file=sys.stderr)
             raise
 
         if self.daemon:
@@ -121,7 +232,7 @@ class ServerProc(object):
                 except KeyboardInterrupt:
                     pass
             except:
-                print >> sys.stderr, traceback.format_exc()
+                print(traceback.format_exc(), file=sys.stderr)
                 raise
 
     def wait(self):
@@ -137,12 +248,12 @@ class ServerProc(object):
         return self.proc.is_alive()
 
 
-def check_subdomains(host, paths, bind_hostname, ssl_config):
+def check_subdomains(host, paths, bind_hostname, ssl_config, aliases):
     port = get_port()
     subdomains = get_subdomains(host)
 
     wrapper = ServerProc()
-    wrapper.start(start_http_server, host, port, paths, default_routes(), bind_hostname,
+    wrapper.start(start_http_server, host, port, paths, build_routes(aliases), bind_hostname,
                   None, ssl_config)
 
     connected = False
@@ -246,7 +357,7 @@ class WebSocketDaemon(object):
             elif pywebsocket._import_pyopenssl():
                 tls_module = pywebsocket._TLS_BY_PYOPENSSL
             else:
-                print "No SSL module available"
+                print("No SSL module available")
                 sys.exit(1)
 
             cmd_args += ["--tls",
@@ -371,7 +482,7 @@ def start(config, ssl_environment, routes, **kwargs):
     ssl_config = get_ssl_config(config, external_config["domains"].values(), ssl_environment)
 
     if config["check_subdomains"]:
-        check_subdomains(host, paths, bind_hostname, ssl_config)
+        check_subdomains(host, paths, bind_hostname, ssl_config, config["aliases"])
 
     servers = start_servers(host, ports, paths, routes, bind_hostname, external_config,
                             ssl_config, **kwargs)
@@ -400,6 +511,9 @@ def set_computed_defaults(config):
     if not value_set(config, "ws_doc_root"):
         root = get_value_or_default(config, "doc_root", default=repo_root)
         config["ws_doc_root"] = os.path.join(root, "websockets", "handlers")
+
+    if not value_set(config, "aliases"):
+        config["aliases"] = {}
 
 
 def merge_json(base_obj, override_obj):
@@ -487,7 +601,7 @@ def main():
 
     with stash.StashServer((config["host"], get_port()), authkey=str(uuid.uuid4())):
         with get_ssl_environment(config) as ssl_env:
-            config_, servers = start(config, ssl_env, default_routes(), **kwargs)
+            config_, servers = start(config, ssl_env, build_routes(config["aliases"]), **kwargs)
 
             try:
                 while any(item.is_alive() for item in iter_procs(servers)):
