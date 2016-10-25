@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -22,15 +24,17 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import javax.annotation.Nullable;
 
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
 @VisibleForTesting
-public class EditorTextField extends CompatibilityTextInputLayout
-        implements EditorFieldView, View.OnClickListener {
+public class EditorTextField extends FrameLayout implements EditorFieldView, View.OnClickListener {
     private EditorFieldModel mEditorFieldModel;
+    private CompatibilityTextInputLayout mInputLayout;
     private AutoCompleteTextView mInput;
+    private ImageView mActionIcon;
     private boolean mHasFocusedAtLeastOnce;
     @Nullable private PaymentRequestObserverForTest mObserverForTest;
 
@@ -42,22 +46,28 @@ public class EditorTextField extends CompatibilityTextInputLayout
         mEditorFieldModel = fieldModel;
         mObserverForTest = observer;
 
+        LayoutInflater.from(context).inflate(R.layout.payments_request_editor_textview, this, true);
+        mInputLayout = (CompatibilityTextInputLayout) findViewById(R.id.text_input_layout);
+
         // Build up the label.  Required fields are indicated by appending a '*'.
         CharSequence label = fieldModel.getLabel();
         if (fieldModel.isRequired()) label = label + EditorView.REQUIRED_FIELD_INDICATOR;
-        setHint(label);
+        mInputLayout.setHint(label);
 
-        // The EditText becomes a child of this class.  The TextInputLayout manages how it looks.
-        LayoutInflater.from(context).inflate(R.layout.payments_request_editor_textview, this, true);
-        mInput = (AutoCompleteTextView) findViewById(R.id.text_view);
+        mInput = (AutoCompleteTextView) mInputLayout.findViewById(R.id.text_view);
         mInput.setText(fieldModel.getValue());
         mInput.setContentDescription(label);
         mInput.setOnEditorActionListener(actionlistener);
 
         if (fieldModel.getIconAction() != null) {
-            ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    mInput, 0, 0, fieldModel.getActionIconResourceId(), 0);
-            mInput.setOnClickListener(this);
+            mActionIcon = (ImageView) findViewById(R.id.action_icon);
+            mActionIcon.setImageDrawable(
+                    TintedDrawable.constructTintedDrawable(context.getResources(),
+                            fieldModel.getActionIconResourceId(), R.color.light_active_color));
+            mActionIcon.setContentDescription(context.getResources().getString(
+                    fieldModel.getActionDescriptionForAccessibility()));
+            mActionIcon.setOnClickListener(this);
+            mActionIcon.setVisibility(VISIBLE);
         }
 
         // Validate the field when the user de-focuses it.
@@ -155,6 +165,41 @@ public class EditorTextField extends CompatibilityTextInputLayout
     }
 
     @Override
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (mActionIcon != null) {
+            if (mActionIcon.getMeasuredWidth() == 0) {
+                mActionIcon.measure(widthMeasureSpec, heightMeasureSpec);
+            }
+
+            // Padding at the end of mInput to preserve space for mActionIcon.
+            ApiCompatibilityUtils.setPaddingRelative(mInput,
+                    ApiCompatibilityUtils.getPaddingStart(mInput), mInput.getPaddingTop(),
+                    mActionIcon.getWidth(), mInput.getPaddingBottom());
+        }
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+
+        if (changed && mActionIcon != null) {
+            // Align the bottom of mActionIcon to the bottom of mInput (mActionIcon overlaps
+            // mInput).
+            // Note one:   mActionIcon can not be put inside mInputLayout to display on top of
+            // mInput since mInputLayout is LinearLayout in essential.
+            // Note two:   mActionIcon and mInput can not be put in ViewGroup to display over each
+            // other inside mInputLayout since mInputLayout must contain an instance of EditText
+            // child view.
+            // Note three: mInputLayout's bottom changes when displaying error.
+            float offset = mInputLayout.getY() + mInput.getY() + (float) mInput.getHeight()
+                    - (float) mActionIcon.getHeight() - mActionIcon.getTop();
+            mActionIcon.setTranslationY(offset);
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         mEditorFieldModel.getIconAction().run();
     }
@@ -164,7 +209,7 @@ public class EditorTextField extends CompatibilityTextInputLayout
         return mEditorFieldModel;
     }
 
-    @Override
+    /** @return The AutoCompleteTextView this field associates*/
     public AutoCompleteTextView getEditText() {
         return mInput;
     }
@@ -176,7 +221,7 @@ public class EditorTextField extends CompatibilityTextInputLayout
 
     @Override
     public void updateDisplayedError(boolean showError) {
-        setError(showError ? mEditorFieldModel.getErrorMessage() : null);
+        mInputLayout.setError(showError ? mEditorFieldModel.getErrorMessage() : null);
     }
 
     @Override

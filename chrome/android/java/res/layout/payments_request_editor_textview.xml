@@ -3,10 +3,30 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<AutoCompleteTextView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/text_view"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:singleLine="true"
-    android:imeOptions="flagNoExtractUi" />
+    android:layout_height="wrap_content">
+
+    <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
+        android:id="@+id/text_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <AutoCompleteTextView
+            android:id="@+id/text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:imeOptions="flagNoExtractUi" />
+    </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
+
+    <ImageView
+        android:id="@+id/action_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="12dp"
+        android:layout_gravity="end"
+        android:contentDescription="@null"
+        android:visibility="gone"/>
+</FrameLayout>
