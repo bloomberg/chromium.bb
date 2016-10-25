@@ -4760,6 +4760,44 @@ interface RTCIceCandidate
     setter candidate
     setter sdpMLineIndex
     setter sdpMid
+interface RTCPeerConnection : EventTarget
+    static method generateCertificate
+    attribute @@toStringTag
+    getter iceConnectionState
+    getter iceGatheringState
+    getter localDescription
+    getter onaddstream
+    getter ondatachannel
+    getter onicecandidate
+    getter oniceconnectionstatechange
+    getter onnegotiationneeded
+    getter onremovestream
+    getter onsignalingstatechange
+    getter remoteDescription
+    getter signalingState
+    method addIceCandidate
+    method addStream
+    method close
+    method constructor
+    method createAnswer
+    method createDTMFSender
+    method createDataChannel
+    method createOffer
+    method getLocalStreams
+    method getRemoteStreams
+    method getStats
+    method getStreamById
+    method removeStream
+    method setLocalDescription
+    method setRemoteDescription
+    method updateIce
+    setter onaddstream
+    setter ondatachannel
+    setter onicecandidate
+    setter oniceconnectionstatechange
+    setter onnegotiationneeded
+    setter onremovestream
+    setter onsignalingstatechange
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp

@@ -1,126 +1,108 @@
 This is a testharness.js-based test.
-FAIL RTCPeerConnection.length RTCPeerConnection is not defined
-FAIL new RTCPeerConnection() RTCPeerConnection is not defined
-FAIL new RTCPeerConnection(null) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection(undefined) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({}) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: null }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ iceServers: undefined }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{}] }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ iceServers: [null] }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ iceServers: [undefined] }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ iceServers: [{ urls: "stun:stun1.example.net" }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: [] }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun1.example.net"] }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun1.example.net", "stun:stun2.example.net"] }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: "turns:turn.example.org", username: "user", credential: "cred" }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: "turn:turn.example.net", username: "user", credential: "cred" }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: ["turns:turn.example.org", "turn:turn.example.net"], username: "user", credential: "cred" }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: "stun:stun1.example.net", credentialType: "password" }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: "stun:stun1.example.net", credentialType: "token" }] }) RTCPeerConnection is not defined
+PASS RTCPeerConnection.length 
+PASS new RTCPeerConnection() 
+PASS new RTCPeerConnection(null) 
+PASS new RTCPeerConnection(undefined) 
+PASS new RTCPeerConnection({}) 
+PASS new RTCPeerConnection({ iceServers: null }) 
+PASS new RTCPeerConnection({ iceServers: undefined }) 
+PASS new RTCPeerConnection({ iceServers: [] }) 
+PASS new RTCPeerConnection({ iceServers: [{}] }) 
+PASS new RTCPeerConnection({ iceServers: [null] }) 
+PASS new RTCPeerConnection({ iceServers: [undefined] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: "stun:stun1.example.net" }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: [] }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun1.example.net"] }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun1.example.net", "stun:stun2.example.net"] }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: "turns:turn.example.org", username: "user", credential: "cred" }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: "turn:turn.example.net", username: "user", credential: "cred" }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: ["turns:turn.example.org", "turn:turn.example.net"], username: "user", credential: "cred" }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: "stun:stun1.example.net", credentialType: "password" }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: "stun:stun1.example.net", credentialType: "token" }] }) 
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "turn:turn.example.net" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+      }" did not throw
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "turn:turn.example.net", username: "user" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+      }" did not throw
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "turn:turn.example.net", credential: "cred" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+      }" did not throw
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "turns:turn.example.org" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+      }" did not throw
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "turns:turn.example.org", username: "user" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+      }" did not throw
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "turns:turn.example.org", credential: "cred" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+      }" did not throw
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "relative-url" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException SyntaxError: property "code" is equal to undefined, expected 12
+      }" threw object "TypeError: Failed to construct 'RTCPeerConnection': Malformed URL" that is not a DOMException SyntaxError: property "code" is equal to undefined, expected 12
 FAIL new RTCPeerConnection({ iceServers: [{ urls: "http://example.com" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" that is not a DOMException SyntaxError: property "code" is equal to undefined, expected 12
-FAIL new RTCPeerConnection({ iceServers: [{ urls: [], credentialType: "password" }] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceServers: [{ urls: [], credentialType: "token" }] }) RTCPeerConnection is not defined
+      }" threw object "TypeError: Failed to construct 'RTCPeerConnection': Malformed URL" that is not a DOMException SyntaxError: property "code" is equal to undefined, expected 12
+PASS new RTCPeerConnection({ iceServers: [{ urls: [], credentialType: "password" }] }) 
+PASS new RTCPeerConnection({ iceServers: [{ urls: [], credentialType: "token" }] }) 
 FAIL new RTCPeerConnection({ iceServers: [{ urls: [], credentialType: "invalid" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+      }" did not throw
 FAIL new RTCPeerConnection({ iceServers: [{ url: "stun:stun1.example.net" }] }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+      }" did not throw
 FAIL new RTCPeerConnection({ iceTransportPolicy: null }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ iceTransportPolicy: undefined }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceTransportPolicy: "relay" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceTransportPolicy: "all" }) RTCPeerConnection is not defined
+      }" did not throw
+PASS new RTCPeerConnection({ iceTransportPolicy: undefined }) 
+PASS new RTCPeerConnection({ iceTransportPolicy: "relay" }) 
+PASS new RTCPeerConnection({ iceTransportPolicy: "all" }) 
 FAIL new RTCPeerConnection({ iceTransportPolicy: "invalid" }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+      }" did not throw
 FAIL new RTCPeerConnection({ iceTransportPolicy: "none" }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ iceTransports: "invalid" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ iceTransports: "none" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ bundlePolicy: null }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ bundlePolicy: undefined }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ bundlePolicy: "balanced" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ bundlePolicy: "max-compat" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ bundlePolicy: "max-bundle" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ bundlePolicy: "invalid" }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: null }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: undefined }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: "negotiate" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: "require" }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: "invalid" }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+      }" did not throw
+FAIL new RTCPeerConnection({ iceTransports: "invalid" }) Failed to construct 'RTCPeerConnection': The provided value 'invalid' is not a valid enum value of type RTCIceTransports.
+PASS new RTCPeerConnection({ iceTransports: "none" }) 
+PASS new RTCPeerConnection({ bundlePolicy: null }) 
+PASS new RTCPeerConnection({ bundlePolicy: undefined }) 
+PASS new RTCPeerConnection({ bundlePolicy: "balanced" }) 
+PASS new RTCPeerConnection({ bundlePolicy: "max-compat" }) 
+PASS new RTCPeerConnection({ bundlePolicy: "max-bundle" }) 
+PASS new RTCPeerConnection({ bundlePolicy: "invalid" }) 
+PASS new RTCPeerConnection({ rtcpMuxPolicy: null }) 
+PASS new RTCPeerConnection({ rtcpMuxPolicy: undefined }) 
+PASS new RTCPeerConnection({ rtcpMuxPolicy: "negotiate" }) 
+PASS new RTCPeerConnection({ rtcpMuxPolicy: "require" }) 
+PASS new RTCPeerConnection({ rtcpMuxPolicy: "invalid" }) 
 FAIL new RTCPeerConnection({ peerIdentity: toStringThrows }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "Error" ("Error")
+      }" did not throw
 FAIL new RTCPeerConnection({ certificates: null }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ certificates: undefined }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ certificates: [] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ certificates: [null] }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ certificates: [undefined] }) assert_throws: function "function () {
-        eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+      }" did not throw
+PASS new RTCPeerConnection({ certificates: undefined }) 
+PASS new RTCPeerConnection({ certificates: [] }) 
+PASS new RTCPeerConnection({ certificates: [null] }) 
+PASS new RTCPeerConnection({ certificates: [undefined] }) 
 FAIL new RTCPeerConnection({ iceCandidatePoolSize: toNumberThrows }) assert_throws: function "function () {
         eval(expr);
-      }" threw object "ReferenceError: RTCPeerConnection is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
-FAIL new RTCPeerConnection({ certificates: [certificate] }) RTCPeerConnection is not defined
-FAIL new RTCPeerConnection({ certificates: [expiredCertificate] }) RTCPeerConnection is not defined
-FAIL localDescription initial value RTCPeerConnection is not defined
-FAIL currentLocalDescription initial value RTCPeerConnection is not defined
-FAIL pendingLocalDescription initial value RTCPeerConnection is not defined
-FAIL remoteDescription initial value RTCPeerConnection is not defined
-FAIL currentRemoteDescription initial value RTCPeerConnection is not defined
-FAIL pendingRemoteDescription initial value RTCPeerConnection is not defined
-FAIL signalingState initial value RTCPeerConnection is not defined
-FAIL iceGatheringState initial value RTCPeerConnection is not defined
-FAIL iceConnectionState initial value RTCPeerConnection is not defined
-FAIL connectionState initial value RTCPeerConnection is not defined
-FAIL canTrickleIceCandidates initial value RTCPeerConnection is not defined
+      }" did not throw
+PASS new RTCPeerConnection({ certificates: [certificate] }) 
+FAIL new RTCPeerConnection({ certificates: [expiredCertificate] }) assert_throws: function "function () {
+          new RTCPeerConnection({ certificates: [certificate] });
+        }" threw object "InvalidStateError: Failed to construct 'RTCPeerConnection': Expired certificate(s)." that is not a DOMException InvalidAccessError: property "code" is equal to 11, expected 15
+PASS localDescription initial value 
+FAIL currentLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
+FAIL pendingLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
+PASS remoteDescription initial value 
+FAIL currentRemoteDescription initial value assert_equals: expected (object) null but got (undefined) undefined
+FAIL pendingRemoteDescription initial value assert_equals: expected (object) null but got (undefined) undefined
+PASS signalingState initial value 
+PASS iceGatheringState initial value 
+PASS iceConnectionState initial value 
+FAIL connectionState initial value assert_equals: expected (string) "new" but got (undefined) undefined
+FAIL canTrickleIceCandidates initial value assert_equals: expected (object) null but got (undefined) undefined
 Harness: the test ran to completion.
 
