@@ -29,7 +29,7 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [150, 50, 100, 100],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g",
@@ -42,7 +42,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGRect rect id='masker'",

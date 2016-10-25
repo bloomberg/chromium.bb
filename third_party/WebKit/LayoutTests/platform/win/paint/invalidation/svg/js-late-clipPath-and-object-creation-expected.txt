@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 40, 784, 168],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
@@ -85,7 +85,7 @@
     },
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGText text",

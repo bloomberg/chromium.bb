@@ -25,12 +25,7 @@ lorem ipsumlorem ipsumlorem ipsum
         {
           "object": "LayoutText #text",
           "rect": [0, 80, 42, 36],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 80, 42, 36],
-          "reason": "selection"
+          "reason": "bounds change"
         }
       ]
     }
@@ -46,27 +41,15 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "object": "LayoutText #text",
-      "reason": "selection"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'lorem'",
-      "reason": "selection"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'ipsum'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'lorem'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'ipsum'",
-      "reason": "full"
+      "reason": "bounds change"
     }
   ]
 }
@@ -96,22 +79,12 @@ lorem ipsumlorem ipsumlorem ipsum
         {
           "object": "LayoutText #text",
           "rect": [0, 80, 44, 36],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 80, 44, 36],
-          "reason": "selection"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [0, 160, 42, 36],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 160, 42, 36],
-          "reason": "selection"
+          "reason": "bounds change"
         }
       ]
     }
@@ -127,27 +100,15 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "object": "LayoutText #text",
-      "reason": "selection"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'lorem'",
-      "reason": "selection"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'ipsum'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'lorem'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'ipsum'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='item2' class='item'",
@@ -159,27 +120,15 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "object": "LayoutText #text",
-      "reason": "selection"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'lorem'",
-      "reason": "selection"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'ipsum'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'lorem'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'ipsum'",
-      "reason": "full"
+      "reason": "bounds change"
     }
   ]
 }

@@ -34,7 +34,7 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [16, 59, 136, 137],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use",
@@ -82,7 +82,7 @@
     },
     {
       "object": "LayoutSVGPath path",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGContainer use",

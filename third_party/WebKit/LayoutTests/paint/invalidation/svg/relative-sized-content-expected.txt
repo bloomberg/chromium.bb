@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [9, 69, 400, 400],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -39,7 +39,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='targetRect'",
-      "reason": "full"
+      "reason": "bounds change"
     }
   ]
 }

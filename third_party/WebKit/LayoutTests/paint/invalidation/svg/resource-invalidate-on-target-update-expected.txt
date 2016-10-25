@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGContainer g id='box'",
           "rect": [0, 10, 230, 350],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='rect3'",
@@ -41,7 +41,7 @@
     },
     {
       "object": "LayoutSVGContainer g id='box'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGRect rect id='rect1'",

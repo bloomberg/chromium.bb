@@ -429,19 +429,6 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (style.hasOutline())
     return PaintInvalidationOutline;
 
-  bool locationChanged = m_context.newLocation != m_context.oldLocation;
-
-  // If the bounds are the same then we know that none of the statements below
-  // can match, so we can early out. However, we can't return
-  // PaintInvalidationNone even if !locationChagned, but conservatively return
-  // PaintInvalidationIncremental because we are not sure whether paint
-  // invalidation is actually needed just based on information known to
-  // LayoutObject. For example, a LayoutBox may need paint invalidation if
-  // border box changes.
-  if (m_context.oldBounds == m_context.newBounds)
-    return locationChanged ? PaintInvalidationLocationChange
-                           : PaintInvalidationIncremental;
-
   // If the size is zero on one of our bounds then we know we're going to have
   // to do a full invalidation of either old bounds or new bounds.
   if (m_context.oldBounds.isEmpty())
@@ -456,10 +443,19 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (m_context.newBounds.location() != m_context.oldBounds.location())
     return PaintInvalidationBoundsChange;
 
-  if (locationChanged)
+  if (m_context.newLocation != m_context.oldLocation)
     return PaintInvalidationLocationChange;
 
-  return PaintInvalidationIncremental;
+  // Incremental invalidation is only applicable to LayoutBoxes. Return
+  // PaintInvalidationIncremental no matter if oldBounds and newBounds are equal
+  // because a LayoutBox may need paint invalidation if its border box changes.
+  if (m_object.isBox())
+    return PaintInvalidationIncremental;
+
+  if (m_context.oldBounds != m_context.newBounds)
+    return PaintInvalidationBoundsChange;
+
+  return PaintInvalidationNone;
 }
 
 void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
@@ -498,11 +494,6 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
   // doing a full invalidation.  This is because we need to update the previous
   // selection rect regardless.
   invalidateSelectionIfNeeded(reason);
-
-  if (reason == PaintInvalidationIncremental) {
-    reason = m_context.oldBounds == m_context.newBounds ? PaintInvalidationNone
-                                                        : PaintInvalidationFull;
-  }
 
   switch (reason) {
     case PaintInvalidationNone:

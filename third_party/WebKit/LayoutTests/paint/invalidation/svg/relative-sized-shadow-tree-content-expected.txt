@@ -29,37 +29,37 @@
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [9, 269, 200, 200],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='targetUse'",
           "rect": [9, 69, 200, 200],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [9, 69, 200, 200],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use id='targetUse'",
           "rect": [9, 69, 200, 200],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
           "rect": [9, 69, 200, 200],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
           "rect": [9, 69, 200, 200],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
           "rect": [9, 69, 200, 200],
-          "reason": "full"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use",
@@ -93,19 +93,19 @@
     },
     {
       "object": "LayoutSVGRect rect id='targetRect'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGRect rect id='targetRect1'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGContainer use id='targetUse'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGRect rect id='targetRect1'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGContainer use",
@@ -117,15 +117,15 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGContainer g id='targetUse'",
-      "reason": "full"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGRect rect id='targetRect1'",
-      "reason": "full"
+      "reason": "bounds change"
     }
   ]
 }
