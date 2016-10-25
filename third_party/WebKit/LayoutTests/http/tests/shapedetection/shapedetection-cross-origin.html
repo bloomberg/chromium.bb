@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src=../../../../resources/testharness.js></script>
+<script src=../../../../resources/testharnessreport.js></script>
+<script>
+
+// TODO(xianglu): Move this helper function to a shared location for reuse.
+function detectFaceAndExpectError(imageUrl) {
+  return new Promise(function(resolve, reject) {
+    var image = new Image();
+    var faceDetector = new FaceDetector();
+    var tryFaceDetection = function() {
+      faceDetector.detect(image)
+          .then(faceDetectionResult => {
+            reject("Promise for this test image should have been rejected.");
+          })
+          .catch(error => {
+            resolve(error);
+          });
+    };
+    image.onload = tryFaceDetection;
+    image.onerror = tryFaceDetection;
+    image.src = imageUrl;
+  });
+}
+
+// This test verifies that FaceDetector will reject a cross-origin-image.
+promise_test(
+    function(t) {
+      // Since security origin is under file://, images using http protocol
+      // is considered of a different origin.
+      return detectFaceAndExpectError(
+                 "http://localhost:8080/security/resources/abe.png")
+          .then(function(error) {
+            assert_equals(error.name, "SecurityError");
+            assert_equals(error.message,
+                          "Image source from a different origin.");
+          });
+    },
+    "FaceDetector should reject cross-origin-images with SecurityError.");
+</script>
