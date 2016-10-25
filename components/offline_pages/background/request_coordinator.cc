@@ -74,6 +74,23 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
   }
 }
 
+void RecordStartTimeUMA(const SavePageRequest& request) {
+  std::string histogram_name("OfflinePages.Background.TimeToStart");
+  if (base::SysInfo::IsLowEndDevice()) {
+    histogram_name += ".Svelte";
+  }
+
+  // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_TIMES
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
+      AddHistogramSuffix(request.client_id(), histogram_name.c_str()),
+      base::TimeDelta::FromMilliseconds(100), base::TimeDelta::FromDays(7), 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::TimeDelta duration = base::Time::Now() - request.creation_time();
+  histogram->AddTime(duration);
+}
+
 void RecordCancelTimeUMA(const SavePageRequest& canceled_request) {
   // Using regular histogram (with dynamic suffix) rather than time-oriented
   // one to record samples in seconds rather than milliseconds.
@@ -580,6 +597,11 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
 
   DCHECK(!is_busy_);
   is_busy_ = true;
+
+  // Record start time if this is first attempt.
+  if (request.started_attempt_count() == 0) {
+    RecordStartTimeUMA(request);
+  }
 
   // Mark attempt started in the database and start offliner when completed.
   queue_->MarkAttemptStarted(
