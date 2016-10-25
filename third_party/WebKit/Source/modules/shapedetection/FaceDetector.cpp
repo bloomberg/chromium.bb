@@ -21,16 +21,20 @@ namespace blink {
 namespace {
 
 mojo::ScopedSharedBufferHandle getSharedBufferHandle(
-    const HTMLImageElement* img) {
+    const HTMLImageElement* img,
+    ScriptPromiseResolver* resolver) {
   ImageResource* const imageResource = img->cachedImage();
-  if (!imageResource) {
-    DLOG(ERROR) << "Failed to convert HTMLImageElement to ImageSource.";
+  // TODO(xianglu): Add test case for undecodable images.
+  if (!imageResource || imageResource->errorOccurred()) {
+    resolver->reject(DOMException::create(
+        InvalidStateError, "Failed to load or decode HTMLImageElement."));
     return mojo::ScopedSharedBufferHandle();
   }
 
   Image* const blinkImage = imageResource->getImage();
   if (!blinkImage) {
-    DLOG(ERROR) << "Failed to convert ImageSource to blink::Image.";
+    resolver->reject(DOMException::create(
+        InvalidStateError, "Failed to get image from resource."));
     return mojo::ScopedSharedBufferHandle();
   }
 
@@ -39,7 +43,8 @@ mojo::ScopedSharedBufferHandle getSharedBufferHandle(
   DCHECK_EQ(img->naturalHeight(), image->height());
 
   if (!image) {
-    DLOG(ERROR) << "Failed to convert blink::Image to sk_sp<SkImage>.";
+    resolver->reject(DOMException::create(
+        InvalidStateError, "Failed to get image from current frame."));
     return mojo::ScopedSharedBufferHandle();
   }
 
@@ -51,9 +56,13 @@ mojo::ScopedSharedBufferHandle getSharedBufferHandle(
   mojo::ScopedSharedBufferHandle sharedBufferHandle =
       mojo::SharedBufferHandle::Create(allocationSize);
   if (!sharedBufferHandle.is_valid()) {
-    // TODO(xianglu): Do something when the image is too large.
-    DLOG(ERROR) << "Failed to create a sharedBufferHandle. allocationSize = "
-                << allocationSize << "bytes. limit = 16777216";
+    DLOG(ERROR) << "Requested allocation : " << allocationSize
+                << "B, larger than |mojo::edk::kMaxSharedBufferSize| == 16MB ";
+    // TODO(xianglu): For now we reject the promise if the image is too large.
+    // But consider resizing the image to remove restriction on the user side.
+    // Also, add layouttest for this case later.
+    resolver->reject(
+        DOMException::create(InvalidStateError, "Image exceeds size limit."));
     return mojo::ScopedSharedBufferHandle();
   }
 
@@ -62,7 +71,9 @@ mojo::ScopedSharedBufferHandle getSharedBufferHandle(
 
   const SkPixmap pixmap(skiaInfo, mappedBuffer.get(), skiaInfo.minRowBytes());
   if (!image->readPixels(pixmap, 0, 0)) {
-    DLOG(ERROR) << "Failed to read pixels from sk_sp<SkImage>.";
+    resolver->reject(DOMException::create(
+        InvalidStateError,
+        "Failed to read pixels: Unable to decompress or unsupported format."));
     return mojo::ScopedSharedBufferHandle();
   }
 
@@ -86,25 +97,28 @@ ScriptPromise FaceDetector::detect(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
+  // TODO(xianglu): Add test cases for cross-origin-images.
+  if (img->wouldTaintOrigin(
+          scriptState->getExecutionContext()->getSecurityOrigin())) {
+    resolver->reject(DOMException::create(
+        SecurityError, "Image source from a different origin."));
+    return promise;
+  }
+
+  if (img->bitmapSourceSize().isZero()) {
+    resolver->reject(
+        DOMException::create(InvalidStateError, "HTMLImageElement is empty."));
+    return promise;
+  }
+
+  mojo::ScopedSharedBufferHandle sharedBufferHandle =
+      getSharedBufferHandle(img, resolver);
+  if (!sharedBufferHandle->is_valid())
+    return promise;
+
   if (!m_service) {
     resolver->reject(DOMException::create(
-        NotFoundError, "Face detection service unavailable."));
-    return promise;
-  }
-
-  if (!img) {
-    resolver->reject(DOMException::create(
-        SyntaxError, "The provided HTMLImageElement is empty."));
-    return promise;
-  }
-
-  // TODO(xianglu): Add security check when the spec is ready.
-  // https://crbug.com/646083
-  mojo::ScopedSharedBufferHandle sharedBufferHandle =
-      getSharedBufferHandle(img);
-  if (!sharedBufferHandle->is_valid()) {
-    resolver->reject(DOMException::create(
-        SyntaxError, "Request for sharedBufferHandle failed."));
+        NotSupportedError, "Face detection service unavailable."));
     return promise;
   }
 
