@@ -515,7 +515,9 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // http://crbug.com/371030: Only use URLFixerUpper if we don't have a valid
     // URL, otherwise we will look in the current directory for a file named
     // 'about' if the browser was started with a about:foo argument.
-    if (!url.is_valid()) {
+    // http://crbug.com/424991: Always use URLFixerUpper on file:// URLs,
+    // otherwise we wouldn't correctly handle '#' in a file name.
+    if (!url.is_valid() || url.SchemeIsFile()) {
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       url = url_formatter::FixupRelativeFile(cur_dir, param);
     }
