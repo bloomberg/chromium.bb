@@ -277,6 +277,12 @@ bool DeviceInfoService::DeleteSpecifics(const std::string& guid,
 }
 
 void DeviceInfoService::OnProviderInitialized() {
+  // Now that the provider has initialized, remove the subscription. The service
+  // should only need to give the processor metadata upon initialization. If
+  // sync is disabled and enabled, our provider will try to retrigger this
+  // event, but we do not want to send any more metadata to the processor.
+  subscription_.reset();
+
   has_provider_initialized_ = true;
   LoadMetadataIfReady();
 }

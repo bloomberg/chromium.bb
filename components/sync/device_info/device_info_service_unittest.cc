@@ -338,7 +338,7 @@ TEST_F(DeviceInfoServiceTest, LocalProviderSubscription) {
 
 // Metadata shouldn't be loaded before the provider is initialized.
 TEST_F(DeviceInfoServiceTest, LocalProviderInitRace) {
-  set_local_device(base::WrapUnique(new LocalDeviceInfoProviderMock()));
+  set_local_device(base::MakeUnique<LocalDeviceInfoProviderMock>());
   InitializeAndPump();
   EXPECT_FALSE(processor()->metadata());
 
@@ -729,6 +729,24 @@ TEST_F(DeviceInfoServiceTest, CountActiveDevices) {
   service()->ApplySyncChanges(service()->CreateMetadataChangeList(),
                               change_list);
   EXPECT_EQ(2, service()->CountActiveDevices());
+}
+
+TEST_F(DeviceInfoServiceTest, MultipleOnProviderInitialized) {
+  set_local_device(base::MakeUnique<LocalDeviceInfoProviderMock>());
+  InitializeAndPump();
+  EXPECT_EQ(nullptr, processor()->metadata());
+
+  // Verify the processor was given metadata.
+  local_device()->Initialize(CreateDeviceInfo());
+  base::RunLoop().RunUntilIdle();
+  const MetadataBatch* metadata = processor()->metadata();
+  EXPECT_NE(nullptr, metadata);
+
+  // Pointer address of metadata should remain constant because the processor
+  // should not have been given new metadata.
+  local_device()->Initialize(CreateDeviceInfo());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(metadata, processor()->metadata());
 }
 
 }  // namespace
