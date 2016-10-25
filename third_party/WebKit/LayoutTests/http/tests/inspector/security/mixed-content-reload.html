@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../security-test.js"></script>
+<script>
+function test()
+{
+    /** @type {!SecurityAgent.InsecureContentStatus} */
+    var insecureContentStatus = { ranMixedContent: false, displayedMixedContent: true, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: SecurityAgent.SecurityState.Insecure, displayedInsecureContentStyle: SecurityAgent.SecurityState.Neutral };
+
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Neutral, [], insecureContentStatus, true));
+
+    // At this point, the page has mixed content but no mixed requests have been recorded, so the user should be prompted to refresh.
+    var explanations = WebInspector.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
+    for (var i = 0; i < explanations.length; i++)
+        InspectorTest.dumpDeepInnerHTML(explanations[i]);
+
+    // Now simulate a refresh.
+
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Neutral, [], insecureContentStatus, true));
+
+    var request = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
+    request.mixedContentType = "optionally-blockable";
+    InspectorTest.dispatchRequestFinished(request);
+
+    var explanations = WebInspector.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
+    for (var i = 0; i < explanations.length; i++)
+        InspectorTest.dumpDeepInnerHTML(explanations[i]);
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the mixed content explanation prompts the user to refresh when there are no recorded requests, and links to the network panel when there are recorded requests.</p>
+</body>
+</html>

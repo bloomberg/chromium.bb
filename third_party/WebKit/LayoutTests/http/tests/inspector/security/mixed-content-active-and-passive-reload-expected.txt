@@ -1,4 +1,4 @@
-Tests addition of explanation when there was both mixed content and subresources were loaded with certificate errors.
+Tests that the active and pasive mixed content explanations prompt the user to refresh when there are no recorded requests, and link to the network panel when there are recorded requests.
 
 <DIV class=security-explanation security-explanation-insecure >
     <DIV class=security-property security-property-insecure >
@@ -35,10 +35,13 @@ Reload the page to record requests for HTTP resources.
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
-Active content with certificate errors
+Active Mixed Content
         </DIV>
         <DIV >
-You have recently allowed content loaded with certificate errors (such as scripts or iframes) to run on this site.
+You have recently allowed non-secure content (such as scripts or iframes) to run on this site.
+        </DIV>
+        <DIV class=security-mixed-content link >
+View 1 request in Network Panel
         </DIV>
     </DIV>
 </DIV>
@@ -47,10 +50,13 @@ You have recently allowed content loaded with certificate errors (such as script
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
-Content with certificate errors
+Mixed Content
         </DIV>
         <DIV >
-This site includes resources that were loaded with certificate errors.
+The site includes HTTP resources.
+        </DIV>
+        <DIV class=security-mixed-content link >
+View 1 request in Network Panel
         </DIV>
     </DIV>
 </DIV>
