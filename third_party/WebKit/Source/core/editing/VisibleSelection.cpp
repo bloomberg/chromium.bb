@@ -72,17 +72,6 @@ VisibleSelection createVisibleSelection(const SelectionInDOMTree& selection) {
   return VisibleSelection::create(selection);
 }
 
-VisibleSelection createVisibleSelection(const Position& pos,
-                                        TextAffinity affinity,
-                                        bool isDirectional) {
-  DCHECK(!needsLayoutTreeUpdate(pos));
-  SelectionInDOMTree::Builder builder;
-  builder.setAffinity(affinity).setIsDirectional(isDirectional);
-  if (pos.isNotNull())
-    builder.collapse(pos);
-  return createVisibleSelection(builder.build());
-}
-
 VisibleSelection createVisibleSelection(const Position& base,
                                         const Position& extent,
                                         TextAffinity affinity,

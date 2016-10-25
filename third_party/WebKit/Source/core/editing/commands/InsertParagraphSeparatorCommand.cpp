@@ -325,8 +325,10 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     setEndingSelection(createVisibleSelection(
-        Position::firstPositionInNode(parent), TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::firstPositionInNode(parent))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     return;
   }
 
@@ -393,9 +395,11 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
 
     // In this case, we need to set the new ending selection.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(
-        createVisibleSelection(insertionPosition, TextAffinity::Downstream,
-                               endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelection(
+        SelectionInDOMTree::Builder()
+            .collapse(insertionPosition)
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     return;
   }
 
@@ -418,9 +422,11 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
     // If the insertion point is a break element, there is nothing else
     // we need to do.
     if (visiblePos.deepEquivalent().anchorNode()->layoutObject()->isBR()) {
-      setEndingSelection(
-          createVisibleSelection(insertionPosition, TextAffinity::Downstream,
-                                 endingSelection().isDirectional()));
+      setEndingSelection(createVisibleSelection(
+          SelectionInDOMTree::Builder()
+              .collapse(insertionPosition)
+              .setIsDirectional(endingSelection().isDirectional())
+              .build()));
       return;
     }
   }
@@ -569,8 +575,10 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
   setEndingSelection(createVisibleSelection(
-      Position::firstPositionInNode(blockToInsert), TextAffinity::Downstream,
-      endingSelection().isDirectional()));
+      SelectionInDOMTree::Builder()
+          .collapse(Position::firstPositionInNode(blockToInsert))
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
   applyStyleAfterInsertion(startBlock, editingState);
 }
 

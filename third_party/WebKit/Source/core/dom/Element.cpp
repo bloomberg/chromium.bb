@@ -2635,15 +2635,15 @@ void Element::updateFocusAppearance(
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // FIXME: We should restore the previous selection if there is one.
-    VisibleSelection newSelection = createVisibleSelection(
-        firstPositionInOrBeforeNode(this), TextAffinity::Downstream);
     // Passing DoNotSetFocus as this function is called after
     // FocusController::setFocusedElement() and we don't want to change the
     // focus to a new Element.
-    frame->selection().setSelection(newSelection,
-                                    FrameSelection::CloseTyping |
-                                        FrameSelection::ClearTypingStyle |
-                                        FrameSelection::DoNotSetFocus);
+    frame->selection().setSelection(
+        SelectionInDOMTree::Builder()
+            .collapse(firstPositionInOrBeforeNode(this))
+            .build(),
+        FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
+            FrameSelection::DoNotSetFocus);
     frame->selection().revealSelection();
   } else if (layoutObject() && !layoutObject()->isLayoutPart()) {
     layoutObject()->scrollRectToVisible(boundingBox());

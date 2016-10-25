@@ -1102,8 +1102,12 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
   if (brResult) {
     calculateTypingStyleAfterDelete();
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        m_endingPosition, affinity, endingSelection().isDirectional()));
+    SelectionInDOMTree::Builder builder;
+    builder.setAffinity(affinity);
+    builder.setIsDirectional(endingSelection().isDirectional());
+    if (m_endingPosition.isNotNull())
+      builder.collapse(m_endingPosition);
+    setEndingSelection(createVisibleSelection(builder.build()));
     clearTransientState();
     rebalanceWhitespace();
     return;
@@ -1159,8 +1163,12 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  setEndingSelection(createVisibleSelection(m_endingPosition, affinity,
-                                            endingSelection().isDirectional()));
+  SelectionInDOMTree::Builder builder;
+  builder.setAffinity(affinity);
+  builder.setIsDirectional(endingSelection().isDirectional());
+  if (m_endingPosition.isNotNull())
+    builder.collapse(m_endingPosition);
+  setEndingSelection(createVisibleSelection(builder.build()));
 
   if (relocatableReferencePosition.position().isNull()) {
     clearTransientState();

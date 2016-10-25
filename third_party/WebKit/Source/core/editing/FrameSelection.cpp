@@ -1340,8 +1340,9 @@ void FrameSelection::setSelectionFromNone() {
     // needs to be audited.  See http://crbug.com/590369 for more details.
     document->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    setSelection(createVisibleSelection(firstPositionInOrBeforeNode(body),
-                                        TextAffinity::Downstream));
+    setSelection(SelectionInDOMTree::Builder()
+                     .collapse(firstPositionInOrBeforeNode(body))
+                     .build());
   }
 }
 

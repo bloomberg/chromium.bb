@@ -345,8 +345,10 @@ void IndentOutdentCommand::outdentRegion(
             .toPositionWithAffinity();
     if (endOfCurrentParagraph.deepEquivalent() ==
         endOfLastParagraph.deepEquivalent()) {
-      setEndingSelection(createVisibleSelection(originalSelectionEnd,
-                                                TextAffinity::Downstream));
+      SelectionInDOMTree::Builder builder;
+      if (originalSelectionEnd.isNotNull())
+        builder.collapse(originalSelectionEnd);
+      setEndingSelection(createVisibleSelection(builder.build()));
     } else {
       setEndingSelection(endOfCurrentParagraph);
     }

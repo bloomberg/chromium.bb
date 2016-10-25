@@ -513,9 +513,11 @@ bool TypingCommand::makeEditableRootEmpty(EditingState* editingState) {
   if (editingState->isAborted())
     return false;
   document().updateStyleAndLayoutIgnorePendingStylesheets();
-  setEndingSelection(createVisibleSelection(Position::firstPositionInNode(root),
-                                            TextAffinity::Downstream,
-                                            endingSelection().isDirectional()));
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position::firstPositionInNode(root))
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
 
   return true;
 }

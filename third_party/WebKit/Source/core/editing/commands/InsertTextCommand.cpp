@@ -283,9 +283,12 @@ void InsertTextCommand::doApply(EditingState* editingState) {
 
   if (!m_selectInsertedText) {
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        endingSelection().end(), endingSelection().affinity(),
-        endingSelection().isDirectional()));
+    SelectionInDOMTree::Builder builder;
+    builder.setAffinity(endingSelection().affinity());
+    builder.setIsDirectional(endingSelection().isDirectional());
+    if (endingSelection().end().isNotNull())
+      builder.collapse(endingSelection().end());
+    setEndingSelection(createVisibleSelection(builder.build()));
   }
 }
 

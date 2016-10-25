@@ -51,8 +51,8 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   VisibleSelection oldSelection = document().frame()->selection().selection();
 
   Position newPosition(input->innerEditorElement()->firstChild(), 3);
-  VisibleSelection newSelection =
-      createVisibleSelection(newPosition, TextAffinity::Downstream);
+  VisibleSelection newSelection = createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(newPosition).build());
   document().frame()->selection().setSelection(
       newSelection, FrameSelection::CloseTyping |
                         FrameSelection::ClearTypingStyle |

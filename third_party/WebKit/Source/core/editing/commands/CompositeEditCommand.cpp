@@ -1814,8 +1814,10 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState) {
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
   setEndingSelection(createVisibleSelection(
-      Position::firstPositionInNode(newBlock), TextAffinity::Downstream,
-      endingSelection().isDirectional()));
+      SelectionInDOMTree::Builder()
+          .collapse(Position::firstPositionInNode(newBlock))
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
 
   style->prepareToApplyAt(endingSelection().start());
   if (!style->isEmpty()) {

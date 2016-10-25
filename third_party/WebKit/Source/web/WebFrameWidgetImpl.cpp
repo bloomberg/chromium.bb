@@ -447,7 +447,7 @@ void WebFrameWidgetImpl::setFocus(bool enable) {
           // caret back to the beginning of the text.
           Position position(element, 0);
           focusedFrame->selection().setSelection(
-              createVisibleSelection(position, SelDefaultAffinity));
+              SelectionInDOMTree::Builder().collapse(position).build());
         }
       }
     }

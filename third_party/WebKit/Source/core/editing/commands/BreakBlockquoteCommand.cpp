@@ -123,8 +123,10 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
       return;
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     setEndingSelection(createVisibleSelection(
-        Position::beforeNode(breakElement), TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::beforeNode(breakElement))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     rebalanceWhitespace();
     return;
   }
@@ -140,8 +142,10 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   // need to break the quote.
   if (isLastVisPosInNode) {
     setEndingSelection(createVisibleSelection(
-        Position::beforeNode(breakElement), TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::beforeNode(breakElement))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     rebalanceWhitespace();
     return;
   }
@@ -270,9 +274,11 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   // Put the selection right before the break.
-  setEndingSelection(createVisibleSelection(Position::beforeNode(breakElement),
-                                            TextAffinity::Downstream,
-                                            endingSelection().isDirectional()));
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position::beforeNode(breakElement))
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
   rebalanceWhitespace();
 }
 

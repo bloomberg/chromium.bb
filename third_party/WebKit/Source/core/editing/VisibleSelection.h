@@ -209,9 +209,6 @@ using VisibleSelectionInFlatTree =
 // TODO(yosin): We should get rid of |createVisibleSelection()| overloads
 // except for taking |SelectionInDOMTree| and |SelectionInFlatTree|.
 CORE_EXPORT VisibleSelection createVisibleSelection(const SelectionInDOMTree&);
-CORE_EXPORT VisibleSelection createVisibleSelection(const Position&,
-                                                    TextAffinity,
-                                                    bool isDirectional = false);
 CORE_EXPORT VisibleSelection
 createVisibleSelection(const Position& base,
                        const Position& extent,

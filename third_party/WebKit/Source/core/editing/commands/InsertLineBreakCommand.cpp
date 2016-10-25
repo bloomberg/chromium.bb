@@ -148,8 +148,10 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
     }
 
     setEndingSelection(createVisibleSelection(
-        Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::inParentAfterNode(*nodeToInsert))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     // If we're inserting after all of the rendered text in a text node, or into
     // a non-text node, a simple insertion is sufficient.
   } else if (!pos.anchorNode()->isTextNode() ||
@@ -160,8 +162,10 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
       return;
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     setEndingSelection(createVisibleSelection(
-        Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::inParentAfterNode(*nodeToInsert))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
   } else if (pos.anchorNode()->isTextNode()) {
     // Split a text node
     Text* textNode = toText(pos.anchorNode());
@@ -195,9 +199,11 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
     }
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(
-        createVisibleSelection(endingPosition, TextAffinity::Downstream,
-                               endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelection(
+        SelectionInDOMTree::Builder()
+            .collapse(endingPosition)
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
   }
 
   // Handle the case where there is a typing style.

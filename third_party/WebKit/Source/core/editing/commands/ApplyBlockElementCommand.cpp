@@ -150,8 +150,10 @@ void ApplyBlockElementCommand::formatSelection(
       return;
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     setEndingSelection(createVisibleSelection(
-        Position::beforeNode(placeholder), TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::beforeNode(placeholder))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     return;
   }
 

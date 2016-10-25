@@ -1859,12 +1859,21 @@ void ReplaceSelectionCommand::completeHTMLReplacement(
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (m_selectReplacement)
+  if (m_selectReplacement) {
     setEndingSelection(createVisibleSelection(
         start, end, SelDefaultAffinity, endingSelection().isDirectional()));
-  else
+    return;
+  }
+
+  if (end.isNotNull()) {
     setEndingSelection(createVisibleSelection(
-        end, SelDefaultAffinity, endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(end)
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
+    return;
+  }
+  setEndingSelection(createVisibleSelection(SelectionInDOMTree()));
 }
 
 void ReplaceSelectionCommand::mergeTextNodesAroundPosition(
