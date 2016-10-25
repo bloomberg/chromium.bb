@@ -15,6 +15,36 @@ namespace base {
 class ListValue;
 }
 
+// A container for Physical Web metadata. This is primarily a wrapper for a
+// ListValue so we can append to it over JNI.
+class PhysicalWebCollection {
+ public:
+  PhysicalWebCollection();
+  ~PhysicalWebCollection();
+
+  void AppendMetadataItem(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_request_url,
+      jdouble distance_estimate,
+      jint scan_timestamp,
+      const base::android::JavaParamRef<jstring>& j_site_url,
+      const base::android::JavaParamRef<jstring>& j_icon_url,
+      const base::android::JavaParamRef<jstring>& j_title,
+      const base::android::JavaParamRef<jstring>& j_description,
+      const base::android::JavaParamRef<jstring>& j_group_id);
+
+  // Returns the metadata list and transfers ownership of the list to the
+  // caller. Call only once.
+  std::unique_ptr<base::ListValue> GetMetadataList();
+
+ private:
+  std::unique_ptr<base::ListValue> metadata_list_;
+  bool accessed_once_;
+
+  DISALLOW_COPY_AND_ASSIGN(PhysicalWebCollection);
+};
+
 class PhysicalWebDataSourceAndroid : public PhysicalWebDataSourceImpl {
  public:
   PhysicalWebDataSourceAndroid();

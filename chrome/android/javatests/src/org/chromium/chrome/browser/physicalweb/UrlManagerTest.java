@@ -468,22 +468,4 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertEquals(UrlManager.getVersion(),
                 mSharedPreferences.getInt(UrlManager.getVersionKey(), 0));
     }
-
-    @SmallTest
-    public void testGetPwCollection() {
-        assertEquals(0, mUrlManager.getPwCollection().urlInfos.length);
-        assertEquals(0, mUrlManager.getPwCollection().pwsResults.length);
-        addPwsResult1();
-        long curTime = System.currentTimeMillis();
-        mUrlManager.addUrl(new UrlInfo(URL1, 99.5, curTime + 42));
-        getInstrumentation().waitForIdleSync();
-        assertEquals(1, mUrlManager.getPwCollection().urlInfos.length);
-        assertEquals(1, mUrlManager.getPwCollection().pwsResults.length);
-
-        addPwsResult2();
-        mUrlManager.addUrl(new UrlInfo(URL2, 99.5, curTime + 42));
-        getInstrumentation().waitForIdleSync();
-        assertEquals(2, mUrlManager.getPwCollection().urlInfos.length);
-        assertEquals(2, mUrlManager.getPwCollection().pwsResults.length);
-    }
 }

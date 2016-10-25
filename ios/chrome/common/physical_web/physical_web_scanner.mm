@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/physical_web/data_source/physical_web_data_source.h"
 #include "device/bluetooth/uribeacon/uri_encoder.h"
 #import "ios/chrome/common/physical_web/physical_web_device.h"
 #import "ios/chrome/common/physical_web/physical_web_request.h"
@@ -189,11 +190,11 @@ enum BeaconType {
     std::string description = base::SysNSStringToUTF8([device description]);
 
     auto metadataItem = base::MakeUnique<base::DictionaryValue>();
-    metadataItem->SetString("scannedUrl", scannedUrl);
-    metadataItem->SetString("resolvedUrl", resolvedUrl);
-    metadataItem->SetString("icon", icon);
-    metadataItem->SetString("title", title);
-    metadataItem->SetString("description", description);
+    metadataItem->SetString(kPhysicalWebScannedUrlKey, scannedUrl);
+    metadataItem->SetString(kPhysicalWebResolvedUrlKey, resolvedUrl);
+    metadataItem->SetString(kPhysicalWebIconUrlKey, icon);
+    metadataItem->SetString(kPhysicalWebTitleKey, title);
+    metadataItem->SetString(kPhysicalWebDescriptionKey, description);
     metadataList->Append(std::move(metadataItem));
   }
 

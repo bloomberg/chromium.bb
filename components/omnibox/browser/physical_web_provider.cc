@@ -106,8 +106,8 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
 
     std::string url_string;
     std::string title_string;
-    if (!metadata_item->GetString("resolvedUrl", &url_string) ||
-        !metadata_item->GetString("title", &title_string)) {
+    if (!metadata_item->GetString(kPhysicalWebResolvedUrlKey, &url_string) ||
+        !metadata_item->GetString(kPhysicalWebTitleKey, &title_string)) {
       continue;
     }
     base::string16 title =

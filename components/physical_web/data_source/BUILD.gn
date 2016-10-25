@@ -4,6 +4,7 @@
 
 source_set("data_source") {
   sources = [
+    "physical_web_data_source.cc",
     "physical_web_data_source.h",
     "physical_web_data_source_impl.cc",
     "physical_web_data_source_impl.h",

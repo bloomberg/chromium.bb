@@ -260,17 +260,23 @@ class UrlManager {
     }
 
     /**
-     * Gets all UrlInfos and PwsResults for nearby URLs.
-     * The UrlInfos and PwsResults are returned as parallel arrays. Unresolved URLs in the UrlInfo
-     * array will have a null element in the corresponding entry of the PwsResult array.
-     * @return A PwCollection object containg parallel arrays of UrlInfos and PwsResults.
+     * Gets all UrlInfos and PwsResults for URLs that are nearby and resolved.
+     * @param nativePhysicalWebCollection A pointer to the native PhysicalWebCollection container
+     *                                    which will receive the list of nearby URL metadata.
      */
-    public PwCollection getPwCollection() {
-        List<PwsResult> nearbyPwsResults = new ArrayList<>();
-        for (String url : mNearbyUrls) {
-            nearbyPwsResults.add(mPwsResultMap.get(url));
+    @CalledByNative
+    public void getPwCollection(long nativePhysicalWebCollection) {
+        List<UrlInfo> nearbyUrlInfos = getUrlInfoList(mNearbyUrls);
+        for (UrlInfo urlInfo : nearbyUrlInfos) {
+            String requestUrl = urlInfo.getUrl();
+            PwsResult pwsResult = mPwsResultMap.get(requestUrl);
+            if (pwsResult != null) {
+                nativeAppendMetadataItem(nativePhysicalWebCollection, requestUrl,
+                        urlInfo.getDistance(), (int) urlInfo.getScanTimestamp(), pwsResult.siteUrl,
+                        pwsResult.iconUrl, pwsResult.title, pwsResult.description,
+                        pwsResult.groupId);
+            }
         }
-        return new PwCollection(getUrlInfoList(mNearbyUrls), nearbyPwsResults);
     }
 
     /**
@@ -714,4 +720,7 @@ class UrlManager {
     }
 
     private native long nativeInit();
+    private native void nativeAppendMetadataItem(long nativePhysicalWebCollection,
+            String requestUrl, double distanceEstimate, int scanTimestamp, String siteUrl,
+            String iconUrl, String title, String description, String groupId);
 }

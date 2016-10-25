@@ -6,14 +6,58 @@
 
 #include <jni.h>
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "jni/UrlManager_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+
+PhysicalWebCollection::PhysicalWebCollection()
+    : metadata_list_(base::MakeUnique<base::ListValue>()),
+      accessed_once_(false) {}
+
+PhysicalWebCollection::~PhysicalWebCollection() {}
+
+void PhysicalWebCollection::AppendMetadataItem(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_request_url,
+    jdouble distance_estimate,
+    jint scan_timestamp,
+    const JavaParamRef<jstring>& j_site_url,
+    const JavaParamRef<jstring>& j_icon_url,
+    const JavaParamRef<jstring>& j_title,
+    const JavaParamRef<jstring>& j_description,
+    const JavaParamRef<jstring>& j_group_id) {
+  auto metadata_item = new base::DictionaryValue();
+  metadata_item->SetString(kPhysicalWebScannedUrlKey,
+                           ConvertJavaStringToUTF8(j_request_url));
+  metadata_item->SetDouble(kPhysicalWebDistanceEstimateKey, distance_estimate);
+  metadata_item->SetInteger(kPhysicalWebScanTimestampKey, scan_timestamp);
+  metadata_item->SetString(kPhysicalWebResolvedUrlKey,
+                           ConvertJavaStringToUTF8(j_site_url));
+  metadata_item->SetString(kPhysicalWebIconUrlKey,
+                           ConvertJavaStringToUTF8(j_icon_url));
+  metadata_item->SetString(kPhysicalWebTitleKey,
+                           ConvertJavaStringToUTF8(j_title));
+  metadata_item->SetString(kPhysicalWebDescriptionKey,
+                           ConvertJavaStringToUTF8(j_description));
+  metadata_item->SetString(kPhysicalWebGroupIdKey,
+                           ConvertJavaStringToUTF8(j_group_id));
+  metadata_list_->Append(std::move(metadata_item));
+}
+
+std::unique_ptr<base::ListValue> PhysicalWebCollection::GetMetadataList() {
+  DCHECK(!accessed_once_);
+  accessed_once_ = true;
+  return std::move(metadata_list_);
+}
 
 PhysicalWebDataSourceAndroid::PhysicalWebDataSourceAndroid() {
   Initialize();
@@ -41,8 +85,13 @@ void PhysicalWebDataSourceAndroid::StopDiscovery() {
 }
 
 std::unique_ptr<base::ListValue> PhysicalWebDataSourceAndroid::GetMetadata() {
-  // TODO(mattreynolds): get the metadata from the Java layer
-  return base::MakeUnique<base::ListValue>();
+  JNIEnv* env = AttachCurrentThread();
+
+  auto pw_collection = base::MakeUnique<PhysicalWebCollection>();
+  Java_UrlManager_getPwCollection(env, url_manager_.obj(),
+                                  (long)pw_collection.get());
+
+  return pw_collection->GetMetadataList();
 }
 
 bool PhysicalWebDataSourceAndroid::HasUnresolvedDiscoveries() {

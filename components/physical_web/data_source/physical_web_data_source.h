@@ -13,6 +13,16 @@ class ListValue;
 
 class PhysicalWebListener;
 
+// Dictionary keys for reading Physical Web URL metadata.
+extern const char kPhysicalWebDescriptionKey[];
+extern const char kPhysicalWebDistanceEstimateKey[];
+extern const char kPhysicalWebGroupIdKey[];
+extern const char kPhysicalWebIconUrlKey[];
+extern const char kPhysicalWebResolvedUrlKey[];
+extern const char kPhysicalWebScanTimestampKey[];
+extern const char kPhysicalWebScannedUrlKey[];
+extern const char kPhysicalWebTitleKey[];
+
 // Helper class for accessing Physical Web metadata and controlling the scanner.
 class PhysicalWebDataSource {
  public:
