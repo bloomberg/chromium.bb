@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<canvas id="cnv" width=140 height=140></canvas>
+
+<script>
+// This layout test checks if the 2D canvas is properly displayed
+// when the color space is set to linear-rgb.
+
+var g_swapsBeforeAck = 15;
+
+function main()
+{
+  draw();
+  waitForFinish();
+}
+
+function draw()
+{
+  var ctx = document.getElementById("cnv").getContext("2d", {colorSpace:'linear-rgb'});
+  ctx.fillStyle = 'red';
+  ctx.fillRect(20,20,50,50);
+  ctx.fillStyle = 'green';
+  ctx.fillRect(70,20,50,50);
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(20,70,50,50);
+  ctx.fillStyle = 'black';
+  ctx.fillRect(70,70,50,50);
+}
+
+function waitForFinish()
+{
+  if (g_swapsBeforeAck == 0) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("SUCCESS");
+  } else {
+    g_swapsBeforeAck--;
+    document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
+    window.webkitRequestAnimationFrame(waitForFinish);
+  }
+}
+
+main();
+</script>
+
+

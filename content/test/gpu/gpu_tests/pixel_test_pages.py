@@ -221,7 +221,28 @@ def ExperimentalCanvasFeaturesPages(base_name):
       test_rect=[0, 0, 300, 300],
       revision=3,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
-  ]
+
+    PixelTestPage(
+      'pixel_canvas_display_linear-rgb.html',
+      base_name + '_CanvasDisplayLinearRGBAccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_linear-rgb.html',
+      base_name + '_CanvasDisplayLinearRGBUnaccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
+      browser_args=browser_args + unaccelerated_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_linear-rgb.html',
+      base_name + '_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
+      browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+]
 
 
 # Pages that should be run with various macOS specific command line
