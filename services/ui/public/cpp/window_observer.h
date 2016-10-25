@@ -29,9 +29,15 @@ class WindowObserver {
  public:
   struct TreeChangeParams {
     TreeChangeParams();
+    // The window whose parent changed or is changing.
     Window* target;
     Window* old_parent;
     Window* new_parent;
+
+    // TreeChangeParams is supplied as an argument to various WindowObserver
+    // functions. |receiver| is the window being observed by the receipient of
+    // this notification, which may equal any of the struct members above.
+    // TODO(sky): move this outside of TreeChangeParams.
     Window* receiver;
   };
 
@@ -113,10 +119,8 @@ class WindowObserver {
   virtual void OnWindowDrawnChanging(Window* window) {}
   virtual void OnWindowDrawnChanged(Window* window) {}
 
-  virtual void OnTransientChildAdded(ui::Window* window,
-                                     ui::Window* transient) {}
-  virtual void OnTransientChildRemoved(ui::Window* window,
-                                       ui::Window* transient) {}
+  virtual void OnTransientChildAdded(Window* window, Window* transient) {}
+  virtual void OnTransientChildRemoved(Window* window, Window* transient) {}
 
   // The WindowManager has requested the window to close. If the observer
   // allows the close it should destroy the window as appropriate.
