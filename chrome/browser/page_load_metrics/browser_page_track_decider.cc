@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
