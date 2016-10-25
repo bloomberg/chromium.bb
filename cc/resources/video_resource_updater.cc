@@ -432,10 +432,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   DCHECK_NE(bits_per_channel, 16);
 
   // Only YUV software video frames are supported.
-  if (!media::IsYuvPlanar(input_frame_format)) {
-    NOTREACHED() << media::VideoPixelFormatToString(input_frame_format);
-    return VideoFrameExternalResources();
-  }
+  DCHECK(media::IsYuvPlanar(input_frame_format));
 
   const bool software_compositor = context_provider_ == NULL;
 
