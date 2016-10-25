@@ -5349,6 +5349,11 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
       buffer = GetBuffer(client_id);
       DCHECK(buffer);
     }
+    if (!buffer_manager()->SetTarget(buffer, target)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "buffer bound to more than 1 target");
+      return;
+    }
     service_id = buffer->service_id();
   }
   LogClientServiceForInfo(buffer, client_id, function_name);
@@ -5795,6 +5800,7 @@ void GLES2DecoderImpl::DoBeginTransformFeedback(GLenum primitive_mode) {
     }
   }
   transform_feedback->DoBeginTransformFeedback(primitive_mode);
+  DCHECK(transform_feedback->active());
 }
 
 void GLES2DecoderImpl::DoEndTransformFeedback() {
@@ -9512,6 +9518,7 @@ bool GLES2DecoderImpl::IsDrawValid(
       ->ValidateBindings(function_name,
                          this,
                          feature_info_.get(),
+                         buffer_manager(),
                          state_.current_program.get(),
                          max_vertex_accessed,
                          instanced,
@@ -9833,19 +9840,18 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
                          "vertexAttrib function must match shader attrib type");
       return error::kNoError;
     }
-    if (state_.bound_array_buffer.get() &&
-        state_.bound_array_buffer->GetMappedRange()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                         "bound ARRAY_BUFFER is mapped");
-      return error::kNoError;
-    }
   }
 
   base::CheckedNumeric<GLuint> checked_max_vertex = first;
   checked_max_vertex += count - 1;
   // first and count-1 are both a non-negative int, so their sum fits an
   // unsigned int.
-  GLuint max_vertex_accessed = checked_max_vertex.ValueOrDie();
+  if (!checked_max_vertex.IsValid()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name,
+                       "first + count overflow");
+    return error::kNoError;
+  }
+  GLuint max_vertex_accessed = checked_max_vertex.ValueOrDefault(0);
   if (IsDrawValid(function_name, max_vertex_accessed, instanced, primcount)) {
     if (!ClearUnclearedTextures()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
@@ -9930,11 +9936,6 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
   error::Error error = WillAccessBoundFramebufferForDraw();
   if (error != error::kNoError)
     return error;
-  if (!state_.vertex_attrib_manager->element_array_buffer()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, function_name, "No element array buffer bound");
-    return error::kNoError;
-  }
 
   if (count < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "count < 0");
@@ -9954,6 +9955,11 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
   }
   if (primcount < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "primcount < 0");
+    return error::kNoError;
+  }
+  Buffer* element_array_buffer = buffer_manager()->RequestBufferAccess(
+      &state_, GL_ELEMENT_ARRAY_BUFFER, function_name);
+  if (!element_array_buffer) {
     return error::kNoError;
   }
 
@@ -9979,25 +9985,9 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
                          "vertexAttrib function must match shader attrib type");
       return error::kNoError;
     }
-    if (state_.bound_array_buffer.get() &&
-        state_.bound_array_buffer->GetMappedRange()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                         "bound ARRAY_BUFFER is mapped");
-      return error::kNoError;
-    }
-    if (state_.vertex_attrib_manager->element_array_buffer() &&
-        state_.vertex_attrib_manager->element_array_buffer()
-            ->GetMappedRange()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                         "bound ELEMENT_ARRAY_BUFFER is mapped");
-      return error::kNoError;
-    }
   }
 
   GLuint max_vertex_accessed;
-  Buffer* element_array_buffer =
-      state_.vertex_attrib_manager->element_array_buffer();
-
   if (!element_array_buffer->GetMaxValueForRange(
           offset, count, type,
           state_.enable_flags.primitive_restart_fixed_index,
@@ -11092,6 +11082,7 @@ void GLES2DecoderImpl::FinishReadPixels(GLsizei width,
 
 error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
                                                 const volatile void* cmd_data) {
+  const char* func_name = "glReadPixels";
   const volatile gles2::cmds::ReadPixels& c =
       *static_cast<const volatile gles2::cmds::ReadPixels*>(cmd_data);
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleReadPixels");
@@ -11110,7 +11101,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   uint32_t result_shm_offset = c.result_shm_offset;
   GLboolean async = static_cast<GLboolean>(c.async);
   if (width < 0 || height < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadPixels", "dimensions < 0");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions < 0");
     return error::kNoError;
   }
   typedef cmds::ReadPixels::Result Result;
@@ -11145,38 +11136,34 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   uint8_t* pixels = nullptr;
   Buffer* buffer = state_.bound_pixel_pack_buffer.get();
   if (pixels_shm_id == 0) {
-    if (buffer) {
-      if (buffer->GetMappedRange()) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
-            "pixel pack buffer should not be mapped to client memory");
-        return error::kNoError;
-      }
-      uint32_t size = 0;
-      if (!SafeAddUint32(pixels_size + skip_size, pixels_shm_offset, &size)) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_VALUE, "glReadPixels", "size + offset overflow");
-        return error::kNoError;
-      }
-      if (static_cast<uint32_t>(buffer->size()) < size) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
-            "pixel pack buffer is not large enough");
-        return error::kNoError;
-      }
-      pixels = reinterpret_cast<uint8_t *>(pixels_shm_offset);
-      pixels += skip_size;
-    } else {
+    if (!buffer) {
       return error::kInvalidArguments;
     }
+    if (!buffer_manager()->RequestBufferAccess(
+            state_.GetErrorState(), buffer, func_name, "pixel pack buffer")) {
+      return error::kNoError;
+    }
+    uint32_t size = 0;
+    if (!SafeAddUint32(pixels_size + skip_size, pixels_shm_offset, &size)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "size + offset overflow");
+      return error::kNoError;
+    }
+    if (static_cast<uint32_t>(buffer->size()) < size) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
+                         "pixel pack buffer is not large enough");
+      return error::kNoError;
+    }
+    pixels = reinterpret_cast<uint8_t *>(pixels_shm_offset);
+    pixels += skip_size;
   } else {
     if (buffer) {
       return error::kInvalidArguments;
-    } else {
-      DCHECK_EQ(0u, skip_size);
-      pixels = GetSharedMemoryAs<uint8_t*>(
-          pixels_shm_id, pixels_shm_offset, pixels_size);
-      if (!pixels) {
-        return error::kOutOfBounds;
-      }
+    }
+    DCHECK_EQ(0u, skip_size);
+    pixels = GetSharedMemoryAs<uint8_t*>(
+        pixels_shm_id, pixels_shm_offset, pixels_size);
+    if (!pixels) {
+      return error::kOutOfBounds;
     }
   }
 
@@ -11193,22 +11180,21 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   }
 
   if (!validators_->read_pixel_format.IsValid(format)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glReadPixels", format, "format");
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, format, "format");
     return error::kNoError;
   }
   if (!validators_->read_pixel_type.IsValid(type)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glReadPixels", type, "type");
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, type, "type");
     return error::kNoError;
   }
 
-  if (!CheckBoundReadFramebufferValid("glReadPixels",
-                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+  if (!CheckBoundReadFramebufferValid(
+          func_name, GL_INVALID_FRAMEBUFFER_OPERATION)) {
     return error::kNoError;
   }
   GLenum src_internal_format = GetBoundReadFramebufferInternalFormat();
   if (src_internal_format == 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
-        "no valid color image");
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no valid color image");
     return error::kNoError;
   }
   std::vector<GLenum> accepted_formats;
@@ -11290,7 +11276,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     }
   }
   if (!format_type_acceptable) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
         "format and type incompatible with the current read framebuffer");
     return error::kNoError;
   }
@@ -11307,12 +11293,11 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   int32_t max_x;
   int32_t max_y;
   if (!SafeAddInt32(x, width, &max_x) || !SafeAddInt32(y, height, &max_y)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glReadPixels", "dimensions out of range");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions out of range");
     return error::kNoError;
   }
 
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glReadPixels");
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(func_name);
 
   ScopedResolvedFramebufferBinder binder(this, false, true);
   GLenum read_format = GetBoundReadFramebufferInternalFormat();
@@ -11415,7 +11400,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     }
   }
   if (pixels_shm_id != 0) {
-    GLenum error = LOCAL_PEEK_GL_ERROR("glReadPixels");
+    GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
     if (error == GL_NO_ERROR) {
       if (result) {
         result->success = 1;
@@ -12826,7 +12811,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexFuncData(const char* function_name,
         reinterpret_cast<GLintptr>(data));
     pbo_bytes_required += bytes_required;
     if (!pbo_bytes_required.IsValid() ||
-        pbo_bytes_required.ValueOrDie() >
+        pbo_bytes_required.ValueOrDefault(0) >
             state_.bound_pixel_unpack_buffer->size()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                          "pixel unpack buffer is not large enough");
@@ -17255,8 +17240,7 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
 }
 
 error::Error GLES2DecoderImpl::HandleMapBufferRange(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
   if (!unsafe_es3_apis_enabled()) {
     return error::kUnknownCommand;
   }
@@ -17285,25 +17269,27 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
     return error::kNoError;
   }
-  Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
-  if (!buffer) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, func_name, "no buffer bound to target");
-    return error::kNoError;
-  }
-  if (buffer->GetMappedRange()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, func_name, "buffer is already mapped");
-    return error::kNoError;
-  }
   if (size == 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "size is zero");
     return error::kNoError;
   }
-  if (!buffer->CheckRange(offset, size)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid range");
+  Buffer* buffer = buffer_manager()->RequestBufferAccess(
+      &state_, target, offset, size, func_name);
+  if (!buffer) {
     return error::kNoError;
   }
+  if (state_.bound_transform_feedback->active() &&
+      !state_.bound_transform_feedback->paused()) {
+    size_t used_binding_count =
+        state_.current_program->effective_transform_feedback_varyings().size();
+    if (state_.bound_transform_feedback->UsesBuffer(
+            used_binding_count, buffer)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "active transform feedback is using this buffer");
+      return error::kNoError;
+    }
+  }
+
   int8_t* mem =
       GetSharedMemoryAs<int8_t*>(data_shm_id, data_shm_offset, size);
   if (!mem) {
@@ -17335,12 +17321,6 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
       !AllBitsSet(access, GL_MAP_WRITE_BIT)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
         "MAP_FLUSH_EXPLICIT_BIT set without MAP_WRITE_BIT");
-    return error::kNoError;
-  }
-  if (target == GL_TRANSFORM_FEEDBACK_BUFFER &&
-      state_.bound_transform_feedback->active()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
-                       "transform feedback is active");
     return error::kNoError;
   }
   if (AllBitsSet(access, GL_MAP_INVALIDATE_BUFFER_BIT)) {
@@ -17406,9 +17386,7 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     DCHECK(mapped_range->pointer);
     memcpy(mapped_range->pointer, mem, mapped_range->size);
     if (buffer->shadowed()) {
-      bool success = buffer->SetRange(
-          mapped_range->offset, mapped_range->size, mem);
-      DCHECK(success);
+      buffer->SetRange(mapped_range->offset, mapped_range->size, mem);
     }
   }
   buffer->RemoveMappedRange();
@@ -17465,9 +17443,7 @@ void GLES2DecoderImpl::DoFlushMappedBufferRange(
   DCHECK(gpu_data);
   memcpy(gpu_data + offset, client_data + offset, size);
   if (buffer->shadowed()) {
-    bool success = buffer->SetRange(
-        mapped_range->offset + offset, size, client_data + offset);
-    DCHECK(success);
+    buffer->SetRange(mapped_range->offset + offset, size, client_data + offset);
   }
   glFlushMappedBufferRange(target, offset, size);
 }
@@ -17854,7 +17830,7 @@ error::Error GLES2DecoderImpl::HandlePathCommandsCHROMIUM(
   }
 
   if (!num_coords_expected.IsValid() ||
-      num_coords != num_coords_expected.ValueOrDie()) {
+      num_coords != num_coords_expected.ValueOrDefault(0)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
                        "numCoords does not match commands");
     return error::kNoError;

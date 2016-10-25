@@ -61,15 +61,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=656889)
     self.Fail('conformance2/context/methods-2.html', bug=616554)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
-    self.Fail('conformance/buffers/buffer-uninitialized.html',
-        bug=654201)
-    self.Fail('conformance2/transform_feedback/transform_feedback.html',
-        bug=654201)
 
     # Windows only.
     # We are awesome!
-    self.Fail('conformance2/buffers/get-buffer-sub-data.html',
-        ['win'], bug=654201)
+    self.Fail('deqp/functional/gles3/pixelbufferobject.html',
+        ['win'], bug=1555) # ANGLE bug.
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -502,9 +498,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=618464)
 
     # Linux only.
-    self.Fail('conformance2/buffers/get-buffer-sub-data.html',
-        ['linux'], bug=654201)
-
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
                ['linux'], bug=627525)

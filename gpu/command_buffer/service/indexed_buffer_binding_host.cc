@@ -264,5 +264,16 @@ void IndexedBufferBindingHost::UpdateMaxNonNullBindingIndex(
   }
 }
 
+bool IndexedBufferBindingHost::UsesBuffer(
+    size_t used_binding_count, const Buffer* buffer) const {
+  DCHECK(buffer);
+  DCHECK_LE(used_binding_count, buffer_bindings_.size());
+  for (size_t ii = 0; ii < used_binding_count; ++ii) {
+    if (buffer == buffer_bindings_[ii].buffer)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace gles2
 }  // namespace gpu

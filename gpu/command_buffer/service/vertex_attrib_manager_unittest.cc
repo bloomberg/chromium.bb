@@ -147,7 +147,6 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
 
   EXPECT_TRUE(attrib->CanAccess(0));
   manager_->Enable(1, true);
-  EXPECT_FALSE(attrib->CanAccess(0));
 
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 0, GL_FALSE);
   EXPECT_FALSE(attrib->CanAccess(0));
@@ -228,5 +227,3 @@ TEST_F(VertexAttribManagerTest, Unbind) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

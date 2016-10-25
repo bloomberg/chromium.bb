@@ -61,20 +61,16 @@ class BufferManagerTestBase : public GpuServiceTest {
   bool DoBufferSubData(
       Buffer* buffer, GLenum target, GLintptr offset, GLsizeiptr size,
       const GLvoid* data) {
-    bool success = true;
     if (!buffer->CheckRange(offset, size)) {
-      EXPECT_CALL(*error_state_, SetGLError(_, _, GL_INVALID_VALUE, _, _))
-         .Times(1)
-         .RetiresOnSaturation();
-      success = false;
-    } else if (!buffer->IsClientSideArray()) {
+      return false;
+    }
+    if (!buffer->IsClientSideArray()) {
       EXPECT_CALL(*gl_, BufferSubData(target, offset, size, _))
           .Times(1)
           .RetiresOnSaturation();
     }
-    manager_->DoBufferSubData(
-        error_state_.get(), buffer, target, offset, size, data);
-    return success;
+    manager_->DoBufferSubData(buffer, target, offset, size, data);
+    return true;
   }
 
   void RunGetMaxValueForRangeUint8Test(bool enable_primitive_restart)
@@ -589,5 +585,3 @@ TEST_F(BufferManagerTest, DeleteBufferAfterContextLost) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

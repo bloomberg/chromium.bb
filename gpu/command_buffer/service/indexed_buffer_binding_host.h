@@ -55,6 +55,10 @@ class GPU_EXPORT IndexedBufferBindingHost :
   // This is used only for UNIFORM_BUFFER bindings in context switching.
   void RestoreBindings(IndexedBufferBindingHost* prev);
 
+  // Check if |buffer| is currently bound to one of the indexed binding point
+  // from 0 to |used_binding_count| - 1.
+  bool UsesBuffer(size_t used_binding_count, const Buffer* buffer) const;
+
  protected:
   friend class base::RefCounted<IndexedBufferBindingHost>;
 

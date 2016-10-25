@@ -78,9 +78,8 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Check if an offset, size range is valid for the current buffer.
   bool CheckRange(GLintptr offset, GLsizeiptr size) const;
 
-  // Sets a range of this buffer's shadowed data. Returns false if offset/size
-  // is out of range.
-  bool SetRange(GLintptr offset, GLsizeiptr size, const GLvoid * data);
+  // Sets a range of this buffer's shadowed data.
+  void SetRange(GLintptr offset, GLsizeiptr size, const GLvoid * data);
 
   bool IsDeleted() const {
     return deleted_;
@@ -96,15 +95,8 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   void SetMappedRange(GLintptr offset, GLsizeiptr size, GLenum access,
                       void* pointer, scoped_refptr<gpu::Buffer> shm,
-                      unsigned int shm_offset) {
-    mapped_range_.reset(
-        new MappedRange(offset, size, access, pointer, shm, shm_offset));
-  }
-
-  void RemoveMappedRange() {
-    mapped_range_.reset(nullptr);
-  }
-
+                      unsigned int shm_offset);
+  void RemoveMappedRange();
   const MappedRange* GetMappedRange() const {
     return mapped_range_.get();
   }
@@ -306,6 +298,30 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // Validate if a buffer is bound at target, if it's unmapped, if it's
+  // large enough. Return the buffer bound to |target| if access is granted;
+  // return nullptr if a GL error is generated.
+  Buffer* RequestBufferAccess(ContextState* context_state,
+                              GLenum target,
+                              GLintptr offset,
+                              GLsizeiptr size,
+                              const char* func_name);
+  // Same as above, but assume to access the entire buffer.
+  Buffer* RequestBufferAccess(ContextState* context_state,
+                              GLenum target,
+                              const char* func_name);
+  // Same as above, but it can be any buffer rather than the buffer bound to
+  // |target|. Return true if access is granted; return false if a GL error is
+  // generated.
+  bool RequestBufferAccess(ErrorState* error_state,
+                           Buffer* buffer,
+                           const char* func_name,
+                           const char* message_tag);
+
+  uint32_t mapped_buffer_count() const {
+    return mapped_buffer_count_;
+  }
+
  private:
   friend class Buffer;
   friend class TestHelper;  // Needs access to DoBufferData.
@@ -318,7 +334,6 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   // Does a glBufferSubData and updates the appropriate accounting.
   // Assumes the values have already been validated.
   void DoBufferSubData(
-      ErrorState* error_state,
       Buffer* buffer,
       GLenum target,
       GLintptr offset,
@@ -357,6 +372,9 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
                GLenum usage,
                bool use_shadow);
 
+  void IncreaseMappedBufferCount();
+  void DecreaseMappedBufferCount();
+
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   MemoryTracker* memory_tracker_;
   scoped_refptr<FeatureInfo> feature_info_;
@@ -382,6 +400,10 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
 
   bool lost_context_;
   bool use_client_side_arrays_for_stream_buffers_;
+
+  // Keep track of total mapped buffer count. In most use cases it should be 0,
+  // so we could bypass checking each individual buffer as an optimization.
+  uint32_t mapped_buffer_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferManager);
 };

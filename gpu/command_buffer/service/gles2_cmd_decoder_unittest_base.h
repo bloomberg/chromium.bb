@@ -104,17 +104,16 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return reinterpret_cast<T>(ptr);
   }
 
-  Buffer* GetBuffer(GLuint service_id) {
-    return group_->buffer_manager()->GetBuffer(service_id);
+  Buffer* GetBuffer(GLuint client_id) {
+    return group_->buffer_manager()->GetBuffer(client_id);
   }
 
-  Framebuffer* GetFramebuffer(GLuint service_id) {
-    return group_->framebuffer_manager()->GetFramebuffer(service_id);
+  Framebuffer* GetFramebuffer(GLuint client_id) {
+    return group_->framebuffer_manager()->GetFramebuffer(client_id);
   }
 
-  Renderbuffer* GetRenderbuffer(
-      GLuint service_id) {
-    return group_->renderbuffer_manager()->GetRenderbuffer(service_id);
+  Renderbuffer* GetRenderbuffer(GLuint client_id) {
+    return group_->renderbuffer_manager()->GetRenderbuffer(client_id);
   }
 
   TextureRef* GetTexture(GLuint client_id) {

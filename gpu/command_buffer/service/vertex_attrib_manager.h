@@ -20,6 +20,7 @@
 namespace gpu {
 namespace gles2 {
 
+class BufferManager;
 class FeatureInfo;
 class GLES2Decoder;
 class Program;
@@ -271,6 +272,7 @@ class GPU_EXPORT VertexAttribManager :
       const char* function_name,
       GLES2Decoder* decoder,
       FeatureInfo* feature_info,
+      BufferManager* buffer_manager,
       Program* current_program,
       GLuint max_vertex_accessed,
       bool instanced,
@@ -330,4 +332,3 @@ class GPU_EXPORT VertexAttribManager :
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_VERTEX_ATTRIB_MANAGER_H_
-
