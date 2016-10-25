@@ -40,6 +40,7 @@ class MockBuildBot(BuildBot):
         super(MockBuildBot, self).__init__()
         # Dict of Build to canned LayoutTestResults.
         self._canned_results = {}
+        self._canned_retry_summary_json = {}
 
     def fetch_layout_test_results(self, _):
         return LayoutTestResults.results_from_string(LayoutTestResultsTest.example_full_results_json)
@@ -51,3 +52,9 @@ class MockBuildBot(BuildBot):
         return self._canned_results.get(
             build,
             LayoutTestResults.results_from_string(LayoutTestResultsTest.example_full_results_json))
+
+    def set_retry_sumary_json(self, build, content):
+        self._canned_retry_summary_json[build] = content
+
+    def fetch_retry_summary_json(self, build):
+        return self._canned_retry_summary_json.get(build)

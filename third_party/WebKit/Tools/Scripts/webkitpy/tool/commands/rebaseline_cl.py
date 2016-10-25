@@ -8,6 +8,7 @@ This command interacts with the Rietveld API to get information about try jobs
 with layout test results.
 """
 
+import json
 import logging
 import optparse
 
@@ -186,7 +187,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         return self._tool.builders.all_try_builder_names()
 
     def _tests_to_rebaseline(self, build):
-        """Fetches a list of LayoutTestResult objects for unexpected results with new baselines."""
+        """Fetches a list of tests that should be rebaselined."""
         buildbot = self._tool.buildbot
         results_url = buildbot.results_url(build.builder_name, build.build_number)
         layout_test_results = buildbot.fetch_layout_test_results(results_url)
@@ -195,7 +196,27 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             return []
         failure_results = layout_test_results.unexpected_mismatch_results()
         missing_results = layout_test_results.missing_results()
-        return sorted(r.test_name() for r in failure_results + missing_results)
+        tests = sorted(r.test_name() for r in failure_results + missing_results)
+
+        new_failures = self._fetch_tests_with_new_failures(build)
+        if new_failures is None:
+            _log.warning('No retry summary available for build %s.', build)
+        else:
+            tests = [t for t in tests if t in new_failures]
+        return tests
+
+    def _fetch_tests_with_new_failures(self, build):
+        """Fetches a list of tests that failed with a patch in a given try job but not without."""
+        buildbot = self._tool.buildbot
+        content = buildbot.fetch_retry_summary_json(build)
+        if content is None:
+            return None
+        try:
+            retry_summary = json.loads(content)
+            return retry_summary['failures']
+        except (ValueError, KeyError):
+            _log.warning('Unexepected retry summary content:\n%s', content)
+            return None
 
     @staticmethod
     def _log_test_prefix_list(test_prefix_list):

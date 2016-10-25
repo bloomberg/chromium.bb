@@ -55,5 +55,5 @@ class BuilderTest(unittest.TestCase):
 
     def fetch_layout_test_results_with_no_responses(self):
         buildbot = BuildBot()
-        buildbot._fetch_file_from_results = lambda: None
+        buildbot._fetch_file = lambda: None  # pylint: disable=protected-access
         self.assertIsNone(buildbot.fetch_layout_test_results(buildbot.results_url('Builder')))

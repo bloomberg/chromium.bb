@@ -55,7 +55,6 @@ class BuildBot(object):
     for more information about the layout test result format, see:
         https://www.chromium.org/developers/the-json-test-results-format
     """
-
     def results_url(self, builder_name, build_number=None):
         """Returns a URL for one set of archived layout test results.
 
@@ -77,6 +76,18 @@ class BuildBot(object):
         """
         return '%s/%s' % (RESULTS_URL_BASE, re.sub('[ .()]', '_', builder_name))
 
+    @memoized
+    def fetch_retry_summary_json(self, build):
+        """Fetches and returns the text of the archived retry_summary file.
+
+        This file is expected to contain the results of retrying layout tests
+        with and without a patch in a try job. It includes lists of tests
+        that failed only with the patch ("failures"), and tests that failed
+        both with and without ("ignored").
+        """
+        url_base = "%s/%s" % (self.builder_results_url_base(build.builder_name), build.build_number)
+        return self._fetch_file(url_base, 'retry_summary.json')
+
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + "/results/layout-test-results"
 
@@ -92,17 +103,17 @@ class BuildBot(object):
     def fetch_layout_test_results(self, results_url):
         """Returns a LayoutTestResults object for results fetched from a given URL."""
         results_file = NetworkTransaction(convert_404_to_None=True).run(
-            lambda: self._fetch_file_from_results(results_url, "failing_results.json"))
+            lambda: self._fetch_file(results_url, "failing_results.json"))
         revision = NetworkTransaction(convert_404_to_None=True).run(
-            lambda: self._fetch_file_from_results(results_url, "LAST_CHANGE"))
+            lambda: self._fetch_file(results_url, "LAST_CHANGE"))
         if not revision:
             results_file = None
         return LayoutTestResults.results_from_string(results_file, revision)
 
-    def _fetch_file_from_results(self, results_url, file_name):
+    def _fetch_file(self, url_base, file_name):
         # It seems this can return None if the url redirects and then returns 404.
         # FIXME: This could use Web instead of using urllib2 directly.
-        result = urllib2.urlopen("%s/%s" % (results_url, file_name))
+        result = urllib2.urlopen("%s/%s" % (url_base, file_name))
         if not result:
             return None
         # urlopen returns a file-like object which sometimes works fine with str()

@@ -59,6 +59,16 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         })
         self.command.rietveld = Rietveld(web)
 
+        self.tool.buildbot.set_retry_sumary_json(Build('MOCK Try Win', 5000), json.dumps({
+            'failures': [
+                'fast/dom/prototype-newtest.html',
+                'fast/dom/prototype-taco.html',
+                'fast/dom/prototype-inheritance.html',
+                'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
+            ],
+            'ignored': [],
+        }))
+
         # Write to the mock filesystem so that these tests are considered to exist.
         port = self.mac_port
         tests = [
@@ -123,6 +133,40 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertLog([
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
+        ])
+
+    def test_execute_with_flaky_test_that_fails_on_retry(self):
+        # In this example, the --only-changed-tests flag is not given, but
+        # svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html
+        # failed both with and without the patch in the try job, so it is not
+        # rebaselined.
+        self.tool.buildbot.set_retry_sumary_json(Build('MOCK Try Win', 5000), json.dumps({
+            'failures': [
+                'fast/dom/prototype-taco.html',
+                'fast/dom/prototype-inheritance.html',
+            ],
+            'ignored': ['svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'],
+        }))
+        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertLog([
+            'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
+            'INFO: Rebaselining fast/dom/prototype-taco.html\n',
+        ])
+
+    def test_execute_with_no_retry_summary_downloaded(self):
+        # In this example, the --only-changed-tests flag is not given, but
+        # svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html
+        # failed both with and without the patch in the try job, so it is not
+        # rebaselined.
+        self.tool.buildbot.set_retry_sumary_json(
+            Build('MOCK Try Win', 5000), None)
+        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertLog([
+            'WARNING: No retry summary available for build Build(builder_name=u\'MOCK Try Win\', build_number=5000).\n',
+            'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
+            'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
+            'INFO: Rebaselining fast/dom/prototype-taco.html\n',
+            'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
         ])
 
     def test_execute_with_nonexistent_test(self):
