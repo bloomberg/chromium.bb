@@ -167,6 +167,8 @@ enum BadMessageReason {
   SWDH_ENABLE_NAVIGATION_PRELOAD_NO_HOST = 143,
   SWDH_ENABLE_NAVIGATION_PRELOAD_INVALID_ORIGIN = 144,
   SWDH_ENABLE_NAVIGATION_PRELOAD_BAD_REGISTRATION_ID = 145,
+  RDH_TRANSFERRING_REQUEST_NOT_FOUND = 146,
+  RDH_TRANSFERRING_NONNAVIGATIONAL_REQUEST = 147,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

@@ -549,6 +549,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                 const ResourceRequest& request_data,
                                 LoaderMap::iterator iter);
 
+  // If |request_data| is for a request being transferred from another process,
+  // then CompleteTransfer method can be used to complete the transfer.
+  void CompleteTransfer(int request_id,
+                        const ResourceRequest& request_data,
+                        int route_id);
+
   void BeginRequest(
       int request_id,
       const ResourceRequest& request_data,

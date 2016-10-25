@@ -4227,12 +4227,6 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
       navigation_state->common_params().allow_download);
   extra_data->set_transition_type(transition_type);
   extra_data->set_should_replace_current_entry(should_replace_current_entry);
-  // TODO(lukasza): https://crbug.com/656179: Navigational things (e.g.
-  // StartNavigationParams) should not apply to subresource requests.
-  extra_data->set_transferred_request_child_id(
-      navigation_state->start_params().transferred_request_child_id);
-  extra_data->set_transferred_request_request_id(
-      navigation_state->start_params().transferred_request_request_id);
   extra_data->set_service_worker_provider_id(provider_id);
   extra_data->set_stream_override(std::move(stream_override));
   bool is_prefetch =
@@ -4244,6 +4238,17 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   WebString error;
   extra_data->set_initiated_in_secure_context(
       frame->document().isSecureContext(error));
+
+  // Renderer process transfers apply only to navigational requests.
+  bool is_navigational_request =
+      request.getFrameType() != WebURLRequest::FrameTypeNone;
+  if (is_navigational_request) {
+    extra_data->set_transferred_request_child_id(
+        navigation_state->start_params().transferred_request_child_id);
+    extra_data->set_transferred_request_request_id(
+        navigation_state->start_params().transferred_request_request_id);
+  }
+
   request.setExtraData(extra_data);
 
   if (request.getLoFiState() == WebURLRequest::LoFiUnspecified) {
@@ -4267,8 +4272,8 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   // to subresource requests).  For example - Content-Type header provided via
   // OpenURLParams::extra_headers should only be applied to the original POST
   // navigation request (and not to subresource requests).
-  if (!navigation_state->start_params().extra_headers.empty() &&
-      request.getFrameType() != WebURLRequest::FrameTypeNone) {
+  if (is_navigational_request &&
+      !navigation_state->start_params().extra_headers.empty()) {
     for (net::HttpUtil::HeadersIterator i(
              navigation_state->start_params().extra_headers.begin(),
              navigation_state->start_params().extra_headers.end(), "\n");
