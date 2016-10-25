@@ -1671,7 +1671,31 @@ TEST_F(SyncDataTypeManagerImplTest, RegisterWithBackendOnEncryptionError) {
   EXPECT_EQ(0, GetController(BOOKMARKS)->register_with_backend_call_count());
   EXPECT_EQ(0, GetController(PASSWORDS)->register_with_backend_call_count());
 
-  dtm_->OnAllDataTypesReadyForConfigure();
+  GetController(PASSWORDS)->SimulateModelLoadFinishing();
+  EXPECT_EQ(0, GetController(BOOKMARKS)->register_with_backend_call_count());
+  EXPECT_EQ(1, GetController(PASSWORDS)->register_with_backend_call_count());
+}
+
+// Test that RegisterWithBackend is not called for datatypes that failed
+// LoadModels().
+TEST_F(SyncDataTypeManagerImplTest, RegisterWithBackendAfterLoadModelsError) {
+  // Initiate configuration for two datatypes but block them at LoadModels.
+  AddController(BOOKMARKS, true, true);
+  AddController(PASSWORDS, true, true);
+  SetConfigureStartExpectation();
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PASSWORDS));
+  EXPECT_EQ(DataTypeController::MODEL_STARTING,
+            GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeController::MODEL_STARTING,
+            GetController(PASSWORDS)->state());
+
+  // Make bookmarks fail LoadModels. Passwords load normally.
+  GetController(BOOKMARKS)->SetModelLoadError(
+      SyncError(FROM_HERE, SyncError::DATATYPE_ERROR, "load error", BOOKMARKS));
+  GetController(BOOKMARKS)->SimulateModelLoadFinishing();
+  GetController(PASSWORDS)->SimulateModelLoadFinishing();
+
+  // RegisterWithBackend should be called for passwords, but not bookmarks.
   EXPECT_EQ(0, GetController(BOOKMARKS)->register_with_backend_call_count());
   EXPECT_EQ(1, GetController(PASSWORDS)->register_with_backend_call_count());
 }

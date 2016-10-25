@@ -166,8 +166,16 @@ void DataTypeManagerImpl::RegisterTypesWithBackend() {
   for (auto type_iter = last_enabled_types_.First(); type_iter.Good();
        type_iter.Inc()) {
     const auto& dtc_iter = controllers_->find(type_iter.Get());
-    if (dtc_iter != controllers_->end())
-      dtc_iter->second->RegisterWithBackend(configurer_);
+    if (dtc_iter == controllers_->end())
+      continue;
+    DataTypeController* dtc = dtc_iter->second.get();
+    if (dtc->state() == DataTypeController::MODEL_LOADED) {
+      // Only call RegisterWithBackend for types that completed LoadModels
+      // successfully. Such types shouldn't be in an error state at the same
+      // time.
+      DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
+      dtc->RegisterWithBackend(configurer_);
+    }
   }
 }
 
