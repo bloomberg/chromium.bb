@@ -119,15 +119,15 @@ void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority,
 }
 
 void ResourceLoader::cancel() {
-  didFail(nullptr, ResourceError::cancelledError(
-                       m_resource->lastResourceRequest().url()));
+  didFail(
+      ResourceError::cancelledError(m_resource->lastResourceRequest().url()));
 }
 
 void ResourceLoader::cancelForRedirectAccessCheckError(const KURL& newURL) {
   m_resource->willNotFollowRedirect();
 
   if (m_loader)
-    didFail(nullptr, ResourceError::cancelledDueToAccessCheckError(newURL));
+    didFail(ResourceError::cancelledDueToAccessCheckError(newURL));
 }
 
 bool ResourceLoader::willFollowRedirect(
@@ -222,6 +222,10 @@ void ResourceLoader::didFinishLoading(WebURLLoader*,
 }
 
 void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error) {
+  didFail(error);
+}
+
+void ResourceLoader::didFail(const ResourceError& error) {
   m_loader.reset();
   m_fetcher->didFailLoading(m_resource.get(), error);
 }

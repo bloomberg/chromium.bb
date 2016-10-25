@@ -1223,13 +1223,13 @@ void ResourceFetcher::didReceiveResponse(Resource* resource,
                                  resource->resourceRequest(), originalURL,
                                  resource->options())) {
       resource->loader()->didFail(
-          nullptr, ResourceError::cancelledDueToAccessCheckError(originalURL));
+          ResourceError::cancelledDueToAccessCheckError(originalURL));
       return;
     }
   } else if (resource->options().corsEnabled == IsCORSEnabled &&
              !canAccessResponse(resource, response)) {
     resource->loader()->didFail(
-        nullptr, ResourceError::cancelledDueToAccessCheckError(response.url()));
+        ResourceError::cancelledDueToAccessCheckError(response.url()));
     return;
   }
 
@@ -1239,8 +1239,7 @@ void ResourceFetcher::didReceiveResponse(Resource* resource,
   resource->responseReceived(response, std::move(handle));
   if (resource->loader() && response.httpStatusCode() >= 400 &&
       !resource->shouldIgnoreHTTPStatusCodeErrors()) {
-    resource->loader()->didFail(nullptr,
-                                ResourceError::cancelledError(response.url()));
+    resource->loader()->didFail(ResourceError::cancelledError(response.url()));
   }
 }
 

@@ -98,6 +98,7 @@ class CORE_EXPORT ResourceLoader final
   void didFail(WebURLLoader*, const WebURLError&) override;
 
   void didFinishLoadingFirstPartInMultipart();
+  void didFail(const ResourceError&);
 
  private:
   // Assumes ResourceFetcher and Resource are non-null.
