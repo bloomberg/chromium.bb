@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Serialization of computed style value for display:contents assert_equals: expected "contents" but got "block"
-PASS display:contents element as inherit parent - explicit inheritance 
-PASS display:contents element as inherit parent - implicit inheritance 
-PASS align-self:auto resolution for flex item inside display:contents 
-FAIL Resolved value should be computed value, not used value, for display:contents assert_equals: expected "auto" but got "588px"
-Harness: the test ran to completion.
-

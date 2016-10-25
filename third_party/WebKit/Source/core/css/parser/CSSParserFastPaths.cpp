@@ -546,7 +546,9 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
              valueID == CSSValueWebkitFlex ||
              valueID == CSSValueWebkitInlineFlex || valueID == CSSValueNone ||
              (RuntimeEnabledFeatures::cssGridLayoutEnabled() &&
-              (valueID == CSSValueGrid || valueID == CSSValueInlineGrid));
+              (valueID == CSSValueGrid || valueID == CSSValueInlineGrid)) ||
+             (RuntimeEnabledFeatures::cssDisplayContentsEnabled() &&
+              valueID == CSSValueContents);
     case CSSPropertyDominantBaseline:
       return valueID == CSSValueAuto || valueID == CSSValueAlphabetic ||
              valueID == CSSValueMiddle ||

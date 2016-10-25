@@ -85,8 +85,9 @@ static EDisplay equivalentBlockDisplay(EDisplay display) {
     case EDisplay::TableCaption:
       return EDisplay::Block;
     case EDisplay::None:
+    case EDisplay::Contents:
       ASSERT_NOT_REACHED();
-      return EDisplay::None;
+      return display;
   }
   ASSERT_NOT_REACHED();
   return EDisplay::Block;
@@ -374,7 +375,8 @@ static void adjustStyleForDisplay(ComputedStyle& style,
 void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
                                         const ComputedStyle& parentStyle,
                                         Element* element) {
-  if (style.display() != EDisplay::None) {
+  if (style.display() != EDisplay::None &&
+      style.display() != EDisplay::Contents) {
     if (element && element->isHTMLElement())
       adjustStyleForHTMLElement(style, toHTMLElement(*element));
 

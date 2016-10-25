@@ -186,6 +186,7 @@ LayoutObject* LayoutObject::createObject(Element* element,
 
   switch (style.display()) {
     case EDisplay::None:
+    case EDisplay::Contents:
       return nullptr;
     case EDisplay::Inline:
       return new LayoutInline(element);

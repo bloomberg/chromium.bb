@@ -1193,6 +1193,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(EDisplay e)
     case EDisplay::InlineGrid:
       m_valueID = CSSValueInlineGrid;
       break;
+    case EDisplay::Contents:
+      m_valueID = CSSValueContents;
+      break;
     case EDisplay::None:
       m_valueID = CSSValueNone;
       break;

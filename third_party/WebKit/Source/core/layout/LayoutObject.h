@@ -135,8 +135,8 @@ const int showTreeCharacterOffset = 39;
 // function for some important information on this.
 //
 // Also some Node don't have an associated LayoutObjects e.g. if display: none
-// is set. For more detail, see LayoutObject::createObject that creates the
-// right LayoutObject based on the style.
+// or display: contents is set. For more detail, see LayoutObject::createObject
+// that creates the right LayoutObject based on the style.
 //
 // Because the SVG and CSS classes both inherit from this object, functions can
 // belong to either realm and sometimes to both.
@@ -474,7 +474,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // This function is used to create the appropriate LayoutObject based
   // on the style, in particular 'display' and 'content'.
-  // "display: none" is the only time this function will return nullptr.
+  // "display: none" or "display: contents" are the only times this function
+  // will return nullptr.
   //
   // For renderer creation, the inline-* values create the same renderer
   // as the non-inline version. The difference is that inline-* sets

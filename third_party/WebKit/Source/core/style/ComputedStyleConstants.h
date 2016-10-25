@@ -497,6 +497,7 @@ enum class EDisplay : unsigned {
   InlineFlex,
   Grid,
   InlineGrid,
+  Contents,
   None
 };
 

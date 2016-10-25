@@ -59,6 +59,7 @@ CSSContainment status=stable
 CSSFontDisplay status=experimental
 CSSFontSizeAdjust status=experimental
 CSSGridLayout status=experimental, settable_from_internals=True
+CSSDisplayContents status=experimental
 CSSHyphens status=stable
 CSSInBodyDoesNotBlockPaint status=experimental
 CSSIndependentTransformProperties status=experimental
