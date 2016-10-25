@@ -140,6 +140,7 @@ test("remoting_unittests") {
   deps = [
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//google_apis",
     "//remoting/base:unit_tests",
     "//remoting/client:unit_tests",
@@ -148,7 +149,6 @@ test("remoting_unittests") {
     "//remoting/test:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/webrtc",
   ]
 
   if (enable_remoting_host) {

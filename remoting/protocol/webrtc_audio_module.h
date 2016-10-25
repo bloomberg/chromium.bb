@@ -135,8 +135,8 @@ class WebrtcAudioModule : public webrtc::AudioDeviceModule {
 
 // Only supported on iOS.
 #if defined(WEBRTC_IOS)
-  int GetPlayoutAudioParameters(AudioParameters* params) const override;
-  int GetRecordAudioParameters(AudioParameters* params) const override;
+  int GetPlayoutAudioParameters(webrtc::AudioParameters* params) const override;
+  int GetRecordAudioParameters(webrtc::AudioParameters* params) const override;
 #endif  // WEBRTC_IOS
 
  private:

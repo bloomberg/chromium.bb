@@ -164,9 +164,15 @@ int main(int argc, char* argv[]) {
     PrintUsage();
     PrintJsonFileInfo();
     PrintAuthCodeInfo();
+#if defined(OS_IOS)
+    return base::LaunchUnitTests(
+        argc, argv,
+        base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#else
     return base::LaunchUnitTestsSerially(
         argc, argv,
         base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#endif
   }
 
   // Update the logging verbosity level if user specified one.
@@ -242,7 +248,13 @@ int main(int argc, char* argv[]) {
 
   // Running the tests serially will avoid clients from connecting to the same
   // host.
+#if defined(OS_IOS)
+  return base::LaunchUnitTests(
+      argc, argv,
+      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#else
   return base::LaunchUnitTestsSerially(
       argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#endif
 }

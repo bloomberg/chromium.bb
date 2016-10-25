@@ -113,7 +113,6 @@ if (enable_webrtc) {
       ":libjingle",
       "//third_party/libsrtp",
       "//third_party/usrsctp",
-      "//third_party/webrtc",
       "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/media_file",

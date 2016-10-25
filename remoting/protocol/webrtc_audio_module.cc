@@ -488,12 +488,13 @@ int32_t WebrtcAudioModule::EnableBuiltInNS(bool enable) {
 
 #if defined(WEBRTC_IOS)
 int WebrtcAudioModule::GetPlayoutAudioParameters(
-    AudioParameters* params) const {
+    webrtc::AudioParameters* params) const {
   NOTREACHED();
   return -1;
 }
 
-int WebrtcAudioModule::GetRecordAudioParameters(AudioParameters* params) const {
+int WebrtcAudioModule::GetRecordAudioParameters(
+    webrtc::AudioParameters* params) const {
   NOTREACHED();
   return -1;
 }

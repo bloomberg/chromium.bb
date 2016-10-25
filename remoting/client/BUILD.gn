@@ -98,7 +98,7 @@ source_set("opengl_renderer") {
   deps = [
     "//remoting/proto",
     "//third_party/libyuv",
-    "//third_party/webrtc",
+    "//third_party/webrtc/base:rtc_base",
   ]
 
   configs += [ "//third_party/khronos:khronos_headers" ]
@@ -109,6 +109,13 @@ source_set("opengl_renderer") {
 
   if (is_mac) {
     libs = [ "OpenGL.framework" ]
+  }
+
+  if (is_ios) {
+    libs = [
+      "GLKit.framework",
+      "OpenGLES.framework",
+    ]
   }
 
   if (is_win) {
@@ -150,7 +157,7 @@ source_set("unit_tests") {
     "//remoting/proto",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/webrtc",
+    "//third_party/webrtc/base:rtc_base",
   ]
 
   if (!is_win) {

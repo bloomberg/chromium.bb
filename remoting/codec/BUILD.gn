@@ -142,4 +142,8 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/webrtc/modules/desktop_capture",
   ]
+
+  if (is_ios) {
+    sources -= [ "audio_encoder_opus_unittest.cc" ]
+  }
 }

@@ -180,9 +180,15 @@ int main(int argc, char** argv) {
     PrintUsage();
     PrintJsonFileInfo();
     PrintAuthCodeInfo();
+#if defined(OS_IOS)
+    return base::LaunchUnitTests(
+        argc, argv,
+        base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#else
     return base::LaunchUnitTestsSerially(
         argc, argv,
         base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#endif
   }
 
   remoting::test::AppRemotingTestDriverEnvironment::EnvironmentOptions options;
@@ -249,7 +255,13 @@ int main(int argc, char** argv) {
 
   // Because many tests may access the same remoting host(s), we need to run
   // the tests sequentially so they do not interfere with each other.
+#if defined(OS_IOS)
+  return base::LaunchUnitTests(
+      argc, argv,
+      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#else
   return base::LaunchUnitTestsSerially(
       argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#endif
 }
