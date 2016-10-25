@@ -248,17 +248,10 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextAAColor(GetEntry(), NORMAL);
 
     // MenuItem
-#if GTK_MAJOR_VERSION == 2
     case kColorId_SelectedMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), SELECTED);
     case kColorId_FocusedMenuItemBackgroundColor:
       return GetBGColor(GetMenuItem(), SELECTED);
-#else
-    case kColorId_SelectedMenuItemForegroundColor:
-      return GetTextColor(GetMenuItem(), PRELIGHT);
-    case kColorId_FocusedMenuItemBackgroundColor:
-      return GetBGColor(GetMenuItem(), PRELIGHT);
-#endif
 
     case kColorId_EnabledMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), NORMAL);
