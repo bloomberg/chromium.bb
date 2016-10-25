@@ -13,4 +13,5 @@
     readonly attribute boolean isReload;
 
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<Response> r);
+    [RuntimeEnabled=ServiceWorkerNavigationPreload, CallWith=ScriptState] readonly attribute Promise<Response> navigationPreload;
 };

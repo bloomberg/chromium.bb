@@ -60,6 +60,7 @@
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "web/WebEmbeddedWorkerImpl.h"
@@ -85,6 +86,7 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
 
 DEFINE_TRACE(ServiceWorkerGlobalScopeProxy) {
   visitor->trace(m_document);
+  visitor->trace(m_pendingPreloadFetchEvents);
 }
 
 void ServiceWorkerGlobalScopeProxy::setRegistration(
@@ -151,7 +153,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(
 
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
     int fetchEventID,
-    const WebServiceWorkerRequest& webRequest) {
+    const WebServiceWorkerRequest& webRequest,
+    bool navigationPreloadSent) {
   ScriptState::Scope scope(
       workerGlobalScope()->scriptController()->getScriptState());
   WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(
@@ -168,9 +171,16 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
   eventInit.setClientId(
       webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
   eventInit.setIsReload(webRequest.isReload());
+  ScriptState* scriptState =
+      workerGlobalScope()->scriptController()->getScriptState();
   FetchEvent* fetchEvent = FetchEvent::create(
-      workerGlobalScope()->scriptController()->getScriptState(),
-      EventTypeNames::fetch, eventInit, respondWithObserver, waitUntilObserver);
+      scriptState, EventTypeNames::fetch, eventInit, respondWithObserver,
+      waitUntilObserver, navigationPreloadSent);
+  if (navigationPreloadSent) {
+    // Keep |fetchEvent| until onNavigationPreloadResponse() or
+    // onNavigationPreloadError() will be called.
+    m_pendingPreloadFetchEvents.add(fetchEventID, fetchEvent);
+  }
   waitUntilObserver->willDispatchEvent();
   respondWithObserver->willDispatchEvent();
   DispatchEventResult dispatchResult =
@@ -179,6 +189,24 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
   // false is okay because waitUntil for fetch event doesn't care about the
   // promise rejection or an uncaught runtime script error.
   waitUntilObserver->didDispatchEvent(false /* errorOccurred */);
+}
+
+void ServiceWorkerGlobalScopeProxy::onNavigationPreloadResponse(
+    int fetchEventID,
+    std::unique_ptr<WebServiceWorkerResponse> response,
+    std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
+  FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
+  DCHECK(fetchEvent);
+  fetchEvent->onNavigationPreloadResponse(std::move(response),
+                                          std::move(dataConsumeHandle));
+}
+
+void ServiceWorkerGlobalScopeProxy::onNavigationPreloadError(
+    int fetchEventID,
+    std::unique_ptr<WebServiceWorkerError> error) {
+  FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
+  DCHECK(fetchEvent);
+  fetchEvent->onNavigationPreloadError(std::move(error));
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(

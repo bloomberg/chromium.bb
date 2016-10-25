@@ -197,6 +197,7 @@ interface ExtendableMessageEvent : ExtendableEvent
 interface FetchEvent : ExtendableEvent
     getter clientId
     getter isReload
+    getter navigationPreload
     getter request
     method constructor
     method respondWith

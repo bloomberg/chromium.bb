@@ -39,10 +39,12 @@ class TaskRunner;
 }
 
 namespace blink {
+class WebDataConsumerHandle;
 class WebDataSource;
 struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
+class WebServiceWorkerResponse;
 struct WebSyncRegistration;
 }
 
@@ -202,6 +204,7 @@ class ServiceWorkerContextClient
  private:
   struct WorkerContextData;
   class FetchEventDispatcherImpl;
+  class NavigationPreloadRequest;
 
   // Get routing_id for sending message to the ServiceWorkerVersion
   // in the browser process.
@@ -218,9 +221,11 @@ class ServiceWorkerContextClient
       int request_id,
       const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
   void OnInstallEvent(int request_id);
-  void DispatchFetchEvent(int fetch_event_id,
-                          const ServiceWorkerFetchRequest& request,
-                          const FetchCallback& callback);
+  void DispatchFetchEvent(
+      int fetch_event_id,
+      const ServiceWorkerFetchRequest& request,
+      std::unique_ptr<NavigationPreloadRequest> preload_request,
+      const FetchCallback& callback);
   void OnNotificationClickEvent(
       int request_id,
       const std::string& notification_id,
@@ -250,6 +255,14 @@ class ServiceWorkerContextClient
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
   void OnPing();
+
+  void OnNavigationPreloadResponse(
+      int fetch_event_id,
+      std::unique_ptr<blink::WebServiceWorkerResponse> response,
+      std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle);
+  void OnNavigationPreloadError(
+      int fetch_event_id,
+      std::unique_ptr<blink::WebServiceWorkerError> error);
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 

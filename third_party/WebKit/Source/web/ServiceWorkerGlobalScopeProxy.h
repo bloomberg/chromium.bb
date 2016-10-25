@@ -33,6 +33,7 @@
 
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/HeapAllocator.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebString.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
@@ -43,10 +44,14 @@ namespace blink {
 
 class ConsoleMessage;
 class Document;
+class FetchEvent;
 class ServiceWorkerGlobalScope;
+class WebDataConsumerHandle;
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
+struct WebServiceWorkerError;
 class WebServiceWorkerRequest;
+class WebServiceWorkerResponse;
 
 // This class is created and destructed on the main thread, but live most
 // of its time as a resident of the worker thread.
@@ -89,7 +94,8 @@ class ServiceWorkerGlobalScopeProxy final
       const WebMessagePortChannelArray&,
       std::unique_ptr<WebServiceWorker::Handle>) override;
   void dispatchFetchEvent(int fetchEventID,
-                          const WebServiceWorkerRequest&) override;
+                          const WebServiceWorkerRequest&,
+                          bool navigationPreloadSent) override;
   void dispatchForeignFetchEvent(int fetchEventID,
                                  const WebServiceWorkerRequest&) override;
   void dispatchInstallEvent(int) override;
@@ -104,6 +110,13 @@ class ServiceWorkerGlobalScopeProxy final
   void dispatchPushEvent(int, const WebString& data) override;
   void dispatchSyncEvent(int, const WebString& tag, LastChanceOption) override;
   bool hasFetchEventHandler() override;
+  void onNavigationPreloadResponse(
+      int fetchEventID,
+      std::unique_ptr<WebServiceWorkerResponse>,
+      std::unique_ptr<WebDataConsumerHandle>) override;
+  void onNavigationPreloadError(
+      int fetchEventID,
+      std::unique_ptr<WebServiceWorkerError>) override;
 
   // WorkerReportingProxy overrides:
   void reportException(const String& errorMessage,
@@ -147,6 +160,8 @@ class ServiceWorkerGlobalScopeProxy final
   // as part of its finalization.
   WebEmbeddedWorkerImpl* m_embeddedWorker;
   Member<Document> m_document;
+
+  HeapHashMap<int, Member<FetchEvent>> m_pendingPreloadFetchEvents;
 
   WebServiceWorkerContextClient* m_client;
 
