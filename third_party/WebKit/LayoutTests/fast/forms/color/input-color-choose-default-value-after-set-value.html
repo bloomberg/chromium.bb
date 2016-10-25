@@ -10,11 +10,13 @@
 <input type="color" id="input" value="#ffffff">
 <script>
 description('Test if change event fires when the user selects the default value after the value was changed by JS.');
+jsTestIsAsync = true;
 
 var input = document.getElementById('input');
 
 input.onchange = function() {
     debug("onchange fired: " + input.value);
+    finishJSTest();
 };
 
 clickElement(input);

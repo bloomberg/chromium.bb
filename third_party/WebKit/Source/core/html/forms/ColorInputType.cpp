@@ -202,9 +202,8 @@ void ColorInputType::didChooseColor(const Color& color) {
 }
 
 void ColorInputType::didEndChooser() {
-  EventQueueScope scope;
   if (LayoutTheme::theme().isModalColorChooser())
-    element().dispatchFormControlChangeEvent();
+    element().enqueueChangeEvent();
   m_chooser.clear();
 }
 

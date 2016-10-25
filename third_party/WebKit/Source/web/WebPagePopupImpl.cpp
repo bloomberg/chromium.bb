@@ -518,26 +518,27 @@ void WebPagePopupImpl::close() {
 }
 
 void WebPagePopupImpl::closePopup() {
-  // This function can be called in EventDispatchForbiddenScope for the main
-  // document, and the following operations dispatch some events.  It's safe
-  // because web authors can't listen the events.
-  EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
+  {
+    // This function can be called in EventDispatchForbiddenScope for the main
+    // document, and the following operations dispatch some events.  It's safe
+    // because web authors can't listen the events.
+    EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
 
-  if (m_page) {
-    toLocalFrame(m_page->mainFrame())->loader().stopAllLoaders();
-    PagePopupSupplement::uninstall(*toLocalFrame(m_page->mainFrame()));
+    if (m_page) {
+      toLocalFrame(m_page->mainFrame())->loader().stopAllLoaders();
+      PagePopupSupplement::uninstall(*toLocalFrame(m_page->mainFrame()));
+    }
+    bool closeAlreadyCalled = m_closing;
+    m_closing = true;
+
+    destroyPage();
+
+    // m_widgetClient might be 0 because this widget might be already closed.
+    if (m_widgetClient && !closeAlreadyCalled) {
+      // closeWidgetSoon() will call this->close() later.
+      m_widgetClient->closeWidgetSoon();
+    }
   }
-  bool closeAlreadyCalled = m_closing;
-  m_closing = true;
-
-  destroyPage();
-
-  // m_widgetClient might be 0 because this widget might be already closed.
-  if (m_widgetClient && !closeAlreadyCalled) {
-    // closeWidgetSoon() will call this->close() later.
-    m_widgetClient->closeWidgetSoon();
-  }
-
   m_popupClient->didClosePopup();
   m_webView->cleanupPagePopup();
 }

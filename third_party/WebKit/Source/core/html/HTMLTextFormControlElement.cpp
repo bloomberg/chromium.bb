@@ -224,6 +224,18 @@ void HTMLTextFormControlElement::dispatchFormControlChangeEvent() {
   setChangedSinceLastFormControlChangeEvent(false);
 }
 
+void HTMLTextFormControlElement::enqueueChangeEvent() {
+  String newValue = value();
+  if (shouldDispatchFormControlChangeEvent(m_textAsOfLastFormControlChangeEvent,
+                                           newValue)) {
+    setTextAsOfLastFormControlChangeEvent(newValue);
+    Event* event = Event::createBubble(EventTypeNames::change);
+    event->setTarget(this);
+    document().enqueueAnimationFrameEvent(event);
+  }
+  setChangedSinceLastFormControlChangeEvent(false);
+}
+
 void HTMLTextFormControlElement::setRangeText(const String& replacement,
                                               ExceptionState& exceptionState) {
   setRangeText(replacement, selectionStart(), selectionEnd(), "preserve",
