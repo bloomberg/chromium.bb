@@ -22,6 +22,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -293,6 +294,11 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
           features::kServiceWorkerNavigationPreload)) {
     // TODO(horo): Check |version_|'s origin_trial_tokens() here if we use
     // Origin-Trial for NavigationPreload.
+    return;
+  }
+  if (IsBrowserSideNavigationEnabled()) {
+    // TODO(horo): Support NavigationPreload with PlzNavigate.
+    NOTIMPLEMENTED();
     return;
   }
   DCHECK(!url_loader_factory_getter.is_null());
