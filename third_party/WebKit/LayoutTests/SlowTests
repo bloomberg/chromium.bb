@@ -247,8 +247,6 @@ crbug.com/490511 imported/wpt/html/semantics/embedded-content/media-elements/pla
 crbug.com/490511 imported/wpt/html/semantics/forms/textfieldselection/selection.html [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 
-crbug.com/358313 virtual/gpu/fast/canvas/webgl/webgl-large-texture.html [ Slow ]
-
 crbug.com/522646 http/tests/media/encrypted-media/encrypted-media-encrypted-event-different-origin.html [ Slow ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Slow ]
 crbug.com/510337 inspector/console/console-format.html [ Slow ]

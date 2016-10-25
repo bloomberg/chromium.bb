@@ -1,9 +1,0 @@
-Test loading a large texture using texImage2D
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-Image width and height: 3900, 3900
-PASS successfullyParsed is true
-
-TEST COMPLETE
-
