@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,6 +35,7 @@ public class VariationsSeedService extends IntentService {
     // Values for the "Variations.FirstRun.SeedFetchResult" sparse histogram, which also logs
     // HTTP result codes. These are negative so that they don't conflict with the HTTP codes.
     // These values should not be renumbered or re-used since they are logged to UMA.
+    private static final int SEED_FETCH_RESULT_UNKNOWN_HOST_EXCEPTION = -3;
     private static final int SEED_FETCH_RESULT_TIMEOUT = -2;
     private static final int SEED_FETCH_RESULT_IOEXCEPTION = -1;
 
@@ -111,6 +113,10 @@ public class VariationsSeedService extends IntentService {
         } catch (SocketTimeoutException e) {
             recordFetchResultOrCode(SEED_FETCH_RESULT_TIMEOUT);
             Log.w(TAG, "SocketTimeoutException fetching first run seed: ", e);
+            return false;
+        } catch (UnknownHostException e) {
+            recordFetchResultOrCode(SEED_FETCH_RESULT_UNKNOWN_HOST_EXCEPTION);
+            Log.w(TAG, "UnknownHostException fetching first run seed: ", e);
             return false;
         } catch (IOException e) {
             recordFetchResultOrCode(SEED_FETCH_RESULT_IOEXCEPTION);
