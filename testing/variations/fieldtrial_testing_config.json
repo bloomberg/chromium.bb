@@ -1034,6 +1034,18 @@
             ]
         }
     ],
+    "NoCreditCardAbort": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled"
+                }
+            ]
+        }
+    ],
     "NonValidatingReloadOnNormalReload": [
         {
             "platforms": [

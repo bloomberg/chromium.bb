@@ -37,12 +37,11 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSimplifiedFullscreenUI,
     &features::kWebPayments,
     &kAndroidPayIntegrationV1,
+    &kCCTExternalLinkHandling,
     &kChromeHomeFeature,
     &kDownloadsUiFeature,
     &kImportantSitesInCBD,
-    &ntp_snippets::kContentSuggestionsFeature,
-    &ntp_snippets::kSaveToOfflineFeature,
-    &ntp_snippets::kSectionDismissalFeature,
+    &kNoCreditCardAbort,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
     &kPhysicalWebFeature,
@@ -51,9 +50,11 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabReparenting,
-    &kCCTExternalLinkHandling,
-    &offline_pages::kOfflinePagesBackgroundLoadingFeature,
+    &ntp_snippets::kContentSuggestionsFeature,
+    &ntp_snippets::kSaveToOfflineFeature,
+    &ntp_snippets::kSectionDismissalFeature,
     &offline_pages::kBackgroundLoaderForDownloadsFeature,
+    &offline_pages::kOfflinePagesBackgroundLoadingFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
     &offline_pages::kOfflinePagesSharingFeature,
     &password_manager::features::kViewPasswords,
@@ -64,6 +65,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kCCTExternalLinkHandling{"CCTExternalLinkHandling",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kChromeHomeFeature{"ChromeHome",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -72,6 +76,9 @@ const base::Feature kDownloadsUiFeature{"DownloadsUi",
 
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -95,9 +102,6 @@ const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabReparenting{"TabReparenting",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kCCTExternalLinkHandling{"CCTExternalLinkHandling",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUserMediaScreenCapturing{

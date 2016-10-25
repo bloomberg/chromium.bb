@@ -15547,6 +15547,15 @@ read aloud to screenreader users to announce that a completion is available.">
             Enabled (Flash ducks when losing audio focus, experimental)
         </message>
     </if>
+
+    <if expr="is_android">
+      <message name="IDS_FLAGS_NO_CREDIT_CARD_ABORT" desc="Title for the flag to enable the No Card Abort in Payment Request." translateable="false">
+        No Credit Card Abort
+      </message>
+      <message name="IDS_FLAGS_NO_CREDIT_CARD_ABORT_DESCRIPTION" desc="Description for the flag to enable the No Card Abort in Payment Request." translateable="false">
+        Whether or not the No Credit Card Abort is enabled.
+      </message>
+    </if>
   </messages>
  </release>
 </grit>

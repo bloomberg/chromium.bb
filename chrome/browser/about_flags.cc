@@ -2006,6 +2006,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webapk", IDS_FLAGS_ENABLE_WEBAPK,
      IDS_FLAGS_ENABLE_WEBAPK_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableWebApk)},
+    {"no-credit-card-abort", IDS_FLAGS_NO_CREDIT_CARD_ABORT,
+     IDS_FLAGS_NO_CREDIT_CARD_ABORT_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
 #endif  // OS_ANDROID
     {"enable-feature-policy", IDS_FLAGS_FEATURE_POLICY_NAME,
      IDS_FLAGS_FEATURE_POLICY_DESCRIPTION, kOsAll,
@@ -2064,7 +2067,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_NAME,
      IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kEnableDefaultMediaSessionChoices)},
-#endif  // !defined(OS_ANDROID)
+#endif  // !OS_ANDROID
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -18,6 +18,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -1060,10 +1061,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         boolean waitingForPaymentApps = !mPendingApps.isEmpty() || !mPendingInstruments.isEmpty();
         boolean foundPaymentMethods =
                 mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty();
+        boolean userCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
 
         if (!mArePaymentMethodsSupported
                 || (mIsShowing && !waitingForPaymentApps && !foundPaymentMethods
-                           && !mMerchantSupportsAutofillPaymentInstruments)) {
+                           && !userCanAddCreditCard)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
