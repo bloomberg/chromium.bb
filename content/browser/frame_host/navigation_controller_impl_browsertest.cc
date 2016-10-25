@@ -2238,8 +2238,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify the tree of FrameNavigationEntries after NAVIGATION_TYPE_NEW_SUBFRAME
 // commits.
-// Disabled due to flakes on Linux Tests; see https://crbug.com/646836.
-#if defined(OS_LINUX)
+// Disabled due to flakes; see https://crbug.com/646836.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_FrameNavigationEntry_NewSubframe \
     DISABLED_FrameNavigationEntry_NewSubframe
 #else
