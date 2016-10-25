@@ -154,6 +154,7 @@ ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
       m_sweepForbidden(false),
       m_noAllocationCount(0),
       m_gcForbiddenCount(0),
+      m_mixinsBeingConstructedCount(0),
       m_accumulatedSweepingTime(0),
       m_vectorBackingArenaIndex(BlinkGC::Vector1ArenaIndex),
       m_currentArenaAges(0),

@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/heap/HeapPage.h"
 #include "platform/heap/WrapperVisitor.h"
 #include "wtf/Deque.h"
 #include "wtf/Vector.h"
@@ -108,22 +109,33 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
   }
 
   template <typename T>
-  static void writeBarrier(const void* object, const T* other) {
+  static void writeBarrier(const void* srcObject, const T* dstObject) {
     if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
       return;
     }
-    if (!object || !other) {
+    if (!srcObject || !dstObject) {
       return;
     }
-    if (!HeapObjectHeader::fromPayload(object)->isWrapperHeaderMarked()) {
+    // We only require a write barrier if |srcObject|  is already marked. Note
+    // that this implicitly disabled the write barrier when  wrapper tracing
+    // is not active as object will not be marked in this case.
+    if (!HeapObjectHeader::fromPayload(srcObject)->isWrapperHeaderMarked()) {
       return;
     }
-    HeapObjectHeader* otherObjectHeader =
-        TraceTrait<T>::heapObjectHeader(other);
-    if (!otherObjectHeader->isWrapperHeaderMarked()) {
-      currentVisitor(ThreadState::current()->isolate())
-          ->traceWrappers(otherObjectHeader->payload());
+
+    const ThreadState* threadState = ThreadState::current();
+    DCHECK(threadState);
+    // We can only safely check the marking state of |dstObject| for non-mixin
+    // objects or if we are outside of object construction.
+    if (!IsGarbageCollectedMixin<T>::value ||
+        !threadState->isMixinInConstruction()) {
+      if (TraceTrait<T>::heapObjectHeader(dstObject)->isWrapperHeaderMarked())
+        return;
     }
+
+    currentVisitor(threadState->isolate())
+        ->pushToMarkingDeque(TraceTrait<T>::markWrapper,
+                             TraceTrait<T>::heapObjectHeader, dstObject);
   }
 
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&
