@@ -452,7 +452,6 @@ _arm_internal_release_boards = frozenset([
 
 _arm_external_boards = frozenset([
     'arm-generic',
-    'arm-generic_freon',
     'arm64-generic',
     'arm64-llvmpipe',
 ])
@@ -1958,7 +1957,6 @@ def _GetConfig(site_config, board_configs, hw_test_list):
   )
 
   _chromium_pfq_important_boards = frozenset([
-      'arm-generic_freon',
       'arm-generic',
       'daisy',
       'veyron_jerry',
