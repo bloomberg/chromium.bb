@@ -20,7 +20,9 @@
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_merge_result.h"
@@ -29,6 +31,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/one_shot_event.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
@@ -52,6 +55,12 @@ namespace app_list {
 namespace {
 
 const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
+
+const char kNameKey[] = "name";
+const char kParentIdKey[] = "parent_id";
+const char kPositionKey[] = "position";
+const char kPinPositionKey[] = "pin_position";
+const char kTypeKey[] = "type";
 
 // Prefix for a sync id of a Drive app. Drive app ids are in a different
 // format and have to be used because a Drive app could have only an URL
@@ -173,6 +182,33 @@ std::string GetDriveAppIdFromSyncId(const std::string& sync_id) {
   return sync_id.substr(strlen(kDriveAppSyncIdPrefix));
 }
 
+void RemoveSyncItemFromLocalStorage(Profile* profile,
+                                    const std::string& item_id) {
+  DictionaryPrefUpdate(profile->GetPrefs(), prefs::kAppListLocalState)->
+      Remove(item_id, nullptr);
+}
+
+void UpdateSyncItemInLocalStorage(
+    Profile* profile,
+    const AppListSyncableService::SyncItem* sync_item) {
+  DictionaryPrefUpdate pref_update(profile->GetPrefs(),
+                                   prefs::kAppListLocalState);
+  base::DictionaryValue* dict_item = nullptr;
+  if (!pref_update->GetDictionaryWithoutPathExpansion(sync_item->item_id,
+      &dict_item)) {
+    dict_item = new base::DictionaryValue();
+    pref_update->SetWithoutPathExpansion(sync_item->item_id, dict_item);
+  }
+
+  dict_item->SetString(kNameKey, sync_item->item_name);
+  dict_item->SetString(kParentIdKey, sync_item->parent_id);
+  dict_item->SetString(kPositionKey,sync_item->item_ordinal.IsValid() ?
+      sync_item->item_ordinal.ToInternalValue() : std::string());
+  dict_item->SetString(kPinPositionKey, sync_item->item_pin_ordinal.IsValid() ?
+      sync_item->item_pin_ordinal.ToInternalValue() : std::string());
+  dict_item->SetInteger(kTypeKey, static_cast<int>(sync_item->item_type));
+}
+
 }  // namespace
 
 // AppListSyncableService::SyncItem
@@ -254,6 +290,12 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
 
 // AppListSyncableService
 
+// static
+void AppListSyncableService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kAppListLocalState);
+}
+
 AppListSyncableService::AppListSyncableService(
     Profile* profile,
     extensions::ExtensionSystem* extension_system)
@@ -261,7 +303,8 @@ AppListSyncableService::AppListSyncableService(
       extension_system_(extension_system),
       model_(new AppListModel),
       initial_sync_data_processed_(false),
-      first_app_list_sync_(true) {
+      first_app_list_sync_(true),
+      weak_ptr_factory_(this) {
   if (!extension_system) {
     LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
     return;
@@ -269,6 +312,19 @@ AppListSyncableService::AppListSyncableService(
 
   oem_folder_name_ =
       l10n_util::GetStringUTF8(IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME);
+
+  // TODO(khmel): Now we support persistent state of this service. It is
+  // possible to remove folder UI enabled check.
+  if (switches::IsFolderUIEnabled())
+    model_->SetFoldersEnabled(true);
+
+  if (IsExtensionServiceReady()) {
+    BuildModel();
+  } else {
+    extension_system_->ready().Post(
+        FROM_HERE, base::Bind(&AppListSyncableService::BuildModel,
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 AppListSyncableService::~AppListSyncableService() {
@@ -276,10 +332,62 @@ AppListSyncableService::~AppListSyncableService() {
   model_observer_.reset();
 }
 
+bool AppListSyncableService::IsExtensionServiceReady() const {
+  return extension_system_->extension_service() &&
+      extension_system_->extension_service()->is_ready();
+}
+
+void AppListSyncableService::InitFromLocalStorage() {
+  // This should happen before sync and model is built.
+  DCHECK(!sync_processor_.get());
+  DCHECK(!IsInitialized());
+
+  // Restore initial state from local storage.
+  const base::DictionaryValue* local_items = profile_->GetPrefs()->
+      GetDictionary(prefs::kAppListLocalState);
+  DCHECK(local_items);
+
+  for (base::DictionaryValue::Iterator item(*local_items); !item.IsAtEnd();
+      item.Advance()) {
+    const base::DictionaryValue* dict_item;
+    if (!item.value().GetAsDictionary(&dict_item)) {
+      LOG(ERROR) << "Dictionary not found for " << item.key() + ".";
+      continue;
+    }
+
+    int type;
+    if (!dict_item->GetInteger(kTypeKey, &type)) {
+      LOG(ERROR) << "Item type is not set in local storage for " << item.key()
+                 << ".";
+      continue;
+    }
+
+    SyncItem* sync_item = CreateSyncItem(item.key(),
+        static_cast<sync_pb::AppListSpecifics::AppListItemType>(type));
+
+    dict_item->GetString(kNameKey, &sync_item->item_name);
+    dict_item->GetString(kParentIdKey, &sync_item->parent_id);
+    std::string position;
+    std::string pin_position;
+    dict_item->GetString(kPositionKey, &position);
+    dict_item->GetString(kPinPositionKey, &pin_position);
+    if (!position.empty())
+      sync_item->item_ordinal = syncer::StringOrdinal(position);
+    if (!pin_position.empty())
+      sync_item->item_pin_ordinal = syncer::StringOrdinal(pin_position);
+    ProcessNewSyncItem(sync_item);
+  }
+}
+
+bool AppListSyncableService::IsInitialized() const {
+  return apps_builder_.get();
+}
+
 void AppListSyncableService::BuildModel() {
+  InitFromLocalStorage();
+
   // TODO(calamity): make this a DCHECK after a dev channel release.
-  CHECK(extension_system_->extension_service() &&
-        extension_system_->extension_service()->is_ready());
+  CHECK(IsExtensionServiceReady());
   AppListControllerDelegate* controller = NULL;
   AppListService* service = AppListService::Get();
   if (service)
@@ -309,6 +417,8 @@ void AppListSyncableService::BuildModel() {
 
   if (app_list::switches::IsDriveAppsInAppListEnabled())
     drive_app_provider_.reset(new DriveAppProvider(profile_, this));
+
+  HandleUpdateFinished();
 }
 
 void AppListSyncableService::AddObserverAndStart(Observer* observer) {
@@ -326,9 +436,7 @@ void AppListSyncableService::NotifyObserversSyncUpdated() {
 }
 
 size_t AppListSyncableService::GetNumSyncItemsForTest() {
-  // If the model isn't built yet, there will be no sync items.
-  GetModel();
-
+  DCHECK(IsInitialized());
   return sync_items_.size();
 }
 
@@ -385,10 +493,24 @@ void AppListSyncableService::SetOemFolderName(const std::string& name) {
 }
 
 AppListModel* AppListSyncableService::GetModel() {
-  if (!apps_builder_)
-    BuildModel();
-
+  DCHECK(IsInitialized());
   return model_.get();
+}
+
+void AppListSyncableService::HandleUpdateStarted() {
+  // Don't observe the model while processing update changes.
+  model_observer_.reset();
+}
+
+void AppListSyncableService::HandleUpdateFinished() {
+  // Processing an update may create folders without setting their positions.
+  // Resolve them now.
+  ResolveFolderPositions();
+
+  // Resume or start observing app list model changes.
+  model_observer_.reset(new ModelObserver(this));
+
+  NotifyObserversSyncUpdated();
 }
 
 void AppListSyncableService::AddItem(std::unique_ptr<AppListItem> app_item) {
@@ -445,6 +567,7 @@ AppListSyncableService::CreateSyncItemFromAppItem(AppListItem* app_item) {
   VLOG(2) << this << " CreateSyncItemFromAppItem:" << app_item->ToDebugString();
   SyncItem* sync_item = CreateSyncItem(app_item->id(), type);
   UpdateSyncItemFromAppItem(app_item, sync_item);
+  UpdateSyncItemInLocalStorage(profile_, sync_item);
   SendSyncChange(sync_item, SyncChange::ACTION_ADD);
   return sync_item;
 }
@@ -470,6 +593,7 @@ void AppListSyncableService::SetPinPosition(
   }
 
   sync_item->item_pin_ordinal = item_pin_ordinal;
+  UpdateSyncItemInLocalStorage(profile_, sync_item);
   SendSyncChange(sync_item, sync_change_type);
 }
 
@@ -522,6 +646,7 @@ void AppListSyncableService::DeleteSyncItem(const std::string& item_id) {
     sync_processor_->ProcessSyncChanges(
         FROM_HERE, syncer::SyncChangeList(1, sync_change));
   }
+  RemoveSyncItemFromLocalStorage(profile_, item_id);
   sync_items_.erase(item_id);
 }
 
@@ -536,6 +661,7 @@ void AppListSyncableService::UpdateSyncItem(AppListItem* app_item) {
     DVLOG(2) << this << " - Update: SYNC NO CHANGE: " << sync_item->ToString();
     return;
   }
+  UpdateSyncItemInLocalStorage(profile_, sync_item);
   SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
 }
 
@@ -586,6 +712,7 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
     VLOG(2) << this << " -> SYNC UPDATE: REMOVE_DEFAULT: "
             << sync_item->item_id;
     sync_item->item_type = sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP;
+    UpdateSyncItemInLocalStorage(profile_, sync_item);
     SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
     return;
   }
@@ -646,13 +773,15 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
 
-  // Ensure the model is built.
-  GetModel();
+  HandleUpdateStarted();
+
+  // Reset local state and recreate from sync info.
+  DictionaryPrefUpdate pref_update(profile_->GetPrefs(),
+                                   prefs::kAppListLocalState);
+  pref_update->Clear();
 
   sync_processor_ = std::move(sync_processor);
   sync_error_handler_ = std::move(error_handler);
-  if (switches::IsFolderUIEnabled())
-    model_->SetFoldersEnabled(true);
 
   syncer::SyncMergeResult result = syncer::SyncMergeResult(type);
   result.set_num_items_before_association(sync_items_.size());
@@ -706,19 +835,13 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     if (!sync_item)
       continue;
     VLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
+    UpdateSyncItemInLocalStorage(profile_, sync_item);
     change_list.push_back(SyncChange(FROM_HERE,  SyncChange::ACTION_ADD,
                                      GetSyncDataFromSyncItem(sync_item)));
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
 
-  // Adding items may have created folders without setting their positions
-  // since we haven't started observing the item list yet. Resolve those.
-  ResolveFolderPositions();
-
-  // Start observing app list model changes.
-  model_observer_.reset(new ModelObserver(this));
-
-  NotifyObserversSyncUpdated();
+  HandleUpdateFinished();
 
   return result;
 }
@@ -728,7 +851,6 @@ void AppListSyncableService::StopSyncing(syncer::ModelType type) {
 
   sync_processor_.reset();
   sync_error_handler_.reset();
-  model_->SetFoldersEnabled(false);
 }
 
 syncer::SyncDataList AppListSyncableService::GetAllSyncData(
@@ -754,8 +876,7 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
                              syncer::APP_LIST);
   }
 
-  // Don't observe the model while processing incoming sync changes.
-  model_observer_.reset();
+  HandleUpdateStarted();
 
   VLOG(1) << this << ": ProcessSyncChanges: " << change_list.size();
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
@@ -774,10 +895,7 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
     }
   }
 
-  // Continue observing app list model changes.
-  model_observer_.reset(new ModelObserver(this));
-
-  NotifyObserversSyncUpdated();
+  HandleUpdateFinished();
 
   return syncer::SyncError();
 }
@@ -797,6 +915,7 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
     if (sync_item->item_type == specifics.item_type()) {
       UpdateSyncItemFromSync(specifics, sync_item);
       ProcessExistingSyncItem(sync_item);
+      UpdateSyncItemInLocalStorage(profile_, sync_item);
       VLOG(2) << this << " <- SYNC UPDATE: " << sync_item->ToString();
       return false;
     }
@@ -818,6 +937,7 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
   sync_item = CreateSyncItem(item_id, specifics.item_type());
   UpdateSyncItemFromSync(specifics, sync_item);
   ProcessNewSyncItem(sync_item);
+  UpdateSyncItemInLocalStorage(profile_, sync_item);
   VLOG(2) << this << " <- SYNC ADD: " << sync_item->ToString();
   return true;
 }
@@ -969,7 +1089,9 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   sync_pb::AppListSpecifics::AppListItemType item_type =
       iter->second->item_type;
   VLOG(2) << this << " <- SYNC DELETE: " << iter->second->ToString();
+  RemoveSyncItemFromLocalStorage(profile_, item_id);
   sync_items_.erase(iter);
+
   // Only delete apps from the model. Folders will be deleted when all
   // children have been deleted.
   if (item_type == sync_pb::AppListSpecifics::TYPE_APP) {
