@@ -1,16 +1,5 @@
-Upstream cherry-picks:
-  d59820f6fec3fd112436fb7712e4f9d6d768b664 - avformat/matroskadec seek bug fix.
-  8efaee3710baa87af40556a622bf2d96a27c6425 - avformat/oggparseopus security fix.
-  542f725964e52201000ec34e2f23229cf534ad3a - avformat/oggdec security fix.
-  ea791c080dd5494b3bee0c618a3f52e371b5f320 - avformat/utils security fix.
-  2875745d354ab0ebc4af1ebaca5c5a8d26ccdc03 - avformat/utils security fix v2.
-  17d320800b70a78f4e90cd96564154e829db8b8d - avformat/movenc security fix.
-  1a82d2cf8fb6a7e854e7548dfcf73c3d046b34ac - avformat/oggparseopus security fix.
-  c1ed78a591f68f3c81eded0bfaac313937ffa3b6 - avformat/utils security fix.
-  2be3007ed55f1513bcae3d2a076e71878f48eb03 - avformat/utils security fix.
-  7e01d48cfd168c3dfc663f03a3b6a98e0ecba328 - avformat/mov security fix.
-  a867b948ed35b3f5b72ee714232c21d5f591e7aa - avformat/oggdec security fix.
-  347cb14b7cba7560e53f4434b419b9d8800253e7 - avformat/mov security fix.
+Upstream cherry-picks, most recent cherry-picks at end of list:
+  none
 
 Autorename:
   autorename_* files are renamed copies of various files that would cause
@@ -22,14 +11,9 @@ Current patches:
 
   Changes to configure
     Commented out a section that creates symlink for source_path. Using symlink
-    causes windows builds to fail (cl.exe cant find the files). Comment out some
-    pkg-config checks for libopus since we use Chromium's copy.
-
-  Remove add_cflags "-mips64" from configure
-    This conflicts with --extra-cflags=-mips64r6 for mips64el. There are a
-    series of upstream patches changing how mips arch selection works, this may
-    be resolved shortly. (Those patches are not by Google though, and are also
-    the reason it broke.)
+    causes windows builds to fail (cl.exe cant find the files).
+    Commented out some pkg-config checks for libopus since we use Chromium's
+    copy.
 
   Changes/additions to compat/msvcrt/{snprintf.c,snprintf.h}
   Changes/additions to compat/{strtod.c,strtod.h}
@@ -56,9 +40,13 @@ Current patches:
     compile with it disabled. Therefore, suppress the warnings locally.
 
   Revert 'sidx' processing for .mov containers. (libavformat/isom.h and mov.c)
-    Reverts commit 4ab56667594842283dc5ae07f0daba2a2cb4d3af.
+    8b946dec reverts commit 4ab56667594842283dc5ae07f0daba2a2cb4d3af.
     'sidx' box processing is broken for MOV containers. http://crbug.com/568336.
     Reported: http://ffmpeg.org/pipermail/ffmpeg-devel/2015-December/185040.html
+
+    That revert removed a local |ret| needed by later dd34e89f, so M56 merge
+    commit e4decbe7 includes a downstream declaration of |ret| in
+    mov_seek_stream in mov.c.
 
   Changes to libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
@@ -95,13 +83,3 @@ Current patches:
     Fixes the conditionals on Linux so that these symbols are hidden and
     adds the Chromium-specific private_extern extension for hiding these
     symbols on OSX.
-
-  Changes to libavformat/riffdec.c
-    Work around VC++ 2015 Update 1 compiler bug, crbug.com/581768 and
-    https://connect.microsoft.com/VisualStudio/feedback/details/2291638
-
-  Changes to libavcodec/aarch64/videodsp.S
-    Renamed videodsp.S to videodsp_aarch64.S. This is to fix GN build errors
-    for arm64 linux. There is a conflict for generated videodsp.o as both
-    libavcodec/videodsp.c and libavcodec/aarch64/videodsp.S tries to generate
-    videodsp.o at same location.

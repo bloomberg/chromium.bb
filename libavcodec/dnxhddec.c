@@ -28,7 +28,6 @@
 #include "libavutil/timer.h"
 #include "avcodec.h"
 #include "blockdsp.h"
-#define  UNCHECKED_BITSTREAM_READER 1
 #include "get_bits.h"
 #include "dnxhddata.h"
 #include "idctdsp.h"
