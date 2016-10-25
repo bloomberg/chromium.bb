@@ -788,12 +788,10 @@ void HostContentSettingsMap::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
-  FOR_EACH_OBSERVER(content_settings::Observer,
-                    observers_,
-                    OnContentSettingChanged(primary_pattern,
-                                            secondary_pattern,
-                                            content_type,
-                                            resource_identifier));
+  for (content_settings::Observer& observer : observers_) {
+    observer.OnContentSettingChanged(primary_pattern, secondary_pattern,
+                                     content_type, resource_identifier);
+  }
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {

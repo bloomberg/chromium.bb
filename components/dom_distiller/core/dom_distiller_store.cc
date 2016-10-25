@@ -347,8 +347,8 @@ void DomDistillerStore::NotifyObservers(const syncer::SyncChangeList& changes) {
       article_update.entry_id = entry.entry_id();
       article_changes.push_back(article_update);
     }
-    FOR_EACH_OBSERVER(DomDistillerObserver, observers_,
-                      ArticleEntriesUpdated(article_changes));
+    for (DomDistillerObserver& observer : observers_)
+      observer.ArticleEntriesUpdated(article_changes);
   }
 }
 

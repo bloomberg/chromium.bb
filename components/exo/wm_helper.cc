@@ -72,39 +72,39 @@ void WMHelper::RemoveAccessibilityObserver(AccessibilityObserver* observer) {
 
 void WMHelper::NotifyWindowActivated(aura::Window* gained_active,
                                      aura::Window* lost_active) {
-  FOR_EACH_OBSERVER(ActivationObserver, activation_observers_,
-                    OnWindowActivated(gained_active, lost_active));
+  for (ActivationObserver& observer : activation_observers_)
+    observer.OnWindowActivated(gained_active, lost_active);
 }
 
 void WMHelper::NotifyWindowFocused(aura::Window* gained_focus,
                                    aura::Window* lost_focus) {
-  FOR_EACH_OBSERVER(FocusObserver, focus_observers_,
-                    OnWindowFocused(gained_focus, lost_focus));
+  for (FocusObserver& observer : focus_observers_)
+    observer.OnWindowFocused(gained_focus, lost_focus);
 }
 
 void WMHelper::NotifyCursorVisibilityChanged(bool is_visible) {
-  FOR_EACH_OBSERVER(CursorObserver, cursor_observers_,
-                    OnCursorVisibilityChanged(is_visible));
+  for (CursorObserver& observer : cursor_observers_)
+    observer.OnCursorVisibilityChanged(is_visible);
 }
 
 void WMHelper::NotifyCursorSetChanged(ui::CursorSetType cursor_set) {
-  FOR_EACH_OBSERVER(CursorObserver, cursor_observers_,
-                    OnCursorSetChanged(cursor_set));
+  for (CursorObserver& observer : cursor_observers_)
+    observer.OnCursorSetChanged(cursor_set);
 }
 
 void WMHelper::NotifyMaximizeModeStarted() {
-  FOR_EACH_OBSERVER(MaximizeModeObserver, maximize_mode_observers_,
-                    OnMaximizeModeStarted());
+  for (MaximizeModeObserver& observer : maximize_mode_observers_)
+    observer.OnMaximizeModeStarted();
 }
 
 void WMHelper::NotifyMaximizeModeEnded() {
-  FOR_EACH_OBSERVER(MaximizeModeObserver, maximize_mode_observers_,
-                    OnMaximizeModeEnded());
+  for (MaximizeModeObserver& observer : maximize_mode_observers_)
+    observer.OnMaximizeModeEnded();
 }
 
 void WMHelper::NotifyAccessibilityModeChanged() {
-  FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
-                    OnAccessibilityModeChanged());
+  for (AccessibilityObserver& observer : accessibility_observers_)
+    observer.OnAccessibilityModeChanged();
 }
 
 }  // namespace exo

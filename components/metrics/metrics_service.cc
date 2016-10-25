@@ -1147,9 +1147,10 @@ void MetricsService::CheckForClonedInstall(
 }
 
 void MetricsService::NotifySyntheticTrialObservers() {
-  FOR_EACH_OBSERVER(variations::SyntheticTrialObserver,
-                    synthetic_trial_observer_list_,
-                    OnSyntheticTrialsChanged(synthetic_trial_groups_));
+  for (variations::SyntheticTrialObserver& observer :
+       synthetic_trial_observer_list_) {
+    observer.OnSyntheticTrialsChanged(synthetic_trial_groups_);
+  }
 }
 
 void MetricsService::GetSyntheticFieldTrialsOlderThan(

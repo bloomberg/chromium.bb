@@ -347,7 +347,8 @@ void LeakDetector::NotifyObservers(
 
   {
     base::AutoLock lock(observers_lock_);
-    FOR_EACH_OBSERVER(Observer, observers_, OnLeaksFound(reports));
+    for (Observer& observer : observers_)
+      observer.OnLeaksFound(reports);
   }
 }
 

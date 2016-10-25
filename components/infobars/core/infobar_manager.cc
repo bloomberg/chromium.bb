@@ -85,9 +85,8 @@ InfoBar* InfoBarManager::ReplaceInfoBar(InfoBar* old_infobar,
   // to AddInfoBar() or similar, we don't dupe-check against this infobar.
   infobars_.erase(++i);
 
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnInfoBarReplaced(old_infobar, new_infobar_ptr));
+  for (Observer& observer : observer_list_)
+    observer.OnInfoBarReplaced(old_infobar, new_infobar_ptr);
 
   old_infobar->CloseSoon();
   return new_infobar_ptr;
@@ -114,7 +113,8 @@ void InfoBarManager::ShutDown() {
   // Destroy all remaining InfoBars.  It's important to not animate here so that
   // we guarantee that we'll delete all delegates before we do anything else.
   RemoveAllInfoBars(false);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnManagerShuttingDown(this));
+  for (Observer& observer : observer_list_)
+    observer.OnManagerShuttingDown(this);
 }
 
 void InfoBarManager::OnNavigation(
@@ -130,12 +130,13 @@ void InfoBarManager::OnNavigation(
 }
 
 void InfoBarManager::NotifyInfoBarAdded(InfoBar* infobar) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnInfoBarAdded(infobar));
+  for (Observer& observer : observer_list_)
+    observer.OnInfoBarAdded(infobar);
 }
 
 void InfoBarManager::NotifyInfoBarRemoved(InfoBar* infobar, bool animate) {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnInfoBarRemoved(infobar, animate));
+  for (Observer& observer : observer_list_)
+    observer.OnInfoBarRemoved(infobar, animate);
 }
 
 void InfoBarManager::RemoveInfoBarInternal(InfoBar* infobar, bool animate) {

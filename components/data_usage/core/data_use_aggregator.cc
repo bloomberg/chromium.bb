@@ -128,7 +128,8 @@ void DataUseAggregator::PassDataUseToAmortizer(
 void DataUseAggregator::OnAmortizationComplete(
     std::unique_ptr<DataUse> amortized_data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDataUse(*amortized_data_use));
+  for (Observer& observer : observer_list_)
+    observer.OnDataUse(*amortized_data_use);
 }
 
 }  // namespace data_usage

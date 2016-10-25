@@ -225,7 +225,8 @@ Surface::Surface()
 
 Surface::~Surface() {
   aura::Env::GetInstance()->context_factory()->RemoveObserver(this);
-  FOR_EACH_OBSERVER(SurfaceObserver, observers_, OnSurfaceDestroying(this));
+  for (SurfaceObserver& observer : observers_)
+    observer.OnSurfaceDestroying(this);
 
   window_->layer()->SetShowSolidColorContent();
 

@@ -68,8 +68,8 @@ void DataReductionProxyService::SetIOData(
   DCHECK(CalledOnValidThread());
   io_data_ = io_data;
   initialized_ = true;
-  FOR_EACH_OBSERVER(DataReductionProxyServiceObserver,
-                    observer_list_, OnServiceInitialized());
+  for (DataReductionProxyServiceObserver& observer : observer_list_)
+    observer.OnServiceInitialized();
 
   // Load the Data Reduction Proxy configuration from |prefs_| and apply it.
   if (prefs_) {

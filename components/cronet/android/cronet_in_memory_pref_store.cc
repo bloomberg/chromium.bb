@@ -79,6 +79,7 @@ void CronetInMemoryPrefStore::ReadPrefsAsync(
 
 void CronetInMemoryPrefStore::ReportValueChanged(const std::string& key,
                                                  uint32_t flags) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
+  for (Observer& observer : observers_)
+    observer.OnPrefValueChanged(key);
 }
 

@@ -25,9 +25,10 @@ void FaviconDriver::NotifyFaviconUpdatedObservers(
     const GURL& icon_url,
     bool icon_url_changed,
     const gfx::Image& image) {
-  FOR_EACH_OBSERVER(FaviconDriverObserver, observer_list_,
-                    OnFaviconUpdated(this, notification_icon_type, icon_url,
-                                     icon_url_changed, image));
+  for (FaviconDriverObserver& observer : observer_list_) {
+    observer.OnFaviconUpdated(this, notification_icon_type, icon_url,
+                              icon_url_changed, image);
+  }
 }
 
 }  // namespace favicon

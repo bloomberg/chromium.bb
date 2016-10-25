@@ -29,13 +29,10 @@ void ObservableProvider::NotifyObservers(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnContentSettingChanged(
-                        primary_pattern,
-                        secondary_pattern,
-                        content_type,
-                        resource_identifier));
+  for (Observer& observer : observer_list_) {
+    observer.OnContentSettingChanged(primary_pattern, secondary_pattern,
+                                     content_type, resource_identifier);
+  }
 }
 
 void ObservableProvider::RemoveAllObservers() {

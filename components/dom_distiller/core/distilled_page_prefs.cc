@@ -115,17 +115,20 @@ void DistilledPagePrefs::RemoveObserver(Observer* obs) {
 
 void DistilledPagePrefs::NotifyOnChangeFontFamily(
     DistilledPagePrefs::FontFamily new_font_family) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnChangeFontFamily(new_font_family));
+  for (Observer& observer : observers_)
+    observer.OnChangeFontFamily(new_font_family);
 }
 
 void DistilledPagePrefs::NotifyOnChangeTheme(
     DistilledPagePrefs::Theme new_theme) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnChangeTheme(new_theme));
+  for (Observer& observer : observers_)
+    observer.OnChangeTheme(new_theme);
 }
 
 void DistilledPagePrefs::NotifyOnChangeFontScaling(
     float scaling) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnChangeFontScaling(scaling));
+  for (Observer& observer : observers_)
+    observer.OnChangeFontScaling(scaling);
 }
 
 }  // namespace dom_distiller

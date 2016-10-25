@@ -1283,9 +1283,8 @@ void GCMDriverDesktop::OnConnected(const net::IPEndPoint& ip_endpoint) {
   if (!gcm_started_)
     return;
 
-  FOR_EACH_OBSERVER(GCMConnectionObserver,
-                    connection_observer_list_,
-                    OnConnected(ip_endpoint));
+  for (GCMConnectionObserver& observer : connection_observer_list_)
+    observer.OnConnected(ip_endpoint);
 }
 
 void GCMDriverDesktop::OnDisconnected() {
@@ -1297,8 +1296,8 @@ void GCMDriverDesktop::OnDisconnected() {
   if (!gcm_started_)
     return;
 
-  FOR_EACH_OBSERVER(
-      GCMConnectionObserver, connection_observer_list_, OnDisconnected());
+  for (GCMConnectionObserver& observer : connection_observer_list_)
+    observer.OnDisconnected();
 }
 
 void GCMDriverDesktop::GetGCMStatisticsFinished(
