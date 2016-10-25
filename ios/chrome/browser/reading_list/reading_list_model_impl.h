@@ -25,8 +25,11 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
   ReadingListModelImpl();
 
   ~ReadingListModelImpl() override;
+
+  // KeyedService implementation.
   void Shutdown() override;
 
+  // ReadingListModel implementation.
   bool loaded() const override;
 
   size_t unread_size() const override;
@@ -35,9 +38,10 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
   bool HasUnseenEntries() const override;
   void ResetUnseenEntries() override;
 
-  // Returns a specific entry.
   const ReadingListEntry& GetUnreadEntryAtIndex(size_t index) const override;
   const ReadingListEntry& GetReadEntryAtIndex(size_t index) const override;
+
+  const ReadingListEntry* GetEntryFromURL(const GURL& gurl) const override;
 
   bool CallbackEntryURL(
       const GURL& url,

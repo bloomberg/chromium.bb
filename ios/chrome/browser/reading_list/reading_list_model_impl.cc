@@ -54,7 +54,6 @@ void ReadingListModelImpl::ResetUnseenEntries() {
     storageLayer_->SavePersistentHasUnseen(false);
 }
 
-// Returns a specific entry.
 const ReadingListEntry& ReadingListModelImpl::GetUnreadEntryAtIndex(
     size_t index) const {
   DCHECK(loaded());
@@ -67,20 +66,26 @@ const ReadingListEntry& ReadingListModelImpl::GetReadEntryAtIndex(
   return read_[index];
 }
 
+const ReadingListEntry* ReadingListModelImpl::GetEntryFromURL(
+    const GURL& gurl) const {
+  DCHECK(loaded());
+  ReadingListEntry entry(gurl, std::string());
+  auto it = std::find(read_.begin(), read_.end(), entry);
+  if (it == read_.end()) {
+    it = std::find(unread_.begin(), unread_.end(), entry);
+    if (it == unread_.end())
+      return nullptr;
+  }
+  return &(*it);
+}
+
 bool ReadingListModelImpl::CallbackEntryURL(
     const GURL& url,
     base::Callback<void(const ReadingListEntry&)> callback) const {
   DCHECK(loaded());
-  ReadingListEntry entry(url, std::string());
-  auto resultUnread = std::find(unread_.begin(), unread_.end(), entry);
-  if (resultUnread != unread_.end()) {
-    callback.Run(*resultUnread);
-    return true;
-  }
-
-  auto resultRead = std::find(read_.begin(), read_.end(), entry);
-  if (resultRead != read_.end()) {
-    callback.Run(*resultRead);
+  const ReadingListEntry* entry = GetEntryFromURL(url);
+  if (entry) {
+    callback.Run(*entry);
     return true;
   }
   return false;

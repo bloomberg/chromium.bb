@@ -171,6 +171,24 @@ TEST_F(ReadingListModelTest, ReadEntry) {
   EXPECT_EQ("sample", other_entry.Title());
 }
 
+TEST_F(ReadingListModelTest, EntryFromURL) {
+  GURL url1("http://example.com");
+  GURL url2("http://example2.com");
+  std::string entry1_title = "foo bar qux";
+  model_->AddEntry(url1, entry1_title);
+
+  const ReadingListEntry* entry1 = model_->GetEntryFromURL(url1);
+  EXPECT_NE(nullptr, entry1);
+  EXPECT_EQ(entry1_title, entry1->Title());
+  model_->MarkReadByURL(url1);
+  entry1 = model_->GetEntryFromURL(url1);
+  EXPECT_NE(nullptr, entry1);
+  EXPECT_EQ(entry1_title, entry1->Title());
+
+  const ReadingListEntry* entry2 = model_->GetEntryFromURL(url2);
+  EXPECT_EQ(nullptr, entry2);
+}
+
 TEST_F(ReadingListModelTest, UnreadEntry) {
   // Setup.
   model_->AddEntry(GURL("http://example.com"), "sample");

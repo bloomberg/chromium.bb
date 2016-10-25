@@ -53,9 +53,13 @@ class ReadingListModel {
   virtual bool HasUnseenEntries() const = 0;
   virtual void ResetUnseenEntries() = 0;
 
+  // TODO(659099): Remove methods.
   // Returns a specific entry.
   virtual const ReadingListEntry& GetUnreadEntryAtIndex(size_t index) const = 0;
   virtual const ReadingListEntry& GetReadEntryAtIndex(size_t index) const = 0;
+
+  // Returns a specific entry. Returns null if the entry does not exist.
+  virtual const ReadingListEntry* GetEntryFromURL(const GURL& gurl) const = 0;
 
   // Synchronously calls the |callback| with entry associated with this |url|.
   // Does nothing if there is no entry associated.
