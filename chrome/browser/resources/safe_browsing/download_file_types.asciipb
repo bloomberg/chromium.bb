@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 6
+version_id: 7
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -2638,6 +2638,8 @@ file_types {
 ##
 ## Android-specific files
 ##
+# Android doesn't have real download-protection, but we can show a
+# warning to provide a speed bump for dangerous file types.
 file_types {
   extension: "dex"
   uma_value: 143
@@ -2649,8 +2651,12 @@ file_types {
   }
 }
 file_types {
-  # Android download manager checks APKs
   extension: "apk"
   uma_value: 20
   ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_ANDROID
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
 }
