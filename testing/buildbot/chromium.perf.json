@@ -119,6 +119,14 @@
         ],
         "name": "load_library_perf_tests",
         "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "tracing_perftests",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "tracing_perftests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },

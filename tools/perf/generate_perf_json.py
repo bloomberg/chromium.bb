@@ -113,6 +113,20 @@ SCRIPT_TESTS = [
   },
   {
     'args': [
+      'tracing_perftests',
+      '--test-launcher-print-test-stdio=always'
+    ],
+    'name': 'tracing_perftests',
+    'script': 'gtest_perf_test.py',
+    'testers': [
+      {
+        'name': 'Linux Perf',
+        'shards': [3]
+      },
+    ]
+  },
+  {
+    'args': [
       'load_library_perf_tests',
       '--test-launcher-print-test-stdio=always'
     ],
