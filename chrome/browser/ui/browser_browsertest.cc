@@ -2561,13 +2561,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, DISABLED_HrefShiftMiddleClickTest) {
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }
 
-// TODO(crbug.com/655112): Fails on Mac 10.11 Tests.
-#if defined(OS_MACOSX)
-#define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
-#else
-#define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   // The instant extended NTP has javascript that does not work with
   // ui_test_utils::NavigateToURL.  The NTP rvh reloads when the browser tries
   // to navigate away from the page, which causes the WebContents to end up in

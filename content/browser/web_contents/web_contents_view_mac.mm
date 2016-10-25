@@ -656,13 +656,20 @@ void WebContentsViewMac::CloseTab() {
   webContents->UpdateWebContentsVisibility(viewVisible);
 }
 
-// When the subviews require a layout, their size should be reset to the size
-// of this view. (It is possible for the size to get out of sync as an
-// optimization in preparation for an upcoming WebContentsView resize.
-// http://crbug.com/264207)
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
-  for (NSView* subview in self.subviews)
-    [subview setFrame:self.bounds];
+  // Subviews do not participate in auto layout unless the the size this view
+  // changes. This allows RenderWidgetHostViewMac::SetBounds(..) to select a
+  // size of the subview that differs from its superview in preparation for an
+  // upcoming WebContentsView resize.
+  // See http://crbug.com/264207 and http://crbug.com/655112.
+}
+
+- (void)setFrameSize:(NSSize)newSize {
+  [super setFrameSize:newSize];
+
+  // Perform manual layout of subviews, e.g., when the window size changes.
+  for (NSView* subview in [self subviews])
+    [subview setFrame:[self bounds]];
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
