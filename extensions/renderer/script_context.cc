@@ -219,12 +219,6 @@ void ScriptContext::SafeCallFunction(const v8::Local<v8::Function>& function,
   }
 }
 
-v8::Local<v8::Value> ScriptContext::CallFunction(
-    const v8::Local<v8::Function>& function) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return CallFunction(function, 0, nullptr);
-}
-
 Feature::Availability ScriptContext::GetAvailability(
     const std::string& api_name) {
   DCHECK(thread_checker_.CalledOnValidThread());

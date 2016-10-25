@@ -108,18 +108,15 @@ class ScriptContext : public RequestSender::Source {
   // the context is in the process of being destroyed.
   content::RenderFrame* GetRenderFrame() const;
 
-  // Runs |function| with appropriate scopes. Doesn't catch exceptions, callers
-  // must do that if they want.
-  //
-  // USE THIS METHOD RATHER THAN v8::Function::Call WHEREVER POSSIBLE.
+  // DEPRECATED.
   v8::Local<v8::Value> CallFunction(const v8::Local<v8::Function>& function,
                                     int argc,
                                     v8::Local<v8::Value> argv[]) const;
-  v8::Local<v8::Value> CallFunction(
-      const v8::Local<v8::Function>& function) const;
 
   // Safely calls the v8::Function, respecting the page load deferrer and
   // possibly executing asynchronously.
+  // Doesn't catch exceptions; callers must do that if they want.
+  // USE THIS METHOD RATHER THAN v8::Function::Call WHEREVER POSSIBLE.
   // TODO(devlin): Remove the above variants in favor of this.
   void SafeCallFunction(const v8::Local<v8::Function>& function,
                         int argc,
