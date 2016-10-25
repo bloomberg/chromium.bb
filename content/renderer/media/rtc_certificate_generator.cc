@@ -166,8 +166,9 @@ std::unique_ptr<blink::WebRTCCertificate> RTCCertificateGenerator::fromPEM(
       rtc::RTCCertificate::FromPEM(
           rtc::RTCCertificatePEM(pem_private_key.utf8(),
               pem_certificate.utf8()));
-  return std::unique_ptr<blink::WebRTCCertificate>(
-      new RTCCertificate(certificate));
+  if (!certificate)
+    return nullptr;
+  return base::MakeUnique<RTCCertificate>(certificate);
 }
 
 }  // namespace content

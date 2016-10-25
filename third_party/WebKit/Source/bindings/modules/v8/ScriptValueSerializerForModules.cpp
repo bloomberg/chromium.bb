@@ -412,6 +412,8 @@ bool SerializedScriptValueReaderForModules::readRTCCertificate(
 
   std::unique_ptr<WebRTCCertificate> certificate(
       certificateGenerator->fromPEM(pemPrivateKey, pemCertificate));
+  if (!certificate)
+    return false;
   RTCCertificate* jsCertificate = new RTCCertificate(std::move(certificate));
 
   *value =

@@ -47,6 +47,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::readDOMObject(
           Platform::current()->createRTCCertificateGenerator());
       std::unique_ptr<WebRTCCertificate> certificate =
           certificateGenerator->fromPEM(pemPrivateKey, pemCertificate);
+      if (!certificate)
+        return nullptr;
       return new RTCCertificate(std::move(certificate));
     }
     default:

@@ -330,9 +330,12 @@ class TestWebRTCCertificateGenerator
   std::unique_ptr<blink::WebRTCCertificate> fromPEM(
       blink::WebString pem_private_key,
       blink::WebString pem_certificate) override {
-    return base::MakeUnique<RTCCertificate>(
+    rtc::scoped_refptr<rtc::RTCCertificate> certificate =
         rtc::RTCCertificate::FromPEM(rtc::RTCCertificatePEM(
-            pem_private_key.utf8(), pem_certificate.utf8())));
+            pem_private_key.utf8(), pem_certificate.utf8()));
+    if (!certificate)
+      return nullptr;
+    return base::MakeUnique<RTCCertificate>(certificate);
   }
 };
 

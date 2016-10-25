@@ -174,6 +174,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
       certificateGenerator->fromPEM(
           WebString::fromUTF8(kEcdsaPrivateKey, sizeof(kEcdsaPrivateKey)),
           WebString::fromUTF8(kEcdsaCertificate, sizeof(kEcdsaCertificate)));
+  ASSERT_TRUE(webCertificate);
   RTCCertificate* certificate = new RTCCertificate(std::move(webCertificate));
 
   // Round trip test.
@@ -208,6 +209,24 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate) {
   WebRTCCertificatePEM pem = newCertificate->certificate().toPEM();
   EXPECT_EQ(kEcdsaPrivateKey, pem.privateKey());
   EXPECT_EQ(kEcdsaCertificate, pem.certificate());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, DecodeInvalidRTCCertificate) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+
+  // This is valid, except that "private" is not a valid private key PEM and
+  // "certificate" is not a valid certificate PEM. This checks what happens if
+  // these fail validation inside WebRTC.
+  ScriptState* scriptState = scope.getScriptState();
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x09, 0x3f, 0x00, 0x6b, 0x07, 'p', 'r', 'i', 'v', 'a', 't', 'e',
+       0x0b, 'c',  'e',  'r',  't',  'i',  'f', 'i', 'c', 'a', 't', 'e', 0x00});
+
+  // Decode test.
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializerForModules(scriptState, input).deserialize();
+  EXPECT_TRUE(result->IsNull());
 }
 
 // A bunch of voodoo which allows the asynchronous WebCrypto operations to be
