@@ -333,9 +333,6 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   String dumpRefCountedInstanceCounts() const;
   LocalDOMWindow* openDummyInspectorFrontend(const String& url);
   void closeDummyInspectorFrontend();
-  Vector<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes,
-                                                 unsigned long maxDeadBytes,
-                                                 unsigned long totalBytes);
 
   String counterValue(Element*);
 

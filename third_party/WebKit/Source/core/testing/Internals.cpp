@@ -1847,18 +1847,6 @@ String Internals::dumpRefCountedInstanceCounts() const {
   return WTF::dumpRefCountedInstanceCounts();
 }
 
-Vector<unsigned long> Internals::setMemoryCacheCapacities(
-    unsigned long minDeadBytes,
-    unsigned long maxDeadBytes,
-    unsigned long totalBytes) {
-  Vector<unsigned long> result;
-  result.append(memoryCache()->minDeadCapacity());
-  result.append(memoryCache()->maxDeadCapacity());
-  result.append(memoryCache()->capacity());
-  memoryCache()->setCapacities(minDeadBytes, maxDeadBytes, totalBytes);
-  return result;
-}
-
 bool Internals::hasGrammarMarker(Document* document, int from, int length) {
   ASSERT(document);
   if (!document->frame())
