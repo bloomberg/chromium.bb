@@ -235,16 +235,27 @@ AutomationPredicate.linebreak = function(first, second) {
  * @return {boolean}
  */
 AutomationPredicate.container = function(node) {
-  return AutomationPredicate.structuralContainer(node) ||
-      node.role == Role.div ||
-      node.role == Role.document ||
-      node.role == Role.group ||
-      node.role == Role.listItem ||
-      node.role == Role.toolbar ||
-      node.role == Role.window ||
-      // For example, crosh.
-      (node.role == Role.textField && node.state.readOnly) ||
-      (node.state.editable && node.parent && !node.parent.state.editable);
+  return AutomationPredicate.match({
+    anyRole: [
+      Role.div,
+      Role.document,
+      Role.group,
+      Role.listItem,
+      Role.toolbar,
+      Role.window],
+    anyPredicate: [
+      AutomationPredicate.landmark,
+      AutomationPredicate.structuralContainer,
+      function(node) {
+        // For example, crosh.
+        return (node.role == Role.textField && node.state.readOnly);
+      },
+      function(node) {
+        return (node.state.editable &&
+            node.parent &&
+            !node.parent.state.editable);
+      }]
+  })(node);
 };
 
 /**
