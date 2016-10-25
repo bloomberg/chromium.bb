@@ -32,6 +32,8 @@ New Procedures and Functions
 
     INVALID_OPERATION is generated if any of the current draw buffers is multisampled.
 
+    INVALID_OPERATION is generated if any framebuffer object is not bound.
+
     OUT_OF_MEMORY may be generated if fail to allocate internal resources necessary to 
     perform the requested operation.
 
