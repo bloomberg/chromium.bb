@@ -14,7 +14,6 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
@@ -142,8 +141,6 @@ class CORE_EXPORT CSPDirectiveList
   const String& evalDisabledErrorMessage() const {
     return m_evalDisabledErrorMessage;
   }
-  ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
-  bool didSetReferrerPolicy() const { return m_didSetReferrerPolicy; }
   bool isReportOnly() const {
     return m_headerType == ContentSecurityPolicyHeaderTypeReport;
   }
@@ -178,7 +175,6 @@ class CORE_EXPORT CSPDirectiveList
   void parseRequireSRIFor(const String& name, const String& value);
   void parseReportURI(const String& name, const String& value);
   void parsePluginTypes(const String& name, const String& value);
-  void parseReferrer(const String& name, const String& value);
   void addDirective(const String& name, const String& value);
   void applySandboxPolicy(const String& name, const String& sandboxPolicy);
   void enforceStrictMixedContentChecking(const String& name,
@@ -277,9 +273,6 @@ class CORE_EXPORT CSPDirectiveList
   ContentSecurityPolicyHeaderSource m_headerSource;
 
   bool m_hasSandboxPolicy;
-
-  bool m_didSetReferrerPolicy;
-  ReferrerPolicy m_referrerPolicy;
 
   bool m_strictMixedContentCheckingEnforced;
 

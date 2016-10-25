@@ -14,6 +14,10 @@
     header("Content-Security-Policy: connect-src 'none'");
     header("Content-Security-Policy: script-src 'self'", false);
   }
+
+  if ($_GET["referrerpolicy"]) {
+    header("Referrer-Policy: " . $_GET["referrerpolicy"]);
+  }
 ?>
 
 <?php

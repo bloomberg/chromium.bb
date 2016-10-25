@@ -194,42 +194,6 @@ TEST_F(ContentSecurityPolicyTest, IsFrameAncestorsEnforced) {
   EXPECT_TRUE(csp->isFrameAncestorsEnforced());
 }
 
-TEST_F(ContentSecurityPolicyTest, MultipleReferrerDirectives) {
-  csp->didReceiveHeader("referrer unsafe-url; referrer origin;",
-                        ContentSecurityPolicyHeaderTypeEnforce,
-                        ContentSecurityPolicyHeaderSourceHTTP);
-  csp->bindToExecutionContext(document.get());
-  EXPECT_EQ(ReferrerPolicyOrigin, document->getReferrerPolicy());
-}
-
-TEST_F(ContentSecurityPolicyTest, MultipleReferrerPolicies) {
-  csp->didReceiveHeader("referrer unsafe-url;",
-                        ContentSecurityPolicyHeaderTypeEnforce,
-                        ContentSecurityPolicyHeaderSourceHTTP);
-  csp->bindToExecutionContext(document.get());
-  EXPECT_EQ(ReferrerPolicyAlways, document->getReferrerPolicy());
-  document->parseAndSetReferrerPolicy("origin");
-  EXPECT_EQ(ReferrerPolicyOrigin, document->getReferrerPolicy());
-}
-
-TEST_F(ContentSecurityPolicyTest, UnknownReferrerDirective) {
-  csp->didReceiveHeader("referrer unsafe-url; referrer blahblahblah",
-                        ContentSecurityPolicyHeaderTypeEnforce,
-                        ContentSecurityPolicyHeaderSourceHTTP);
-  csp->bindToExecutionContext(document.get());
-  EXPECT_EQ(ReferrerPolicyAlways, document->getReferrerPolicy());
-  document->parseAndSetReferrerPolicy("origin");
-  document->parseAndSetReferrerPolicy("blahblahblah");
-  EXPECT_EQ(ReferrerPolicyOrigin, document->getReferrerPolicy());
-}
-
-TEST_F(ContentSecurityPolicyTest, EmptyReferrerDirective) {
-  csp->didReceiveHeader("referrer;", ContentSecurityPolicyHeaderTypeEnforce,
-                        ContentSecurityPolicyHeaderSourceHTTP);
-  csp->bindToExecutionContext(document.get());
-  EXPECT_EQ(ReferrerPolicyNever, document->getReferrerPolicy());
-}
-
 // Tests that frame-ancestors directives are discarded from policies
 // delivered in <meta> elements.
 TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {

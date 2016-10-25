@@ -1,6 +1,6 @@
 <?php
   header('Cache-Control: no-store');
-  header('Content-Security-Policy: referrer origin-when-cross-origin');
+  header('Referrer-Policy: origin-when-cross-origin');
   header('Content-Type: application/javascript');
 ?>
 

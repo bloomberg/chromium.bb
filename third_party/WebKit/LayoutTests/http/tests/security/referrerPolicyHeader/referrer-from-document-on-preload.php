@@ -1,5 +1,5 @@
 <?php
-header("Content-Security-Policy: referrer origin-when-cross-origin");
+header("Referrer-Policy: origin-when-cross-origin");
 ?>
 <html>
 <head>

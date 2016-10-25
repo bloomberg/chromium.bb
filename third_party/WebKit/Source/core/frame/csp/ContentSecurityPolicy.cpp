@@ -92,7 +92,6 @@ const char ContentSecurityPolicy::ChildSrc[] = "child-src";
 const char ContentSecurityPolicy::FormAction[] = "form-action";
 const char ContentSecurityPolicy::FrameAncestors[] = "frame-ancestors";
 const char ContentSecurityPolicy::PluginTypes[] = "plugin-types";
-const char ContentSecurityPolicy::Referrer[] = "referrer";
 
 // CSP Editor's Draft:
 // https://w3c.github.io/webappsec/specs/content-security-policy
@@ -126,7 +125,6 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name) {
       equalIgnoringCase(name, FormAction) ||
       equalIgnoringCase(name, FrameAncestors) ||
       equalIgnoringCase(name, PluginTypes) ||
-      equalIgnoringCase(name, Referrer) ||
       equalIgnoringCase(name, ManifestSrc) ||
       equalIgnoringCase(name, BlockAllMixedContent) ||
       equalIgnoringCase(name, UpgradeInsecureRequests) ||
@@ -191,7 +189,6 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone),
       m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone),
       m_sandboxMask(0),
-      m_referrerPolicy(ReferrerPolicyDefault),
       m_treatAsPublicAddress(false),
       m_insecureRequestPolicy(kLeaveInsecureRequestsAlone) {}
 
@@ -214,9 +211,6 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext() {
          m_executionContext->securityContext().getSecurityOrigin());
 
   setupSelf(*m_executionContext->securityContext().getSecurityOrigin());
-
-  if (didSetReferrerPolicy())
-    m_executionContext->setReferrerPolicy(m_referrerPolicy);
 
   // If we're in a Document, set mixed content checking and sandbox
   // flags, then dump all the parsing error messages, then poke at histograms.
@@ -363,12 +357,6 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(
     //        ^                  ^
     Member<CSPDirectiveList> policy =
         CSPDirectiveList::create(this, begin, position, type, source);
-
-    // When a referrer policy has already been set, the most recent
-    // one takes precedence.
-    if (type != ContentSecurityPolicyHeaderTypeReport &&
-        policy->didSetReferrerPolicy())
-      m_referrerPolicy = policy->getReferrerPolicy();
 
     if (!policy->allowEval(0, SuppressReport) &&
         m_disableEvalErrorMessage.isNull())
@@ -1008,14 +996,6 @@ bool ContentSecurityPolicy::isActive() const {
   return !m_policies.isEmpty();
 }
 
-bool ContentSecurityPolicy::didSetReferrerPolicy() const {
-  for (const auto& policy : m_policies) {
-    if (policy->didSetReferrerPolicy())
-      return true;
-  }
-  return false;
-}
-
 const KURL ContentSecurityPolicy::url() const {
   return m_executionContext->contextURL();
 }
@@ -1270,15 +1250,6 @@ void ContentSecurityPolicy::reportMixedContent(const KURL& mixedURL,
                                                RedirectStatus redirectStatus) {
   for (const auto& policy : m_policies)
     policy->reportMixedContent(mixedURL, redirectStatus);
-}
-
-void ContentSecurityPolicy::reportInvalidReferrer(const String& invalidValue) {
-  logToConsole(
-      "The 'referrer' Content Security Policy directive has the invalid value "
-      "\"" +
-      invalidValue +
-      "\". Valid values are \"no-referrer\", \"no-referrer-when-downgrade\", "
-      "\"origin\", \"origin-when-cross-origin\", and \"unsafe-url\".");
 }
 
 void ContentSecurityPolicy::reportReportOnlyInMeta(const String& header) {
