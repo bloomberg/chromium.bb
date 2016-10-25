@@ -964,6 +964,11 @@ class TempDirTestCase(TestCase):
       self._tempdir_obj = None
       self.tempdir = None
 
+  def ExpectRootOwnedFiles(self):
+    """Tells us that we may need to clean up root owned files."""
+    if self._tempdir_obj is not None:
+      self._tempdir_obj.SetSudoRm()
+
   def assertFileContents(self, file_path, content):
     """Assert that the file contains the given content."""
     self.assertExists(file_path)

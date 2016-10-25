@@ -85,15 +85,15 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
       path = os.path.join(dirname, 'foon')
       os.makedirs(dirname)
       open(path, 'w').close()
-      self.assertTrue(os.path.exists(path))
+      self.assertExists(path)
       if sudo:
         cros_build_lib.SudoRunCommand(
             ['chown', 'root:root', '-R', '--', dirname], print_cmd=False)
         self.assertRaises(EnvironmentError, os.unlink, path)
       self.assertTrue(osutils.SafeUnlink(path, sudo=sudo))
-      self.assertFalse(os.path.exists(path))
+      self.assertNotExists(path)
       self.assertFalse(osutils.SafeUnlink(path))
-      self.assertFalse(os.path.exists(path))
+      self.assertNotExists(path)
 
     f("nonsudo", False)
     f("sudo", True)
@@ -102,9 +102,9 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     """Test creating directory trees work (existing or not)."""
     path = os.path.join(self.tempdir, 'a', 'b', 'c', 'd', 'e')
     self.assertTrue(osutils.SafeMakedirs(path))
-    self.assertTrue(os.path.exists(path))
+    self.assertExists(path)
     self.assertFalse(osutils.SafeMakedirs(path))
-    self.assertTrue(os.path.exists(path))
+    self.assertExists(path)
 
   def testSafeMakedirs_error(self):
     """Check error paths."""
@@ -113,14 +113,34 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
 
   def testSafeMakedirsSudo(self):
     """Test creating directory trees work as root (existing or not)."""
+    self.ExpectRootOwnedFiles()
     path = os.path.join(self.tempdir, 'a', 'b', 'c', 'd', 'e')
     self.assertTrue(osutils.SafeMakedirs(path, sudo=True))
-    self.assertTrue(os.path.exists(path))
+    self.assertExists(path)
     self.assertFalse(osutils.SafeMakedirs(path, sudo=True))
-    self.assertTrue(os.path.exists(path))
+    self.assertExists(path)
     self.assertEqual(os.stat(path).st_uid, 0)
-    # Have to manually clean up as a non-root `rm -rf` will fail.
-    cros_build_lib.SudoRunCommand(['rm', '-rf', self.tempdir], print_cmd=False)
+
+  def testSafeMakedirsNoSudoRootOwnedDirs(self):
+    """Test that we can recover some root owned directories."""
+    self.ExpectRootOwnedFiles()
+    root_owned_prefix = os.path.join(self.tempdir, 'root_owned_prefix')
+    root_owned_dir = os.path.join(root_owned_prefix, 'root_owned_dir')
+    non_root_dir = os.path.join(root_owned_prefix, 'non_root_dir')
+    self.assertTrue(osutils.SafeMakedirs(root_owned_dir, sudo=True))
+    self.assertExists(root_owned_prefix)
+    self.assertEqual(os.stat(root_owned_prefix).st_uid, 0)
+    self.assertExists(root_owned_dir)
+    self.assertEqual(os.stat(root_owned_dir).st_uid, 0)
+
+    # Test that we can reclaim a root-owned dir.
+    # Note, return value is False because the directory already exists.
+    self.assertFalse(osutils.SafeMakedirsNonRoot(root_owned_dir))
+    self.assertNotEqual(os.stat(root_owned_dir).st_uid, 0)
+
+    # Test that we can create a non-root directory in a root-path.
+    self.assertTrue(osutils.SafeMakedirsNonRoot(non_root_dir))
+    self.assertNotEqual(os.stat(non_root_dir).st_uid, 0)
 
   def testRmDir(self):
     """Test that removing dirs work."""
@@ -134,7 +154,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
 
     osutils.SafeMakedirs(path)
     osutils.RmDir(path)
-    self.assertFalse(os.path.exists(path))
+    self.assertNotExists(path)
 
   def testRmDirSudo(self):
     """Test that removing dirs via sudo works."""
@@ -149,17 +169,17 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
   def testTouchFile(self):
     """Test that we can touch files."""
     path = os.path.join(self.tempdir, 'touchit')
-    self.assertFalse(os.path.exists(path))
+    self.assertNotExists(path)
     osutils.Touch(path)
-    self.assertTrue(os.path.exists(path))
+    self.assertExists(path)
     self.assertEqual(os.path.getsize(path), 0)
 
   def testTouchFileSubDir(self):
     """Test that we can touch files in non-existent subdirs."""
     path = os.path.join(self.tempdir, 'a', 'b', 'c', 'touchit')
-    self.assertFalse(os.path.exists(os.path.dirname(path)))
+    self.assertNotExists(os.path.dirname(path))
     osutils.Touch(path, makedirs=True)
-    self.assertTrue(os.path.exists(path))
+    self.assertExists(path)
     self.assertEqual(os.path.getsize(path), 0)
 
 
@@ -324,7 +344,7 @@ class MountTests(cros_test_lib.TestCase):
         cleaned = True
 
         # Finally make sure it's cleaned up.
-        self.assertFalse(os.path.exists(tempdir))
+        self.assertNotExists(tempdir)
       finally:
         if not cleaned:
           cros_build_lib.SudoRunCommand(['umount', '-lf', tempdir],

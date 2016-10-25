@@ -259,16 +259,27 @@ def SafeMakedirsNonRoot(path, mode=0o775, user=None):
   if user is None or user == 'root':
     raise MakingDirsAsRoot('Refusing to create %s as root!' % path)
 
-  created = SafeMakedirs(path, mode=mode, user=user)
-  # Temporary fix: if the directory already exists and is owned by
-  # root, chown it. This corrects existing root-owned directories.
-  if not created:
-    stat_info = os.stat(path)
-    if stat_info.st_uid == 0:
-      cros_build_lib.SudoRunCommand(['chown', user, path],
-                                    print_cmd=False,
-                                    redirect_stderr=True,
-                                    redirect_stdout=True)
+  created = False
+  should_chown = False
+  try:
+    created = SafeMakedirs(path, mode=mode, user=user)
+    if not created:
+      # Sometimes, the directory exists, but is owned by root. As a HACK, we
+      # will chown it to the requested user.
+      stat_info = os.stat(path)
+      should_chown = (stat_info.st_uid == 0)
+  except OSError as e:
+    if e.errno == errno.EACCES:
+      # Sometimes, (a prefix of the) path we're making the directory in may be
+      # owned by root, and so we fail. As a HACK, use da power to create
+      # directory and then chown it.
+      created = should_chown = SafeMakedirs(path, mode=mode, sudo=True)
+
+  if should_chown:
+    cros_build_lib.SudoRunCommand(['chown', user, path],
+                                  print_cmd=False,
+                                  redirect_stderr=True,
+                                  redirect_stdout=True)
   return created
 
 
@@ -535,6 +546,10 @@ class TempDir(object):
     self.sudo_rm = kwargs.pop('sudo_rm', False)
     self.tempdir = None
     _TempDirSetup(self, **kwargs)
+
+  def SetSudoRm(self, enable=True):
+    """Sets |sudo_rm|, which forces us to delete temporary files as root."""
+    self.sudo_rm = enable
 
   def Cleanup(self):
     """Clean up the temporary directory."""
