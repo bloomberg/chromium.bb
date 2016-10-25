@@ -63,7 +63,6 @@
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
-#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -124,7 +123,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -138,7 +136,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -147,10 +144,8 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
@@ -479,74 +474,6 @@ bool IsJavascriptEnabled(content::WebContents* contents) {
 bool IsNetworkPredictionEnabled(PrefService* prefs) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(prefs) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
-}
-
-void CopyPluginListAndQuit(std::vector<content::WebPluginInfo>* out,
-                           const std::vector<content::WebPluginInfo>& in) {
-  *out = in;
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
-template<typename T>
-void CopyValueAndQuit(T* out, T in) {
-  *out = in;
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
-void GetPluginList(std::vector<content::WebPluginInfo>* plugins) {
-  content::PluginService* service = content::PluginService::GetInstance();
-  service->GetPlugins(base::Bind(CopyPluginListAndQuit, plugins));
-  content::RunMessageLoop();
-}
-
-const content::WebPluginInfo* GetFlashPlugin(
-    const std::vector<content::WebPluginInfo>& plugins) {
-  const content::WebPluginInfo* flash = NULL;
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    if (plugins[i].name == base::ASCIIToUTF16(content::kFlashPluginName)) {
-      flash = &plugins[i];
-      break;
-    }
-  }
-#if defined(OFFICIAL_BUILD)
-  // Official builds bundle Flash.
-  EXPECT_TRUE(flash);
-#else
-  if (!flash)
-    LOG(INFO) << "Test skipped because the Flash plugin couldn't be found.";
-#endif
-  return flash;
-}
-
-bool SetPluginEnabled(PluginPrefs* plugin_prefs,
-                      const content::WebPluginInfo* plugin,
-                      bool enabled) {
-  bool ok = false;
-  plugin_prefs->EnablePlugin(enabled, plugin->path,
-                             base::Bind(CopyValueAndQuit<bool>, &ok));
-  content::RunMessageLoop();
-  return ok;
-}
-
-int CountPluginsOnIOThread() {
-  int count = 0;
-  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
-      count++;
-    }
-  }
-  return count;
-}
-
-int CountPlugins() {
-  int count = -1;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(CountPluginsOnIOThread),
-      base::Bind(CopyValueAndQuit<int>, &count));
-  content::RunMessageLoop();
-  EXPECT_GE(count, 0);
-  return count;
 }
 
 void FlushBlacklistPolicy() {
@@ -1358,158 +1285,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisablePacHttpsUrlStripping) {
 
   // It should now reflect as disabled.
   EXPECT_FALSE(GetPacHttpsUrlStrippingEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPlugins) {
-  // Verifies that plugins can be forced to be disabled by policy.
-
-  // Verify that the Flash plugin exists and that it can be enabled and disabled
-  // by the user.
-  std::vector<content::WebPluginInfo> plugins;
-  GetPluginList(&plugins);
-  const content::WebPluginInfo* flash = GetFlashPlugin(plugins);
-  if (!flash)
-    return;
-  PluginPrefs* plugin_prefs =
-      PluginPrefs::GetForProfile(browser()->profile()).get();
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
-  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
-  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, true));
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-
-  // Now disable it with a policy.
-  base::ListValue disabled_plugins;
-  disabled_plugins.AppendString("*Flash*");
-  PolicyMap policies;
-  policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, disabled_plugins.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
-  // The user shouldn't be able to enable it.
-  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
-  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
-  // Verifies that plugins with an exception in the blacklist can be enabled.
-
-  // Verify that the Flash plugin exists and that it can be enabled and disabled
-  // by the user.
-  std::vector<content::WebPluginInfo> plugins;
-  GetPluginList(&plugins);
-  const content::WebPluginInfo* flash = GetFlashPlugin(plugins);
-  if (!flash)
-    return;
-  PluginPrefs* plugin_prefs =
-      PluginPrefs::GetForProfile(browser()->profile()).get();
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-
-  // Disable all plugins.
-  base::ListValue disabled_plugins;
-  disabled_plugins.AppendString("*");
-  PolicyMap policies;
-  policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, disabled_plugins.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
-  // The user shouldn't be able to enable it.
-  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
-  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
-
-  // Now open an exception for flash.
-  base::ListValue disabled_plugins_exceptions;
-  disabled_plugins_exceptions.AppendString("*Flash*");
-  policies.Set(key::kDisabledPluginsExceptions, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               disabled_plugins_exceptions.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  // It should revert to the user's preference automatically.
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-  // And the user should be able to disable and enable again.
-  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
-  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
-  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, true));
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
-  // Verifies that a plugin can be force-installed with a policy.
-  std::vector<content::WebPluginInfo> plugins;
-  GetPluginList(&plugins);
-  const content::WebPluginInfo* flash = GetFlashPlugin(plugins);
-  if (!flash)
-    return;
-  PluginPrefs* plugin_prefs =
-      PluginPrefs::GetForProfile(browser()->profile()).get();
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-
-  // The user disables it and then a policy forces it to be enabled.
-  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
-  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
-  base::ListValue plugin_list;
-  plugin_list.AppendString(content::kFlashPluginName);
-  PolicyMap policies;
-  policies.Set(key::kEnabledPlugins, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, plugin_list.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-  // The user can't disable it anymore.
-  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, false));
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-
-  // When a plugin is both enabled and disabled, the whitelist takes precedence.
-  policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, plugin_list.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
-  // Verifies that dangerous plugins can be always authorized to run with
-  // a policy.
-
-  // Verify that the test page exists. It is only present in checkouts with
-  // src-internal.
-  if (!base::PathExists(ui_test_utils::GetTestFilePath(
-      base::FilePath(FILE_PATH_LITERAL("plugin")),
-      base::FilePath(FILE_PATH_LITERAL("quicktime.html"))))) {
-    LOG(INFO) <<
-        "Test skipped because plugin/quicktime.html test file wasn't found.";
-    return;
-  }
-
-  ServeContentTestData();
-  // No plugins at startup.
-  EXPECT_EQ(0, CountPlugins());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0u, infobar_service->infobar_count());
-
-  GURL url(URLRequestMockHTTPJob::GetMockUrl("plugin/quicktime.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-  // This should have triggered the dangerous plugin infobar.
-  ASSERT_EQ(1u, infobar_service->infobar_count());
-  EXPECT_TRUE(
-      infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate());
-  // And the plugin isn't running.
-  EXPECT_EQ(0, CountPlugins());
-
-  // Now set a policy to always authorize this.
-  PolicyMap policies;
-  policies.Set(key::kAlwaysAuthorizePlugins, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::FundamentalValue>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  // Reloading the page shouldn't trigger the infobar this time.
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_EQ(0u, infobar_service->infobar_count());
-  // And the plugin started automatically.
-  EXPECT_EQ(1, CountPlugins());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
