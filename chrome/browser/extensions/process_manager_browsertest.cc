@@ -173,6 +173,9 @@ class NavigationCompletedObserver : public content::WebContentsObserver {
 // a real browser.
 class ProcessManagerBrowserTest : public ExtensionBrowserTest {
  public:
+  ProcessManagerBrowserTest() {
+    guest_view::GuestViewManager::set_factory_for_testing(&factory_);
+  }
   // Create an extension with web-accessible frames and an optional background
   // page.
   const Extension* CreateExtension(const std::string& name,
@@ -260,6 +263,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
   }
 
  private:
+  guest_view::TestGuestViewManagerFactory factory_;
   std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
 };
 
