@@ -996,8 +996,6 @@ crbug.com/249112 imported/csswg-test/css-flexbox-1/flex-minimum-height-flex-item
 crbug.com/249112 imported/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 imported/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-007.xht [ Failure ]
 
-crbug.com/656622 inspector/sources/debugger-pause/debugger-eval-while-paused-throws.html [ NeedsManualRebaseline ]
-
 # Not implemented yet
 crbug.com/336604 imported/csswg-test/css-flexbox-1/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 imported/csswg-test/css-flexbox-1/flexbox_visibility-collapse.html [ Failure ]

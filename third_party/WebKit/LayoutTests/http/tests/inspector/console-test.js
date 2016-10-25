@@ -54,6 +54,9 @@ InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessag
     var messageText = messageElement.deepTextContent().replace(/\u200b/g, "");
     // Replace scriptIds with generic scriptId string to avoid flakiness.
     messageText = messageText.replace(/VM\d+/g, "VM");
+    // Remove line and column of evaluate method.
+    messageText = messageText.replace(/(at eval \(eval at evaluate) \(:\d+:\d+\)/, '$1');
+
     if (messageText.startsWith("Navigated to")) {
         var fileName = messageText.split(" ").pop().split("/").pop();
         messageText = "Navigated to " + fileName;

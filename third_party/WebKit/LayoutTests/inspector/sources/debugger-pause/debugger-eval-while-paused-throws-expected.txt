@@ -7,7 +7,7 @@ injectedFunction()
 VM:6 Uncaught Error: injectedObj.func
     at Object.func (<anonymous>:6:23)
     at injectedFunction (<anonymous>:9:28)
-    at eval (eval at evaluate (:111:21), <anonymous>:1:1)
+    at eval (eval at evaluate, <anonymous>:1:1)
     at testFunction (test.js:23:5)
 func @ VM:6
 injectedFunction @ VM:9
@@ -16,7 +16,7 @@ testFunction @ test.js:18
 localObj.func()
 test.js:15 Uncaught Error: localObj.func
     at Object.func (test.js:20:19)
-    at eval (eval at evaluate (:111:21), <anonymous>:1:10)
+    at eval (eval at evaluate, <anonymous>:1:10)
     at testFunction (test.js:23:5)
 func @ test.js:15
 (anonymous) @ VM:1
@@ -24,7 +24,7 @@ testFunction @ test.js:18
 globalObj.func()
 test.js:6 Uncaught Error: globalObj.func
     at Object.func (test.js:11:15)
-    at eval (eval at evaluate (:111:21), <anonymous>:1:11)
+    at eval (eval at evaluate, <anonymous>:1:11)
     at testFunction (test.js:23:5)
 func @ test.js:6
 (anonymous) @ VM:1
