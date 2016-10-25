@@ -272,6 +272,12 @@ RenderViewHostImpl::RenderViewHostImpl(
 
   GetProcess()->AddObserver(this);
 
+  // New views may be created during RenderProcessHost::ProcessDied(), within a
+  // brief window where the internal ChannelProxy is null. This ensures that the
+  // ChannelProxy is re-initialized in such cases so that subsequent messages
+  // make their way to the new renderer once its restarted.
+  GetProcess()->EnableSendQueue();
+
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

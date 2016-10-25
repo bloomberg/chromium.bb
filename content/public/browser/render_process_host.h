@@ -85,6 +85,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // the process has been created, it should just call Init().
   virtual bool Init() = 0;
 
+  // Ensures that a Channel exists and is at least queueing outgoing messages
+  // if there isn't a render process connected to it yet. This may be used to
+  // ensure that in the event of a renderer crash and restart, subsequent
+  // messages sent via Send() will eventually reach the new process.
+  virtual void EnableSendQueue() = 0;
+
   // Gets the next available routing id.
   virtual int GetNextRoutingID() = 0;
 

@@ -120,6 +120,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // RenderProcessHost implementation (public portion).
   bool Init() override;
+  void EnableSendQueue() override;
   int GetNextRoutingID() override;
   void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
   void RemoveRoute(int32_t routing_id) override;
@@ -319,6 +320,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Initializes a new IPC::ChannelProxy in |channel_|, which will be connected
   // to the next child process launched for this host, if any.
   void InitializeChannelProxy();
+
+  // Resets |channel_|, removing it from the attachment broker if necessary.
+  // Always call this in lieu of directly resetting |channel_|.
+  void ResetChannelProxy();
 
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();

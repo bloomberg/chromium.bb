@@ -101,6 +101,8 @@ bool MockRenderProcessHost::Init() {
   return true;
 }
 
+void MockRenderProcessHost::EnableSendQueue() {}
+
 int MockRenderProcessHost::GetNextRoutingID() {
   return ++prev_routing_id_;
 }

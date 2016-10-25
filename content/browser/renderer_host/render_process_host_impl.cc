@@ -931,6 +931,11 @@ bool RenderProcessHostImpl::Init() {
   return true;
 }
 
+void RenderProcessHostImpl::EnableSendQueue() {
+  if (!channel_)
+    InitializeChannelProxy();
+}
+
 void RenderProcessHostImpl::InitializeChannelProxy() {
   // Generate a token used to identify the new child process.
   child_token_ = mojo::edk::GenerateRandomToken();
@@ -975,15 +980,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
       IPC::ChannelMojo::CreateServerFactory(
           bootstrap.PassInterface().PassHandle(), io_task_runner);
 
-#if USE_ATTACHMENT_BROKER
-  if (channel_) {
-    IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-        channel_.get());
-  }
-#endif
-
-  channel_.reset();
-  channel_connected_ = false;
+  ResetChannelProxy();
 
   // Do NOT expand ifdef or run time condition checks here! Synchronous
   // IPCs from browser process are banned. It is only narrowly allowed
@@ -1024,6 +1021,18 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   // We start the Channel in a paused state. It will be briefly unpaused again
   // in Init() if applicable, before process launch is initiated.
   channel_->Pause();
+}
+
+void RenderProcessHostImpl::ResetChannelProxy() {
+  if (!channel_)
+    return;
+
+#if USE_ATTACHMENT_BROKER
+  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+      channel_.get());
+#endif
+  channel_.reset();
+  channel_connected_ = false;
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {
@@ -2171,17 +2180,12 @@ void RenderProcessHostImpl::Cleanup() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   deleting_soon_ = true;
 
-#if USE_ATTACHMENT_BROKER
-  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-      channel_.get());
-#endif
-
   // It's important not to wait for the DeleteTask to delete the channel
   // proxy. Kill it off now. That way, in case the profile is going away, the
   // rest of the objects attached to this RenderProcessHost start going
   // away first, since deleting the channel proxy will post a
   // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
-  channel_.reset();
+  ResetChannelProxy();
 
   // The following members should be cleared in ProcessDied() as well!
   message_port_message_filter_ = NULL;
@@ -2668,11 +2672,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   child_process_launcher_.reset();
   is_dead_ = true;
-
-  // Clear all cached associated interface proxies as well, since these are
-  // effectively bound to the lifetime of the Channel.
-  remote_route_provider_.reset();
-  renderer_interface_.reset();
+  ResetChannelProxy();
 
   UpdateProcessPriority();
   DCHECK(!is_process_backgrounded_);
@@ -2699,7 +2699,9 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // Initialize a new ChannelProxy in case this host is re-used for a new
   // process. This ensures that new messages can be sent on the host ASAP (even
   // before Init()) and they'll eventually reach the new process.
-  InitializeChannelProxy();
+  //
+  // Note that this may have already been called by one of the above observers
+  EnableSendQueue();
 
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
