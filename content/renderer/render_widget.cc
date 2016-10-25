@@ -759,7 +759,6 @@ void RenderWidget::DidCommitCompositorFrame() {
     observer.DidCommitCompositorFrame();
   for (auto& observer : render_frame_proxies_)
     observer.DidCommitCompositorFrame();
-  input_handler_->FlushPendingInputEventAck();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {}
@@ -1695,7 +1694,6 @@ void RenderWidget::SetHidden(bool hidden) {
   // The status has changed.  Tell the RenderThread about it and ensure
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
-  input_handler_->FlushPendingInputEventAck();
 
   if (is_hidden_)
     RenderThreadImpl::current()->WidgetHidden();

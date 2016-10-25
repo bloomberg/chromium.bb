@@ -58,9 +58,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   // we should not send an extra ack (see SendAckForMouseMoveFromDebugger).
   void IgnoreAckForMouseMoveFromDebugger();
 
-  // Issue the pending InputEventAck if one exists.
-  void FlushPendingInputEventAck();
-
   bool handling_input_event() const { return handling_input_event_; }
   void set_handling_input_event(bool handling_input_event) {
     handling_input_event_ = handling_input_event;
@@ -99,13 +96,8 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
 
-  // The time spent in input handlers this frame. Used to throttle input acks.
-  base::TimeDelta total_input_handling_time_this_frame_;
-
   // Whether we should not send ack for the current mouse move.
   bool ignore_ack_for_mouse_move_from_debugger_;
-
-  std::unique_ptr<InputEventAck> pending_input_event_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetInputHandler);
 };

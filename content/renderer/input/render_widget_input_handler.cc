@@ -49,12 +49,6 @@ namespace content {
 
 namespace {
 
-// TODO(brianderson): Replace the hard-coded threshold with a fraction of
-// the BeginMainFrame interval.
-// 4166us will allow 1/4 of a 60Hz interval or 1/2 of a 120Hz interval to
-// be spent in input hanlders before input starts getting throttled.
-const int kInputHandlingTimeThrottlingThresholdMicroseconds = 4166;
-
 int64_t GetEventLatencyMicros(double event_timestamp, base::TimeTicks now) {
   return (now - base::TimeDelta::FromSecondsD(event_timestamp))
       .ToInternalValue();
@@ -401,21 +395,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
     }
   }
 
-  bool frame_pending =
-      widget_->compositor() && widget_->compositor()->BeginMainFrameRequested();
-
-  // If we don't have a fast and accurate Now(), we assume the input handlers
-  // are heavy and rate limit them.
-  bool rate_limiting_wanted = input_event.type == WebInputEvent::MouseMove ||
-                              input_event.type == WebInputEvent::MouseWheel;
-  if (rate_limiting_wanted && !start_time.is_null()) {
-    base::TimeTicks end_time = base::TimeTicks::Now();
-    total_input_handling_time_this_frame_ += (end_time - start_time);
-    rate_limiting_wanted =
-        total_input_handling_time_this_frame_.InMicroseconds() >
-        kInputHandlingTimeThrottlingThresholdMicroseconds;
-  }
-
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
 
   // Note that we can't use handling_event_type_ here since it will be
@@ -435,31 +414,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
         input_event.type, ack_result, swap_latency_info,
         std::move(event_overscroll),
         ui::WebInputEventTraits::GetUniqueTouchEventId(input_event)));
-    if (rate_limiting_wanted && frame_pending && !widget_->is_hidden()) {
-      // We want to rate limit the input events in this case, so we'll wait for
-      // painting to finish before ACKing this message.
-      TRACE_EVENT_INSTANT0(
-          "renderer",
-          "RenderWidgetInputHandler::OnHandleInputEvent ack throttled",
-          TRACE_EVENT_SCOPE_THREAD);
-      if (pending_input_event_ack_) {
-        TRACE_EVENT_ASYNC_END0(
-            "input", "RenderWidgetInputHandler::ThrottledInputEventAck",
-            pending_input_event_ack_.get());
-        // As two different kinds of events could cause us to postpone an ack
-        // we send it now, if we have one pending. The Browser should never
-        // send us the same kind of event we are delaying the ack for.
-        delegate_->OnInputEventAck(std::move(pending_input_event_ack_));
-      }
-      pending_input_event_ack_ = std::move(response);
-      TRACE_EVENT_ASYNC_BEGIN0(
-          "input", "RenderWidgetInputHandler::ThrottledInputEventAck",
-          pending_input_event_ack_.get());
-      if (widget_->compositor())
-        widget_->compositor()->NotifyInputThrottledUntilCommit();
-    } else {
-      delegate_->OnInputEventAck(std::move(response));
-    }
+    delegate_->OnInputEventAck(std::move(response));
   } else {
     DCHECK(!event_overscroll) << "Unexpected overscroll for un-acked event";
   }
@@ -544,16 +499,6 @@ bool RenderWidgetInputHandler::SendAckForMouseMoveFromDebugger() {
 
 void RenderWidgetInputHandler::IgnoreAckForMouseMoveFromDebugger() {
   ignore_ack_for_mouse_move_from_debugger_ = true;
-}
-
-void RenderWidgetInputHandler::FlushPendingInputEventAck() {
-  if (pending_input_event_ack_) {
-    TRACE_EVENT_ASYNC_END0("input",
-                           "RenderWidgetInputHandler::ThrottledInputEventAck",
-                           pending_input_event_ack_.get());
-    delegate_->OnInputEventAck(std::move(pending_input_event_ack_));
-  }
-  total_input_handling_time_this_frame_ = base::TimeDelta();
 }
 
 }  // namespace content
