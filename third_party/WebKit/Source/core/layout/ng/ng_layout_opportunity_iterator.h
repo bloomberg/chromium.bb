@@ -15,11 +15,11 @@
 
 namespace blink {
 
-typedef const NGConstraintSpace NGLayoutOpportunity;
-typedef HeapVector<Member<const NGLayoutOpportunity>> NGLayoutOpportunities;
+typedef NGLogicalRect NGLayoutOpportunity;
+typedef Vector<NGLayoutOpportunity> NGLayoutOpportunities;
 
 class CORE_EXPORT NGLayoutOpportunityIterator final
-    : public GarbageCollected<NGLayoutOpportunityIterator> {
+    : public GarbageCollectedFinalized<NGLayoutOpportunityIterator> {
  public:
   NGLayoutOpportunityIterator(NGConstraintSpace* space,
                               unsigned clear,
@@ -27,11 +27,10 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
 
   // Gets the next Layout Opportunity or nullptr if the search is exhausted.
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
-  NGLayoutOpportunity* Next();
+  const NGLayoutOpportunity Next();
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(constraint_space_);
-    visitor->trace(opportunities_);
     visitor->trace(opportunity_tree_root_);
   }
 
@@ -49,7 +48,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   Member<NGConstraintSpace> constraint_space_;
 
   NGLayoutOpportunities opportunities_;
-  Vector<Member<NGLayoutOpportunity>>::const_iterator opportunity_iter_;
+  NGLayoutOpportunities::const_iterator opportunity_iter_;
   Member<NGLayoutOpportunityTreeNode> opportunity_tree_root_;
 };
 

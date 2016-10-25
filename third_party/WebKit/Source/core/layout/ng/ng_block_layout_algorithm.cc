@@ -28,12 +28,12 @@ LayoutUnit ComputeCollapsedMarginBlockStart(
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
 NGExclusion* CreateExclusion(const NGFragment& fragment,
-                             const NGConstraintSpace* opportunity,
+                             const NGLayoutOpportunity& opportunity,
                              LayoutUnit float_offset,
                              NGBoxStrut margins) {
-  LayoutUnit exclusion_top = opportunity->Offset().block_offset;
+  LayoutUnit exclusion_top = opportunity.offset.block_offset;
 
-  LayoutUnit exclusion_left = opportunity->Offset().inline_offset;
+  LayoutUnit exclusion_left = opportunity.offset.inline_offset;
   exclusion_left += float_offset;
 
   LayoutUnit exclusion_bottom = exclusion_top + fragment.BlockSize();
@@ -56,25 +56,29 @@ NGExclusion* CreateExclusion(const NGFragment& fragment,
 //              the fragment.
 // @param fragment Fragment that needs to be placed.
 // @return Layout opportunity for the fragment.
-const NGConstraintSpace* FindLayoutOpportunityForFragment(
+const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     const Member<NGConstraintSpace>& space,
     const NGFragment& fragment) {
   NGLayoutOpportunityIterator* opportunity_iter = space->LayoutOpportunities();
-  const NGConstraintSpace* opportunity = nullptr;
-  while (const NGConstraintSpace* opportunity_candidate =
-             opportunity_iter->Next()) {
+  NGLayoutOpportunity opportunity;
+  NGLayoutOpportunity opportunity_candidate = opportunity_iter->Next();
+
+  while (!opportunity_candidate.IsEmpty()) {
     opportunity = opportunity_candidate;
     // Checking opportunity's block size is not necessary as a float cannot be
     // positioned on top of another float inside of the same constraint space.
-    if (opportunity->Size().inline_size > fragment.InlineSize())
+    if (opportunity.size.inline_size > fragment.InlineSize())
       break;
+
+    opportunity_candidate = opportunity_iter->Next();
   }
+
   return opportunity;
 }
 
 // Calculates the logical offset for opportunity.
 NGLogicalOffset CalculateLogicalOffsetForOpportunity(
-    const NGConstraintSpace* opportunity,
+    const NGLayoutOpportunity& opportunity,
     NGBoxStrut border_padding,
     LayoutUnit float_offset,
     NGBoxStrut margins) {
@@ -89,8 +93,8 @@ NGLogicalOffset CalculateLogicalOffsetForOpportunity(
   block_offset += margins.block_start;
 
   // Offset from the opportunity's block/inline start.
-  inline_offset += opportunity->Offset().inline_offset;
-  block_offset += opportunity->Offset().block_offset;
+  inline_offset += opportunity.offset.inline_offset;
+  block_offset += opportunity.offset.block_offset;
 
   inline_offset += float_offset;
 
@@ -323,14 +327,14 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
     NGBoxStrut margins) {
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.
-  const NGConstraintSpace* opportunity = FindLayoutOpportunityForFragment(
+  const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
       constraint_space_for_children_, fragment);
-  DCHECK(opportunity) << "Opportunity is NULL but it shouldn't be";
+  DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.
   LayoutUnit float_offset;
   if (current_child_->Style()->floating() == EFloat::Right) {
-    float_offset = opportunity->Size().inline_size - fragment.InlineSize();
+    float_offset = opportunity.size.inline_size - fragment.InlineSize();
   }
 
   // Add the float as an exclusion.

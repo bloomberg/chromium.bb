@@ -28,15 +28,6 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
       writing_mode_(writing_mode),
       direction_(direction) {}
 
-NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
-                                     NGLogicalOffset offset,
-                                     NGLogicalSize size)
-    : physical_space_(other.MutablePhysicalSpace()),
-      offset_(offset),
-      size_(size),
-      writing_mode_(other.WritingMode()),
-      direction_(other.Direction()) {}
-
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
                                      const NGConstraintSpace& other,

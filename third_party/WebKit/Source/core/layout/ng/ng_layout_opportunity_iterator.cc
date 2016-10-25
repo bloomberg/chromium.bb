@@ -17,7 +17,7 @@ void CollectAllOpportunities(const NGLayoutOpportunityTreeNode* node,
   if (!node)
     return;
   if (node->IsLeafNode())
-    opportunities.append(node->space);
+    opportunities.append(node->opportunity);
   CollectAllOpportunities(node->left, opportunities);
   CollectAllOpportunities(node->bottom, opportunities);
   CollectAllOpportunities(node->right, opportunities);
@@ -29,12 +29,12 @@ bool IsOverlapping(const NGEdge& edge1, const NGEdge& edge2) {
 }
 
 // Whether the exclusion is out of bounds of the LayoutNG constraint space.
-bool IsExclusionWithinSpace(const NGConstraintSpace& space,
+bool IsExclusionWithinSpace(const NGLayoutOpportunity& opportunity,
                             const NGExclusion& exclusion) {
-  LayoutUnit left = space.Offset().inline_offset;
-  LayoutUnit top = space.Offset().block_offset;
-  LayoutUnit right = left + space.Size().inline_size;
-  LayoutUnit bottom = top + space.Size().block_size;
+  LayoutUnit left = opportunity.offset.inline_offset;
+  LayoutUnit top = opportunity.offset.block_offset;
+  LayoutUnit right = left + opportunity.size.inline_size;
+  LayoutUnit bottom = top + opportunity.size.block_size;
 
   return !(exclusion.Right() <= left || exclusion.Bottom() <= top ||
            exclusion.Left() >= right || exclusion.Top() >= bottom);
@@ -49,20 +49,18 @@ bool IsExclusionWithinSpace(const NGConstraintSpace& space,
 NGLayoutOpportunityTreeNode* CreateBottomNGLayoutOpportunityTreeNode(
     const NGLayoutOpportunityTreeNode* parent_node,
     const NGExclusion& exclusion) {
-  const NGConstraintSpace& parent_space = *parent_node->space;
-  LayoutUnit left = parent_space.Offset().inline_offset;
+  const NGLayoutOpportunity& parent_opportunity = parent_node->opportunity;
+  LayoutUnit left = parent_opportunity.offset.inline_offset;
   LayoutUnit top = exclusion.Bottom();
-  LayoutUnit right = left + parent_space.Size().inline_size;
-  LayoutUnit bottom =
-      parent_space.Offset().block_offset + parent_space.Size().block_size;
+  LayoutUnit right = left + parent_opportunity.size.inline_size;
+  LayoutUnit bottom = parent_opportunity.offset.block_offset +
+                      parent_opportunity.size.block_size;
 
   NGEdge exclusion_edge = {exclusion.Left(), exclusion.Right()};
   LayoutUnit block_size = bottom - top;
   if (block_size > 0) {
-    auto* space =
-        new NGConstraintSpace(parent_space, NGLogicalOffset(left, top),
-                              NGLogicalSize(right - left, block_size));
-    return new NGLayoutOpportunityTreeNode(space, exclusion_edge);
+    NGLayoutOpportunity opportunity(left, top, right - left, block_size);
+    return new NGLayoutOpportunityTreeNode(opportunity, exclusion_edge);
   }
   return nullptr;
 }
@@ -77,20 +75,18 @@ NGLayoutOpportunityTreeNode* CreateBottomNGLayoutOpportunityTreeNode(
 NGLayoutOpportunityTreeNode* CreateLeftNGLayoutOpportunityTreeNode(
     const NGLayoutOpportunityTreeNode* parent_node,
     const NGExclusion& exclusion) {
-  const NGConstraintSpace& parent_space = *parent_node->space;
-  LayoutUnit left = parent_space.Offset().inline_offset;
-  LayoutUnit top = parent_space.Offset().block_offset;
+  const NGLayoutOpportunity& parent_opportunity = parent_node->opportunity;
+  LayoutUnit left = parent_opportunity.offset.inline_offset;
+  LayoutUnit top = parent_opportunity.offset.block_offset;
   LayoutUnit right = exclusion.Left();
-  LayoutUnit bottom = top + parent_space.Size().block_size;
+  LayoutUnit bottom = top + parent_opportunity.size.block_size;
 
   NGEdge node_edge = {left, right};
   LayoutUnit inline_size = right - left;
   if (inline_size > 0 &&
       IsOverlapping(parent_node->exclusion_edge, node_edge)) {
-    auto* space =
-        new NGConstraintSpace(parent_space, NGLogicalOffset(left, top),
-                              NGLogicalSize(inline_size, bottom - top));
-    return new NGLayoutOpportunityTreeNode(space);
+    NGLayoutOpportunity opportunity(left, top, inline_size, bottom - top);
+    return new NGLayoutOpportunityTreeNode(opportunity);
   }
   return nullptr;
 }
@@ -105,21 +101,19 @@ NGLayoutOpportunityTreeNode* CreateLeftNGLayoutOpportunityTreeNode(
 NGLayoutOpportunityTreeNode* CreateRightNGLayoutOpportunityTreeNode(
     const NGLayoutOpportunityTreeNode* parent_node,
     const NGExclusion& exclusion) {
-  const NGConstraintSpace& parent_space = *parent_node->space;
+  const NGLayoutOpportunity& parent_opportunity = parent_node->opportunity;
   LayoutUnit left = exclusion.Right();
-  LayoutUnit top = parent_space.Offset().block_offset;
-  LayoutUnit right =
-      parent_space.Offset().inline_offset + parent_space.Size().inline_size;
-  LayoutUnit bottom = top + parent_space.Size().block_size;
+  LayoutUnit top = parent_opportunity.offset.block_offset;
+  LayoutUnit right = parent_opportunity.offset.inline_offset +
+                     parent_opportunity.size.inline_size;
+  LayoutUnit bottom = top + parent_opportunity.size.block_size;
 
   NGEdge node_edge = {left, right};
   LayoutUnit inline_size = right - left;
   if (inline_size > 0 &&
       IsOverlapping(parent_node->exclusion_edge, node_edge)) {
-    auto* space =
-        new NGConstraintSpace(parent_space, NGLogicalOffset(left, top),
-                              NGLogicalSize(inline_size, bottom - top));
-    return new NGLayoutOpportunityTreeNode(space);
+    NGLayoutOpportunity opportunity(left, top, inline_size, bottom - top);
+    return new NGLayoutOpportunityTreeNode(opportunity);
   }
   return nullptr;
 }
@@ -130,18 +124,18 @@ NGLayoutOpportunityTreeNode* CreateRightNGLayoutOpportunityTreeNode(
 // @param parent_node Node that needs to be split.
 // @param exclusion Exclusion existed in the parent node constraint space.
 // @return New node or nullptr if the new block size == 0.
-NGConstraintSpace* GetTopSpace(const NGConstraintSpace& space,
-                               const NGExclusion& exclusion) {
-  LayoutUnit left = space.Offset().inline_offset;
-  LayoutUnit top = space.Offset().block_offset;
-  LayoutUnit right = left + space.Size().inline_size;
+NGLayoutOpportunity GetTopSpace(const NGLayoutOpportunity& rect,
+                                const NGExclusion& exclusion) {
+  LayoutUnit left = rect.offset.inline_offset;
+  LayoutUnit top = rect.offset.block_offset;
+  LayoutUnit right = left + rect.size.inline_size;
   LayoutUnit bottom = exclusion.Top();
 
   LayoutUnit block_size = bottom - top;
   if (block_size > 0)
-    return new NGConstraintSpace(space, NGLogicalOffset(left, top),
-                                 NGLogicalSize(right - left, block_size));
-  return nullptr;
+    return NGLayoutOpportunity(left, top, right - left, block_size);
+
+  return NGLayoutOpportunity();
 }
 
 // Inserts the exclusion into the Layout Opportunity tree.
@@ -153,7 +147,7 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
     return;
 
   // Base case: exclusion is not in the node's constraint space.
-  if (!IsExclusionWithinSpace(*node->space, *exclusion))
+  if (!IsExclusionWithinSpace(node->opportunity, *exclusion))
     return;
 
   if (node->exclusion) {
@@ -168,8 +162,11 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
   node->right = CreateRightNGLayoutOpportunityTreeNode(node, *exclusion);
   node->bottom = CreateBottomNGLayoutOpportunityTreeNode(node, *exclusion);
 
-  if (auto* topSpace = GetTopSpace(*node->space, *exclusion))
-    opportunities.append(topSpace);
+  NGLayoutOpportunity top_layout_opp =
+      GetTopSpace(node->opportunity, *exclusion);
+  if (!top_layout_opp.IsEmpty())
+    opportunities.append(top_layout_opp);
+
   node->exclusion = exclusion;
 }
 
@@ -182,27 +179,26 @@ bool CompareNGExclusionsByTopAsc(const Member<const NGExclusion>& lhs,
 // Compares Layout Opportunities by Start Point.
 // Start point is a TopLeft position from where inline content can potentially
 // start positioning itself.
-bool CompareNGLayoutOpportunitesByStartPoint(
-    const Member<const NGLayoutOpportunity>& lhs,
-    const Member<const NGLayoutOpportunity>& rhs) {
+bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
+                                             const NGLayoutOpportunity& rhs) {
   // sort by TOP.
-  if (rhs->Offset().block_offset > lhs->Offset().block_offset) {
+  if (rhs.offset.block_offset > lhs.offset.block_offset) {
     return true;
   }
-  if (rhs->Offset().block_offset < lhs->Offset().block_offset) {
+  if (rhs.offset.block_offset < lhs.offset.block_offset) {
     return false;
   }
 
   // TOP is the same -> Sort by LEFT
-  if (rhs->Offset().inline_offset > lhs->Offset().inline_offset) {
+  if (rhs.offset.inline_offset > lhs.offset.inline_offset) {
     return true;
   }
-  if (rhs->Offset().inline_offset < lhs->Offset().inline_offset) {
+  if (rhs.offset.inline_offset < lhs.offset.inline_offset) {
     return false;
   }
 
   // TOP and LEFT are the same -> Sort by width
-  return rhs->Size().inline_size < lhs->Size().inline_size;
+  return rhs.size.inline_size < lhs.size.inline_size;
 }
 
 }  // namespace
@@ -218,7 +214,10 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
                         &CompareNGExclusionsByTopAsc))
       << "Exclusions are expected to be sorted by TOP";
 
-  opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(space);
+  opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(NGLayoutOpportunity(
+      space->Offset().inline_offset, space->Offset().block_offset,
+      space->Size().inline_size, space->Size().block_size));
+
   for (const auto exclusion : exclusions) {
     InsertExclusion(MutableOpportunityTreeRoot(), exclusion, opportunities_);
   }
@@ -228,12 +227,12 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
   opportunity_iter_ = opportunities_.begin();
 }
 
-const NGConstraintSpace* NGLayoutOpportunityIterator::Next() {
+const NGLayoutOpportunity NGLayoutOpportunityIterator::Next() {
   if (opportunity_iter_ == opportunities_.end())
-    return nullptr;
-  auto* opportunity = opportunity_iter_->get();
+    return NGLayoutOpportunity();
+  auto* opportunity = opportunity_iter_;
   opportunity_iter_++;
-  return opportunity;
+  return NGLayoutOpportunity(*opportunity);
 }
 
 }  // namespace blink

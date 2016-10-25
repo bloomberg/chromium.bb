@@ -32,20 +32,20 @@ struct NGExclusion : public GarbageCollected<NGExclusion> {
               LayoutUnit right,
               LayoutUnit bottom,
               LayoutUnit left) {
-    rect.location.left = left;
-    rect.location.top = top;
+    rect.offset.left = left;
+    rect.offset.top = top;
     rect.size.width = right - left;
     rect.size.height = bottom - top;
   }
-  LayoutUnit Top() const { return rect.location.top; }
-  LayoutUnit Right() const { return rect.size.width + rect.location.left; }
-  LayoutUnit Bottom() const { return rect.size.height + rect.location.top; }
-  LayoutUnit Left() const { return rect.location.left; }
+  LayoutUnit Top() const { return rect.offset.top; }
+  LayoutUnit Right() const { return rect.size.width + rect.offset.left; }
+  LayoutUnit Bottom() const { return rect.size.height + rect.offset.top; }
+  LayoutUnit Left() const { return rect.offset.left; }
 
   String ToString() const {
     return String::format("%s,%s %sx%s",
-                          rect.location.left.toString().ascii().data(),
-                          rect.location.top.toString().ascii().data(),
+                          rect.offset.left.toString().ascii().data(),
+                          rect.offset.top.toString().ascii().data(),
                           rect.size.width.toString().ascii().data(),
                           rect.size.height.toString().ascii().data());
   }

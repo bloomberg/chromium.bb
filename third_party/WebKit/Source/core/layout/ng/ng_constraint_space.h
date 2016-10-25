@@ -37,14 +37,6 @@ class CORE_EXPORT NGConstraintSpace final
   // TODO(layout-dev): Remove once NGConstraintSpaceBuilder exists.
   NGConstraintSpace(NGWritingMode, NGDirection, NGLogicalSize);
 
-  // Constructs a derived constraint space sharing the same backing
-  // NGPhysicalConstraintSpace, NGWritingMode and NGDirection. Primarily for use
-  // by NGLayoutOpportunityIterator.
-  // TODO(layout-dev): Remove once NGConstraintSpaceBuilder exists.
-  NGConstraintSpace(const NGConstraintSpace& other,
-                    NGLogicalOffset,
-                    NGLogicalSize);
-
   // Constructs a derived constraint space that shares the exclusions of the
   // input constraint space, but has a different container size, writing mode
   // and direction. Sets the offset to zero. For use by layout algorithms

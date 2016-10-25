@@ -13,9 +13,31 @@ NGPhysicalSize NGLogicalSize::ConvertToPhysical(NGWritingMode mode) const {
                                      : NGPhysicalSize(block_size, inline_size);
 }
 
+bool NGLogicalSize::operator==(const NGLogicalSize& other) const {
+  return std::tie(other.inline_size, other.block_size) ==
+         std::tie(inline_size, block_size);
+}
+
 NGLogicalSize NGPhysicalSize::ConvertToLogical(NGWritingMode mode) const {
   return mode == HorizontalTopBottom ? NGLogicalSize(width, height)
                                      : NGLogicalSize(height, width);
+}
+
+bool NGLogicalRect::IsEmpty() const {
+  // TODO(layout-dev): equality check shouldn't allocate an object each time.
+  return *this == NGLogicalRect();
+}
+
+bool NGLogicalRect::operator==(const NGLogicalRect& other) const {
+  return std::tie(other.offset, other.size) == std::tie(offset, size);
+}
+
+String NGLogicalRect::ToString() const {
+  return String::format("%s,%s %sx%s",
+                        offset.inline_offset.toString().ascii().data(),
+                        offset.block_offset.toString().ascii().data(),
+                        size.inline_size.toString().ascii().data(),
+                        size.block_size.toString().ascii().data());
 }
 
 NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
@@ -59,6 +81,11 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
       ASSERT_NOT_REACHED();
       return NGPhysicalOffset();
   }
+}
+
+bool NGLogicalOffset::operator==(const NGLogicalOffset& other) const {
+  return std::tie(other.inline_offset, other.block_offset) ==
+         std::tie(inline_offset, block_offset);
 }
 
 bool NGBoxStrut::IsEmpty() const {

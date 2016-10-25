@@ -26,6 +26,7 @@ struct NGLogicalSize {
   LayoutUnit block_size;
 
   NGPhysicalSize ConvertToPhysical(NGWritingMode mode) const;
+  bool operator==(const NGLogicalSize& other) const;
 };
 
 // NGLogicalOffset is the position of a rect (typically a fragment) relative to
@@ -47,6 +48,7 @@ struct NGLogicalOffset {
                     NGDirection direction,
                     NGPhysicalSize container_size,
                     NGPhysicalSize inner_size) const;
+  bool operator==(const NGLogicalOffset& other) const;
 };
 
 // NGPhysicalOffset is the position of a rect (typically a fragment) relative to
@@ -82,9 +84,30 @@ struct NGPhysicalLocation {
 };
 
 struct NGPhysicalRect {
+  NGPhysicalOffset offset;
   NGPhysicalSize size;
-  NGPhysicalLocation location;
 };
+
+struct CORE_EXPORT NGLogicalRect {
+  NGLogicalRect() {}
+  NGLogicalRect(LayoutUnit inline_offset,
+                LayoutUnit block_offset,
+                LayoutUnit inline_size,
+                LayoutUnit block_size)
+      : offset(inline_offset, block_offset), size(inline_size, block_size) {}
+
+  bool IsEmpty() const;
+  String ToString() const;
+  bool operator==(const NGLogicalRect& other) const;
+
+  NGLogicalOffset offset;
+  NGLogicalSize size;
+};
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const NGLogicalRect& value) {
+  return stream << value.ToString();
+}
 
 struct NGPixelSnappedPhysicalRect {
   int top;
