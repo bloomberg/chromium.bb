@@ -23,7 +23,6 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/ipc_util.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,8 +42,6 @@ using testing::Return;
 namespace remoting {
 
 namespace {
-
-const char kIpcSecurityDescriptor[] = "D:(A;;GA;;;AU)";
 
 class MockProcessLauncherDelegate : public WorkerProcessLauncher::Delegate {
  public:
@@ -171,8 +168,8 @@ class WorkerProcessLauncherTest
   // Implements WorkerProcessLauncher::Delegate.
   std::unique_ptr<MockProcessLauncherDelegate> launcher_delegate_;
 
-  // The name of the IPC channel.
-  std::string channel_name_;
+  // The client handle to the channel.
+  mojo::ScopedMessagePipeHandle client_channel_handle_;
 
   // Client and server ends of the IPC channel.
   std::unique_ptr<IPC::ChannelProxy> channel_client_;
@@ -281,10 +278,9 @@ void WorkerProcessLauncherTest::TerminateWorker(DWORD exit_code) {
 }
 
 void WorkerProcessLauncherTest::ConnectClient() {
-  channel_client_ = IPC::ChannelProxy::Create(IPC::ChannelHandle(channel_name_),
+  channel_client_ = IPC::ChannelProxy::Create(client_channel_handle_.release(),
                                               IPC::Channel::MODE_CLIENT,
-                                              &client_listener_,
-                                              task_runner_);
+                                              &client_listener_, task_runner_);
 
   // Pretend that |kLaunchSuccessTimeoutSeconds| passed since launching
   // the worker process. This will make the backoff algorithm think that this
@@ -330,7 +326,7 @@ void WorkerProcessLauncherTest::StartWorker() {
 void WorkerProcessLauncherTest::StopWorker() {
   launcher_.reset();
   DisconnectClient();
-  channel_name_.clear();
+  client_channel_handle_.reset();
   channel_server_.reset();
   task_runner_ = nullptr;
 }
@@ -366,14 +362,12 @@ void WorkerProcessLauncherTest::DoLaunchProcess() {
   worker_process_.Set(process_information.TakeProcessHandle());
   ASSERT_TRUE(worker_process_.IsValid());
 
-  channel_name_ = IPC::Channel::GenerateUniqueRandomChannelID();
-  ScopedHandle pipe;
-  ASSERT_TRUE(CreateIpcChannel(channel_name_, kIpcSecurityDescriptor, &pipe));
+  mojo::MessagePipe pipe;
+  client_channel_handle_ = std::move(pipe.handle0);
 
   // Wrap the pipe into an IPC channel.
   channel_server_ = IPC::ChannelProxy::Create(
-      IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER, this,
-      task_runner_);
+      pipe.handle1.release(), IPC::Channel::MODE_SERVER, this, task_runner_);
 
   HANDLE temp_handle;
   ASSERT_TRUE(DuplicateHandle(GetCurrentProcess(), worker_process_.Get(),

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "base/win/startup_information.h"
 
 using base::win::ScopedHandle;
 
@@ -75,9 +76,6 @@ bool CreatePrivilegedToken(ScopedHandle* token_out) {
 
 namespace remoting {
 
-base::LazyInstance<base::Lock>::Leaky g_inherit_handles_lock =
-    LAZY_INSTANCE_INITIALIZER;
-
 // Creates a copy of the current process token for the given |session_id| so
 // it can be used to launch a process in that session.
 bool CreateSessionToken(uint32_t session_id, ScopedHandle* token_out) {
@@ -119,36 +117,62 @@ bool CreateSessionToken(uint32_t session_id, ScopedHandle* token_out) {
   return true;
 }
 
-bool LaunchProcessWithToken(const base::FilePath& binary,
-                            const base::CommandLine::StringType& command_line,
-                            HANDLE user_token,
-                            SECURITY_ATTRIBUTES* process_attributes,
-                            SECURITY_ATTRIBUTES* thread_attributes,
-                            bool inherit_handles,
-                            DWORD creation_flags,
-                            const base::char16* desktop_name,
-                            ScopedHandle* process_out,
-                            ScopedHandle* thread_out) {
+bool LaunchProcessWithToken(
+    const base::FilePath& binary,
+    const base::CommandLine::StringType& command_line,
+    HANDLE user_token,
+    SECURITY_ATTRIBUTES* process_attributes,
+    SECURITY_ATTRIBUTES* thread_attributes,
+    const base::HandlesToInheritVector& handles_to_inherit,
+    DWORD creation_flags,
+    const base::char16* desktop_name,
+    ScopedHandle* process_out,
+    ScopedHandle* thread_out) {
   base::FilePath::StringType application_name = binary.value();
 
-  STARTUPINFOW startup_info;
-  memset(&startup_info, 0, sizeof(startup_info));
-  startup_info.cb = sizeof(startup_info);
+  base::win::StartupInformation startup_info_wrapper;
+  STARTUPINFO* startup_info = startup_info_wrapper.startup_info();
   if (desktop_name)
-    startup_info.lpDesktop = const_cast<base::char16*>(desktop_name);
+    startup_info->lpDesktop = const_cast<base::char16*>(desktop_name);
 
+  bool inherit_handles = false;
+  if (!handles_to_inherit.empty()) {
+    if (handles_to_inherit.size() >
+        std::numeric_limits<DWORD>::max() / sizeof(HANDLE)) {
+      DLOG(ERROR) << "Too many handles to inherit.";
+      return false;
+    }
+
+    // Ensure the handles can be inherited.
+    for (HANDLE handle : handles_to_inherit) {
+      BOOL result = SetHandleInformation(handle, HANDLE_FLAG_INHERIT,
+                                         HANDLE_FLAG_INHERIT);
+      PCHECK(result);
+    }
+
+    if (!startup_info_wrapper.InitializeProcThreadAttributeList(
+            /* attribute_count= */ 1)) {
+      PLOG(ERROR) << "InitializeProcThreadAttributeList()";
+      return false;
+    }
+
+    if (!startup_info_wrapper.UpdateProcThreadAttribute(
+            PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+            const_cast<HANDLE*>(&handles_to_inherit.at(0)),
+            static_cast<DWORD>(handles_to_inherit.size() * sizeof(HANDLE)))) {
+      PLOG(ERROR) << "UpdateProcThreadAttribute()";
+      return false;
+    }
+
+    inherit_handles = true;
+    creation_flags |= EXTENDED_STARTUPINFO_PRESENT;
+  }
   PROCESS_INFORMATION temp_process_info = {};
-  BOOL result = CreateProcessAsUser(user_token,
-                                    application_name.c_str(),
+  BOOL result = CreateProcessAsUser(user_token, application_name.c_str(),
                                     const_cast<LPWSTR>(command_line.c_str()),
-                                    process_attributes,
-                                    thread_attributes,
-                                    inherit_handles,
-                                    creation_flags,
-                                    nullptr,
-                                    nullptr,
-                                    &startup_info,
-                                    &temp_process_info);
+                                    process_attributes, thread_attributes,
+                                    inherit_handles, creation_flags, nullptr,
+                                    nullptr, startup_info, &temp_process_info);
 
   if (!result) {
     PLOG(ERROR) << "Failed to launch a process with a user token";

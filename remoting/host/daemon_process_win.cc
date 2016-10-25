@@ -25,6 +25,7 @@
 #include "base/win/win_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
@@ -105,6 +106,11 @@ class DaemonProcessWin : public DaemonProcess {
   bool OpenPairingRegistry();
 
  private:
+  // Mojo keeps the task runner passed to it alive forever, so an
+  // AutoThreadTaskRunner should not be passed to it. Otherwise, the process may
+  // never shut down cleanly.
+  mojo::edk::ScopedIPCSupport ipc_support_;
+
   std::unique_ptr<WorkerProcessLauncher> network_launcher_;
 
   // Handle of the network process.
@@ -120,8 +126,8 @@ DaemonProcessWin::DaemonProcessWin(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
-    : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback) {
-}
+    : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback),
+      ipc_support_(io_task_runner->task_runner()) {}
 
 DaemonProcessWin::~DaemonProcessWin() {
 }
