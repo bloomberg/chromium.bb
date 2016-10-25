@@ -464,7 +464,7 @@ base::Process CloudPrintProxyPolicyStartupTest::Launch(
                          base::RandInt(0, std::numeric_limits<int>::max())));
   startup_channel_ = IPC::ChannelProxy::Create(
       mojo::edk::ConnectToPeerProcess(
-          mojo::edk::CreateServerHandle(startup_channel_handle_, false))
+          mojo::edk::CreateServerHandle(startup_channel_handle_))
           .release(),
       IPC::Channel::MODE_SERVER, this, IOTaskRunner());
 

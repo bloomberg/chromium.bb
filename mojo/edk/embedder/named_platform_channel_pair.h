@@ -28,7 +28,16 @@ namespace edk {
 // resolve it into a client handle.
 class MOJO_SYSTEM_IMPL_EXPORT NamedPlatformChannelPair {
  public:
-  NamedPlatformChannelPair();
+  struct Options {
+#if defined(OS_WIN)
+    // If non-empty, a security descriptor to use when creating the pipe. If
+    // empty, a default security descriptor will be used. See
+    // kDefaultSecurityDescriptor in named_platform_handle_utils_win.cc.
+    base::string16 security_descriptor;
+#endif
+  };
+
+  NamedPlatformChannelPair(const Options& options = {});
   ~NamedPlatformChannelPair();
 
   // Note: It is NOT acceptable to use this handle as a generic pipe channel. It

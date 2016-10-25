@@ -15,6 +15,18 @@
 
 namespace mojo {
 namespace edk {
+namespace {
+
+// A DACL to grant:
+// GA = Generic All
+// access to:
+// SY = LOCAL_SYSTEM
+// BA = BUILTIN_ADMINISTRATORS
+// OW = OWNER_RIGHTS
+constexpr base::char16 kDefaultSecurityDescriptor[] =
+    L"D:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GA;;;OW)";
+
+}  // namespace
 
 ScopedPlatformHandle CreateClientHandle(
     const NamedPlatformHandle& named_handle) {
@@ -41,27 +53,23 @@ ScopedPlatformHandle CreateClientHandle(
   return handle;
 }
 
-ScopedPlatformHandle CreateServerHandle(const NamedPlatformHandle& named_handle,
-                                        bool enforce_uniqueness) {
+ScopedPlatformHandle CreateServerHandle(
+    const NamedPlatformHandle& named_handle,
+    const CreateServerHandleOptions& options) {
   if (!named_handle.is_valid())
     return ScopedPlatformHandle();
 
   PSECURITY_DESCRIPTOR security_desc = nullptr;
   ULONG security_desc_len = 0;
-  // Create a DACL to grant:
-  // GA = Generic All
-  // access to:
-  // SY = LOCAL_SYSTEM
-  // BA = BUILTIN_ADMINISTRATORS
-  // OW = OWNER_RIGHTS
   PCHECK(ConvertStringSecurityDescriptorToSecurityDescriptor(
-      L"D:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GA;;;OW)", SDDL_REVISION_1,
-      &security_desc, &security_desc_len));
+      options.security_descriptor.empty() ? kDefaultSecurityDescriptor
+                                          : options.security_descriptor.c_str(),
+      SDDL_REVISION_1, &security_desc, &security_desc_len));
   std::unique_ptr<void, decltype(::LocalFree)*> p(security_desc, ::LocalFree);
   SECURITY_ATTRIBUTES security_attributes = {sizeof(SECURITY_ATTRIBUTES),
                                              security_desc, FALSE};
 
-  const DWORD kOpenMode = enforce_uniqueness
+  const DWORD kOpenMode = options.enforce_uniqueness
                               ? PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
                                     FILE_FLAG_FIRST_PIPE_INSTANCE
                               : PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED;
@@ -69,9 +77,9 @@ ScopedPlatformHandle CreateServerHandle(const NamedPlatformHandle& named_handle,
       PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_REJECT_REMOTE_CLIENTS;
   PlatformHandle handle(
       CreateNamedPipeW(named_handle.pipe_name().c_str(), kOpenMode, kPipeMode,
-                       enforce_uniqueness ? 1 : 255,  // Max instances.
-                       4096,                          // Out buffer size.
-                       4096,                          // In buffer size.
+                       options.enforce_uniqueness ? 1 : 255,  // Max instances.
+                       4096,  // Out buffer size.
+                       4096,  // In buffer size.
                        5000,  // Timeout in milliseconds.
                        &security_attributes));
   handle.needs_connection = true;

@@ -99,9 +99,9 @@ ScopedPlatformHandle CreateClientHandle(
   return handle;
 }
 
-ScopedPlatformHandle CreateServerHandle(const NamedPlatformHandle& named_handle,
-                                        bool enforce_uniqueness) {
-  CHECK(!enforce_uniqueness);
+ScopedPlatformHandle CreateServerHandle(
+    const NamedPlatformHandle& named_handle,
+    const CreateServerHandleOptions& options) {
   if (!named_handle.is_valid())
     return ScopedPlatformHandle();
 

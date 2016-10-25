@@ -35,9 +35,13 @@ std::wstring GeneratePipeName() {
 
 }  // namespace
 
-NamedPlatformChannelPair::NamedPlatformChannelPair()
+NamedPlatformChannelPair::NamedPlatformChannelPair(
+    const NamedPlatformChannelPair::Options& options)
     : pipe_handle_(GeneratePipeName()) {
-  server_handle_ = CreateServerHandle(pipe_handle_, true);
+  CreateServerHandleOptions server_handle_options;
+  server_handle_options.security_descriptor = options.security_descriptor;
+  server_handle_options.enforce_uniqueness = true;
+  server_handle_ = CreateServerHandle(pipe_handle_, server_handle_options);
   PCHECK(server_handle_.is_valid());
 }
 

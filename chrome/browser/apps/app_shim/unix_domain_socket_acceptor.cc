@@ -16,7 +16,7 @@ UnixDomainSocketAcceptor::UnixDomainSocketAcceptor(const base::FilePath& path,
                                                    Delegate* delegate)
     : named_pipe_(path.value()),
       delegate_(delegate),
-      listen_handle_(mojo::edk::CreateServerHandle(named_pipe_, false)) {
+      listen_handle_(mojo::edk::CreateServerHandle(named_pipe_)) {
   DCHECK(delegate_);
 }
 

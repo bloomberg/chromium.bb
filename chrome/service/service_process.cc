@@ -131,7 +131,7 @@ mojo::edk::ScopedPlatformHandle CreateServerHandle(
   return mojo::edk::ScopedPlatformHandle(platform_handle);
 #else
   return mojo::edk::CreateServerHandle(
-      mojo::edk::NamedPlatformHandle(channel_handle.name), false);
+      mojo::edk::NamedPlatformHandle(channel_handle.name));
 #endif
 }
 #endif
@@ -334,7 +334,9 @@ mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
 #if defined(OS_POSIX)
   channel_handle = mojo::edk::DuplicatePlatformHandle(server_handle_.get());
 #elif defined(OS_WIN)
-  channel_handle = mojo::edk::CreateServerHandle(server_handle_, false);
+  mojo::edk::CreateServerHandleOptions options;
+  options.enforce_uniqueness = false;
+  channel_handle = mojo::edk::CreateServerHandle(server_handle_, options);
 #endif
   CHECK(channel_handle.is_valid());
 
