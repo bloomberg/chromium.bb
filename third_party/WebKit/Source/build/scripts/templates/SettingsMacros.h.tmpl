@@ -45,12 +45,12 @@ void Settings::set{{setting.name|upper_first}}({{setting.type|to_passing_type}} 
 void Settings::setFromStrings(const String& name, const String& value) \
 { \
     {% for setting in settings %}
-    if (equalIgnoringCase(name, "{{setting.name}}")) { \
+    if (name == "{{setting.name}}") { \
         set{{setting.name|upper_first}}( \
             {% if setting.type == 'String' %}
             value \
             {% elif setting.type == 'bool' %}
-            value.isEmpty() || equalIgnoringCase(value, "true") \
+            value.isEmpty() || value == "true" \
             {% elif setting.type == 'int' %}
             value.toInt() \
             {% elif setting.type == 'float' %}
