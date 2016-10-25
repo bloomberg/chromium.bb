@@ -214,6 +214,8 @@ source_set("chromeos") {
     "arc/downloads_watcher/arc_downloads_watcher_service.h",
     "arc/enterprise/arc_enterprise_reporting_service.cc",
     "arc/enterprise/arc_enterprise_reporting_service.h",
+    "arc/extensions/arc_support_message_host.cc",
+    "arc/extensions/arc_support_message_host.h",
     "arc/fileapi/arc_content_file_system_async_file_util.cc",
     "arc/fileapi/arc_content_file_system_async_file_util.h",
     "arc/fileapi/arc_content_file_system_backend_delegate.cc",

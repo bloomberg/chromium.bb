@@ -114,8 +114,8 @@ class ArcAuthServiceTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<FakeArcBridgeService> bridge_service_;
-  std::unique_ptr<ArcAuthService> auth_service_;
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<ArcAuthService> auth_service_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
 

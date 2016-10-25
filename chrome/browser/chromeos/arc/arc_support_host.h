@@ -7,37 +7,43 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "ui/display/display_observer.h"
 
-// Supports communication with Arc support dialog.
-class ArcSupportHost : public extensions::NativeMessageHost,
-                       public arc::ArcAuthService::Observer,
+// Native interface to control ARC support chrome App.
+// TODO(hidehiko): Move more implementation for the UI control from
+// ArcAuthService to this class.
+// TODO(hidehiko,lhchavez,khmel): Extract preference observing into a
+// standalone class so that it can be shared with OOBE flow.
+// TODO(hidehiko,lhchavez): Move this into extensions/ directory, and put it
+// into "arc" namespace. Add unittests at the time.
+class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
                        public display::DisplayObserver {
  public:
-  static const char kHostName[];
   static const char kHostAppId[];
   static const char kStorageId[];
-  static const char* const kHostOrigin[];
 
-  static std::unique_ptr<NativeMessageHost> Create();
-
+  ArcSupportHost();
   ~ArcSupportHost() override;
+
+  // Called when the communication to arc_support Chrome App is ready.
+  void SetMessageHost(arc::ArcSupportMessageHost* message_host);
+
+  // Called when the communication to arc_support Chrome App is closed.
+  // The argument message_host is used to check if the given |message_host|
+  // is what this instance uses know, to avoid racy case.
+  // If |message_host| is different from the one this instance knows,
+  // this is no op.
+  void UnsetMessageHost(arc::ArcSupportMessageHost* message_host);
 
   // Requests to close the extension window.
   void Close();
+  void ShowPage(arc::ArcAuthService::UIPage page, const base::string16& status);
 
-  // Overrides NativeMessageHost:
-  void Start(Client* client) override;
-  void OnMessage(const std::string& request_string) override;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
-
-  // Overrides arc::ArcAuthService::Observer:
-  // TODO(hidehiko): Get rid of Observer interface.
-  void OnOptInUIClose() override;
-  void OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
-                         const base::string16& status) override;
+  // arc::ArcSupportMessageHost::Observer override:
+  void OnMessage(const base::DictionaryValue& message) override;
 
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;
@@ -46,8 +52,6 @@ class ArcSupportHost : public extensions::NativeMessageHost,
                                uint32_t changed_metrics) override;
 
  private:
-  ArcSupportHost();
-
   bool Initialize();
   void OnMetricsPreferenceChanged();
   void OnBackupAndRestorePreferenceChanged();
@@ -75,17 +79,10 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   void EnableBackupRestore(bool is_enabled);
   void EnableLocationService(bool is_enabled);
 
-  // Unowned pointer.
-  Client* client_ = nullptr;
+  void DisconnectMessageHost();
 
-  // Keep if Close() is requested from the browser.
-  // TODO(hidehiko): Remove this. This is temporarily introduced for checking
-  // if ArcAuthService::CancelAuthCode() needs to be invoked or not.
-  // ArcAuthService should know its own state and the transition so moving to
-  // there should simplify the structure. However, it is blocked by the current
-  // dependency. For the clean up, more refactoring is needed, which can be
-  // bigger changes.
-  bool close_requested_ = false;
+  // The instance is created and managed by Chrome.
+  arc::ArcSupportMessageHost* message_host_ = nullptr;
 
   // Used to track metrics preference.
   PrefChangeRegistrar pref_local_change_registrar_;

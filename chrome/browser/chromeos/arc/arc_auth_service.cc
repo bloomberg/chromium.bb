@@ -484,6 +484,11 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   }
 
   profile_ = profile;
+  // Create the support host at initialization. Note that, practically,
+  // ARC support Chrome app is rarely used (only opt-in and re-auth flow).
+  // So, it may be better to initialize it lazily.
+  // TODO(hidehiko): Revisit to think about lazy initialization.
+  support_host_.reset(new ArcSupportHost());
   SetState(State::STOPPED);
 
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
@@ -565,7 +570,6 @@ void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
           ArcSupportHost::kHostAppId);
   CHECK(extension && extensions::util::IsAppLaunchable(
                          ArcSupportHost::kHostAppId, profile_));
-
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile_, extension, WindowOpenDisposition::NEW_WINDOW,
       extensions::SOURCE_CHROME_INTERNAL));
@@ -682,8 +686,8 @@ void ArcAuthService::RemoveObserver(Observer* observer) {
 void ArcAuthService::CloseUI() {
   ui_page_ = UIPage::NO_PAGE;
   ui_page_status_.clear();
-  for (auto& observer : observer_list_)
-    observer.OnOptInUIClose();
+  if (support_host_)
+    support_host_->Close();
   if (!g_disable_ui_for_testing)
     ArcAuthNotification::Hide();
 }
@@ -691,8 +695,8 @@ void ArcAuthService::CloseUI() {
 void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
   ui_page_ = page;
   ui_page_status_ = status;
-  for (auto& observer : observer_list_)
-    observer.OnOptInUIShowPage(ui_page_, ui_page_status_);
+  if (support_host_)
+    support_host_->ShowPage(ui_page_, ui_page_status_);
 }
 
 // This is the special method to support enterprise mojo API.

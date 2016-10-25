@@ -36,6 +36,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+class ArcSupportHost;
+
 namespace arc {
 
 class ArcAndroidManagementChecker;
@@ -79,12 +81,6 @@ class ArcAuthService : public ArcService,
 
     // Called whenever Opt-In state of the ARC has been changed.
     virtual void OnOptInChanged(State state) {}
-
-    // Called to notify that OptIn UI needs to be closed.
-    virtual void OnOptInUIClose() {}
-
-    // Called to notify that OptIn UI needs to show specific page.
-    virtual void OnOptInUIShowPage(UIPage page, const base::string16& status) {}
 
     // Called to notify that ARC bridge is shut down.
     virtual void OnShutdownBridge() {}
@@ -207,8 +203,11 @@ class ArcAuthService : public ArcService,
   // Returns current page status, relevant to the specific page.
   const base::string16& ui_page_status() const { return ui_page_status_; }
 
+  ArcSupportHost* support_host() { return support_host_.get(); }
+
  private:
   void StartArc();
+  // TODO: move UI methods/fields to ArcSupportHost.
   void ShowUI(UIPage page, const base::string16& status);
   void CloseUI();
   void SetUIPage(UIPage page, const base::string16& status);
@@ -247,6 +246,11 @@ class ArcAuthService : public ArcService,
   bool clear_required_ = false;
   bool reenable_arc_ = false;
   base::OneShotTimer arc_sign_in_timer_;
+
+  // Temporarily keeps the ArcSupportHost instance.
+  // This should be moved to ArcSessionManager when the refactoring is
+  // done.
+  std::unique_ptr<ArcSupportHost> support_host_;
 
   std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher_;
