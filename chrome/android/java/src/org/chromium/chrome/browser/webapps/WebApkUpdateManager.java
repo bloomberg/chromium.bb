@@ -42,6 +42,9 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     private String mId;
 
+    /** WebAPK package name. */
+    private String mWebApkPackageName;
+
     /** Android version code of WebAPK. */
     private int mVersionCode;
 
@@ -64,6 +67,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
             return;
         }
 
+        mWebApkPackageName = info.webApkPackageName();
         mId = info.id();
         mVersionCode = packageInfo.versionCode;
         final Bundle metadata = packageInfo.applicationInfo.metaData;
@@ -92,9 +96,9 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     @Override
     public void onUpgradeNeededCheckFinished(boolean needsUpgrade,
             ManifestUpgradeDetector.FetchedManifestData data) {
-        if (mUpgradeDetector != null) {
-            mUpgradeDetector.destroy();
-        }
+        String manifestUrl = mUpgradeDetector.getManifestUrl();
+
+        mUpgradeDetector.destroy();
         mUpgradeDetector = null;
 
         Log.v(TAG, "WebAPK upgrade needed: " + needsUpgrade);
@@ -109,7 +113,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
         // Set WebAPK update as having failed in case that Chrome is killed prior to
         // {@link onBuiltWebApk} being called.
         recordUpdateInWebappDataStorage(mId, false);
-        updateAsync(data);
+        updateAsync(manifestUrl, data);
     }
 
     /**
@@ -123,12 +127,11 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     /**
      * Sends request to WebAPK Server to update WebAPK.
      */
-    public void updateAsync(ManifestUpgradeDetector.FetchedManifestData data) {
-        String packageName = mUpgradeDetector.getWebApkPackageName();
+    public void updateAsync(String manifestUrl, ManifestUpgradeDetector.FetchedManifestData data) {
         nativeUpdateAsync(mId, data.startUrl, data.scopeUrl, data.name, data.shortName,
                 data.iconUrl, data.iconMurmur2Hash, data.icon, data.displayMode, data.orientation,
-                data.themeColor, data.backgroundColor, mUpgradeDetector.getManifestUrl(),
-                packageName, mVersionCode);
+                data.themeColor, data.backgroundColor, manifestUrl, mWebApkPackageName,
+                mVersionCode);
     }
 
     public void destroy() {

@@ -88,10 +88,6 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         return mManifestUrl;
     }
 
-    public String getWebApkPackageName() {
-        return mWebappInfo.webApkPackageName();
-    }
-
     /**
      * Starts fetching the web manifest resources.
      */

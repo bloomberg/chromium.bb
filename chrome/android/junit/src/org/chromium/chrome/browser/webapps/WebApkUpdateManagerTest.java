@@ -107,7 +107,8 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        public void updateAsync(ManifestUpgradeDetector.FetchedManifestData data) {
+        public void updateAsync(
+                String manifestUrl, ManifestUpgradeDetector.FetchedManifestData data) {
             mUpdateRequested = true;
         }
 
