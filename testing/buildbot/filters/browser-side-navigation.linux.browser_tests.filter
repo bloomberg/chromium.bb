@@ -30,7 +30,6 @@
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
 -RedirectTest.ClientServerServer
--SafeBrowsing*
 -SubresourceFilterBrowserTest.MainFrameActivation
 -SubresourceFilterBrowserTest.MainFrameActivationOnStartup
 -SubresourceFilterBrowserTest.SubFrameActivation
