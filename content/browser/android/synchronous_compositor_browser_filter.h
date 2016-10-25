@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_OBSERVER_H_
-#define CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_OBSERVER_H_
+#ifndef CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_BROWSER_FILTER_H_
+#define CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_BROWSER_FILTER_H_
 
 #include <vector>
 
@@ -22,11 +22,10 @@ namespace content {
 class RenderProcessHost;
 class SynchronousCompositorHost;
 
-// TODO(boliu): Rename this to SynchronousCompositorFilter.
-class SynchronousCompositorObserver : public ui::WindowAndroidObserver,
-                                      public BrowserMessageFilter {
+class SynchronousCompositorBrowserFilter : public ui::WindowAndroidObserver,
+                                           public BrowserMessageFilter {
  public:
-  explicit SynchronousCompositorObserver(int process_id);
+  explicit SynchronousCompositorBrowserFilter(int process_id);
 
   // WindowAndroidObserver overrides.
   void OnCompositingDidCommit() override;
@@ -48,7 +47,7 @@ class SynchronousCompositorObserver : public ui::WindowAndroidObserver,
       scoped_refptr<SynchronousCompositor::FrameFuture> frame_future);
 
  private:
-  ~SynchronousCompositorObserver() override;
+  ~SynchronousCompositorBrowserFilter() override;
 
   bool ReceiveFrame(const IPC::Message& message);
 
@@ -64,9 +63,9 @@ class SynchronousCompositorObserver : public ui::WindowAndroidObserver,
       std::map<int, scoped_refptr<SynchronousCompositor::FrameFuture>>;
   FrameFutureMap future_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorObserver);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorBrowserFilter);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_OBSERVER_H_
+#endif  // CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_BROWSER_FILTER_H_

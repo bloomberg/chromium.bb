@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/synchronous_compositor_observer.h"
+#include "content/browser/android/synchronous_compositor_browser_filter.h"
 
 #include <map>
 
@@ -16,19 +16,20 @@
 
 namespace content {
 
-SynchronousCompositorObserver::SynchronousCompositorObserver(int process_id)
+SynchronousCompositorBrowserFilter::SynchronousCompositorBrowserFilter(
+    int process_id)
     : BrowserMessageFilter(SyncCompositorMsgStart),
       render_process_host_(RenderProcessHost::FromID(process_id)),
       window_android_in_vsync_(nullptr) {
   DCHECK(render_process_host_);
 }
 
-SynchronousCompositorObserver::~SynchronousCompositorObserver() {
+SynchronousCompositorBrowserFilter::~SynchronousCompositorBrowserFilter() {
   DCHECK(compositor_host_pending_renderer_state_.empty());
   // TODO(boliu): signal pending frames.
 }
 
-void SynchronousCompositorObserver::SyncStateAfterVSync(
+void SynchronousCompositorBrowserFilter::SyncStateAfterVSync(
     ui::WindowAndroid* window_android,
     SynchronousCompositorHost* compositor_host) {
   DCHECK(!window_android_in_vsync_ ||
@@ -44,10 +45,10 @@ void SynchronousCompositorObserver::SyncStateAfterVSync(
   window_android_in_vsync_->AddObserver(this);
 }
 
-bool SynchronousCompositorObserver::OnMessageReceived(
+bool SynchronousCompositorBrowserFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorObserver, message)
+  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorBrowserFilter, message)
     IPC_MESSAGE_HANDLER_GENERIC(SyncCompositorHostMsg_ReturnFrame,
                                 ReceiveFrame(message))
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -55,7 +56,8 @@ bool SynchronousCompositorObserver::OnMessageReceived(
   return handled;
 }
 
-bool SynchronousCompositorObserver::ReceiveFrame(const IPC::Message& message) {
+bool SynchronousCompositorBrowserFilter::ReceiveFrame(
+    const IPC::Message& message) {
   SyncCompositorHostMsg_ReturnFrame::Param param;
   if (!SyncCompositorHostMsg_ReturnFrame::Read(&message, &param))
     return false;
@@ -87,7 +89,7 @@ bool SynchronousCompositorObserver::ReceiveFrame(const IPC::Message& message) {
   return true;
 }
 
-void SynchronousCompositorObserver::SetFrameFuture(
+void SynchronousCompositorBrowserFilter::SetFrameFuture(
     int routing_id,
     scoped_refptr<SynchronousCompositor::FrameFuture> frame_future) {
   // TODO(boliu): Need a sequenced id, to queue previous frames.
@@ -96,25 +98,25 @@ void SynchronousCompositorObserver::SetFrameFuture(
   future_map_[routing_id] = std::move(frame_future);
 }
 
-void SynchronousCompositorObserver::OnCompositingDidCommit() {
+void SynchronousCompositorBrowserFilter::OnCompositingDidCommit() {
   NOTREACHED();
 }
 
-void SynchronousCompositorObserver::OnRootWindowVisibilityChanged(
+void SynchronousCompositorBrowserFilter::OnRootWindowVisibilityChanged(
     bool visible) {
   NOTREACHED();
 }
 
-void SynchronousCompositorObserver::OnAttachCompositor() {
+void SynchronousCompositorBrowserFilter::OnAttachCompositor() {
   NOTREACHED();
 }
 
-void SynchronousCompositorObserver::OnDetachCompositor() {
+void SynchronousCompositorBrowserFilter::OnDetachCompositor() {
   NOTREACHED();
 }
 
-void SynchronousCompositorObserver::OnVSync(base::TimeTicks frame_time,
-                                            base::TimeDelta vsync_period) {
+void SynchronousCompositorBrowserFilter::OnVSync(base::TimeTicks frame_time,
+                                                 base::TimeDelta vsync_period) {
   // This is called after DidSendBeginFrame for SynchronousCompositorHosts
   // belonging to this WindowAndroid, since this is added as an Observer after
   // the observer iteration has started.
@@ -148,11 +150,11 @@ void SynchronousCompositorObserver::OnVSync(base::TimeTicks frame_time,
   compositor_host_pending_renderer_state_.clear();
 }
 
-void SynchronousCompositorObserver::OnActivityStopped() {
+void SynchronousCompositorBrowserFilter::OnActivityStopped() {
   NOTREACHED();
 }
 
-void SynchronousCompositorObserver::OnActivityStarted() {
+void SynchronousCompositorBrowserFilter::OnActivityStarted() {
   NOTREACHED();
 }
 

@@ -42,7 +42,7 @@ namespace content {
 
 class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
-class SynchronousCompositorObserver;
+class SynchronousCompositorBrowserFilter;
 class WebContents;
 struct SyncCompositorCommonRendererParams;
 
@@ -76,7 +76,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   void DidSendBeginFrame(ui::WindowAndroid* window_android);
   bool OnMessageReceived(const IPC::Message& message);
 
-  // Called by SynchronousCompositorObserver.
+  // Called by SynchronousCompositorBrowserFilter.
   int routing_id() const { return routing_id_; }
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
 
@@ -99,7 +99,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   SynchronousCompositor::Frame ProcessHardwareFrame(
       uint32_t compositor_frame_sink_id,
       cc::CompositorFrame compositor_frame);
-  SynchronousCompositorObserver* GetFilter();
+  SynchronousCompositorBrowserFilter* GetFilter();
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;

@@ -1215,7 +1215,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
 #if defined(OS_ANDROID)
   AddFilter(new ScreenOrientationMessageFilterAndroid());
-  synchronous_compositor_filter_ = new SynchronousCompositorObserver(GetID());
+  synchronous_compositor_filter_ =
+      new SynchronousCompositorBrowserFilter(GetID());
   AddFilter(synchronous_compositor_filter_.get());
 #endif
 }

@@ -40,7 +40,7 @@
 #include "ui/gl/gpu_switching_observer.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/synchronous_compositor_observer.h"
+#include "content/browser/android/synchronous_compositor_browser_filter.h"
 #endif
 
 namespace base {
@@ -268,7 +268,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   }
 
 #if defined(OS_ANDROID)
-  SynchronousCompositorObserver* synchronous_compositor_filter() const {
+  SynchronousCompositorBrowserFilter* synchronous_compositor_filter() const {
     return synchronous_compositor_filter_.get();
   }
 #endif
@@ -477,7 +477,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<NotificationMessageFilter> notification_message_filter_;
 
 #if defined(OS_ANDROID)
-  scoped_refptr<SynchronousCompositorObserver> synchronous_compositor_filter_;
+  scoped_refptr<SynchronousCompositorBrowserFilter>
+      synchronous_compositor_filter_;
 #endif
 
   // Used in single-process mode.

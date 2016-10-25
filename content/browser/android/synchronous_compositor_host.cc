@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "content/browser/android/synchronous_compositor_observer.h"
+#include "content/browser/android/synchronous_compositor_browser_filter.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -104,7 +104,7 @@ SynchronousCompositorHost::DemandDrawHwAsync(
                                           viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
   scoped_refptr<FrameFuture> frame_future = new FrameFuture();
-  if (SynchronousCompositorObserver* filter = GetFilter()) {
+  if (SynchronousCompositorBrowserFilter* filter = GetFilter()) {
     filter->SetFrameFuture(routing_id_, frame_future);
     sender_->Send(new SyncCompositorMsg_DemandDrawHwAsync(routing_id_, params));
   } else {
@@ -158,7 +158,7 @@ void SynchronousCompositorHost::UpdateFrameMetaData(
   rwhva_->SynchronousFrameMetadata(std::move(frame_metadata));
 }
 
-SynchronousCompositorObserver* SynchronousCompositorHost::GetFilter() {
+SynchronousCompositorBrowserFilter* SynchronousCompositorHost::GetFilter() {
   return static_cast<RenderProcessHostImpl*>(
              rwhva_->GetRenderWidgetHost()->GetProcess())
       ->synchronous_compositor_filter();
@@ -376,7 +376,7 @@ void SynchronousCompositorHost::DidOverscroll(
 
 void SynchronousCompositorHost::DidSendBeginFrame(
     ui::WindowAndroid* window_android) {
-  if (SynchronousCompositorObserver* filter = GetFilter())
+  if (SynchronousCompositorBrowserFilter* filter = GetFilter())
     filter->SyncStateAfterVSync(window_android, this);
 }
 
