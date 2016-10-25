@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/welcome_handler.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -26,7 +28,8 @@ WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
 
 WelcomeHandler::~WelcomeHandler() {
   oauth2_token_service_->RemoveObserver(this);
-  // TODO(tmartino): Log to UMA according to WelcomeResult.
+  UMA_HISTOGRAM_ENUMERATION("Welcome.SignInPromptResult", result_,
+                            WelcomeResult::WELCOME_RESULT_MAX);
 }
 
 // Override from OAuth2TokenService::Observer. Occurs when a new auth token is
@@ -45,6 +48,8 @@ void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
     // them away to the NTP instead.
     GoToNewTabPage();
   } else {
+    base::RecordAction(
+        base::UserMetricsAction("Signin_Impression_FromStartPage"));
     GetBrowser()->ShowModalSigninWindow(
         profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
         signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);

@@ -28,9 +28,13 @@ class WelcomeHandler : public content::WebUIMessageHandler,
 
  private:
   enum WelcomeResult {
-    DEFAULT = 0,
-    SIGNED_IN,  // User clicked the "Sign In" button and completed sign-in.
-    DECLINED    // User clicked the "No Thanks" button.
+    DEFAULT = 0,    // User navigated away from the page.
+    DECLINED = 1,   // User clicked the "No Thanks" button.
+    SIGNED_IN = 2,  // User clicked the "Sign In" button and completed sign-in.
+
+    // New results must be added before this line, and should correspond to
+    // values in tools/metrics/histograms/histograms.xml.
+    WELCOME_RESULT_MAX
   };
 
   void HandleActivateSignIn(const base::ListValue* args);
