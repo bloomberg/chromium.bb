@@ -60,8 +60,6 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
 void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  DCHECK(client_);  // BindToClient should have been called already.
-
   if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = cc::BeginFrameArgs::DefaultInterval();

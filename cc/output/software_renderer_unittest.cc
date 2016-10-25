@@ -38,7 +38,7 @@ class SoftwareRendererTest : public testing::Test {
       std::unique_ptr<SoftwareOutputDevice> software_output_device) {
     output_surface_ =
         FakeOutputSurface::CreateSoftware(std::move(software_output_device));
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
+    output_surface_->BindToClient(&output_surface_client_);
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ =

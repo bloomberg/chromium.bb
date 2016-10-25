@@ -67,8 +67,6 @@ class CONTENT_EXPORT CompositorImpl
 
   static bool IsInitialized();
 
-  void PopulateGpuCapabilities(gpu::Capabilities gpu_capabilities);
-
   void AddObserver(VSyncObserver* observer);
   void RemoveObserver(VSyncObserver* observer);
   void OnNeedsBeginFramesChange(bool needs_begin_frames);

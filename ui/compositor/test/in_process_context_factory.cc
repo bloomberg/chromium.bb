@@ -56,8 +56,8 @@ class DirectOutputSurface : public cc::OutputSurface {
   ~DirectOutputSurface() override {}
 
   // cc::OutputSurface implementation.
-  bool BindToClient(cc::OutputSurfaceClient* client) override {
-    return OutputSurface::BindToClient(client);
+  void BindToClient(cc::OutputSurfaceClient* client) override {
+    client_ = client;
   }
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
@@ -106,6 +106,7 @@ class DirectOutputSurface : public cc::OutputSurface {
  private:
   void OnSwapBuffersComplete() { client_->DidReceiveSwapBuffersAck(); }
 
+  cc::OutputSurfaceClient* client_ = nullptr;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);

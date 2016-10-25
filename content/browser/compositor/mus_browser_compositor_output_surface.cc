@@ -33,6 +33,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
       ui_window_(window) {
   ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
       ui::mojom::CompositorFrameSinkType::DEFAULT, context);
+  ui_compositor_frame_sink_->BindToClient(this);
 }
 
 MusBrowserCompositorOutputSurface::~MusBrowserCompositorOutputSurface() {}
@@ -107,14 +108,6 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
   ui_frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
   ui_compositor_frame_sink_->SubmitCompositorFrame(std::move(ui_frame));
   return;
-}
-
-bool MusBrowserCompositorOutputSurface::BindToClient(
-    cc::OutputSurfaceClient* client) {
-  if (!GpuBrowserCompositorOutputSurface::BindToClient(client))
-    return false;
-  ui_compositor_frame_sink_->BindToClient(this);
-  return true;
 }
 
 void MusBrowserCompositorOutputSurface::SetBeginFrameSource(

@@ -19,17 +19,11 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   void DidReceiveSwapBuffersAck() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override {}
-  void DidLoseOutputSurface() override;
 
   int swap_count() { return swap_count_; }
 
-  bool did_lose_output_surface_called() {
-    return did_lose_output_surface_called_;
-  }
-
  private:
   int swap_count_ = 0;
-  bool did_lose_output_surface_called_ = false;
 };
 
 }  // namespace cc

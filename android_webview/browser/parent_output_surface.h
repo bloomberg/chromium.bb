@@ -18,7 +18,7 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   ~ParentOutputSurface() override;
 
   // OutputSurface overrides.
-  void DidLoseOutputSurface() override;
+  void BindToClient(cc::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;

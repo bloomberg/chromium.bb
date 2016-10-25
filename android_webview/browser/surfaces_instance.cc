@@ -92,6 +92,11 @@ SurfacesInstance::~SurfacesInstance() {
   surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
+void SurfacesInstance::DisplayOutputSurfaceLost() {
+  // Android WebView does not handle context loss.
+  LOG(FATAL) << "Render thread context loss";
+}
+
 cc::FrameSinkId SurfacesInstance::AllocateFrameSinkId() {
   return cc::FrameSinkId(next_client_id_++, 0 /* sink_id */);
 }

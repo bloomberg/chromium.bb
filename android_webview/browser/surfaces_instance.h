@@ -58,7 +58,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   ~SurfacesInstance() override;
 
   // cc::DisplayClient overrides.
-  void DisplayOutputSurfaceLost() override {}
+  void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(
       bool will_draw_and_swap,
       const cc::RenderPassList& render_passes) override {}

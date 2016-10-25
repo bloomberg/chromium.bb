@@ -53,6 +53,8 @@ Display::Display(SharedBitmapManager* bitmap_manager,
 Display::~Display() {
   // Only do this if Initialize() happened.
   if (client_) {
+    if (auto* context = output_surface_->context_provider())
+      context->SetLostContextCallback(base::Closure());
     if (begin_frame_source_)
       surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
     surface_manager_->RemoveObserver(this);
@@ -84,11 +86,19 @@ void Display::Initialize(DisplayClient* client,
                                                frame_sink_id_);
   }
 
-  bool ok = output_surface_->BindToClient(this);
-  // The context given to the Display's OutputSurface should already be
-  // initialized, so Bind can not fail.
-  DCHECK(ok);
+  output_surface_->BindToClient(this);
   InitializeRenderer();
+
+  if (auto* context = output_surface_->context_provider()) {
+    // This depends on assumptions that Display::Initialize will happen
+    // on the same callstack as the ContextProvider being created/initialized
+    // or else it could miss a callback before setting this.
+    context->SetLostContextCallback(base::Bind(
+        &Display::DidLoseContextProvider,
+        // Unretained is safe since the callback is unset in this class'
+        // destructor and is never posted.
+        base::Unretained(this)));
+  }
 }
 
 void Display::SetSurfaceId(const SurfaceId& id, float device_scale_factor) {
@@ -202,20 +212,20 @@ void Display::InitializeRenderer() {
   aggregator_->set_output_is_secure(output_is_secure_);
 }
 
-void Display::DidLoseOutputSurface() {
-  if (scheduler_)
-    scheduler_->OutputSurfaceLost();
-  // WARNING: The client may delete the Display in this method call. Do not
-  // make any additional references to members after this call.
-  client_->DisplayOutputSurfaceLost();
-}
-
 void Display::UpdateRootSurfaceResourcesLocked() {
   Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
   bool root_surface_resources_locked =
       !surface || !surface->GetEligibleFrame().delegated_frame_data;
   if (scheduler_)
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
+}
+
+void Display::DidLoseContextProvider() {
+  if (scheduler_)
+    scheduler_->OutputSurfaceLost();
+  // WARNING: The client may delete the Display in this method call. Do not
+  // make any additional references to members after this call.
+  client_->DisplayOutputSurfaceLost();
 }
 
 bool Display::DrawAndSwap() {

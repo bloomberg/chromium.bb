@@ -81,6 +81,7 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
       : cc::OutputSurface(std::move(software_device)) {}
 
   // cc::OutputSurface implementation.
+  void BindToClient(cc::OutputSurfaceClient* client) override {}
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}

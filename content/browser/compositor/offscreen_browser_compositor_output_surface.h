@@ -35,8 +35,9 @@ class OffscreenBrowserCompositorOutputSurface
 
   ~OffscreenBrowserCompositorOutputSurface() override;
 
- protected:
-  // cc::OutputSurface:
+ private:
+  // cc::OutputSurface implementation.
+  void BindToClient(cc::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void Reshape(const gfx::Size& size,
@@ -50,22 +51,21 @@ class OffscreenBrowserCompositorOutputSurface
   bool SurfaceIsSuspendForRecycle() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
-  // BrowserCompositorOutputSurface
+  // BrowserCompositorOutputSurface implementation.
   void OnReflectorChanged() override;
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override {};
 #endif
 
+  void OnSwapBuffersComplete();
+
+  cc::OutputSurfaceClient* client_ = nullptr;
   gfx::Size reshape_size_;
   uint32_t fbo_ = 0;
   bool reflector_changed_ = false;
   std::unique_ptr<ReflectorTexture> reflector_texture_;
-
   base::WeakPtrFactory<OffscreenBrowserCompositorOutputSurface>
       weak_ptr_factory_;
-
- private:
-  void OnSwapBuffersComplete();
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenBrowserCompositorOutputSurface);
 };

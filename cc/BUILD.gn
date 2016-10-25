@@ -899,7 +899,6 @@ test("cc_unittests") {
     "output/gl_renderer_unittest.cc",
     "output/layer_quad_unittest.cc",
     "output/managed_memory_policy_unittest.cc",
-    "output/output_surface_unittest.cc",
     "output/overlay_unittest.cc",
     "output/renderer_pixeltest.cc",
     "output/renderer_settings_unittest.cc",

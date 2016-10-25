@@ -53,7 +53,7 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
 
  private:
   // cc::OutputSurface implementation.
-  bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void BindToClient(cc::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
@@ -76,6 +76,8 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
 
   // Called when a swap completion is sent from the GPU process.
   void OnGpuSwapBuffersCompleted(gfx::SwapResult result);
+
+  cc::OutputSurfaceClient* client_ = nullptr;
 
   display_compositor::GLHelper gl_helper_;
   std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;

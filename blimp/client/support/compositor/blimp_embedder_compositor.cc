@@ -51,6 +51,10 @@ class DisplayOutputSurface : public cc::OutputSurface {
   ~DisplayOutputSurface() override = default;
 
   // cc::OutputSurface implementation
+  void BindToClient(cc::OutputSurfaceClient* client) override {
+    client_ = client;
+  }
+
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {
     context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
@@ -90,6 +94,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
  private:
   void SwapBuffersCallback() { client_->DidReceiveSwapBuffersAck(); }
 
+  cc::OutputSurfaceClient* client_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<DisplayOutputSurface> weak_ptr_factory_;
 
@@ -194,6 +199,7 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
     return;
 
   DCHECK(context_provider_);
+  context_provider_->BindToCurrentThread();
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       compositor_dependencies_->GetGpuMemoryBufferManager();

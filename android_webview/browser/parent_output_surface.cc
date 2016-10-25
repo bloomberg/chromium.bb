@@ -20,10 +20,7 @@ ParentOutputSurface::ParentOutputSurface(
 ParentOutputSurface::~ParentOutputSurface() {
 }
 
-void ParentOutputSurface::DidLoseOutputSurface() {
-  // Android WebView does not handle context loss.
-  LOG(FATAL) << "Render thread context loss";
-}
+void ParentOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {}
 
 void ParentOutputSurface::EnsureBackbuffer() {}
 

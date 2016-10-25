@@ -33,6 +33,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   ~SoftwareBrowserCompositorOutputSurface() override;
 
   // OutputSurface implementation.
+  void BindToClient(cc::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
@@ -54,6 +55,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
   void SwapBuffersCallback();
 
+  cc::OutputSurfaceClient* client_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;
 

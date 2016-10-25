@@ -61,15 +61,10 @@ DirectOutputSurfaceOzone::~DirectOutputSurfaceOzone() {
   // TODO(rjkroege): Support cleanup.
 }
 
-bool DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
-  if (!cc::OutputSurface::BindToClient(client))
-    return false;
-
-  if (capabilities_.uses_default_gl_framebuffer) {
-    capabilities_.flipped_output_surface =
-        context_provider()->ContextCapabilities().flips_vertically;
-  }
-  return true;
+void DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
 }
 
 void DirectOutputSurfaceOzone::EnsureBackbuffer() {}

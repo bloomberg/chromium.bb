@@ -87,7 +87,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void DidReceiveSwapBuffersAck() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
-  void DidLoseOutputSurface() override;
 
   // SurfaceObserver implementation.
   void OnSurfaceDamaged(const SurfaceId& surface, bool* changed) override;
@@ -103,6 +102,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
  private:
   void InitializeRenderer();
   void UpdateRootSurfaceResourcesLocked();
+  void DidLoseContextProvider();
 
   SharedBitmapManager* const bitmap_manager_;
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;

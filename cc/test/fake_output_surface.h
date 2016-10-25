@@ -26,25 +26,14 @@ class FakeOutputSurface : public OutputSurface {
   ~FakeOutputSurface() override;
 
   static std::unique_ptr<FakeOutputSurface> Create3d() {
-    return base::WrapUnique(
-        new FakeOutputSurface(TestContextProvider::Create()));
+    auto provider = TestContextProvider::Create();
+    provider->BindToCurrentThread();
+    return base::WrapUnique(new FakeOutputSurface(std::move(provider)));
   }
 
   static std::unique_ptr<FakeOutputSurface> Create3d(
       scoped_refptr<ContextProvider> context_provider) {
     return base::WrapUnique(new FakeOutputSurface(context_provider));
-  }
-
-  static std::unique_ptr<FakeOutputSurface> Create3d(
-      std::unique_ptr<TestGLES2Interface> gl) {
-    return base::WrapUnique(
-        new FakeOutputSurface(TestContextProvider::Create(std::move(gl))));
-  }
-
-  static std::unique_ptr<FakeOutputSurface> Create3d(
-      std::unique_ptr<TestWebGraphicsContext3D> context) {
-    return base::WrapUnique(
-        new FakeOutputSurface(TestContextProvider::Create(std::move(context))));
   }
 
   static std::unique_ptr<FakeOutputSurface> CreateSoftware(
@@ -53,9 +42,9 @@ class FakeOutputSurface : public OutputSurface {
   }
 
   static std::unique_ptr<FakeOutputSurface> CreateOffscreen(
-      std::unique_ptr<TestWebGraphicsContext3D> context) {
-    auto surface = base::WrapUnique(
-        new FakeOutputSurface(TestContextProvider::Create(std::move(context))));
+      scoped_refptr<ContextProvider> context_provider) {
+    auto surface =
+        base::WrapUnique(new FakeOutputSurface(std::move(context_provider)));
     surface->capabilities_.uses_default_gl_framebuffer = false;
     return surface;
   }
@@ -69,7 +58,7 @@ class FakeOutputSurface : public OutputSurface {
 
   OutputSurfaceClient* client() { return client_; }
 
-  bool BindToClient(OutputSurfaceClient* client) override;
+  void BindToClient(OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override;

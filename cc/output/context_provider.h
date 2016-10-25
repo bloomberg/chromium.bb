@@ -74,6 +74,10 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // Sets a callback to be called when the context is lost. This should be
   // called from the same thread that the context is bound to. To avoid races,
   // it should be called before BindToCurrentThread().
+  // Implementation note: Implementations must avoid post-tasking the provided
+  // |lost_context_callback| directly as clients expect the method to not be
+  // called once they call SetLostContextCallback() again with a different
+  // callback.
   typedef base::Closure LostContextCallback;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) = 0;

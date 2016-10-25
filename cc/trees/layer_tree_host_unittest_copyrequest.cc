@@ -140,6 +140,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
         TestContextProvider::Create();
     TestContextSupport* context_support = display_context_provider->support();
     context_support->set_out_of_order_callbacks(out_of_order_callbacks_);
+    display_context_provider->BindToCurrentThread();
 
     return FakeOutputSurface::Create3d(std::move(display_context_provider));
   }
@@ -734,6 +735,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
   std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) override {
     display_context_provider_ = TestContextProvider::Create();
+    display_context_provider_->BindToCurrentThread();
     return FakeOutputSurface::Create3d(display_context_provider_);
   }
 

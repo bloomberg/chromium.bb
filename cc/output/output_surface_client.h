@@ -29,11 +29,6 @@ class CC_EXPORT OutputSurfaceClient {
   // and is now visible to the user.
   virtual void DidReceiveSwapBuffersAck() = 0;
 
-  // The OutputSurface is lost when the ContextProviders held by it
-  // encounter an error. In this case the OutputSurface (and the
-  // ContextProviders) must be recreated.
-  virtual void DidLoseOutputSurface() = 0;
-
   // For surfaceless/ozone implementations to create damage for the next frame.
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
 

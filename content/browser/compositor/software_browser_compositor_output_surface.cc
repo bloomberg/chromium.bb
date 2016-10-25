@@ -36,6 +36,13 @@ SoftwareBrowserCompositorOutputSurface::
     ~SoftwareBrowserCompositorOutputSurface() {
 }
 
+void SoftwareBrowserCompositorOutputSurface::BindToClient(
+    cc::OutputSurfaceClient* client) {
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
+}
+
 void SoftwareBrowserCompositorOutputSurface::EnsureBackbuffer() {
   software_device()->EnsureBackbuffer();
 }
@@ -59,6 +66,7 @@ void SoftwareBrowserCompositorOutputSurface::Reshape(
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
     cc::OutputSurfaceFrame frame) {
+  DCHECK(client_);
   base::TimeTicks swap_time = base::TimeTicks::Now();
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(

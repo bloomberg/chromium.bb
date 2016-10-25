@@ -10,8 +10,4 @@ void FakeOutputSurfaceClient::DidReceiveSwapBuffersAck() {
   swap_count_++;
 }
 
-void FakeOutputSurfaceClient::DidLoseOutputSurface() {
-  did_lose_output_surface_called_ = true;
-}
-
 }  // namespace cc

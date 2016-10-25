@@ -72,13 +72,10 @@ uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
     return GL_RGB;
 }
 
-bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
-  if (OutputSurface::BindToClient(client)) {
-    client_ = client;
-    return true;
-  } else {
-    return false;
-  }
+void FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
 }
 
 bool FakeOutputSurface::HasExternalStencilTest() const {

@@ -6007,6 +6007,7 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
 #if defined(OS_MACOSX)
     context3d->set_support_texture_rectangle(true);
 #endif
+    display_context_provider->BindToCurrentThread();
     return LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
         std::move(display_context_provider));
   }

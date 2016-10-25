@@ -63,11 +63,6 @@ class CC_EXPORT OutputSurface {
 
   virtual ~OutputSurface();
 
-  // Called by the Display to initialize the OutputSurface. This also specifies
-  // the thread that the OutputSurface will be used on as tests create and then
-  // bind the class on different threads.
-  virtual bool BindToClient(OutputSurfaceClient* client);
-
   const Capabilities& capabilities() const { return capabilities_; }
 
   // Obtain the 3d context or the software device associated with this output
@@ -81,6 +76,8 @@ class CC_EXPORT OutputSurface {
   SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }
+
+  virtual void BindToClient(OutputSurfaceClient* client) = 0;
 
   virtual void EnsureBackbuffer() = 0;
   virtual void DiscardBackbuffer() = 0;
@@ -119,17 +116,10 @@ class CC_EXPORT OutputSurface {
   virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
 
  protected:
-  // Used internally for the context provider to inform the client about loss,
-  // and can be overridden to change behaviour instead of informing the client.
-  virtual void DidLoseOutputSurface();
-
-  OutputSurfaceClient* client_ = nullptr;
-
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
   std::unique_ptr<SoftwareOutputDevice> software_device_;
-  base::ThreadChecker thread_checker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);

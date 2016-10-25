@@ -118,7 +118,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
   std::unique_ptr<cc::SoftwareOutputDevice> software_device(
       new cc::SoftwareOutputDevice());
   output_surface_ = CreateSurface(std::move(software_device));
-  CHECK(output_surface_->BindToClient(&output_surface_client));
+  output_surface_->BindToClient(&output_surface_client);
 
   output_surface_->SwapBuffers(cc::OutputSurfaceFrame());
   EXPECT_EQ(NULL, output_surface_->software_device()->GetVSyncProvider());
@@ -129,7 +129,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, VSyncProviderUpdates) {
   std::unique_ptr<cc::SoftwareOutputDevice> software_device(
       new FakeSoftwareOutputDevice());
   output_surface_ = CreateSurface(std::move(software_device));
-  CHECK(output_surface_->BindToClient(&output_surface_client));
+  output_surface_->BindToClient(&output_surface_client);
 
   FakeVSyncProvider* vsync_provider = static_cast<FakeVSyncProvider*>(
       output_surface_->software_device()->GetVSyncProvider());

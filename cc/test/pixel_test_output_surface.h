@@ -20,6 +20,7 @@ class PixelTestOutputSurface : public OutputSurface {
   ~PixelTestOutputSurface() override;
 
   // OutputSurface implementation.
+  void BindToClient(OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
@@ -44,6 +45,7 @@ class PixelTestOutputSurface : public OutputSurface {
   void SwapBuffersCallback();
 
   bool external_stencil_test_ = false;
+  OutputSurfaceClient* client_ = nullptr;
   base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_;
 };
 

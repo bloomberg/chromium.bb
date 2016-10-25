@@ -29,6 +29,10 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 
 PixelTestOutputSurface::~PixelTestOutputSurface() = default;
 
+void PixelTestOutputSurface::BindToClient(OutputSurfaceClient* client) {
+  client_ = client;
+}
+
 void PixelTestOutputSurface::EnsureBackbuffer() {}
 
 void PixelTestOutputSurface::DiscardBackbuffer() {}

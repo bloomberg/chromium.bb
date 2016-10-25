@@ -30,7 +30,12 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
                                      std::move(vsync_manager),
                                      begin_frame_source,
                                      std::move(overlay_candidate_validator)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  if (capabilities_.uses_default_gl_framebuffer) {
+    capabilities_.flipped_output_surface =
+        context_provider()->ContextCapabilities().flips_vertically;
+  }
+}
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() =
     default;
@@ -52,15 +57,11 @@ void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {
   }
 }
 
-bool GpuBrowserCompositorOutputSurface::BindToClient(
+void GpuBrowserCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
-  if (!BrowserCompositorOutputSurface::BindToClient(client))
-    return false;
-
-  if (capabilities_.uses_default_gl_framebuffer) {
-    capabilities_.flipped_output_surface =
-        context_provider()->ContextCapabilities().flips_vertically;
-  }
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
 
   GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
       base::Bind(&GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
@@ -68,7 +69,6 @@ bool GpuBrowserCompositorOutputSurface::BindToClient(
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(base::Bind(
       &GpuBrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu,
       weak_ptr_factory_.GetWeakPtr()));
-  return true;
 }
 
 void GpuBrowserCompositorOutputSurface::EnsureBackbuffer() {}

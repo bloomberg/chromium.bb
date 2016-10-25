@@ -9,7 +9,6 @@
 #include "cc/output/output_surface_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
@@ -88,6 +87,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
+  void BindToClient(cc::OutputSurfaceClient* client) override {}
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
@@ -141,10 +141,12 @@ class ReflectorImplTest : public testing::Test {
     compositor_.reset(
         new ui::Compositor(context_factory, compositor_task_runner_.get()));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
+
+    auto context_provider = cc::TestContextProvider::Create();
+    context_provider->BindToCurrentThread();
     output_surface_ = base::MakeUnique<TestOutputSurface>(
-        cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create()),
-        compositor_->vsync_manager(), begin_frame_source_.get());
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
+        std::move(context_provider), compositor_->vsync_manager(),
+        begin_frame_source_.get());
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->SetRootLayer(root_layer_.get());
@@ -180,7 +182,6 @@ class ReflectorImplTest : public testing::Test {
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source_;
-  cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<ui::Compositor> compositor_;

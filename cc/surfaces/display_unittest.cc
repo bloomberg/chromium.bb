@@ -25,6 +25,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,7 +116,9 @@ class DisplayTest : public testing::Test {
 
     std::unique_ptr<FakeOutputSurface> output_surface;
     if (context) {
-      output_surface = FakeOutputSurface::Create3d(std::move(context));
+      auto provider = TestContextProvider::Create(std::move(context));
+      provider->BindToCurrentThread();
+      output_surface = FakeOutputSurface::Create3d(std::move(provider));
     } else {
       std::unique_ptr<TestSoftwareOutputDevice> device(
           new TestSoftwareOutputDevice);
@@ -497,6 +500,32 @@ TEST_F(DisplayTest, Finish) {
   testing::Mock::VerifyAndClearExpectations(context_ptr);
 
   factory_.Destroy(local_frame_id);
+}
+
+class CountLossDisplayClient : public StubDisplayClient {
+ public:
+  CountLossDisplayClient() = default;
+
+  void DisplayOutputSurfaceLost() override { ++loss_count_; }
+
+  int loss_count() const { return loss_count_; }
+
+ private:
+  int loss_count_ = 0;
+};
+
+TEST_F(DisplayTest, ContextLossInformsClient) {
+  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+
+  CountLossDisplayClient client;
+  display_->Initialize(&client, &manager_, kArbitraryFrameSinkId);
+
+  // Verify DidLoseOutputSurface callback is hooked up correctly.
+  EXPECT_EQ(0, client.loss_count());
+  output_surface_->context_provider()->ContextGL()->LoseContextCHROMIUM(
+      GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+  output_surface_->context_provider()->ContextGL()->Flush();
+  EXPECT_EQ(1, client.loss_count());
 }
 
 }  // namespace

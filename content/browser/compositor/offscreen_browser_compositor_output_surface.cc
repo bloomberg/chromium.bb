@@ -47,6 +47,13 @@ OffscreenBrowserCompositorOutputSurface::
   DiscardBackbuffer();
 }
 
+void OffscreenBrowserCompositorOutputSurface::BindToClient(
+    cc::OutputSurfaceClient* client) {
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
+}
+
 void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
   bool update_source_texture = !reflector_texture_ || reflector_changed_;
   reflector_changed_ = false;

@@ -22,54 +22,20 @@ namespace cc {
 OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
     : context_provider_(std::move(context_provider)) {
   DCHECK(context_provider_);
-  thread_checker_.DetachFromThread();
 }
 
 OutputSurface::OutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
     : software_device_(std::move(software_device)) {
   DCHECK(software_device_);
-  thread_checker_.DetachFromThread();
 }
 
 OutputSurface::OutputSurface(
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
     : vulkan_context_provider_(std::move(vulkan_context_provider)) {
   DCHECK(vulkan_context_provider_);
-  thread_checker_.DetachFromThread();
 }
 
-OutputSurface::~OutputSurface() {
-  // Is destroyed on the thread it is bound to.
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!client_)
-    return;
-
-  if (context_provider_) {
-    context_provider_->SetLostContextCallback(
-        ContextProvider::LostContextCallback());
-  }
-}
-
-bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(client);
-  DCHECK(!client_);
-  client_ = client;
-
-  if (context_provider_) {
-    if (!context_provider_->BindToCurrentThread())
-      return false;
-    context_provider_->SetLostContextCallback(base::Bind(
-        &OutputSurface::DidLoseOutputSurface, base::Unretained(this)));
-  }
-  return true;
-}
-
-void OutputSurface::DidLoseOutputSurface() {
-  TRACE_EVENT0("cc", "OutputSurface::DidLoseOutputSurface");
-  client_->DidLoseOutputSurface();
-}
+OutputSurface::~OutputSurface() = default;
 
 }  // namespace cc
