@@ -17,35 +17,6 @@
 
 DEFINE_WEB_STATE_USER_DATA_KEY(IOSChromeSecurityStateModelClient);
 
-namespace {
-
-// Converts a web::SecurityStyle (an indicator of a request's
-// overall security level computed by //ios/web) into a
-// SecurityStateModel::SecurityLevel (a finer-grained SecurityStateModel
-// concept that can express all of SecurityStateModel's policies that
-// //ios/web doesn't necessarily know about).
-security_state::SecurityStateModel::SecurityLevel
-GetSecurityLevelForSecurityStyle(web::SecurityStyle style) {
-  switch (style) {
-    case web::SECURITY_STYLE_UNKNOWN:
-      NOTREACHED();
-      return security_state::SecurityStateModel::NONE;
-    case web::SECURITY_STYLE_UNAUTHENTICATED:
-      return security_state::SecurityStateModel::NONE;
-    case web::SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      return security_state::SecurityStateModel::DANGEROUS;
-    case web::SECURITY_STYLE_WARNING:
-      // //ios/web currently doesn't use this style.
-      NOTREACHED();
-      return security_state::SecurityStateModel::SECURITY_WARNING;
-    case web::SECURITY_STYLE_AUTHENTICATED:
-      return security_state::SecurityStateModel::SECURE;
-  }
-  return security_state::SecurityStateModel::NONE;
-}
-
-}  // namespace
-
 IOSChromeSecurityStateModelClient::IOSChromeSecurityStateModelClient(
     web::WebState* web_state)
     : web_state_(web_state),
