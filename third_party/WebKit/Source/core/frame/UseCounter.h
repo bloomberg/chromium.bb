@@ -1383,6 +1383,9 @@ class CORE_EXPORT UseCounter {
     OffscreenCanvasTransferToImageBitmapWebGL = 1659,
     OffscreenCanvasCommit2D = 1660,
     OffscreenCanvasCommitWebGL = 1661,
+    RTCConfigurationIceTransportPolicy = 1662,
+    RTCConfigurationIceTransportPolicyNone = 1663,
+    RTCConfigurationIceTransports = 1664,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

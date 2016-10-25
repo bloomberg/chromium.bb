@@ -6,6 +6,7 @@
 
 dictionary RTCIceServer {
     // TODO(foolip): |urls| should be required and |url| is not in the spec.
+    // https://crbug.com/659133
     (DOMString or sequence<DOMString>) urls;
     DOMString url;
     DOMString username;

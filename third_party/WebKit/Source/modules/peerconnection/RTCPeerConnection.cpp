@@ -218,6 +218,15 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
   Persistent<ScriptPromiseResolver> m_resolver;
 };
 
+WebRTCIceTransportPolicy iceTransportPolicyFromString(const String& policy) {
+  if (policy == "none")
+    return WebRTCIceTransportPolicy::kNone;
+  if (policy == "relay")
+    return WebRTCIceTransportPolicy::kRelay;
+  DCHECK_EQ(policy, "all");
+  return WebRTCIceTransportPolicy::kAll;
+}
+
 WebRTCConfiguration parseConfiguration(ExecutionContext* context,
                                        const RTCConfiguration& configuration,
                                        ExceptionState& exceptionState,
@@ -225,15 +234,21 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
   DCHECK(context);
   DCHECK(selectedRtcpMuxPolicy);
 
-  WebRTCIceTransports iceTransports = WebRTCIceTransports::kAll;
-  String iceTransportsString = configuration.iceTransports();
-  if (iceTransportsString == "none") {
-    UseCounter::count(context, UseCounter::RTCConfigurationIceTransportsNone);
-    iceTransports = WebRTCIceTransports::kNone;
-  } else if (iceTransportsString == "relay") {
-    iceTransports = WebRTCIceTransports::kRelay;
-  } else {
-    DCHECK_EQ(iceTransportsString, "all");
+  WebRTCIceTransportPolicy iceTransportPolicy = WebRTCIceTransportPolicy::kAll;
+  if (configuration.hasIceTransportPolicy()) {
+    UseCounter::count(context, UseCounter::RTCConfigurationIceTransportPolicy);
+    iceTransportPolicy =
+        iceTransportPolicyFromString(configuration.iceTransportPolicy());
+    if (iceTransportPolicy == WebRTCIceTransportPolicy::kNone) {
+      UseCounter::count(context,
+                        UseCounter::RTCConfigurationIceTransportPolicyNone);
+    }
+  } else if (configuration.hasIceTransports()) {
+    UseCounter::count(context, UseCounter::RTCConfigurationIceTransports);
+    iceTransportPolicy =
+        iceTransportPolicyFromString(configuration.iceTransports());
+    if (iceTransportPolicy == WebRTCIceTransportPolicy::kNone)
+      UseCounter::count(context, UseCounter::RTCConfigurationIceTransportsNone);
   }
 
   WebRTCBundlePolicy bundlePolicy = WebRTCBundlePolicy::kBalanced;
@@ -261,7 +276,7 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
   }
 
   WebRTCConfiguration webConfiguration;
-  webConfiguration.iceTransports = iceTransports;
+  webConfiguration.iceTransportPolicy = iceTransportPolicy;
   webConfiguration.bundlePolicy = bundlePolicy;
   webConfiguration.rtcpMuxPolicy = rtcpMuxPolicy;
 

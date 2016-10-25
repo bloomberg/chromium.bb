@@ -48,7 +48,7 @@ struct WebRTCIceServer {
   WebString credential;
 };
 
-enum class WebRTCIceTransports { kNone, kRelay, kAll };
+enum class WebRTCIceTransportPolicy { kNone, kRelay, kAll };
 
 enum class WebRTCBundlePolicy { kBalanced, kMaxCompat, kMaxBundle };
 
@@ -56,7 +56,7 @@ enum class WebRTCRtcpMuxPolicy { kNegotiate, kRequire };
 
 struct WebRTCConfiguration {
   WebVector<WebRTCIceServer> iceServers;
-  WebRTCIceTransports iceTransports = WebRTCIceTransports::kAll;
+  WebRTCIceTransportPolicy iceTransportPolicy = WebRTCIceTransportPolicy::kAll;
   WebRTCBundlePolicy bundlePolicy = WebRTCBundlePolicy::kBalanced;
   WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
   WebVector<std::unique_ptr<WebRTCCertificate>> certificates;

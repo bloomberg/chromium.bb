@@ -51,19 +51,15 @@ FAIL new RTCPeerConnection({ iceServers: [{ urls: [], credentialType: "invalid" 
 FAIL new RTCPeerConnection({ iceServers: [{ url: "stun:stun1.example.net" }] }) assert_throws: function "function () {
         eval(expr);
       }" did not throw
-FAIL new RTCPeerConnection({ iceTransportPolicy: null }) assert_throws: function "function () {
-        eval(expr);
-      }" did not throw
+PASS new RTCPeerConnection({ iceTransportPolicy: null }) 
 PASS new RTCPeerConnection({ iceTransportPolicy: undefined }) 
 PASS new RTCPeerConnection({ iceTransportPolicy: "relay" }) 
 PASS new RTCPeerConnection({ iceTransportPolicy: "all" }) 
-FAIL new RTCPeerConnection({ iceTransportPolicy: "invalid" }) assert_throws: function "function () {
-        eval(expr);
-      }" did not throw
+PASS new RTCPeerConnection({ iceTransportPolicy: "invalid" }) 
 FAIL new RTCPeerConnection({ iceTransportPolicy: "none" }) assert_throws: function "function () {
         eval(expr);
       }" did not throw
-FAIL new RTCPeerConnection({ iceTransports: "invalid" }) Failed to construct 'RTCPeerConnection': The provided value 'invalid' is not a valid enum value of type RTCIceTransports.
+FAIL new RTCPeerConnection({ iceTransports: "invalid" }) Failed to construct 'RTCPeerConnection': The provided value 'invalid' is not a valid enum value of type RTCIceTransportPolicy.
 PASS new RTCPeerConnection({ iceTransports: "none" }) 
 PASS new RTCPeerConnection({ bundlePolicy: null }) 
 PASS new RTCPeerConnection({ bundlePolicy: undefined }) 

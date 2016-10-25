@@ -26,7 +26,7 @@ PASS new webkitRTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}); thr
 PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'none'}); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'relay'}); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'all'}); did not throw exception.
-PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'foo'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value 'foo' is not a valid enum value of type RTCIceTransports..
+PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'foo'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value 'foo' is not a valid enum value of type RTCIceTransportPolicy..
 PASS new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'balanced'}); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-bundle'}); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-compat'}); did not throw exception.

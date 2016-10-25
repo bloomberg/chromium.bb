@@ -204,14 +204,14 @@ void GetNativeRtcConfiguration(
     webrtc_config->servers.push_back(server);
   }
 
-  switch (blink_config.iceTransports) {
-    case blink::WebRTCIceTransports::kNone:
+  switch (blink_config.iceTransportPolicy) {
+    case blink::WebRTCIceTransportPolicy::kNone:
       webrtc_config->type = webrtc::PeerConnectionInterface::kNone;
       break;
-    case blink::WebRTCIceTransports::kRelay:
+    case blink::WebRTCIceTransportPolicy::kRelay:
       webrtc_config->type = webrtc::PeerConnectionInterface::kRelay;
       break;
-    case blink::WebRTCIceTransports::kAll:
+    case blink::WebRTCIceTransportPolicy::kAll:
       webrtc_config->type = webrtc::PeerConnectionInterface::kAll;
       break;
     default:
