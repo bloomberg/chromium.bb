@@ -654,6 +654,8 @@ chrome.automation.AutomationNode.prototype.nextOnLine;
 /** @type {chrome.automation.AutomationNode} */
 chrome.automation.AutomationNode.prototype.previousOnLine;
 
+/** @type {Object<string, string>} */
+chrome.automation.AutomationNode.prototype.htmlAttributes;
 
 /**
  * @extends {chrome.automation.AutomationNode}

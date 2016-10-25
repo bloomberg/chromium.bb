@@ -227,6 +227,7 @@ DesktopAutomationHandler.prototype = {
     if (!AutomationPredicate.checkable(evt.target))
       return;
 
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
     this.onEventIfInRange(
         new chrome.automation.AutomationEvent(
             EventType.checkedStateChanged, evt.target, evt.eventFrom));

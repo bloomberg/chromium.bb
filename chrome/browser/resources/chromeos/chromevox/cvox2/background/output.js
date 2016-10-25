@@ -343,52 +343,29 @@ Output.ROLE_INFO_ = {
 
 /**
  * Metadata about supported automation states.
- * @const {!Object<{on: {msgId: string, earconId: string},
- *                  off: {msgId: string, earconId: string},
- *                  omitted: {msgId: string, earconId: string}}>}
+ * @const {!Object<string, {on: {msgId: string, earconId: string},
+ *                          off: {msgId: string, earconId: string},
+ *                          isRoleSpecific: (boolean|undefined)}>}
  *     on: info used to describe a state that is set to true.
- *     off: info used to describe a state that is set to false.
- *     omitted: info used to describe a state that is undefined.
+ *     off: info used to describe a state that is set to undefined.
+ *     isRoleSpecific: info used for specific roles.
  * @private
  */
 Output.STATE_INFO_ = {
-  checked: {
-    on: {
-      msgId: 'checkbox_checked_state'
-    },
-    off: {
-      msgId: 'checkbox_unchecked_state'
-    },
-    omitted: {
-      msgId: 'checkbox_unchecked_state'
-    }
+  busy: {on: {msgId: 'busy_state'}},
+  collapsed: {on: {msgId: 'aria_expanded_false'}},
+  default: {on: {msgId: 'default_state'}},
+  disabled: {on: {msgId: 'aria_disabled_true'}},
+  expanded: {on: {msgId: 'aria_expanded_true'}},
+  multiselectable: {on: {msgId: 'aria_multiselectable_true'}},
+  pressed: {
+    isRoleSpecific: true,
+    on: {msgId: 'aria_pressed_true'},
+    off: {msgId: 'aria_pressed_false'}
   },
-  collapsed: {
-    on: {
-      msgId: 'aria_expanded_false'
-    },
-    off: {
-      msgId: 'aria_expanded_true'
-    }
-  },
-  disabled: {
-    on: {
-      msgId: 'aria_disabled_true'
-    }
-  },
-  expanded: {
-    on: {
-      msgId: 'aria_expanded_true'
-    },
-    off: {
-      msgId: 'aria_expanded_false'
-    }
-  },
-  visited: {
-    on: {
-      msgId: 'visited_state'
-    }
-  }
+  required: {on: {msgId: 'aria_required_true'}},
+  selected: {on: {msgId: 'aria_selected_true'}},
+  visited: {on: {msgId: 'visited_state'}}
 };
 
 /**
@@ -573,9 +550,7 @@ Output.RULES = {
     },
     toggleButton: {
       speak: '$if($pressed, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
-          '$name $role ' +
-          '$if($pressed, @aria_pressed_true, @aria_pressed_false) ' +
-          '$description $state'
+          '$name $role $pressed $description $state'
     },
     toolbar: {
       enter: '$name $role $description'
@@ -1121,10 +1096,28 @@ Output.prototype = {
             }).length;
             this.append_(buff, String(count));
           }
+        } else if (token == 'checked') {
+          var msg;
+          var ariaChecked = node.htmlAttributes['aria-checked'];
+          switch (ariaChecked) {
+            case 'mixed':
+              msg = 'aria_checked_mixed';
+              break;
+            case 'true':
+              msg = 'aria_checked_true';
+              break;
+            case 'false':
+              msg = 'aria_checked_false';
+              break;
+            default:
+            msg =
+                node.state.checked ? 'aria_checked_true' : 'aria_checked_false';
+          }
+          this.format_(node, '@' + msg, buff);
         } else if (token == 'state') {
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
             var stateInfo = Output.STATE_INFO_[s];
-            if (stateInfo && stateInfo.on)
+            if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on)
               this.format_(node, '@' + stateInfo.on.msgId, buff);
           }.bind(this));
         } else if (token == 'find') {
@@ -1226,10 +1219,7 @@ Output.prototype = {
           options.annotation.push('state');
           var stateInfo = Output.STATE_INFO_[token];
           var resolvedInfo = {};
-          if (node.state[token] === undefined)
-            resolvedInfo = stateInfo.omitted;
-          else
-            resolvedInfo = node.state[token] ? stateInfo.on : stateInfo.off;
+          resolvedInfo = node.state[token] ? stateInfo.on : stateInfo.off;
           if (!resolvedInfo)
             return;
           if (this.formatOptions_.speech && resolvedInfo.earconId) {

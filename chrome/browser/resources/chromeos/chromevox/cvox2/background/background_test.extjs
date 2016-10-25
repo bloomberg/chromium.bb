@@ -644,15 +644,15 @@ TEST_F('BackgroundTest', 'Checkbox', function() {
     mockFeedback.call(focus)
         .expectSpeech('go')
         .expectSpeech('Check box')
-        .expectSpeech('not checked')
+        .expectSpeech('Not checked')
         .call(click)
         .expectSpeech('go')
         .expectSpeech('Check box')
-        .expectSpeech('checked')
+        .expectSpeech('Checked')
         .call(click)
         .expectSpeech('go')
         .expectSpeech('Check box')
-        .expectSpeech('not checked')
+        .expectSpeech('Not checked')
         .replay();
   });
 });

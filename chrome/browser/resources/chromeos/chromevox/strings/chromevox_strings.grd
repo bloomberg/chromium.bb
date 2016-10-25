@@ -2552,6 +2552,18 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Title of an article on how to use accessibility features of the Chromebook touch screen" name="IDS_CHROMEVOX_TOUCHSCREEN_ACCESSIBILITY">
         Use Chromebook touch screen accessibility features
       </message>
+      <message desc="Describes a UI element that is busy" name="IDS_CHROMEVOX_BUSY_STATE">
+        busy
+      </message>
+      <message desc="Brailled for a UI element that is busy" name="IDS_CHROMEVOX_BUSY_STATE_BRL">
+        busy
+      </message>
+      <message desc="Describes a UI element invoked after pressing enter such as an ok button in a dialog" name="IDS_CHROMEVOX_DEFAULT_STATE">
+        default
+      </message>
+      <message desc="Brailles for a UI element invoked after pressing enter such as an ok button in a dialog" name="IDS_CHROMEVOX_DEFAULT_STATE_BRL">
+        default
+      </message>
     </messages>
   </release>
 </grit>
