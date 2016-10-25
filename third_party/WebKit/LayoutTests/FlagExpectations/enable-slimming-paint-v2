@@ -2162,17 +2162,20 @@ crbug.com/654554 fast/forms/suggestion-picker/week-suggestion-picker-appearance-
 crbug.com/654554 fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ Crash Timeout ]
 crbug.com/654554 fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Crash Timeout ]
 
-#The following tests for crbug.com/593596 are actually SPv2 progressions.
-# Small pixel differences, needs rebaseline
-crbug.com/593596 compositing/geometry/layer-due-to-layer-children-deep.html [ NeedsRebaseline ]
-# These fail because GeometryMapper applies a control clip for the input element; SPv1 does not.
-crbug.com/593596 fast/css/input-search-padding.html [ NeedsRebaseline ]
-crbug.com/593596 fast/forms/search/search-vertical-alignment.html [ NeedsRebaseline ]
-Bug(none) fast/forms/search/searchfield-heights.html [ NeedsRebaseline ]
-Bug(none) fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
-Bug(none) fast/forms/text/textfield-overflow-by-value-update.html [ NeedsRebaseline ]
-Bug(none) fast/replaced/width100percent-searchfield.html [ NeedsRebaseline ]
+# Notes about rebaselined tests:
+#
+# Rebaselined for small pixel differences.
+# compositing/geometry/layer-due-to-layer-children-deep.html
+#
+# Rebaselined because GeometryMapper applies a control clip for the input element; SPv1 does not.
+# fast/css/input-search-padding.html
+# fast/forms/search/search-vertical-alignment.html
+# fast/forms/search/searchfield-heights.html
+# fast/forms/text/text-font-height-mismatch.html
+# fast/forms/text/textfield-overflow-by-value-update.html
+# fast/replaced/width100percent-searchfield.html
+#
 # SPv2 correctly positions a background clip that includes the transformed size of div #two.
-# SPv1 does not understand how to apply transforms properly in PaintLayerClipper (the altter isue is
+# SPv1 does not understand how to apply transforms properly in PaintLayerClipper (the issue is
 # also tracked in crbug.com/548184).
-Bug(none) fast/transforms/transform-overflow.html [ NeedsRebaseline ]
+# fast/transforms/transform-overflow.html

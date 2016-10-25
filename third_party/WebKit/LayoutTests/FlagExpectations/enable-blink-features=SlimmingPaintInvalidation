@@ -1,11 +1,12 @@
 # Expectations for slimmingPaintInvalidation feature
 
-# Different clipping behavior, sometimes more accurate (e.g. about css clip),
-# sometimes less accurate (e.g. when clip has transforms). This doesn't matter.
-Bug(none) paint/invalidation/outline-clip-change.html [ NeedsRebaseline ]
-Bug(none) paint/invalidation/scroll-in-transformed-layer.html [ NeedsRebaseline ]
-Bug(none) paint/invalidation/scroll-with-transformed-parent-layer.html [ NeedsRebaseline ]
-Bug(none) paint/invalidation/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
+# Rebaselined because of different clipping behavior, sometimes more accurate
+# (e.g. about css clip), sometimes less accurate (e.g. when clip has transforms)
+# which doesn't matter.
+# paint/invalidation/outline-clip-change.html
+# paint/invalidation/scroll-in-transformed-layer.html
+# paint/invalidation/scroll-with-transformed-parent-layer.html
+# paint/invalidation/shift-relative-positioned-container-with-image-addition.html
 
 crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]
 
