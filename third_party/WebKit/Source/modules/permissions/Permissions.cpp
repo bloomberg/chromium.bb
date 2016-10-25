@@ -264,6 +264,13 @@ PermissionService* Permissions::getService(ExecutionContext* executionContext) {
 }
 
 void Permissions::serviceConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Remove this hack once renderer shutdown sequence is fixed.
+    // Note that reaching this code indicates that the MessageLoop has already
+    // been torn down, so it's impossible for any pending reply callbacks on
+    // |m_service| to fire beyond this point anyway.
+    return;
+  }
   m_service.reset();
 }
 
