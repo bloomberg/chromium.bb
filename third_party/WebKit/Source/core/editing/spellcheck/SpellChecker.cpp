@@ -224,7 +224,7 @@ void SpellChecker::didBeginEditing(Element* element) {
   }
 
   if (isTextField || !parent->isAlreadySpellChecked()) {
-    if (editingIgnoresContent(element))
+    if (editingIgnoresContent(*element))
       return;
     // We always recheck textfields because markers are removed from them on
     // blur.

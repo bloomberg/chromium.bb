@@ -1832,7 +1832,7 @@ void LayoutBlock::updateHitTestResult(HitTestResult& result,
 // so the firstChild() is nullptr if the only child is an empty inline-block.
 inline bool LayoutBlock::isInlineBoxWrapperActuallyChild() const {
   return isInlineBlockOrInlineTable() && !size().isEmpty() && node() &&
-         editingIgnoresContent(node());
+         editingIgnoresContent(*node());
 }
 
 bool LayoutBlock::hasCursorCaret() const {

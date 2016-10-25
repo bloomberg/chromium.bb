@@ -107,7 +107,7 @@ bool needsLayoutTreeUpdate(const PositionInFlatTree& position) {
 // Atomic means that the node has no children, or has children which are ignored
 // for the purposes of editing.
 bool isAtomicNode(const Node* node) {
-  return node && (!node->hasChildren() || editingIgnoresContent(node));
+  return node && (!node->hasChildren() || editingIgnoresContent(*node));
 }
 
 template <typename Traversal>
@@ -756,7 +756,7 @@ PositionTemplate<Strategy> previousPositionOfAlgorithm(
   const int offset = position.computeEditingOffset();
 
   if (offset > 0) {
-    if (editingIgnoresContent(node))
+    if (editingIgnoresContent(*node))
       return PositionTemplate<Strategy>::beforeNode(node);
     if (Node* child = Strategy::childAt(*node, offset - 1))
       return PositionTemplate<Strategy>::lastPositionInOrAfterNode(child);
@@ -782,7 +782,7 @@ PositionTemplate<Strategy> previousPositionOfAlgorithm(
   }
 
   if (ContainerNode* parent = Strategy::parent(*node)) {
-    if (editingIgnoresContent(parent))
+    if (editingIgnoresContent(*parent))
       return PositionTemplate<Strategy>::beforeNode(parent);
     // TODO(yosin) We should use |Strategy::index(Node&)| instead of
     // |Node::nodeIndex()|.

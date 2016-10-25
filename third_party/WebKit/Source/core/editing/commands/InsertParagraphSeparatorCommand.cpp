@@ -445,7 +445,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
   // If the returned position lies either at the end or at the start of an
   // element that is ignored by editing we should move to its upstream or
   // downstream position.
-  if (editingIgnoresContent(insertionPosition.anchorNode())) {
+  if (editingIgnoresContent(*insertionPosition.anchorNode())) {
     if (insertionPosition.atLastEditingPositionForNode())
       insertionPosition = mostForwardCaretPosition(insertionPosition);
     else if (insertionPosition.atFirstEditingPositionForNode())

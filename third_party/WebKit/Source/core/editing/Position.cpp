@@ -67,7 +67,7 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::editingPositionOf(
   if (!anchorNode || anchorNode->isTextNode())
     return PositionTemplate<Strategy>(anchorNode, offset);
 
-  if (!editingIgnoresContent(anchorNode))
+  if (!editingIgnoresContent(*anchorNode))
     return PositionTemplate<Strategy>(anchorNode, offset);
 
   if (offset == 0)
@@ -179,7 +179,7 @@ PositionTemplate<Strategy>::parentAnchoredEquivalent() const {
   // needed for positions before and after Tables
   if (m_offset == 0 && !isAfterAnchorOrAfterChildren()) {
     if (Strategy::parent(*m_anchorNode) &&
-        (editingIgnoresContent(m_anchorNode.get()) ||
+        (editingIgnoresContent(*m_anchorNode) ||
          isDisplayInsideTable(m_anchorNode.get())))
       return inParentBeforeNode(*m_anchorNode);
     return PositionTemplate<Strategy>(m_anchorNode.get(), 0);
@@ -187,7 +187,7 @@ PositionTemplate<Strategy>::parentAnchoredEquivalent() const {
   if (!m_anchorNode->isCharacterDataNode() &&
       (isAfterAnchorOrAfterChildren() ||
        static_cast<unsigned>(m_offset) == m_anchorNode->countChildren()) &&
-      (editingIgnoresContent(m_anchorNode.get()) ||
+      (editingIgnoresContent(*m_anchorNode) ||
        isDisplayInsideTable(m_anchorNode.get())) &&
       computeContainerNode()) {
     return inParentAfterNode(*m_anchorNode);
@@ -485,8 +485,8 @@ PositionTemplate<Strategy>
 PositionTemplate<Strategy>::firstPositionInOrBeforeNode(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
-  return editingIgnoresContent(node) ? beforeNode(node)
-                                     : firstPositionInNode(node);
+  return editingIgnoresContent(*node) ? beforeNode(node)
+                                      : firstPositionInNode(node);
 }
 
 // static
@@ -495,8 +495,8 @@ PositionTemplate<Strategy>
 PositionTemplate<Strategy>::lastPositionInOrAfterNode(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
-  return editingIgnoresContent(node) ? afterNode(node)
-                                     : lastPositionInNode(node);
+  return editingIgnoresContent(*node) ? afterNode(node)
+                                      : lastPositionInNode(node);
 }
 
 PositionInFlatTree toPositionInFlatTree(const Position& pos) {

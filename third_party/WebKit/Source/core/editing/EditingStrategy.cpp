@@ -27,7 +27,7 @@ int EditingAlgorithm<Traversal>::caretMaxOffset(const Node& node) {
 // "EditingUtilities.cpp"
 // |isEmptyNonEditableNodeInEditable()| is introduced for fixing
 // http://crbug.com/428986.
-static bool isEmptyNonEditableNodeInEditable(const Node* node) {
+static bool isEmptyNonEditableNodeInEditable(const Node& node) {
   // Editability is defined the DOM tree rather than the flat tree. For example:
   // DOM:
   //   <host>
@@ -38,19 +38,17 @@ static bool isEmptyNonEditableNodeInEditable(const Node* node) {
   // Flat Tree:
   //   <host><div ce><span1>unedittable</span></div></host>
   // e.g. editing/shadow/breaking-editing-boundaries.html
-  return !NodeTraversal::hasChildren(*node) && !hasEditableStyle(*node) &&
-         node->parentNode() && hasEditableStyle(*node->parentNode());
+  return !NodeTraversal::hasChildren(node) && !hasEditableStyle(node) &&
+         node.parentNode() && hasEditableStyle(*node.parentNode());
 }
 
 // TODO(yosin): We should move "editingIgnoresContent()" to
 // "EditingUtilities.cpp"
-// TODO(yosin) We should make |editingIgnoresContent()| to take |Node&| instead
-// |Node*|.
 // TODO(yosin): We should not use |isEmptyNonEditableNodeInEditable()| in
 // |editingIgnoresContent()| since |isEmptyNonEditableNodeInEditable()|
 // requires clean layout tree.
-bool editingIgnoresContent(const Node* node) {
-  return !node->canContainRangeEndPoint() ||
+bool editingIgnoresContent(const Node& node) {
+  return !node.canContainRangeEndPoint() ||
          isEmptyNonEditableNodeInEditable(node);
 }
 
@@ -67,7 +65,7 @@ int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node) {
 
   // FIXME: Try return 0 here.
 
-  if (!editingIgnoresContent(node))
+  if (!editingIgnoresContent(*node))
     return 0;
 
   // editingIgnoresContent uses the same logic in

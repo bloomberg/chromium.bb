@@ -982,7 +982,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(
       if (node->contains(pastEndNode) || containsNonEditableRegion(*node) ||
           !hasEditableStyle(*node->parentNode()))
         continue;
-      if (editingIgnoresContent(node)) {
+      if (editingIgnoresContent(*node)) {
         next = NodeTraversal::nextSkippingChildren(*node);
         continue;
       }
@@ -1083,7 +1083,7 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(
   Node* next = runStart;
   for (Node* node = next; node && node->isConnected() && node != pastEndNode;
        node = next) {
-    if (editingIgnoresContent(node)) {
+    if (editingIgnoresContent(*node)) {
       DCHECK(!node->contains(pastEndNode)) << node << " " << pastEndNode;
       next = NodeTraversal::nextSkippingChildren(*node);
     } else {
@@ -1448,7 +1448,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style,
   Node* node = start.anchorNode();
   while (node) {
     Node* next = nullptr;
-    if (editingIgnoresContent(node)) {
+    if (editingIgnoresContent(*node)) {
       DCHECK(node == end.anchorNode() || !node->contains(end.anchorNode()))
           << node << " " << end;
       next = NodeTraversal::nextSkippingChildren(*node);

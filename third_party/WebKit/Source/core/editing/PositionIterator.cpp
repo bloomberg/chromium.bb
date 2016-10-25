@@ -73,7 +73,7 @@ PositionIteratorAlgorithm<Strategy>::deprecatedComputePosition() const {
     DCHECK_NE(m_offsetsInAnchorNode[m_depthToAnchorNode], kInvalidOffset);
     // FIXME: This check is inadaquete because any ancestor could be ignored by
     // editing
-    if (editingIgnoresContent(Strategy::parent(*m_nodeAfterPositionInAnchor)))
+    if (editingIgnoresContent(*Strategy::parent(*m_nodeAfterPositionInAnchor)))
       return PositionTemplate<Strategy>::beforeNode(m_anchorNode);
     return PositionTemplate<Strategy>(
         m_anchorNode, m_offsetsInAnchorNode[m_depthToAnchorNode]);

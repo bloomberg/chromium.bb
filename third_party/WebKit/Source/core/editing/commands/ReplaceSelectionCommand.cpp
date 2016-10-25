@@ -133,7 +133,7 @@ static bool isHTMLInterchangeConvertedSpaceSpan(const Node* node) {
 static Position positionAvoidingPrecedingNodes(Position pos) {
   // If we're already on a break, it's probably a placeholder and we shouldn't
   // change our position.
-  if (editingIgnoresContent(pos.anchorNode()))
+  if (editingIgnoresContent(*pos.anchorNode()))
     return pos;
 
   // We also stop when changing block flow elements because even though the

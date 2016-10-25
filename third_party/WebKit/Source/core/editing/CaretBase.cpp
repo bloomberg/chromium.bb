@@ -52,7 +52,7 @@ void CaretBase::clearCaretRect() {
 }
 
 static inline bool caretRendersInsideNode(Node* node) {
-  return node && !isDisplayInsideTable(node) && !editingIgnoresContent(node);
+  return node && !isDisplayInsideTable(node) && !editingIgnoresContent(*node);
 }
 
 LayoutBlock* CaretBase::caretLayoutObject(Node* node) {
