@@ -6,11 +6,16 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/logging.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 
 using base::mac::ScopedObjCClassSwizzler;
 
 namespace {
+
+// Swizzling can be stacked, but not interleaved without creating unexpected
+// states. Require that there is only one swizzler rather than tracking a stack.
+bool g_swizzling = false;
 
 void NotifyStyleChanged() {
   [[NSNotificationCenter defaultCenter]
@@ -60,6 +65,8 @@ ScopedPreferredScrollerStyle::ScopedPreferredScrollerStyle(bool overlay)
                           ? [FakeNSScrollerPreferredStyleOverlayDonor class]
                           : [FakeNSScrollerPreferredStyleLegacyDonor class];
 
+  DCHECK(!g_swizzling);
+  g_swizzling = true;
   swizzler_.reset(new ScopedObjCClassSwizzler(
       [NSScroller class], style_class, @selector(preferredScrollerStyle)));
 
@@ -69,6 +76,8 @@ ScopedPreferredScrollerStyle::ScopedPreferredScrollerStyle(bool overlay)
 
 ScopedPreferredScrollerStyle::~ScopedPreferredScrollerStyle() {
   swizzler_.reset();
+  DCHECK(g_swizzling);
+  g_swizzling = false;
 
   if ([NSScroller preferredScrollerStyle] != GetScrollerStyle(overlay_))
     NotifyStyleChanged();
