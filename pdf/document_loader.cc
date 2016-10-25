@@ -335,7 +335,7 @@ pp::URLRequestInfo DocumentLoader::GetRequest(uint32_t position,
   pp::URLRequestInfo request(client_->GetPluginInstance());
   request.SetURL(url_);
   request.SetMethod("GET");
-  request.SetFollowRedirects(true);
+  request.SetFollowRedirects(false);
   request.SetCustomReferrerURL(url_);
 
   const size_t kBufSize = 100;
