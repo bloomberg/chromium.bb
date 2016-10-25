@@ -9,8 +9,6 @@ import("//testing/test.gni")
 bundle_data("ios_chrome_unittests_bundle_data") {
   testonly = true
   sources = [
-    "test/data/webdata/bookmarkimages/image.jpg",
-    "test/data/webdata/bookmarkimages/index.html",
     "test/data/webp_transcode/test.jpg",
     "test/data/webp_transcode/test.webp",
     "test/data/webp_transcode/test_alpha.png",
