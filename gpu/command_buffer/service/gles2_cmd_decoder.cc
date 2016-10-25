@@ -3103,7 +3103,10 @@ bool GLES2DecoderImpl::Initialize(
     }
   }
 
-  bool needs_emulation = gl_version_info().IsLowerThanGL(4, 2);
+  // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
+  // However, we set it to true everywhere, not to trust drivers to handle
+  // out-of-bounds buffer accesses.
+  bool needs_emulation = true;
   transform_feedback_manager_.reset(new TransformFeedbackManager(
       group_->max_transform_feedback_separate_attribs(), needs_emulation));
 

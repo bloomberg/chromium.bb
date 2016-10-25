@@ -80,6 +80,7 @@ IndexedBufferBindingHost::IndexedBufferBindingHost(
     uint32_t max_bindings, bool needs_emulation)
     : needs_emulation_(needs_emulation),
       max_non_null_binding_index_plus_one_(0u) {
+  DCHECK(needs_emulation);
   buffer_bindings_.resize(max_bindings);
 }
 

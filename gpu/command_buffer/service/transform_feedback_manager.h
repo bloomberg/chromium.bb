@@ -76,7 +76,9 @@ class GPU_EXPORT TransformFeedback : public IndexedBufferBindingHost {
 // This class keeps tracks of the transform feedbacks and their states.
 class GPU_EXPORT TransformFeedbackManager {
  public:
-  // |needs_emulation| is true on Desktop GL 4.1 or lower.
+  // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
+  // However, we set it to true everywhere, not to trust drivers to handle
+  // out-of-bounds buffer accesses.
   TransformFeedbackManager(GLuint max_transform_feedback_separate_attribs,
                            bool needs_emulation);
   ~TransformFeedbackManager();

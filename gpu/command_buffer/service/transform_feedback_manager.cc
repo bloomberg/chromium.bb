@@ -81,6 +81,7 @@ TransformFeedbackManager::TransformFeedbackManager(
           max_transform_feedback_separate_attribs),
       needs_emulation_(needs_emulation),
       lost_context_(false) {
+  DCHECK(needs_emulation);
 }
 
 TransformFeedbackManager::~TransformFeedbackManager() {
