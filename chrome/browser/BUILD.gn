@@ -3004,6 +3004,8 @@ split_static_library("browser") {
       "android/download/chrome_download_delegate.h",
       "android/download/chrome_download_manager_overwrite_infobar_delegate.cc",
       "android/download/chrome_download_manager_overwrite_infobar_delegate.h",
+      "android/download/dangerous_download_infobar_delegate.cc",
+      "android/download/dangerous_download_infobar_delegate.h",
       "android/download/download_controller.cc",
       "android/download/download_controller.h",
       "android/download/download_controller_base.cc",

@@ -17,6 +17,8 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/download/chrome_download_delegate.h"
+#include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -250,8 +252,12 @@ void DownloadController::OnDownloadStarted(
 
 void DownloadController::OnDownloadUpdated(DownloadItem* item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (item->IsDangerous() && (item->GetState() != DownloadItem::CANCELLED))
+  if (item->IsDangerous() && (item->GetState() != DownloadItem::CANCELLED)) {
+    // Dont't show notification for a dangerous download, as user can resume
+    // the download after browser crash through notification.
     OnDangerousDownload(item);
+    return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jguid =
@@ -327,10 +333,13 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
 
 void DownloadController::OnDangerousDownload(DownloadItem* item) {
   WebContents* web_contents = item->GetWebContents();
-  if (!web_contents)
+  if (!web_contents) {
+    item->Remove();
     return;
-  ChromeDownloadDelegate::FromWebContents(web_contents)->OnDangerousDownload(
-      item->GetTargetFilePath().BaseName().value(), item->GetGuid());
+  }
+
+  DangerousDownloadInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents), item);
 }
 
 DownloadController::JavaObject*
@@ -357,22 +366,3 @@ void DownloadController::StartContextMenuDownload(
                                routing_id, params, is_link, extra_headers));
 }
 
-void DownloadController::DangerousDownloadValidated(
-    WebContents* web_contents,
-    const std::string& download_guid,
-    bool accept) {
-  if (!web_contents)
-    return;
-  DownloadManager* dlm =
-      BrowserContext::GetDownloadManager(web_contents->GetBrowserContext());
-  DownloadItem* item = dlm->GetDownloadByGuid(download_guid);
-  if (!item)
-    return;
-  if (accept) {
-    item->ValidateDangerousDownload();
-  } else {
-    DownloadController::RecordDownloadCancelReason(
-        DownloadController::CANCEL_REASON_DANGEROUS_DOWNLOAD_INFOBAR_DISMISSED);
-    item->Remove();
-  }
-}

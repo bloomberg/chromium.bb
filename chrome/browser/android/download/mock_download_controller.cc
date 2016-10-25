@@ -27,11 +27,6 @@ void MockDownloadController::StartContextMenuDownload(
     bool is_link, const std::string& extra_headers) {
 }
 
-void MockDownloadController::DangerousDownloadValidated(
-    content::WebContents* web_contents,
-    const std::string& download_guid,
-    bool accept) {}
-
 void MockDownloadController::AcquireFileAccessPermission(
     content::WebContents* web_contents,
     const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb) {

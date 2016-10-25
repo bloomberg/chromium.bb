@@ -20,8 +20,6 @@ class ChromeDownloadDelegate
   void SetJavaRef(JNIEnv*, jobject obj);
 
   void OnDownloadStarted(const std::string& filename);
-  void OnDangerousDownload(const std::string& filename,
-                           const std::string& guid);
   void RequestFileAccess(intptr_t callback_id);
 
  private:

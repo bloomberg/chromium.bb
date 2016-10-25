@@ -105,36 +105,6 @@ public class DownloadTest extends DownloadTestBase {
     @MediumTest
     @Feature({"Downloads"})
     @RetryOnFailure
-    public void testDangerousDownloadCancel() throws Exception {
-        loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "dangerous.html"));
-        waitForFocus();
-        View currentView = getActivity().getActivityTab().getView();
-        TouchCommon.longPressView(currentView);
-
-        // Open in new tab so that the "CloseBlankTab" functionality is invoked later.
-        getInstrumentation().invokeContextMenuAction(getActivity(),
-                R.id.contextmenu_open_in_new_tab, 0);
-
-        waitForNewTabToStabilize(2);
-        goToLastTab();
-        assertPollForInfoBarSize(1);
-
-        assertTrue("Cancel button wasn't found",
-                InfoBarUtil.clickSecondaryButton(getInfoBars().get(0)));
-
-        // "Cancel" should close the blank tab opened for this download.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(1, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return getActivity().getCurrentTabModel().getCount();
-                    }
-                }));
-    }
-
-    @MediumTest
-    @Feature({"Downloads"})
-    @RetryOnFailure
     public void testHttpPostDownload() throws Exception {
         loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "post.html"));
         waitForFocus();

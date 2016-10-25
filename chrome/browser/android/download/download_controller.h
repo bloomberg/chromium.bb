@@ -81,9 +81,6 @@ class DownloadController : public DownloadControllerBase {
                                 content::WebContents* web_contents,
                                 bool is_link,
                                 const std::string& extra_headers) override;
-  void DangerousDownloadValidated(content::WebContents* web_contents,
-                                  const std::string& download_guid,
-                                  bool accept) override;
 
   // DownloadItem::Observer interface.
   void OnDownloadUpdated(content::DownloadItem* item) override;

@@ -30,9 +30,6 @@ class MockDownloadController : public DownloadControllerBase {
       const content::ContextMenuParams& params,
       content::WebContents* web_contents,
       bool is_link, const std::string& extra_headers) override;
-  void DangerousDownloadValidated(content::WebContents* web_contents,
-                                  const std::string& download_guid,
-                                  bool accept) override;
   void AcquireFileAccessPermission(
       content::WebContents* web_contents,
       const AcquireFileAccessPermissionCallback& callback) override;

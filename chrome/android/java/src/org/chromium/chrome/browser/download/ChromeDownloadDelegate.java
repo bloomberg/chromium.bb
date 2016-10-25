@@ -26,8 +26,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
-import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -49,42 +47,9 @@ import java.io.File;
 public class ChromeDownloadDelegate {
     private static final String TAG = "Download";
 
-    private class DangerousDownloadListener implements SimpleConfirmInfoBarBuilder.Listener {
-        @Override
-        public boolean onInfoBarButtonClicked(boolean confirm) {
-            assert mTab != null;
-            if (mPendingRequest == null) return false;
-            if (mPendingRequest.getDownloadGuid() != null) {
-                nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadGuid(), confirm);
-                if (confirm) {
-                    DownloadUtils.showDownloadStartToast(mContext);
-                }
-            }
-            mPendingRequest = null;
-            return closeBlankTab();
-        }
-
-        @Override
-        public void onInfoBarDismissed() {
-            if (mPendingRequest == null) return;
-            if (mPendingRequest.getDownloadGuid() != null) {
-                assert mTab != null;
-                nativeDangerousDownloadValidated(
-                        mTab, mPendingRequest.getDownloadGuid(), false);
-            }
-            // Forget the pending request.
-            mPendingRequest = null;
-        }
-    }
-
-    private final DangerousDownloadListener mDangerousDownloadListener;
-
     // The application context.
     private final Context mContext;
     private Tab mTab;
-
-    // Pending download request for a dangerous file.
-    private DownloadInfo mPendingRequest;
 
     /**
      * Creates ChromeDownloadDelegate.
@@ -101,8 +66,6 @@ public class ChromeDownloadDelegate {
             }
         });
 
-        mPendingRequest = null;
-        mDangerousDownloadListener = new DangerousDownloadListener();
         nativeInit(tab.getWebContents());
     }
 
@@ -155,15 +118,11 @@ public class ChromeDownloadDelegate {
                 // The proper fix would be to let chrome knows which frame originated the request.
                 if ("application/x-shockwave-flash".equals(newInfo.getMimeType())) return;
 
-                if (isDangerousFile(fileName)) {
-                    confirmDangerousDownload(newInfo);
+                // Not a dangerous file, proceed.
+                if (fileExists) {
+                    launchDownloadInfoBar(newInfo, dirName, fullDirPath);
                 } else {
-                    // Not a dangerous file, proceed.
-                    if (fileExists) {
-                        launchDownloadInfoBar(newInfo, dirName, fullDirPath);
-                    } else {
-                        enqueueDownloadManagerRequest(newInfo);
-                    }
+                    enqueueDownloadManagerRequest(newInfo);
                 }
             }
         }.execute();
@@ -176,43 +135,6 @@ public class ChromeDownloadDelegate {
      */
     protected String sanitizeDownloadUrl(DownloadInfo downloadInfo) {
         return downloadInfo.getUrl();
-    }
-
-    /**
-     * Request user confirmation on a dangerous download.
-     *
-     * @param downloadInfo Information about the download.
-     */
-    private void confirmDangerousDownload(DownloadInfo downloadInfo) {
-        // A Dangerous file is already pending user confirmation, ignore the new download.
-        if (mPendingRequest != null) return;
-        // Tab is already destroyed, no need to add an infobar.
-        if (mTab == null) return;
-
-        mPendingRequest = downloadInfo;
-
-        int drawableId = R.drawable.infobar_warning;
-        final String titleText = nativeGetDownloadWarningText(mPendingRequest.getFileName());
-        final String okButtonText = mContext.getResources().getString(R.string.ok);
-        final String cancelButtonText = mContext.getResources().getString(R.string.cancel);
-        SimpleConfirmInfoBarBuilder.create(mTab, mDangerousDownloadListener,
-                InfoBarIdentifier.CONFIRM_DANGEROUS_DOWNLOAD, drawableId, titleText, okButtonText,
-                cancelButtonText, true);
-    }
-
-    /**
-     * Called when a danagerous download is about to start.
-     *
-     * @param filename File name of the download item.
-     * @param downloadGuid GUID of the download.
-     */
-    @CalledByNative
-    private void onDangerousDownload(String filename, String downloadGuid) {
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setFileName(filename)
-                .setDescription(filename)
-                .setDownloadGuid(downloadGuid).build();
-        confirmDangerousDownload(downloadInfo);
     }
 
     @CalledByNative
@@ -562,8 +484,6 @@ public class ChromeDownloadDelegate {
     private native void nativeInit(WebContents webContents);
     private static native String nativeGetDownloadWarningText(String filename);
     private static native boolean nativeIsDownloadDangerous(String filename);
-    private static native void nativeDangerousDownloadValidated(
-            Object tab, String downloadGuid, boolean accept);
     private static native void nativeLaunchDownloadOverwriteInfoBar(ChromeDownloadDelegate delegate,
             Tab tab, DownloadInfo downloadInfo, String fileName, String dirName,
             String dirFullPath);

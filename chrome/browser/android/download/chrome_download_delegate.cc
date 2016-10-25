@@ -51,20 +51,6 @@ static jboolean IsDownloadDangerous(JNIEnv* env,
              path) != safe_browsing::DownloadFileType::NOT_DANGEROUS;
 }
 
-// Called when a dangerous download is validated.
-static void DangerousDownloadValidated(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jobject>& tab,
-    const JavaParamRef<jstring>& jdownload_guid,
-    jboolean accept) {
-  std::string download_guid =
-      base::android::ConvertJavaStringToUTF8(env, jdownload_guid);
-  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
-  DownloadControllerBase::Get()->DangerousDownloadValidated(
-      tab_android->web_contents(), download_guid, accept);
-}
-
 // static
 bool ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
     jobject chrome_download_delegate,
@@ -147,16 +133,6 @@ void ChromeDownloadDelegate::OnDownloadStarted(const std::string& filename) {
   ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
       env, filename);
   Java_ChromeDownloadDelegate_onDownloadStarted(env, java_ref_, jfilename);
-}
-
-void ChromeDownloadDelegate::OnDangerousDownload(const std::string& filename,
-                                                 const std::string& guid) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
-      env, filename);
-  ScopedJavaLocalRef<jstring> jguid = ConvertUTF8ToJavaString(env, guid);
-  Java_ChromeDownloadDelegate_onDangerousDownload(env, java_ref_, jfilename,
-                                                  jguid);
 }
 
 void ChromeDownloadDelegate::RequestFileAccess(intptr_t callback_id) {
