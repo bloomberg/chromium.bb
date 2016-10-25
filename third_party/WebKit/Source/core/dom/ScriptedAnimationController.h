@@ -26,6 +26,7 @@
 #ifndef ScriptedAnimationController_h
 #define ScriptedAnimationController_h
 
+#include "core/CoreExport.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ListHashSet.h"
@@ -41,7 +42,7 @@ class EventTarget;
 class FrameRequestCallback;
 class MediaQueryListListener;
 
-class ScriptedAnimationController
+class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollected<ScriptedAnimationController> {
  public:
   static ScriptedAnimationController* create(Document* document) {

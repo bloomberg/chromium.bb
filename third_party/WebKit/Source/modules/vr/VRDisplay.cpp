@@ -5,7 +5,9 @@
 #include "modules/vr/VRDisplay.h"
 
 #include "core/dom/DOMException.h"
+#include "core/dom/FrameRequestCallback.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/ScriptedAnimationController.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -21,6 +23,7 @@
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -33,6 +36,24 @@ VREye stringToVREye(const String& whichEye) {
     return VREyeRight;
   return VREyeNone;
 }
+
+class VRDisplayFrameRequestCallback : public FrameRequestCallback {
+ public:
+  VRDisplayFrameRequestCallback(VRDisplay* vrDisplay)
+      : m_vrDisplay(vrDisplay) {}
+  ~VRDisplayFrameRequestCallback() override {}
+  void handleEvent(double highResTimeMs) override {
+    m_vrDisplay->serviceScriptedAnimations(highResTimeMs);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_vrDisplay);
+
+    FrameRequestCallback::trace(visitor);
+  }
+
+  Member<VRDisplay> m_vrDisplay;
+};
 
 }  // namespace
 
@@ -47,7 +68,9 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR)
       m_eyeParametersRight(new VREyeParameters()),
       m_depthNear(0.01),
       m_depthFar(10000.0),
-      m_fullscreenCheckTimer(this, &VRDisplay::onFullscreenCheck) {}
+      m_fullscreenCheckTimer(this, &VRDisplay::onFullscreenCheck),
+      m_animationCallbackRequested(false),
+      m_inAnimationFrame(false) {}
 
 VRDisplay::~VRDisplay() {}
 
@@ -132,16 +155,32 @@ VREyeParameters* VRDisplay::getEyeParameters(const String& whichEye) {
 }
 
 int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
-  // TODO: Use HMD-specific rAF when an external display is present.
+  Document* doc = m_navigatorVR->document();
+  if (!doc)
+    return 0;
+
+  if (!m_animationCallbackRequested) {
+    doc->requestAnimationFrame(new VRDisplayFrameRequestCallback(this));
+    m_animationCallbackRequested = true;
+  }
+
   callback->m_useLegacyTimeBase = false;
-  if (Document* doc = m_navigatorVR->document())
-    return doc->requestAnimationFrame(callback);
-  return 0;
+  return ensureScriptedAnimationController(doc).registerCallback(callback);
 }
 
 void VRDisplay::cancelAnimationFrame(int id) {
-  if (Document* document = m_navigatorVR->document())
-    document->cancelAnimationFrame(id);
+  if (!m_scriptedAnimationController)
+    return;
+  m_scriptedAnimationController->cancelCallback(id);
+}
+
+void VRDisplay::serviceScriptedAnimations(double monotonicAnimationStartTime) {
+  if (!m_scriptedAnimationController)
+    return;
+  AutoReset<bool> animating(&m_inAnimationFrame, true);
+  m_animationCallbackRequested = false;
+  m_scriptedAnimationController->serviceScriptedAnimations(
+      monotonicAnimationStartTime);
 }
 
 void ReportPresentationResult(PresentationResult result) {
@@ -376,8 +415,28 @@ HeapVector<VRLayer> VRDisplay::getLayers() {
 }
 
 void VRDisplay::submitFrame() {
-  if (!m_isPresenting || !m_contextGL) {
-    // Something got confused, we can't submit frames if we're not presenting.
+  Document* doc = m_navigatorVR->document();
+  if (!m_isPresenting) {
+    if (doc) {
+      doc->addConsoleMessage(ConsoleMessage::create(
+          RenderingMessageSource, WarningMessageLevel,
+          "submitFrame has no effect when the VRDisplay is not presenting."));
+    }
+    return;
+  }
+
+  if (!m_inAnimationFrame) {
+    if (doc) {
+      doc->addConsoleMessage(
+          ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
+                                 "submitFrame must be called within a "
+                                 "VRDisplay.requestAnimationFrame callback."));
+    }
+    return;
+  }
+
+  if (!m_contextGL) {
+    // Something got confused, we can't submit frames without a GL context.
     return;
   }
 
@@ -427,6 +486,14 @@ void VRDisplay::onFullscreenCheck(TimerBase*) {
   }
 }
 
+ScriptedAnimationController& VRDisplay::ensureScriptedAnimationController(
+    Document* doc) {
+  if (!m_scriptedAnimationController)
+    m_scriptedAnimationController = ScriptedAnimationController::create(doc);
+
+  return *m_scriptedAnimationController;
+}
+
 DEFINE_TRACE(VRDisplay) {
   visitor->trace(m_navigatorVR);
   visitor->trace(m_capabilities);
@@ -435,6 +502,7 @@ DEFINE_TRACE(VRDisplay) {
   visitor->trace(m_eyeParametersRight);
   visitor->trace(m_layer);
   visitor->trace(m_renderingContext);
+  visitor->trace(m_scriptedAnimationController);
 }
 
 }  // namespace blink

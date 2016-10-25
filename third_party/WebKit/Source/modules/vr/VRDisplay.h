@@ -26,6 +26,7 @@ class GLES2Interface;
 namespace blink {
 
 class NavigatorVR;
+class ScriptedAnimationController;
 class VRController;
 class VREyeParameters;
 class VRFrameData;
@@ -66,6 +67,7 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
 
   int requestAnimationFrame(FrameRequestCallback*);
   void cancelAnimationFrame(int id);
+  void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
   ScriptPromise requestPresent(ScriptState*, const HeapVector<VRLayer>& layers);
   ScriptPromise exitPresent(ScriptState*);
@@ -96,6 +98,8 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
  private:
   void onFullscreenCheck(TimerBase*);
 
+  ScriptedAnimationController& ensureScriptedAnimationController(Document*);
+
   Member<NavigatorVR> m_navigatorVR;
   unsigned m_displayId;
   String m_displayName;
@@ -115,6 +119,10 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   Timer<VRDisplay> m_fullscreenCheckTimer;
   gpu::gles2::GLES2Interface* m_contextGL;
   Member<WebGLRenderingContextBase> m_renderingContext;
+
+  Member<ScriptedAnimationController> m_scriptedAnimationController;
+  bool m_animationCallbackRequested;
+  bool m_inAnimationFrame;
 };
 
 using VRDisplayVector = HeapVector<Member<VRDisplay>>;
