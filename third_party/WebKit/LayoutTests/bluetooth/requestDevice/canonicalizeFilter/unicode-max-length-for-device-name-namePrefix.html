@@ -7,15 +7,14 @@ promise_test(() => {
   // \u2764's UTF-8 respresentation is 3 bytes long.
   // 10 chars * 3 bytes/char = 30 bytes
   let unicode_name = generate_string(10, '\u2764');
-  return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
-      .then(() => assert_promise_rejects_with_message(
-        requestDeviceWithKeyDown({filters: [{namePrefix: unicode_name}]}),
-        new DOMException(
-          'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
-          'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
-          'results in no devices being found, because a device can\'t ' +
-          'advertise a name longer than 29 bytes.',
-          'NotFoundError')));
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{namePrefix: unicode_name}]}),
+    new DOMException(
+      'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+      'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
+      'results in no devices being found, because a device can\'t ' +
+      'advertise a name longer than 29 bytes.',
+    'NotFoundError'));
 }, 'Unicode string with utf8 representation between (29, 248] bytes in ' +
    '\'namePrefix\' must throw NotFoundError.');
 </script>

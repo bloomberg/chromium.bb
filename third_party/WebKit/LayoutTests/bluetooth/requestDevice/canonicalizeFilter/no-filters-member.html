@@ -11,14 +11,11 @@ let test_specs = [
 }];
 
 promise_test(t => {
-  return setBluetoothFakeAdapter('EmptyAdapter')
-    .then(() => {
-      let test_promises = Promise.resolve();
-      test_specs.forEach(args => {
-        test_promises = test_promises.then(() => promise_rejects(
-          t, new TypeError(), requestDeviceWithKeyDown(args)));
-      });
-      return test_promises;
-    });
+  let test_promises = Promise.resolve();
+  test_specs.forEach(args => {
+  test_promises = test_promises.then(() => promise_rejects(
+    t, new TypeError(), requestDeviceWithKeyDown(args)));
+  });
+  return test_promises;
 }, 'RequestDeviceOptions requires a |filters| member.');
 </script>

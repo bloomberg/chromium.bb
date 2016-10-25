@@ -29,14 +29,11 @@ let test_specs = [{
 }];
 
 promise_test(t => {
-  return setBluetoothFakeAdapter('EmptyAdapter')
-    .then(() => {
-      let test_promises = Promise.resolve();
-      test_specs.forEach(args => {
-        test_promises = test_promises.then(() => promise_rejects(
-           t, TypeError(), requestDeviceWithKeyDown(args)));
-      });
-      return test_promises;
-    });
+  let test_promises = Promise.resolve();
+  test_specs.forEach(args => {
+    test_promises = test_promises.then(() => promise_rejects(
+      t, TypeError(), requestDeviceWithKeyDown(args)));
+  });
+  return test_promises;
 }, 'Invalid optional service must reject the promise.');
 </script>

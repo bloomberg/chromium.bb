@@ -6,13 +6,12 @@
 'use strict';
 promise_test(() => {
   let name_too_long = generate_string(249, 'a');
-  return setBluetoothFakeAdapter('EmptyAdapter')
-    .then(() => assert_promise_rejects_with_message(
-      requestDeviceWithKeyDown({filters: [{namePrefix: name_too_long}]}),
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{namePrefix: name_too_long}]}),
       new DOMException(
         'Failed to execute \'requestDevice\' on \'Bluetooth\': A device ' +
         'name can\'t be longer than 248 bytes.',
-        'TypeError'),
-      'Device name longer than 29'));
+      'TypeError'),
+    'Device name longer than 29');
 }, 'A device name prefix longer than 248 must reject.');
 </script>

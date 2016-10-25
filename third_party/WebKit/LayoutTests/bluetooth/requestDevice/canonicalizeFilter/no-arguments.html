@@ -6,8 +6,6 @@
 <script>
 'use strict';
 promise_test(t => {
-  return setBluetoothFakeAdapter('EmptyAdapter')
-    .then(() => promise_rejects(
-      t, new TypeError(), requestDeviceWithKeyDown()));
+  return promise_rejects(t, new TypeError(), requestDeviceWithKeyDown());
 }, 'requestDevice() requires an argument.');
 </script>
