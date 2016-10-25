@@ -55,6 +55,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         public boolean canDownloadWhileMetered;
         public boolean canResolve;
         public long systemDownloadId;
+        public boolean isSupportedMimeType;
 
         public PendingNotificationInfo(int type, DownloadInfo downloadInfo) {
             this.type = type;
@@ -178,11 +179,12 @@ public class SystemDownloadNotifier implements DownloadNotifier {
 
     @Override
     public void notifyDownloadSuccessful(DownloadInfo downloadInfo, long systemDownloadId,
-            boolean canResolve) {
+            boolean canResolve, boolean isSupportedMimeType) {
         PendingNotificationInfo info =
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_SUCCESS, downloadInfo);
         info.canResolve = canResolve;
         info.systemDownloadId = systemDownloadId;
+        info.isSupportedMimeType = isSupportedMimeType;
         updateDownloadNotification(info);
     }
 
@@ -281,7 +283,8 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         final int notificationId = mBoundService.notifyDownloadSuccessful(
                                 info.getDownloadGuid(), info.getFilePath(), info.getFileName(),
-                                notificationInfo.systemDownloadId, info.isOfflinePage());
+                                notificationInfo.systemDownloadId, info.isOfflinePage(),
+                                notificationInfo.isSupportedMimeType);
                         onSuccessNotificationShown(notificationInfo, notificationId);
                         stopServiceIfNeeded();
                         break;

@@ -122,48 +122,53 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
             return new Pair<MethodID, Object>(methodId, param);
         }
 
-        void assertCorrectExpectedCall(MethodID methodId, Object param) {
+        void assertCorrectExpectedCall(MethodID methodId, Object param, boolean matchParams) {
             Log.w("MockDownloadNotifier", "Called: " + methodId);
             assertFalse("Unexpected call:, no call expected, but got: " + methodId,
                     mExpectedCalls.isEmpty());
             Pair<MethodID, Object> actual = getMethodSignature(methodId, param);
             Pair<MethodID, Object> expected = mExpectedCalls.poll();
             assertEquals("Unexpected call", expected.first, actual.first);
-            assertTrue("Incorrect arguments", MatchHelper.macthes(expected.second, actual.second));
+            if (matchParams) {
+                assertTrue(
+                        "Incorrect arguments", MatchHelper.macthes(expected.second, actual.second));
+            }
         }
 
         @Override
         public void notifyDownloadSuccessful(DownloadInfo downloadInfo,
-                long systemDownloadId, boolean canResolve) {
-            assertCorrectExpectedCall(MethodID.DOWNLOAD_SUCCESSFUL, downloadInfo);
-            super.notifyDownloadSuccessful(downloadInfo, systemDownloadId, canResolve);
+                long systemDownloadId, boolean canResolve, boolean isSupportedMimeType) {
+            assertCorrectExpectedCall(MethodID.DOWNLOAD_SUCCESSFUL, downloadInfo, false);
+            assertEquals("application/unknown", downloadInfo.getMimeType());
+            super.notifyDownloadSuccessful(downloadInfo, systemDownloadId, canResolve,
+                    isSupportedMimeType);
         }
 
         @Override
         public void notifyDownloadFailed(DownloadInfo downloadInfo) {
-            assertCorrectExpectedCall(MethodID.DOWNLOAD_FAILED, downloadInfo);
+            assertCorrectExpectedCall(MethodID.DOWNLOAD_FAILED, downloadInfo, true);
 
         }
 
         @Override
         public void notifyDownloadProgress(
                 DownloadInfo downloadInfo, long startTime, boolean canDownloadWhileMetered) {
-            assertCorrectExpectedCall(MethodID.DOWNLOAD_PROGRESS, downloadInfo);
+            assertCorrectExpectedCall(MethodID.DOWNLOAD_PROGRESS, downloadInfo, true);
         }
 
         @Override
         public void notifyDownloadPaused(DownloadInfo downloadInfo) {
-            assertCorrectExpectedCall(MethodID.DOWNLOAD_PAUSED, downloadInfo);
+            assertCorrectExpectedCall(MethodID.DOWNLOAD_PAUSED, downloadInfo, true);
         }
 
         @Override
         public void notifyDownloadInterrupted(DownloadInfo downloadInfo, boolean isAutoResumable) {
-            assertCorrectExpectedCall(MethodID.DOWNLOAD_INTERRUPTED, downloadInfo);
+            assertCorrectExpectedCall(MethodID.DOWNLOAD_INTERRUPTED, downloadInfo, true);
         }
 
         @Override
         public void notifyDownloadCanceled(String downloadGuid) {
-            assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, downloadGuid);
+            assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, downloadGuid, true);
         }
 
         @Override

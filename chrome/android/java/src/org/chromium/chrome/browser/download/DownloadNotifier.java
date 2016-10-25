@@ -13,9 +13,10 @@ public interface DownloadNotifier {
      * @param downloadInfo info about the successful download.
      * @param systemDownloadId The system download ID assigned to the download.
      * @param canResolve Whether the download can be resolved to any activity.
+     * @param isSupportedMimeType Whether the MIME type can be viewed inside browser.
      */
     void notifyDownloadSuccessful(DownloadInfo downloadInfo, long systemDownloadId,
-            boolean canResolve);
+            boolean canResolve, boolean isSupportedMimeType);
 
     /**
      * Add a download failed notification.

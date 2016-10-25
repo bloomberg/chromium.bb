@@ -60,6 +60,7 @@ public class DownloadNotificationService extends Service {
     static final String EXTRA_NOTIFICATION_DISMISSED = "NotificationDismissed";
     static final String EXTRA_DOWNLOAD_IS_OFF_THE_RECORD = "DownloadIsOffTheRecord";
     static final String EXTRA_DOWNLOAD_IS_OFFLINE_PAGE = "DownloadIsOfflinePage";
+    static final String EXTRA_IS_SUPPORTED_MIME_TYPE = "IsSupportedMimeType";
     static final String ACTION_DOWNLOAD_CANCEL =
             "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
     static final String ACTION_DOWNLOAD_PAUSE =
@@ -339,12 +340,14 @@ public class DownloadNotificationService extends Service {
      * @param filePath Full path to the download.
      * @param fileName Filename of the download.
      * @param systemDownloadId Download ID assigned by system DownloadManager.
+     * @param isOfflinePage Whether the download is for offline page.
+     * @param isSupportedMimeType Whether the MIME type can be viewed inside browser.
      * @return ID of the successful download notification. Used for removing the notification when
      *         user click on the snackbar.
      */
     public int notifyDownloadSuccessful(
             String downloadGuid, String filePath, String fileName, long systemDownloadId,
-            boolean isOfflinePage) {
+            boolean isOfflinePage, boolean isSupportedMimeType) {
         int notificationId = getNotificationId(downloadGuid);
         NotificationCompat.Builder builder = buildNotification(
                 R.drawable.offline_pin, fileName,
@@ -360,6 +363,7 @@ public class DownloadNotificationService extends Service {
             long[] idArray = {systemDownloadId};
             intent.putExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, idArray);
             intent.putExtra(EXTRA_DOWNLOAD_FILE_PATH, filePath);
+            intent.putExtra(EXTRA_IS_SUPPORTED_MIME_TYPE, isSupportedMimeType);
         }
         intent.setComponent(component);
         builder.setContentIntent(PendingIntent.getBroadcast(

@@ -39,7 +39,7 @@ public class OfflinePageNotificationBridge {
                                             .setIsOffTheRecord(false)
                                             .build();
 
-        notifier.notifyDownloadSuccessful(downloadInfo, -1, false);
+        notifier.notifyDownloadSuccessful(downloadInfo, -1, false, true);
     }
 
     /**

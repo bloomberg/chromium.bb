@@ -102,7 +102,7 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
 
         mDownloadNotifier.notifyDownloadFailed(info);
         assertTrue(mDownloadNotifier.mStarted);
-        mDownloadNotifier.notifyDownloadSuccessful(info2, 100L, true);
+        mDownloadNotifier.notifyDownloadSuccessful(info2, 100L, true, false);
         assertFalse(mDownloadNotifier.mStarted);
     }
 }

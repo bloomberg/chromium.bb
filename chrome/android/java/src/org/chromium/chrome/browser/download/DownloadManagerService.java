@@ -141,6 +141,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
         int mDownloadStatus;
         boolean mIsAutoResumable;
         boolean mIsUpdated;
+        boolean mIsSupportedMimeType;
 
         DownloadProgress(long startTimeInMillis, boolean canDownloadWhileMetered,
                 DownloadItem downloadItem, int downloadStatus) {
@@ -159,6 +160,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             mDownloadStatus = progress.mDownloadStatus;
             mIsAutoResumable = progress.mIsAutoResumable;
             mIsUpdated = progress.mIsUpdated;
+            mIsSupportedMimeType = progress.mIsSupportedMimeType;
         }
     }
 
@@ -288,11 +290,18 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void onDownloadCompleted(final DownloadInfo downloadInfo) {
         int status = DOWNLOAD_STATUS_COMPLETE;
+        String mimeType = downloadInfo.getMimeType();
         if (downloadInfo.getContentLength() == 0) {
             status = DOWNLOAD_STATUS_FAILED;
+        } else {
+            String origMimeType = mimeType;
+            if (TextUtils.isEmpty(origMimeType)) origMimeType = UNKNOWN_MIME_TYPE;
+            mimeType = ChromeDownloadDelegate.remapGenericMimeType(
+                    origMimeType, downloadInfo.getOriginalUrl(), downloadInfo.getFileName());
         }
-
-        DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
+        DownloadInfo newInfo =
+                DownloadInfo.Builder.fromDownloadInfo(downloadInfo).setMimeType(mimeType).build();
+        DownloadItem downloadItem = new DownloadItem(false, newInfo);
         updateDownloadProgress(downloadItem, status);
         scheduleUpdateIfNeeded();
     }
@@ -400,7 +409,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                             .setFileName(title)
                             .build();
                     mDownloadItem.setDownloadInfo(mDownloadInfo);
-                    canResolve = canResolveDownloadItem(mContext, mDownloadItem);
+                    canResolve = canResolveDownloadItem(mContext, mDownloadItem, false);
                 } else if (status == DownloadManager.STATUS_FAILED) {
                     mFailureReason = c.getInt(reasonIndex);
                     manager.remove(mDownloadItem.getSystemDownloadId());
@@ -542,10 +551,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     boolean success = addCompletedDownload(item);
                     if (success) {
                         boolean canResolve = isOMADownloadDescription(info)
-                                || canResolveDownloadItem(mContext, item);
+                                || canResolveDownloadItem(
+                                        mContext, item, progress.mIsSupportedMimeType);
                         long systemDownloadId = item.getSystemDownloadId();
                         mDownloadNotifier.notifyDownloadSuccessful(
-                                info, systemDownloadId, canResolve);
+                                info, systemDownloadId, canResolve, progress.mIsSupportedMimeType);
                         broadcastDownloadSuccessful(info);
                     } else {
                         downloadItems.add(item);
@@ -588,17 +598,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     protected boolean addCompletedDownload(DownloadItem downloadItem) {
         DownloadInfo downloadInfo = downloadItem.getDownloadInfo();
-        String mimeType = downloadInfo.getMimeType();
-        if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
         String description = downloadInfo.getDescription();
         if (TextUtils.isEmpty(description)) description = downloadInfo.getFileName();
         try {
             // Exceptions can be thrown when calling this, although it is not
             // documented on Android SDK page.
             long downloadId = mDownloadManagerDelegate.addCompletedDownload(
-                    downloadInfo.getFileName(), description, mimeType, downloadInfo.getFilePath(),
-                    downloadInfo.getContentLength(), downloadInfo.getOriginalUrl(),
-                    downloadInfo.getReferer());
+                    downloadInfo.getFileName(), description, downloadInfo.getMimeType(),
+                    downloadInfo.getFilePath(), downloadInfo.getContentLength(),
+                    downloadInfo.getOriginalUrl(), downloadInfo.getReferer());
             downloadItem.setSystemDownloadId(downloadId);
             return true;
         } catch (RuntimeException e) {
@@ -689,6 +697,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadStatus Status of the download.
      */
     private void updateDownloadProgress(DownloadItem downloadItem, int downloadStatus) {
+        boolean isSupportedMimeType = (downloadStatus == DOWNLOAD_STATUS_COMPLETE)
+                ? isSupportedMimeType(downloadItem.getDownloadInfo().getMimeType()) : false;
         String id = downloadItem.getId();
         DownloadProgress progress = mDownloadProgressMap.get(id);
         if (progress == null) {
@@ -697,6 +707,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 progress = new DownloadProgress(
                         startTime, isActiveNetworkMetered(mContext), downloadItem, downloadStatus);
                 progress.mIsUpdated = true;
+                progress.mIsSupportedMimeType = isSupportedMimeType;
                 mDownloadProgressMap.put(id, progress);
                 if (getUmaStatsEntry(downloadItem.getId()) == null) {
                     addUmaStatsEntry(new DownloadUmaStatsEntry(
@@ -710,6 +721,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
         progress.mDownloadItem = downloadItem;
         progress.mIsUpdated = true;
         progress.mIsAutoResumable = mAutoResumableDownloadIds.contains(id);
+        progress.mIsSupportedMimeType = isSupportedMimeType;
         DownloadUmaStatsEntry entry;
         switch (downloadStatus) {
             case DOWNLOAD_STATUS_COMPLETE:
@@ -951,10 +963,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param context    Context of the app.
      * @param filePath   Path to the file.
      * @param downloadId ID of the download item in DownloadManager.
+     * @param isSupportedMimeType Whether the MIME type is supported by browser.
      * @return the intent to launch for the given download item.
      */
     static Intent getLaunchIntentFromDownloadId(
-            Context context, @Nullable String filePath, long downloadId) {
+            Context context, @Nullable String filePath, long downloadId,
+            boolean isSupportedMimeType) {
         assert !ThreadUtils.runningOnUiThread();
         DownloadManager manager =
                 (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
@@ -962,7 +976,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
         if (contentUri == null) return null;
 
         String mimeType = manager.getMimeTypeForDownloadedFile(downloadId);
-        if (isSupportedMimeType(mimeType)) {
+        if (isSupportedMimeType) {
             // Redirect the user to an internal media viewer.  The file path is necessary to show
             // the real file path to the user instead of a content:// download ID.
             Uri fileUri = contentUri;
@@ -978,13 +992,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
      *
      * @param context Context of the app.
      * @param download A download item.
+     * @param isSupportedMimeType Whether the MIME type is supported by browser.
      * @return true if the download item can be resolved, or false otherwise.
      */
-    static boolean canResolveDownloadItem(Context context, DownloadItem download) {
+    static boolean canResolveDownloadItem(Context context, DownloadItem download,
+            boolean isSupportedMimeType) {
         assert !ThreadUtils.runningOnUiThread();
         Intent intent = getLaunchIntentFromDownloadId(
                 context, download.getDownloadInfo().getFilePath(),
-                download.getSystemDownloadId());
+                download.getSystemDownloadId(), isSupportedMimeType);
         return (intent == null) ? false : ExternalNavigationDelegateImpl.resolveIntent(
                 context, intent, true);
     }
@@ -997,11 +1013,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadId   ID of the download item in DownloadManager.
      */
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId) {
+        final boolean isSupportedMimeType = isSupportedMimeType(downloadInfo.getMimeType());
         new AsyncTask<Void, Void, Intent>() {
             @Override
             public Intent doInBackground(Void... params) {
                 return getLaunchIntentFromDownloadId(
-                        mContext, downloadInfo.getFilePath(), downloadId);
+                        mContext, downloadInfo.getFilePath(), downloadId, isSupportedMimeType);
             }
 
             @Override

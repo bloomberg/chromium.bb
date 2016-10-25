@@ -61,8 +61,10 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
         } else {
             String downloadFilename = IntentUtils.safeGetStringExtra(
                     intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
+            boolean isSupportedMimeType =  IntentUtils.safeGetBooleanExtra(
+                    intent, DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE, false);
             Intent launchIntent = DownloadManagerService.getLaunchIntentFromDownloadId(
-                    context, downloadFilename, id);
+                    context, downloadFilename, id, isSupportedMimeType);
             if (!DownloadUtils.fireOpenIntentForDownload(context, launchIntent)) {
                 DownloadManagerService.openDownloadsPage(context);
             }

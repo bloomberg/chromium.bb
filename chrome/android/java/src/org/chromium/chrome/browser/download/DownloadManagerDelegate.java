@@ -38,8 +38,6 @@ public class DownloadManagerDelegate {
                 (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
         boolean useSystemNotification = !notificationManager.areNotificationsEnabled();
-        String newMimeType =
-                ChromeDownloadDelegate.remapGenericMimeType(mimeType, originalUrl, fileName);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             Class<?> c = manager.getClass();
             try {
@@ -48,7 +46,7 @@ public class DownloadManagerDelegate {
                 Method method = c.getMethod("addCompletedDownload", args);
                 Uri originalUri = Uri.parse(originalUrl);
                 Uri refererUri = referer == null ? Uri.EMPTY : Uri.parse(referer);
-                return (Long) method.invoke(manager, fileName, description, true, newMimeType, path,
+                return (Long) method.invoke(manager, fileName, description, true, mimeType, path,
                         length, useSystemNotification, originalUri, refererUri);
             } catch (SecurityException e) {
                 Log.e(TAG, "Cannot access the needed method.");
@@ -60,7 +58,7 @@ public class DownloadManagerDelegate {
                 Log.e(TAG, "Error accessing the needed method.");
             }
         }
-        return manager.addCompletedDownload(fileName, description, true, newMimeType, path, length,
+        return manager.addCompletedDownload(fileName, description, true, mimeType, path, length,
                 useSystemNotification);
     }
 
@@ -149,7 +147,7 @@ public class DownloadManagerDelegate {
                         canResolve = DownloadManagerService.isOMADownloadDescription(
                                 mDownloadItem.getDownloadInfo())
                                 || DownloadManagerService.canResolveDownloadItem(
-                                        mContext, mDownloadItem);
+                                        mContext, mDownloadItem, false);
                     }
                 } else if (status == DownloadManager.STATUS_FAILED) {
                     downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_FAILED;
