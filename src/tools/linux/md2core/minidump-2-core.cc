@@ -100,6 +100,8 @@ struct Options {
   string minidump_path;
   bool verbose;
   int out_fd;
+  bool use_filename;
+  bool inc_guid;
   string so_basedir;
 };
 
@@ -110,13 +112,27 @@ Usage(int argc, const char* argv[]) {
           "\n"
           "Convert a minidump file into a core file (often for use by gdb).\n"
           "\n"
+          "The shared library list will by default have filenames as the runtime expects.\n"
+          "There are many flags to control the output names though to make it easier to\n"
+          "integrate with your debug environment (e.g. gdb).\n"
+          " Default:    /lib64/libpthread.so.0\n"
+          " -f:         /lib64/libpthread-2.19.so\n"
+          " -i:         /lib64/<module id>-libpthread.so.0\n"
+          " -f -i:      /lib64/<module id>-libpthread-2.19.so\n"
+          " -S /foo/:   /foo/libpthread.so.0\n"
+          "\n"
           "Options:\n"
           "  -v         Enable verbose output\n"
           "  -o <file>  Write coredump to specified file (otherwise use stdout).\n"
+          "  -f         Use the filename rather than the soname in the sharedlib list.\n"
+          "             The soname is what the runtime system uses, but the filename is\n"
+          "             how it's stored on disk.\n"
+          "  -i         Prefix sharedlib names with ID (when available).  This makes it\n"
+          "             easier to have a single directory full of symbols.\n"
           "  -S <dir>   Set soname base directory.  This will force all debug/symbol\n"
           "             lookups to be done in this directory rather than the filesystem\n"
           "             layout as it exists in the crashing image.  This path should end\n"
-          "             with a slash if it's a directory.\n"
+          "             with a slash if it's a directory.  e.g. /var/lib/breakpad/\n"
           "", basename(argv[0]));
 }
 
@@ -128,8 +144,10 @@ SetupOptions(int argc, const char* argv[], Options* options) {
 
   // Initialize the options struct as needed.
   options->verbose = false;
+  options->use_filename = false;
+  options->inc_guid = false;
 
-  while ((ch = getopt(argc, (char * const *)argv, "ho:S:v")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, "fhio:S:v")) != -1) {
     switch (ch) {
       case 'h':
         Usage(argc, argv);
@@ -140,6 +158,12 @@ SetupOptions(int argc, const char* argv[], Options* options) {
         exit(1);
         break;
 
+      case 'f':
+        options->use_filename = true;
+        break;
+      case 'i':
+        options->inc_guid = true;
+        break;
       case 'o':
         output_file = optarg;
         break;
@@ -271,6 +295,7 @@ struct CrashedProcess {
 
     uint32_t permissions;
     uint64_t start_address, end_address, offset;
+    // The name we write out to the core.
     string filename;
     string data;
   };
@@ -306,7 +331,13 @@ struct CrashedProcess {
 
   prpsinfo prps;
 
-  std::map<uintptr_t, string> signatures;
+  // The GUID/filename from MD_MODULE_LIST_STREAM entries.
+  // We gather them for merging later on into the list of maps.
+  struct Signature {
+    char guid[40];
+    string filename;
+  };
+  std::map<uintptr_t, Signature> signatures;
 
   string dynamic_data;
   MDRawDebug debug;
@@ -954,26 +985,19 @@ ParseModuleStream(const Options& options, CrashedProcess* crashinfo,
             record->signature.data4[2], record->signature.data4[3],
             record->signature.data4[4], record->signature.data4[5],
             record->signature.data4[6], record->signature.data4[7]);
-    string filename =
-        full_file.GetAsciiMDString(rawmodule->module_name_rva);
-    size_t slash = filename.find_last_of('/');
-    string basename = slash == string::npos ?
-        filename : filename.substr(slash + 1);
-    if (strcmp(guid, "00000000-0000-0000-0000-000000000000")) {
-      string prefix;
-      if (!options.so_basedir.empty())
-        prefix = options.so_basedir;
-      else
-        prefix = string("/var/lib/breakpad/") + guid + "-" + basename;
 
-      crashinfo->signatures[rawmodule->base_of_image] = prefix + basename;
-    }
+    string filename = full_file.GetAsciiMDString(rawmodule->module_name_rva);
+
+    CrashedProcess::Signature signature;
+    strcpy(signature.guid, guid);
+    signature.filename = filename;
+    crashinfo->signatures[rawmodule->base_of_image] = signature;
 
     if (options.verbose) {
-      fprintf(stderr, "0x%08llX-0x%08llX, ChkSum: 0x%08X, GUID: %s, \"%s\"\n",
-              (unsigned long long)rawmodule->base_of_image,
-              (unsigned long long)rawmodule->base_of_image +
-              rawmodule->size_of_image,
+      fprintf(stderr, "0x%" PRIx64 "-0x%" PRIx64 ", ChkSum: 0x%08X, GUID: %s, "
+              " \"%s\"\n",
+              rawmodule->base_of_image,
+              rawmodule->base_of_image + rawmodule->size_of_image,
               rawmodule->checksum, guid, filename.c_str());
     }
   }
@@ -1071,10 +1095,55 @@ AugmentMappings(const Options& options, CrashedProcess* crashinfo,
 
     // Look up signature for this filename. If available, change filename
     // to point to GUID, instead.
-    std::map<uintptr_t, string>::const_iterator guid =
+    std::map<uintptr_t, CrashedProcess::Signature>::const_iterator sig =
       crashinfo->signatures.find((uintptr_t)iter->addr);
-    if (guid != crashinfo->signatures.end()) {
-      filename = guid->second;
+    if (sig != crashinfo->signatures.end()) {
+      // At this point, we have:
+      // old_filename: The path as found via SONAME (e.g. /lib/libpthread.so.0).
+      // sig_filename: The path on disk (e.g. /lib/libpthread-2.19.so).
+      const char* guid = sig->second.guid;
+      string sig_filename = sig->second.filename;
+      string old_filename = filename.empty() ? sig_filename : filename;
+      string new_filename;
+
+      // First set up the leading path.  We assume dirname always ends with a
+      // trailing slash (as needed), so we won't be appending one manually.
+      if (options.so_basedir.empty()) {
+        string dirname;
+        if (options.use_filename) {
+          dirname = sig_filename;
+        } else {
+          dirname = old_filename;
+        }
+        size_t slash = dirname.find_last_of('/');
+        if (slash != string::npos) {
+          new_filename = dirname.substr(0, slash + 1);
+        }
+      } else {
+        new_filename = options.so_basedir;
+      }
+
+      // Insert the module ID if requested.
+      if (options.inc_guid &&
+          strcmp(guid, "00000000-0000-0000-0000-000000000000") != 0) {
+        new_filename += guid;
+        new_filename += "-";
+      }
+
+      // Decide whether we use the filename or the SONAME (where the SONAME tends
+      // to be a symlink to the actual file).
+      string basename = options.use_filename ? sig_filename : old_filename;
+      size_t slash = basename.find_last_of('/');
+      new_filename += basename.substr(slash == string::npos ? 0 : slash + 1);
+
+      if (filename != new_filename) {
+        if (options.verbose) {
+          fprintf(stderr, "0x%" PRIx64": rewriting mapping \"%s\" to \"%s\"\n",
+                  static_cast<uint64_t>(link_map.l_addr),
+                  filename.c_str(), new_filename.c_str());
+        }
+        filename = new_filename;
+      }
     }
 
     if (std::distance(iter, crashinfo->link_map.end()) == 1) {
