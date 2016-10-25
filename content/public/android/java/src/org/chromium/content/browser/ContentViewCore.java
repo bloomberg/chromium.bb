@@ -2991,11 +2991,14 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         viewNode.setDimens(boundsInParent.left, boundsInParent.top, 0, 0, width, height);
         viewNode.setChildCount(node.children.size());
         if (node.hasStyle) {
+            // The text size should be in physical pixels, not CSS pixels.
+            float textSize = mRenderCoordinates.fromLocalCssToPix(node.textSize);
+
             int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
                     | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
                     | (node.underline ? ViewNode.TEXT_STYLE_UNDERLINE : 0)
                     | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
-            viewNode.setTextStyle(node.textSize, node.color, node.bgcolor, style);
+            viewNode.setTextStyle(textSize, node.color, node.bgcolor, style);
         }
         for (int i = 0; i < node.children.size(); i++) {
             createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);

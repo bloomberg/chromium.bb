@@ -91,7 +91,7 @@ public class AccessibilitySnapshotTest extends ContentShellTestBase {
     @SmallTest
     public void testRequestAccessibilitySnapshotFontSize() throws Throwable {
         final String data = "<html><head><style> "
-                + "    body { font-size:11px; }"
+                + "    p { font-size:16px; transform: scale(2); }"
                 + "    </style></head><body><p>foo</p></body></html>";
         AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data, null);
         assertEquals(1, root.children.size());
@@ -100,7 +100,8 @@ public class AccessibilitySnapshotTest extends ContentShellTestBase {
         assertTrue(child.hasStyle);
         assertEquals("foo", child.text);
 
-        assertEquals(11.0, child.textSize, 0.01);
+        // The font size should take the scale into account.
+        assertEquals(32.0, child.textSize, 1.0);
     }
 
     @SmallTest

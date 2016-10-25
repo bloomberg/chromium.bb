@@ -106,8 +106,15 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
   if (node->HasFloatAttribute(ui::AX_ATTR_FONT_SIZE)) {
     color = node->GetIntAttribute(ui::AX_ATTR_COLOR);
     bgcolor = node->GetIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR);
-    size =  node->GetFloatAttribute(ui::AX_ATTR_FONT_SIZE);
     text_style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
+
+    // The font size is just the computed style for that element; apply
+    // transformations to get the actual pixel size.
+    gfx::RectF text_size_rect(
+        0, 0, 1, node->GetFloatAttribute(ui::AX_ATTR_FONT_SIZE));
+    gfx::Rect scaled_text_size_rect = node->RelativeToAbsoluteBounds(
+        text_size_rect, false);
+    size = scaled_text_size_rect.height();
   }
 
   const gfx::Rect& absolute_rect = node->GetPageBoundsRect();
