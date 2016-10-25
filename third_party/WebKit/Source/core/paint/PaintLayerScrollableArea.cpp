@@ -1742,16 +1742,9 @@ PaintLayerScrollableArea::compositorAnimationTimeline() const {
   return nullptr;
 }
 
-PaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(
-    PaintLayerScrollableArea& scrollableArea)
-    : m_scrollableArea(&scrollableArea),
-      m_hBarIsAttached(0),
-      m_vBarIsAttached(0) {}
-
-void PaintLayerScrollableArea::ScrollbarManager::dispose() {
-  m_hBarIsAttached = m_vBarIsAttached = 0;
-  destroyScrollbar(HorizontalScrollbar);
-  destroyScrollbar(VerticalScrollbar);
+PaintLayerScrollableArea*
+PaintLayerScrollableArea::ScrollbarManager::scrollableArea() {
+  return toPaintLayerScrollableArea(m_scrollableArea.get());
 }
 
 void PaintLayerScrollableArea::ScrollbarManager::destroyDetachedScrollbars() {
@@ -1773,7 +1766,7 @@ void PaintLayerScrollableArea::ScrollbarManager::setHasHorizontalScrollbar(
       m_hBar = createScrollbar(HorizontalScrollbar);
       m_hBarIsAttached = 1;
       if (!m_hBar->isCustomScrollbar())
-        m_scrollableArea->didAddScrollbar(*m_hBar, HorizontalScrollbar);
+        scrollableArea()->didAddScrollbar(*m_hBar, HorizontalScrollbar);
     } else {
       m_hBarIsAttached = 1;
     }
@@ -1792,7 +1785,7 @@ void PaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollbar(
       m_vBar = createScrollbar(VerticalScrollbar);
       m_vBarIsAttached = 1;
       if (!m_vBar->isCustomScrollbar())
-        m_scrollableArea->didAddScrollbar(*m_vBar, VerticalScrollbar);
+        scrollableArea()->didAddScrollbar(*m_vBar, VerticalScrollbar);
     } else {
       m_vBarIsAttached = 1;
     }
@@ -1809,23 +1802,23 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::createScrollbar(
                                             : !m_vBarIsAttached);
   Scrollbar* scrollbar = nullptr;
   const LayoutObject& actualLayoutObject =
-      layoutObjectForScrollbar(m_scrollableArea->box());
+      layoutObjectForScrollbar(scrollableArea()->box());
   bool hasCustomScrollbarStyle =
       actualLayoutObject.isBox() &&
       actualLayoutObject.styleRef().hasPseudoStyle(PseudoIdScrollbar);
   if (hasCustomScrollbarStyle) {
     scrollbar = LayoutScrollbar::createCustomScrollbar(
-        m_scrollableArea.get(), orientation, actualLayoutObject.node());
+        scrollableArea(), orientation, actualLayoutObject.node());
   } else {
     ScrollbarControlSize scrollbarSize = RegularScrollbar;
     if (actualLayoutObject.styleRef().hasAppearance())
       scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(
           actualLayoutObject.styleRef().appearance());
     scrollbar = Scrollbar::create(
-        m_scrollableArea.get(), orientation, scrollbarSize,
-        &m_scrollableArea->box().frame()->page()->chromeClient());
+        scrollableArea(), orientation, scrollbarSize,
+        &scrollableArea()->box().frame()->page()->chromeClient());
   }
-  m_scrollableArea->box().document().view()->addChild(scrollbar);
+  scrollableArea()->box().document().view()->addChild(scrollbar);
   return scrollbar;
 }
 
@@ -1838,14 +1831,14 @@ void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(
   if (!scrollbar)
     return;
 
-  m_scrollableArea->setScrollbarNeedsPaintInvalidation(orientation);
+  scrollableArea()->setScrollbarNeedsPaintInvalidation(orientation);
   if (orientation == HorizontalScrollbar)
-    m_scrollableArea->m_rebuildHorizontalScrollbarLayer = true;
+    scrollableArea()->m_rebuildHorizontalScrollbarLayer = true;
   else
-    m_scrollableArea->m_rebuildVerticalScrollbarLayer = true;
+    scrollableArea()->m_rebuildVerticalScrollbarLayer = true;
 
   if (!scrollbar->isCustomScrollbar())
-    m_scrollableArea->willRemoveScrollbar(*scrollbar, orientation);
+    scrollableArea()->willRemoveScrollbar(*scrollbar, orientation);
 
   toFrameView(scrollbar->parent())->removeChild(scrollbar.get());
   scrollbar->disconnectFromScrollableArea();
@@ -1854,12 +1847,6 @@ void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(
 
 uint64_t PaintLayerScrollableArea::id() const {
   return DOMNodeIds::idForNode(box().node());
-}
-
-DEFINE_TRACE(PaintLayerScrollableArea::ScrollbarManager) {
-  visitor->trace(m_scrollableArea);
-  visitor->trace(m_hBar);
-  visitor->trace(m_vBar);
 }
 
 int PaintLayerScrollableArea::PreventRelayoutScope::s_count = 0;

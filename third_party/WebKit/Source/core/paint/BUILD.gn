@@ -157,6 +157,8 @@ blink_core_sources("paint") {
     "ScrollRecorder.h",
     "ScrollableAreaPainter.cpp",
     "ScrollableAreaPainter.h",
+    "ScrollbarManager.cpp",
+    "ScrollbarManager.h",
     "ScrollbarPainter.cpp",
     "ScrollbarPainter.h",
     "TableCellPainter.cpp",
