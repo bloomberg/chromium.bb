@@ -97,9 +97,6 @@ class CredentialManagerImpl
       const RequireUserMediationCallback& callback,
       const std::vector<std::string>& android_realms);
 
-  // Returns true iff it's OK to update credentials in the password store.
-  bool IsUpdatingCredentialAllowed() const;
-
   PasswordManagerClient* client_;
   std::unique_ptr<CredentialManagerPasswordFormManager> form_manager_;
 
