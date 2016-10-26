@@ -1023,7 +1023,7 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   init_params.iMultipleThreadIdc = 1;
 
   // TODO(mcasas): consider reducing complexity if there are few CPUs available.
-  DCHECK_EQ(MEDIUM_COMPLEXITY, init_params.iComplexityMode);
+  init_params.iComplexityMode = MEDIUM_COMPLEXITY;
   DCHECK(!init_params.bEnableDenoise);
   DCHECK(init_params.bEnableFrameSkip);
 
@@ -1032,8 +1032,12 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   init_params.sSpatialLayers[0].iVideoWidth        = init_params.iPicWidth;
   init_params.sSpatialLayers[0].iVideoHeight       = init_params.iPicHeight;
   init_params.sSpatialLayers[0].iSpatialBitrate    = init_params.iTargetBitrate;
-  // Slice num according to number of threads.
-  init_params.sSpatialLayers[0].sSliceCfg.uiSliceMode = SM_AUTO_SLICE;
+
+  // When uiSliceMode = SM_FIXEDSLCNUM_SLICE, uiSliceNum = 0 means auto design
+  // it with cpu core number.
+  init_params.sSpatialLayers[0].sSliceArgument.uiSliceNum = 0;
+  init_params.sSpatialLayers[0].sSliceArgument.uiSliceMode =
+      SM_FIXEDSLCNUM_SLICE;
 
   if (openh264_encoder_->InitializeExt(&init_params) != cmResultSuccess) {
     NOTREACHED() << "Failed to initialize OpenH264 encoder";

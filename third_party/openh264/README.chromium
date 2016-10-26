@@ -1,7 +1,7 @@
 Name: OpenH264
 Short Name: openh264
 URL: http://www.openh264.org/
-Version: v.1.4.0
+Version: v.1.6.0
 License: 2-Clause BSD
 License File: src/LICENSE
 Security Critical: yes
