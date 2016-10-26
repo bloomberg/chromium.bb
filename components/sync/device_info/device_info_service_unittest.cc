@@ -128,7 +128,7 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   void Put(const std::string& storage_key,
            std::unique_ptr<EntityData> entity_data,
            MetadataChangeList* metadata_changes) override {
-    put_map_.insert(std::make_pair(storage_key, std::move(entity_data)));
+    put_multimap_.insert(std::make_pair(storage_key, std::move(entity_data)));
   }
 
   void Delete(const std::string& storage_key,
@@ -141,14 +141,15 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
     std::swap(metadata_, batch);
   }
 
-  const std::map<std::string, std::unique_ptr<EntityData>>& put_map() const {
-    return put_map_;
+  const std::multimap<std::string, std::unique_ptr<EntityData>>& put_multimap()
+      const {
+    return put_multimap_;
   }
   const std::set<std::string>& delete_set() const { return delete_set_; }
   const MetadataBatch* metadata() const { return metadata_.get(); }
 
  private:
-  std::map<std::string, std::unique_ptr<EntityData>> put_map_;
+  std::multimap<std::string, std::unique_ptr<EntityData>> put_multimap_;
   std::set<std::string> delete_set_;
   std::unique_ptr<MetadataBatch> metadata_;
 };
@@ -277,6 +278,8 @@ class DeviceInfoServiceTest : public testing::Test,
     InitializeAndPump();
   }
 
+  void ForcePulse() { service()->SendLocalData(); }
+
   Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
     return DeviceInfoService::GetLastUpdateTime(specifics);
   }
@@ -398,7 +401,7 @@ TEST_F(DeviceInfoServiceTest, TestWithLocalMetadata) {
   DeviceInfoList devices = service()->GetAllDeviceInfo();
   ASSERT_EQ(1u, devices.size());
   ASSERT_TRUE(local_device()->GetLocalDeviceInfo()->Equals(*devices[0]));
-  EXPECT_EQ(1u, processor()->put_map().size());
+  EXPECT_EQ(1u, processor()->put_multimap().size());
 }
 
 TEST_F(DeviceInfoServiceTest, TestWithLocalDataAndMetadata) {
@@ -565,7 +568,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
   EXPECT_EQ(1, change_count());
   // Ensure |last_updated| is about now, plus or minus a little bit.
   Time last_updated(ProtoTimeToTime(processor()
-                                        ->put_map()
+                                        ->put_multimap()
                                         .begin()
                                         ->second->specifics.device_info()
                                         .last_updated_timestamp()));
@@ -605,7 +608,12 @@ TEST_F(DeviceInfoServiceTest, MergeEmpty) {
       service()->CreateMetadataChangeList(), EntityDataMap());
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(1, change_count());
-  EXPECT_EQ(1u, processor()->put_map().size());
+  // TODO(skym): Stop sending local twice. The first of the two puts will
+  // probably happen before the processor is tracking metadata yet, and so there
+  // should not be much overhead.
+  EXPECT_EQ(2u, processor()->put_multimap().size());
+  EXPECT_EQ(2u, processor()->put_multimap().count(
+                    local_device()->GetLocalDeviceInfo()->guid()));
   EXPECT_EQ(0u, processor()->delete_set().size());
 }
 
@@ -657,9 +665,10 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
 
   // Service should have told the processor about the existance of unique_local.
   EXPECT_TRUE(processor()->delete_set().empty());
-  EXPECT_EQ(2u, processor()->put_map().size());
-  const auto& it = processor()->put_map().find(unique_local.cache_guid());
-  ASSERT_NE(processor()->put_map().end(), it);
+  EXPECT_EQ(3u, processor()->put_multimap().size());
+  EXPECT_EQ(1u, processor()->put_multimap().count(unique_local.cache_guid()));
+  const auto& it = processor()->put_multimap().find(unique_local.cache_guid());
+  ASSERT_NE(processor()->put_multimap().end(), it);
   AssertEqual(unique_local, it->second->specifics.device_info());
 
   RestartService();
@@ -690,7 +699,7 @@ TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {
   EXPECT_EQ(0, change_count());
   EXPECT_EQ(1u, service()->GetAllDeviceInfo().size());
   EXPECT_TRUE(processor()->delete_set().empty());
-  EXPECT_TRUE(processor()->put_map().empty());
+  EXPECT_TRUE(processor()->put_multimap().empty());
 }
 
 TEST_F(DeviceInfoServiceTest, GetLastUpdateTime) {
@@ -747,6 +756,24 @@ TEST_F(DeviceInfoServiceTest, MultipleOnProviderInitialized) {
   local_device()->Initialize(CreateDeviceInfo());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(metadata, processor()->metadata());
+}
+
+TEST_F(DeviceInfoServiceTest, SendLocalData) {
+  InitializeAndPump();
+  EXPECT_EQ(1, service()->CountActiveDevices());
+  EXPECT_EQ(1, change_count());
+  EXPECT_EQ(1u, processor()->put_multimap().size());
+
+  ForcePulse();
+  EXPECT_EQ(1, service()->CountActiveDevices());
+  EXPECT_EQ(2, change_count());
+  EXPECT_EQ(2u, processor()->put_multimap().size());
+
+  local_device()->Clear();
+  ForcePulse();
+  EXPECT_EQ(1, service()->CountActiveDevices());
+  EXPECT_EQ(2, change_count());
+  EXPECT_EQ(2u, processor()->put_multimap().size());
 }
 
 }  // namespace

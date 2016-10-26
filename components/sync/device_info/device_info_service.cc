@@ -412,22 +412,27 @@ void DeviceInfoService::ReconcileLocalAndStored() {
 void DeviceInfoService::SendLocalData() {
   DCHECK(has_provider_initialized_);
 
-  std::unique_ptr<DeviceInfoSpecifics> specifics =
-      CopyToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo());
-  specifics->set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
+  // It is possible that the provider no longer has data for us, such as when
+  // the user signs out. No-op this pulse, but keep the timer going in case sync
+  // is enabled later.
+  if (local_device_info_provider_->GetLocalDeviceInfo() != nullptr) {
+    std::unique_ptr<DeviceInfoSpecifics> specifics =
+        CopyToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo());
+    specifics->set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
 
-  std::unique_ptr<MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
-  if (change_processor()->IsTrackingMetadata()) {
-    change_processor()->Put(specifics->cache_guid(),
-                            CopyToEntityData(*specifics),
-                            metadata_change_list.get());
+    std::unique_ptr<MetadataChangeList> metadata_change_list =
+        CreateMetadataChangeList();
+    if (change_processor()->IsTrackingMetadata()) {
+      change_processor()->Put(specifics->cache_guid(),
+                              CopyToEntityData(*specifics),
+                              metadata_change_list.get());
+    }
+
+    std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+    StoreSpecifics(std::move(specifics), batch.get());
+    CommitAndNotify(std::move(batch), std::move(metadata_change_list), true);
   }
 
-  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  StoreSpecifics(std::move(specifics), batch.get());
-
-  CommitAndNotify(std::move(batch), std::move(metadata_change_list), true);
   pulse_timer_.Start(
       FROM_HERE, DeviceInfoUtil::kPulseInterval,
       base::Bind(&DeviceInfoService::SendLocalData, base::Unretained(this)));
