@@ -65,7 +65,7 @@ struct IntentHandlerInfo {
 // Describes an activity.
 struct ActivityName {
   string package_name;
-  string activity_name;
+  string? activity_name;  // may be null to indicate any activity within package
 };
 
 // Describes an icon for the activity.
