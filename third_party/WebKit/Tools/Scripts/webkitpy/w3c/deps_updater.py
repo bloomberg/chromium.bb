@@ -424,7 +424,7 @@ class DepsUpdater(object):
 
     def _list_deleted_tests(self):
         """Returns a list of layout tests that have been deleted."""
-        out = self.check_run(['git', 'diff', 'origin/master', '--diff-filter=D', '--name-only'])
+        out = self.check_run(['git', 'diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'])
         deleted_tests = []
         for line in out.splitlines():
             test = self.finder.layout_test_name(line)
@@ -434,7 +434,7 @@ class DepsUpdater(object):
 
     def _list_renamed_tests(self):
         """Returns a dict mapping source to dest name for layout tests that have been renamed."""
-        out = self.check_run(['git', 'diff', 'origin/master', '--diff-filter=R', '--name-status'])
+        out = self.check_run(['git', 'diff', 'origin/master', '-M100%', '--diff-filter=R', '--name-status'])
         renamed_tests = {}
         for line in out.splitlines():
             _, source_path, dest_path = line.split()
