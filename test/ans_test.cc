@@ -20,7 +20,7 @@
 
 #include "test/acm_random.h"
 #include "aom_dsp/ansreader.h"
-#include "aom_dsp/answriter.h"
+#include "aom_dsp/buf_ans.h"
 
 namespace {
 typedef std::vector<std::pair<uint8_t, bool> > PvVec;
@@ -48,16 +48,18 @@ PvVec abs_encode_build_vals(int iters) {
 }
 
 bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
-  AnsCoder a;
-  ans_write_init(&a, buf);
+  BufAnsCoder a;
+  aom_buf_ans_alloc(&a, NULL, 100);
+  buf_ans_write_init(&a, buf);
 
   std::clock_t start = std::clock();
-  for (PvVec::const_reverse_iterator it = pv_vec.rbegin(); it != pv_vec.rend();
-       ++it) {
-    uabs_write(&a, it->second, 256 - it->first);
+  for (PvVec::const_iterator it = pv_vec.begin(); it != pv_vec.end(); ++it) {
+    buf_uabs_write(&a, it->second, 256 - it->first);
   }
+  buf_ans_flush(&a);
   std::clock_t enc_time = std::clock() - start;
-  int offset = ans_write_end(&a);
+  int offset = buf_ans_write_end(&a);
+  aom_buf_ans_free(&a);
   bool okay = true;
   AnsDecoder d;
   if (ans_read_init(&d, buf, offset)) return false;
@@ -112,18 +114,21 @@ void rans_build_dec_tab(const struct rans_sym sym_tab[],
 
 bool check_rans(const std::vector<int> &sym_vec, const rans_sym *const tab,
                 uint8_t *buf) {
-  AnsCoder a;
-  ans_write_init(&a, buf);
+  BufAnsCoder a;
+  aom_buf_ans_alloc(&a, NULL, 100);
+  buf_ans_write_init(&a, buf);
   aom_cdf_prob dec_tab[kRansSymbols];
   rans_build_dec_tab(tab, dec_tab);
 
   std::clock_t start = std::clock();
-  for (std::vector<int>::const_reverse_iterator it = sym_vec.rbegin();
-       it != sym_vec.rend(); ++it) {
-    rans_write(&a, &tab[*it]);
+  for (std::vector<int>::const_iterator it = sym_vec.begin();
+       it != sym_vec.end(); ++it) {
+    buf_rans_write(&a, &tab[*it]);
   }
+  buf_ans_flush(&a);
   std::clock_t enc_time = std::clock() - start;
-  int offset = ans_write_end(&a);
+  int offset = buf_ans_write_end(&a);
+  aom_buf_ans_free(&a);
   bool okay = true;
   AnsDecoder d;
   if (ans_read_init(&d, buf, offset)) return false;
