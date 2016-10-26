@@ -7,10 +7,14 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -81,7 +85,7 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
 
-class PrivetNotificationsListenerTest : public ::testing::Test {
+class PrivetNotificationsListenerTest : public testing::Test {
  public:
   PrivetNotificationsListenerTest()
       : request_context_(new net::TestURLRequestContextGetter(
@@ -178,6 +182,136 @@ TEST_F(PrivetNotificationsListenerTest, HTTPErrorTest) {
 TEST_F(PrivetNotificationsListenerTest, DictionaryErrorTest) {
   notification_listener_->DeviceChanged(kExampleDeviceName, description_);
   SuccessfulResponseToInfo(kInfoResponseNoUptime);
+}
+
+class TestPrivetNotificationService;
+
+class TestPrivetNotificationDelegate : public PrivetNotificationDelegate {
+ public:
+  TestPrivetNotificationDelegate(TestPrivetNotificationService* service,
+                                 Profile* profile)
+      : PrivetNotificationDelegate(profile), service_(service) {}
+
+ private:
+  // Refcounted.
+  ~TestPrivetNotificationDelegate() override {}
+
+  // PrivetNotificationDelegate:
+  void OpenTab(const GURL& url) override;
+  void DisableNotifications() override;
+
+  TestPrivetNotificationService* const service_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPrivetNotificationDelegate);
+};
+
+class TestPrivetNotificationService : public PrivetNotificationService {
+ public:
+  explicit TestPrivetNotificationService(Profile* profile)
+      : PrivetNotificationService(profile) {}
+  ~TestPrivetNotificationService() override {}
+
+  const GURL& open_tab_url() const { return open_tab_url_; }
+  size_t open_tab_count() const { return open_tab_count_; }
+  size_t disable_notifications_count() const {
+    return disable_notifications_count_;
+  }
+
+  void OpenTab(const GURL& url) {
+    open_tab_url_ = url;
+    ++open_tab_count_;
+  }
+
+  void DisableNotifications() { ++disable_notifications_count_; }
+
+ private:
+  // PrivetNotificationService:
+  PrivetNotificationDelegate* CreateNotificationDelegate(
+      Profile* profile) override {
+    return new TestPrivetNotificationDelegate(this, profile);
+  }
+
+  GURL open_tab_url_;
+  size_t open_tab_count_ = 0;
+  size_t disable_notifications_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPrivetNotificationService);
+};
+
+void TestPrivetNotificationDelegate::OpenTab(const GURL& url) {
+  service_->OpenTab(url);
+}
+
+void TestPrivetNotificationDelegate::DisableNotifications() {
+  service_->DisableNotifications();
+}
+
+class PrivetNotificationsNotificationTest : public testing::Test {
+ public:
+  PrivetNotificationsNotificationTest() {}
+  ~PrivetNotificationsNotificationTest() override {}
+
+  void SetUp() override {
+    testing::Test::SetUp();
+
+    profile_manager_ = base::MakeUnique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("test-user");
+
+    TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
+        base::MakeUnique<StubNotificationUIManager>());
+  }
+
+  void TearDown() override {
+    profile_manager_.reset();
+    testing::Test::TearDown();
+  }
+
+ protected:
+  StubNotificationUIManager* ui_manager() const {
+    return static_cast<StubNotificationUIManager*>(
+        TestingBrowserProcess::GetGlobal()->notification_ui_manager());
+  }
+
+  Profile* profile() { return profile_; }
+
+ private:
+  // The thread bundle must be first so it is destroyed last.
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrivetNotificationsNotificationTest);
+};
+
+TEST_F(PrivetNotificationsNotificationTest, AddToCloudPrint) {
+  TestPrivetNotificationService service(profile());
+  service.PrivetNotify(1 /* devices_active */, true /* added */);
+
+  ASSERT_EQ(1U, ui_manager()->GetNotificationCount());
+  const auto& notification = ui_manager()->GetNotificationAt(0);
+  notification.ButtonClick(0 /* add */);
+
+  EXPECT_EQ("chrome://devices/", service.open_tab_url().spec());
+  EXPECT_EQ(1U, service.open_tab_count());
+  EXPECT_EQ(0U, service.disable_notifications_count());
+  EXPECT_EQ(0U, ui_manager()->GetNotificationCount());
+}
+
+TEST_F(PrivetNotificationsNotificationTest, DontShowAgain) {
+  TestPrivetNotificationService service(profile());
+  service.PrivetNotify(1 /* devices_active */, true /* added */);
+
+  ASSERT_EQ(1U, ui_manager()->GetNotificationCount());
+  const auto& notification = ui_manager()->GetNotificationAt(0);
+  notification.ButtonClick(1 /* don't show again */);
+
+  EXPECT_EQ("", service.open_tab_url().spec());
+  EXPECT_EQ(0U, service.open_tab_count());
+  EXPECT_EQ(1U, service.disable_notifications_count());
+  EXPECT_EQ(0U, ui_manager()->GetNotificationCount());
 }
 
 }  // namespace
