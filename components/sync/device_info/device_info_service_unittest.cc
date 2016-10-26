@@ -760,20 +760,45 @@ TEST_F(DeviceInfoServiceTest, MultipleOnProviderInitialized) {
 
 TEST_F(DeviceInfoServiceTest, SendLocalData) {
   InitializeAndPump();
-  EXPECT_EQ(1, service()->CountActiveDevices());
   EXPECT_EQ(1, change_count());
   EXPECT_EQ(1u, processor()->put_multimap().size());
 
   ForcePulse();
-  EXPECT_EQ(1, service()->CountActiveDevices());
   EXPECT_EQ(2, change_count());
   EXPECT_EQ(2u, processor()->put_multimap().size());
 
+  // After clearing, pulsing should no-op and not result in a processor put or
+  // a notification to observers.
   local_device()->Clear();
   ForcePulse();
-  EXPECT_EQ(1, service()->CountActiveDevices());
   EXPECT_EQ(2, change_count());
   EXPECT_EQ(2u, processor()->put_multimap().size());
+}
+
+TEST_F(DeviceInfoServiceTest, DisableSync) {
+  InitializeAndPump();
+  EXPECT_EQ(1u, service()->GetAllDeviceInfo().size());
+  EXPECT_EQ(1, change_count());
+
+  DeviceInfoSpecifics specifics = GenerateTestSpecifics();
+  EntityChangeList add_changes;
+  PushBackEntityChangeAdd(specifics, &add_changes);
+  const SyncError error = service()->ApplySyncChanges(
+      service()->CreateMetadataChangeList(), add_changes);
+
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(2u, service()->GetAllDeviceInfo().size());
+  EXPECT_EQ(2, change_count());
+
+  // Should clear out all local data and notify observers.
+  service()->DisableSync();
+  EXPECT_EQ(0u, service()->GetAllDeviceInfo().size());
+  EXPECT_EQ(3, change_count());
+
+  // Reloading from storage shouldn't contain remote data.
+  RestartService();
+  EXPECT_EQ(1u, service()->GetAllDeviceInfo().size());
+  EXPECT_EQ(4, change_count());
 }
 
 }  // namespace

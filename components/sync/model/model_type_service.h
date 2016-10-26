@@ -111,8 +111,7 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // Indicates that we no longer want to do any sync-related things for this
   // data type. Severs all ties to the sync thread, deletes all local sync
   // metadata, and then destroys the change processor.
-  // TODO(crbug.com/584365): This needs to be called from DataTypeController.
-  void DisableSync();
+  virtual void DisableSync();
 
   ModelTypeChangeProcessor* change_processor() const;
 

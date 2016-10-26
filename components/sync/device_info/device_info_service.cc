@@ -180,6 +180,31 @@ std::string DeviceInfoService::GetStorageKey(const EntityData& entity_data) {
   return entity_data.specifics.device_info().cache_guid();
 }
 
+void DeviceInfoService::DisableSync() {
+  // TODO(skym, crbug.com/659263): Would it be reasonable to pulse_timer_.Stop()
+  // or subscription_.reset() here?
+
+  // Allow deletion of metadata to happen before the deletion of data below. If
+  // we crash after removing metadata but not regular data, then merge can
+  // handle pairing everything back up.
+  ModelTypeService::DisableSync();
+
+  // Remove all local data, if sync is being disabled, the user has expressed
+  // their desire to not have knowledge about other devices.
+  if (!all_data_.empty()) {
+    std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+    for (const auto& kv : all_data_) {
+      store_->DeleteData(batch.get(), kv.first);
+    }
+    store_->CommitWriteBatch(
+        std::move(batch),
+        base::Bind(&DeviceInfoService::OnCommit, base::AsWeakPtr(this)));
+
+    all_data_.clear();
+    NotifyObservers();
+  }
+}
+
 bool DeviceInfoService::IsSyncing() const {
   return !all_data_.empty();
 }

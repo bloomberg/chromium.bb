@@ -57,6 +57,7 @@ class DeviceInfoService : public ModelTypeService, public DeviceInfoTracker {
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
+  void DisableSync() override;
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;
