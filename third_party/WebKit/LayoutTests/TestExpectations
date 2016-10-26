@@ -76,7 +76,7 @@ crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Fai
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
 crbug.com/587737 [ Mac ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
-crbug.com/624233 virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Pass Failure ]
+crbug.com/624233 virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Pass Failure Crash ]
 
 crbug.com/657839 fast/images/color-profile-layer.html [ Pass Failure ]
 
