@@ -11,7 +11,8 @@
 namespace blink {
 
 enum class WebPresentationConnectionState {
-  Connected = 0,
+  Connecting = 0,
+  Connected,
   Closed,
   Terminated,
 };

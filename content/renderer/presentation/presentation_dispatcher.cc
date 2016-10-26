@@ -45,7 +45,8 @@ blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
 blink::WebPresentationConnectionState GetWebPresentationConnectionStateFromMojo(
     blink::mojom::PresentationConnectionState mojoSessionState) {
   switch (mojoSessionState) {
-    // TODO(imcheng): Add Connecting state to Blink (crbug.com/575351).
+    case blink::mojom::PresentationConnectionState::CONNECTING:
+      return blink::WebPresentationConnectionState::Connecting;
     case blink::mojom::PresentationConnectionState::CONNECTED:
       return blink::WebPresentationConnectionState::Connected;
     case blink::mojom::PresentationConnectionState::CLOSED:

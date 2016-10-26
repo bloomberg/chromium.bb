@@ -46,11 +46,14 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
 
 const AtomicString& connectionStateToString(
     WebPresentationConnectionState state) {
+  DEFINE_STATIC_LOCAL(const AtomicString, connectingValue, ("connecting"));
   DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected"));
   DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed"));
   DEFINE_STATIC_LOCAL(const AtomicString, terminatedValue, ("terminated"));
 
   switch (state) {
+    case WebPresentationConnectionState::Connecting:
+      return connectingValue;
     case WebPresentationConnectionState::Connected:
       return connectedValue;
     case WebPresentationConnectionState::Closed:
@@ -148,6 +151,7 @@ PresentationConnection::PresentationConnection(LocalFrame* frame,
     : DOMWindowProperty(frame),
       m_id(id),
       m_url(url),
+      // TODO(zhaobin): change initial state to Connecting. (crbug/659423)
       m_state(WebPresentationConnectionState::Connected),
       m_binaryType(BinaryTypeBlob) {}
 
@@ -374,8 +378,10 @@ void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data,
 }
 
 void PresentationConnection::close() {
-  if (m_state != WebPresentationConnectionState::Connected)
+  if (m_state != WebPresentationConnectionState::Connecting &&
+      m_state != WebPresentationConnectionState::Connected) {
     return;
+  }
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (client)
     client->closeSession(m_url, m_id);
@@ -406,6 +412,9 @@ void PresentationConnection::didChangeState(
 
   m_state = state;
   switch (m_state) {
+    case WebPresentationConnectionState::Connecting:
+      NOTREACHED();
+      return;
     case WebPresentationConnectionState::Connected:
       dispatchEvent(Event::create(EventTypeNames::connect));
       return;
@@ -414,9 +423,10 @@ void PresentationConnection::didChangeState(
       return;
     // Closed state is handled in |didClose()|.
     case WebPresentationConnectionState::Closed:
+      NOTREACHED();
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void PresentationConnection::didClose(
