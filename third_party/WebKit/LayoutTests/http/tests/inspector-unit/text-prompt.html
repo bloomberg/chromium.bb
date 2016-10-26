@@ -6,7 +6,8 @@
 <script>
 function test() {
     var suggestions = ["heyoo", "hey it's a suggestion", "hey another suggestion"];
-    var prompt = new WebInspector.TextPrompt((element, range, force, callback) => callback(suggestions));
+    var prompt = new WebInspector.TextPrompt();
+    prompt.initialize((element, range, force, callback) => callback(suggestions));
     prompt.setSuggestBoxEnabled(true);
     var div = document.createElement("div");
     WebInspector.inspectorView.element.appendChild(div);
