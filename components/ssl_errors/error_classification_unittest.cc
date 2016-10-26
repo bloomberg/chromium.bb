@@ -169,9 +169,9 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
 }
 
 TEST_F(SSLErrorClassificationTest, TestHostNameHasKnownTLD) {
-  EXPECT_TRUE(ssl_errors::IsHostNameKnownTLD("www.google.com"));
-  EXPECT_TRUE(ssl_errors::IsHostNameKnownTLD("b.appspot.com"));
-  EXPECT_FALSE(ssl_errors::IsHostNameKnownTLD("a.private"));
+  EXPECT_TRUE(ssl_errors::HostNameHasKnownTLD("www.google.com"));
+  EXPECT_TRUE(ssl_errors::HostNameHasKnownTLD("b.appspot.com"));
+  EXPECT_FALSE(ssl_errors::HostNameHasKnownTLD("a.private"));
 }
 
 TEST_F(SSLErrorClassificationTest, TestPrivateURL) {

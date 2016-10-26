@@ -118,11 +118,9 @@ bool isNonWildcardTLD(const std::string& url,
     return true;
 
   // Wildcards on subdomains of a TLD are not allowed.
-  size_t registry_length = net::registry_controlled_domains::GetRegistryLength(
-      host,
-      net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+  return net::registry_controlled_domains::HostHasRegistryControlledDomain(
+      host, net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  return registry_length != 0;
 }
 
 // Checks whether the source is a syntactically valid hash.

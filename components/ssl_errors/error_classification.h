@@ -147,7 +147,7 @@ HostnameTokens Tokenize(const std::string& name);
 void SetBuildTimeForTesting(const base::Time& testing_time);
 
 // Returns true if the hostname has a known Top Level Domain.
-bool IsHostNameKnownTLD(const std::string& host_name);
+bool HostNameHasKnownTLD(const std::string& host_name);
 
 // Returns true if any one of the following conditions hold:
 // 1.|hostname| is an IP Address in an IANA-reserved range.

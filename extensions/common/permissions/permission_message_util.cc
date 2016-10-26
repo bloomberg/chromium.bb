@@ -51,11 +51,12 @@ std::set<std::string> GetDistinctHosts(const URLPatternSet& host_patterns,
       host = "*." + host;
 
     // If the host has an RCD, split it off so we can detect duplicates.
+
     std::string rcd;
-    size_t reg_len = net::registry_controlled_domains::GetRegistryLength(
-        host,
-        net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-        net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    size_t reg_len =
+        net::registry_controlled_domains::PermissiveGetHostRegistryLength(
+            host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
     if (reg_len && reg_len != std::string::npos) {
       if (include_rcd)  // else leave rcd empty
         rcd = host.substr(host.size() - reg_len);
