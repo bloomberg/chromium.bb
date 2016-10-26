@@ -38,9 +38,9 @@ const ClientSpecificId kInvalidClientId = 0;
 // that embed roots use the client id in creating the window id to avoid
 // possible conflicts.
 struct WindowId {
-  WindowId(ClientSpecificId client_id, ClientSpecificId window_id)
+  constexpr WindowId(ClientSpecificId client_id, ClientSpecificId window_id)
       : client_id(client_id), window_id(window_id) {}
-  WindowId() : client_id(0), window_id(0) {}
+  constexpr WindowId() : client_id(0), window_id(0) {}
 
   bool operator==(const WindowId& other) const {
     return other.client_id == client_id && other.window_id == window_id;

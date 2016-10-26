@@ -14,6 +14,7 @@
 #include "cc/surfaces/local_frame_id.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surface_sequence_generator.h"
+#include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -49,6 +50,7 @@ class ServerWindowCompositorFrameSink;
 class FrameGenerator : public ServerWindowObserver {
  public:
   FrameGenerator(FrameGeneratorDelegate* delegate,
+                 ServerWindow* root_window,
                  scoped_refptr<DisplayCompositor> display_compositor);
   ~FrameGenerator() override;
 

@@ -22,10 +22,6 @@ class ServerWindow;
 /// and responses to changes in viewport size.
 class PlatformDisplayDelegate {
  public:
-  // Creates the root window for this display. The new root window will have
-  // |size| in DIP initially.
-  virtual void CreateRootWindow(const gfx::Size& size) = 0;
-
   // Returns the root window of this display.
   virtual ServerWindow* GetRootWindow() = 0;
 

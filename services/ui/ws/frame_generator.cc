@@ -24,10 +24,13 @@ namespace ws {
 
 FrameGenerator::FrameGenerator(
     FrameGeneratorDelegate* delegate,
+    ServerWindow* root_window,
     scoped_refptr<DisplayCompositor> display_compositor)
     : delegate_(delegate),
       display_compositor_(display_compositor),
-      frame_sink_id_(0, display_compositor->GenerateNextClientId()),
+      frame_sink_id_(
+          WindowIdToTransportId(root_window->id()),
+          static_cast<uint32_t>(mojom::CompositorFrameSinkType::DEFAULT)),
       draw_timer_(false, false),
       weak_factory_(this) {
   DCHECK(delegate_);

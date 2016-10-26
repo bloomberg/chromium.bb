@@ -34,9 +34,13 @@ namespace ws {
 
 Display::Display(WindowServer* window_server,
                  const PlatformDisplayInitParams& platform_display_init_params)
-    : window_server_(window_server),
-      platform_display_(PlatformDisplay::Create(platform_display_init_params)),
-      last_cursor_(mojom::Cursor::CURSOR_NULL) {
+    : window_server_(window_server), last_cursor_(mojom::Cursor::CURSOR_NULL) {
+  CreateRootWindow(platform_display_init_params.metrics.bounds.size());
+
+  // Pass the display root ServerWindow to PlatformDisplay.
+  PlatformDisplayInitParams param_copy = platform_display_init_params;
+  param_copy.root_window = root_.get();
+  platform_display_.reset(PlatformDisplay::Create(param_copy));
   platform_display_->Init(this);
 
   window_server_->window_manager_window_tree_factory_set()->AddObserver(this);

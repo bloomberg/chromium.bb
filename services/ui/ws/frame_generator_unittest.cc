@@ -10,6 +10,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
 #include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/ws/ids.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
@@ -21,6 +22,9 @@ namespace ui {
 namespace ws {
 namespace test {
 namespace {
+
+// Typical id for the display root ServerWindow.
+constexpr WindowId kRootDisplayId(0, 2);
 
 // Makes the window visible and creates the default surface for it.
 void InitWindow(ServerWindow* window) {
@@ -37,7 +41,10 @@ void InitWindow(ServerWindow* window) {
 
 class FrameGeneratorTest : public testing::Test {
  public:
-  FrameGeneratorTest() : display_compositor_(new DisplayCompositor(nullptr)) {}
+  FrameGeneratorTest()
+      : display_compositor_(new DisplayCompositor(nullptr)),
+        root_window_(base::MakeUnique<ServerWindow>(&window_delegate_,
+                                                    kRootDisplayId)) {}
   ~FrameGeneratorTest() override {}
 
   // Calls DrawWindowTree() on |frame_generator_|
@@ -58,6 +65,7 @@ class FrameGeneratorTest : public testing::Test {
   std::unique_ptr<FrameGenerator> frame_generator_;
   std::unique_ptr<TestFrameGeneratorDelegate> frame_generator_delegate_;
   TestServerWindowDelegate window_delegate_;
+  std::unique_ptr<ServerWindow> root_window_;
 
   // Needed so that Mojo classes can be initialized for ServerWindow use.
   base::TestMessageLoop message_loop_;
@@ -77,7 +85,7 @@ void FrameGeneratorTest::SetUp() {
       base::MakeUnique<ServerWindow>(&window_delegate_, WindowId()));
   PlatformDisplayInitParams init_params;
   frame_generator_ = base::MakeUnique<FrameGenerator>(
-      frame_generator_delegate_.get(), display_compositor_);
+      frame_generator_delegate_.get(), root_window_.get(), display_compositor_);
   InitWindow(root_window());
 }
 

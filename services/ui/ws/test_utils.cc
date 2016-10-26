@@ -41,9 +41,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   ~TestPlatformDisplay() override {}
 
   // PlatformDisplay:
-  void Init(PlatformDisplayDelegate* delegate) override {
-    delegate->CreateRootWindow(display_metrics_.bounds.size());
-  }
+  void Init(PlatformDisplayDelegate* delegate) override {}
   int64_t GetId() const override { return id_; }
   void SchedulePaint(const ServerWindow* window,
                      const gfx::Rect& bounds) override {}

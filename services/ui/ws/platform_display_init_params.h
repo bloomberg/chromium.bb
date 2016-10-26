@@ -13,17 +13,20 @@
 namespace ui {
 
 class DisplayCompositor;
-class GpuState;
 
 namespace ws {
 
+class ServerWindow;
+
 struct PlatformDisplayInitParams {
   PlatformDisplayInitParams();
+  PlatformDisplayInitParams(const PlatformDisplayInitParams& other);
   ~PlatformDisplayInitParams();
 
   scoped_refptr<DisplayCompositor> display_compositor;
 
   int64_t display_id;
+  ServerWindow* root_window = nullptr;
   display::ViewportMetrics metrics;
 };
 

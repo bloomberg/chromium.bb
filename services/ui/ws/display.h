@@ -163,8 +163,11 @@ class Display : public PlatformDisplayDelegate,
   void CreateWindowManagerDisplayRootFromFactory(
       WindowManagerWindowTreeFactory* factory);
 
+  // Creates the root ServerWindow for this display. The root window will have
+  // |size| in DIP.
+  void CreateRootWindow(const gfx::Size& size);
+
   // PlatformDisplayDelegate:
-  void CreateRootWindow(const gfx::Size& size) override;
   ServerWindow* GetRootWindow() override;
   bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;

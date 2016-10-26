@@ -58,8 +58,9 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
 #if !defined(OS_ANDROID)
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
-      frame_generator_(
-          new FrameGenerator(this, init_params.display_compositor)),
+      frame_generator_(new FrameGenerator(this,
+                                          init_params.root_window,
+                                          init_params.display_compositor)),
       metrics_(init_params.metrics) {
 }
 
@@ -83,7 +84,6 @@ void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
 #else
   NOTREACHED() << "Unsupported platform";
 #endif
-  delegate_->CreateRootWindow(metrics_.bounds.size());
 
   platform_window_->SetBounds(bounds);
   platform_window_->Show();
