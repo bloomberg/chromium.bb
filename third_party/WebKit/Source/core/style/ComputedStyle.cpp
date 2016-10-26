@@ -598,9 +598,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
 
   updatePropertySpecificDifferences(other, diff);
 
-  // TODO(skobes): Refine the criteria for ScrollAnchor-disabling properties.
-  // Some things set needsLayout but shouldn't disable scroll anchoring.
-  if (diff.needsLayout() || diff.transformChanged())
+  if (scrollAnchorDisablingPropertyChanged(other, diff))
     diff.setScrollAnchorDisablingPropertyChanged();
 
   // Cursors are not checked, since they will be set appropriately in response
@@ -612,6 +610,35 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
   // transition properly.
 
   return diff;
+}
+
+bool ComputedStyle::scrollAnchorDisablingPropertyChanged(
+    const ComputedStyle& other,
+    StyleDifference& diff) const {
+  if (m_nonInheritedData.m_position != other.m_nonInheritedData.m_position)
+    return true;
+
+  if (m_box.get() != other.m_box.get()) {
+    if (m_box->width() != other.m_box->width() ||
+        m_box->minWidth() != other.m_box->minWidth() ||
+        m_box->maxWidth() != other.m_box->maxWidth() ||
+        m_box->height() != other.m_box->height() ||
+        m_box->minHeight() != other.m_box->minHeight() ||
+        m_box->maxHeight() != other.m_box->maxHeight())
+      return true;
+  }
+
+  if (m_surround.get() != other.m_surround.get()) {
+    if (m_surround->margin != other.m_surround->margin ||
+        m_surround->offset != other.m_surround->offset ||
+        m_surround->padding != other.m_surround->padding)
+      return true;
+  }
+
+  if (diff.transformChanged())
+    return true;
+
+  return false;
 }
 
 bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(

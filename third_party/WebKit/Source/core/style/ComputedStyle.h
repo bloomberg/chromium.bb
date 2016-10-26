@@ -4019,6 +4019,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                 float originY,
                                 TransformationMatrix&) const;
 
+  bool scrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
+                                            StyleDifference&) const;
   bool diffNeedsFullLayoutAndPaintInvalidation(
       const ComputedStyle& other) const;
   bool diffNeedsFullLayout(const ComputedStyle& other) const;
