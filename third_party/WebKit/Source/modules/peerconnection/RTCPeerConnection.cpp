@@ -439,9 +439,7 @@ RTCPeerConnection* RTCPeerConnection::create(
          configuration.certificates) {
       DOMTimeStamp expires = certificate->expires();
       if (expires <= now) {
-        // TODO(hbos): Per https://w3c.github.io/webrtc-pc/#operation this
-        // should throw InvalidAccessError, not InvalidStateError.
-        exceptionState.throwDOMException(InvalidStateError,
+        exceptionState.throwDOMException(InvalidAccessError,
                                          "Expired certificate(s).");
         return 0;
       }

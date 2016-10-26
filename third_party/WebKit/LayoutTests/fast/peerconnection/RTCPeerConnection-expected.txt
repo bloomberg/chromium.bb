@@ -57,7 +57,7 @@ PASS new webkitRTCPeerConnection({iceServers:[], certificates:[1337]}); threw ex
 PASS new webkitRTCPeerConnection({iceServers:[], certificates:[certRSA]}, null); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], certificates:[certECDSA]}, null); did not throw exception.
 PASS certExpired.expires <= new Date().getTime() is true
-PASS new webkitRTCPeerConnection({iceServers:[], certificates:[certExpired]}, null); threw exception InvalidStateError: Failed to construct 'RTCPeerConnection': Expired certificate(s)..
+PASS new webkitRTCPeerConnection({iceServers:[], certificates:[certExpired]}, null); threw exception InvalidAccessError: Failed to construct 'RTCPeerConnection': Expired certificate(s)..
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -84,9 +84,7 @@ FAIL new RTCPeerConnection({ iceCandidatePoolSize: toNumberThrows }) assert_thro
         eval(expr);
       }" did not throw
 PASS new RTCPeerConnection({ certificates: [certificate] }) 
-FAIL new RTCPeerConnection({ certificates: [expiredCertificate] }) assert_throws: function "function () {
-          new RTCPeerConnection({ certificates: [certificate] });
-        }" threw object "InvalidStateError: Failed to construct 'RTCPeerConnection': Expired certificate(s)." that is not a DOMException InvalidAccessError: property "code" is equal to 11, expected 15
+PASS new RTCPeerConnection({ certificates: [expiredCertificate] }) 
 PASS localDescription initial value 
 FAIL currentLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
 FAIL pendingLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
