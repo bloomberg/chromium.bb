@@ -509,7 +509,6 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options,
               'patch_project': project,
               'patch_storage': 'rietveld',
               'patchset': patchset,
-              'reason': options.name,
               'rietveld': codereview_url,
           },
       }
@@ -4844,9 +4843,6 @@ def CMDtry(parser, args):
            'json if decodable, or as string otherwise. '
            'NOTE: using this may make your try job not usable for CQ, '
            'which will then schedule another try job with default properties')
-  # TODO(tandrii): if this even used?
-  group.add_option(
-      '-n', '--name', help='Try job name; default to current branch name')
   group.add_option(
       '--buildbucket-host', default='cr-buildbucket.appspot.com',
       help='Host of buildbucket. The default host is %default.')
@@ -4876,9 +4872,6 @@ def CMDtry(parser, args):
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:
     parser.error('Can\'t trigger try jobs: %s' % error_message)
-
-  if not options.name:
-    options.name = cl.GetBranch()
 
   if options.bucket and options.master:
     parser.error('Only one of --bucket and --master may be used.')

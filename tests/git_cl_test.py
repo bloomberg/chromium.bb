@@ -1950,7 +1950,6 @@ class TestGitCl(TestCase):
            u'patch_project': u'depot_tools',
            u'patch_storage': u'rietveld',
            u'patchset': 20001,
-           u'reason': u'feature',  # This is a branch name, but why?
            u'rietveld': u'https://codereview.chromium.org',
         }
       })
@@ -2004,7 +2003,6 @@ class TestGitCl(TestCase):
            u'patch_project': u'depot_tools',
            u'patch_storage': u'rietveld',
            u'patchset': 20001,
-           u'reason': u'feature',  # This is a branch name, but why?
            u'rietveld': u'https://codereview.chromium.org',
         }
       })
