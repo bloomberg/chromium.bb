@@ -64,7 +64,4 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
   data = [
     "test/data/",
   ]
-  data_deps = [
-    ":webview_ui_test_app_apk",
-  ]
 }
