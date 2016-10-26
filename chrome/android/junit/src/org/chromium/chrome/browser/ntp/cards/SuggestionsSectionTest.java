@@ -136,8 +136,7 @@ public class SuggestionsSectionTest {
 
         section.removeSuggestion(snippets.get(0));
         verify(mParent).onItemRangeRemoved(section, 1, 1);
-        verify(mParent).onItemRangeInserted(section, 1, 1);
-        verify(mParent).onItemRangeInserted(section, 2, 1);
+        verify(mParent).onItemRangeInserted(section, 1, 3);
     }
 
     @Test
@@ -163,7 +162,6 @@ public class SuggestionsSectionTest {
 
         section.removeSuggestion(snippets.get(1));
         verify(mParent, times(2)).onItemRangeRemoved(section, 1, 1);
-        verify(mParent).onItemRangeInserted(section, 1, 1);
-        verify(mParent).onItemRangeInserted(section, 3, 1);
+        verify(mParent).onItemRangeInserted(section, 1, 3);
     }
 }

@@ -99,13 +99,9 @@ public class SuggestionsSection extends InnerNode {
         notifyItemRemoved(globalRemovedIndex);
 
         // If we still have some suggestions, we are done. Otherwise, we'll have to notify about the
-        // status-related items that are now present.
-        if (hasSuggestions()) return;
-        notifyItemInserted(globalRemovedIndex); // Status card.
-        if (!mCategoryInfo.hasMoreButton()) {
-            notifyItemInserted(globalRemovedIndex + 1); // Action card.
-        }
-        notifyItemInserted(globalRemovedIndex + 2); // Progress indicator.
+        // status-related items (status card, action card, and progress indicator) that are
+        // now present.
+        if (!hasSuggestions()) notifyItemRangeInserted(globalRemovedIndex, 3);
     }
 
     public void removeSuggestionById(String idWithinCategory) {

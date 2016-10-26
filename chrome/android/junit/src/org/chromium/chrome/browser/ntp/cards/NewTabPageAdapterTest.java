@@ -12,9 +12,11 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.support.annotation.Nullable;
@@ -721,10 +723,8 @@ public class NewTabPageAdapterTest {
         // Dismiss the last suggestion in the section. We should now show the status card.
         adapter.dismissItem(2);
         verify(dataObserver).onItemRangeRemoved(2, 1);
-        verify(dataObserver).onItemRangeInserted(2, 1);
-        verify(dataObserver).onItemRangeInserted(3, 1);
-        verify(dataObserver).onItemRangeInserted(4, 1);
-        verify(dataObserver, times(4)).onItemRangeChanged(6, 1, null);
+        verify(dataObserver).onItemRangeInserted(2, 3);
+        verify(dataObserver, times(2)).onItemRangeChanged(6, 1, null);
 
         // Adapter content:
         // Idx | Item
@@ -756,13 +756,15 @@ public class NewTabPageAdapterTest {
         // 9   | Footer
         // 10  | Spacer
 
+        verifyNoMoreInteractions(dataObserver);
+        reset(dataObserver);
         suggestionsSource.setSuggestionsForCategory(
                 KnownCategories.ARTICLES, createDummySuggestions(0));
         adapter.onCategoryStatusChanged(KnownCategories.ARTICLES, CategoryStatus.SIGNED_OUT);
-        verify(dataObserver, times(2)).onItemRangeChanged(2, changedCount, null);
+        verify(dataObserver).onItemRangeChanged(2, changedCount, null);
         verify(dataObserver)
                 .onItemRangeRemoved(2 + changedCount, newSuggestionCount - changedCount);
-        verify(dataObserver, times(5)).onItemRangeChanged(6, 1, null);
+        verify(dataObserver).onItemRangeChanged(6, 1, null);
     }
 
     @Test
