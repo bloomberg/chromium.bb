@@ -27,10 +27,12 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.8.5'
+__version__ = '0.8.6'
 
+import argparse
 import base64
 import collections
+import json
 import logging
 import optparse
 import os
@@ -731,6 +733,13 @@ def create_option_parser():
       '--bot-file',
       help='Path to a file describing the state of the host. The content is '
            'defined by on_before_task() in bot_config.')
+  parser.add_option(
+      '-a', '--argsfile',
+      # This is actually handled in parse_args; it's included here purely so it
+      # can make it into the help text.
+      help='Specify a file containing a JSON array of arguments to this '
+           'script. If --argsfile is provided, no other argument may be '
+           'provided on the command line.')
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
       '-s', '--isolated',
@@ -758,9 +767,36 @@ def create_option_parser():
   return parser
 
 
-def main(args):
+def parse_args(args):
+  # Create a fake mini-parser just to get out the "-a" command. Note that
+  # it's not documented here; instead, it's documented in create_option_parser
+  # even though that parser will never actually get to parse it. This is
+  # because --argsfile is exclusive with all other options and arguments.
+  file_argparse = argparse.ArgumentParser(add_help=False)
+  file_argparse.add_argument('-a', '--argsfile')
+  (file_args, nonfile_args) = file_argparse.parse_known_args(args)
+  if file_args.argsfile:
+    if nonfile_args:
+      file_argparse.error('Can\'t specify --argsfile with'
+                          'any other arguments (%s)' % nonfile_args)
+    try:
+      with open(file_args.argsfile, 'r') as f:
+        args = json.load(f)
+    except (IOError, OSError, ValueError) as e:
+      # We don't need to error out here - "args" is now empty,
+      # so the call below to parser.parse_args(args) will fail
+      # and print the full help text.
+      print >> sys.stderr, 'Couldn\'t read arguments: %s' % e
+
+  # Even if we failed to read the args, just call the normal parser now since it
+  # will print the correct help message.
   parser = create_option_parser()
   options, args = parser.parse_args(args)
+  return (parser, options, args)
+
+
+def main(args):
+  (parser, options, args) = parse_args(args)
 
   isolated_cache = isolateserver.process_cache_options(options)
   if options.clean:
@@ -829,4 +865,5 @@ if __name__ == '__main__':
   # Ensure that we are always running with the correct encoding.
   fix_encoding.fix_encoding()
   file_path.enable_symlink()
+
   sys.exit(main(sys.argv[1:]))
