@@ -31,10 +31,6 @@
 
 namespace blink {
 
-SegmentedFontData::~SegmentedFontData() {
-  GlyphPageTreeNode::pruneTreeCustomFontData(this);
-}
-
 const SimpleFontData* SegmentedFontData::fontDataForCharacter(UChar32 c) const {
   auto end = m_faces.end();
   for (auto it = m_faces.begin(); it != end; ++it) {

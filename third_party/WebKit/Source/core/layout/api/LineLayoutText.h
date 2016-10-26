@@ -8,7 +8,6 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "platform/LayoutUnit.h"
-#include "platform/text/TextPath.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -79,10 +78,6 @@ class LineLayoutText : public LineLayoutItem {
   unsigned resolvedTextLength() const { return toText()->resolvedTextLength(); }
 
   const String& text() const { return toText()->text(); }
-
-  bool canUseSimpleFontCodePath() const {
-    return toText()->canUseSimpleFontCodePath();
-  }
 
   float width(unsigned from,
               unsigned len,

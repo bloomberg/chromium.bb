@@ -39,12 +39,8 @@ class PLATFORM_EXPORT UTF16TextIterator {
   // 'endOffset'.
   UTF16TextIterator(const UChar*, int length);
 
-  // FIXME: The offset/endOffset fields are only used by the SimpleShaper,
-  // remove once HarfBuzz is used for all text.
-  UTF16TextIterator(const UChar*, int offset, int endOffset, int length);
-
   inline bool consume(UChar32& character) {
-    if (m_offset >= m_endOffset)
+    if (m_offset >= m_length)
       return false;
 
     character = *m_characters;
@@ -75,7 +71,7 @@ class PLATFORM_EXPORT UTF16TextIterator {
   const UChar* m_characters;
   const UChar* m_charactersEnd;
   int m_offset;
-  int m_endOffset;
+  int m_length;
   unsigned m_currentGlyphLength;
 };
 

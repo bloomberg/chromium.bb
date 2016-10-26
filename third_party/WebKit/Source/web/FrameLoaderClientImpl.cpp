@@ -69,7 +69,6 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
-#include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
@@ -453,13 +452,6 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(
   if (!m_webFrame->parent()) {
     m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
   }
-
-  // Save some histogram data so we can compute the average memory used per
-  // page load of the glyphs.
-  // TODO(esprehn): Is this ancient uma actually useful?
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, gyphsPagesPerLoadHistogram,
-                      ("Memory.GlyphPagesPerLoad", 1, 10000, 50));
-  gyphsPagesPerLoadHistogram.count(GlyphPageTreeNode::treeGlyphPageCount());
 
   if (m_webFrame->client())
     m_webFrame->client()->didCommitProvisionalLoad(

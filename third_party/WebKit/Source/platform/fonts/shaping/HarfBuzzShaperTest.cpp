@@ -6,7 +6,6 @@
 
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/fonts/GlyphPage.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "platform/text/TextRun.h"
 #include "testing/gtest/include/gtest/gtest.h"

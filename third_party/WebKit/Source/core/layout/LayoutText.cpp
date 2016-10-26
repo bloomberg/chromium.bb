@@ -1920,10 +1920,7 @@ unsigned LayoutText::resolvedTextLength() const {
 }
 
 bool LayoutText::computeCanUseSimpleFontCodePath() const {
-  if (m_text.is8Bit())
-    return true;
-  return Character::characterRangeCodePath(characters16(), length()) ==
-         SimplePath;
+  return m_text.is8Bit();
 }
 
 #if ENABLE(ASSERT)

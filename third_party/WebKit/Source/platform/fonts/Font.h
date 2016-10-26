@@ -33,7 +33,6 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
-#include "platform/text/TextPath.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -56,8 +55,6 @@ class FontSelector;
 class GlyphBuffer;
 class TextRun;
 struct TextRunPaintInfo;
-
-struct GlyphData;
 
 class PLATFORM_EXPORT Font {
   DISALLOW_NEW();
@@ -160,12 +157,6 @@ class PLATFORM_EXPORT Font {
   const SimpleFontData* primaryFont() const;
   const FontData* fontDataAt(unsigned) const;
 
-  GlyphData glyphDataForCharacter(UChar32&,
-                                  bool mirror,
-                                  bool normalizeSpace = false,
-                                  FontDataVariant = AutoVariant) const;
-  CodePath codePath(const TextRunPaintInfo&) const;
-
   // Whether the font supports shaping word by word instead of shaping the
   // full run in one go. Allows better caching for fonts where space cannot
   // participate in kerning and/or ligatures.
@@ -189,19 +180,6 @@ class PLATFORM_EXPORT Font {
                        const GlyphBuffer&,
                        const FloatPoint&,
                        float deviceScaleFactor) const;
-  float floatWidthForSimpleText(
-      const TextRun&,
-      HashSet<const SimpleFontData*>* fallbackFonts = 0,
-      FloatRect* glyphBounds = 0) const;
-  int offsetForPositionForSimpleText(const TextRun&,
-                                     float position,
-                                     bool includePartialGlyphs) const;
-  FloatRect selectionRectForSimpleText(const TextRun&,
-                                       const FloatPoint&,
-                                       int h,
-                                       int from,
-                                       int to,
-                                       bool accountForGlyphBounds) const;
 
   bool getEmphasisMarkGlyphData(const AtomicString&, GlyphData&) const;
 

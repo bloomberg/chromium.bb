@@ -34,7 +34,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/text/CharacterProperty.h"
 #include "platform/text/TextDirection.h"
-#include "platform/text/TextPath.h"
 #include "platform/text/TextRun.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/Allocator.h"
@@ -48,11 +47,6 @@ class PLATFORM_EXPORT Character {
   STATIC_ONLY(Character);
 
  public:
-  static CodePath characterRangeCodePath(const LChar*, unsigned) {
-    return SimplePath;
-  }
-  static CodePath characterRangeCodePath(const UChar*, unsigned len);
-
   static inline bool isInRange(UChar32 character,
                                UChar32 lowerBound,
                                UChar32 upperBound) {

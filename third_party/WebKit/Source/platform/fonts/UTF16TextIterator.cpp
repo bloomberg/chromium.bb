@@ -32,17 +32,7 @@ UTF16TextIterator::UTF16TextIterator(const UChar* characters, int length)
     : m_characters(characters),
       m_charactersEnd(characters + length),
       m_offset(0),
-      m_endOffset(length),
-      m_currentGlyphLength(0) {}
-
-UTF16TextIterator::UTF16TextIterator(const UChar* characters,
-                                     int currentCharacter,
-                                     int endOffset,
-                                     int endCharacter)
-    : m_characters(characters),
-      m_charactersEnd(characters + (endCharacter - currentCharacter)),
-      m_offset(currentCharacter),
-      m_endOffset(endOffset),
+      m_length(length),
       m_currentGlyphLength(0) {}
 
 bool UTF16TextIterator::isValidSurrogatePair(UChar32& character) {

@@ -32,7 +32,6 @@
 
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/GlyphPage.h"
 #include "platform/text/TextRun.h"
 
 namespace blink {

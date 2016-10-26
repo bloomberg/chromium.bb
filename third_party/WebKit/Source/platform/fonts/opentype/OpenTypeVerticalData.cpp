@@ -27,7 +27,6 @@
 #include "SkTypeface.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/GlyphPage.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/RefPtr.h"

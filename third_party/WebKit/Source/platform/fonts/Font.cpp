@@ -32,10 +32,8 @@
 #include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
-#include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/Character.h"
@@ -110,34 +108,16 @@ void Font::update(FontSelector* fontSelector) const {
 float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo,
                              GlyphBuffer& glyphBuffer,
                              const GlyphData* emphasisData) const {
-  if (codePath(runInfo) == ComplexPath) {
-    float width;
-    CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-    if (emphasisData) {
-      width = shaper.fillGlyphBufferForTextEmphasis(this, runInfo.run,
-                                                    emphasisData, &glyphBuffer,
-                                                    runInfo.from, runInfo.to);
-    } else {
-      width = shaper.fillGlyphBuffer(this, runInfo.run, nullptr, &glyphBuffer,
-                                     runInfo.from, runInfo.to);
-    }
-
-    return width;
+  float width;
+  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
+  if (emphasisData) {
+    width = shaper.fillGlyphBufferForTextEmphasis(this, runInfo.run,
+                                                  emphasisData, &glyphBuffer,
+                                                  runInfo.from, runInfo.to);
+  } else {
+    width = shaper.fillGlyphBuffer(this, runInfo.run, nullptr, &glyphBuffer,
+                                   runInfo.from, runInfo.to);
   }
-
-  SimpleShaper shaper(this, runInfo.run, emphasisData,
-                      nullptr /* fallbackFonts */, nullptr);
-  shaper.advance(runInfo.from);
-  shaper.advance(runInfo.to, &glyphBuffer);
-  float width = shaper.runWidthSoFar();
-
-  if (runInfo.run.rtl()) {
-    // Glyphs are shaped & stored in RTL advance order - reverse them for LTR
-    // drawing.
-    shaper.advance(runInfo.run.length());
-    glyphBuffer.reverseForSimpleRTL(width, shaper.runWidthSoFar());
-  }
-
   return width;
 }
 
@@ -255,9 +235,7 @@ float Font::width(const TextRun& run,
                   FloatRect* glyphBounds) const {
   FontCachePurgePreventer purgePreventer;
 
-  if (codePath(TextRunPaintInfo(run)) == ComplexPath)
-    return floatWidthForComplexText(run, fallbackFonts, glyphBounds);
-  return floatWidthForSimpleText(run, fallbackFonts, glyphBounds);
+  return floatWidthForComplexText(run, fallbackFonts, glyphBounds);
 }
 
 namespace {
@@ -499,9 +477,6 @@ FloatRect Font::selectionRectForText(const TextRun& run,
 
   FontCachePurgePreventer purgePreventer;
 
-  if (codePath(runInfo) != ComplexPath)
-    return pixelSnappedSelectionRect(selectionRectForSimpleText(
-        run, point, h, from, to, accountForGlyphBounds));
   return pixelSnappedSelectionRect(
       selectionRectForComplexText(run, point, h, from, to));
 }
@@ -510,48 +485,7 @@ int Font::offsetForPosition(const TextRun& run,
                             float x,
                             bool includePartialGlyphs) const {
   FontCachePurgePreventer purgePreventer;
-
-  if (codePath(TextRunPaintInfo(run)) != ComplexPath &&
-      !getFontDescription().getTypesettingFeatures())
-    return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
-
   return offsetForPositionForComplexText(run, x, includePartialGlyphs);
-}
-
-CodePath Font::codePath(const TextRunPaintInfo& runInfo) const {
-  if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled() ||
-      LayoutTestSupport::alwaysUseComplexTextForTest()) {
-    return ComplexPath;
-  }
-
-  const TextRun& run = runInfo.run;
-
-  if (getFontDescription().getTypesettingFeatures())
-    return ComplexPath;
-
-  if (m_fontDescription.featureSettings() &&
-      m_fontDescription.featureSettings()->size() > 0)
-    return ComplexPath;
-
-  if (m_fontDescription.isVerticalBaseline())
-    return ComplexPath;
-
-  if (m_fontDescription.widthVariant() != RegularWidth)
-    return ComplexPath;
-
-  // FIXME: This really shouldn't be needed but for some reason the
-  // TextRendering setting doesn't propagate to typesettingFeatures in time
-  // for the prefs width calculation.
-  if (getFontDescription().textRendering() == OptimizeLegibility ||
-      getFontDescription().textRendering() == GeometricPrecision)
-    return ComplexPath;
-
-  if (run.is8Bit())
-    return SimplePath;
-
-  // Start from 0 since drawing and highlighting also measure the characters
-  // before run->from.
-  return Character::characterRangeCodePath(run.characters16(), run.length());
 }
 
 bool Font::canShapeWordByWord() const {
@@ -582,229 +516,10 @@ void Font::willUseFontData(const String& text) const {
         getFontDescription(), family.family(), text);
 }
 
-static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(
-    UChar32 character,
-    bool isUpright,
-    GlyphData& data,
-    unsigned pageNumber) {
-  if (isUpright) {
-    RefPtr<SimpleFontData> uprightFontData =
-        data.fontData->uprightOrientationFontData();
-    GlyphPageTreeNode* uprightNode = GlyphPageTreeNode::getNormalRootChild(
-        uprightFontData.get(), pageNumber);
-    GlyphPage* uprightPage = uprightNode->page();
-    if (uprightPage) {
-      GlyphData uprightData = uprightPage->glyphDataForCharacter(character);
-      // If the glyphs are the same, then we know we can just use the horizontal
-      // glyph rotated vertically to be upright.
-      if (data.glyph == uprightData.glyph)
-        return data;
-      // The glyphs are distinct, meaning that the font has a vertical-right
-      // glyph baked into it. We can't use that glyph, so we fall back to the
-      // upright data and use the horizontal glyph.
-      if (uprightData.fontData)
-        return uprightData;
-    }
-  } else {
-    RefPtr<SimpleFontData> verticalRightFontData =
-        data.fontData->verticalRightOrientationFontData();
-    GlyphPageTreeNode* verticalRightNode =
-        GlyphPageTreeNode::getNormalRootChild(verticalRightFontData.get(),
-                                              pageNumber);
-    GlyphPage* verticalRightPage = verticalRightNode->page();
-    if (verticalRightPage) {
-      GlyphData verticalRightData =
-          verticalRightPage->glyphDataForCharacter(character);
-      // If the glyphs are distinct, we will make the assumption that the font
-      // has a vertical-right glyph baked into it.
-      if (data.glyph != verticalRightData.glyph)
-        return data;
-      // The glyphs are identical, meaning that we should just use the
-      // horizontal glyph.
-      if (verticalRightData.fontData)
-        return verticalRightData;
-    }
-  }
-  return data;
-}
-
 PassRefPtr<FontFallbackIterator> Font::createFontFallbackIterator(
     FontFallbackPriority fallbackPriority) const {
   return FontFallbackIterator::create(m_fontDescription, m_fontFallbackList,
                                       fallbackPriority);
-}
-
-GlyphData Font::glyphDataForCharacter(UChar32& c,
-                                      bool mirror,
-                                      bool normalizeSpace,
-                                      FontDataVariant variant) const {
-  ASSERT(isMainThread());
-
-  if (variant == AutoVariant) {
-    if (m_fontDescription.variantCaps() == FontDescription::SmallCaps) {
-      UChar32 upperC =
-          toUpper(c, LayoutLocale::localeString(m_fontDescription.locale()));
-      if (upperC != c) {
-        c = upperC;
-        variant = SmallCapsVariant;
-      } else {
-        variant = NormalVariant;
-      }
-    } else {
-      variant = NormalVariant;
-    }
-  }
-
-  if (normalizeSpace && Character::isNormalizedCanvasSpaceCharacter(c))
-    c = spaceCharacter;
-
-  if (mirror)
-    c = mirroredChar(c);
-
-  unsigned pageNumber = (c / GlyphPage::size);
-
-  GlyphPageTreeNodeBase* node = m_fontFallbackList->getPageNode(pageNumber);
-  if (!node) {
-    node = GlyphPageTreeNode::getRootChild(fontDataAt(0), pageNumber);
-    m_fontFallbackList->setPageNode(pageNumber, node);
-  }
-  RELEASE_ASSERT(node);  // Diagnosing crbug.com/446566 crash bug.
-
-  GlyphPage* page = 0;
-  if (variant == NormalVariant) {
-    // Fastest loop, for the common case (normal variant).
-    while (true) {
-      page = node->page(m_fontDescription.script());
-      if (page) {
-        GlyphData data = page->glyphDataForCharacter(c);
-        if (data.fontData) {
-          if (!data.fontData->platformData().isVerticalAnyUpright() ||
-              data.fontData->isTextOrientationFallback())
-            return data;
-
-          bool isUpright = m_fontDescription.isVerticalUpright(c);
-          if (!isUpright || !Character::isCJKIdeographOrSymbol(c))
-            return glyphDataForNonCJKCharacterWithGlyphOrientation(
-                c, isUpright, data, pageNumber);
-
-          return data;
-        }
-
-        if (node->isSystemFallback())
-          break;
-      }
-
-      // Proceed with the fallback list.
-      node = toGlyphPageTreeNode(node)->getChild(fontDataAt(node->level()),
-                                                 pageNumber);
-      m_fontFallbackList->setPageNode(pageNumber, node);
-    }
-  }
-  if (variant != NormalVariant) {
-    while (true) {
-      page = node->page(m_fontDescription.script());
-      if (page) {
-        GlyphData data = page->glyphDataForCharacter(c);
-        if (data.fontData) {
-          // The variantFontData function should not normally return 0.
-          // But if it does, we will just render the capital letter big.
-          RefPtr<SimpleFontData> variantFontData =
-              data.fontData->variantFontData(m_fontDescription, variant);
-          if (!variantFontData)
-            return data;
-
-          GlyphPageTreeNode* variantNode =
-              GlyphPageTreeNode::getNormalRootChild(variantFontData.get(),
-                                                    pageNumber);
-          GlyphPage* variantPage = variantNode->page();
-          if (variantPage) {
-            GlyphData data = variantPage->glyphDataForCharacter(c);
-            if (data.fontData)
-              return data;
-          }
-
-          // Do not attempt system fallback off the variantFontData. This is the
-          // very unlikely case that a font has the lowercase character but the
-          // small caps font does not have its uppercase version.
-          return variantFontData->missingGlyphData();
-        }
-
-        if (node->isSystemFallback())
-          break;
-      }
-
-      // Proceed with the fallback list.
-      node = toGlyphPageTreeNode(node)->getChild(fontDataAt(node->level()),
-                                                 pageNumber);
-      m_fontFallbackList->setPageNode(pageNumber, node);
-    }
-  }
-
-  ASSERT(page);
-  ASSERT(node->isSystemFallback());
-
-  // System fallback is character-dependent. When we get here, we
-  // know that the character in question isn't in the system fallback
-  // font's glyph page. Try to lazily create it here.
-
-  // FIXME: Unclear if this should normalizeSpaces above 0xFFFF.
-  // Doing so changes fast/text/international/plane2-diffs.html
-  UChar32 characterToRender = c;
-  if (characterToRender <= 0xFFFF)
-    characterToRender = Character::normalizeSpaces(characterToRender);
-
-  const FontData* fontData = fontDataAt(0);
-  if (fontData) {
-    const SimpleFontData* fontDataToSubstitute =
-        fontData->fontDataForCharacter(characterToRender);
-    RefPtr<SimpleFontData> characterFontData =
-        FontCache::fontCache()->fallbackFontForCharacter(
-            m_fontDescription, characterToRender, fontDataToSubstitute);
-    if (characterFontData && variant != NormalVariant) {
-      characterFontData =
-          characterFontData->variantFontData(m_fontDescription, variant);
-    }
-    if (characterFontData) {
-      // Got the fallback glyph and font.
-      unsigned pageNumberForRendering = characterToRender / GlyphPage::size;
-      GlyphPage* fallbackPage =
-          GlyphPageTreeNode::getRootChild(characterFontData.get(),
-                                          pageNumberForRendering)
-              ->page();
-      GlyphData data =
-          fallbackPage && fallbackPage->glyphForCharacter(characterToRender)
-              ? fallbackPage->glyphDataForCharacter(characterToRender)
-              : characterFontData->missingGlyphData();
-      // Cache it so we don't have to do system fallback again next time.
-      if (variant == NormalVariant) {
-        page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
-        data.fontData->setMaxGlyphPageTreeLevel(
-            std::max(data.fontData->maxGlyphPageTreeLevel(), node->level()));
-        if (data.fontData->platformData().isVerticalAnyUpright() &&
-            !data.fontData->isTextOrientationFallback() &&
-            !Character::isCJKIdeographOrSymbol(characterToRender))
-          return glyphDataForNonCJKCharacterWithGlyphOrientation(
-              characterToRender,
-              m_fontDescription.isVerticalUpright(characterToRender), data,
-              pageNumberForRendering);
-      }
-      return data;
-    }
-  }
-
-  // Even system fallback can fail; use the missing glyph in that case.
-  // FIXME: It would be nicer to use the missing glyph from the last resort font
-  // instead.
-  DCHECK(primaryFont());
-  if (!primaryFont())
-    return GlyphData();
-  GlyphData data = primaryFont()->missingGlyphData();
-  if (variant == NormalVariant) {
-    page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
-    data.fontData->setMaxGlyphPageTreeLevel(
-        std::max(data.fontData->maxGlyphPageTreeLevel(), node->level()));
-  }
-  return data;
 }
 
 bool Font::getEmphasisMarkGlyphData(const AtomicString& mark,
@@ -926,86 +641,6 @@ Vector<CharacterRange> Font::individualCharacterRanges(
   // more popular platforms, and to protect users, we are using a CHECK here.
   CHECK_EQ(ranges.size(), run.length());
   return ranges;
-}
-
-float Font::floatWidthForSimpleText(
-    const TextRun& run,
-    HashSet<const SimpleFontData*>* fallbackFonts,
-    FloatRect* glyphBounds) const {
-  SimpleShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds);
-  shaper.advance(run.length());
-  return shaper.runWidthSoFar();
-}
-
-FloatRect Font::selectionRectForSimpleText(const TextRun& run,
-                                           const FloatPoint& point,
-                                           int h,
-                                           int from,
-                                           int to,
-                                           bool accountForGlyphBounds) const {
-  FloatRect bounds;
-  SimpleShaper shaper(this, run, nullptr, nullptr,
-                      accountForGlyphBounds ? &bounds : nullptr);
-  shaper.advance(from);
-  float fromX = shaper.runWidthSoFar();
-  shaper.advance(to);
-  float toX = shaper.runWidthSoFar();
-
-  if (run.rtl()) {
-    shaper.advance(run.length());
-    float totalWidth = shaper.runWidthSoFar();
-    float beforeWidth = fromX;
-    float afterWidth = toX;
-    fromX = totalWidth - afterWidth;
-    toX = totalWidth - beforeWidth;
-  }
-
-  return FloatRect(point.x() + fromX,
-                   accountForGlyphBounds ? bounds.y() : point.y(), toX - fromX,
-                   accountForGlyphBounds ? bounds.maxY() - bounds.y() : h);
-}
-
-int Font::offsetForPositionForSimpleText(const TextRun& run,
-                                         float x,
-                                         bool includePartialGlyphs) const {
-  float delta = x;
-
-  SimpleShaper shaper(this, run);
-  unsigned offset;
-  if (run.rtl()) {
-    delta -= floatWidthForSimpleText(run);
-    while (1) {
-      offset = shaper.currentOffset();
-      float w;
-      if (!shaper.advanceOneCharacter(w))
-        break;
-      delta += w;
-      if (includePartialGlyphs) {
-        if (delta - w / 2 >= 0)
-          break;
-      } else {
-        if (delta >= 0)
-          break;
-      }
-    }
-  } else {
-    while (1) {
-      offset = shaper.currentOffset();
-      float w;
-      if (!shaper.advanceOneCharacter(w))
-        break;
-      delta -= w;
-      if (includePartialGlyphs) {
-        if (delta + w / 2 <= 0)
-          break;
-      } else {
-        if (delta <= 0)
-          break;
-      }
-    }
-  }
-
-  return offset;
 }
 
 bool Font::loadingCustomFonts() const {

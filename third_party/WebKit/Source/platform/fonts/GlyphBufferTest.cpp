@@ -23,14 +23,6 @@ class TestSimpleFontData : public SimpleFontData {
 
  private:
   TestSimpleFontData() : SimpleFontData(nullptr, 10, false, false) {}
-
-  bool fillGlyphPage(GlyphPage* pageToFill,
-                     unsigned offset,
-                     unsigned length,
-                     UChar* buffer,
-                     unsigned bufferLength) const override {
-    return false;
-  }
 };
 
 }  // anonymous namespace

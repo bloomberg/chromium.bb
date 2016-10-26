@@ -33,7 +33,6 @@
 #include "core/paint/InlineTextBoxPainter.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/fonts/shaping/SimpleShaper.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 

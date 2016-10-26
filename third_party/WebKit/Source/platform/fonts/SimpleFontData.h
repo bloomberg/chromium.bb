@@ -30,7 +30,6 @@
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/FontMetrics.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/geometry/FloatRect.h"
@@ -44,6 +43,15 @@
 #endif
 
 namespace blink {
+
+// Holds the glyph index and the corresponding SimpleFontData information for a
+// given
+// character.
+struct GlyphData {
+  GlyphData(Glyph g = 0, const SimpleFontData* f = 0) : glyph(g), fontData(f) {}
+  Glyph glyph;
+  const SimpleFontData* fontData;
+};
 
 class FontDescription;
 
@@ -66,8 +74,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
                                        isTextOrientationFallback,
                                        subpixelAscentDescent));
   }
-
-  ~SimpleFontData() override;
 
   const FontPlatformData& platformData() const { return m_platformData; }
   const OpenTypeVerticalData* verticalData() const {
@@ -153,13 +159,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
   CustomFontData* customFontData() const { return m_customFontData.get(); }
 
-  // Implemented by the platform.
-  virtual bool fillGlyphPage(GlyphPage* pageToFill,
-                             unsigned offset,
-                             unsigned length,
-                             UChar* buffer,
-                             unsigned bufferLength) const;
-
  protected:
   SimpleFontData(const FontPlatformData&,
                  PassRefPtr<CustomFontData> customData,
@@ -200,17 +199,15 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     WTF_MAKE_NONCOPYABLE(DerivedFontData);
 
    public:
-    static std::unique_ptr<DerivedFontData> create(bool forCustomFont);
-    ~DerivedFontData();
+    static std::unique_ptr<DerivedFontData> create();
 
-    bool forCustomFont;
     RefPtr<SimpleFontData> smallCaps;
     RefPtr<SimpleFontData> emphasisMark;
     RefPtr<SimpleFontData> verticalRightOrientation;
     RefPtr<SimpleFontData> uprightOrientation;
 
    private:
-    DerivedFontData(bool custom) : forCustomFont(custom) {}
+    DerivedFontData() {}
   };
 
   mutable std::unique_ptr<DerivedFontData> m_derivedFontData;

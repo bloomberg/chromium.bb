@@ -33,7 +33,6 @@
 #include "SkTypeface.h"
 #include "SkTypes.h"
 #include "platform/fonts/FontDescription.h"
-#include "platform/fonts/GlyphPage.h"
 #include "platform/fonts/VDMXParser.h"
 #include "platform/fonts/skia/SkiaTextMetrics.h"
 #include "platform/geometry/FloatRect.h"
@@ -287,13 +286,6 @@ void SimpleFontData::platformGlyphInit() {
   m_missingGlyphData.glyph = 0;
 }
 
-SimpleFontData::~SimpleFontData() {
-  if (isCustomFont())
-    GlyphPageTreeNode::pruneTreeCustomFontData(this);
-  else
-    GlyphPageTreeNode::pruneTreeFontData(this);
-}
-
 const SimpleFontData* SimpleFontData::fontDataForCharacter(UChar32) const {
   return this;
 }
@@ -313,7 +305,7 @@ bool SimpleFontData::isSegmented() const {
 PassRefPtr<SimpleFontData> SimpleFontData::verticalRightOrientationFontData()
     const {
   if (!m_derivedFontData)
-    m_derivedFontData = DerivedFontData::create(isCustomFont());
+    m_derivedFontData = DerivedFontData::create();
   if (!m_derivedFontData->verticalRightOrientation) {
     FontPlatformData verticalRightPlatformData(m_platformData);
     verticalRightPlatformData.setOrientation(FontOrientation::Horizontal);
@@ -326,7 +318,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::verticalRightOrientationFontData()
 
 PassRefPtr<SimpleFontData> SimpleFontData::uprightOrientationFontData() const {
   if (!m_derivedFontData)
-    m_derivedFontData = DerivedFontData::create(isCustomFont());
+    m_derivedFontData = DerivedFontData::create();
   if (!m_derivedFontData->uprightOrientation)
     m_derivedFontData->uprightOrientation =
         create(m_platformData,
@@ -337,7 +329,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::uprightOrientationFontData() const {
 PassRefPtr<SimpleFontData> SimpleFontData::smallCapsFontData(
     const FontDescription& fontDescription) const {
   if (!m_derivedFontData)
-    m_derivedFontData = DerivedFontData::create(isCustomFont());
+    m_derivedFontData = DerivedFontData::create();
   if (!m_derivedFontData->smallCaps)
     m_derivedFontData->smallCaps =
         createScaledFontData(fontDescription, smallCapsFontSizeMultiplier);
@@ -348,7 +340,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::smallCapsFontData(
 PassRefPtr<SimpleFontData> SimpleFontData::emphasisMarkFontData(
     const FontDescription& fontDescription) const {
   if (!m_derivedFontData)
-    m_derivedFontData = DerivedFontData::create(isCustomFont());
+    m_derivedFontData = DerivedFontData::create();
   if (!m_derivedFontData->emphasisMark)
     m_derivedFontData->emphasisMark =
         createScaledFontData(fontDescription, emphasisMarkFontSizeMultiplier);
@@ -365,22 +357,8 @@ bool SimpleFontData::isTextOrientationFallbackOf(
 }
 
 std::unique_ptr<SimpleFontData::DerivedFontData>
-SimpleFontData::DerivedFontData::create(bool forCustomFont) {
-  return wrapUnique(new DerivedFontData(forCustomFont));
-}
-
-SimpleFontData::DerivedFontData::~DerivedFontData() {
-  if (!forCustomFont)
-    return;
-
-  if (smallCaps)
-    GlyphPageTreeNode::pruneTreeCustomFontData(smallCaps.get());
-  if (emphasisMark)
-    GlyphPageTreeNode::pruneTreeCustomFontData(emphasisMark.get());
-  if (verticalRightOrientation)
-    GlyphPageTreeNode::pruneTreeCustomFontData(verticalRightOrientation.get());
-  if (uprightOrientation)
-    GlyphPageTreeNode::pruneTreeCustomFontData(uprightOrientation.get());
+SimpleFontData::DerivedFontData::create() {
+  return wrapUnique(new DerivedFontData());
 }
 
 PassRefPtr<SimpleFontData> SimpleFontData::createScaledFontData(
@@ -411,37 +389,6 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const {
   static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
 
   return SkiaTextMetrics(&m_paint).getSkiaWidthForGlyph(glyph);
-}
-
-bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill,
-                                   unsigned offset,
-                                   unsigned length,
-                                   UChar* buffer,
-                                   unsigned bufferLength) const {
-  if (U16_IS_LEAD(buffer[bufferLength - 1])) {
-    DLOG(ERROR) << "Last UTF-16 code unit is high-surrogate.";
-    return false;
-  }
-
-  SkTypeface* typeface = platformData().typeface();
-  if (!typeface) {
-    DLOG(ERROR) << "fillGlyphPage called on an empty Skia typeface.";
-    return false;
-  }
-
-  SkAutoSTMalloc<GlyphPage::size, uint16_t> glyphStorage(length);
-  uint16_t* glyphs = glyphStorage.get();
-  typeface->charsToGlyphs(buffer, SkTypeface::kUTF16_Encoding, glyphs, length);
-
-  bool haveGlyphs = false;
-  for (unsigned i = 0; i < length; i++) {
-    if (glyphs[i]) {
-      pageToFill->setGlyphDataForIndex(offset + i, glyphs[i], this);
-      haveGlyphs = true;
-    }
-  }
-
-  return haveGlyphs;
 }
 
 }  // namespace blink
