@@ -14,12 +14,8 @@ import android.media.ThumbnailUtils;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v4.text.BidiFormatter;
-import android.support.v4.view.ViewCompat;
 import android.text.format.DateUtils;
 import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -32,6 +28,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
+import org.chromium.chrome.browser.ntp.ContextMenuHandler;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
@@ -50,19 +47,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * A class that represents the view for a single card snippet.
  */
-public class SnippetArticleViewHolder extends CardViewHolder implements ImpressionTracker.Listener {
+public class SnippetArticleViewHolder
+        extends CardViewHolder implements ImpressionTracker.Listener, ContextMenuHandler.Delegate {
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
             "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab_mobile&sz=%d&alt=404";
-
-    // ContextMenu item ids. These must be unique.
-    private static final int ID_OPEN_IN_NEW_WINDOW = 0;
-    private static final int ID_OPEN_IN_NEW_TAB = 1;
-    private static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
-    private static final int ID_SAVE_FOR_OFFLINE = 3;
-    private static final int ID_REMOVE = 4;
 
     private final NewTabPageManager mNewTabPageManager;
     private final TextView mHeadlineTextView;
@@ -77,59 +68,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     private final boolean mUseFaviconService;
     private final UiConfig mUiConfig;
-
-    /**
-     * Listener for when the context menu is created.
-     */
-    public interface OnCreateContextMenuListener {
-        /** Called when the context menu is created. */
-        void onCreateContextMenu();
-    }
-
-    private static class ContextMenuItemClickListener implements OnMenuItemClickListener {
-        private final SnippetArticle mArticle;
-        private final NewTabPageManager mManager;
-        private final NewTabPageRecyclerView mRecyclerView;
-
-        public ContextMenuItemClickListener(SnippetArticle article,
-                NewTabPageManager newTabPageManager,
-                NewTabPageRecyclerView newTabPageRecyclerView) {
-            mArticle = article;
-            mManager = newTabPageManager;
-            mRecyclerView = newTabPageRecyclerView;
-        }
-
-        @Override
-        public boolean onMenuItemClick(MenuItem item) {
-            // If the user clicks a snippet then immediately long presses they will create a context
-            // menu while the snippet's URL loads in the background. This means that when they press
-            // an item on context menu the NTP will not actually be open. We add this check here to
-            // prevent taking any action if the user has already left the NTP.
-            // https://crbug.com/640468.
-            // TODO(peconn): Instead, close the context menu when a snippet is clicked.
-            if (!ViewCompat.isAttachedToWindow(mRecyclerView)) return true;
-
-            switch (item.getItemId()) {
-                case ID_OPEN_IN_NEW_WINDOW:
-                    mManager.openSnippet(WindowOpenDisposition.NEW_WINDOW, mArticle);
-                    return true;
-                case ID_OPEN_IN_NEW_TAB:
-                    mManager.openSnippet(WindowOpenDisposition.NEW_FOREGROUND_TAB, mArticle);
-                    return true;
-                case ID_OPEN_IN_INCOGNITO_TAB:
-                    mManager.openSnippet(WindowOpenDisposition.OFF_THE_RECORD, mArticle);
-                    return true;
-                case ID_SAVE_FOR_OFFLINE:
-                    mManager.openSnippet(WindowOpenDisposition.SAVE_TO_DISK, mArticle);
-                    return true;
-                case ID_REMOVE:
-                    mRecyclerView.dismissItemWithAnimation(mArticle);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    }
 
     /**
      * Constructs a {@link SnippetArticleViewHolder} item used to display snippets.
@@ -175,54 +113,26 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     }
 
     @Override
-    protected void createContextMenu(ContextMenu menu) {
-        OnMenuItemClickListener listener =
-                new ContextMenuItemClickListener(mArticle, mNewTabPageManager, getRecyclerView());
-
-        // Create a context menu akin to the one shown for MostVisitedItems.
-        if (mNewTabPageManager.isOpenInNewWindowEnabled()) {
-            addContextMenuItem(menu, ID_OPEN_IN_NEW_WINDOW,
-                    R.string.contextmenu_open_in_other_window, listener);
-        }
-
-        addContextMenuItem(
-                menu, ID_OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab, listener);
-
-        if (mNewTabPageManager.isOpenInIncognitoEnabled()) {
-            addContextMenuItem(menu, ID_OPEN_IN_INCOGNITO_TAB,
-                    R.string.contextmenu_open_in_incognito_tab, listener);
-        }
-
-        // TODO(peconn): Only show 'Save for Offline' for appropriate snippet types.
-        if (SnippetsConfig.isSaveToOfflineEnabled()
-                && OfflinePageBridge.canSavePage(mArticle.mUrl)) {
-            addContextMenuItem(
-                    menu, ID_SAVE_FOR_OFFLINE, R.string.contextmenu_save_offline, listener);
-        }
-
-        addContextMenuItem(menu, ID_REMOVE, R.string.remove, listener);
-
-        // Disable touch events on the RecyclerView while the context menu is open. This is to
-        // prevent the user long pressing to get the context menu then on the same press scrolling
-        // or swiping to dismiss an item (eg. https://crbug.com/638854, 638555, 636296)
-        final NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView) itemView.getParent();
-        recyclerView.setTouchEnabled(false);
-
-        mNewTabPageManager.addContextMenuCloseCallback(new Callback<Menu>() {
-            @Override
-            public void onResult(Menu result) {
-                recyclerView.setTouchEnabled(true);
-                mNewTabPageManager.removeContextMenuCloseCallback(this);
-            }
-        });
+    public void openItem(int windowDisposition) {
+        mNewTabPageManager.openSnippet(windowDisposition, mArticle);
     }
 
-    /**
-     * Convenience method to reduce multi-line function call to single line.
-     */
-    private static void addContextMenuItem(
-            ContextMenu menu, int id, int resourceId, OnMenuItemClickListener listener) {
-        menu.add(Menu.NONE, id, Menu.NONE, resourceId).setOnMenuItemClickListener(listener);
+    @Override
+    public void removeItem() {
+        getRecyclerView().dismissItemWithAnimation(mArticle);
+    }
+
+    @Override
+    public boolean canBeSavedOffline() {
+        // TODO(peconn): Only show 'Save for Offline' for appropriate snippet types.
+        return SnippetsConfig.isSaveToOfflineEnabled()
+                && OfflinePageBridge.canSavePage(mArticle.mUrl);
+    }
+
+    @Override
+    protected void createContextMenu(ContextMenu menu) {
+        new ContextMenuHandler(mNewTabPageManager, getRecyclerView(), this)
+                .onCreateContextMenu(menu);
     }
 
     /**

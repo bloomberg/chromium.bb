@@ -266,7 +266,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInNewTab() throws InterruptedException {
         invokeContextMenuAndOpenInANewTab(mMostVisitedLayout.getChildAt(0),
-                NewTabPage.ID_OPEN_IN_NEW_TAB, false, mFakeMostVisitedUrls[0]);
+                ContextMenuHandler.ID_OPEN_IN_NEW_TAB, false, mFakeMostVisitedUrls[0]);
     }
 
     /**
@@ -276,7 +276,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInIncognitoTab() throws InterruptedException {
         invokeContextMenuAndOpenInANewTab(mMostVisitedLayout.getChildAt(0),
-                NewTabPage.ID_OPEN_IN_INCOGNITO_TAB, true, mFakeMostVisitedUrls[0]);
+                ContextMenuHandler.ID_OPEN_IN_INCOGNITO_TAB, true, mFakeMostVisitedUrls[0]);
     }
 
     /**
@@ -292,8 +292,8 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         assertEquals(1, views.size());
 
         TestTouchUtils.longClickView(getInstrumentation(), mostVisitedItem);
-        assertTrue(getInstrumentation().invokeContextMenuAction(getActivity(),
-                NewTabPage.ID_REMOVE, 0));
+        assertTrue(getInstrumentation().invokeContextMenuAction(
+                getActivity(), ContextMenuHandler.ID_REMOVE, 0));
 
         assertTrue(mFakeMostVisitedSites.isUrlBlacklisted(mFakeMostVisitedUrls[0]));
     }

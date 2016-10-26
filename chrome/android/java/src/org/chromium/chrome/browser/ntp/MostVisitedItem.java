@@ -6,47 +6,31 @@ package org.chromium.chrome.browser.ntp;
 
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
+
+import org.chromium.chrome.browser.ntp.ContextMenuHandler.TouchDisableableView;
+import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 /**
  * Displays the title, thumbnail, and favicon of a most visited page. The item can be clicked, or
  * long-pressed to trigger a context menu with options to "open in new tab", "open in incognito
  * tab", or "remove".
  */
-public class MostVisitedItem implements OnCreateContextMenuListener,
-        MenuItem.OnMenuItemClickListener, OnClickListener {
-
+public class MostVisitedItem
+        implements OnCreateContextMenuListener, OnClickListener, ContextMenuHandler.Delegate {
     /**
      * Interface for an object that handles callbacks from a MostVisitedItem.
      */
     public interface MostVisitedItemManager {
-        /**
-         * Navigates to a most visited page in the existing tab.
-         * @param item The most visited item to open.
-         */
-        void openMostVisitedItem(MostVisitedItem item);
+        void removeMostVisitedItem(MostVisitedItem item);
 
-        /**
-         * Allows the manager to add context menu items for a given MostVisitedItem.
-         * @param menu The context menu that should be used to add menu items.
-         * @param listener Listener that should get the callbacks for context menu selections.
-         */
-        void onCreateContextMenu(ContextMenu menu, OnMenuItemClickListener listener);
-
-        /**
-         * Handles context menu item clicks.
-         * @param menuId Id of the menu item that was selected.
-         * @param item MostVisitedItem that triggered the context menu.
-         * @return Whether a menu item was selected successfully.
-         */
-        boolean onMenuItemClick(int menuId, MostVisitedItem item);
+        void openMostVisitedItem(int windowDisposition, MostVisitedItem item);
     }
 
-    private MostVisitedItemManager mManager;
+    private NewTabPageManager mManager;
     private String mTitle;
     private String mUrl;
     private String mWhitelistIconPath;
@@ -55,6 +39,7 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
     private int mTileType;
     private int mSource;
     private View mView;
+    private TouchDisableableView mWrapperView;
 
     /**
      * Constructs a MostVisitedItem with the given manager, title, URL, whitelist icon path, index,
@@ -67,9 +52,9 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      *                          visited item. Empty otherwise.
      * @param offlineAvailable Whether there is an offline copy of the URL available.
      * @param index The index of this item in the list of most visited items.
-     * @param source The {@link MostVisitedSource} that generated this item.
+     * @param source The {@code MostVisitedSource} that generated this item.
      */
-    public MostVisitedItem(MostVisitedItemManager manager, String title, String url,
+    public MostVisitedItem(NewTabPageManager manager, String title, String url,
             String whitelistIconPath, boolean offlineAvailable, int index, int source) {
         mManager = manager;
         mTitle = title;
@@ -85,9 +70,10 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      * Sets the view that will display this item. MostVisitedItem will handle clicks on the view.
      * This should be called exactly once.
      */
-    public void initView(View view) {
+    public void initView(View view, TouchDisableableView parent) {
         assert mView == null;
         mView = view;
+        mWrapperView = parent;
         mView.setOnClickListener(this);
         mView.setOnCreateContextMenuListener(this);
     }
@@ -159,7 +145,7 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
 
     /**
      * @return The source of this item.  Used for metrics tracking. Valid values are listed in
-     * {@link MostVisitedSource}.
+     * {@code MostVisitedSource}.
      */
     public int getSource() {
         return mSource;
@@ -167,16 +153,27 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        mManager.onCreateContextMenu(menu, this);
-    }
-
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        return mManager.onMenuItemClick(item.getItemId(), this);
+        new ContextMenuHandler(mManager, mWrapperView, this)
+                .onCreateContextMenu(menu);
     }
 
     @Override
     public void onClick(View v) {
-        mManager.openMostVisitedItem(this);
+        mManager.openMostVisitedItem(WindowOpenDisposition.CURRENT_TAB, MostVisitedItem.this);
+    }
+
+    @Override
+    public void openItem(int windowDisposition) {
+        mManager.openMostVisitedItem(windowDisposition, MostVisitedItem.this);
+    }
+
+    @Override
+    public void removeItem() {
+        mManager.removeMostVisitedItem(MostVisitedItem.this);
+    }
+
+    @Override
+    public boolean canBeSavedOffline() {
+        return false;
     }
 }

@@ -24,6 +24,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.ContextMenuHandler.TouchDisableableView;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -36,7 +37,7 @@ import java.util.Map;
  * Simple wrapper on top of a RecyclerView that will acquire focus when tapped.  Ensures the
  * New Tab page receives focus when clicked.
  */
-public class NewTabPageRecyclerView extends RecyclerView {
+public class NewTabPageRecyclerView extends RecyclerView implements TouchDisableableView {
     private static final String TAG = "NtpCards";
     private static final Interpolator DISMISS_INTERPOLATOR = new FastOutLinearInInterpolator();
     private static final int DISMISS_ANIMATION_TIME_MS = 300;
@@ -105,8 +106,14 @@ public class NewTabPageRecyclerView extends RecyclerView {
         return super.onInterceptTouchEvent(ev);
     }
 
+    @Override
     public void setTouchEnabled(boolean enabled) {
         mTouchEnabled = enabled;
+    }
+
+    @Override
+    public View asView() {
+        return this;
     }
 
     @Override

@@ -1020,7 +1020,7 @@ public class NewTabPageView extends FrameLayout
                         offlineAvailable, i, source);
                 View view =
                         mMostVisitedDesign.createMostVisitedItemView(inflater, item, isInitialLoad);
-                item.initView(view);
+                item.initView(view, mUseCardsUi ? mRecyclerView : mScrollView);
             }
 
             mMostVisitedItems[i] = item;

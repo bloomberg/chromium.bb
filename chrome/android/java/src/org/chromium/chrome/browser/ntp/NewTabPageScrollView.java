@@ -19,14 +19,18 @@ import android.widget.ScrollView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.ContextMenuHandler.TouchDisableableView;
 import org.chromium.chrome.browser.widget.FadingShadow;
 
 /**
  * Simple wrapper on top of a ScrollView that will acquire focus when tapped.  Ensures the
  * New Tab page receives focus when clicked.
  */
-public class NewTabPageScrollView extends ScrollView {
+public class NewTabPageScrollView extends ScrollView implements TouchDisableableView {
     private static final String TAG = "NewTabPageScrollView";
+
+    /** Whether the ScrollView and its children should react to touch events. */
+    private boolean mTouchEnabled = true;
 
     /**
      * Listener for scroll changes.
@@ -94,12 +98,25 @@ public class NewTabPageScrollView extends ScrollView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         mGestureDetector.onTouchEvent(ev);
+        if (!mTouchEnabled) return true;
         return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
+    public void setTouchEnabled(boolean enabled) {
+        mTouchEnabled = enabled;
+    }
+
+    @Override
+    public View asView() {
+        return this;
     }
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent ev) {
+        if (!mTouchEnabled) return false;
+
         // Action down would already have been handled in onInterceptTouchEvent
         if (ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
             mGestureDetector.onTouchEvent(ev);

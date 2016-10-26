@@ -7,9 +7,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.BitmapFactory;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.TypedValue;
-import android.view.ContextMenu;
 import android.view.Menu;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -217,17 +215,12 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void openMostVisitedItem(MostVisitedItem item) {
+        public void removeMostVisitedItem(MostVisitedItem item) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void onCreateContextMenu(ContextMenu menu, OnMenuItemClickListener listener) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean onMenuItemClick(int menuId, MostVisitedItem item) {
+        public void openMostVisitedItem(int windowDisposition, MostVisitedItem item) {
             throw new UnsupportedOperationException();
         }
 

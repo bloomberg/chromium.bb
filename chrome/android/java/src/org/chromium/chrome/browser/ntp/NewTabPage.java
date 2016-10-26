@@ -15,10 +15,8 @@ import android.os.SystemClock;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -93,12 +91,6 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public class NewTabPage
         implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
     private static final String TAG = "NewTabPage";
-
-    // MostVisitedItem Context menu item IDs.
-    static final int ID_OPEN_IN_NEW_WINDOW = 0;
-    static final int ID_OPEN_IN_NEW_TAB = 1;
-    static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
-    static final int ID_REMOVE = 3;
 
     // UMA enum constants. CTA means the "click-to-action" icon.
     private static final String LOGO_SHOWN_UMA_NAME = "NewTabPage.LogoShown";
@@ -263,13 +255,28 @@ public class NewTabPage
         }
 
         @Override
-        public void openMostVisitedItem(MostVisitedItem item) {
+        public void openMostVisitedItem(int windowDisposition, MostVisitedItem item) {
             if (mIsDestroyed) return;
-            recordOpenedMostVisitedItem(item);
+
             String url = item.getUrl();
-            if (!switchToExistingTab(url)) {
-                openUrlMostVisited(WindowOpenDisposition.CURRENT_TAB, url);
+
+            // TODO(treib): Should we call recordOpenedMostVisitedItem here?
+            if (windowDisposition != WindowOpenDisposition.NEW_WINDOW) {
+                recordOpenedMostVisitedItem(item);
             }
+
+            if (windowDisposition == WindowOpenDisposition.CURRENT_TAB
+                    && switchToExistingTab(url)) {
+                return;
+            }
+
+            openUrl(windowDisposition, new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
+        }
+
+        @Override
+        public void removeMostVisitedItem(MostVisitedItem item) {
+            mMostVisitedSites.addBlacklistedUrl(item.getUrl());
+            showMostVisitedItemRemovedSnackbar(item.getUrl());
         }
 
         @Override
@@ -354,11 +361,6 @@ public class NewTabPage
             openUrl(windowOpenDisposition, loadUrlParams);
         }
 
-        // TODO(mastiz): Merge with openMostVisitedItem().
-        private void openUrlMostVisited(int windowOpenDisposition, String url) {
-            openUrl(windowOpenDisposition, new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
-        }
-
         private void openUrl(int windowOpenDisposition, LoadUrlParams loadUrlParams) {
             assert !mIsDestroyed;
             switch (windowOpenDisposition) {
@@ -379,50 +381,6 @@ public class NewTabPage
                     break;
                 default:
                     assert false;
-            }
-        }
-
-        @Override
-        public void onCreateContextMenu(ContextMenu menu, OnMenuItemClickListener listener) {
-            if (mIsDestroyed) return;
-            if (isOpenInNewWindowEnabled()) {
-                menu.add(Menu.NONE, ID_OPEN_IN_NEW_WINDOW, Menu.NONE,
-                        R.string.contextmenu_open_in_other_window)
-                        .setOnMenuItemClickListener(listener);
-            }
-            menu.add(Menu.NONE, ID_OPEN_IN_NEW_TAB, Menu.NONE, R.string.contextmenu_open_in_new_tab)
-                    .setOnMenuItemClickListener(listener);
-            if (isOpenInIncognitoEnabled()) {
-                menu.add(Menu.NONE, ID_OPEN_IN_INCOGNITO_TAB, Menu.NONE,
-                        R.string.contextmenu_open_in_incognito_tab).setOnMenuItemClickListener(
-                        listener);
-            }
-            menu.add(Menu.NONE, ID_REMOVE, Menu.NONE, R.string.remove)
-                    .setOnMenuItemClickListener(listener);
-        }
-
-        @Override
-        public boolean onMenuItemClick(int menuId, MostVisitedItem item) {
-            if (mIsDestroyed) return false;
-            switch (menuId) {
-                case ID_OPEN_IN_NEW_WINDOW:
-                    // TODO(treib): Should we call recordOpenedMostVisitedItem here?
-                    openUrlMostVisited(WindowOpenDisposition.NEW_WINDOW, item.getUrl());
-                    return true;
-                case ID_OPEN_IN_NEW_TAB:
-                    recordOpenedMostVisitedItem(item);
-                    openUrlMostVisited(WindowOpenDisposition.NEW_FOREGROUND_TAB, item.getUrl());
-                    return true;
-                case ID_OPEN_IN_INCOGNITO_TAB:
-                    recordOpenedMostVisitedItem(item);
-                    openUrlMostVisited(WindowOpenDisposition.OFF_THE_RECORD, item.getUrl());
-                    return true;
-                case ID_REMOVE:
-                    mMostVisitedSites.addBlacklistedUrl(item.getUrl());
-                    showMostVisitedItemRemovedSnackbar(item.getUrl());
-                    return true;
-                default:
-                    return false;
             }
         }
 

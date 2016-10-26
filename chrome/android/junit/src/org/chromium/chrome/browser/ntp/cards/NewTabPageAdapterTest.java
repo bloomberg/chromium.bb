@@ -20,9 +20,7 @@ import static org.mockito.Mockito.when;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
-import android.view.ContextMenu;
 import android.view.Menu;
-import android.view.MenuItem.OnMenuItemClickListener;
 
 import org.junit.After;
 import org.junit.Before;
@@ -970,17 +968,13 @@ public class NewTabPageAdapterTest {
         }
 
         @Override
-        public void openMostVisitedItem(MostVisitedItem item) {
+        public void removeMostVisitedItem(MostVisitedItem item) {
             throw new UnsupportedOperationException();
+
         }
 
         @Override
-        public void onCreateContextMenu(ContextMenu menu, OnMenuItemClickListener listener) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean onMenuItemClick(int menuId, MostVisitedItem item) {
+        public void openMostVisitedItem(int windowDisposition, MostVisitedItem item) {
             throw new UnsupportedOperationException();
         }
 
