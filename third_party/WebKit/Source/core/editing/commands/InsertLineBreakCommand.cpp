@@ -229,8 +229,9 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
     // So, this next call sets the endingSelection() to a caret just after the
     // line break that we inserted, or just before it if it's at the end of a
     // block.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(endingSelection().visibleEnd());
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(endingSelection().end())
+                           .build());
   }
 
   rebalanceWhitespace();

@@ -350,7 +350,9 @@ void IndentOutdentCommand::outdentRegion(
         builder.collapse(originalSelectionEnd);
       setEndingSelection(createVisibleSelection(builder.build()));
     } else {
-      setEndingSelection(endOfCurrentParagraph);
+      setEndingSelection(SelectionInDOMTree::Builder()
+                             .collapse(endOfCurrentParagraph.deepEquivalent())
+                             .build());
     }
 
     outdentParagraph(editingState);

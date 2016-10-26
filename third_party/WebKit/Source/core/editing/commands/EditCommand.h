@@ -72,7 +72,6 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
   // TODO(yosin): We should get rid of overloads of |setEndingSelection()|
   // except for taking |SelectionInDOMTree|.
   void setEndingSelection(const VisibleSelection&);
-  void setEndingSelection(const VisiblePosition&);
 
   // TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
   // |VisiblePosition::characterAfter()| and

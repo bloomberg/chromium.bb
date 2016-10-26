@@ -1207,10 +1207,14 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
       VisiblePosition startAfterDelete = endingSelection().visibleStart();
       if (isEndOfParagraph(startAfterDelete) &&
           !isStartOfParagraph(startAfterDelete) &&
-          !isEndOfEditableOrNonEditableContent(startAfterDelete))
-        setEndingSelection(nextPositionOf(startAfterDelete));
-      else
+          !isEndOfEditableOrNonEditableContent(startAfterDelete)) {
+        setEndingSelection(
+            SelectionInDOMTree::Builder()
+                .collapse(nextPositionOf(startAfterDelete).deepEquivalent())
+                .build());
+      } else {
         insertParagraphSeparator(editingState);
+      }
       if (editingState->isAborted())
         return;
     }
@@ -1221,7 +1225,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
           nextPositionOf(visibleStart, CannotCrossEditingBoundary);
       if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) &&
           next.isNotNull()) {
-        setEndingSelection(next);
+        setEndingSelection(SelectionInDOMTree::Builder()
+                               .collapse(next.deepEquivalent())
+                               .build());
       } else {
         insertParagraphSeparator(editingState);
         if (editingState->isAborted())
@@ -1250,7 +1256,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
       if (editingState->isAborted())
         return;
       document().updateStyleAndLayoutIgnorePendingStylesheets();
-      setEndingSelection(previousPositionOf(endingSelection().visibleStart()));
+      setEndingSelection(
+          SelectionInDOMTree::Builder()
+              .collapse(previousPositionOf(endingSelection().visibleStart())
+                            .deepEquivalent())
+              .build());
     }
   }
 
@@ -1627,14 +1637,17 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
           if (editingState->isAborted())
             return;
         }
-        document().updateStyleAndLayoutIgnorePendingStylesheets();
         setEndingSelection(
-            VisiblePosition::afterNode(insertedNodes.lastLeafInserted()));
+            SelectionInDOMTree::Builder()
+                .collapse(Position::afterNode(insertedNodes.lastLeafInserted()))
+                .build());
         // Select up to the paragraph separator that was added.
         lastPositionToSelect =
             endingSelection().visibleStart().deepEquivalent();
       } else if (!isStartOfParagraph(endOfInsertedContent)) {
-        setEndingSelection(endOfInsertedContent);
+        setEndingSelection(SelectionInDOMTree::Builder()
+                               .collapse(endOfInsertedContent.deepEquivalent())
+                               .build());
         Element* enclosingBlockElement =
             enclosingBlock(endOfInsertedContent.deepEquivalent().anchorNode());
         if (isListItem(enclosingBlockElement)) {
@@ -1642,8 +1655,10 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
           insertNodeAfter(newListItem, enclosingBlockElement, editingState);
           if (editingState->isAborted())
             return;
-          document().updateStyleAndLayoutIgnorePendingStylesheets();
-          setEndingSelection(VisiblePosition::firstPositionInNode(newListItem));
+          setEndingSelection(
+              SelectionInDOMTree::Builder()
+                  .collapse(Position::firstPositionInNode(newListItem))
+                  .build());
         } else {
           // Use a default paragraph element (a plain div) for the empty
           // paragraph, using the last paragraph block's style seems to annoy

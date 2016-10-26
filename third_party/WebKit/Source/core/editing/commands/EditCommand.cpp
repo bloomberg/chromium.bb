@@ -94,18 +94,6 @@ void EditCommand::setEndingSelection(const VisibleSelection& selection) {
   }
 }
 
-// TODO(yosin): We will make |SelectionInDOMTree| version of
-// |setEndingSelection()| as primary function instead of wrapper.
-void EditCommand::setEndingSelection(const VisiblePosition& position) {
-  if (position.isNull()) {
-    setEndingSelection(SelectionInDOMTree());
-    return;
-  }
-  setEndingSelection(SelectionInDOMTree::Builder()
-                         .collapse(position.toPositionWithAffinity())
-                         .build());
-}
-
 bool EditCommand::isRenderedCharacter(const Position& position) {
   if (position.isNull())
     return false;

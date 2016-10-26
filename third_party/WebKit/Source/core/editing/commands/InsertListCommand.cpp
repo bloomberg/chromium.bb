@@ -216,7 +216,10 @@ void InsertListCommand::doApply(EditingState* editingState) {
         // and use it as the end of the new selection.
         if (!startOfLastParagraph.isConnected())
           return;
-        setEndingSelection(startOfCurrentParagraph);
+        setEndingSelection(
+            SelectionInDOMTree::Builder()
+                .collapse(startOfCurrentParagraph.deepEquivalent())
+                .build());
 
         // Save and restore visibleEndOfSelection and startOfLastParagraph when
         // necessary since moveParagraph and movePragraphWithClones can remove
@@ -253,7 +256,9 @@ void InsertListCommand::doApply(EditingState* editingState) {
         startOfCurrentParagraph =
             startOfNextParagraph(endingSelection().visibleStart());
       }
-      setEndingSelection(visibleEndOfSelection);
+      setEndingSelection(SelectionInDOMTree::Builder()
+                             .collapse(visibleEndOfSelection.deepEquivalent())
+                             .build());
     }
     doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection,
                               editingState);
@@ -411,8 +416,9 @@ bool InsertListCommand::doApplyForSingleParagraph(
         currentSelection.setEnd(newList, Position::lastOffsetInNode(newList),
                                 IGNORE_EXCEPTION);
 
-      document().updateStyleAndLayoutIgnorePendingStylesheets();
-      setEndingSelection(VisiblePosition::firstPositionInNode(newList));
+      setEndingSelection(SelectionInDOMTree::Builder()
+                             .collapse(Position::firstPositionInNode(newList))
+                             .build());
 
       return true;
     }
