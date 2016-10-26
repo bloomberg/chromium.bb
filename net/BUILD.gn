@@ -1195,34 +1195,6 @@ source_set("simple_quic_tools") {
   ]
 }
 
-action_foreach("stale_while_revalidate_experiment_domains_dafsa") {
-  script = "//net/tools/dafsa/make_dafsa.py"
-  sources = [
-    "base/stale_while_revalidate_experiment_domains.gperf",
-  ]
-  outputs = [
-    "${target_gen_dir}/base/{{source_name_part}}-inc.cc",
-  ]
-  args = [
-    "{{source}}",
-    rebase_path("${target_gen_dir}/base/{{source_name_part}}-inc.cc",
-                root_build_dir),
-  ]
-}
-
-source_set("stale_while_revalidate_experiment_domains") {
-  sources = [
-    "base/stale_while_revalidate_experiment_domains.cc",
-    "base/stale_while_revalidate_experiment_domains.h",
-  ]
-  deps = [
-    ":net",
-    ":stale_while_revalidate_experiment_domains_dafsa",
-    "//base",
-  ]
-  configs += net_configs
-}
-
 if (!is_ios) {
   executable("quic_client") {
     sources = [
@@ -1317,7 +1289,6 @@ test("net_unittests") {
     ":extras",
     ":net",
     ":simple_quic_tools",
-    ":stale_while_revalidate_experiment_domains",
     ":test_support",
     "//base",
     "//base:i18n",
