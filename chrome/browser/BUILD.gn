@@ -3506,7 +3506,9 @@ split_static_library("browser") {
       "themes/theme_service_aurax11.h",
       "web_applications/web_app_linux.cc",
     ]
-    if (!use_ozone) {
+
+    # libsecret hard depends on GLib.
+    if (use_glib) {
       sources += [
         "password_manager/native_backend_libsecret.cc",
         "password_manager/native_backend_libsecret.h",
