@@ -727,6 +727,10 @@ test("media_unittests") {
       "//ui/android:ui_java",
     ]
   }
+
+  if (enable_media_remoting) {
+    deps += [ "//media/remoting:media_remoting_tests" ]
+  }
 }
 
 test("media_perftests") {

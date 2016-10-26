@@ -16,6 +16,7 @@ source_set("run_all_unittests") {
     "//base/test:test_support",
     "//media",
     "//media/base:test_support",
+    "//mojo/edk/system",
   ]
 
   if (is_android) {

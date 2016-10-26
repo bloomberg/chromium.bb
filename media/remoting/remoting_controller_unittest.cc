@@ -103,11 +103,13 @@ class FakeRemoterFactory final : public mojom::RemoterFactory {
 };
 
 std::unique_ptr<RemotingController> CreateRemotingController(
-    mojom::RemoterFactory* remoter_factory) {
+    bool start_will_fail) {
   mojom::RemotingSourcePtr remoting_source;
   mojom::RemotingSourceRequest remoting_source_request =
       mojo::GetProxy(&remoting_source);
   mojom::RemoterPtr remoter;
+  std::unique_ptr<mojom::RemoterFactory> remoter_factory =
+      base::MakeUnique<FakeRemoterFactory>(start_will_fail);
   remoter_factory->Create(std::move(remoting_source), mojo::GetProxy(&remoter));
   std::unique_ptr<RemotingController> remoting_controller =
       base::MakeUnique<RemotingController>(std::move(remoting_source_request),
@@ -120,8 +122,7 @@ std::unique_ptr<RemotingController> CreateRemotingController(
 class RemotingControllerTest : public ::testing::Test {
  public:
   RemotingControllerTest()
-      : remoting_controller_(
-            CreateRemotingController(new FakeRemoterFactory(false))),
+      : remoting_controller_(CreateRemotingController(false)),
         is_remoting_(false) {
     remoting_controller_->SetSwitchRendererCallback(base::Bind(
         &RemotingControllerTest::ToggleRenderer, base::Unretained(this)));
@@ -159,7 +160,7 @@ TEST_F(RemotingControllerTest, ToggleRenderer) {
 
 TEST_F(RemotingControllerTest, StartFailed) {
   EXPECT_FALSE(is_remoting_);
-  remoting_controller_ = CreateRemotingController(new FakeRemoterFactory(true));
+  remoting_controller_ = CreateRemotingController(true);
   remoting_controller_->SetSwitchRendererCallback(base::Bind(
       &RemotingControllerTest::ToggleRenderer, base::Unretained(this)));
   remoting_controller_->OnSinkAvailable();

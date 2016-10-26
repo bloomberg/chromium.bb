@@ -594,10 +594,6 @@
     "label": "//media/blink:media_blink_unittests",
     "type": "windowed_test_launcher",
   },
-  "media_remoting_unittests": {
-    "label": "//media/remoting:media_remoting_unittests",
-    "type": "console_test_launcher",
-  },
   "midi_unittests": {
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",

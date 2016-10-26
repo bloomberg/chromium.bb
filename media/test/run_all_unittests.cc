@@ -11,6 +11,7 @@
 #include "media/base/fake_media_resources.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "mojo/edk/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -59,6 +60,7 @@ void TestSuiteNoAtExit::Initialize() {
 }
 
 int main(int argc, char** argv) {
+  mojo::edk::Init();
   TestSuiteNoAtExit test_suite(argc, argv);
 
   return base::LaunchUnitTests(
