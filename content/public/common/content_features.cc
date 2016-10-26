@@ -141,9 +141,13 @@ const base::Feature kPointerEvents{"PointerEvent",
 const base::Feature kPointerEventV1SpecCapturing{
     "PointerEventV1SpecCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// RAF aligned input events support.
-const base::Feature kRafAlignedInputEvents{"RafAlignedInput",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// RAF aligned mouse input events support.
+const base::Feature kRafAlignedMouseInputEvents{
+    "RafAlignedMouseInput", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// RAF aligned touch input events support.
+const base::Feature kRafAlignedTouchInputEvents{
+    "RafAlignedTouchInput", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.

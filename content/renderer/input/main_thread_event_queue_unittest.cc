@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
@@ -37,21 +38,30 @@ bool operator==(const WebTouchEvent& lhs, const WebTouchEvent& rhs) {
 namespace content {
 namespace {
 
+const unsigned kRafAlignedEnabledTouch = 1;
+const unsigned kRafAlignedEnabledMouse = 1 << 1;
+
 const int kTestRoutingID = 13;
 const char* kCoalescedCountHistogram =
     "Event.MainThreadEventQueue.CoalescedCount";
 
 }  // namespace
 
-class MainThreadEventQueueTest : public testing::TestWithParam<bool>,
+class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
                                  public MainThreadEventQueueClient {
  public:
   MainThreadEventQueueTest()
       : main_task_runner_(new base::TestSimpleTaskRunner()),
-        handle_raf_aligned_input_(GetParam()),
+        raf_aligned_input_setting_(GetParam()),
         needs_main_frame_(false) {
-    if (handle_raf_aligned_input_)
-      feature_list_.InitAndEnableFeature(features::kRafAlignedInputEvents);
+    std::vector<std::string> features;
+    if (raf_aligned_input_setting_ & kRafAlignedEnabledTouch)
+      features.push_back(features::kRafAlignedTouchInputEvents.name);
+    if (raf_aligned_input_setting_ & kRafAlignedEnabledMouse)
+      features.push_back(features::kRafAlignedMouseInputEvents.name);
+
+    feature_list_.InitFromCommandLine(base::JoinString(features, ","),
+                                      std::string());
   }
 
   void SetUp() override {
@@ -120,7 +130,7 @@ class MainThreadEventQueueTest : public testing::TestWithParam<bool>,
   scoped_refptr<MainThreadEventQueue> queue_;
   std::vector<ui::ScopedWebInputEvent> handled_events_;
   std::vector<uint32_t> additional_acked_events_;
-  bool handle_raf_aligned_input_;
+  int raf_aligned_input_setting_;
   bool needs_main_frame_;
 };
 
@@ -141,7 +151,8 @@ TEST_P(MainThreadEventQueueTest, NonBlockingWheel) {
     HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 
   EXPECT_EQ(2u, event_queue().size());
-  EXPECT_EQ(handle_raf_aligned_input_, !main_task_runner_->HasPendingTask());
+  EXPECT_EQ((raf_aligned_input_setting_ & kRafAlignedEnabledMouse) == 0,
+            main_task_runner_->HasPendingTask());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
@@ -281,7 +292,9 @@ TEST_P(MainThreadEventQueueTest, InterleavedEvents) {
   HandleEvent(kTouchEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 
   EXPECT_EQ(2u, event_queue().size());
-  EXPECT_EQ(handle_raf_aligned_input_, !main_task_runner_->HasPendingTask());
+  EXPECT_EQ(raf_aligned_input_setting_ !=
+                (kRafAlignedEnabledMouse | kRafAlignedEnabledTouch),
+            main_task_runner_->HasPendingTask());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
@@ -314,7 +327,7 @@ TEST_P(MainThreadEventQueueTest, InterleavedEvents) {
 
 TEST_P(MainThreadEventQueueTest, RafAlignedMouseInput) {
   // Don't run the test when we aren't supporting rAF aligned input.
-  if (!handle_raf_aligned_input_)
+  if ((raf_aligned_input_setting_ & kRafAlignedEnabledMouse) == 0)
     return;
 
   WebMouseEvent mouseDown =
@@ -369,7 +382,7 @@ TEST_P(MainThreadEventQueueTest, RafAlignedMouseInput) {
 
 TEST_P(MainThreadEventQueueTest, RafAlignedTouchInput) {
   // Don't run the test when we aren't supporting rAF aligned input.
-  if (!handle_raf_aligned_input_)
+  if ((raf_aligned_input_setting_ & kRafAlignedEnabledTouch) == 0)
     return;
 
   SyntheticWebTouchEvent kEvents[3];
@@ -444,8 +457,10 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_EQ(kEvents[0], *last_touch_event);
 
   kEvents[0].MovePoint(0, 30, 30);
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
   HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(handle_raf_aligned_input_, !main_task_runner_->HasPendingTask());
+  EXPECT_EQ((raf_aligned_input_setting_ & kRafAlignedEnabledTouch) == 0,
+            main_task_runner_->HasPendingTask());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
@@ -562,8 +577,10 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
 
 // The boolean parameterized test varies whether rAF aligned input
 // is enabled or not.
-INSTANTIATE_TEST_CASE_P(MainThreadEventQueueTests,
-                        MainThreadEventQueueTest,
-                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    MainThreadEventQueueTests,
+    MainThreadEventQueueTest,
+    testing::Range(0u,
+                   (kRafAlignedEnabledTouch | kRafAlignedEnabledMouse) + 1));
 
 }  // namespace content

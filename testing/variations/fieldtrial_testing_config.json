@@ -1456,7 +1456,7 @@
             ]
         }
     ],
-    "RafAlignedInput": [
+    "RafAlignedMouseInput": [
         {
             "platforms": [
                 "android",
@@ -1469,7 +1469,26 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "RafAlignedInput"
+                        "RafAlignedMouseInput"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RafAlignedTouchInput": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RafAlignedTouchInput"
                     ]
                 }
             ]
