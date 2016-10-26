@@ -12,8 +12,7 @@ promise_test(t => {
     }))
     .then(device => {
       return device.gatt.connect()
-        .then(gattServer => gattServer.getPrimaryService(request_disconnection_service_uuid))
-        .then(service => service.getCharacteristic(request_disconnection_characteristic_uuid))
+        .then(gattServer => get_request_disconnection(gattServer))
         .then(requestDisconnection => {
           // 1. Attach a listener that tries to reconnect.
           let reconnection = new Promise(resolve => {
@@ -24,12 +23,12 @@ promise_test(t => {
             device.addEventListener('gattserverdisconnected', wrapper);
           });
           // 2. Disconnect.
-          requestDisconnection.writeValue(new Uint8Array([0]));
+          requestDisconnection();
           return reconnection.then(() => {
             // Resolves after disconnected event.
             let disconnected = eventPromise(device, 'gattserverdisconnected');
             // 3. Disconnect after reconnecting.
-            requestDisconnection.writeValue(new Uint8Array([0]));
+            requestDisconnection();
             return disconnected;
           });
         });

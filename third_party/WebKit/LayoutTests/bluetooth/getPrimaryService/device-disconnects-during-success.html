@@ -12,10 +12,9 @@ promise_test(t => {
     }))
     .then(device => {
       return device.gatt.connect()
-        .then(gattServer => gattServer.getPrimaryService(request_disconnection_service_uuid))
-        .then(service => service.getCharacteristic(request_disconnection_characteristic_uuid))
+        .then(gattServer => get_request_disconnection(gattServer))
         .then(requestDisconnection => {
-          requestDisconnection.writeValue(new Uint8Array([0]));
+          requestDisconnection();
           return assert_promise_rejects_with_message(
             device.gatt.getPrimaryService('heart_rate'),
             new DOMException('GATT Server disconnected while retrieving services.',

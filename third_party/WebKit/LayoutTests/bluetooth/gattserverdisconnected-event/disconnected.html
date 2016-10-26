@@ -12,12 +12,11 @@
     }))
     .then(device => {
       return device.gatt.connect()
-        .then(gattServer => gattServer.getPrimaryService(request_disconnection_service_uuid))
-        .then(service => service.getCharacteristic(request_disconnection_characteristic_uuid))
+        .then(gattServer => get_request_disconnection(gattServer))
         .then(requestDisconnection => {
           // This promise hangs unless gattserverdisconnected is fired.
           let disconnected = eventPromise(device, 'gattserverdisconnected');
-          return Promise.all([requestDisconnection.writeValue(new Uint8Array([0])),
+          return Promise.all([requestDisconnection(),
                               disconnected]);
         }).then(([, disconnected]) => assert_true(disconnected.bubbles));
     });

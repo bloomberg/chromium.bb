@@ -13,12 +13,9 @@ promise_test(() => {
         .getPrimaryService(errorUUID(0xA0))
         .then(es => es.getCharacteristic(errorUUID(0xA1)))
         .then(ec => error_characteristic = ec)
-        .then(() => gattServer.getPrimaryService(
-          request_disconnection_service_uuid))
-        .then(service => service.getCharacteristic(
-          request_disconnection_characteristic_uuid))
+        .then(() => get_request_disconnection(gattServer))
         .then(requestDisconnection => {
-          requestDisconnection.writeValue(new Uint8Array([0]));
+          requestDisconnection();
           return assert_promise_rejects_with_message(
             error_characteristic.CALLS([readValue()]),
             new DOMException(

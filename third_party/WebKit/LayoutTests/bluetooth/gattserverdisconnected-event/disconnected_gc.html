@@ -11,10 +11,9 @@
       optionalServices: [request_disconnection_service_uuid]
     }))
     .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService(request_disconnection_service_uuid))
-    .then(service => service.getCharacteristic(request_disconnection_characteristic_uuid))
+    .then(gattServer => get_request_disconnection(gattServer))
     .then(requestDisconnection => {
-      requestDisconnection.writeValue(new Uint8Array([0]));
+      requestDisconnection();
       requestDisconnection = undefined;
       return runGarbageCollection();
       // Wait 50ms after the GC runs for the disconnection event to come back.

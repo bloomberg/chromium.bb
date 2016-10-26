@@ -7,12 +7,8 @@ promise_test(t => {
     }))
     .then(device => {
       return device.gatt.connect()
-        .then(gattServer => gattServer.getPrimaryService(
-          request_disconnection_service_uuid))
-        .then(service => service.getCharacteristic(
-          request_disconnection_characteristic_uuid))
-        .then(requestDisconnection => requestDisconnection.writeValue(
-          new Uint8Array([0])))
+        .then(gattServer => get_request_disconnection(gattServer))
+        .then(requestDisconnection => requestDisconnection())
         .then(() => assert_promise_rejects_with_message(
           device.gatt.CALLS([
             getPrimaryService('heart_rate')|

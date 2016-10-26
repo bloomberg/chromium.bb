@@ -13,12 +13,9 @@ promise_test(() => {
         .getPrimaryService('health_thermometer')
         .then(ht=> ht.getCharacteristic('measurement_interval'))
         .then(mi => measurement_interval = mi)
-        .then(() => gattServer.getPrimaryService(
-          request_disconnection_service_uuid))
-        .then(service => service.getCharacteristic(
-          request_disconnection_characteristic_uuid))
+        .then(() => get_request_disconnection(gattServer))
         .then(requestDisconnection => {
-          requestDisconnection.writeValue(new Uint8Array([0]));
+          requestDisconnection();
           return assert_promise_rejects_with_message(
             measurement_interval.CALLS([readValue()]),
             new DOMException(

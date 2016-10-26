@@ -15,12 +15,8 @@ promise_test(() => {
       let heart_rate_service;
       return gattServer.getPrimaryService('heart_rate')
         .then(hrs => heart_rate_service = hrs)
-        .then(() => gattServer.getPrimaryService(
-          request_disconnection_service_uuid))
-        .then(service => service.getCharacteristic(
-          request_disconnection_characteristic_uuid))
-        .then(requestDisconnection => requestDisconnection.writeValue(
-          new Uint8Array([0])))
+        .then(() => get_request_disconnection(gattServer))
+        .then(requestDisconnection => requestDisconnection())
         .then(() => assert_promise_rejects_with_message(
           heart_rate_service.getCharacteristic('heart_rate_measurement'),
           new DOMException(
