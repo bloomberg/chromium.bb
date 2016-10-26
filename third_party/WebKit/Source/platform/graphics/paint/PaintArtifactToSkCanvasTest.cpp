@@ -27,7 +27,30 @@ using testing::Property;
 using testing::ResultOf;
 
 namespace blink {
+
 namespace {
+TransformPaintPropertyNode* dummyRootTransform() {
+  DEFINE_STATIC_REF(TransformPaintPropertyNode, rootTransform,
+                    (TransformPaintPropertyNode::create(
+                        nullptr, TransformationMatrix(), FloatPoint3D())));
+  return rootTransform;
+}
+
+ClipPaintPropertyNode* dummyRootClip() {
+  DEFINE_STATIC_REF(ClipPaintPropertyNode, rootClip,
+                    (ClipPaintPropertyNode::create(
+                        nullptr, dummyRootTransform(),
+                        FloatRoundedRect(LayoutRect::infiniteIntRect()))));
+  return rootClip;
+}
+
+EffectPaintPropertyNode* dummyRootEffect() {
+  DEFINE_STATIC_REF(EffectPaintPropertyNode, rootEffect,
+                    (EffectPaintPropertyNode::create(
+                        nullptr, dummyRootTransform(), dummyRootClip(),
+                        CompositorFilterOperations(), 1.0)));
+  return rootEffect;
+}
 
 static const int kCanvasWidth = 800;
 static const int kCanvasHeight = 600;
@@ -136,6 +159,7 @@ TEST_F(PaintArtifactToSkCanvasTest, OpacityEffectsCombining) {
   MockCanvas canvas(kCanvasWidth, kCanvasHeight);
   {
     testing::InSequence sequence;
+    EXPECT_CALL(canvas, willSaveLayer(255, _));
     EXPECT_CALL(canvas, willSaveLayer(expectedFirstOpacity, _));
     EXPECT_CALL(canvas,
                 onDrawRect(SkRect::MakeWH(300, 200),
@@ -148,14 +172,18 @@ TEST_F(PaintArtifactToSkCanvasTest, OpacityEffectsCombining) {
 
   // Build an opacity effect tree.
   RefPtr<EffectPaintPropertyNode> opacityEffect1 =
-      EffectPaintPropertyNode::create(nullptr, 0.5);
+      EffectPaintPropertyNode::create(dummyRootEffect(), dummyRootTransform(),
+                                      dummyRootClip(),
+                                      CompositorFilterOperations(), 0.5);
   RefPtr<EffectPaintPropertyNode> opacityEffect2 =
-      EffectPaintPropertyNode::create(opacityEffect1, 0.25);
+      EffectPaintPropertyNode::create(opacityEffect1, dummyRootTransform(),
+                                      dummyRootClip(),
+                                      CompositorFilterOperations(), 0.25);
 
   TestPaintArtifact artifact;
-  artifact.chunk(nullptr, nullptr, opacityEffect1.get())
+  artifact.chunk(dummyRootTransform(), dummyRootClip(), opacityEffect1.get())
       .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
-  artifact.chunk(nullptr, nullptr, opacityEffect2.get())
+  artifact.chunk(dummyRootTransform(), dummyRootClip(), opacityEffect2.get())
       .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
   paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
@@ -168,6 +196,7 @@ TEST_F(PaintArtifactToSkCanvasTest, ChangingOpacityEffects) {
   MockCanvas canvas(kCanvasWidth, kCanvasHeight);
   {
     testing::InSequence sequence;
+    EXPECT_CALL(canvas, willSaveLayer(255, _));
     EXPECT_CALL(canvas, willSaveLayer(expectedAOpacity, _));
     EXPECT_CALL(canvas, willSaveLayer(expectedBOpacity, _));
     EXPECT_CALL(canvas,
@@ -187,20 +216,28 @@ TEST_F(PaintArtifactToSkCanvasTest, ChangingOpacityEffects) {
   //      |      |
   // 0.2  b      d  0.4
   RefPtr<EffectPaintPropertyNode> opacityEffectA =
-      EffectPaintPropertyNode::create(nullptr, 0.1);
+      EffectPaintPropertyNode::create(dummyRootEffect(), dummyRootTransform(),
+                                      dummyRootClip(),
+                                      CompositorFilterOperations(), 0.1);
   RefPtr<EffectPaintPropertyNode> opacityEffectB =
-      EffectPaintPropertyNode::create(opacityEffectA, 0.2);
+      EffectPaintPropertyNode::create(opacityEffectA, dummyRootTransform(),
+                                      dummyRootClip(),
+                                      CompositorFilterOperations(), 0.2);
   RefPtr<EffectPaintPropertyNode> opacityEffectC =
-      EffectPaintPropertyNode::create(nullptr, 0.3);
+      EffectPaintPropertyNode::create(dummyRootEffect(), dummyRootTransform(),
+                                      dummyRootClip(),
+                                      CompositorFilterOperations(), 0.3);
   RefPtr<EffectPaintPropertyNode> opacityEffectD =
-      EffectPaintPropertyNode::create(opacityEffectC, 0.4);
+      EffectPaintPropertyNode::create(opacityEffectC, dummyRootTransform(),
+                                      dummyRootClip(),
+                                      CompositorFilterOperations(), 0.4);
 
   // Build a two-chunk artifact directly.
   // chunk1 references opacity node b, chunk2 references opacity node d.
   TestPaintArtifact artifact;
-  artifact.chunk(nullptr, nullptr, opacityEffectB.get())
+  artifact.chunk(dummyRootTransform(), dummyRootClip(), opacityEffectB.get())
       .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
-  artifact.chunk(nullptr, nullptr, opacityEffectD.get())
+  artifact.chunk(dummyRootTransform(), dummyRootClip(), opacityEffectD.get())
       .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
   paintArtifactToSkCanvas(artifact.build(), &canvas);
 }

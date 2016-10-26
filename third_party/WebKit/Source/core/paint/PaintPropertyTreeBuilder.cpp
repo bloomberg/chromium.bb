@@ -38,7 +38,9 @@ ClipPaintPropertyNode* rootClipNode() {
 
 EffectPaintPropertyNode* rootEffectNode() {
   DEFINE_STATIC_REF(EffectPaintPropertyNode, rootEffect,
-                    (EffectPaintPropertyNode::create(nullptr, 1.0)));
+                    (EffectPaintPropertyNode::create(
+                        nullptr, rootTransformNode(), rootClipNode(),
+                        CompositorFilterOperations(), 1.0)));
   return rootEffect;
 }
 
@@ -357,15 +359,73 @@ void PaintPropertyTreeBuilder::updateTransform(
 void PaintPropertyTreeBuilder::updateEffect(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  if (!object.styleRef().hasOpacity()) {
-    if (auto* properties = object.getMutableForPainting().paintProperties())
+  const ComputedStyle& style = object.styleRef();
+
+  if (!style.isStackingContext()) {
+    if (ObjectPaintProperties* properties =
+            object.getMutableForPainting().paintProperties())
+      properties->clearEffect();
+    return;
+  }
+
+  // TODO(trchen): Can't omit effect node if we have 3D children.
+  // TODO(trchen): Can't omit effect node if we have blending children.
+  bool effectNodeNeeded = false;
+
+  float opacity = style.opacity();
+  if (opacity != 1.0f)
+    effectNodeNeeded = true;
+
+  CompositorFilterOperations filter;
+  if (object.isSVG() && !object.isSVGRoot()) {
+    // TODO(trchen): SVG caches filters in SVGResources. Implement it.
+  } else if (PaintLayer* layer = toLayoutBoxModelObject(object).layer()) {
+    // TODO(trchen): Eliminate PaintLayer dependency.
+    filter = layer->createCompositorFilterOperationsForFilter(style);
+  }
+
+  const ClipPaintPropertyNode* outputClip = rootClipNode();
+  // The CSS filter spec didn't specify how filters interact with overflow
+  // clips. The implementation here mimics the old Blink/WebKit behavior for
+  // backward compatibility.
+  // Basically the output of the filter will be affected by clips that applies
+  // to the current element. The descendants that paints into the input of the
+  // filter ignores any clips collected so far. For example:
+  // <div style="overflow:scroll">
+  //   <div style="filter:blur(1px);">
+  //     <div>A</div>
+  //     <div style="position:absolute;">B</div>
+  //   </div>
+  // </div>
+  // In this example "A" should be clipped if the filter was not present.
+  // With the filter, "A" will be rastered without clipping, but instead
+  // the blurred result will be clipped.
+  // On the other hand, "B" should not be clipped because the overflow clip is
+  // not in its containing block chain, but as the filter output will be
+  // clipped, so a blurred "B" may still be invisible.
+  if (!filter.isEmpty()) {
+    effectNodeNeeded = true;
+    outputClip = context.current.clip;
+
+    // TODO(trchen): A filter may contain spatial operations such that an output
+    // pixel may depend on an input pixel outside of the output clip. Need to
+    // generate special clip node to hint how to expand clip / cull rect.
+    const ClipPaintPropertyNode* expansionHint = context.current.clip;
+    context.current.clip = context.absolutePosition.clip =
+        context.fixedPosition.clip = expansionHint;
+  }
+
+  if (!effectNodeNeeded) {
+    if (ObjectPaintProperties* properties =
+            object.getMutableForPainting().paintProperties())
       properties->clearEffect();
     return;
   }
 
   context.currentEffect =
       object.getMutableForPainting().ensurePaintProperties().updateEffect(
-          context.currentEffect, object.styleRef().opacity());
+          context.currentEffect, context.current.transform, outputClip,
+          std::move(filter), opacity);
 }
 
 void PaintPropertyTreeBuilder::updateCssClip(

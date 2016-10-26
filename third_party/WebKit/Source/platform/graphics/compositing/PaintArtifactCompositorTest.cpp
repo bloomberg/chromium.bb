@@ -37,10 +37,27 @@ gfx::Transform translation(SkMScalar x, SkMScalar y) {
   return transform;
 }
 
+TransformPaintPropertyNode* dummyRootTransform() {
+  DEFINE_STATIC_REF(TransformPaintPropertyNode, rootTransform,
+                    (TransformPaintPropertyNode::create(
+                        nullptr, TransformationMatrix(), FloatPoint3D())));
+  return rootTransform;
+}
+
+ClipPaintPropertyNode* dummyRootClip() {
+  DEFINE_STATIC_REF(ClipPaintPropertyNode, rootClip,
+                    (ClipPaintPropertyNode::create(
+                        nullptr, dummyRootTransform(),
+                        FloatRoundedRect(LayoutRect::infiniteIntRect()))));
+  return rootClip;
+}
+
 EffectPaintPropertyNode* dummyRootEffect() {
-  DEFINE_STATIC_REF(EffectPaintPropertyNode, node,
-                    EffectPaintPropertyNode::create(nullptr, 1.0));
-  return node;
+  DEFINE_STATIC_REF(EffectPaintPropertyNode, rootEffect,
+                    (EffectPaintPropertyNode::create(
+                        nullptr, dummyRootTransform(), dummyRootClip(),
+                        CompositorFilterOperations(), 1.0)));
+  return rootEffect;
 }
 
 class WebLayerTreeViewWithCompositorFrameSink
@@ -520,12 +537,15 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
-  RefPtr<EffectPaintPropertyNode> effect1 =
-      EffectPaintPropertyNode::create(dummyRootEffect(), 0.5);
-  RefPtr<EffectPaintPropertyNode> effect2 =
-      EffectPaintPropertyNode::create(effect1, 0.3);
-  RefPtr<EffectPaintPropertyNode> effect3 =
-      EffectPaintPropertyNode::create(dummyRootEffect(), 0.2);
+  RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::create(
+      dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
+      CompositorFilterOperations(), 0.5);
+  RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::create(
+      effect1, dummyRootTransform(), dummyRootClip(),
+      CompositorFilterOperations(), 0.3);
+  RefPtr<EffectPaintPropertyNode> effect3 = EffectPaintPropertyNode::create(
+      dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
+      CompositorFilterOperations(), 0.2);
 
   TestPaintArtifact artifact;
   artifact.chunk(nullptr, nullptr, effect2.get())
@@ -599,8 +619,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
-  RefPtr<EffectPaintPropertyNode> effect =
-      EffectPaintPropertyNode::create(dummyRootEffect(), 0.5);
+  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
+      dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
+      CompositorFilterOperations(), 0.5);
 
   RefPtr<TransformPaintPropertyNode> scrollTranslationA =
       TransformPaintPropertyNode::create(

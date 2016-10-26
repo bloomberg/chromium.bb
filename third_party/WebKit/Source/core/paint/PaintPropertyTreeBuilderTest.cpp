@@ -2860,4 +2860,47 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_TRUE(
       getLayoutObjectByElementId("absolute")->container()->isLayoutBlock());
 }
+
+TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
+  setBodyInnerHTML(
+      "<div id='filter' style='filter:opacity(0.5); height:1000px;'>"
+      "</div>");
+  const ObjectPaintProperties* filterProperties =
+      getLayoutObjectByElementId("filter")->paintProperties();
+  EXPECT_TRUE(filterProperties->effect()->parent()->isRoot());
+  EXPECT_EQ(frameScrollTranslation(),
+            filterProperties->effect()->localTransformSpace());
+  EXPECT_EQ(frameContentClip(), filterProperties->effect()->outputClip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
+  setBodyInnerHTML(
+      "<div id='clip' style='overflow:hidden;'>"
+      "  <div id='filter' style='filter:opacity(0.5); height:1000px;'>"
+      "    <div id='child' style='position:fixed;'></div>"
+      "  </div>"
+      "</div>");
+  const ObjectPaintProperties* clipProperties =
+      getLayoutObjectByElementId("clip")->paintProperties();
+  const ObjectPaintProperties* filterProperties =
+      getLayoutObjectByElementId("filter")->paintProperties();
+  EXPECT_TRUE(filterProperties->effect()->parent()->isRoot());
+  EXPECT_EQ(frameScrollTranslation(),
+            filterProperties->effect()->localTransformSpace());
+  EXPECT_EQ(clipProperties->overflowClip(),
+            filterProperties->effect()->outputClip());
+
+  const ObjectPaintProperties* childProperties =
+      getLayoutObjectByElementId("child")->paintProperties();
+  const PropertyTreeState& childPaintState =
+      childProperties->localBorderBoxProperties()->propertyTreeState;
+  EXPECT_EQ(framePreTranslation(),
+            childProperties->paintOffsetTranslation()->parent());
+  EXPECT_EQ(childProperties->paintOffsetTranslation(),
+            childPaintState.transform());
+  // This will change once we added clip expansion node.
+  EXPECT_EQ(filterProperties->effect()->outputClip(), childPaintState.clip());
+  EXPECT_EQ(filterProperties->effect(), childPaintState.effect());
+}
+
 }  // namespace blink
