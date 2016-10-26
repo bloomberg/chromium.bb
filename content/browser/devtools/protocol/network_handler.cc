@@ -255,7 +255,8 @@ class GetCookiesCommand {
 
 typedef DevToolsProtocolClient::Response Response;
 
-NetworkHandler::NetworkHandler() : host_(nullptr), weak_factory_(this) {
+NetworkHandler::NetworkHandler()
+    : host_(nullptr), enabled_(false), weak_factory_(this) {
 }
 
 NetworkHandler::~NetworkHandler() {
@@ -267,6 +268,17 @@ void NetworkHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
 
 void NetworkHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
+}
+
+Response NetworkHandler::Enable(const int* max_total_size,
+                                const int* max_resource_size) {
+  enabled_ = true;
+  return Response::FallThrough();
+}
+
+Response NetworkHandler::Disable() {
+  enabled_ = false;
+  return Response::FallThrough();
 }
 
 Response NetworkHandler::ClearBrowserCache() {

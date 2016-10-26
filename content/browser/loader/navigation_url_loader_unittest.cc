@@ -113,7 +113,7 @@ class NavigationURLLoaderTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, begin_params, url,
                                   url::Origin(url), true, false, false, -1,
-                                  false));
+                                  false, false));
 
     return NavigationURLLoader::Create(browser_context_.get(),
                                        std::move(request_info), nullptr,

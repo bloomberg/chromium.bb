@@ -372,6 +372,15 @@ RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(
 }
 
 // static
+bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
+    FrameTreeNode* frame_tree_node) {
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  if (!agent_host)
+    return false;
+  return agent_host->network_handler_->enabled();
+}
+
+// static
 void RenderFrameDevToolsAgentHost::WebContentsCreated(
     WebContents* web_contents) {
   if (ShouldForceCreation()) {

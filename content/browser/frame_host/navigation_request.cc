@@ -520,13 +520,17 @@ void NavigationRequest::OnStartChecksComplete(
       navigation_handle_->GetStartingSiteInstance()->GetSiteURL().
           SchemeIs(kGuestScheme);
 
+  bool report_raw_headers =
+      RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(frame_tree_node_);
+
   loader_ = NavigationURLLoader::Create(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       base::MakeUnique<NavigationRequestInfo>(
           common_params_, begin_params_, first_party_for_cookies,
           frame_tree_node_->current_origin(), frame_tree_node_->IsMainFrame(),
           parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
-          frame_tree_node_->frame_tree_node_id(), is_for_guests_only),
+          frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
+          report_raw_headers),
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(), this);
 }

@@ -68,6 +68,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void OnBeforeNavigation(NavigationHandle* navigation_handle);
   static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
+  static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);
 
   static void WebContentsCreated(WebContents* web_contents);
 

@@ -2219,7 +2219,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // same mechanism as the cookie one.
       blink::WebPageVisibilityStateVisible, resource_context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
-      false,  // request_data.report_raw_headers
+      info.report_raw_headers,
       true,   // is_async
       IsUsingLoFi(info.common_params.lofi_state, delegate_, *new_request,
                   resource_context, info.is_main_frame),

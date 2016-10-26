@@ -1157,11 +1157,13 @@
                 "parameters": [
                     { "name": "maxTotalBufferSize", "type": "integer", "optional": true, "experimental": true, "description": "Buffer size in bytes to use when preserving network payloads (XHRs, etc)." },
                     { "name": "maxResourceBufferSize", "type": "integer", "optional": true, "experimental": true, "description": "Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc)." }
-                ]
+                ],
+                "handlers": ["renderer", "browser"]
             },
             {
                 "name": "disable",
-                "description": "Disables network tracking, prevents network events from being sent to the client."
+                "description": "Disables network tracking, prevents network events from being sent to the client.",
+                "handlers": ["renderer", "browser"]
             },
             {
                 "name": "setUserAgentOverride",
