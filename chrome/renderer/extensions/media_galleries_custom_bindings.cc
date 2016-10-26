@@ -12,6 +12,8 @@
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -37,8 +39,8 @@ void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
 
   blink::WebLocalFrame* webframe =
       blink::WebLocalFrame::frameForCurrentContext();
-  const GURL origin = blink::WebStringToGURL(
-      webframe->document().getSecurityOrigin().toString());
+  const GURL origin =
+      url::Origin(webframe->document().getSecurityOrigin()).GetURL();
   std::string fs_name =
       storage::GetFileSystemName(origin, storage::kFileSystemTypeExternal);
   fs_name.append("_");

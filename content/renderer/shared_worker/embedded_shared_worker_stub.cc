@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -237,9 +238,7 @@ blink::WebWorkerContentSettingsClientProxy*
     EmbeddedSharedWorkerStub::createWorkerContentSettingsClientProxy(
     const blink::WebSecurityOrigin& origin) {
   return new EmbeddedSharedWorkerContentSettingsClientProxy(
-      blink::WebStringToGURL(origin.toString()),
-      origin.isUnique(),
-      route_id_,
+      url::Origin(origin).GetURL(), origin.isUnique(), route_id_,
       ChildThreadImpl::current()->thread_safe_sender());
 }
 

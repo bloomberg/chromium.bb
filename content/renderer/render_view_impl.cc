@@ -171,6 +171,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 #include "v8/include/v8.h"
 
@@ -1528,11 +1529,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
     params->opener_top_level_frame_url = creator->top()->document().url();
   } else {
     params->opener_top_level_frame_url =
-        blink::WebStringToGURL(creator->top()->getSecurityOrigin().toString());
+        url::Origin(creator->top()->getSecurityOrigin()).GetURL();
   }
 
-  GURL security_url(blink::WebStringToGURL(
-      creator->document().getSecurityOrigin().toString()));
+  GURL security_url(
+      url::Origin(creator->document().getSecurityOrigin()).GetURL());
   if (!security_url.is_valid())
     security_url = GURL();
   params->opener_security_origin = security_url;

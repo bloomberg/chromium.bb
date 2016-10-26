@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -899,8 +900,7 @@ void KeySystemConfigSelector::SelectConfigInternal(
         {
           // Note: the GURL must not be constructed inline because
           // base::Passed(&request) sets |request| to null.
-          GURL security_origin(
-              blink::WebStringToGURL(request->security_origin.toString()));
+          GURL security_origin(url::Origin(request->security_origin).GetURL());
           media_permission_->RequestPermission(
               MediaPermission::PROTECTED_MEDIA_IDENTIFIER, security_origin,
               base::Bind(&KeySystemConfigSelector::OnPermissionResult,

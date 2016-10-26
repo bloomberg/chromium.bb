@@ -36,7 +36,7 @@
 namespace blink {
 
 class WebStorageArea;
-class WebString;
+class WebSecurityOrigin;
 
 // WebStorageNamespace represents a collection of StorageAreas. Typically,
 // you'll have multiple StorageNamespaces to represent the SessionStorage for
@@ -50,7 +50,7 @@ class WebStorageNamespace {
   // origin will return two different WebStorageArea objects that share the same
   // backing store.  You should call delete on the returned object when you're
   // finished.
-  virtual WebStorageArea* createStorageArea(const WebString& origin) = 0;
+  virtual WebStorageArea* createStorageArea(const WebSecurityOrigin&) = 0;
 
   // Returns true of the two instances represent the same storage namespace.
   virtual bool isSameNamespace(const WebStorageNamespace&) const {

@@ -13,7 +13,6 @@
 
 using blink::WebStorageArea;
 using blink::WebStorageNamespace;
-using blink::WebString;
 
 namespace content {
 
@@ -26,9 +25,9 @@ LocalStorageNamespace::~LocalStorageNamespace() {
 }
 
 WebStorageArea* LocalStorageNamespace::createStorageArea(
-    const WebString& origin) {
-  return new LocalStorageArea(local_storage_cached_areas_->GetCachedArea(
-      url::Origin(blink::WebStringToGURL(origin))));
+    const blink::WebSecurityOrigin& origin) {
+  return new LocalStorageArea(
+      local_storage_cached_areas_->GetCachedArea(origin));
 }
 
 bool LocalStorageNamespace::isSameNamespace(

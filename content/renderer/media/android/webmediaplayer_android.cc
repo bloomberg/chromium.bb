@@ -67,6 +67,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 static const uint32_t kGLTextureExternalOES = 0x8D65;
 static const int kSDKVersionToSupportSecurityOriginCheck = 20;
@@ -1297,7 +1299,7 @@ void WebMediaPlayerAndroid::ReportHLSMetrics() const {
   UMA_HISTOGRAM_BOOLEAN("Media.Android.IsHttpLiveStreamingMedia", is_hls);
   if (is_hls) {
     media::RecordOriginOfHLSPlayback(
-        blink::WebStringToGURL(frame_->getSecurityOrigin().toString()));
+        url::Origin(frame_->getSecurityOrigin()).GetURL());
   }
 
   // Assuming that |is_hls| is the ground truth, test predictions.

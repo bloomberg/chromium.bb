@@ -23,6 +23,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -75,8 +76,7 @@ bool ResourceRequestPolicy::CanRequestResource(
     // The page_origin may be GURL("null") for unique origins like data URLs,
     // but this is ok for the checks below.  We only care if it matches the
     // current extension or has a devtools scheme.
-    GURL page_origin =
-        blink::WebStringToGURL(frame->top()->getSecurityOrigin().toString());
+    GURL page_origin = url::Origin(frame->top()->getSecurityOrigin()).GetURL();
 
     // Exceptions are:
     // - empty origin (needed for some edge cases when we have empty origins)

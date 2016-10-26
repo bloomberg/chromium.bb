@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_DOM_STORAGE_LOCAL_STORAGE_NAMESPACE_H_
 
 #include "base/macros.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 
 namespace content {
@@ -20,7 +21,7 @@ class LocalStorageNamespace : public blink::WebStorageNamespace {
 
   // blink::WebStorageNamespace:
   blink::WebStorageArea* createStorageArea(
-      const blink::WebString& origin) override;
+      const blink::WebSecurityOrigin& origin) override;
   bool isSameNamespace(const WebStorageNamespace&) const override;
 
  private:

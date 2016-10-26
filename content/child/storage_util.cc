@@ -7,6 +7,7 @@
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -20,7 +21,7 @@ GURL WebSecurityOriginToGURL(const blink::WebSecurityOrigin& security_origin) {
       security_origin.host().utf8() == "" && security_origin.port() == 0) {
     return GURL("file:///");
   }
-  return blink::WebStringToGURL(security_origin.toString());
+  return url::Origin(security_origin).GetURL();
 }
 
 }  // namespace content

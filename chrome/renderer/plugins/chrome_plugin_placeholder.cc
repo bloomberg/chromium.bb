@@ -39,6 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/origin.h"
 #include "url/url_util.h"
 
 using base::UserMetricsAction;

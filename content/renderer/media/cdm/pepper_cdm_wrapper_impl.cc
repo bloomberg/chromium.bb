@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -39,8 +40,7 @@ std::unique_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   // Note: The code will continue after navigation to the "same" origin, even
   // though the CDM is no longer necessary.
   // TODO: Consider avoiding this possibility entirely. http://crbug.com/575236
-  GURL frame_security_origin(
-      blink::WebStringToGURL(frame->getSecurityOrigin().toString()));
+  GURL frame_security_origin(url::Origin(frame->getSecurityOrigin()).GetURL());
   if (frame_security_origin != security_origin) {
     LOG(ERROR) << "Frame has a different origin than the EME call.";
     return std::unique_ptr<PepperCdmWrapper>();

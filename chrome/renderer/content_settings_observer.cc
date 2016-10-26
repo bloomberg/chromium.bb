@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -44,15 +45,15 @@ using content::NavigationState;
 namespace {
 
 GURL GetOriginOrURL(const WebFrame* frame) {
-  WebString top_origin = frame->top()->getSecurityOrigin().toString();
+  url::Origin top_origin = url::Origin(frame->top()->getSecurityOrigin());
   // The |top_origin| is unique ("null") e.g., for file:// URLs. Use the
   // document URL as the primary URL in those cases.
   // TODO(alexmos): This is broken for --site-per-process, since top() can be a
   // WebRemoteFrame which does not have a document(), and the WebRemoteFrame's
   // URL is not replicated.  See https://crbug.com/628759.
-  if (top_origin == "null" && frame->top()->isWebLocalFrame())
+  if (top_origin.unique() && frame->top()->isWebLocalFrame())
     return frame->top()->document().url();
-  return blink::WebStringToGURL(top_origin);
+  return top_origin.GetURL();
 }
 
 ContentSetting GetContentSettingFromRules(
@@ -209,10 +210,9 @@ bool ContentSettingsObserver::allowDatabase(const WebString& name,
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowDatabase(
-      routing_id(),
-      blink::WebStringToGURL(frame->getSecurityOrigin().toString()),
-      blink::WebStringToGURL(frame->top()->getSecurityOrigin().toString()),
-      name, display_name, &result));
+      routing_id(), url::Origin(frame->getSecurityOrigin()).GetURL(),
+      url::Origin(frame->top()->getSecurityOrigin()).GetURL(), name,
+      display_name, &result));
   return result;
 }
 
@@ -235,8 +235,8 @@ void ContentSettingsObserver::requestFileSystemAccessAsync(
 
   Send(new ChromeViewHostMsg_RequestFileSystemAccessAsync(
       routing_id(), current_request_id_,
-      blink::WebStringToGURL(frame->getSecurityOrigin().toString()),
-      blink::WebStringToGURL(frame->top()->getSecurityOrigin().toString())));
+      url::Origin(frame->getSecurityOrigin()).GetURL(),
+      url::Origin(frame->top()->getSecurityOrigin()).GetURL()));
 }
 
 bool ContentSettingsObserver::allowImage(bool enabled_per_settings,
@@ -271,10 +271,8 @@ bool ContentSettingsObserver::allowIndexedDB(const WebString& name,
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id(),
-      blink::WebStringToGURL(frame->getSecurityOrigin().toString()),
-      blink::WebStringToGURL(frame->top()->getSecurityOrigin().toString()),
-      name, &result));
+      routing_id(), url::Origin(frame->getSecurityOrigin()).GetURL(),
+      url::Origin(frame->top()->getSecurityOrigin()).GetURL(), name, &result));
   return result;
 }
 
@@ -300,8 +298,7 @@ bool ContentSettingsObserver::allowScript(bool enabled_per_settings) {
   if (content_setting_rules_) {
     ContentSetting setting = GetContentSettingFromRules(
         content_setting_rules_->script_rules, frame,
-        blink::WebStringToGURL(
-            frame->document().getSecurityOrigin().toString()));
+        url::Origin(frame->document().getSecurityOrigin()).GetURL());
     allow = setting != CONTENT_SETTING_BLOCK;
   }
   allow = allow || IsWhitelistedForContentSettings();
@@ -336,18 +333,15 @@ bool ContentSettingsObserver::allowStorage(bool local) {
     return false;
 
   StoragePermissionsKey key(
-      blink::WebStringToGURL(frame->document().getSecurityOrigin().toString()),
-      local);
+      url::Origin(frame->document().getSecurityOrigin()).GetURL(), local);
   const auto permissions = cached_storage_permissions_.find(key);
   if (permissions != cached_storage_permissions_.end())
     return permissions->second;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowDOMStorage(
-      routing_id(),
-      blink::WebStringToGURL(frame->getSecurityOrigin().toString()),
-      blink::WebStringToGURL(frame->top()->getSecurityOrigin().toString()),
-      local, &result));
+      routing_id(), url::Origin(frame->getSecurityOrigin()).GetURL(),
+      url::Origin(frame->top()->getSecurityOrigin()).GetURL(), local, &result));
   cached_storage_permissions_[key] = result;
   return result;
 }
@@ -410,8 +404,7 @@ bool ContentSettingsObserver::allowAutoplay(bool default_value) {
   WebFrame* frame = render_frame()->GetWebFrame();
   return GetContentSettingFromRules(
              content_setting_rules_->autoplay_rules, frame,
-             blink::WebStringToGURL(
-                 frame->document().getSecurityOrigin().toString())) ==
+             url::Origin(frame->document().getSecurityOrigin()).GetURL()) ==
          CONTENT_SETTING_ALLOW;
 }
 
@@ -424,8 +417,7 @@ void ContentSettingsObserver::passiveInsecureContentFound(
 void ContentSettingsObserver::didUseKeygen() {
   WebFrame* frame = render_frame()->GetWebFrame();
   Send(new ChromeViewHostMsg_DidUseKeygen(
-      routing_id(),
-      blink::WebStringToGURL(frame->getSecurityOrigin().toString())));
+      routing_id(), url::Origin(frame->getSecurityOrigin()).GetURL()));
 }
 
 void ContentSettingsObserver::didNotAllowPlugins() {

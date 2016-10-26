@@ -121,8 +121,7 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
 
   // Report the origin from where the media player is created.
   if (GetMediaClient()) {
-    GURL security_origin_url(
-        blink::WebStringToGURL(security_origin.toString()));
+    GURL security_origin_url(url::Origin(security_origin).GetURL());
 
     GetMediaClient()->RecordRapporURL(
         "Media.OriginUrl." + LoadTypeToString(load_type), security_origin_url);
@@ -151,7 +150,7 @@ void ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
 
   GetMediaClient()->RecordRapporURL(
       "Media.OriginUrl." + LoadTypeToString(load_type) + ".PipelineError",
-      blink::WebStringToGURL(security_origin.toString()));
+      url::Origin(security_origin).GetURL());
 }
 
 void RecordOriginOfHLSPlayback(const GURL& origin_url) {

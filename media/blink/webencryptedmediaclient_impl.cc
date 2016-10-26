@@ -22,6 +22,8 @@
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -102,8 +104,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   GetReporter(request.keySystem())->ReportRequested();
 
   if (GetMediaClient()) {
-    GURL security_origin(
-        blink::WebStringToGURL(request.getSecurityOrigin().toString()));
+    GURL security_origin(url::Origin(request.getSecurityOrigin()).GetURL());
 
     GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME", security_origin);
 

@@ -28,6 +28,7 @@
 #include "modules/storage/StorageArea.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebStorageArea.h"
 #include "public/platform/WebStorageNamespace.h"
 #include "wtf/PtrUtil.h"
@@ -47,13 +48,15 @@ StorageArea* StorageNamespace::localStorageArea(SecurityOrigin* origin) {
   if (!localStorageNamespace)
     localStorageNamespace = Platform::current()->createLocalStorageNamespace();
   return StorageArea::create(
-      wrapUnique(localStorageNamespace->createStorageArea(origin->toString())),
+      wrapUnique(
+          localStorageNamespace->createStorageArea(WebSecurityOrigin(origin))),
       LocalStorage);
 }
 
 StorageArea* StorageNamespace::storageArea(SecurityOrigin* origin) {
   return StorageArea::create(
-      wrapUnique(m_webStorageNamespace->createStorageArea(origin->toString())),
+      wrapUnique(
+          m_webStorageNamespace->createStorageArea(WebSecurityOrigin(origin))),
       SessionStorage);
 }
 

@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -88,7 +89,7 @@ void NotificationManager::show(
   DCHECK_EQ(0u, notification_data.actions.size());
   DCHECK_EQ(0u, notification_resources->actionIcons.size());
 
-  GURL origin_gurl = blink::WebStringToGURL(origin.toString());
+  GURL origin_gurl = url::Origin(origin).GetURL();
 
   int notification_id =
       notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
@@ -153,8 +154,7 @@ void NotificationManager::showPersistent(
   // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
   // https://crbug.com/490074 for detail.
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_ShowPersistent(
-      request_id, service_worker_registration_id,
-      blink::WebStringToGURL(origin.toString()),
+      request_id, service_worker_registration_id, url::Origin(origin).GetURL(),
       ToPlatformNotificationData(notification_data),
       ToNotificationResources(std::move(notification_resources))));
 }
@@ -210,8 +210,7 @@ void NotificationManager::closePersistent(
       // TODO(mkwst): This is potentially doing the wrong thing with unique
       // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
       // https://crbug.com/490074 for detail.
-      blink::WebStringToGURL(origin.toString()),
-      base::UTF16ToUTF8(base::StringPiece16(tag)),
+      url::Origin(origin).GetURL(), base::UTF16ToUTF8(base::StringPiece16(tag)),
       base::UTF16ToUTF8(base::StringPiece16(notification_id))));
 }
 
