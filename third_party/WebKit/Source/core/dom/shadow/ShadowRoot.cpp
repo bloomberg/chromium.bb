@@ -129,9 +129,11 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change) {
 
   // There's no style to update so just calling recalcStyle means we're updated.
   clearNeedsStyleRecalc();
+  clearNeedsReattachLayoutTree();
 
   recalcDescendantStyles(change);
   clearChildNeedsStyleRecalc();
+  clearChildNeedsReattachLayoutTree();
 }
 
 void ShadowRoot::attachLayoutTree(const AttachContext& context) {

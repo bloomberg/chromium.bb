@@ -390,6 +390,18 @@ Node* Node::getRootNode(const GetRootNodeOptions& options) const {
                                                        : &treeRoot();
 }
 
+Text* Node::nextTextSibling() const {
+  for (Node* sibling = nextSibling();
+       sibling &&
+       (!sibling->isElementNode() || !toElement(sibling)->layoutObject());
+       sibling = sibling->nextSibling()) {
+    if (sibling->isTextNode()) {
+      return toText(sibling);
+    }
+  }
+  return nullptr;
+}
+
 Node* Node::insertBefore(Node* newChild,
                          Node* refChild,
                          ExceptionState& exceptionState) {
@@ -697,6 +709,17 @@ void Node::markAncestorsWithChildNeedsStyleRecalc() {
   document().scheduleLayoutTreeUpdateIfNeeded();
 }
 
+void Node::markAncestorsWithChildNeedsReattachLayoutTree() {
+  for (ContainerNode* p = parentOrShadowHostNode();
+       p && !p->childNeedsReattachLayoutTree(); p = p->parentOrShadowHostNode())
+    p->setChildNeedsReattachLayoutTree();
+}
+
+void Node::setNeedsReattachLayoutTree() {
+  setFlag(NeedsReattachLayoutTree);
+  markAncestorsWithChildNeedsReattachLayoutTree();
+}
+
 void Node::setNeedsStyleRecalc(StyleChangeType changeType,
                                const StyleChangeReasonForTracing& reason) {
   DCHECK(changeType != NoStyleChange);
@@ -888,6 +911,7 @@ void Node::attachLayoutTree(const AttachContext&) {
           (layoutObject()->parent() || layoutObject()->isLayoutView())));
 
   clearNeedsStyleRecalc();
+  clearNeedsReattachLayoutTree();
 
   if (AXObjectCache* cache = document().axObjectCache())
     cache->updateCacheAfterNodeIsAttached(this);
