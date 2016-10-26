@@ -27,6 +27,7 @@ source_set("render_widget") {
     "//base",
     "//blimp/client/core/compositor",
     "//blimp/client/core/input",
+    "//blimp/client/core/switches",
     "//blimp/net",
   ]
 }

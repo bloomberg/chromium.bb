@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "blimp/client/core/compositor/blimp_compositor_frame_sink_proxy.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "cc/blimp/compositor_state_deserializer_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -33,6 +34,7 @@ namespace proto {
 class CompositorMessage;
 }  // namespace proto
 
+class CompositorStateDeserializer;
 class ContextProvider;
 class Layer;
 class LayerTreeHost;
@@ -77,10 +79,12 @@ class BlimpCompositorClient {
 class BlimpCompositor : public cc::LayerTreeHostClient,
                         public cc::RemoteProtoChannel,
                         public BlimpCompositorFrameSinkProxy,
-                        public cc::SurfaceFactoryClient {
+                        public cc::SurfaceFactoryClient,
+                        public cc::CompositorStateDeserializerClient {
  public:
   BlimpCompositor(BlimpCompositorDependencies* compositor_dependencies,
-                  BlimpCompositorClient* client);
+                  BlimpCompositorClient* client,
+                  bool use_threaded_layer_tree_host);
 
   ~BlimpCompositor() override;
 
@@ -111,7 +115,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   void DidBeginMainFrame() override {}
   void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
   void BeginMainFrameNotExpectedSoon() override {}
-  void UpdateLayerTreeHost() override {}
+  void UpdateLayerTreeHost() override;
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
@@ -140,6 +144,14 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override {}
+
+  // CompositorStateDeserializerClient implementation.
+  bool ShouldRetainClientScroll(int engine_layer_id,
+                                const gfx::ScrollOffset& new_offset) override;
+  bool ShouldRetainClientPageScale(float new_page_scale) override;
+
+  void HandleCompositorMessageToImpl(
+      std::unique_ptr<cc::proto::CompositorMessage> message);
 
   // Called when the a ContextProvider has been created by the
   // CompositorDependencies class.  If |host_| is waiting on an
@@ -172,6 +184,14 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // Acks a submitted CompositorFrame when it has been processed and another
   // frame should be started.
   void SubmitCompositorFrameAck();
+
+  // Called when the local copy of the layer with |engine_layer_id| on the
+  // engine was scrolled on the compositor thread.
+  void LayerScrolled(int engine_layer_id);
+
+  // Set to true if we are using a LayerTreeHostInProcess to process frame
+  // updates from the engine.
+  const bool use_threaded_layer_tree_host_;
 
   BlimpCompositorClient* client_;
 
@@ -214,6 +234,16 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // DidCommitAndDrawFrame is called these entries get decremented.  If they hit
   // 0 the callback is triggered.
   std::vector<std::pair<size_t, base::Closure>> pending_commit_trackers_;
+
+  // Stores a frame update received from the engine, when a threaded
+  // LayerTreeHost is used. There can only be a single frame in flight at any
+  // point.
+  std::unique_ptr<cc::proto::CompositorMessage> pending_frame_update_;
+
+  // Used with a threaded LayerTreeHost to deserialize proto updates from the
+  // engine into the LayerTree.
+  std::unique_ptr<cc::CompositorStateDeserializer>
+      compositor_state_deserializer_;
 
   base::WeakPtrFactory<BlimpCompositor> weak_ptr_factory_;
 

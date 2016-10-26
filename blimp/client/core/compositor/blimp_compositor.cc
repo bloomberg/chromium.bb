@@ -19,6 +19,9 @@
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "blimp/net/blimp_stats.h"
 #include "cc/animation/animation_host.h"
+#include "cc/blimp/client_picture_cache.h"
+#include "cc/blimp/compositor_state_deserializer.h"
+#include "cc/blimp/image_serialization_processor.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame_sink.h"
@@ -59,8 +62,10 @@ void RequireCallback(cc::SurfaceManager* manager,
 
 BlimpCompositor::BlimpCompositor(
     BlimpCompositorDependencies* compositor_dependencies,
-    BlimpCompositorClient* client)
-    : client_(client),
+    BlimpCompositorClient* client,
+    bool use_threaded_layer_tree_host)
+    : use_threaded_layer_tree_host_(use_threaded_layer_tree_host),
+      client_(client),
       compositor_dependencies_(compositor_dependencies),
       frame_sink_id_(compositor_dependencies_->GetEmbedderDependencies()
                          ->AllocateFrameSinkId()),
@@ -75,6 +80,18 @@ BlimpCompositor::BlimpCompositor(
   surface_id_allocator_ = base::MakeUnique<cc::SurfaceIdAllocator>();
   GetEmbedderDeps()->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   CreateLayerTreeHost();
+
+  if (use_threaded_layer_tree_host_) {
+    std::unique_ptr<cc::ClientPictureCache> client_picture_cache =
+        compositor_dependencies_->GetImageSerializationProcessor()
+            ->CreateClientPictureCache();
+    compositor_state_deserializer_ =
+        base::MakeUnique<cc::CompositorStateDeserializer>(
+            host_.get(), std::move(client_picture_cache),
+            base::Bind(&BlimpCompositor::LayerScrolled,
+                       weak_ptr_factory_.GetWeakPtr()),
+            this);
+  }
 }
 
 BlimpCompositor::~BlimpCompositor() {
@@ -103,6 +120,18 @@ void BlimpCompositor::NotifyWhenDonePendingCommits(base::Closure callback) {
       std::make_pair(outstanding_commits_, callback));
 }
 
+void BlimpCompositor::UpdateLayerTreeHost() {
+  if (pending_frame_update_) {
+    DCHECK(use_threaded_layer_tree_host_);
+    compositor_state_deserializer_->DeserializeCompositorUpdate(
+        pending_frame_update_->layer_tree_host());
+    pending_frame_update_ = nullptr;
+    cc::proto::CompositorMessage frame_ack;
+    frame_ack.set_frame_ack(true);
+    client_->SendCompositorMessage(frame_ack);
+  }
+}
+
 void BlimpCompositor::RequestNewCompositorFrameSink() {
   DCHECK(!surface_factory_);
   DCHECK(!compositor_frame_sink_request_pending_);
@@ -127,19 +156,42 @@ void BlimpCompositor::DidCommitAndDrawFrame() {
 }
 
 void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
+  DCHECK(!use_threaded_layer_tree_host_);
   remote_proto_channel_receiver_ = receiver;
 }
 
 void BlimpCompositor::SendCompositorProto(
     const cc::proto::CompositorMessage& proto) {
+  DCHECK(!use_threaded_layer_tree_host_);
   client_->SendCompositorMessage(proto);
 }
 
 void BlimpCompositor::OnCompositorMessageReceived(
     std::unique_ptr<cc::proto::CompositorMessage> message) {
-  DCHECK(message->has_to_impl());
-  const cc::proto::CompositorMessageToImpl& to_impl_proto = message->to_impl();
+  if (message->has_to_impl()) {
+    HandleCompositorMessageToImpl(std::move(message));
+    return;
+  }
 
+  DCHECK(use_threaded_layer_tree_host_);
+  DCHECK(message->has_layer_tree_host())
+      << "The engine only sends frame updates";
+  DCHECK(!pending_frame_update_)
+      << "We should have only a single frame in flight";
+
+  UMA_HISTOGRAM_MEMORY_KB("Blimp.Compositor.CommitSizeKb",
+                          (float)message->ByteSize() / 1024);
+  pending_frame_update_ = std::move(message);
+  outstanding_commits_++;
+  host_->SetNeedsAnimate();
+}
+
+void BlimpCompositor::HandleCompositorMessageToImpl(
+    std::unique_ptr<cc::proto::CompositorMessage> message) {
+  DCHECK(!use_threaded_layer_tree_host_);
+  DCHECK(message->has_to_impl());
+
+  const cc::proto::CompositorMessageToImpl to_impl_proto = message->to_impl();
   DCHECK(to_impl_proto.has_message_type());
 
   if (to_impl_proto.message_type() ==
@@ -270,6 +322,24 @@ void BlimpCompositor::ReturnResources(
           proxy_client_, resources));
 }
 
+bool BlimpCompositor::ShouldRetainClientScroll(
+    int engine_layer_id,
+    const gfx::ScrollOffset& new_offset) {
+  // TODO(khushalsagar): Update when adding scroll/scale sync. See
+  // crbug.com/648442.
+  return true;
+}
+
+bool BlimpCompositor::ShouldRetainClientPageScale(float new_page_scale) {
+  // TODO(khushalsagar): Update when adding scroll/scale sync. See
+  // crbug.com/648442.
+  return true;
+}
+
+void BlimpCompositor::LayerScrolled(int engine_layer_id) {
+  DCHECK(use_threaded_layer_tree_host_);
+}
+
 CompositorDependencies* BlimpCompositor::GetEmbedderDeps() {
   return compositor_dependencies_->GetEmbedderDependencies();
 }
@@ -296,14 +366,13 @@ void BlimpCompositor::CreateLayerTreeHost() {
   params.gpu_memory_buffer_manager =
       GetEmbedderDeps()->GetGpuMemoryBufferManager();
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-  params.image_serialization_processor =
-      compositor_dependencies_->GetImageSerializationProcessor();
+  if (!use_threaded_layer_tree_host_) {
+    params.image_serialization_processor =
+        compositor_dependencies_->GetImageSerializationProcessor();
+  }
 
   cc::LayerTreeSettings* settings =
       compositor_dependencies_->GetLayerTreeSettings();
-  // TODO(khushalsagar): This is a hack. Remove when we move the split point
-  // out. For details on why this is needed, see crbug.com/586210.
-  settings->abort_commit_before_compositor_frame_sink_creation = false;
   params.settings = settings;
 
   params.animation_host = cc::AnimationHost::CreateMainInstance();
@@ -311,8 +380,13 @@ void BlimpCompositor::CreateLayerTreeHost() {
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
       compositor_dependencies_->GetCompositorTaskRunner();
 
-  host_ = cc::LayerTreeHostInProcess::CreateRemoteClient(
-      this /* remote_proto_channel */, compositor_task_runner, &params);
+  if (use_threaded_layer_tree_host_) {
+    host_ = cc::LayerTreeHostInProcess::CreateThreaded(compositor_task_runner,
+                                                       &params);
+  } else {
+    host_ = cc::LayerTreeHostInProcess::CreateRemoteClient(
+        this /* remote_proto_channel */, compositor_task_runner, &params);
+  }
 }
 
 void BlimpCompositor::DestroyLayerTreeHost() {

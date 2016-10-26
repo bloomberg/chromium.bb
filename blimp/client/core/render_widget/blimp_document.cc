@@ -4,10 +4,12 @@
 
 #include "blimp/client/core/render_widget/blimp_document.h"
 
+#include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/input/blimp_input_manager.h"
 #include "blimp/client/core/render_widget/blimp_document_manager.h"
+#include "blimp/client/core/switches/blimp_client_switches.h"
 #include "cc/layers/layer.h"
 
 namespace blimp {
@@ -17,7 +19,11 @@ BlimpDocument::BlimpDocument(int document_id,
                              BlimpCompositorDependencies* compositor_deps,
                              BlimpDocumentManager* document_manager)
     : BlimpDocument(document_id,
-                    base::MakeUnique<BlimpCompositor>(compositor_deps, this),
+                    base::MakeUnique<BlimpCompositor>(
+                        compositor_deps,
+                        this,
+                        base::CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kEnableUpdatedCompositingPath)),
                     compositor_deps,
                     document_manager) {}
 

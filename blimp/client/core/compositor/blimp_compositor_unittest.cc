@@ -41,7 +41,7 @@ class BlimpCompositorForTesting : public BlimpCompositor {
   BlimpCompositorForTesting(
       BlimpCompositorDependencies* compositor_dependencies,
       BlimpCompositorClient* client)
-      : BlimpCompositor(compositor_dependencies, client) {}
+      : BlimpCompositor(compositor_dependencies, client, false) {}
 
   void SendProto(const cc::proto::CompositorMessage& proto) {
     SendCompositorProto(proto);

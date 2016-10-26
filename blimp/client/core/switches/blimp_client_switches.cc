@@ -21,5 +21,7 @@ const char kEngineTransport[] = "engine-transport";
 
 const char kDownloadWholeDocument[] = "download-whole-document";
 
+const char kEnableUpdatedCompositingPath[] = "enable-updated-compositing-path";
+
 }  // namespace switches
 }  // namespace blimp

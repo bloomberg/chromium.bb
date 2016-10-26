@@ -33,6 +33,10 @@ extern const char kEngineTransport[];
 // Enables downloading the complete page from the engine.
 extern const char kDownloadWholeDocument[];
 
+// Enables the updated compositing path, which uses a threaded
+// LayerTreeHostInProcess for the BlimpCompositor.
+extern const char kEnableUpdatedCompositingPath[];
+
 }  // namespace switches
 }  // namespace blimp
 

@@ -32,7 +32,7 @@ class MockBlimpCompositor : public BlimpCompositor {
   explicit MockBlimpCompositor(
       BlimpCompositorDependencies* compositor_dependencies,
       BlimpCompositorClient* client)
-      : BlimpCompositor(compositor_dependencies, client) {}
+      : BlimpCompositor(compositor_dependencies, client, false) {}
 
   MOCK_METHOD1(SetVisible, void(bool));
 
