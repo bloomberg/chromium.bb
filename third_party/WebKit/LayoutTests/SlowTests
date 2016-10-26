@@ -280,6 +280,23 @@ crbug.com/372424 http/tests/serviceworker/chromium/registration-stress.html [ Sl
 crbug.com/448670 http/tests/serviceworker/chromium/register-different-script-many-times.html [ Slow ]
 crbug.com/516319 [ Win ] http/tests/fetch/ [ Slow ]
 
+crbug.com/602693 imported/wpt/service-workers/service-worker/client-navigate.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/clients-get-cross-origin.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/clients-matchall-client-types.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-canvas-tainting-cache.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-canvas-tainting.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-csp.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-event-async-respond-with.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-event-respond-with-stops-propagation.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-request-css-base-url.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-response-xhr.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/getregistrations.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/invalid-blobtype.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/invalid-header.https.html [ Slow ]
+crbug.com/602693 imported/wpt/service-workers/service-worker/referer.https.html [ Slow ]
+
 # Most crypto/subtle tests are slow some or most of the time.
 crbug.com/459009 crypto/subtle/ [ Slow ]
 
