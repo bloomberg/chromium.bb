@@ -166,11 +166,7 @@ cr.define('settings', function() {
 
 <if expr="chromeos">
   r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
-
   r.BLUETOOTH = r.ADVANCED.createSection('/bluetooth', 'bluetooth');
-  r.BLUETOOTH_ADD_DEVICE = r.BLUETOOTH.createChild('/bluetoothAddDevice');
-  r.BLUETOOTH_PAIR_DEVICE =
-      r.BLUETOOTH_ADD_DEVICE.createChild('bluetoothPairDevice');
 </if>
 
   r.PASSWORDS =
@@ -179,7 +175,6 @@ cr.define('settings', function() {
   r.MANAGE_PASSWORDS = r.PASSWORDS.createChild('/passwords');
 
   r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
-  r.LANGUAGES_DETAIL = r.LANGUAGES.createChild('edit');
 <if expr="chromeos">
   r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
 </if>
