@@ -722,11 +722,10 @@ const HTMLSelectElement::ListItems& HTMLSelectElement::listItems() const {
   if (m_shouldRecalcListItems) {
     recalcListItems();
   } else {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     HeapVector<Member<HTMLElement>> items = m_listItems;
     recalcListItems();
-    // TODO(tkent): Add a stream printer for HeapVector. DCHECK requires it.
-    ASSERT(items == m_listItems);
+    DCHECK(items == m_listItems);
 #endif
   }
 
