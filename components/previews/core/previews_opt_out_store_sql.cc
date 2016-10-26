@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/previews/core/previews_black_list.h"
@@ -177,7 +178,8 @@ void LoadBlackListFromDataBase(
         base::Time::FromInternalValue(statement.ColumnInt64(1)));
   }
 
-  // TODO(ryansturm): Add UMA to log |count|. crbug.com/656739
+  UMA_HISTOGRAM_COUNTS_10000("Previews.OptOut.DBRowCount", count);
+
   if (count > kMaxRowsInDB) {
     // Delete the oldest entries if there are more than |kMaxEntriesInDB|.
     // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
