@@ -99,6 +99,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   // Optional byte data required to initialize video decoders, such as H.264
   // AVCC data.
+  void SetExtraData(const std::vector<uint8_t>& extra_data);
   const std::vector<uint8_t>& extra_data() const { return extra_data_; }
 
   // Whether the video stream is potentially encrypted.

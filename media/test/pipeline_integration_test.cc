@@ -670,6 +670,27 @@ class MockMediaSource {
   base::TimeDelta last_timestamp_offset_;
 };
 
+// A rough simulation of GpuVideoDecoder that fails every Decode() request. This
+// is used to test post-Initialize() fallback paths.
+class FailingVideoDecoder : public VideoDecoder {
+ public:
+  std::string GetDisplayName() const override { return "FailingVideoDecoder"; }
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb) override {
+    init_cb.Run(true);
+  }
+  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+              const DecodeCB& decode_cb) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+  }
+  void Reset(const base::Closure& closure) override { closure.Run(); }
+  bool NeedsBitstreamConversion() const override { return true; }
+};
+
 // TODO(xhwang): These tests have been disabled for some time as apptests and no
 //               longer pass. They need to be reconstituted as shell tests.
 //               Currently there are compile issues which must be resolved,
@@ -689,7 +710,9 @@ class PipelineIntegrationTestHost : public service_manager::test::ServiceTest,
   }
 
  protected:
-  std::unique_ptr<Renderer> CreateRenderer() override {
+  std::unique_ptr<Renderer> CreateRenderer(
+      ScopedVector<VideoDecoder> prepend_video_decoders,
+      ScopedVector<AudioDecoder> prepend_audio_decoders) override {
     connector()->ConnectToInterface("service:media", &media_interface_factory_);
 
     mojom::RendererPtr mojo_renderer;
@@ -1533,6 +1556,18 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {
 
   ASSERT_TRUE(WaitUntilOnEnded());
 }
+
+TEST_F(PipelineIntegrationTest, BasicFallback) {
+  ScopedVector<VideoDecoder> failing_video_decoder;
+  failing_video_decoder.push_back(new FailingVideoDecoder());
+
+  ASSERT_EQ(PIPELINE_OK,
+            Start("bear.mp4", kClockless, std::move(failing_video_decoder)));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+};
 
 TEST_F(PipelineIntegrationTest, MediaSource_ADTS) {
   MockMediaSource source("sfx.adts", kADTS, kAppendWholeFile);

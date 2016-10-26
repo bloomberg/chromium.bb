@@ -670,6 +670,15 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
 #if defined(USE_PROPRIETARY_CODECS)
   switch (stream_->codec->codec_id) {
     case AV_CODEC_ID_H264:
+      // Clear |extra_data| so that future (fallback) decoders will know that
+      // conversion is forcibly enabled on this stream.
+      //
+      // TODO(sandersd): Ideally we would convert |extra_data| to concatenated
+      // SPS/PPS data, but it's too late to be useful because Initialize() was
+      // already called on GpuVideoDecoder, which is the only path that would
+      // consume that data.
+      if (video_config_)
+        video_config_->SetExtraData(std::vector<uint8_t>());
       bitstream_converter_.reset(
           new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
       break;

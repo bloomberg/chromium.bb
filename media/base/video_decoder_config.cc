@@ -152,4 +152,8 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
   return s.str();
 }
 
+void VideoDecoderConfig::SetExtraData(const std::vector<uint8_t>& extra_data) {
+  extra_data_ = extra_data;
+}
+
 }  // namespace media
