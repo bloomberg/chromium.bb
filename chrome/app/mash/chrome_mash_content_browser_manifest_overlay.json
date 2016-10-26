@@ -10,6 +10,7 @@
     "service_manager:connector": {
       "provides": {
         "content_browser:ash": [
+          "ash::mojom::NewWindowClient",
           "ash::mojom::SystemTrayClient",
           "ash::mojom::VolumeController",
           "ash::mojom::WallpaperManager",
@@ -20,7 +21,8 @@
       "requires": {
         "service:ash": [ "ash" ],
         "service:accessibility_autoclick": [ "ash:autoclick" ],
-        "service:mash_session": [ "app" ]
+        "service:mash_session": [ "app" ],
+        "service:task_viewer": [ "mash:launchable" ]
       }
     }
   }

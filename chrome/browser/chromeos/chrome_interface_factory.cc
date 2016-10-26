@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/common/mojo_interface_factory.h"
+#include "ash/public/interfaces/new_window.mojom.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
@@ -114,6 +116,13 @@ class FactoryImpl {
     launchable_->ProcessRequest(std::move(request));
   }
 
+  void BindRequest(ash::mojom::NewWindowClientRequest request) {
+    if (!new_window_client_)
+      new_window_client_.reset(new ChromeNewWindowClient);
+    new_window_client_bindings_.AddBinding(new_window_client_.get(),
+                                           std::move(request));
+  }
+
   void BindRequest(ash::mojom::SystemTrayClientRequest request) {
     system_tray_client_bindings_.AddBinding(SystemTrayClient::Get(),
                                             std::move(request));
@@ -141,6 +150,8 @@ class FactoryImpl {
   std::unique_ptr<KeyboardUIService> keyboard_ui_service_;
   mojo::BindingSet<keyboard::mojom::Keyboard> keyboard_bindings_;
   std::unique_ptr<ChromeLaunchable> launchable_;
+  std::unique_ptr<ChromeNewWindowClient> new_window_client_;
+  mojo::BindingSet<ash::mojom::NewWindowClient> new_window_client_bindings_;
   mojo::BindingSet<ash::mojom::SystemTrayClient> system_tray_client_bindings_;
   std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
@@ -168,6 +179,8 @@ bool ChromeInterfaceFactory::OnConnect(
                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
+  FactoryImpl::AddFactory<ash::mojom::NewWindowClient>(
+      registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::SystemTrayClient>(
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::VolumeController>(

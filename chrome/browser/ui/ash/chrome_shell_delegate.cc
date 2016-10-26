@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
-#include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
@@ -497,10 +496,6 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new AccessibilityDelegateImpl;
-}
-
-ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
-  return new ChromeNewWindowDelegate;
 }
 
 ash::MediaDelegate* ChromeShellDelegate::CreateMediaDelegate() {

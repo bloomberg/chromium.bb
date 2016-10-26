@@ -39,6 +39,7 @@
 #include "ash/resources/grit/ash_resources.h"     // nogncheck
 #include "ash/wm/window_properties.h"             // nogncheck
 #include "ash/wm/window_util.h"                   // nogncheck
+#include "chrome/browser/ui/ash/ash_util.h"       // nogncheck
 #include "chrome/browser/ui/ash/property_util.h"  // nogncheck
 #endif  // defined(USE_ASH)
 
@@ -75,7 +76,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   gfx::NativeWindow window =
       browser ? browser->window()->GetNativeWindow() : nullptr;
 #if defined(USE_ASH)
-  if (!window)
+  if (!chrome::IsRunningInMash() && !window)
     window = ash::wm::GetActiveWindow();
 #endif
 

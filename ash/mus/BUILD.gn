@@ -57,8 +57,6 @@ source_set("lib") {
     "move_event_handler.h",
     "native_widget_factory_mus.cc",
     "native_widget_factory_mus.h",
-    "new_window_delegate_mus.cc",
-    "new_window_delegate_mus.h",
     "non_client_frame_controller.cc",
     "non_client_frame_controller.h",
     "property_util.cc",

@@ -7,8 +7,10 @@
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/test/material_design_controller_test_api.h"
+#include "ash/common/test/test_new_window_client.h"
 #include "ash/common/test/test_session_state_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
+#include "ash/common/test/wm_shell_test_api.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -151,6 +153,8 @@ void AshTestHelper::SetUp(bool start_session,
   test_screenshot_delegate_ = new TestScreenshotDelegate();
   shell->accelerator_controller_delegate()->SetScreenshotDelegate(
       std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
+
+  WmShellTestApi().SetNewWindowClient(base::MakeUnique<TestNewWindowClient>());
 }
 
 void AshTestHelper::TearDown() {

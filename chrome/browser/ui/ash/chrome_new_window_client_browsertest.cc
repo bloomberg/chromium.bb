@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/new_window_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/interfaces/new_window.mojom.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -21,19 +21,19 @@ const char kTestUserName2[] = "test2@test.com";
 
 }  // namespace
 
-typedef InProcessBrowserTest ChromeNewWindowDelegateBrowserTest;
+using ChromeNewWindowClientBrowserTest = InProcessBrowserTest;
 
 // Tests that when we open a new window by pressing 'Ctrl-N', we should use the
 // current active window's profile to determine on which profile's desktop we
 // should open a new window.
-IN_PROC_BROWSER_TEST_F(ChromeNewWindowDelegateBrowserTest,
+IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
                        NewWindowForActiveWindowProfileTest) {
   user_manager::UserManager::Get()->UserLoggedIn(
       AccountId::FromUserEmail(kTestUserName1), kTestUserName1, false);
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
   Browser* browser1 = CreateBrowser(profile1);
   // The newly created window should be created for the current active profile.
-  ash::WmShell::Get()->new_window_delegate()->NewWindow(false);
+  ash::WmShell::Get()->new_window_client()->NewWindow(false);
   EXPECT_EQ(
       chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow())->profile(),
       profile1);
@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowDelegateBrowserTest,
   Browser* browser2 = CreateBrowser(profile2);
   // The newly created window should be created for the current active window's
   // profile, which is |profile2|.
-  ash::WmShell::Get()->new_window_delegate()->NewWindow(false);
+  ash::WmShell::Get()->new_window_client()->NewWindow(false);
   EXPECT_EQ(
       chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow())->profile(),
       profile2);
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowDelegateBrowserTest,
   // After activating |browser1|, the newly created window should be created
   // against |browser1|'s profile.
   browser1->window()->Show();
-  ash::WmShell::Get()->new_window_delegate()->NewWindow(false);
+  ash::WmShell::Get()->new_window_client()->NewWindow(false);
   EXPECT_EQ(
       chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow())->profile(),
       profile1);
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowDelegateBrowserTest,
   // The newly created incoginito window should be created against the current
   // active |browser1|'s profile.
   browser1->window()->Show();
-  ash::WmShell::Get()->new_window_delegate()->NewWindow(true);
+  ash::WmShell::Get()->new_window_client()->NewWindow(true);
   EXPECT_EQ(chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow())
                 ->profile()
                 ->GetOriginalProfile(),
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowDelegateBrowserTest,
   // The newly created incoginito window should be created against the current
   // active |browser2|'s profile.
   browser2->window()->Show();
-  ash::WmShell::Get()->new_window_delegate()->NewWindow(true);
+  ash::WmShell::Get()->new_window_client()->NewWindow(true);
   EXPECT_EQ(chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow())
                 ->profile()
                 ->GetOriginalProfile(),

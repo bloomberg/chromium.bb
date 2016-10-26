@@ -13,7 +13,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/context_menu_mus.h"
-#include "ash/mus/new_window_delegate_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "base/memory/ptr_util.h"
@@ -197,10 +196,6 @@ SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {
 
 AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
   return new AccessibilityDelegateMus(connector_);
-}
-
-NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
-  return new mus::NewWindowDelegateMus;
 }
 
 MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {

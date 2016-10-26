@@ -13,7 +13,6 @@
 #include "ash/common/ime_control_delegate.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/new_window_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -33,6 +32,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/interfaces/new_window.mojom.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -143,18 +143,18 @@ bool CanHandleNewIncognitoWindow() {
 
 void HandleNewIncognitoWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Incognito_Window"));
-  WmShell::Get()->new_window_delegate()->NewWindow(true /* is_incognito */);
+  WmShell::Get()->new_window_client()->NewWindow(true /* is_incognito */);
 }
 
 void HandleNewTab(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_T)
     base::RecordAction(UserMetricsAction("Accel_NewTab_T"));
-  WmShell::Get()->new_window_delegate()->NewTab();
+  WmShell::Get()->new_window_client()->NewTab();
 }
 
 void HandleNewWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Window"));
-  WmShell::Get()->new_window_delegate()->NewWindow(false /* is_incognito */);
+  WmShell::Get()->new_window_client()->NewWindow(false /* is_incognito */);
 }
 
 bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate) {
@@ -197,7 +197,7 @@ void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
 
 void HandleOpenFeedbackPage() {
   base::RecordAction(UserMetricsAction("Accel_Open_Feedback_Page"));
-  WmShell::Get()->new_window_delegate()->OpenFeedbackPage();
+  WmShell::Get()->new_window_client()->OpenFeedbackPage();
 }
 
 bool CanHandlePreviousIme(ImeControlDelegate* ime_control_delegate) {
@@ -214,12 +214,12 @@ void HandlePreviousIme(ImeControlDelegate* ime_control_delegate,
 
 void HandleRestoreTab() {
   base::RecordAction(UserMetricsAction("Accel_Restore_Tab"));
-  WmShell::Get()->new_window_delegate()->RestoreTab();
+  WmShell::Get()->new_window_client()->RestoreTab();
 }
 
 void HandleShowKeyboardOverlay() {
   base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
-  WmShell::Get()->new_window_delegate()->ShowKeyboardOverlay();
+  WmShell::Get()->new_window_client()->ShowKeyboardOverlay();
 }
 
 bool CanHandleShowMessageCenterBubble() {
@@ -245,7 +245,7 @@ void HandleShowMessageCenterBubble() {
 
 void HandleShowTaskManager() {
   base::RecordAction(UserMetricsAction("Accel_Show_Task_Manager"));
-  WmShell::Get()->new_window_delegate()->ShowTaskManager();
+  WmShell::Get()->new_window_client()->ShowTaskManager();
 }
 
 bool CanHandleSwitchIme(ImeControlDelegate* ime_control_delegate,
@@ -357,7 +357,7 @@ void HandleShowImeMenuBubble() {
 void HandleCrosh() {
   base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
-  WmShell::Get()->new_window_delegate()->OpenCrosh();
+  WmShell::Get()->new_window_client()->OpenCrosh();
 }
 
 bool CanHandleDisableCapsLock(const ui::Accelerator& previous_accelerator) {
@@ -387,11 +387,11 @@ void HandleDisableCapsLock() {
 void HandleFileManager() {
   base::RecordAction(UserMetricsAction("Accel_Open_File_Manager"));
 
-  WmShell::Get()->new_window_delegate()->OpenFileManager();
+  WmShell::Get()->new_window_client()->OpenFileManager();
 }
 
 void HandleGetHelp() {
-  WmShell::Get()->new_window_delegate()->OpenGetHelp();
+  WmShell::Get()->new_window_client()->OpenGetHelp();
 }
 
 bool CanHandleLock() {

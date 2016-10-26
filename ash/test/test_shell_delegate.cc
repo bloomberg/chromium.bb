@@ -11,7 +11,6 @@
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
-#include "ash/common/new_window_delegate.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/test/test_session_state_delegate.h"
@@ -38,26 +37,6 @@
 namespace ash {
 namespace test {
 namespace {
-
-class NewWindowDelegateImpl : public NewWindowDelegate {
- public:
-  NewWindowDelegateImpl() {}
-  ~NewWindowDelegateImpl() override {}
-
- private:
-  // NewWindowDelegate:
-  void NewTab() override {}
-  void NewWindow(bool incognito) override {}
-  void OpenFileManager() override {}
-  void OpenCrosh() override {}
-  void OpenGetHelp() override {}
-  void RestoreTab() override {}
-  void ShowKeyboardOverlay() override {}
-  void ShowTaskManager() override {}
-  void OpenFeedbackPage() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
-};
 
 class MediaDelegateImpl : public MediaDelegate {
  public:
@@ -177,10 +156,6 @@ TestSessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate();
-}
-
-NewWindowDelegate* TestShellDelegate::CreateNewWindowDelegate() {
-  return new NewWindowDelegateImpl;
 }
 
 MediaDelegate* TestShellDelegate::CreateMediaDelegate() {

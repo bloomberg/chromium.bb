@@ -9,7 +9,6 @@
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
-#include "ash/common/new_window_delegate.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
@@ -36,31 +35,6 @@
 namespace ash {
 namespace shell {
 namespace {
-
-class NewWindowDelegateImpl : public NewWindowDelegate {
- public:
-  NewWindowDelegateImpl() {}
-  ~NewWindowDelegateImpl() override {}
-
-  // NewWindowDelegate:
-  void NewTab() override {}
-  void NewWindow(bool incognito) override {
-    ToplevelWindow::CreateParams create_params;
-    create_params.can_resize = true;
-    create_params.can_maximize = true;
-    ToplevelWindow::CreateToplevelWindow(create_params);
-  }
-  void OpenFileManager() override {}
-  void OpenCrosh() override {}
-  void OpenGetHelp() override {}
-  void RestoreTab() override {}
-  void ShowKeyboardOverlay() override {}
-  void ShowTaskManager() override {}
-  void OpenFeedbackPage() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
-};
 
 class MediaDelegateImpl : public MediaDelegate {
  public:
@@ -263,10 +237,6 @@ SessionStateDelegate* ShellDelegateImpl::CreateSessionStateDelegate() {
 
 AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
-}
-
-NewWindowDelegate* ShellDelegateImpl::CreateNewWindowDelegate() {
-  return new NewWindowDelegateImpl;
 }
 
 MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {

@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_DELEGATE_H_
-#define CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_CLIENT_H_
+#define CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_CLIENT_H_
 
 #include <memory>
 
-#include "ash/common/new_window_delegate.h"
-#include "base/compiler_specific.h"
+#include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
 
 class Browser;
 
-class ChromeNewWindowDelegate : public ash::NewWindowDelegate {
+class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
  public:
-  ChromeNewWindowDelegate();
-  ~ChromeNewWindowDelegate() override;
+  ChromeNewWindowClient();
+  ~ChromeNewWindowClient() override;
 
-  // Overridden from ash::NewWindowDelegate:
+  // Overridden from ash::mojom::NewWindowClient:
   void NewTab() override;
   void NewWindow(bool incognito) override;
   void OpenFileManager() override;
@@ -34,7 +33,7 @@ class ChromeNewWindowDelegate : public ash::NewWindowDelegate {
 
   std::unique_ptr<TabRestoreHelper> tab_restore_helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeNewWindowDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeNewWindowClient);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_CLIENT_H_

@@ -18,6 +18,7 @@
         ],
         "ash": [
           "ash::mojom::LocaleNotificationController",
+          "ash::mojom::NewWindowClient",
           "ash::mojom::ShelfController",
           "ash::mojom::SystemTray",
           "ash::mojom::SystemTrayClient",

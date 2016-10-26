@@ -52,7 +52,6 @@ class TestShellDelegate : public ShellDelegate {
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   TestSessionStateDelegate* CreateSessionStateDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
-  NewWindowDelegate* CreateNewWindowDelegate() override;
   MediaDelegate* CreateMediaDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
   ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,

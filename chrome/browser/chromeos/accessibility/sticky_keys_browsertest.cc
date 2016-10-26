@@ -5,7 +5,9 @@
 #include <stddef.h>
 
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/test/wm_shell_test_api.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/interfaces/new_window.mojom.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/sticky_keys/sticky_keys_overlay.h"
@@ -30,12 +32,40 @@
 
 namespace chromeos {
 
+class CountingNewWindowClient : public ash::mojom::NewWindowClient {
+ public:
+  CountingNewWindowClient() {}
+  ~CountingNewWindowClient() override {}
+
+  int new_tab_action_count() const { return new_tab_action_count_; }
+
+  // ash::mojom::NewWindowClient:
+  void NewTab() override { new_tab_action_count_++; }
+  void NewWindow(bool incognito) override {}
+  void OpenFileManager() override {}
+  void OpenCrosh() override {}
+  void OpenGetHelp() override {}
+  void RestoreTab() override {}
+  void ShowKeyboardOverlay() override {}
+  void ShowTaskManager() override {}
+  void OpenFeedbackPage() override {}
+
+ private:
+  int new_tab_action_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(CountingNewWindowClient);
+};
+
 class StickyKeysBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
     content::BrowserTestBase::SetUpOnMainThread();
     event_generator_.reset(
         new ui::test::EventGenerator(browser()->window()->GetNativeWindow()));
+
+    new_window_client_ = new CountingNewWindowClient;
+    ash::WmShellTestApi().SetNewWindowClient(
+        base::WrapUnique(new_window_client_));
   }
 
  protected:
@@ -61,6 +91,7 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
 
   content::NotificationRegistrar registrar_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
+  CountingNewWindowClient* new_window_client_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysBrowserTest);
 };
@@ -97,24 +128,23 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OpenNewTabs) {
   SendKeyPress(ui::VKEY_CONTROL);
 
   // In the locked state, pressing 't' should open a new tab each time.
-  TabStripModel* tab_strip_model = browser()->tab_strip_model();
-  int tab_count = 1;
-  for (; tab_count < 5; ++tab_count) {
-    EXPECT_EQ(tab_count, tab_strip_model->count());
+  int tab_count = 0;
+  for (; tab_count < 4; ++tab_count) {
+    EXPECT_EQ(tab_count, new_window_client_->new_tab_action_count());
     SendKeyPress(ui::VKEY_T);
   }
 
   // Unlock the modifier key and shortcut should no longer activate.
   SendKeyPress(ui::VKEY_CONTROL);
   SendKeyPress(ui::VKEY_T);
-  EXPECT_EQ(tab_count, tab_strip_model->count());
+  EXPECT_EQ(tab_count, new_window_client_->new_tab_action_count());
 
   // Shortcut should not work after disabling sticky keys.
   DisableStickyKeys();
   SendKeyPress(ui::VKEY_CONTROL);
   SendKeyPress(ui::VKEY_CONTROL);
   SendKeyPress(ui::VKEY_T);
-  EXPECT_EQ(tab_count, tab_strip_model->count());
+  EXPECT_EQ(tab_count, new_window_client_->new_tab_action_count());
 }
 
 IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, CtrlClickHomeButton) {

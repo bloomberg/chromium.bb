@@ -5,17 +5,16 @@
 #include "ash/display/display_util.h"
 
 #include <algorithm>
+#include <utility>
 
-#include "ash/common/new_window_delegate.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
-
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/null_mouse_warp_controller.h"
 #include "ash/display/unified_mouse_warp_controller.h"
-
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/public/interfaces/new_window.mojom.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "grit/ash_resources.h"
@@ -54,7 +53,7 @@ class DisplayErrorNotificationDelegate
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    WmShell::Get()->new_window_delegate()->OpenFeedbackPage();
+    WmShell::Get()->new_window_client()->OpenFeedbackPage();
   }
 
  private:

@@ -44,7 +44,6 @@ namespace ash {
 class AccessibilityDelegate;
 class GPUSupport;
 class MediaDelegate;
-class NewWindowDelegate;
 class PaletteDelegate;
 class SessionStateDelegate;
 class ShelfDelegate;
@@ -118,9 +117,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
-
-  // Creates an application delegate. Shell takes ownership of the delegate.
-  virtual NewWindowDelegate* CreateNewWindowDelegate() = 0;
 
   // Creates a media delegate. Shell takes ownership of the delegate.
   virtual MediaDelegate* CreateMediaDelegate() = 0;

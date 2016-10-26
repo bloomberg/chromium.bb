@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
+#include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
 #include "ash/content/keyboard_overlay/keyboard_overlay_view.h"
-#include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -39,24 +39,19 @@ void RestoreTabUsingProfile(Profile* profile) {
   service->RestoreMostRecentEntry(nullptr);
 }
 
-// Returns the browser for the active window, if any.
-Browser* GetBrowserForActiveWindow() {
-  return chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
-}
-
 }  // namespace
 
-ChromeNewWindowDelegate::ChromeNewWindowDelegate() {}
-ChromeNewWindowDelegate::~ChromeNewWindowDelegate() {}
+ChromeNewWindowClient::ChromeNewWindowClient() {}
+ChromeNewWindowClient::~ChromeNewWindowClient() {}
 
 // TabRestoreHelper is used to restore a tab. In particular when the user
 // attempts to a restore a tab if the TabRestoreService hasn't finished loading
 // this waits for it. Once the TabRestoreService finishes loading the tab is
 // restored.
-class ChromeNewWindowDelegate::TabRestoreHelper
+class ChromeNewWindowClient::TabRestoreHelper
     : public sessions::TabRestoreServiceObserver {
  public:
-  TabRestoreHelper(ChromeNewWindowDelegate* delegate,
+  TabRestoreHelper(ChromeNewWindowClient* delegate,
                    Profile* profile,
                    sessions::TabRestoreService* service)
       : delegate_(delegate), profile_(profile), tab_restore_service_(service) {
@@ -85,15 +80,15 @@ class ChromeNewWindowDelegate::TabRestoreHelper
   }
 
  private:
-  ChromeNewWindowDelegate* delegate_;
+  ChromeNewWindowClient* delegate_;
   Profile* profile_;
   sessions::TabRestoreService* tab_restore_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRestoreHelper);
 };
 
-void ChromeNewWindowDelegate::NewTab() {
-  Browser* browser = GetBrowserForActiveWindow();
+void ChromeNewWindowClient::NewTab() {
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (browser && browser->is_type_tabbed()) {
     chrome::NewTab(browser);
     return;
@@ -110,8 +105,8 @@ void ChromeNewWindowDelegate::NewTab() {
   browser->SetFocusToLocationBar(false);
 }
 
-void ChromeNewWindowDelegate::NewWindow(bool is_incognito) {
-  Browser* browser = GetBrowserForActiveWindow();
+void ChromeNewWindowClient::NewWindow(bool is_incognito) {
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
   Profile* profile = (browser && browser->profile())
                          ? browser->profile()->GetOriginalProfile()
                          : ProfileManager::GetActiveUserProfile();
@@ -119,7 +114,7 @@ void ChromeNewWindowDelegate::NewWindow(bool is_incognito) {
                                       : profile);
 }
 
-void ChromeNewWindowDelegate::OpenFileManager() {
+void ChromeNewWindowClient::OpenFileManager() {
   using file_manager::kFileManagerAppId;
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   const ExtensionService* const service =
@@ -137,7 +132,7 @@ void ChromeNewWindowDelegate::OpenFileManager() {
       extensions::SOURCE_KEYBOARD));
 }
 
-void ChromeNewWindowDelegate::OpenCrosh() {
+void ChromeNewWindowClient::OpenCrosh() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   GURL crosh_url =
       extensions::TerminalExtensionHelper::GetCroshExtensionURL(profile);
@@ -153,18 +148,18 @@ void ChromeNewWindowDelegate::OpenCrosh() {
   page->Focus();
 }
 
-void ChromeNewWindowDelegate::OpenGetHelp() {
+void ChromeNewWindowClient::OpenGetHelp() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   chrome::ShowHelpForProfile(profile, chrome::HELP_SOURCE_KEYBOARD);
 }
 
-void ChromeNewWindowDelegate::RestoreTab() {
+void ChromeNewWindowClient::RestoreTab() {
   if (tab_restore_helper_.get()) {
     DCHECK(!tab_restore_helper_->tab_restore_service()->IsLoaded());
     return;
   }
 
-  Browser* browser = GetBrowserForActiveWindow();
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
   Profile* profile = browser ? browser->profile() : NULL;
   if (!profile)
     profile = ProfileManager::GetActiveUserProfile();
@@ -183,7 +178,7 @@ void ChromeNewWindowDelegate::RestoreTab() {
   }
 }
 
-void ChromeNewWindowDelegate::ShowKeyboardOverlay() {
+void ChromeNewWindowClient::ShowKeyboardOverlay() {
   // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string url(chrome::kChromeUIKeyboardOverlayURL);
@@ -191,10 +186,10 @@ void ChromeNewWindowDelegate::ShowKeyboardOverlay() {
                                        GURL(url));
 }
 
-void ChromeNewWindowDelegate::ShowTaskManager() {
+void ChromeNewWindowClient::ShowTaskManager() {
   chrome::OpenTaskManager(NULL);
 }
 
-void ChromeNewWindowDelegate::OpenFeedbackPage() {
-  chrome::OpenFeedbackDialog(GetBrowserForActiveWindow());
+void ChromeNewWindowClient::OpenFeedbackPage() {
+  chrome::OpenFeedbackDialog(BrowserList::GetInstance()->GetLastActive());
 }

@@ -120,6 +120,8 @@ component("ash") {
     "common/mojo_interface_factory.h",
     "common/multi_profile_uma.cc",
     "common/multi_profile_uma.h",
+    "common/new_window_client_proxy.cc",
+    "common/new_window_client_proxy.h",
     "common/palette_delegate.h",
     "common/popup_message.cc",
     "common/popup_message.h",

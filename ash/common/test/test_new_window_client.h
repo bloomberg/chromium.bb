@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_NEW_WINDOW_DELEGATE_MUS_H_
-#define ASH_MUS_NEW_WINDOW_DELEGATE_MUS_H_
+#ifndef ASH_COMMON_TEST_TEST_NEW_WINDOW_CLIENT_H_
+#define ASH_COMMON_TEST_TEST_NEW_WINDOW_CLIENT_H_
 
-#include "ash/common/new_window_delegate.h"
-#include "base/macros.h"
+#include "ash/public/interfaces/new_window.mojom.h"
 
 namespace ash {
-namespace mus {
 
-class NewWindowDelegateMus : public NewWindowDelegate {
+// A mojom::NewWindowClient which doesn't try to access a remote mojo component
+// for testing purpose.
+class TestNewWindowClient : public mojom::NewWindowClient {
  public:
-  NewWindowDelegateMus();
-  ~NewWindowDelegateMus() override;
+  TestNewWindowClient();
+  ~TestNewWindowClient() override;
 
-  // NewWindowDelegate:
+  // NewWindowClient:
   void NewTab() override;
   void NewWindow(bool incognito) override;
   void OpenFileManager() override;
@@ -28,10 +28,9 @@ class NewWindowDelegateMus : public NewWindowDelegate {
   void OpenFeedbackPage() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateMus);
+  DISALLOW_COPY_AND_ASSIGN(TestNewWindowClient);
 };
 
-}  // namespace mus
 }  // namespace ash
 
-#endif  // ASH_MUS_NEW_WINDOW_DELEGATE_MUS_H_
+#endif  // ASH_COMMON_TEST_TEST_NEW_WINDOW_CLIENT_H_

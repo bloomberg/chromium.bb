@@ -76,6 +76,7 @@ static_library("arc") {
 
   deps = [
     "//ash:ash",
+    "//ash/public/interfaces",
     "//base",
     "//chromeos",
     "//chromeos:power_manager_proto",
