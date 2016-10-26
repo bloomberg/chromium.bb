@@ -39,7 +39,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   // Android won't be able to reliably support non-persistent notifications, the
   // intended behavior for which is in flux by itself.
   WebRuntimeFeatures::enableNotificationConstructor(false);
-  WebRuntimeFeatures::enableNewMediaPlaybackUi(true);
   // Android does not yet support switching of audio output devices
   WebRuntimeFeatures::enableAudioOutputDevices(false);
 #else
@@ -240,11 +239,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::enableSlimmingPaintV2(true);
-
-  // Note that it might already by true for OS_ANDROID, above.  This is for
-  // non-android versions.
-  if (base::FeatureList::IsEnabled(features::kNewMediaPlaybackUi))
-    WebRuntimeFeatures::enableNewMediaPlaybackUi(true);
 
   if (base::FeatureList::IsEnabled(
           features::kNonValidatingReloadOnNormalReload)) {

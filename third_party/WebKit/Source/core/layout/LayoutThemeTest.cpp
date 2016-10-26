@@ -85,39 +85,22 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
 
 TEST_F(LayoutThemeTest, FormatMediaTime) {
   struct {
-    bool newUi;
     float time;
     float duration;
     String expectedResult;
   } tests[] = {
-      {false, 1, 1, "0:01"},          {false, 1, 15, "0:01"},
-      {false, 1, 600, "00:01"},       {false, 1, 3600, "0:00:01"},
-      {false, 1, 7200, "0:00:01"},    {false, 15, 15, "0:15"},
-      {false, 15, 600, "00:15"},      {false, 15, 3600, "0:00:15"},
-      {false, 15, 7200, "0:00:15"},   {false, 600, 600, "10:00"},
-      {false, 600, 3600, "0:10:00"},  {false, 600, 7200, "0:10:00"},
-      {false, 3600, 3600, "1:00:00"}, {false, 3600, 7200, "1:00:00"},
-      {false, 7200, 7200, "2:00:00"},
-
-      {true, 1, 1, "0:01"},           {true, 1, 15, "0:01"},
-      {true, 1, 600, "0:01"},         {true, 1, 3600, "00:01"},
-      {true, 1, 7200, "000:01"},      {true, 15, 15, "0:15"},
-      {true, 15, 600, "0:15"},        {true, 15, 3600, "00:15"},
-      {true, 15, 7200, "000:15"},     {true, 600, 600, "10:00"},
-      {true, 600, 3600, "10:00"},     {true, 600, 7200, "010:00"},
-      {true, 3600, 3600, "60:00"},    {true, 3600, 7200, "060:00"},
-      {true, 7200, 7200, "120:00"},
+      {1, 1, "0:01"},        {1, 15, "0:01"},        {1, 600, "0:01"},
+      {1, 3600, "00:01"},    {1, 7200, "000:01"},    {15, 15, "0:15"},
+      {15, 600, "0:15"},     {15, 3600, "00:15"},    {15, 7200, "000:15"},
+      {600, 600, "10:00"},   {600, 3600, "10:00"},   {600, 7200, "010:00"},
+      {3600, 3600, "60:00"}, {3600, 7200, "060:00"}, {7200, 7200, "120:00"},
   };
 
-  const bool newUi = RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
-
   for (const auto& testcase : tests) {
-    RuntimeEnabledFeatures::setNewMediaPlaybackUiEnabled(testcase.newUi);
     EXPECT_EQ(testcase.expectedResult,
               LayoutTheme::theme().formatMediaControlsCurrentTime(
                   testcase.time, testcase.duration));
   }
-  RuntimeEnabledFeatures::setNewMediaPlaybackUiEnabled(newUi);
 }
 
 }  // namespace blink

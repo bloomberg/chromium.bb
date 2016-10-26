@@ -181,7 +181,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   Timer<MediaControls> m_panelWidthChangedTimer;
   int m_panelWidth;
 
-  bool m_allowHiddenVolumeControls : 1;
   bool m_keepShowingUntilTimerFires : 1;
 };
 

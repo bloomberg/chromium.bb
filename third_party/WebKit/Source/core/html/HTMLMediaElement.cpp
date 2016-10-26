@@ -3675,11 +3675,6 @@ void HTMLMediaElement::setAudioSourceNode(
   getAudioSourceProvider().setClient(m_audioSourceNode);
 }
 
-void HTMLMediaElement::setAllowHiddenVolumeControls(bool allow) {
-  ensureMediaControls();
-  mediaControls()->setAllowHiddenVolumeControls(allow);
-}
-
 WebMediaPlayer::CORSMode HTMLMediaElement::corsMode() const {
   const AtomicString& crossOriginMode = fastGetAttribute(crossoriginAttr);
   if (crossOriginMode.isNull())

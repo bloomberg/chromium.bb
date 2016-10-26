@@ -44,19 +44,13 @@ static const double kCurrentTimeBufferedDelta = 1.0;
 typedef WTF::HashMap<const char*, Image*> MediaControlImageMap;
 static MediaControlImageMap* gMediaControlImageMap = 0;
 
-// Current UI slider thumbs sizes.
-static const int mediaSliderThumbWidth = 32;
-static const int mediaSliderThumbHeight = 24;
-static const int mediaVolumeSliderThumbHeight = 24;
-static const int mediaVolumeSliderThumbWidth = 24;
-
-// New UI slider thumb sizes, shard between time and volume.
+// Slider thumb sizes, shard between time and volume.
 static const int mediaSliderThumbTouchWidthNew = 36;  // Touch zone size.
 static const int mediaSliderThumbTouchHeightNew = 48;
 static const int mediaSliderThumbPaintWidthNew = 12;  // Painted area.
 static const int mediaSliderThumbPaintHeightNew = 12;
 
-// New UI overlay play button size.
+// Overlay play button size.
 static const int mediaOverlayPlayButtonWidthNew = 48;
 static const int mediaOverlayPlayButtonHeightNew = 48;
 
@@ -74,13 +68,6 @@ static Image* platformResource(const char* name) {
   }
   ASSERT_NOT_REACHED();
   return 0;
-}
-
-static Image* platformResource(const char* currentName, const char* newName) {
-  // Return currentName or newName based on current or new playback.
-  return platformResource(RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()
-                              ? newName
-                              : currentName);
 }
 
 static bool hasSource(const HTMLMediaElement* mediaElement) {
@@ -114,11 +101,6 @@ static bool paintMediaButton(GraphicsContext& context,
                              Image* image,
                              const LayoutObject* object,
                              bool isEnabled) {
-  if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
-    context.drawImage(image, rect);
-    return true;
-  }
-
   FloatRect drawRect = adjustRectForPadding(rect, object);
 
   if (!isEnabled)
@@ -147,16 +129,11 @@ bool MediaControlsPainter::paintMediaMuteButton(const LayoutObject& object,
     return false;
 
   // The new UI uses "muted" and "not muted" only.
-  static Image* soundLevel3 =
-      platformResource("mediaplayerSoundLevel3", "mediaplayerSoundLevel3New");
-  static Image* soundLevel2 =
-      platformResource("mediaplayerSoundLevel2", "mediaplayerSoundLevel3New");
-  static Image* soundLevel1 =
-      platformResource("mediaplayerSoundLevel1", "mediaplayerSoundLevel3New");
-  static Image* soundLevel0 =
-      platformResource("mediaplayerSoundLevel0", "mediaplayerSoundLevel0New");
-  static Image* soundDisabled =
-      platformResource("mediaplayerSoundDisabled", "mediaplayerSoundLevel0New");
+  static Image* soundLevel3 = platformResource("mediaplayerSoundLevel3New");
+  static Image* soundLevel2 = platformResource("mediaplayerSoundLevel3New");
+  static Image* soundLevel1 = platformResource("mediaplayerSoundLevel3New");
+  static Image* soundLevel0 = platformResource("mediaplayerSoundLevel0New");
+  static Image* soundDisabled = platformResource("mediaplayerSoundLevel0New");
 
   if (!hasSource(mediaElement) || !mediaElement->hasAudio())
     return paintMediaButton(paintInfo.context, rect, soundDisabled, &object,
@@ -184,14 +161,11 @@ bool MediaControlsPainter::paintMediaPlayButton(const LayoutObject& object,
   if (!mediaElement)
     return false;
 
-  static Image* mediaPlay =
-      platformResource("mediaplayerPlay", "mediaplayerPlayNew");
-  static Image* mediaPause =
-      platformResource("mediaplayerPause", "mediaplayerPauseNew");
+  static Image* mediaPlay = platformResource("mediaplayerPlayNew");
+  static Image* mediaPause = platformResource("mediaplayerPauseNew");
   // For this case, the new UI draws the normal icon, but the entire panel
   // grays out.
-  static Image* mediaPlayDisabled =
-      platformResource("mediaplayerPlayDisabled", "mediaplayerPlayNew");
+  static Image* mediaPlayDisabled = platformResource("mediaplayerPlayNew");
 
   if (!hasSource(mediaElement))
     return paintMediaButton(paintInfo.context, rect, mediaPlayDisabled, &object,
@@ -217,31 +191,24 @@ bool MediaControlsPainter::paintMediaOverlayPlayButton(
     return false;
 
   static Image* mediaOverlayPlay =
-      platformResource("mediaplayerOverlayPlay", "mediaplayerOverlayPlayNew");
+      platformResource("mediaplayerOverlayPlayNew");
 
   IntRect buttonRect(rect);
-  if (RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
-    // Overlay play button covers the entire player, so center and draw a
-    // smaller button.  Center in the entire element.
-    // TODO(liberato): object.enclosingBox()?
-    const LayoutBox* box = mediaElement->layoutObject()->enclosingBox();
-    if (!box)
-      return false;
-    int mediaHeight = box->pixelSnappedHeight();
-    buttonRect.setX(rect.center().x() - mediaOverlayPlayButtonWidthNew / 2);
-    buttonRect.setY(rect.center().y() - mediaOverlayPlayButtonHeightNew / 2 +
-                    (mediaHeight - rect.height()) / 2);
-    buttonRect.setWidth(mediaOverlayPlayButtonWidthNew);
-    buttonRect.setHeight(mediaOverlayPlayButtonHeightNew);
-  }
+
+  // Overlay play button covers the entire player, so center and draw a
+  // smaller button.  Center in the entire element.
+  // TODO(liberato): object.enclosingBox()?
+  const LayoutBox* box = mediaElement->layoutObject()->enclosingBox();
+  if (!box)
+    return false;
+  int mediaHeight = box->pixelSnappedHeight();
+  buttonRect.setX(rect.center().x() - mediaOverlayPlayButtonWidthNew / 2);
+  buttonRect.setY(rect.center().y() - mediaOverlayPlayButtonHeightNew / 2 +
+                  (mediaHeight - rect.height()) / 2);
+  buttonRect.setWidth(mediaOverlayPlayButtonWidthNew);
+  buttonRect.setHeight(mediaOverlayPlayButtonHeightNew);
 
   return paintMediaButton(paintInfo.context, buttonRect, mediaOverlayPlay);
-}
-
-static Image* getMediaSliderThumb() {
-  static Image* mediaSliderThumb =
-      platformResource("mediaplayerSliderThumb", "mediaplayerSliderThumbNew");
-  return mediaSliderThumb;
 }
 
 static void paintRoundedSliderBackground(const IntRect& rect,
@@ -330,8 +297,7 @@ bool MediaControlsPainter::paintMediaSlider(const LayoutObject& object,
   GraphicsContext& context = paintInfo.context;
 
   // Should we paint the slider partially transparent?
-  bool drawUiGrayed = !hasSource(mediaElement) &&
-                      RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
+  bool drawUiGrayed = !hasSource(mediaElement);
   if (drawUiGrayed)
     context.beginLayer(kDisabledAlpha);
 
@@ -346,7 +312,6 @@ bool MediaControlsPainter::paintMediaSlider(const LayoutObject& object,
 void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object,
                                                     const PaintInfo& paintInfo,
                                                     const IntRect& rect) {
-  const bool useNewUi = RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
   const HTMLMediaElement* mediaElement = toParentMediaElement(object);
   if (!mediaElement)
     return;
@@ -355,13 +320,7 @@ void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object,
   GraphicsContext& context = paintInfo.context;
 
   // Paint the slider bar in the "no data buffered" state.
-  Color sliderBackgroundColor;
-  if (!useNewUi)
-    sliderBackgroundColor = Color(11, 11, 11);
-  else
-    sliderBackgroundColor = Color(0xda, 0xda, 0xda);
-
-  paintRoundedSliderBackground(rect, style, context, sliderBackgroundColor);
+  paintRoundedSliderBackground(rect, style, context, Color(0xda, 0xda, 0xda));
 
   // Draw the buffered range. Since the element may have multiple buffered
   // ranges and it'd be distracting/'busy' to show all of them, show only the
@@ -390,40 +349,22 @@ void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object,
     int currentPosition = int(currentTime * rect.width() / duration);
     int endPosition = int(end * rect.width() / duration);
 
-    if (!useNewUi) {
-      // Add half the thumb width proportionally adjusted to the current
-      // painting position.
-      int thumbCenter = mediaSliderThumbWidth / 2;
-      int addWidth = thumbCenter * (1.0 - 2.0 * currentPosition / rect.width());
-      currentPosition += addWidth;
-    }
-
     // Draw highlight before current time.
-    Color startColor;
-    Color endColor;
-    if (!useNewUi) {
-      startColor = Color(195, 195, 195);  // white-ish.
-      endColor = Color(217, 217, 217);
-    } else {
-      startColor = endColor = Color(0x42, 0x85, 0xf4);  // blue.
-    }
+    Color startColor = Color(0x42, 0x85, 0xf4);
+    Color endColor = Color(0x42, 0x85, 0xf4);
 
-    if (currentPosition > startPosition)
+    if (currentPosition > startPosition) {
       paintSliderRangeHighlight(rect, style, context, startPosition,
                                 currentPosition, startColor, endColor);
-
-    // Draw grey-ish highlight after current time.
-    if (!useNewUi) {
-      startColor = Color(60, 60, 60);
-      endColor = Color(76, 76, 76);
-    } else {
-      startColor = endColor = Color(0x5a, 0x5a, 0x5a);  // dark grey
     }
 
-    if (endPosition > currentPosition)
+    // Draw dark grey highlight after current time.
+    startColor = endColor = Color(0x5a, 0x5a, 0x5a);
+
+    if (endPosition > currentPosition) {
       paintSliderRangeHighlight(rect, style, context, currentPosition,
                                 endPosition, startColor, endColor);
-
+    }
     return;
   }
 }
@@ -438,14 +379,9 @@ void MediaControlsPainter::adjustMediaSliderThumbPaintSize(
   // adjustMediaSliderThumbSize(), and scale it back when we paint.
   rectOut = rect;
 
-  if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
-    // ...except for the old UI.
-    return;
-  }
-
-  float zoomLevel = style.effectiveZoom();
-  float zoomedPaintWidth = mediaSliderThumbPaintWidthNew * zoomLevel;
-  float zoomedPaintHeight = mediaSliderThumbPaintHeightNew * zoomLevel;
+  const float zoomLevel = style.effectiveZoom();
+  const float zoomedPaintWidth = mediaSliderThumbPaintWidthNew * zoomLevel;
+  const float zoomedPaintHeight = mediaSliderThumbPaintHeightNew * zoomLevel;
 
   rectOut.setX(rect.center().x() - zoomedPaintWidth / 2);
   rectOut.setY(rect.center().y() - zoomedPaintHeight / 2);
@@ -467,7 +403,8 @@ bool MediaControlsPainter::paintMediaSliderThumb(const LayoutObject& object,
   if (!hasSource(mediaElement))
     return true;
 
-  Image* mediaSliderThumb = getMediaSliderThumb();
+  static Image* mediaSliderThumb =
+      platformResource("mediaplayerSliderThumbNew");
   IntRect paintRect;
   const ComputedStyle& style = object.styleRef();
   adjustMediaSliderThumbPaintSize(rect, style, paintRect);
@@ -485,12 +422,7 @@ bool MediaControlsPainter::paintMediaVolumeSlider(const LayoutObject& object,
   const ComputedStyle& style = object.styleRef();
 
   // Paint the slider bar.
-  Color sliderBackgroundColor;
-  if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled())
-    sliderBackgroundColor = Color(11, 11, 11);
-  else
-    sliderBackgroundColor = Color(0x5a, 0x5a, 0x5a);  // dark grey
-  paintRoundedSliderBackground(rect, style, context, sliderBackgroundColor);
+  paintRoundedSliderBackground(rect, style, context, Color(0x5a, 0x5a, 0x5a));
 
   // Calculate volume position for white background rectangle.
   float volume = mediaElement->volume();
@@ -499,29 +431,14 @@ bool MediaControlsPainter::paintMediaVolumeSlider(const LayoutObject& object,
   if (volume > 1)
     volume = 1;
   if (!hasSource(mediaElement) || !mediaElement->hasAudio() ||
-      mediaElement->muted())
+      mediaElement->muted()) {
     volume = 0;
-
-  // Calculate the position relative to the center of the thumb.
-  float fillWidth = 0;
-  if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
-    if (volume > 0) {
-      float thumbCenter = mediaVolumeSliderThumbWidth / 2;
-      float zoomLevel = style.effectiveZoom();
-      float positionWidth = volume * (rect.width() - (zoomLevel * thumbCenter));
-      fillWidth = positionWidth + (zoomLevel * thumbCenter / 2);
-    }
-  } else {
-    fillWidth = volume * rect.width();
   }
 
-  Color startColor = Color(195, 195, 195);
-  Color endColor = Color(217, 217, 217);
-  if (RuntimeEnabledFeatures::newMediaPlaybackUiEnabled())
-    startColor = endColor = Color(0x42, 0x85, 0xf4);  // blue.
-
-  paintSliderRangeHighlight(rect, style, context, 0.0, fillWidth, startColor,
-                            endColor);
+  // Calculate the position relative to the center of the thumb.
+  const float fillWidth = volume * rect.width();
+  static const Color color = Color(0x42, 0x85, 0xf4);  // blue
+  paintSliderRangeHighlight(rect, style, context, 0.0, fillWidth, color, color);
 
   return true;
 }
@@ -541,8 +458,8 @@ bool MediaControlsPainter::paintMediaVolumeSliderThumb(
   if (!hasSource(mediaElement) || !mediaElement->hasAudio())
     return true;
 
-  static Image* mediaVolumeSliderThumb = platformResource(
-      "mediaplayerVolumeSliderThumb", "mediaplayerVolumeSliderThumbNew");
+  static Image* mediaVolumeSliderThumb =
+      platformResource("mediaplayerVolumeSliderThumbNew");
 
   IntRect paintRect;
   const ComputedStyle& style = object.styleRef();
@@ -561,9 +478,9 @@ bool MediaControlsPainter::paintMediaFullscreenButton(
   // With the new player UI, we have separate assets for enter / exit
   // fullscreen mode.
   static Image* mediaEnterFullscreenButton =
-      platformResource("mediaplayerFullscreen", "mediaplayerEnterFullscreen");
+      platformResource("mediaplayerEnterFullscreen");
   static Image* mediaExitFullscreenButton =
-      platformResource("mediaplayerFullscreen", "mediaplayerExitFullscreen");
+      platformResource("mediaplayerExitFullscreen");
 
   bool isEnabled = hasSource(mediaElement);
 
@@ -582,11 +499,10 @@ bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(
   if (!mediaElement)
     return false;
 
-  static Image* mediaClosedCaptionButton = platformResource(
-      "mediaplayerClosedCaption", "mediaplayerClosedCaptionNew");
+  static Image* mediaClosedCaptionButton =
+      platformResource("mediaplayerClosedCaptionNew");
   static Image* mediaClosedCaptionButtonDisabled =
-      platformResource("mediaplayerClosedCaptionDisabled",
-                       "mediaplayerClosedCaptionDisabledNew");
+      platformResource("mediaplayerClosedCaptionDisabledNew");
 
   bool isEnabled = mediaElement->hasClosedCaptions();
 
@@ -605,15 +521,13 @@ bool MediaControlsPainter::paintMediaCastButton(const LayoutObject& object,
   if (!mediaElement)
     return false;
 
-  static Image* mediaCastOn =
-      platformResource("mediaplayerCastOn", "mediaplayerCastOnNew");
-  static Image* mediaCastOff =
-      platformResource("mediaplayerCastOff", "mediaplayerCastOffNew");
+  static Image* mediaCastOn = platformResource("mediaplayerCastOnNew");
+  static Image* mediaCastOff = platformResource("mediaplayerCastOffNew");
   // To ensure that the overlaid cast button is visible when overlaid on pale
   // videos we use a different version of it for the overlaid case with a
   // semi-opaque background.
-  static Image* mediaOverlayCastOff = platformResource(
-      "mediaplayerOverlayCastOff", "mediaplayerOverlayCastOffNew");
+  static Image* mediaOverlayCastOff =
+      platformResource("mediaplayerOverlayCastOffNew");
 
   bool isEnabled = mediaElement->hasRemoteRoutes();
 
@@ -643,8 +557,7 @@ bool MediaControlsPainter::paintMediaTrackSelectionCheckmark(
     return false;
 
   static Image* mediaTrackSelectionCheckmark =
-      platformResource("mediaplayerTrackSelectionCheckmark",
-                       "mediaplayerTrackSelectionCheckmarkNew");
+      platformResource("mediaplayerTrackSelectionCheckmarkNew");
   return paintMediaButton(paintInfo.context, rect,
                           mediaTrackSelectionCheckmark);
 }
@@ -657,8 +570,8 @@ bool MediaControlsPainter::paintMediaClosedCaptionsIcon(
   if (!mediaElement)
     return false;
 
-  static Image* mediaClosedCaptionsIcon = platformResource(
-      "mediaplayerClosedCaptionsIcon", "mediaplayerClosedCaptionsIconNew");
+  static Image* mediaClosedCaptionsIcon =
+      platformResource("mediaplayerClosedCaptionsIconNew");
   return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionsIcon);
 }
 
@@ -669,8 +582,8 @@ bool MediaControlsPainter::paintMediaSubtitlesIcon(const LayoutObject& object,
   if (!mediaElement)
     return false;
 
-  static Image* mediaSubtitlesIcon = platformResource(
-      "mediaplayerSubtitlesIcon", "mediaplayerSubtitlesIconNew");
+  static Image* mediaSubtitlesIcon =
+      platformResource("mediaplayerSubtitlesIconNew");
   return paintMediaButton(paintInfo.context, rect, mediaSubtitlesIcon);
 }
 
@@ -702,35 +615,12 @@ bool MediaControlsPainter::paintMediaDownloadIcon(const LayoutObject& object,
 }
 
 void MediaControlsPainter::adjustMediaSliderThumbSize(ComputedStyle& style) {
-  static Image* mediaSliderThumb =
-      platformResource("mediaplayerSliderThumb", "mediaplayerSliderThumbNew");
-  static Image* mediaVolumeSliderThumb = platformResource(
-      "mediaplayerVolumeSliderThumb", "mediaplayerVolumeSliderThumbNew");
-  int width = 0;
-  int height = 0;
+  const float zoomLevel = style.effectiveZoom();
 
-  Image* thumbImage = 0;
-
-  if (RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
-    // Volume and time sliders are the same.
-    thumbImage = mediaSliderThumb;
-    width = mediaSliderThumbTouchWidthNew;
-    height = mediaSliderThumbTouchHeightNew;
-  } else if (style.appearance() == MediaSliderThumbPart) {
-    thumbImage = mediaSliderThumb;
-    width = mediaSliderThumbWidth;
-    height = mediaSliderThumbHeight;
-  } else if (style.appearance() == MediaVolumeSliderThumbPart) {
-    thumbImage = mediaVolumeSliderThumb;
-    width = mediaVolumeSliderThumbWidth;
-    height = mediaVolumeSliderThumbHeight;
-  }
-
-  float zoomLevel = style.effectiveZoom();
-  if (thumbImage) {
-    style.setWidth(Length(static_cast<int>(width * zoomLevel), Fixed));
-    style.setHeight(Length(static_cast<int>(height * zoomLevel), Fixed));
-  }
+  style.setWidth(Length(
+      static_cast<int>(mediaSliderThumbTouchWidthNew * zoomLevel), Fixed));
+  style.setHeight(Length(
+      static_cast<int>(mediaSliderThumbTouchHeightNew * zoomLevel), Fixed));
 }
 
 }  // namespace blink

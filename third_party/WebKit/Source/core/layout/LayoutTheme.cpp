@@ -268,28 +268,12 @@ static String formatChromiumMediaControlsTime(float time,
     duration = 0;
   int seconds = static_cast<int>(fabsf(time));
   int minutes = seconds / 60;
-  int hours = seconds / (60 * 60);
 
   seconds %= 60;
 
   // duration defines the format of how the time is rendered
   int durationSecs = static_cast<int>(fabsf(duration));
   int durationMins = durationSecs / 60;
-
-  if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
-    int durationHours = durationSecs / (60 * 60);
-    durationMins %= 60;
-    minutes %= 60;
-    if (durationHours || hours)
-      return String::format("%s%01d:%02d:%02d", (time < 0 ? "-" : ""), hours,
-                            minutes, seconds);
-    if (durationMins > 9)
-      return String::format("%s%02d:%02d", (time < 0 ? "-" : ""), minutes,
-                            seconds);
-
-    return String::format("%s%01d:%02d", (time < 0 ? "-" : ""), minutes,
-                          seconds);
-  }
 
   // New UI includes a leading "/ " before duration.
   const char* separator = includeSeparator ? "/ " : "";

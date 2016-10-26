@@ -28,7 +28,6 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThemeEngine.h"
 
@@ -47,10 +46,7 @@ String LayoutThemeMobile::extraDefaultStyleSheet() {
 }
 
 String LayoutThemeMobile::extraMediaControlsStyleSheet() {
-  return loadResourceAsASCIIString(
-      RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()
-          ? "mediaControlsAndroidNew.css"
-          : "mediaControlsAndroid.css");
+  return loadResourceAsASCIIString("mediaControlsAndroidNew.css");
 }
 
 String LayoutThemeMobile::extraFullscreenStyleSheet() {

@@ -145,7 +145,6 @@ NavigatorContentUtils
 WebNFC status=experimental
 NetworkInformation status=stable
 NetInfoDownlinkMax status=stable
-NewMediaPlaybackUi
 NotificationConstructor status=stable
 NotificationBadge status=stable
 NotificationImage status=experimental

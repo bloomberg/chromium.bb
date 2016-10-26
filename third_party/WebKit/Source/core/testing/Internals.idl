@@ -223,7 +223,6 @@
     DOMString effectivePreload(HTMLMediaElement mediaElement);
     void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
-    void setAllowHiddenVolumeControls(HTMLMediaElement mediaElement, boolean allow);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme, sequence<DOMString> policyAreas);

@@ -98,11 +98,6 @@ const base::Feature kMemoryCoordinator {
   "MemoryCoordinator", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
-// Enable the material design playback UI for media elements.  This is always
-// on for OS_ANDROID, but may be enabled by experiment for other platforms.
-const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Non-validating reload for desktop.
 // See https://crbug.com/591245
 const base::Feature kNonValidatingReloadOnNormalReload{

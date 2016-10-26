@@ -10,8 +10,6 @@ async_test(function(t) {
     var video = document.querySelector("video");
 
     video.oncanplaythrough = t.step_func_done(function() {
-        // Enable hidden audio preferences to take effect.
-        internals.setAllowHiddenVolumeControls(video, true);
         // Request non-hidden audio controls.
         internals.settings.setPreferHiddenVolumeControls(false);
         video.muted = false;

@@ -292,10 +292,6 @@ void WebRuntimeFeatures::enableWebVR(bool enable) {
   RuntimeEnabledFeatures::setWebVREnabled(enable);
 }
 
-void WebRuntimeFeatures::enableNewMediaPlaybackUi(bool enable) {
-  RuntimeEnabledFeatures::setNewMediaPlaybackUiEnabled(enable);
-}
-
 void WebRuntimeFeatures::enablePresentationAPI(bool enable) {
   RuntimeEnabledFeatures::setPresentationEnabled(enable);
 }
