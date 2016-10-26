@@ -107,6 +107,7 @@ class NetworkScreen : public NetworkModel,
   friend class NetworkScreenTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
+  FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
 
   void SetApplicationLocale(const std::string& locale);
   void SetInputMethod(const std::string& input_method);

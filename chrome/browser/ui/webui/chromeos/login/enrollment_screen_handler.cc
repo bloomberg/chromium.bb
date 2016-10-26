@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
@@ -564,6 +565,7 @@ void EnrollmentScreenHandler::DoShow() {
                         GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   screen_data.SetString("enrollment_mode",
                         EnrollmentModeToUIMode(config_.mode));
+  screen_data.SetBoolean("attestationBased", config_.is_mode_attestation());
   screen_data.SetString("management_domain", config_.management_domain);
 
   const bool cfm = g_browser_process->platform_part()

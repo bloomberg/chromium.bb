@@ -59,7 +59,9 @@ const char kSharkRequisition[] = "shark";
 const char kRialtoRequisition[] = "rialto";
 
 // Zero-touch enrollment flag values.
+
 const char kZeroTouchEnrollmentForced[] = "forced";
+const char kZeroTouchEnrollmentHandsOff[] = "hands-off";
 
 // Fetches a machine statistic value from StatisticsProvider, returns an empty
 // string on failure.
@@ -212,6 +214,9 @@ DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() {
       chromeos::switches::kEnterpriseEnableZeroTouchEnrollment);
   if (value == kZeroTouchEnrollmentForced) {
     return ZeroTouchEnrollmentMode::FORCED;
+  }
+  if (value == kZeroTouchEnrollmentHandsOff) {
+    return ZeroTouchEnrollmentMode::HANDS_OFF;
   }
   if (value.empty()) {
     return ZeroTouchEnrollmentMode::ENABLED;

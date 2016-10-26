@@ -93,6 +93,7 @@ class EnrollmentScreen
                            TestAttributePromptPageGetsLoaded);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAuthCodeGetsProperlyReceivedFromGaia);
+  FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
 
   // The authentication mechanisms that this class can use.
   enum Auth {

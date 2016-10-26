@@ -235,7 +235,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.isManualEnrollment_ = data.enrollment_mode === 'manual';
       this.isCancelDisabled = true;
 
-      this.showStep(STEP_SIGNIN);
+      this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
     },
 
     onBeforeHide: function() {

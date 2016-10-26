@@ -176,7 +176,6 @@ void EnrollmentScreen::AuthenticateUsingAttestation() {
   VLOG(1) << "Authenticating using attestation.";
   elapsed_timer_.reset(new base::ElapsedTimer());
   actor_->Show();
-  actor_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();
   enrollment_helper_->EnrollUsingAttestation();
 }

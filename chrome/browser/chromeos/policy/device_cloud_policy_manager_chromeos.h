@@ -41,7 +41,7 @@ class HeartbeatScheduler;
 class StatusUploader;
 class SystemLogUploader;
 
-enum class ZeroTouchEnrollmentMode { DISABLED, ENABLED, FORCED };
+enum class ZeroTouchEnrollmentMode { DISABLED, ENABLED, FORCED, HANDS_OFF };
 
 // CloudPolicyManager specialization for device policy on Chrome OS.
 class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {

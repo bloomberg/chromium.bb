@@ -6,14 +6,20 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,6 +152,70 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   // EXPECT_FALSE(actor_->IsConnecting());
   // actor_->ClearErrors();
+}
+
+class HandsOffNetworkScreenTest : public NetworkScreenTest {
+ public:
+  HandsOffNetworkScreenTest() {}
+
+ private:
+  // Overridden from InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(HandsOffNetworkScreenTest);
+};
+
+IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, RequiresNoInput) {
+  WizardController* wizard_controller = WizardController::default_controller();
+
+  // Allow the WizardController to advance throught the enrollment flow.
+  network_screen_->base_screen_delegate_ = wizard_controller;
+
+  // Simulate a network connection.
+  EXPECT_CALL(*mock_network_state_helper_, IsConnected())
+      .WillRepeatedly((Return(true)));
+  network_screen_->UpdateStatus();
+
+  // Check if NetworkScreen::OnContinueButtonPressed() is called
+  // Note that checking network_screen_->continue_pressed_ is not
+  // sufficient since there are cases where OnContinueButtonPressed()
+  // is called but where this variable is not set to true.
+  ASSERT_TRUE((!network_screen_->is_network_subscribed_) &&
+              network_screen_->network_state_helper_->IsConnected());
+
+  // Check that we reach the enrollment screen.
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+
+  // Check that attestation-based enrollment finishes
+  // with either success or error.
+  bool done = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      LoginDisplayHost::default_host()->GetOobeUI()->web_ui()->GetWebContents(),
+      "var count = 0;"
+      "function isVisible(el) {"
+      "  return window.getComputedStyle(document.getElementById(el)).display"
+      "    !== 'none';"
+      "}"
+      "function SendReplyIfEnrollmentDone() {"
+      "  if (isVisible('oauth-enroll-step-abe-success') ||"
+      "      isVisible('oauth-enroll-step-error')) {"
+      "    domAutomationController.send(true);"
+      "  } else if (count > 10) {"
+      "    domAutomationController.send(false);"
+      "  } else {"
+      "    count++;"
+      "    setTimeout(SendReplyIfEnrollmentDone, 1000);"
+      "  }"
+      "}"
+      "SendReplyIfEnrollmentDone();",
+      &done));
+
+  // Reset the enrollment helper so there is no side effect with other tests.
+  static_cast<EnrollmentScreen*>(wizard_controller->current_screen())
+      ->enrollment_helper_.reset();
 }
 
 }  // namespace chromeos

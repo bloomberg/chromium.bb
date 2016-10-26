@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
@@ -368,6 +369,11 @@ void NetworkScreen::StopWaitingForConnection(const base::string16& network_id) {
     view_->ShowConnectingStatus(false, network_id_);
 
   GetContextEditor().SetBoolean(kContextKeyContinueButtonEnabled, is_connected);
+  if (is_connected &&
+      policy::DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() ==
+          policy::ZeroTouchEnrollmentMode::HANDS_OFF) {
+    OnContinueButtonPressed();
+  }
 }
 
 void NetworkScreen::WaitForConnection(const base::string16& network_id) {
