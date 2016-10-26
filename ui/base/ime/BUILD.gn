@@ -194,6 +194,10 @@ component("ime") {
     libs = [ "imm32.lib" ]
   }
 
+  if (is_mac) {
+    libs = [ "AppKit.framework" ]
+  }
+
   if (use_ozone) {
     deps += [
       "//ui/events/ozone:events_ozone_layout",
