@@ -202,9 +202,8 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
         if (current_child_->Style()->isFloating()) {
           fragment_offset = PositionFloatFragment(*fragment, child_margins);
         } else {
-          // TODO(layout-ng): move ApplyAutoMargins to PositionFragment
           ApplyAutoMargins(*constraint_space_for_children_,
-                           *current_child_->Style(), *fragment, child_margins);
+                           *current_child_->Style(), *fragment, &child_margins);
           fragment_offset =
               PositionFragment(*fragment, child_margins, *constraint_space);
         }
@@ -306,7 +305,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
     const NGFragment& fragment,
-    NGBoxStrut child_margins,
+    const NGBoxStrut& child_margins,
     const NGConstraintSpace& space) {
   const NGBoxStrut collapsed_margins =
       CollapseMargins(space, child_margins, fragment);
@@ -324,7 +323,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
     const NGFragment& fragment,
-    NGBoxStrut margins) {
+    const NGBoxStrut& margins) {
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.
   const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(

@@ -66,7 +66,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param space Constraint space for the block.
   // @return Position of the fragment in the parent's constraint space.
   NGLogicalOffset PositionFragment(const NGFragment& fragment,
-                                   NGBoxStrut child_margins,
+                                   const NGBoxStrut& child_margins,
                                    const NGConstraintSpace& space);
 
   // Calculates position of the float fragment that needs to be
@@ -76,7 +76,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param margins Margins information for the fragment.
   // @return Position of the fragment in the parent's constraint space.
   NGLogicalOffset PositionFloatFragment(const NGFragment& fragment,
-                                        NGBoxStrut margins);
+                                        const NGBoxStrut& margins);
 
   // Updates block-{start|end} of the currently constructed fragment.
   //

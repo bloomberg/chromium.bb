@@ -287,19 +287,20 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraintSpace,
 void ApplyAutoMargins(const NGConstraintSpace& constraint_space,
                       const ComputedStyle& style,
                       const NGFragment& fragment,
-                      NGBoxStrut& margins) {
-  const LayoutUnit used_space = fragment.InlineSize() + margins.InlineSum();
+                      NGBoxStrut* margins) {
+  DCHECK(margins) << "Margins cannot be NULL here";
+  const LayoutUnit used_space = fragment.InlineSize() + margins->InlineSum();
   const LayoutUnit available_space =
       constraint_space.ContainerSize().inline_size - used_space;
   if (available_space < LayoutUnit())
     return;
   if (style.marginStart().isAuto() && style.marginEnd().isAuto()) {
-    margins.inline_start = available_space / 2;
-    margins.inline_end = available_space - margins.inline_start;
+    margins->inline_start = available_space / 2;
+    margins->inline_end = available_space - margins->inline_start;
   } else if (style.marginStart().isAuto()) {
-    margins.inline_start = available_space;
+    margins->inline_start = available_space;
   } else if (style.marginEnd().isAuto()) {
-    margins.inline_end = available_space;
+    margins->inline_end = available_space;
   }
 }
 

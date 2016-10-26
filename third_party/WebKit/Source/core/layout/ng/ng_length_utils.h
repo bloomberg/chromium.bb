@@ -71,7 +71,7 @@ CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
 CORE_EXPORT void ApplyAutoMargins(const NGConstraintSpace&,
                                   const ComputedStyle&,
                                   const NGFragment&,
-                                  NGBoxStrut& margins);
+                                  NGBoxStrut* margins);
 
 }  // namespace blink
 
