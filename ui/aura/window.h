@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -50,6 +51,7 @@ namespace aura {
 
 class LayoutManager;
 class WindowDelegate;
+class WindowPort;
 class WindowObserver;
 class WindowTreeHost;
 
@@ -85,6 +87,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   typedef std::vector<Window*> Windows;
 
   explicit Window(WindowDelegate* delegate);
+  Window(WindowDelegate* delegate, std::unique_ptr<WindowPort> port);
   ~Window() override;
 
   // Initializes the window. This creates the window's layer.
@@ -313,6 +316,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   template<typename T>
   void ClearProperty(const WindowProperty<T>* property);
 
+  // Returns the value of all properties with a non-default value.
+  std::set<const void*> GetAllPropertKeys() const;
+
   // NativeWidget::[GS]etNativeWindowProperty use strings as keys, and this is
   // difficult to change while retaining compatibility with other platforms.
   // TODO(benrg): Find a better solution.
@@ -340,10 +346,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void RemoveOrDestroyChildren();
 
  private:
-  friend class test::WindowTestApi;
   friend class LayoutManager;
+  friend class WindowPort;
   friend class WindowTargeter;
   friend class subtle::PropertyHelper;
+  friend class test::WindowTestApi;
+
   // Called by the public {Set,Get,Clear}Property functions.
   int64_t SetPropertyInternal(const void* key,
                               const char* name,
@@ -459,6 +467,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();
+
+  // Window owns its corresponding WindowPort, but the ref is held as a raw
+  // pointer in |port_| so that it can still be accessed during destruction.
+  // This is important as deleting the WindowPort may result in trying to lookup
+  // the WindowPort associated with the Window.
+  std::unique_ptr<WindowPort> port_owner_;
+  WindowPort* port_;
 
   // Bounds of this window relative to the parent. This is cached as the bounds
   // of the Layer and Window are not necessarily the same. In particular bounds

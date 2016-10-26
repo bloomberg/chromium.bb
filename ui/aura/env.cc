@@ -6,9 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
+#include "ui/aura/window_port_local.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/platform/platform_event_source.h"
 
@@ -43,9 +45,10 @@ Env::~Env() {
 }
 
 // static
-std::unique_ptr<Env> Env::CreateInstance() {
+std::unique_ptr<Env> Env::CreateInstance(
+    const WindowPortFactory& window_port_factory) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  std::unique_ptr<Env> env(new Env());
+  std::unique_ptr<Env> env(new Env(window_port_factory));
   env->Init();
   return env;
 }
@@ -61,6 +64,12 @@ Env* Env::GetInstance() {
 // static
 Env* Env::GetInstanceDontCreate() {
   return lazy_tls_ptr.Pointer()->Get();
+}
+
+std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
+  if (window_port_factory_.is_null())
+    return base::MakeUnique<WindowPortLocal>(window);
+  return window_port_factory_.Run(window);
 }
 
 void Env::AddObserver(EnvObserver* observer) {
@@ -79,8 +88,9 @@ bool Env::IsMouseButtonDown() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:
 
-Env::Env()
-    : mouse_button_flags_(0),
+Env::Env(const WindowPortFactory& window_port_factory)
+    : window_port_factory_(window_port_factory),
+      mouse_button_flags_(0),
       is_touch_down_(false),
       input_state_lookup_(InputStateLookup::Create()),
       context_factory_(NULL) {

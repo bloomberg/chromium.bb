@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_port.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -52,7 +53,12 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform()
-    : widget_(gfx::kNullAcceleratedWidget),
+    : WindowTreeHostPlatform(nullptr) {}
+
+WindowTreeHostPlatform::WindowTreeHostPlatform(
+    std::unique_ptr<WindowPort> window_port)
+    : WindowTreeHost(std::move(window_port)),
+      widget_(gfx::kNullAcceleratedWidget),
       current_cursor_(ui::kCursorNull) {
   CreateCompositor();
 }

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
@@ -28,6 +29,7 @@ class EnvTestHelper;
 class EnvObserver;
 class InputStateLookup;
 class Window;
+class WindowPort;
 class WindowTreeHost;
 
 // A singleton object that tracks general state within Aura.
@@ -35,9 +37,15 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
  public:
   ~Env() override;
 
-  static std::unique_ptr<Env> CreateInstance();
+  using WindowPortFactory =
+      base::Callback<std::unique_ptr<WindowPort>(Window* window)>;
+  static std::unique_ptr<Env> CreateInstance(
+      const WindowPortFactory& window_port_factory = WindowPortFactory());
   static Env* GetInstance();
   static Env* GetInstanceDontCreate();
+
+  // Called internally to create the appropriate WindowPort implementation.
+  std::unique_ptr<WindowPort> CreateWindowPort(Window* window);
 
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
@@ -71,7 +79,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   friend class Window;
   friend class WindowTreeHost;
 
-  Env();
+  explicit Env(const WindowPortFactory& window_port_factory);
 
   void Init();
 
@@ -89,6 +97,8 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   ui::EventTarget* GetParentTarget() override;
   std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
+
+  WindowPortFactory window_port_factory_;
 
   base::ObserverList<EnvObserver> observers_;
 

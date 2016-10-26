@@ -30,6 +30,8 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_port.h"
+#include "ui/aura/window_port_local.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
@@ -43,56 +45,20 @@
 
 namespace aura {
 
-class ScopedCursorHider {
- public:
-  explicit ScopedCursorHider(Window* window)
-      : window_(window),
-        hid_cursor_(false) {
-    if (!window_->IsRootWindow())
-      return;
-    const bool cursor_is_in_bounds = window_->GetBoundsInScreen().Contains(
-        Env::GetInstance()->last_mouse_location());
-    client::CursorClient* cursor_client = client::GetCursorClient(window_);
-    if (cursor_is_in_bounds && cursor_client &&
-        cursor_client->IsCursorVisible()) {
-      cursor_client->HideCursor();
-      hid_cursor_ = true;
-    }
-  }
-  ~ScopedCursorHider() {
-    if (!window_->IsRootWindow())
-      return;
+Window::Window(WindowDelegate* delegate) : Window(delegate, nullptr) {}
 
-    // Update the device scale factor of the cursor client only when the last
-    // mouse location is on this root window.
-    if (hid_cursor_) {
-      client::CursorClient* cursor_client = client::GetCursorClient(window_);
-      if (cursor_client) {
-        const display::Display& display =
-            display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-        cursor_client->SetDisplay(display);
-        cursor_client->ShowCursor();
-      }
-    }
-  }
-
- private:
-  Window* window_;
-  bool hid_cursor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCursorHider);
-};
-
-Window::Window(WindowDelegate* delegate)
-    : host_(NULL),
+Window::Window(WindowDelegate* delegate, std::unique_ptr<WindowPort> port)
+    : port_owner_(std::move(port)),
+      port_(port_owner_.get()),
+      host_(nullptr),
       type_(ui::wm::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),
       delegate_(delegate),
-      parent_(NULL),
+      parent_(nullptr),
       visible_(false),
       id_(kInitialId),
       transparent_(false),
-      user_data_(NULL),
+      user_data_(nullptr),
       ignore_events_(false),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
@@ -102,6 +68,9 @@ Window::Window(WindowDelegate* delegate)
 }
 
 Window::~Window() {
+  // See comment in header as to why this is done.
+  std::unique_ptr<WindowPort> port = std::move(port_owner_);
+
   if (layer()->owner() == this)
     layer()->CompleteAllAnimations();
   layer()->SuppressPaint();
@@ -170,12 +139,18 @@ Window::~Window() {
 }
 
 void Window::Init(ui::LayerType layer_type) {
+  if (!port_owner_) {
+    port_owner_ = Env::GetInstance()->CreateWindowPort(this);
+    port_ = port_owner_.get();
+  }
   SetLayer(new ui::Layer(layer_type));
+  std::unique_ptr<WindowPortInitData> init_data = port_->OnPreInit(this);
   layer()->SetVisible(false);
   layer()->set_delegate(this);
   UpdateLayerName();
   layer()->SetFillsBoundsOpaquely(!transparent_);
   Env::GetInstance()->NotifyWindowInitialized(this);
+  port_->OnPostInit(std::move(init_data));
 }
 
 void Window::SetType(ui::wm::WindowType type) {
@@ -373,6 +348,8 @@ void Window::AddChild(Window* child) {
 
   Window* old_root = child->GetRootWindow();
 
+  port_->OnWillAddChild(child);
+
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
       children_.end());
   if (child->parent())
@@ -406,6 +383,7 @@ void Window::RemoveChild(Window* child) {
   params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING;
   NotifyWindowHierarchyChange(params);
 
+  port_->OnWillRemoveChild(child);
   RemoveChildImpl(child, NULL);
 
   params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED;
@@ -517,6 +495,8 @@ Window* Window::GetTopWindowContainingPoint(const gfx::Point& local_point) {
 }
 
 Window* Window::GetToplevelWindow() {
+  // TODO: this may need to call to the WindowPort. For mus this may need to
+  // return for any top level.
   Window* topmost_window_with_delegate = NULL;
   for (aura::Window* window = this; window != NULL; window = window->parent()) {
     if (window->delegate())
@@ -556,6 +536,8 @@ bool Window::CanFocus() const {
 }
 
 bool Window::CanReceiveEvents() const {
+  // TODO(sky): this may want to delegate to the WindowPort as for mus there
+  // isn't a point in descending into windows owned by the client.
   if (IsRootWindow())
     return IsVisible();
 
@@ -603,6 +585,13 @@ void Window::SuppressPaint() {
   layer()->SuppressPaint();
 }
 
+std::set<const void*> Window::GetAllPropertKeys() const {
+  std::set<const void*> keys;
+  for (auto& pair : prop_map_)
+    keys.insert(pair.first);
+  return keys;
+}
+
 // {Set,Get,Clear}Property are implemented in window_property.h.
 
 void Window::SetNativeWindowProperty(const char* key, void* value) {
@@ -614,9 +603,7 @@ void* Window::GetNativeWindowProperty(const char* key) const {
 }
 
 void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  ScopedCursorHider hider(this);
-  if (delegate_)
-    delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
+  port_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
 #if !defined(NDEBUG)
@@ -668,6 +655,9 @@ int64_t Window::SetPropertyInternal(const void* key,
                                     PropertyDeallocator deallocator,
                                     int64_t value,
                                     int64_t default_value) {
+  // This code may be called before |port_| has been created.
+  std::unique_ptr<WindowPortPropertyData> data =
+      port_ ? port_->OnWillChangeProperty(key) : nullptr;
   int64_t old = GetPropertyInternal(key, default_value);
   if (value == default_value) {
     prop_map_.erase(key);
@@ -678,6 +668,8 @@ int64_t Window::SetPropertyInternal(const void* key,
     prop_value.deallocator = deallocator;
     prop_map_[key] = prop_value;
   }
+  if (port_)
+    port_->OnPropertyChanged(key, std::move(data));
   for (WindowObserver& observer : observers_)
     observer.OnWindowPropertyChanged(this, key, old);
   return old;
@@ -735,6 +727,7 @@ void Window::SetVisible(bool visible) {
   else
     layer()->SetVisible(visible);
   visible_ = visible;
+  port_->OnVisibilityChanged(visible);
   SchedulePaint();
   if (parent_ && parent_->layout_manager_)
     parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);
@@ -864,6 +857,7 @@ void Window::StackChildRelativeTo(Window* child,
       direction == STACK_ABOVE ?
       (child_i < target_i ? target_i : target_i + 1) :
       (child_i < target_i ? target_i - 1 : target_i);
+  port_->OnWillMoveChild(child_i, dest_i);
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
@@ -1038,6 +1032,11 @@ void Window::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
 
 void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds) {
   bounds_ = layer()->bounds();
+
+  // Use |bounds_| as that is the bounds before any animations, which is what
+  // mus wants.
+  port_->OnDidChangeBounds(old_bounds, bounds_);
+
   if (layout_manager_)
     layout_manager_->OnWindowResized();
   if (delegate_)

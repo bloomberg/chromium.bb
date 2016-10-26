@@ -5,6 +5,7 @@
 #ifndef UI_AURA_WINDOW_TREE_HOST_H_
 #define UI_AURA_WINDOW_TREE_HOST_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/event_types.h"
@@ -39,6 +40,7 @@ class WindowTreeHostTestApi;
 }
 
 class WindowEventDispatcher;
+class WindowPort;
 class WindowTreeHostObserver;
 
 // WindowTreeHost bridges between a native window and the embedded RootWindow.
@@ -184,6 +186,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 
   WindowTreeHost();
+  explicit WindowTreeHost(std::unique_ptr<WindowPort> window_port);
+
   void DestroyCompositor();
   void DestroyDispatcher();
 

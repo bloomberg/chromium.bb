@@ -11,6 +11,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_port.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/input_method.h"
@@ -218,12 +219,13 @@ void WindowTreeHost::Hide() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
-WindowTreeHost::WindowTreeHost()
-    : window_(new Window(nullptr)),
+WindowTreeHost::WindowTreeHost() : WindowTreeHost(nullptr) {}
+
+WindowTreeHost::WindowTreeHost(std::unique_ptr<WindowPort> window_port)
+    : window_(new Window(nullptr, std::move(window_port))),
       last_cursor_(ui::kCursorNull),
       input_method_(nullptr),
-      owned_input_method_(false) {
-}
+      owned_input_method_(false) {}
 
 void WindowTreeHost::DestroyCompositor() {
   compositor_.reset();
