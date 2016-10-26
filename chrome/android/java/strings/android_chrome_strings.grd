@@ -2537,15 +2537,6 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to edit their contact information, such as the user's full name, an email address or a phone number.">
         Edit contact info
       </message>
-      <message name="IDS_PAYMENTS_SHIPPING_SUMMARY_LABEL" desc="The title for the section of shipping information.">
-        Shipping
-      </message>
-      <message name="IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL" desc="The title for the section that lets the user select the address where the product should be shipped.">
-        Shipping address
-      </message>
-      <message name="IDS_PAYMENTS_SHIPPING_OPTION_LABEL" desc="The title for the section that lets the user select how the product should be shipped.">
-        Shipping option
-      </message>
       <message name="IDS_PAYMENTS_ORDER_SUMMARY_LABEL" desc="The title of the section that shows the summary of the order, including names and prices of individual line items, i.e. the bill.">
         Order summary
       </message>
@@ -2579,14 +2570,59 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_ADD_CONTACT" desc="Text on a button that lets a user add new contact details, like the user's full name, an email address or a phone number.">
         Add contact info
       </message>
-      <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS" desc="Text implying that a user needs to pick a shipping address to see the shipping methods.">
-        Select a shipping address to check shipping methods and requirements.
-      </message>
       <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified.">
         Checking
       </message>
-      <message name="IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS" desc="Text implying that a user needs to pick a different shipping address, because the currently selected address is not supported.">
-        Unsupported shipping address. Select a different adddress.
+
+      <!-- Shipping address in web payments API -->
+      <message name="IDS_PAYMENTS_SHIPPING_SUMMARY_LABEL" desc="The title for the section of shipping information. Shipping is typically used for packages.">
+        Shipping
+      </message>
+      <message name="IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL" desc="The title for the section that lets the user select the address where the product should be shipped. Shipping is typically used for packages.">
+        Shipping address
+      </message>
+      <message name="IDS_PAYMENTS_SHIPPING_OPTION_LABEL" desc="The title for the section that lets the user select how the product should be shipped. Shipping is typically used for packages.">
+        Shipping option
+      </message>
+      <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS" desc="Text implying that a user needs to pick a shipping address to see the shipping methods. Shipping is typically used for packages.">
+        Select a shipping address to check shipping methods and requirements.
+      </message>
+      <message name="IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS" desc="Text implying that a user needs to pick a different shipping address, because the currently selected address is not supported. Shipping is typically used for packages.">
+        Unsupported shipping address. Select a different address.
+      </message>
+
+      <!-- Delivery address in web payments API -->
+      <message name="IDS_PAYMENTS_DELIVERY_SUMMARY_LABEL" desc="The title for the section of delivery information. Delivery is commonly faster than shipping. For example, it might be used for food delivery.">
+        Delivery
+      </message>
+      <message name="IDS_PAYMENTS_DELIVERY_ADDRESS_LABEL" desc="The title for the section that lets the user select the address where the product should be delivered. Delivery is commonly faster than shipping. For example, it might be used for food delivery.">
+        Delivery address
+      </message>
+      <message name="IDS_PAYMENTS_DELIVERY_OPTION_LABEL" desc="The title for the section that lets the user select how the product should be delivered. Delivery is commonly faster than shipping. For example, it might be used for food delivery.">
+        Delivery option
+      </message>
+      <message name="IDS_PAYMENTS_SELECT_DELIVERY_ADDRESS_FOR_DELIVERY_METHODS" desc="Text implying that a user needs to pick a delivery address to see the delivery methods. Delivery is commonly faster than shipping. For example, it might be used for food delivery.">
+        Select a delivery address to check delivery methods and requirements.
+      </message>
+      <message name="IDS_PAYMENTS_UNSUPPORTED_DELIVERY_ADDRESS" desc="Text implying that a user needs to pick a different delivery address, because the currently selected address is not supported. Delivery is commonly faster than shipping. For example, it might be used for food delivery.">
+        Unsupported delivery address. Select a different address.
+      </message>
+
+      <!-- Pickup address in web payments API -->
+      <message name="IDS_PAYMENTS_PICKUP_SUMMARY_LABEL" desc="The title for the section of pickup information. For example, this could be the address for laundry pickup.">
+        Pickup
+      </message>
+      <message name="IDS_PAYMENTS_PICKUP_ADDRESS_LABEL" desc="The title for the section that lets the user select the address where their item should be picked up. For example, this item could be laundry to be cleaned.">
+        Pickup address
+      </message>
+      <message name="IDS_PAYMENTS_PICKUP_OPTION_LABEL" desc="The title for the section that lets the user select how their item should be picked up. This item can be laundry to be cleaned, for example.">
+        Pickup option
+      </message>
+      <message name="IDS_PAYMENTS_SELECT_PICKUP_ADDRESS_FOR_PICKUP_METHODS" desc="Text implying that a user needs to choose a pickup address to see the pickup methods. For example, this could be the address for laundry pickup.">
+        Select a pickup address to check pickup methods and requirements.
+      </message>
+      <message name="IDS_PAYMENTS_UNSUPPORTED_PICKUP_ADDRESS" desc="Text implying that a user needs to choose a different pickup address, because the currently selected address is not supported. This address can be used, for example, for laundry pickup.">
+        Unsupported pickup address. Select a different address.
       </message>
 
       <!-- Migration strings -->

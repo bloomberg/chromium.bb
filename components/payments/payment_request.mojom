@@ -107,11 +107,18 @@ struct PaymentDetails {
   string error;
 };
 
+enum PaymentShippingType {
+  SHIPPING,
+  DELIVERY,
+  PICKUP
+};
+
 struct PaymentOptions {
   bool request_payer_name;
   bool request_payer_email;
   bool request_payer_phone;
   bool request_shipping;
+  PaymentShippingType shipping_type;
 };
 
 struct PaymentMethodData {

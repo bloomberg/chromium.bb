@@ -676,6 +676,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/PaymentRequestJourneyLogger.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentRequestMetrics.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentResponseHelper.java",
+  "java/src/org/chromium/chrome/browser/payments/ShippingStrings.java",
   "java/src/org/chromium/chrome/browser/payments/ui/Completable.java",
   "java/src/org/chromium/chrome/browser/payments/ui/EditorDialogToolbar.java",
   "java/src/org/chromium/chrome/browser/payments/ui/EditorDropdownField.java",

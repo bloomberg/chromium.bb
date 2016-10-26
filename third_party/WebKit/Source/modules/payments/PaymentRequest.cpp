@@ -49,6 +49,7 @@ using blink::mojom::blink::PaymentOptions;
 using blink::mojom::blink::PaymentOptionsPtr;
 using blink::mojom::blink::PaymentShippingOption;
 using blink::mojom::blink::PaymentShippingOptionPtr;
+using blink::mojom::blink::PaymentShippingType;
 
 template <>
 struct TypeConverter<PaymentCurrencyAmountPtr, blink::PaymentCurrencyAmount> {
@@ -152,6 +153,14 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
     output->request_payer_email = input.requestPayerEmail();
     output->request_payer_phone = input.requestPayerPhone();
     output->request_shipping = input.requestShipping();
+
+    if (input.shippingType() == "delivery")
+      output->shipping_type = PaymentShippingType::DELIVERY;
+    else if (input.shippingType() == "pickup")
+      output->shipping_type = PaymentShippingType::PICKUP;
+    else
+      output->shipping_type = PaymentShippingType::SHIPPING;
+
     return output;
   }
 };

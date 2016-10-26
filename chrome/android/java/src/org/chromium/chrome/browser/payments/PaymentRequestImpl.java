@@ -51,6 +51,7 @@ import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentRequestClient;
 import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentShippingOption;
+import org.chromium.payments.mojom.PaymentShippingType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -382,7 +383,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
                 requestPayerName || requestPayerPhone || requestPayerEmail,
-                mMerchantSupportsAutofillPaymentInstruments, mMerchantName, mOrigin);
+                mMerchantSupportsAutofillPaymentInstruments, mMerchantName, mOrigin,
+                new ShippingStrings(
+                        options == null ? PaymentShippingType.SHIPPING : options.shippingType));
 
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;

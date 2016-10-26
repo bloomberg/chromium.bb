@@ -42,6 +42,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ExtraTextsSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
@@ -270,6 +271,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final ViewGroup mRequestView;
     private final PaymentRequestUiErrorView mErrorView;
     private final Callback<PaymentInformation> mUpdateSectionsCallback;
+    private final ShippingStrings mShippingStrings;
 
     private ScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
@@ -324,9 +326,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *                        "https://shop.momandpop.com". If the origin is too long for the UI, it
      *                        should elide according to:
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
+     * @param shippingStrings The string resource identifiers to use in the shipping sections.
      */
     public PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            boolean requestContact, boolean canAddCards, String title, String origin) {
+            boolean requestContact, boolean canAddCards, String title, String origin,
+            ShippingStrings shippingStrings) {
         mContext = activity;
         mClient = client;
         mRequestShipping = requestShipping;
@@ -370,6 +374,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 notifySelectionChecked();
             }
         };
+
+        mShippingStrings = shippingStrings;
 
         mRequestView =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
@@ -507,11 +513,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mOrderSummarySection = new LineItemBreakdownSection(
                 activity, activity.getString(R.string.payments_order_summary_label), this);
         mShippingSummarySection = new ExtraTextsSection(
-                activity, activity.getString(R.string.payments_shipping_summary_label), this);
+                activity, activity.getString(mShippingStrings.getSummaryLabel()), this);
         mShippingAddressSection = new OptionSection(
-                activity, activity.getString(R.string.payments_shipping_address_label), this);
+                activity, activity.getString(mShippingStrings.getAddressLabel()), this);
         mShippingOptionSection = new OptionSection(
-                activity, activity.getString(R.string.payments_shipping_option_label), this);
+                activity, activity.getString(mShippingStrings.getOptionLabel()), this);
         mContactDetailsSection = new OptionSection(
                 activity, activity.getString(R.string.payments_contact_details_label), this);
         mPaymentMethodSection = new OptionSection(
@@ -1017,8 +1023,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     || selectedItemIndex == SectionInformation.INVALID_SELECTION;
             return isNecessary
                     ? mContext.getString(selectedItemIndex == SectionInformation.NO_SELECTION
-                            ? R.string.payments_select_shipping_address_for_shipping_methods
-                            : R.string.payments_unsupported_shipping_address)
+                            ? mShippingStrings.getSelectPrompt()
+                            : mShippingStrings.getUnsupported())
                     : null;
         }
         return null;
