@@ -53,7 +53,7 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
  private:
   bool IsPlatformDevicePolicy(const PolicyMap::const_iterator iter) const;
 
-  std::vector<ConfigurationPolicyHandler*> handlers_;
+  std::vector<std::unique_ptr<ConfigurationPolicyHandler>> handlers_;
   const PopulatePolicyHandlerParametersCallback parameters_callback_;
   const GetChromePolicyDetailsCallback details_callback_;
 

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -102,7 +101,7 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   CombinedSchemaRegistry schema_registry_;
 
   // The browser-global policy providers, in decreasing order of priority.
-  ScopedVector<ConfigurationPolicyProvider> policy_providers_;
+  std::vector<std::unique_ptr<ConfigurationPolicyProvider>> policy_providers_;
   ConfigurationPolicyProvider* platform_policy_provider_;
 
   // Must be deleted before all the policy providers.

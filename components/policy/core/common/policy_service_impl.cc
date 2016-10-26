@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -22,8 +22,6 @@
 #include "components/policy/policy_constants.h"
 
 namespace policy {
-
-typedef PolicyServiceImpl::Providers::const_iterator Iterator;
 
 namespace {
 
@@ -83,8 +81,7 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
   providers_ = providers;
-  for (Iterator it = providers.begin(); it != providers.end(); ++it) {
-    ConfigurationPolicyProvider* provider = *it;
+  for (auto provider : providers) {
     provider->AddObserver(this);
     for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain) {
       initialization_complete_[domain] &=
@@ -98,31 +95,29 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
 
 PolicyServiceImpl::~PolicyServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
-    (*it)->RemoveObserver(this);
-  base::STLDeleteValues(&observers_);
+  for (auto provider : providers_)
+    provider->RemoveObserver(this);
 }
 
 void PolicyServiceImpl::AddObserver(PolicyDomain domain,
                                     PolicyService::Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Observers*& list = observers_[domain];
+  std::unique_ptr<Observers>& list = observers_[domain];
   if (!list)
-    list = new Observers();
+    list = base::MakeUnique<Observers>();
   list->AddObserver(observer);
 }
 
 void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
                                        PolicyService::Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ObserverMap::iterator it = observers_.find(domain);
+  auto it = observers_.find(domain);
   if (it == observers_.end()) {
     NOTREACHED();
     return;
   }
   it->second->RemoveObserver(observer);
   if (!it->second->might_have_observers()) {
-    delete it->second;
     observers_.erase(it);
   }
 }
@@ -155,10 +150,10 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
   } else {
     // Some providers might invoke OnUpdatePolicy synchronously while handling
     // RefreshPolicies. Mark all as pending before refreshing.
-    for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
-      refresh_pending_.insert(*it);
-    for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
-      (*it)->RefreshPolicies();
+    for (auto provider : providers_)
+      refresh_pending_.insert(provider);
+    for (auto provider : providers_)
+      provider->RefreshPolicies();
   }
 }
 
@@ -185,7 +180,7 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
     const PolicyMap& previous,
     const PolicyMap& current) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ObserverMap::iterator iterator = observers_.find(ns.domain);
+  auto iterator = observers_.find(ns.domain);
   if (iterator != observers_.end()) {
     for (auto& observer : *iterator->second)
       observer.OnPolicyUpdated(ns, previous, current);
@@ -196,9 +191,9 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   // Merge from each provider in their order of priority.
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
   PolicyBundle bundle;
-  for (Iterator it = providers_.begin(); it != providers_.end(); ++it) {
+  for (auto provider : providers_) {
     PolicyBundle provided_bundle;
-    provided_bundle.CopyFrom((*it)->policies());
+    provided_bundle.CopyFrom(provider->policies());
     FixDeprecatedPolicies(&provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
   }
@@ -256,15 +251,15 @@ void PolicyServiceImpl::CheckInitializationComplete() {
     PolicyDomain policy_domain = static_cast<PolicyDomain>(domain);
 
     bool all_complete = true;
-    for (Iterator it = providers_.begin(); it != providers_.end(); ++it) {
-      if (!(*it)->IsInitializationComplete(policy_domain)) {
+    for (auto provider : providers_) {
+      if (!provider->IsInitializationComplete(policy_domain)) {
         all_complete = false;
         break;
       }
     }
     if (all_complete) {
       initialization_complete_[domain] = true;
-      ObserverMap::iterator iter = observers_.find(policy_domain);
+      auto iter = observers_.find(policy_domain);
       if (iter != observers_.end()) {
         for (auto& observer : *iter->second)
           observer.OnPolicyServiceInitialized(policy_domain);

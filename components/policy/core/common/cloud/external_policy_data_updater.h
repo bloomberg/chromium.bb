@@ -112,11 +112,11 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
 
   // Queue of jobs waiting to be run. Jobs are taken off the queue and started
   // by StartNextJobs().
-  std::queue<base::WeakPtr<FetchJob> > job_queue_;
+  std::queue<base::WeakPtr<FetchJob>> job_queue_;
 
   // Map that owns all existing jobs, regardless of whether they are currently
   // queued, running or waiting for a retry.
-  std::map<std::string, FetchJob*> job_map_;
+  std::map<std::string, std::unique_ptr<FetchJob>> job_map_;
 
   // |True| once the destructor starts. Prevents jobs from being started during
   // shutdown.

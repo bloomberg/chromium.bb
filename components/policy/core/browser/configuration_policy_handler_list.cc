@@ -5,7 +5,7 @@
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -28,12 +28,11 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList(
       details_callback_(details_callback) {}
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {
-  base::STLDeleteElements(&handlers_);
 }
 
 void ConfigurationPolicyHandlerList::AddHandler(
     std::unique_ptr<ConfigurationPolicyHandler> handler) {
-  handlers_.push_back(handler.release());
+  handlers_.push_back(std::move(handler));
 }
 
 void ConfigurationPolicyHandlerList::ApplyPolicySettings(
@@ -56,7 +55,7 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
   PolicyHandlerParameters parameters;
   parameters_callback_.Run(&parameters);
 
-  for (auto handler : handlers_) {
+  for (const auto& handler : handlers_) {
     if (handler->CheckPolicySettings(*filtered_policies, errors) && prefs) {
       handler->ApplyPolicySettingsWithParameters(
           *filtered_policies, parameters, prefs);
@@ -76,7 +75,7 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
 
 void ConfigurationPolicyHandlerList::PrepareForDisplaying(
     PolicyMap* policies) const {
-  for (auto handler : handlers_)
+  for (const auto& handler : handlers_)
     handler->PrepareForDisplaying(policies);
 }
 

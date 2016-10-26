@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/signing_service.h"
@@ -68,7 +69,6 @@ CloudPolicyClient::CloudPolicyClient(
 }
 
 CloudPolicyClient::~CloudPolicyClient() {
-  base::STLDeleteValues(&responses_);
 }
 
 void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
@@ -81,7 +81,7 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
   client_id_ = client_id;
   request_jobs_.clear();
   policy_fetch_request_job_.reset();
-  base::STLDeleteValues(&responses_);
+  responses_.clear();
 
   NotifyRegistrationStateChanged();
 }
@@ -489,9 +489,8 @@ void CloudPolicyClient::SetStateKeysToUpload(
 const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
     const std::string& policy_type,
     const std::string& settings_entity_id) const {
-  ResponseMap::const_iterator it =
-      responses_.find(std::make_pair(policy_type, settings_entity_id));
-  return it == responses_.end() ? nullptr : it->second;
+  auto it = responses_.find(std::make_pair(policy_type, settings_entity_id));
+  return it == responses_.end() ? nullptr : it->second.get();
 }
 
 scoped_refptr<net::URLRequestContextGetter>
@@ -581,7 +580,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
   if (status == DM_STATUS_SUCCESS) {
     const em::DevicePolicyResponse& policy_response =
         response.policy_response();
-    base::STLDeleteValues(&responses_);
+    responses_.clear();
     for (int i = 0; i < policy_response.response_size(); ++i) {
       const em::PolicyFetchResponse& response = policy_response.response(i);
       em::PolicyData policy_data;
@@ -601,7 +600,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
             << type << ", entity: " << entity_id << ", ignoring";
         continue;
       }
-      responses_[key] = new em::PolicyFetchResponse(response);
+      responses_[key] = base::MakeUnique<em::PolicyFetchResponse>(response);
     }
     state_keys_to_upload_.clear();
     NotifyPolicyFetched();
@@ -709,7 +708,7 @@ void CloudPolicyClient::OnDeviceAttributeUpdated(
 
 void CloudPolicyClient::RemoveJob(const DeviceManagementRequestJob* job) {
   for (auto it = request_jobs_.begin(); it != request_jobs_.end(); ++it) {
-    if (*it == job) {
+    if (it->get() == job) {
       request_jobs_.erase(it);
       return;
     }

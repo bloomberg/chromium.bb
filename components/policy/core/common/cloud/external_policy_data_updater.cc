@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "components/policy/core/common/cloud/external_policy_data_fetcher.h"
 #include "crypto/sha2.h"
 #include "net/base/backoff_entry.h"
@@ -306,7 +306,6 @@ ExternalPolicyDataUpdater::ExternalPolicyDataUpdater(
 ExternalPolicyDataUpdater::~ExternalPolicyDataUpdater() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   shutting_down_ = true;
-  base::STLDeleteValues(&job_map_);
 }
 
 void ExternalPolicyDataUpdater::FetchExternalData(
@@ -316,7 +315,7 @@ void ExternalPolicyDataUpdater::FetchExternalData(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   // Check whether a job exists for this |key| already.
-  FetchJob* job = job_map_[key];
+  FetchJob* job = job_map_[key].get();
   if (job) {
     // If the current |job| is handling the given |request| already, nothing
     // needs to be done.
@@ -326,13 +325,12 @@ void ExternalPolicyDataUpdater::FetchExternalData(
     // Otherwise, the current |job| is obsolete. If the |job| is on the queue,
     // its WeakPtr will be invalidated and skipped by StartNextJobs(). If |job|
     // is currently running, it will call OnJobFailed() immediately.
-    delete job;
     job_map_.erase(key);
   }
 
   // Start a new job to handle |request|.
   job = new FetchJob(this, key, request, callback);
-  job_map_[key] = job;
+  job_map_[key] = base::WrapUnique(job);
   ScheduleJob(job);
 }
 
@@ -343,11 +341,9 @@ void ExternalPolicyDataUpdater::CancelExternalDataFetch(
   // If a |job| exists for this |key|, delete it. If the |job| is on the queue,
   // its WeakPtr will be invalidated and skipped by StartNextJobs(). If |job| is
   // currently running, it will call OnJobFailed() immediately.
-  std::map<std::string, FetchJob*>::iterator job = job_map_.find(key);
-  if (job != job_map_.end()) {
-    delete job->second;
+  auto job = job_map_.find(key);
+  if (job != job_map_.end())
     job_map_.erase(job);
-  }
 }
 
 void ExternalPolicyDataUpdater::StartNextJobs() {
@@ -368,7 +364,7 @@ void ExternalPolicyDataUpdater::StartNextJobs() {
 }
 
 void ExternalPolicyDataUpdater::ScheduleJob(FetchJob* job) {
-  DCHECK_EQ(job_map_[job->key()], job);
+  DCHECK_EQ(job_map_[job->key()].get(), job);
 
   job_queue_.push(job->AsWeakPtr());
 
@@ -377,20 +373,20 @@ void ExternalPolicyDataUpdater::ScheduleJob(FetchJob* job) {
 
 void ExternalPolicyDataUpdater::OnJobSucceeded(FetchJob* job) {
   DCHECK(running_jobs_);
-  DCHECK_EQ(job_map_[job->key()], job);
+  DCHECK_EQ(job_map_[job->key()].get(), job);
 
   --running_jobs_;
   job_map_.erase(job->key());
-  delete job;
 
   StartNextJobs();
 }
 
 void ExternalPolicyDataUpdater::OnJobFailed(FetchJob* job) {
   DCHECK(running_jobs_);
-  DCHECK_EQ(job_map_[job->key()], job);
-
   --running_jobs_;
+
+  // Don't touch job_map_; deletion of FetchJobs cause a call to this method, so
+  // job_map_ is possibly in an inconsistent state.
 
   // The job is not deleted when it fails because a retry attempt may have been
   // scheduled.

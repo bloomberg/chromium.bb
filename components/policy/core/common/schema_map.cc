@@ -56,7 +56,7 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
       continue;
     }
 
-    PolicyMap* map = it->second;
+    PolicyMap* map = it->second.get();
     for (PolicyMap::const_iterator it_map = map->begin();
          it_map != map->end();) {
       const std::string& policy_name = it_map->first;

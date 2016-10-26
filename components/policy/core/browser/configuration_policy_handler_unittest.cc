@@ -23,11 +23,14 @@ namespace policy {
 namespace {
 
 void GetIntegerTypeMap(
-    ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "one", std::unique_ptr<base::Value>(new base::FundamentalValue(1))));
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "two", std::unique_ptr<base::Value>(new base::FundamentalValue(2))));
+    std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
+        result) {
+  result->push_back(
+      base::MakeUnique<StringMappingListPolicyHandler::MappingEntry>(
+          "one", std::unique_ptr<base::Value>(new base::FundamentalValue(1))));
+  result->push_back(
+      base::MakeUnique<StringMappingListPolicyHandler::MappingEntry>(
+          "two", std::unique_ptr<base::Value>(new base::FundamentalValue(2))));
 }
 
 const char kTestPolicy[] = "unit_test.test_policy";

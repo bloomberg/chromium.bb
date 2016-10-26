@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -139,46 +140,52 @@ bool PolicyErrorMap::IsReady() const {
 }
 
 void PolicyErrorMap::AddError(const std::string& policy, int message_id) {
-  AddError(new SimplePendingError(policy, message_id, std::string()));
-}
-
-void PolicyErrorMap::AddError(const std::string& policy,
-                              const std::string& subkey,
-                              int message_id) {
   AddError(
-      new DictSubkeyPendingError(policy, subkey, message_id, std::string()));
+      base::MakeUnique<SimplePendingError>(policy, message_id, std::string()));
+}
+
+void PolicyErrorMap::AddError(const std::string& policy,
+                              const std::string& subkey,
+                              int message_id) {
+  AddError(base::MakeUnique<DictSubkeyPendingError>(policy, subkey, message_id,
+                                                    std::string()));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int index,
                               int message_id) {
-  AddError(new ListItemPendingError(policy, index, message_id, std::string()));
+  AddError(base::MakeUnique<ListItemPendingError>(policy, index, message_id,
+                                                  std::string()));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int message_id,
                               const std::string& replacement) {
-  AddError(new SimplePendingError(policy, message_id, replacement));
+  AddError(
+      base::MakeUnique<SimplePendingError>(policy, message_id, replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id,
                               const std::string& replacement) {
-  AddError(new DictSubkeyPendingError(policy, subkey, message_id, replacement));
+  AddError(base::MakeUnique<DictSubkeyPendingError>(policy, subkey, message_id,
+                                                    replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int index,
                               int message_id,
                               const std::string& replacement) {
-  AddError(new ListItemPendingError(policy, index, message_id, replacement));
+  AddError(base::MakeUnique<ListItemPendingError>(policy, index, message_id,
+                                                  replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& error_path,
                               const std::string& message) {
-  AddError(new SchemaValidatingPendingError(policy, error_path, message));
+  AddError(base::MakeUnique<SchemaValidatingPendingError>(policy, error_path,
+                                                          message));
 }
 
 base::string16 PolicyErrorMap::GetErrors(const std::string& policy) {
@@ -215,12 +222,12 @@ void PolicyErrorMap::Clear() {
   map_.clear();
 }
 
-void PolicyErrorMap::AddError(PendingError* error) {
+void PolicyErrorMap::AddError(std::unique_ptr<PendingError> error) {
   if (IsReady()) {
-    Convert(error);
-    delete error;
+    Convert(error.get());
+    // Allow error to be deleted as it exits function scope.
   } else {
-    pending_.push_back(error);
+    pending_.push_back(std::move(error));
   }
 }
 
@@ -231,7 +238,7 @@ void PolicyErrorMap::Convert(PendingError* error) {
 void PolicyErrorMap::CheckReadyAndConvert() {
   DCHECK(IsReady());
   for (size_t i = 0; i < pending_.size(); ++i) {
-    Convert(pending_[i]);
+    Convert(pending_[i].get());
   }
   pending_.clear();
 }

@@ -67,9 +67,10 @@ base::FilePath GetManagedPolicyPath() {
 
 ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
     : BrowserPolicyConnector(base::Bind(&BuildHandlerList)) {
-  ConfigurationPolicyProvider* platform_provider = CreatePlatformProvider();
+  std::unique_ptr<ConfigurationPolicyProvider> platform_provider =
+      CreatePlatformProvider();
   if (platform_provider)
-    SetPlatformPolicyProvider(base::WrapUnique(platform_provider));
+    SetPlatformPolicyProvider(std::move(platform_provider));
 }
 
 ChromeBrowserPolicyConnector::~ChromeBrowserPolicyConnector() {}
@@ -92,33 +93,36 @@ void ChromeBrowserPolicyConnector::Init(
   InitInternal(local_state, std::move(device_management_service));
 }
 
-ConfigurationPolicyProvider*
-    ChromeBrowserPolicyConnector::CreatePlatformProvider() {
+std::unique_ptr<ConfigurationPolicyProvider>
+ChromeBrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
   std::unique_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
       kRegistryChromePolicyKey));
-  return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
+  return base::MakeUnique<AsyncPolicyProvider>(GetSchemaRegistry(),
+                                               std::move(loader));
 #elif defined(OS_MACOSX)
   std::unique_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
       GetManagedPolicyPath(), new MacPreferences()));
-  return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
+  return base::MakeUnique<AsyncPolicyProvider>(GetSchemaRegistry(),
+                                               std::move(loader));
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   base::FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     std::unique_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
         config_dir_path, POLICY_SCOPE_MACHINE));
-    return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
+    return base::MakeUnique<AsyncPolicyProvider>(GetSchemaRegistry(),
+                                                 std::move(loader));
   } else {
-    return NULL;
+    return nullptr;
   }
 #elif defined(OS_ANDROID)
-  return new policy::android::AndroidCombinedPolicyProvider(
+  return base::MakeUnique<policy::android::AndroidCombinedPolicyProvider>(
       GetSchemaRegistry());
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 

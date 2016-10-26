@@ -24,8 +24,8 @@ namespace {
 // Check whether two RegistryDicts equal each other.
 testing::AssertionResult RegistryDictEquals(const RegistryDict& a,
                                             const RegistryDict& b) {
-  RegistryDict::KeyMap::const_iterator iter_key_a(a.keys().begin());
-  RegistryDict::KeyMap::const_iterator iter_key_b(b.keys().begin());
+  auto iter_key_a = a.keys().begin();
+  auto iter_key_b = b.keys().begin();
   for (; iter_key_a != a.keys().end() && iter_key_b != b.keys().end();
        ++iter_key_a, ++iter_key_b) {
     if (iter_key_a->first != iter_key_b->first) {
@@ -39,16 +39,17 @@ testing::AssertionResult RegistryDictEquals(const RegistryDict& a,
       return result;
   }
 
-  RegistryDict::ValueMap::const_iterator iter_value_a(a.values().begin());
-  RegistryDict::ValueMap::const_iterator iter_value_b(b.values().begin());
+  auto iter_value_a = a.values().begin();
+  auto iter_value_b = b.values().begin();
   for (; iter_value_a != a.values().end() && iter_value_b != b.values().end();
        ++iter_value_a, ++iter_value_b) {
     if (iter_value_a->first != iter_value_b->first ||
-        !base::Value::Equals(iter_value_a->second, iter_value_b->second)) {
+        !base::Value::Equals(iter_value_a->second.get(),
+                             iter_value_b->second.get())) {
       return testing::AssertionFailure()
-          << "Value mismatch "
-          << iter_value_a->first << "=" << *iter_value_a->second
-          << " vs. " << iter_value_b->first << "=" << *iter_value_b->second;
+             << "Value mismatch " << iter_value_a->first << "="
+             << *iter_value_a->second.get() << " vs. " << iter_value_b->first
+             << "=" << *iter_value_b->second.get();
     }
   }
 

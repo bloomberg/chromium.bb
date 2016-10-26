@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
@@ -680,22 +679,25 @@ class ForceYouTubeSafetyModePolicyHandler : public TypeCheckingPolicyHandler {
 
 #if defined(ENABLE_EXTENSIONS)
 void GetExtensionAllowedTypesMap(
-    ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
+    std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
+        result) {
   // Mapping from extension type names to Manifest::Type.
   for (size_t index = 0;
        index < extensions::schema_constants::kAllowedTypesMapSize;
        ++index) {
     const extensions::schema_constants::AllowedTypesMapEntry& entry =
         extensions::schema_constants::kAllowedTypesMap[index];
-    result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-        entry.name, std::unique_ptr<base::Value>(
-                        new base::FundamentalValue(entry.manifest_type))));
+    result->push_back(
+        base::MakeUnique<StringMappingListPolicyHandler::MappingEntry>(
+            entry.name, std::unique_ptr<base::Value>(
+                            new base::FundamentalValue(entry.manifest_type))));
   }
 }
 #endif
 
 void GetDeprecatedFeaturesMap(
-    ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
+    std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
+        result) {
   // Maps feature tags as specified in policy to the corresponding switch to
   // re-enable them.
 }
@@ -814,80 +816,60 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       base::MakeUnique<LoginScreenPowerManagementPolicyHandler>(chrome_schema));
 
-  ScopedVector<ConfigurationPolicyHandler>
+  std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
       power_management_idle_legacy_policies;
   power_management_idle_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kScreenDimDelayAC,
-                                prefs::kPowerAcScreenDimDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
+      base::MakeUnique<IntRangePolicyHandler>(key::kScreenDimDelayAC,
+                                              prefs::kPowerAcScreenDimDelayMs,
+                                              0, INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kScreenOffDelayAC,
-                                prefs::kPowerAcScreenOffDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
+      base::MakeUnique<IntRangePolicyHandler>(key::kScreenOffDelayAC,
+                                              prefs::kPowerAcScreenOffDelayMs,
+                                              0, INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kIdleWarningDelayAC,
-                                prefs::kPowerAcIdleWarningDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
-  power_management_idle_legacy_policies.push_back(new IntRangePolicyHandler(
-      key::kIdleDelayAC, prefs::kPowerAcIdleDelayMs, 0, INT_MAX, true));
+      base::MakeUnique<IntRangePolicyHandler>(key::kIdleWarningDelayAC,
+                                              prefs::kPowerAcIdleWarningDelayMs,
+                                              0, INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kScreenDimDelayBattery,
-                                prefs::kPowerBatteryScreenDimDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
+      base::MakeUnique<IntRangePolicyHandler>(
+          key::kIdleDelayAC, prefs::kPowerAcIdleDelayMs, 0, INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kScreenOffDelayBattery,
-                                prefs::kPowerBatteryScreenOffDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
+      base::MakeUnique<IntRangePolicyHandler>(
+          key::kScreenDimDelayBattery, prefs::kPowerBatteryScreenDimDelayMs, 0,
+          INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kIdleWarningDelayBattery,
-                                prefs::kPowerBatteryIdleWarningDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
+      base::MakeUnique<IntRangePolicyHandler>(
+          key::kScreenOffDelayBattery, prefs::kPowerBatteryScreenOffDelayMs, 0,
+          INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kIdleDelayBattery,
-                                prefs::kPowerBatteryIdleDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
-  power_management_idle_legacy_policies.push_back(new IntRangePolicyHandler(
-      key::kIdleActionAC,
-      prefs::kPowerAcIdleAction,
-      chromeos::PowerPolicyController::ACTION_SUSPEND,
-      chromeos::PowerPolicyController::ACTION_DO_NOTHING,
-      false));
-  power_management_idle_legacy_policies.push_back(new IntRangePolicyHandler(
-      key::kIdleActionBattery,
-      prefs::kPowerBatteryIdleAction,
-      chromeos::PowerPolicyController::ACTION_SUSPEND,
-      chromeos::PowerPolicyController::ACTION_DO_NOTHING,
-      false));
+      base::MakeUnique<IntRangePolicyHandler>(
+          key::kIdleWarningDelayBattery, prefs::kPowerBatteryIdleWarningDelayMs,
+          0, INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      new DeprecatedIdleActionHandler());
+      base::MakeUnique<IntRangePolicyHandler>(key::kIdleDelayBattery,
+                                              prefs::kPowerBatteryIdleDelayMs,
+                                              0, INT_MAX, true));
+  power_management_idle_legacy_policies.push_back(
+      base::MakeUnique<IntRangePolicyHandler>(
+          key::kIdleActionAC, prefs::kPowerAcIdleAction,
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING, false));
+  power_management_idle_legacy_policies.push_back(
+      base::MakeUnique<IntRangePolicyHandler>(
+          key::kIdleActionBattery, prefs::kPowerBatteryIdleAction,
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING, false));
+  power_management_idle_legacy_policies.push_back(
+      base::MakeUnique<DeprecatedIdleActionHandler>());
 
-  ScopedVector<ConfigurationPolicyHandler> screen_lock_legacy_policies;
-  screen_lock_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kScreenLockDelayAC,
-                                prefs::kPowerAcScreenLockDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
-  screen_lock_legacy_policies.push_back(
-      new IntRangePolicyHandler(key::kScreenLockDelayBattery,
-                                prefs::kPowerBatteryScreenLockDelayMs,
-                                0,
-                                INT_MAX,
-                                true));
+  std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
+      screen_lock_legacy_policies;
+  screen_lock_legacy_policies.push_back(base::MakeUnique<IntRangePolicyHandler>(
+      key::kScreenLockDelayAC, prefs::kPowerAcScreenLockDelayMs, 0, INT_MAX,
+      true));
+  screen_lock_legacy_policies.push_back(base::MakeUnique<IntRangePolicyHandler>(
+      key::kScreenLockDelayBattery, prefs::kPowerBatteryScreenLockDelayMs, 0,
+      INT_MAX, true));
 
   handlers->AddHandler(base::MakeUnique<IntRangePolicyHandler>(
       key::kSAMLOfflineSigninTimeLimit, prefs::kSAMLOfflineSigninTimeLimit, -1,

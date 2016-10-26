@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -40,7 +42,7 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
  private:
-  ConfigurationPolicyProvider* CreatePlatformProvider();
+  std::unique_ptr<ConfigurationPolicyProvider> CreatePlatformProvider();
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserPolicyConnector);
 };

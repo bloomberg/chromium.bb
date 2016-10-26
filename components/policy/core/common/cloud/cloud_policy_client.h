@@ -16,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -46,8 +45,9 @@ class POLICY_EXPORT CloudPolicyClient {
  public:
   // Maps a (policy type, settings entity ID) pair to its corresponding
   // PolicyFetchResponse.
-  using ResponseMap = std::map<std::pair<std::string, std::string>,
-                               enterprise_management::PolicyFetchResponse*>;
+  using ResponseMap =
+      std::map<std::pair<std::string, std::string>,
+               std::unique_ptr<enterprise_management::PolicyFetchResponse>>;
 
   // A callback which receives boolean status of an operation.  If the operation
   // succeeded, |status| is true.
@@ -411,7 +411,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // All of the outstanding non-policy-fetch request jobs. These jobs are
   // silently cancelled if Unregister() is called.
-  ScopedVector<DeviceManagementRequestJob> request_jobs_;
+  std::vector<std::unique_ptr<DeviceManagementRequestJob>> request_jobs_;
 
   // The policy responses returned by the last policy fetch operation.
   ResponseMap responses_;

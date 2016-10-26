@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,7 +24,7 @@ namespace policy {
 namespace {
 
 // Converts a value (as read from the registry) to meet |schema|, converting
-// types as necessary. Unconvertible types will show up as NULL values in the
+// types as necessary. Unconvertible types will show up as null values in the
 // result.
 std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
                                           const Schema& schema) {
@@ -34,8 +34,8 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
   // If the type is good already, go with it.
   if (value.IsType(schema.type())) {
     // Recurse for complex types.
-    const base::DictionaryValue* dict = NULL;
-    const base::ListValue* list = NULL;
+    const base::DictionaryValue* dict = nullptr;
+    const base::ListValue* list = nullptr;
     if (value.GetAsDictionary(&dict)) {
       std::unique_ptr<base::DictionaryValue> result(
           new base::DictionaryValue());
@@ -100,11 +100,11 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
     }
     case base::Value::TYPE_LIST: {
       // Lists are encoded as subkeys with numbered value in the registry.
-      const base::DictionaryValue* dict = NULL;
+      const base::DictionaryValue* dict = nullptr;
       if (value.GetAsDictionary(&dict)) {
         std::unique_ptr<base::ListValue> result(new base::ListValue());
         for (int i = 1; ; ++i) {
-          const base::Value* entry = NULL;
+          const base::Value* entry = nullptr;
           if (!dict->Get(base::IntToString(i), &entry))
             break;
           std::unique_ptr<base::Value> converted =
@@ -153,12 +153,12 @@ RegistryDict::~RegistryDict() {
 
 RegistryDict* RegistryDict::GetKey(const std::string& name) {
   KeyMap::iterator entry = keys_.find(name);
-  return entry != keys_.end() ? entry->second : NULL;
+  return entry != keys_.end() ? entry->second.get() : nullptr;
 }
 
 const RegistryDict* RegistryDict::GetKey(const std::string& name) const {
   KeyMap::const_iterator entry = keys_.find(name);
-  return entry != keys_.end() ? entry->second : NULL;
+  return entry != keys_.end() ? entry->second.get() : nullptr;
 }
 
 void RegistryDict::SetKey(const std::string& name,
@@ -168,33 +168,31 @@ void RegistryDict::SetKey(const std::string& name,
     return;
   }
 
-  RegistryDict*& entry = keys_[name];
-  delete entry;
-  entry = dict.release();
+  keys_[name] = std::move(dict);
 }
 
 std::unique_ptr<RegistryDict> RegistryDict::RemoveKey(const std::string& name) {
   std::unique_ptr<RegistryDict> result;
   KeyMap::iterator entry = keys_.find(name);
   if (entry != keys_.end()) {
-    result.reset(entry->second);
+    result = std::move(entry->second);
     keys_.erase(entry);
   }
   return result;
 }
 
 void RegistryDict::ClearKeys() {
-  base::STLDeleteValues(&keys_);
+  keys_.clear();
 }
 
 base::Value* RegistryDict::GetValue(const std::string& name) {
   ValueMap::iterator entry = values_.find(name);
-  return entry != values_.end() ? entry->second : NULL;
+  return entry != values_.end() ? entry->second.get() : nullptr;
 }
 
 const base::Value* RegistryDict::GetValue(const std::string& name) const {
   ValueMap::const_iterator entry = values_.find(name);
-  return entry != values_.end() ? entry->second : NULL;
+  return entry != values_.end() ? entry->second.get() : nullptr;
 }
 
 void RegistryDict::SetValue(const std::string& name,
@@ -204,9 +202,7 @@ void RegistryDict::SetValue(const std::string& name,
     return;
   }
 
-  base::Value*& entry = values_[name];
-  delete entry;
-  entry = dict.release();
+  values_[name] = std::move(dict);
 }
 
 std::unique_ptr<base::Value> RegistryDict::RemoveValue(
@@ -214,22 +210,22 @@ std::unique_ptr<base::Value> RegistryDict::RemoveValue(
   std::unique_ptr<base::Value> result;
   ValueMap::iterator entry = values_.find(name);
   if (entry != values_.end()) {
-    result.reset(entry->second);
+    result = std::move(entry->second);
     values_.erase(entry);
   }
   return result;
 }
 
 void RegistryDict::ClearValues() {
-  base::STLDeleteValues(&values_);
+  values_.clear();
 }
 
 void RegistryDict::Merge(const RegistryDict& other) {
   for (KeyMap::const_iterator entry(other.keys_.begin());
        entry != other.keys_.end(); ++entry) {
-    RegistryDict*& subdict = keys_[entry->first];
+    std::unique_ptr<RegistryDict>& subdict = keys_[entry->first];
     if (!subdict)
-      subdict = new RegistryDict();
+      subdict = base::MakeUnique<RegistryDict>();
     subdict->Merge(*entry->second);
   }
 

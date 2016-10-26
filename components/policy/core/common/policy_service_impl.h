@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_SERVICE_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -28,7 +29,7 @@ class POLICY_EXPORT PolicyServiceImpl
     : public PolicyService,
       public ConfigurationPolicyProvider::Observer {
  public:
-  typedef std::vector<ConfigurationPolicyProvider*> Providers;
+  using Providers = std::vector<ConfigurationPolicyProvider*>;
 
   // The PolicyServiceImpl will merge policies from |providers|. |providers|
   // must be sorted in decreasing order of priority; the first provider will
@@ -48,8 +49,7 @@ class POLICY_EXPORT PolicyServiceImpl
   void RefreshPolicies(const base::Closure& callback) override;
 
  private:
-  typedef base::ObserverList<PolicyService::Observer, true> Observers;
-  typedef std::map<PolicyDomain, Observers*> ObserverMap;
+  using Observers = base::ObserverList<PolicyService::Observer, true>;
 
   // ConfigurationPolicyProvider::Observer overrides:
   void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
@@ -78,7 +78,7 @@ class POLICY_EXPORT PolicyServiceImpl
   PolicyBundle policy_bundle_;
 
   // Maps each policy domain to its observer list.
-  ObserverMap observers_;
+  std::map<PolicyDomain, std::unique_ptr<Observers>> observers_;
 
   // True if all the providers are initialized for the indexed policy domain.
   bool initialization_complete_[POLICY_DOMAIN_SIZE];
