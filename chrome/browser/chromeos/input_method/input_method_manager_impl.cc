@@ -1223,27 +1223,32 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
   if (!url.has_ref())
     return;
   std::string overridden_ref = url.ref();
-  auto i = overridden_ref.find("id");
+  auto i = overridden_ref.find("id=");
   if (i == std::string::npos)
     return;
 
   if (keyset.empty()) {
+    // Resets the url as the input method default url and notify the hash
+    // changed to VK.
     keyboard::SetOverrideContentUrl(
         GetActiveIMEState()->GetCurrentInputMethod().input_view_url());
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    if (keyboard_controller)
+      keyboard_controller->Reload();
     return;
   }
 
   // For system IME extension, the input view url is overridden as:
   // chrome-extension://${extension_id}/inputview.html#id=us.compact.qwerty
   // &language=en-US&passwordLayout=us.compact.qwerty&name=keyboard_us
-  // Fow emoji and handwriting input, we replace the id=${keyset} part with
-  // desired keyset like: id=emoji; For voice, we append ".voice" to the end of
-  // id like: id=${keyset}.voice.
+  // Fow emoji, handwriting and voice input, we append the keyset to the end of
+  // id like: id=${keyset}.emoji/hwt/voice.
   auto j = overridden_ref.find("&", i + 1);
-  if (keyset == "voice") {
-    overridden_ref.replace(j, 0, "." + keyset);
+  if (j == std::string::npos) {
+    overridden_ref += "." + keyset;
   } else {
-    overridden_ref.replace(i, j - i, "id=" + keyset);
+    overridden_ref.replace(j, 0, "." + keyset);
   }
 
   GURL::Replacements replacements;

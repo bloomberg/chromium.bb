@@ -1410,7 +1410,7 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest) {
   EXPECT_EQ(ImeIdFromEngineId("zh-t-i0-pinyin"), input_method_ids[3]);
 }
 
-TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithEmojiOrHwt) {
+TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
   const GURL inputview_url(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
@@ -1421,29 +1421,22 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithEmojiOrHwt) {
   // Override the keyboard url ref with 'emoji'.
   const GURL overridden_url_emoji(
       "chrome-extension://"
-      "inputview.html#id=emoji&language=en-US&passwordLayout=us."
-      "compact.qwerty&name=keyboard_us");
+      "inputview.html#id=us.compact.qwerty.emoji&language=en-US&passwordLayout="
+      "us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardUrlRef("emoji");
   EXPECT_EQ(overridden_url_emoji, keyboard::GetOverrideContentUrl());
 
   // Override the keyboard url ref with 'hwt'.
+  keyboard::SetOverrideContentUrl(inputview_url);
   const GURL overridden_url_hwt(
       "chrome-extension://"
-      "inputview.html#id=hwt&language=en-US&passwordLayout=us."
-      "compact.qwerty&name=keyboard_us");
+      "inputview.html#id=us.compact.qwerty.hwt&language=en-US&passwordLayout="
+      "us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardUrlRef("hwt");
   EXPECT_EQ(overridden_url_hwt, keyboard::GetOverrideContentUrl());
-}
-
-TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithVoice) {
-  const GURL inputview_url(
-      "chrome-extension://"
-      "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
-      "compact.qwerty&name=keyboard_us");
-  keyboard::SetOverrideContentUrl(inputview_url);
-  EXPECT_EQ(inputview_url, keyboard::GetOverrideContentUrl());
 
   // Override the keyboard url ref with 'voice'.
+  keyboard::SetOverrideContentUrl(inputview_url);
   const GURL overridden_url_voice(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.voice&language=en-US"
