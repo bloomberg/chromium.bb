@@ -1988,7 +1988,6 @@ class TestGitCl(TestCase):
     ]
 
     def _buildbucket_retry(*_, **kw):
-      # self.maxDiff = 10000
       body = json.loads(kw['body'])
       self.assertEqual(len(body['builds']), 1)
       build = body['builds'][0]
@@ -2022,6 +2021,48 @@ class TestGitCl(TestCase):
     self.assertRegexpMatches(
         git_cl.sys.stdout.getvalue(),
         'Tried jobs on:\nBucket: test.bucket')
+
+  def test_git_cl_try_bots_on_multiple_masters(self):
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 20001)
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+      ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
+      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+      ((['git', 'config', 'rietveld.server'],),
+       'https://codereview.chromium.org'),
+      ((['git', 'config', 'branch.feature.rietveldserver'],), CERR1),
+      ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
+    ]
+
+    def _buildbucket_retry(*_, **kw):
+      body = json.loads(kw['body'])
+      self.assertEqual(len(body['builds']), 2)
+
+      first_build_params = json.loads(body['builds'][0]['parameters_json'])
+      self.assertEqual(first_build_params['builder_name'], 'builder1')
+      self.assertEqual(first_build_params['properties']['master'], 'master1')
+
+      first_build_params = json.loads(body['builds'][1]['parameters_json'])
+      self.assertEqual(first_build_params['builder_name'], 'builder2')
+      self.assertEqual(first_build_params['properties']['master'], 'master2')
+
+    self.mock(git_cl, '_buildbucket_retry', _buildbucket_retry)
+
+    self.mock(git_cl.urllib2, 'urlopen', lambda _: StringIO.StringIO(
+      json.dumps({'builder1': ['master1'], 'builder2': ['master2']})))
+
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.assertEqual(
+        0, git_cl.main(['try', '-b', 'builder1', '-b', 'builder2']))
+    self.assertEqual(
+        git_cl.sys.stdout.getvalue(),
+        'Tried jobs on:\n'
+        'Bucket: master.master1\n'
+        '  builder1: []\n'
+        'Bucket: master.master2\n'
+        '  builder2: []\n'
+        'To see results here, run:        git cl try-results\n'
+        'To see results in browser, run:  git cl web\n')
 
   def _common_GerritCommitMsgHookCheck(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
