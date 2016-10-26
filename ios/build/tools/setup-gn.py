@@ -163,7 +163,7 @@ class GnGenerator(object):
       if isinstance(value, bool):
         stream.write('%s = %s\n' % (name, str(value).lower()))
       elif isinstance(value, list):
-        stream.write('%s = [%s' % (name, '\n' if len(value) else ''))
+        stream.write('%s = [%s' % (name, '\n' if len(value) > 1 else ''))
         if len(value) == 1:
           prefix = ' '
           suffix = ' '
