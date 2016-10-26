@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.graphics.Canvas;
+import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -66,6 +67,50 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     private FakeMostVisitedSites mFakeMostVisitedSites;
     private EmbeddedTestServer mTestServer;
 
+    @Override
+    protected void setUp() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mFakeMostVisitedUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+        mTab = getActivity().getActivityTab();
+
+        try {
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // Create FakeMostVisitedSites after starting the activity, since it depends on
+                    // native code.
+                    mFakeMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile(),
+                            FAKE_MOST_VISITED_TITLES, mFakeMostVisitedUrls,
+                            FAKE_MOST_VISITED_WHITELIST_ICON_PATHS, FAKE_MOST_VISITED_SOURCES);
+                }
+            });
+        } catch (Throwable t) {
+            fail(t.getMessage());
+        }
+        NewTabPage.setMostVisitedSitesForTests(mFakeMostVisitedSites);
+
+        loadUrl(UrlConstants.NTP_URL);
+        NewTabPageTestUtils.waitForNtpLoaded(mTab);
+
+        assertTrue(mTab.getNativePage() instanceof NewTabPage);
+        mNtp = (NewTabPage) mTab.getNativePage();
+        mFakebox = mNtp.getView().findViewById(R.id.search_box);
+        mMostVisitedLayout = (ViewGroup) mNtp.getView().findViewById(R.id.most_visited_layout);
+        assertEquals(mFakeMostVisitedUrls.length, mMostVisitedLayout.getChildCount());
+    }
+
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @CommandLineFlags.Add("enable-features=NTPSnippets")
@@ -100,99 +145,38 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"NewTabPage"})
     @CommandLineFlags.Add("enable-features=NTPSnippets")
+    @UiThreadTest
     public void testThumbnailInvalidations() {
-        // The Adapter's notify methods must be called on the UI Thread.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                captureThumbnail();
-                assertFalse(mNtp.shouldCaptureThumbnail());
-
-                // Check that we invalidate the thumbnail when the Recycler View is updated.
-                NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView)
-                        mNtp.getNewTabPageView().getWrapperView();
-
-                recyclerView.getAdapter().notifyDataSetChanged();
-                assertThumbnailInvalidAndRecapture();
-
-                recyclerView.getAdapter().notifyItemChanged(0);
-                assertThumbnailInvalidAndRecapture();
-
-                recyclerView.getAdapter().notifyItemInserted(0);
-                assertThumbnailInvalidAndRecapture();
-
-                recyclerView.getAdapter().notifyItemMoved(0, 1);
-                assertThumbnailInvalidAndRecapture();
-
-                recyclerView.getAdapter().notifyItemRangeChanged(0, 1);
-                assertThumbnailInvalidAndRecapture();
-
-                recyclerView.getAdapter().notifyItemRangeInserted(0, 1);
-                assertThumbnailInvalidAndRecapture();
-
-                recyclerView.getAdapter().notifyItemRangeRemoved(0, 1);
-                assertThumbnailInvalidAndRecapture();
-
-                recyclerView.getAdapter().notifyItemRemoved(0);
-                assertThumbnailInvalidAndRecapture();
-            }
-        });
-    }
-
-    private void assertThumbnailInvalidAndRecapture() {
-        assertTrue(mNtp.shouldCaptureThumbnail());
         captureThumbnail();
         assertFalse(mNtp.shouldCaptureThumbnail());
-    }
 
-    private void captureThumbnail() {
-        Canvas canvas = new Canvas();
-        mNtp.captureThumbnail(canvas);
-    }
+        // Check that we invalidate the thumbnail when the Recycler View is updated.
+        NewTabPageRecyclerView recyclerView =
+                (NewTabPageRecyclerView) mNtp.getNewTabPageView().getWrapperView();
 
-    @Override
-    protected void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
-        mFakeMostVisitedUrls = new String[] { mTestServer.getURL(TEST_PAGE) };
-        super.setUp();
-    }
+        recyclerView.getAdapter().notifyDataSetChanged();
+        assertThumbnailInvalidAndRecapture();
 
-    @Override
-    protected void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
-        super.tearDown();
-    }
+        recyclerView.getAdapter().notifyItemChanged(0);
+        assertThumbnailInvalidAndRecapture();
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-        mTab = getActivity().getActivityTab();
+        recyclerView.getAdapter().notifyItemInserted(0);
+        assertThumbnailInvalidAndRecapture();
 
-        try {
-            runTestOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // Create FakeMostVisitedSites after starting the activity, since it depends on
-                    // native code.
-                    mFakeMostVisitedSites =
-                            new FakeMostVisitedSites(mTab.getProfile(), FAKE_MOST_VISITED_TITLES,
-                                    mFakeMostVisitedUrls, FAKE_MOST_VISITED_WHITELIST_ICON_PATHS,
-                                    FAKE_MOST_VISITED_SOURCES);
-                }
-            });
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
-        NewTabPage.setMostVisitedSitesForTests(mFakeMostVisitedSites);
+        recyclerView.getAdapter().notifyItemMoved(0, 1);
+        assertThumbnailInvalidAndRecapture();
 
-        loadUrl(UrlConstants.NTP_URL);
-        NewTabPageTestUtils.waitForNtpLoaded(mTab);
+        recyclerView.getAdapter().notifyItemRangeChanged(0, 1);
+        assertThumbnailInvalidAndRecapture();
 
-        assertTrue(mTab.getNativePage() instanceof NewTabPage);
-        mNtp = (NewTabPage) mTab.getNativePage();
-        mFakebox = mNtp.getView().findViewById(R.id.search_box);
-        mMostVisitedLayout = (ViewGroup) mNtp.getView().findViewById(R.id.most_visited_layout);
-        assertEquals(mFakeMostVisitedUrls.length, mMostVisitedLayout.getChildCount());
+        recyclerView.getAdapter().notifyItemRangeInserted(0, 1);
+        assertThumbnailInvalidAndRecapture();
+
+        recyclerView.getAdapter().notifyItemRangeRemoved(0, 1);
+        assertThumbnailInvalidAndRecapture();
+
+        recyclerView.getAdapter().notifyItemRemoved(0);
+        assertThumbnailInvalidAndRecapture();
     }
 
     /**
@@ -381,6 +365,34 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         } finally {
             webServer.shutdown();
         }
+    }
+
+    /**
+     * Tests setting whether the search provider has a logo.
+     */
+    @SmallTest
+    @Feature({"NewTabPage"})
+    @CommandLineFlags.Add("disable-features=NTPSnippets") // Exercise the old ui.
+    @UiThreadTest
+    public void testSetSearchProviderHasLogo() {
+        NewTabPageView ntpView = mNtp.getNewTabPageView();
+        View logoView = ntpView.findViewById(R.id.search_provider_logo);
+        assertEquals(View.VISIBLE, logoView.getVisibility());
+        ntpView.setSearchProviderHasLogo(false);
+        assertEquals(View.GONE, logoView.getVisibility());
+        ntpView.setSearchProviderHasLogo(true);
+        assertEquals(View.VISIBLE, logoView.getVisibility());
+    }
+
+    private void assertThumbnailInvalidAndRecapture() {
+        assertTrue(mNtp.shouldCaptureThumbnail());
+        captureThumbnail();
+        assertFalse(mNtp.shouldCaptureThumbnail());
+    }
+
+    private void captureThumbnail() {
+        Canvas canvas = new Canvas();
+        mNtp.captureThumbnail(canvas);
     }
 
     private boolean getUrlFocusAnimatonsDisabled() {
