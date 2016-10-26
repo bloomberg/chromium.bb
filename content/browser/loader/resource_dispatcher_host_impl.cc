@@ -1222,8 +1222,9 @@ void ResourceDispatcherHostImpl::CompleteTransfer(
     // Renderer sent transferred_request_request_id and/or
     // transferred_request_child_id that doesn't have a corresponding entry on
     // the browser side.
-    bad_message::ReceivedBadMessage(
-        filter_, bad_message::RDH_TRANSFERRING_REQUEST_NOT_FOUND);
+    // TODO(lukasza): https://crbug.com/659613: Need to understand the scenario
+    // that can lead here (and then attempt to reintroduce a renderer kill
+    // below).
     return;
   }
   ResourceLoader* pending_loader = it->second.get();
