@@ -17,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -654,8 +655,6 @@ PDFiumEngine::~PDFiumEngine() {
 #endif
   }
   FPDFAvail_Destroy(fpdf_availability_);
-
-  base::STLDeleteElements(&pages_);
 }
 
 #if defined(PDF_ENABLE_XFA)
@@ -1607,7 +1606,7 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 
 void PDFiumEngine::OnSingleClick(int page_index, int char_index) {
   SetSelecting(true);
-  selection_.push_back(PDFiumRange(pages_[page_index], char_index, 0));
+  selection_.push_back(PDFiumRange(pages_[page_index].get(), char_index, 0));
 }
 
 void PDFiumEngine::OnMultipleClick(int click_count,
@@ -1634,8 +1633,8 @@ void PDFiumEngine::OnMultipleClick(int click_count,
       break;
   }
 
-  selection_.push_back(PDFiumRange(
-      pages_[page_index], start_index, end_index - start_index));
+  selection_.push_back(PDFiumRange(pages_[page_index].get(), start_index,
+                                   end_index - start_index));
 }
 
 bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
@@ -1791,13 +1790,13 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
     // First make sure that there are no gaps in selection, i.e. if mousedown on
     // page one but we only get mousemove over page three, we want page two.
     for (int i = selection_[last].page_index() + 1; i < page_index; ++i) {
-      selection_.push_back(PDFiumRange(pages_[i], 0,
-                           pages_[i]->GetCharCount()));
+      selection_.push_back(
+          PDFiumRange(pages_[i].get(), 0, pages_[i]->GetCharCount()));
     }
 
     int count = pages_[selection_[last].page_index()]->GetCharCount();
     selection_[last].SetCharCount(count - selection_[last].char_index());
-    selection_.push_back(PDFiumRange(pages_[page_index], 0, char_index));
+    selection_.push_back(PDFiumRange(pages_[page_index].get(), 0, char_index));
   } else {
     // Selecting into the previous page.
     // The selection's char_index is 0-based, so the character count is one
@@ -1808,13 +1807,13 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
     // First make sure that there are no gaps in selection, i.e. if mousedown on
     // page three but we only get mousemove over page one, we want page two.
     for (int i = selection_[last].page_index() - 1; i > page_index; --i) {
-      selection_.push_back(PDFiumRange(pages_[i], 0,
-                           pages_[i]->GetCharCount()));
+      selection_.push_back(
+          PDFiumRange(pages_[i].get(), 0, pages_[i]->GetCharCount()));
     }
 
     int count = pages_[page_index]->GetCharCount();
     selection_.push_back(
-        PDFiumRange(pages_[page_index], count, count - char_index));
+        PDFiumRange(pages_[page_index].get(), count, count - char_index));
   }
 
   return true;
@@ -1979,7 +1978,7 @@ void PDFiumEngine::SearchUsingPDFium(const base::string16& term,
   // page boundaries.  We could do this manually ourself, but it seems low
   // priority since Reader itself doesn't do it.
   while (FPDFText_FindNext(find)) {
-    PDFiumRange result(pages_[current_page],
+    PDFiumRange result(pages_[current_page].get(),
                        FPDFText_GetSchResultIndex(find),
                        FPDFText_GetSchCount(find));
 
@@ -2036,7 +2035,7 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
     int end = FPDFText_GetCharIndexFromTextIndex(
         pages_[current_page]->GetTextPage(),
         temp_start + result.length);
-    AddFindResult(PDFiumRange(pages_[current_page], start, end - start));
+    AddFindResult(PDFiumRange(pages_[current_page].get(), start, end - start));
   }
 }
 
@@ -2264,7 +2263,7 @@ void PDFiumEngine::SelectAll() {
   selection_.clear();
   for (const auto& page : pages_) {
     if (page->available())
-      selection_.push_back(PDFiumRange(page, 0, page->GetCharCount()));
+      selection_.push_back(PDFiumRange(page.get(), 0, page->GetCharCount()));
   }
 }
 
@@ -2406,7 +2405,6 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
 
   // Delete all pages except the first one.
   while (pages_.size() > 1) {
-    delete pages_.back();
     pages_.pop_back();
     FPDFPage_Delete(doc_, pages_.size());
   }
@@ -2442,7 +2440,7 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
                                                 kPixelsPerInch,
                                                 kPointsPerInch);
     FPDFPage_New(doc_, i, width_in_points, height_in_points);
-    pages_.push_back(new PDFiumPage(this, i, page_rect, true));
+    pages_.push_back(base::MakeUnique<PDFiumPage>(this, i, page_rect, true));
   }
 
   CalculateVisiblePages();
@@ -2635,7 +2633,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
       // The page is marked as not being available even if |doc_complete| is
       // true because FPDFAvail_IsPageAvail() still has to be called for this
       // page, which will be done in FinishLoadingDocument().
-      pages_.push_back(new PDFiumPage(this, i, page_rect, false));
+      pages_.push_back(base::MakeUnique<PDFiumPage>(this, i, page_rect, false));
     }
   }
 

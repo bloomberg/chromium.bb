@@ -620,10 +620,8 @@ class PDFiumEngine : public PDFEngine,
   // on the page.
   FPDF_FORMHANDLE form_;
 
-  // The page(s) of the document. Store a vector of pointers so that when the
-  // vector is resized we don't close the pages that are used in pending
-  // paints.
-  std::vector<PDFiumPage*> pages_;
+  // The page(s) of the document.
+  std::vector<std::unique_ptr<PDFiumPage>> pages_;
 
   // The indexes of the pages currently visible.
   std::vector<int> visible_pages_;
