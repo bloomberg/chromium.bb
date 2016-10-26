@@ -79,13 +79,8 @@ litdigit 9 24
 display ! 2346
 punctuation ! 235
 
-#TODO:  why?!
 display " 5
-punctuation " 5
-#punctuation " 236
-#punctuation " 356
-#prepunc " 236
-#postpunc " 356
+punctuation " 6-2356
 match %[^_~]%<* " %[_.$]*%[a#] 236
 match %[a#]%[_.$]* " %>*%[^_~] 356
 
