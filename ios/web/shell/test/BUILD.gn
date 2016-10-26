@@ -19,6 +19,7 @@ ios_eg_test("ios_web_shell_test") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web:earl_grey_test_support",
     "//ios/web:test_support",
@@ -45,6 +46,7 @@ source_set("earl_grey_test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
     "//ios/web",

@@ -8,7 +8,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/timer/elapsed_timer.h"
-#import "ios/testing/earl_grey/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
 namespace web {

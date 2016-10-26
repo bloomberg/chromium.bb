@@ -8,7 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
-#include "ios/testing/earl_grey/wait_util.h"
+#include "ios/testing/wait_util.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -36,9 +36,13 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
                                  did_finish = true;
                                }));
 
-  testing::WaitUntilCondition(testing::kWaitForJSCompletionTimeout, ^{
-    return did_finish;
-  });
+  bool completed = testing::WaitUntilConditionOrTimeout(
+      testing::kWaitForJSCompletionTimeout, ^{
+        return did_finish;
+      });
+  if (!completed) {
+    return nullptr;
+  }
 
   // As result is marked __block, this return call does a copy and not a move
   // (marking the variable as __block mean it is allocated in the block object
@@ -72,26 +76,24 @@ CGRect GetBoundingRectOfElementWithId(web::WebState* web_state,
       "    };"
       "})();";
 
-  base::DictionaryValue const* rect = nullptr;
-  bool found = false;
-  NSDate* deadline =
-      [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
-  while (([[NSDate date] compare:deadline] != NSOrderedDescending) && !found) {
-    std::unique_ptr<base::Value> value =
-        ExecuteJavaScript(web_state, kGetBoundsScript);
-    base::DictionaryValue* dictionary = nullptr;
-    if (value && value->GetAsDictionary(&dictionary)) {
-      std::string error;
-      if (dictionary->GetString("error", &error)) {
-        DLOG(ERROR) << "Error getting rect: " << error << ", retrying..";
-      } else {
-        rect = dictionary->DeepCopy();
-        found = true;
-      }
-    }
-    base::test::ios::SpinRunLoopWithMaxDelay(
-        base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
-  }
+  __block base::DictionaryValue const* rect = nullptr;
+
+  bool found =
+      testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+        std::unique_ptr<base::Value> value =
+            ExecuteJavaScript(web_state, kGetBoundsScript);
+        base::DictionaryValue* dictionary = nullptr;
+        if (value && value->GetAsDictionary(&dictionary)) {
+          std::string error;
+          if (dictionary->GetString("error", &error)) {
+            DLOG(ERROR) << "Error getting rect: " << error << ", retrying..";
+          } else {
+            rect = dictionary->DeepCopy();
+            return true;
+          }
+        }
+        return false;
+      });
 
   if (!found)
     return CGRectNull;
@@ -145,7 +147,7 @@ bool RunActionOnWebViewElementWithId(web::WebState* web_state,
                         element_found = [result boolValue];
                       }];
 
-  testing::WaitUntilCondition(testing::kWaitForJSCompletionTimeout, ^{
+  testing::WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
     return did_complete;
   });
 

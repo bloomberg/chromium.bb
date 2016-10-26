@@ -9,18 +9,6 @@
 
 namespace testing {
 
-// Constant for UI wait loop in seconds.
-extern const NSTimeInterval kSpinDelaySeconds;
-
-// Constant for timeout in seconds while waiting for UI element.
-extern const NSTimeInterval kWaitForUIElementTimeout;
-
-// Constant for timeout in seconds while waiting for JavaScript completion.
-extern const NSTimeInterval kWaitForJSCompletionTimeout;
-
-// Constant for timeout in seconds while waiting for a download to complete.
-extern const NSTimeInterval kWaitForDownloadTimeout;
-
 // Waits until |condition| is true, or induces GREYAssert after |timeout|.
 void WaitUntilCondition(NSTimeInterval timeout, bool (^condition)(void));
 

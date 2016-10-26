@@ -7,24 +7,15 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/test/ios/wait_util.h"
+#include "ios/testing/wait_util.h"
 
 namespace testing {
-
-const NSTimeInterval kSpinDelaySeconds = 0.01;
-const NSTimeInterval kWaitForJSCompletionTimeout = 2.0;
-const NSTimeInterval kWaitForUIElementTimeout = 4.0;
-const NSTimeInterval kWaitForDownloadTimeout = 10.0;
 
 void WaitUntilCondition(NSTimeInterval timeout,
                         NSString* timeoutDescription,
                         bool (^condition)(void)) {
-  NSDate* deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
-  while (!condition() &&
-         [[NSDate date] compare:deadline] != NSOrderedDescending) {
-    base::test::ios::SpinRunLoopWithMaxDelay(
-        base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
-  }
-  GREYAssert(condition(), timeoutDescription);
+  GREYAssert(testing::WaitUntilConditionOrTimeout(timeout, condition),
+             timeoutDescription);
 }
 
 void WaitUntilCondition(NSTimeInterval timeout, bool (^condition)(void)) {

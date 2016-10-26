@@ -10,7 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/ios/wait_util.h"
 #include "base/values.h"
-#import "ios/testing/earl_grey/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -62,26 +62,25 @@ bool AddVerifierToElementWithId(web::WebState* web_state,
   const std::string kAddVerifierScript =
       base::StringPrintf(kAddInteractionVerifierScriptTemplate,
                          element_id.c_str(), kCallbackInvocation.c_str());
-  NSDate* deadline =
-      [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
-  bool verifier_added = false;
-  while (([[NSDate date] compare:deadline] != NSOrderedDescending) &&
-         !verifier_added) {
-    std::unique_ptr<base::Value> value =
-        web::test::ExecuteJavaScript(web_state, kAddVerifierScript);
-    if (value) {
-      std::string error;
-      if (value->GetAsString(&error)) {
-        DLOG(ERROR) << "Verifier injection failed: " << error << ", retrying.";
-      } else if (value->GetAsBoolean(&verifier_added)) {
-        verifier_added = true;
-      }
-    }
-    base::test::ios::SpinRunLoopWithMaxDelay(
-        base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
-  }
 
-  if (!verifier_added)
+  bool success =
+      testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+        bool verifier_added = false;
+        std::unique_ptr<base::Value> value =
+            web::test::ExecuteJavaScript(web_state, kAddVerifierScript);
+        if (value) {
+          std::string error;
+          if (value->GetAsString(&error)) {
+            DLOG(ERROR) << "Verifier injection failed: " << error
+                        << ", retrying.";
+          } else if (value->GetAsBoolean(&verifier_added)) {
+            return true;
+          }
+        }
+        return false;
+      });
+
+  if (!success)
     return false;
 
   // The callback doesn't care about any of the parameters, just whether it is
@@ -175,10 +174,12 @@ id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
         [NSString stringWithFormat:@"The action (%@) on element_id %s wasn't "
                                    @"verified before timing out.",
                                    action.name, element_id.c_str()];
-    testing::WaitUntilCondition(testing::kWaitForJSCompletionTimeout,
-                                verification_timeout_message, ^{
-                                  return verified;
-                                });
+    GREYAssert(testing::WaitUntilConditionOrTimeout(
+                   testing::kWaitForJSCompletionTimeout,
+                   ^{
+                     return verified;
+                   }),
+               verification_timeout_message);
 
     // If |verified| is not true, the wait condition should have already exited
     // this control flow, so sanity check that it has in fact been set to

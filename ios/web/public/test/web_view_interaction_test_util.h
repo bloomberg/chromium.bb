@@ -14,7 +14,8 @@
 namespace web {
 namespace test {
 
-// Synchronously returns the result of executed JavaScript.
+// Synchronously returns the result of executed JavaScript, returning nullptr
+// if the JavaScript does not complete.
 std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
                                                const std::string& script);
 

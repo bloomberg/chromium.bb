@@ -5,7 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/test/ios/wait_util.h"
-#include "ios/testing/earl_grey/wait_util.h"
+#include "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
@@ -26,18 +26,10 @@ const char kTestPDFURL[] =
 id<GREYMatcher> webViewWithPdf() {
   web::WebState* web_state = web::shell_test_util::GetCurrentWebState();
   MatchesBlock matches = ^BOOL(UIView* view) {
-    __block BOOL did_succeed = NO;
-    NSDate* deadline =
-        [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
-    while ([[NSDate date] compare:deadline] != NSOrderedDescending) {
-      if (web_state->GetContentsMimeType() == "application/pdf") {
-        did_succeed = YES;
-        break;
-      }
-      base::test::ios::SpinRunLoopWithMaxDelay(
-          base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
-    }
-    return did_succeed;
+    return testing::WaitUntilConditionOrTimeout(
+        testing::kWaitForUIElementTimeout, ^{
+          return web_state->GetContentsMimeType() == "application/pdf";
+        });
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {

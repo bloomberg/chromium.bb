@@ -7,7 +7,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/matchers.h"
-#include "ios/testing/earl_grey/wait_util.h"
+#include "ios/testing/wait_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
@@ -43,9 +43,16 @@ id<GREYMatcher> addressFieldText(std::string text) {
       return NO;
     }
     UITextField* text_field = base::mac::ObjCCastStrict<UITextField>(view);
-    testing::WaitUntilCondition(testing::kWaitForUIElementTimeout, ^bool() {
-      return [text_field.text isEqualToString:base::SysUTF8ToNSString(text)];
-    });
+    NSString* error_message = [NSString
+        stringWithFormat:
+            @"Address field text did not match. expected: %@, actual: %@",
+            base::SysUTF8ToNSString(text), text_field.text];
+    GREYAssert(testing::WaitUntilConditionOrTimeout(
+                   testing::kWaitForUIElementTimeout,
+                   ^{
+                     return base::SysNSStringToUTF8(text_field.text) == text;
+                   }),
+               error_message);
     return YES;
   };
 
