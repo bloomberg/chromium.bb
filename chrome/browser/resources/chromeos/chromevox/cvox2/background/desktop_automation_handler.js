@@ -109,6 +109,10 @@ DesktopAutomationHandler.prototype = {
     if (!node)
       return;
 
+    // Decide whether to announce and sync this event.
+    if (!DesktopAutomationHandler.announceActions && evt.eventFrom == 'action')
+      return;
+
     var prevRange = ChromeVoxState.instance.currentRange;
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
@@ -120,10 +124,6 @@ DesktopAutomationHandler.prototype = {
     if (prevRange &&
         evt.type == 'focus' &&
         ChromeVoxState.instance.currentRange.equals(prevRange))
-      return;
-
-    // Decide whether to announce this event.
-    if (!DesktopAutomationHandler.announceActions && evt.eventFrom == 'action')
       return;
 
     var output = new Output();

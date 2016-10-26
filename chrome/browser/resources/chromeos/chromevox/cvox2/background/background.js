@@ -426,18 +426,9 @@ Background.prototype = {
     opt_focus = opt_focus === undefined ? true : opt_focus;
     opt_speechProps = opt_speechProps || {};
 
-    if (opt_focus) {
-      // TODO(dtseng): Figure out what it means to focus a range.
-      var actionNode = range.start.node;
-      if (actionNode.role == RoleType.inlineTextBox)
-        actionNode = actionNode.parent;
+    if (opt_focus)
+      this.setFocusToRange_(range);
 
-      // Iframes, when focused, causes the child webArea to fire focus event.
-      // This can result in getting stuck when navigating backward.
-      if (actionNode.role != RoleType.iframe && !actionNode.state.focused &&
-          !AutomationPredicate.structuralContainer(actionNode))
-        actionNode.focus();
-    }
     var prevRange = this.currentRange_;
     this.setCurrentRange(range);
 
@@ -757,6 +748,37 @@ Background.prototype = {
         this.setCurrentRange(null);
     }.bind(this));
   },
+
+  /**
+   * @param {!cursors.Range} range
+   * @private
+   */
+  setFocusToRange_: function(range) {
+    var start = range.start.node;
+    var end = range.end.node;
+    if (start.state.focused || end.state.focused)
+      return;
+
+    // Iframes, when focused, causes the child webArea to fire focus
+    // event.  This can result in getting stuck when navigating
+    // backward.
+    var isFocusable = function(node) {
+      return node.role != RoleType.iframe &&
+          node.state.focusable &&
+          !node.state.focused &&
+          !AutomationPredicate.structuralContainer(node);
+    };
+    if (isFocusable(start)) {
+      start.focus();
+      return;
+    }
+    if (isFocusable(end)) {
+      end.focus();
+      return;
+    }
+
+    // TODO(dmazzoni): Set sequential focus.
+  }
 };
 
 /**
