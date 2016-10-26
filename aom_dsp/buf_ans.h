@@ -39,8 +39,10 @@ struct buffered_ans_symbol {
 struct BufAnsCoder {
   struct aom_internal_error_info *error;
   struct buffered_ans_symbol *buf;
+  struct AnsCoder ans;
   int size;
   int offset;
+  int output_bytes;
 };
 
 void aom_buf_ans_alloc(struct BufAnsCoder *c,
@@ -50,8 +52,11 @@ void aom_buf_ans_free(struct BufAnsCoder *c);
 
 void aom_buf_ans_grow(struct BufAnsCoder *c);
 
-static INLINE void buf_ans_write_reset(struct BufAnsCoder *const c) {
+static INLINE void buf_ans_write_init(struct BufAnsCoder *const c,
+                                      uint8_t *const output_buffer) {
   c->offset = 0;
+  c->output_bytes = 0;
+  ans_write_init(&c->ans, output_buffer);
 }
 
 static INLINE void buf_uabs_write(struct BufAnsCoder *const c, uint8_t val,
@@ -78,20 +83,21 @@ static INLINE void buf_rans_write(struct BufAnsCoder *const c,
   ++c->offset;
 }
 
-static INLINE void buf_ans_flush(const struct BufAnsCoder *const c,
-                                 struct AnsCoder *ans) {
+static INLINE void buf_ans_flush(struct BufAnsCoder *const c) {
   int offset;
   for (offset = c->offset - 1; offset >= 0; --offset) {
     if (c->buf[offset].method == ANS_METHOD_RANS) {
       struct rans_sym sym;
       sym.prob = c->buf[offset].prob;
       sym.cum_prob = c->buf[offset].val_start;
-      rans_write(ans, &sym);
+      rans_write(&c->ans, &sym);
     } else {
-      uabs_write(ans, (uint8_t)c->buf[offset].val_start,
+      uabs_write(&c->ans, (uint8_t)c->buf[offset].val_start,
                  (AnsP8)c->buf[offset].prob);
     }
   }
+  c->offset = 0;
+  c->output_bytes += ans_write_end(&c->ans);
 }
 
 static INLINE void buf_uabs_write_bit(struct BufAnsCoder *c, int bit) {
@@ -105,6 +111,11 @@ static INLINE void buf_uabs_write_literal(struct BufAnsCoder *c, int literal,
   assert(bits < 31);
   for (bit = bits - 1; bit >= 0; bit--)
     buf_uabs_write_bit(c, 1 & (literal >> bit));
+}
+
+static INLINE int buf_ans_write_end(struct BufAnsCoder *const c) {
+  assert(c->offset == 0);
+  return c->output_bytes;
 }
 #ifdef __cplusplus
 }  // extern "C"

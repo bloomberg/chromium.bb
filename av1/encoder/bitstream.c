@@ -3464,7 +3464,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #endif
   const AV1_COMMON *const cm = &cpi->common;
 #if CONFIG_ANS
-  struct AnsCoder token_ans;
+  struct BufAnsCoder *buf_ans = &cpi->buf_ans;
 #else
   aom_writer mode_bc;
 #endif  // CONFIG_ANS
@@ -3495,9 +3495,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_EXT_TILE
   const int have_tiles = tile_cols * tile_rows > 1;
 #endif  // CONFIG_EXT_TILE
-#if CONFIG_ANS
-  struct BufAnsCoder *buf_ans = &cpi->buf_ans;
-#endif  // CONFIG_ANS
 
   *max_tile_size = 0;
   *max_tile_col_size = 0;
@@ -3536,12 +3533,11 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       aom_stop_encode(&mode_bc);
       tile_size = mode_bc.pos;
 #else
-      buf_ans_write_reset(buf_ans);
+      buf_ans_write_init(buf_ans, buf->data + data_offset);
       write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
       assert(tok == tok_end);
-      ans_write_init(&token_ans, buf->data + data_offset);
-      buf_ans_flush(buf_ans, &token_ans);
-      tile_size = ans_write_end(&token_ans);
+      buf_ans_flush(buf_ans);
+      tile_size = buf_ans_write_end(buf_ans);
 #endif  // !CONFIG_ANS
 
       buf->size = tile_size;
@@ -3686,12 +3682,11 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       if (!is_last_tile) total_size += 4;
 
 #if CONFIG_ANS
-      buf_ans_write_reset(buf_ans);
+      buf_ans_write_init(buf_ans, dst + total_size);
       write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
       assert(tok == tok_end);
-      ans_write_init(&token_ans, dst + total_size);
-      buf_ans_flush(buf_ans, &token_ans);
-      tile_size = ans_write_end(&token_ans);
+      buf_ans_flush(buf_ans);
+      tile_size = buf_ans_write_end(buf_ans);
 #else
       aom_start_encode(&mode_bc, dst + total_size);
 #if CONFIG_PVQ
@@ -3703,10 +3698,10 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       assert(tok == tok_end);
       aom_stop_encode(&mode_bc);
       tile_size = mode_bc.pos;
-#endif
+#endif  // CONFIG_ANS
 #if CONFIG_PVQ
       cpi->td.mb.pvq_q = NULL;
-#endif  // !CONFIG_ANS
+#endif
 
       assert(tile_size > 0);
 
@@ -4132,10 +4127,9 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
 
 #if CONFIG_ANS
-  struct AnsCoder header_ans;
   int header_size;
   header_bc = &cpi->buf_ans;
-  buf_ans_write_reset(header_bc);
+  buf_ans_write_init(header_bc, data);
 #else
   aom_writer real_header_bc;
   header_bc = &real_header_bc;
@@ -4333,9 +4327,8 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
 #endif
 #if CONFIG_ANS
-  ans_write_init(&header_ans, data);
-  buf_ans_flush(header_bc, &header_ans);
-  header_size = ans_write_end(&header_ans);
+  buf_ans_flush(header_bc);
+  header_size = buf_ans_write_end(header_bc);
   assert(header_size <= 0xffff);
   return header_size;
 #else
