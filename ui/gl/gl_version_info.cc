@@ -83,33 +83,13 @@ bool GLVersionInfo::IsES3Capable(
     return true;
   }
 
-  // Don't try supporting ES3 on ES2, or desktop before 3.2 because there are no
-  // extension that allow querying for GL_MAX_FRAGMENT_INPUT_COMPONENTS
-  if (is_es || !IsAtLeastGL(3, 2)) {
+  // Don't try supporting ES3 on ES2, or desktop before 4.0.
+  if (is_es || !IsAtLeastGL(4, 0)) {
     return false;
   }
 
-  bool has_shader_packing = has_extension("GL_ARB_shading_bit_packing") ||
-                            has_extension("GL_ARB_shader_bit_encoding");
-  bool has_transform_feedback =
-      IsAtLeastGL(4, 0) || has_extension("GL_ARB_transform_feedback2");
-  // Technically this is required for ES2 as well, but some drivers silently
-  // support it, without the required extensions. To avoid breaking WebGL for
-  // some users, only require detectable support for ES3.
-  bool has_sampler_indexing =
-      IsAtLeastGL(4, 0) || is_es || has_extension("GL_ARB_gpu_shader5");
-  bool has_samplers =
-      IsAtLeastGL(3, 3) || has_extension("GL_ARB_sampler_object");
-  bool has_swizzle = IsAtLeastGL(3, 3) ||
-                     has_extension("GL_ARB_texture_swizzle") ||
-                     has_extension("GL_EXT_texture_swizzle");
-  bool has_attrib_location =
-      IsAtLeastGL(3, 3) || has_extension("GL_ARB_explicit_attrib_location");
-
-  // TODO(cwallez) check for texture related extensions. See crbug.com/623577
-
-  return has_shader_packing && has_transform_feedback && has_sampler_indexing &&
-         has_samplers && has_swizzle && has_attrib_location;
+  bool has_tex_storage = has_extension("GL_ARB_texture_storage");
+  return has_tex_storage;
 }
 
 void GLVersionInfo::ParseVersionString(const char* version_str,
