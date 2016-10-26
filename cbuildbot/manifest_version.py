@@ -465,10 +465,10 @@ class SlaveStatus(object):
     """Set status_buildset_dict by sorting the builds into their status set."""
     for build, status_dict in self.status.iteritems():
       status = status_dict.get('status')
-      assert status is not None
 
-      self.status_buildset_dict.setdefault(status, set())
-      self.status_buildset_dict[status].add(build)
+      if status is not None:
+        self.status_buildset_dict.setdefault(status, set())
+        self.status_buildset_dict[status].add(build)
 
   def GetBuildbucketBuilds(self, build_status):
     """Get the buildbucket builds which are in the build_status status.

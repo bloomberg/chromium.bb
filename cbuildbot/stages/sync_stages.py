@@ -371,7 +371,7 @@ class SyncStage(generic_stages.BuilderStage):
       self.buildbucket_client = buildbucket_lib.BuildbucketClient(
           service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
 
-    if (self._run.config.name == constants.CQ_MASTER and
+    if (config_lib.UseBuildbucketScheduler(self._run.config) and
         self._run.InProduction() and
         self.buildbucket_client is None):
       # If it's CQ-master build, running on a buildbot and in production
@@ -1238,7 +1238,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # If this builder is a cq-master but not force_version build,
     # schedule all slave builders via Buildbucket. If it's a debug mode run,
     # PutSlaveBuildToBuildbucket would be a dryrun.
-    if (self._run.config.name == constants.CQ_MASTER and
+    if (config_lib.UseBuildbucketScheduler(self._run.config) and
         not self._run.options.force_version and
         self._run.options.buildbot):
       self.ScheduleSlaveBuildsViaBuildbucket(important_only=False,

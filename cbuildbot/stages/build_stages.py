@@ -12,6 +12,7 @@ import os
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.cbuildbot import repository
@@ -191,9 +192,10 @@ class CleanUpStage(generic_stages.BuilderStage):
       else:
         tasks.append(self._CleanChroot)
 
-      # Only enable CancelObsoleteSlaveBuilds on the master-paladin,
-      # it checks for builds in ChromiumOs and ChromeOs waterfalls.
-      if self._run.config.name == constants.CQ_MASTER:
+      # Only enable CancelObsoleteSlaveBuilds on the master builds
+      # which use the Buildbucket scheduler, it checks for builds in
+      # ChromiumOs and ChromeOs waterfalls.
+      if config_lib.UseBuildbucketScheduler(self._run.config):
         tasks.append(self.CancelObsoleteSlaveBuilds)
 
       parallel.RunParallelSteps(tasks)

@@ -139,9 +139,10 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def __init__(self, *args, **kwargs):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
+    self.build_buildbucket_id_dict = None
     self.buildbucket_client = None
 
-    if self._run.config.name == constants.CQ_MASTER:
+    if config_lib.UseBuildbucketScheduler(self._run.config):
       if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
         self.buildbucket_client = buildbucket_lib.BuildbucketClient(
             service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
@@ -205,7 +206,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       slave_statuses.update(manager.GetBuildersStatus(
           self._run.attrs.metadata.GetValue('build_id'),
           builder_names,
-          timeout=timeout))
+          timeout=timeout,
+          buildbucket_id_dict=self.build_buildbucket_id_dict))
     return slave_statuses
 
   def _HandleStageException(self, exc_info):
@@ -280,6 +282,12 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def PerformStage(self):
     super(MasterSlaveSyncCompletionStage, self).PerformStage()
 
+    if config_lib.UseBuildbucketScheduler(self._run.config):
+      scheduled_slaves_list = (
+          self._run.attrs.metadata.GetDict().get('scheduled_slaves', []))
+      self.build_buildbucket_id_dict = (
+          buildbucket_lib.GetScheduledBuildDict(scheduled_slaves_list))
+
     # Upload our pass/fail status to Google Storage.
     self._run.attrs.manifest_manager.UploadStatus(
         success=self.success, message=self.message,
@@ -322,6 +330,52 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     sanity_builders = set(sanity_builders)
     return not sanity_builders.issuperset(failing | inflight | no_stat)
 
+  def _AnnotateBuildStatusFromBuildbucket(self, no_stat):
+    """Annotate the build statuses fetched from the Buildbucket.
+
+    Some builds may fail to upload statuses to GS. If the builds were
+    scheduled by Buildbucket, get the build statuses and annotate the results.
+
+    Args:
+      no_stat: Config names of the slave builds with None status.
+    """
+    for config_name in no_stat:
+      if config_name in self.build_buildbucket_id_dict:
+        buildbucket_id = self.build_buildbucket_id_dict[config_name]
+        assert buildbucket_id is not None, 'buildbucket_id is None'
+        try:
+          content = self.buildbucket_client.GetBuildRequest(
+              buildbucket_id, self._run.options.test_tryjob,
+              self._run.options.debug)
+
+          status = buildbucket_lib.GetBuildStatus(content)
+          result = buildbucket_lib.GetBuildResult(content)
+
+          text = '%s: [status] %s [result] %s' % (config_name, status, result)
+
+          if result == constants.BUILDBUCKET_BUILDER_RESULT_FAILURE:
+            failure_reason = buildbucket_lib.GetBuildFailureReason(content)
+            if failure_reason:
+              text += ' [failure_reason] %s' % failure_reason
+          elif result == constants.BUILDBUCKET_BUILDER_RESULT_CANCELED:
+            cancel_reason = buildbucket_lib.GetBuildCancelationReason(content)
+            if cancel_reason:
+              text += ' [cancelation_reason] %s' % cancel_reason
+
+          dashboard_url = buildbucket_lib.GetBuildURL(content)
+          if dashboard_url:
+            logging.PrintBuildbotLink(text, dashboard_url)
+          else:
+            logging.PrintBuildbotStepText(text)
+        except buildbucket_lib.BuildbucketResponseException as e:
+          logging.error('Cannot get status for %s: %s', config_name, e)
+          logging.PrintBuildbotStepText(
+              'No status found for build %s buildbucket_id %s'
+              % (config_name, buildbucket_id))
+      else:
+        logging.PrintBuildbotStepText('%s wasn\'t scheduled by master.'
+                                      % config_name)
+
   def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses):
     """Add annotations that link to either failing or inflight builders.
 
@@ -346,8 +400,12 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
         logging.PrintBuildbotLink(text, statuses[builder].dashboard_url)
 
-    for builder in no_stat:
-      logging.PrintBuildbotStepText('%s did not start.' % builder)
+    if no_stat:
+      if config_lib.UseBuildbucketScheduler(self._run.config):
+        self._AnnotateBuildStatusFromBuildbucket(no_stat)
+      else:
+        for builder in no_stat:
+          logging.PrintBuildbotStepText('%s did not start.' % builder)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.

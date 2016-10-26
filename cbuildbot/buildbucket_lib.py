@@ -68,6 +68,32 @@ def GetServiceAccount(service_account=None):
     return service_account
   return None
 
+def GetScheduledBuildDict(scheduled_slave_list):
+  """Parse the scheduled builds from the scheduled_slave_list.
+
+  Args:
+    scheduled_slave_list: A list of scheduled builds recorded in the
+                          master manifest. In the format of
+                          [(build_config, buildbucket_id, created_ts)].
+
+  Returns:
+    A dict mapping builds to buildbucket_ids.
+  """
+  if scheduled_slave_list is None:
+    return {}
+
+  scheduled_slave_map = {}
+  for (slave_name, buildbucket_id, created_ts) in scheduled_slave_list:
+    if (slave_name not in scheduled_slave_map or
+        created_ts > scheduled_slave_map.get(slave_name)[1]):
+      # If a slave occurs multiple times in the scheduled_slave_list,
+      # use the most recently created one.
+      scheduled_slave_map[slave_name] = buildbucket_id, created_ts
+
+  build_buildbucket_id_dict = {config: b_id for config, (b_id, _) in
+                               scheduled_slave_map.iteritems()}
+  return build_buildbucket_id_dict
+
 class BuildbucketClient(object):
   """Buildbucket client to interact with the Buildbucket server."""
 
@@ -345,11 +371,23 @@ def GetNestedAttr(content, nested_attr, default=None):
 
   return value
 
+# Error reason for Cancel requests.
 def GetErrorReason(content):
   return GetNestedAttr(content, ['error', 'reason'])
 
 def GetErrorMessage(content):
   return GetNestedAttr(content, ['error', 'message'])
+
+# Failure reason for FAILURE builds.
+def GetBuildFailureReason(content):
+  return GetNestedAttr(content, ['build', 'failure_reason'])
+
+# Cancelation reason for CANCELED builds.
+def GetBuildCancelationReason(content):
+  return GetNestedAttr(content, ['build', 'cancelation_reason'])
+
+def GetBuildURL(content):
+  return GetNestedAttr(content, ['build', 'url'])
 
 def GetBuildId(content):
   return GetNestedAttr(content, ['build', 'id'])

@@ -356,3 +356,46 @@ class GetAttributeTest(cros_test_lib.MockTestCase):
     for r in results:
       reason = buildbucket_lib.GetErrorReason(r)
       self.assertEqual(reason, 'error_reason')
+
+class BuildbucketLibTest(cros_test_lib.MockTestCase):
+  """Test methods in buildbucket_lib."""
+
+  def testGetScheduledBuildDict(self):
+    """test GetScheduledBuildDict."""
+    config_name_1 = 'config_name_1'
+    config_name_2 = 'config_name_2'
+    config_name_3 = 'config_name_3'
+    id_1 = 'id_1'
+    id_2 = 'id_2'
+    id_3 = 'id_3'
+
+    slave_list = [(config_name_1, id_1, 1),
+                  (config_name_2, id_2, 2),
+                  (config_name_3, id_3, 3)]
+    build_dict = buildbucket_lib.GetScheduledBuildDict(slave_list)
+    self.assertEqual(len(build_dict), 3)
+    self.assertEqual(build_dict[config_name_1], id_1)
+    self.assertEqual(build_dict[config_name_2], id_2)
+    self.assertEqual(build_dict[config_name_3], id_3)
+
+    slave_list = [(config_name_1, id_1, 1),
+                  (config_name_2, id_2, 2),
+                  (config_name_1, id_3, 3)]
+    build_dict = buildbucket_lib.GetScheduledBuildDict(slave_list)
+    self.assertEqual(len(build_dict), 2)
+    self.assertEqual(build_dict[config_name_1], id_3)
+    self.assertEqual(build_dict[config_name_2], id_2)
+
+    slave_list = [(config_name_1, id_1, 3),
+                  (config_name_2, id_2, 2),
+                  (config_name_1, id_3, 1)]
+    build_dict = buildbucket_lib.GetScheduledBuildDict(slave_list)
+    self.assertEqual(len(build_dict), 2)
+    self.assertEqual(build_dict[config_name_1], id_1)
+    self.assertEqual(build_dict[config_name_2], id_2)
+
+    build_dict = buildbucket_lib.GetScheduledBuildDict([])
+    self.assertEqual(build_dict, {})
+
+    build_dict = buildbucket_lib.GetScheduledBuildDict(None)
+    self.assertEqual(build_dict, {})

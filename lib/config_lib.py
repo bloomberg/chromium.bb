@@ -108,6 +108,10 @@ def IsMasterAndroidPFQ(config):
   """Returns True if this build is master Android PFQ type."""
   return config.build_type == constants.ANDROID_PFQ_TYPE and config.master
 
+def UseBuildbucketScheduler(config):
+  """Returns True if this build uses Buildbucket to schedule slaves."""
+  return config.name == constants.CQ_MASTER
+
 def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
 
