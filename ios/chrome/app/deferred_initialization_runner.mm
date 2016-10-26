@@ -6,10 +6,13 @@
 
 #include <stdint.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // An object encapsulating the deferred execution of a block of initialization
 // code.
@@ -47,7 +50,7 @@
   self = [super init];
   if (self) {
     _name.reset([name copy]);
-    _runBlock.reset(block, base::scoped_policy::RETAIN);
+    _runBlock.reset(block);
   }
   return self;
 }
@@ -102,8 +105,8 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _blocksNameQueue.reset([[NSMutableArray array] retain]);
-    _runBlocks.reset([[NSMutableDictionary dictionary] retain]);
+    _blocksNameQueue.reset([NSMutableArray array]);
+    _runBlocks.reset([NSMutableDictionary dictionary]);
     _isBlockScheduled = NO;
     _delayBetweenBlocks = 0.2;
     _delayBeforeFirstBlock = 3.0;
@@ -137,8 +140,7 @@
       [_runBlocks objectForKey:nextBlockName];
   DCHECK(nextBlock);
 
-  base::WeakNSObject<DeferredInitializationRunner> weakSelf(self);
-
+  __weak DeferredInitializationRunner* weakSelf = self;
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)),
       dispatch_get_main_queue(), ^{
