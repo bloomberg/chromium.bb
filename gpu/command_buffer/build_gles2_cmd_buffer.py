@@ -2603,9 +2603,8 @@ _FUNCTION_INFO = {
   },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {
-    'type': 'Data',
+    'type': 'Custom',
     'data_transfer_methods': ['bucket', 'shm'],
-    'decoder_func': 'DoCompressedTexImage2D',
     'trace_level': 1,
   },
   'CompressedTexSubImage2D': {
@@ -5633,6 +5632,15 @@ class StateSetNamedParameter(TypeHandler):
 
 class CustomHandler(TypeHandler):
   """Handler for commands that are auto-generated but require minor tweaks."""
+
+  def InitFunction(self, func):
+    """Overrriden from TypeHandler."""
+    if (func.name.startswith('CompressedTex') and func.name.endswith('Bucket')):
+      # Remove imageSize argument, take the size from the bucket instead.
+      func.cmd_args = [arg for arg in func.cmd_args if arg.name != 'imageSize']
+      func.AddCmdArg(Argument('bucket_id', 'GLuint'))
+    else:
+      TypeHandler.InitFunction(self, func)
 
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""

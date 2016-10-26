@@ -301,6 +301,7 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   // Validate if a buffer is bound at target, if it's unmapped, if it's
   // large enough. Return the buffer bound to |target| if access is granted;
   // return nullptr if a GL error is generated.
+  // Generates INVALID_VALUE if offset + size is out of range.
   Buffer* RequestBufferAccess(ContextState* context_state,
                               GLenum target,
                               GLintptr offset,
@@ -315,6 +316,13 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   // generated.
   bool RequestBufferAccess(ErrorState* error_state,
                            Buffer* buffer,
+                           const char* func_name,
+                           const char* message_tag);
+  // Generates INVALID_OPERATION if offset + size is out of range.
+  bool RequestBufferAccess(ErrorState* error_state,
+                           Buffer* buffer,
+                           GLintptr offset,
+                           GLsizeiptr size,
                            const char* func_name,
                            const char* message_tag);
 

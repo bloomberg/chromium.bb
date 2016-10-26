@@ -791,6 +791,25 @@ bool BufferManager::RequestBufferAccess(ErrorState* error_state,
   return true;
 }
 
+bool BufferManager::RequestBufferAccess(ErrorState* error_state,
+                                        Buffer* buffer,
+                                        GLintptr offset,
+                                        GLsizeiptr size,
+                                        const char* func_name,
+                                        const char* message_tag) {
+  if (!RequestBufferAccess(error_state, buffer, func_name, message_tag)) {
+    return false;
+  }
+  if (!buffer->CheckRange(offset, size)) {
+    std::string msg = base::StringPrintf(
+        "%s : offset/size out of range", message_tag);
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_OPERATION, func_name, msg.c_str());
+    return false;
+  }
+  return true;
+}
+
 void BufferManager::IncreaseMappedBufferCount() {
   DCHECK_GT(std::numeric_limits<uint32_t>::max(), mapped_buffer_count_);
   mapped_buffer_count_++;

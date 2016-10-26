@@ -2430,5 +2430,57 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetFragDataIndexEXT(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage2DBucket(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexImage2DBucket& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexImage2DBucket*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  GLint border = static_cast<GLint>(c.border);
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  uint32_t data_size = bucket->size();
+  GLsizei imageSize = data_size;
+  const void* data = bucket->GetData(0, data_size);
+  if (imageSize && !data) {
+    return error::kInvalidArguments;
+  }
+  error::Error error = DoCompressedTexImage2D(
+      target, level, internalformat, width, height, border, imageSize, data);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage2D(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexImage2D& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexImage2D*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLint border = static_cast<GLint>(c.border);
+  GLsizei imageSize = static_cast<GLsizei>(c.imageSize);
+  uint32_t data_size = imageSize;
+  // TODO(geofflang): Handle PIXEL_UNPACK_BUFFER case.
+  const void* data = GetSharedMemoryAs<const void*>(
+      c.data_shm_id, c.data_shm_offset, data_size);
+  error::Error error = DoCompressedTexImage2D(
+      target, level, internalformat, width, height, border, imageSize, data);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

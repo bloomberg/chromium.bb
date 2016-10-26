@@ -2330,7 +2330,10 @@ void GLES2Implementation::CompressedTexImage2D(
     }
     return;
   }
-  if (data) {
+  if (bound_pixel_unpack_buffer_) {
+    helper_->CompressedTexImage2D(target, level, internalformat, width, height,
+                                  image_size, 0, ToGLuint(data));
+  } else if (data) {
     SetBucketContents(kResultBucketId, data, image_size);
     helper_->CompressedTexImage2DBucket(target, level, internalformat, width,
                                         height, kResultBucketId);
