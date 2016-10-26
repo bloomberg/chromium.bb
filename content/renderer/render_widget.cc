@@ -2023,14 +2023,6 @@ void RenderWidget::SetHandlingInputEventForTesting(bool handling_input_event) {
   input_handler_->set_handling_input_event(handling_input_event);
 }
 
-bool RenderWidget::SendAckForMouseMoveFromDebugger() {
-  return input_handler_->SendAckForMouseMoveFromDebugger();
-}
-
-void RenderWidget::IgnoreAckForMouseMoveFromDebugger() {
-  input_handler_->IgnoreAckForMouseMoveFromDebugger();
-}
-
 void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHasTouchHandler(has_handlers);

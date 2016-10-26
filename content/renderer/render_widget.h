@@ -316,15 +316,6 @@ class CONTENT_EXPORT RenderWidget
 
   void SetHandlingInputEventForTesting(bool handling_input_event);
 
-  // When paused in debugger, we send ack for mouse event early. This ensures
-  // that we continue receiving mouse moves and pass them to debugger. Returns
-  // whether we are paused in mouse move event and have sent the ack.
-  bool SendAckForMouseMoveFromDebugger();
-
-  // When resumed from pause in debugger while handling mouse move,
-  // we should not send an extra ack (see SendAckForMouseMoveFromDebugger).
-  void IgnoreAckForMouseMoveFromDebugger();
-
   // Callback for use with synthetic gestures (e.g. BeginSmoothScroll).
   typedef base::Callback<void()> SyntheticGestureCompletionCallback;
 

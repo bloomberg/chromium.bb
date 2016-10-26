@@ -85,7 +85,6 @@ DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
     : RenderFrameObserver(frame),
       is_attached_(false),
       is_devtools_client_(false),
-      paused_in_mouse_move_(false),
       paused_(false),
       frame_(frame),
       cpu_throttler_(new DevToolsCPUThrottler()),
@@ -154,18 +153,10 @@ DevToolsAgent::createClientMessageLoop() {
 
 void DevToolsAgent::willEnterDebugLoop() {
   paused_ = true;
-  if (RenderWidget* widget = frame_->GetRenderWidget())
-    paused_in_mouse_move_ = widget->SendAckForMouseMoveFromDebugger();
 }
 
 void DevToolsAgent::didExitDebugLoop() {
   paused_ = false;
-  if (!paused_in_mouse_move_)
-    return;
-  if (RenderWidget* widget = frame_->GetRenderWidget()) {
-    widget->IgnoreAckForMouseMoveFromDebugger();
-    paused_in_mouse_move_ = false;
-  }
 }
 
 bool DevToolsAgent::requestDevToolsForFrame(blink::WebLocalFrame* webFrame) {

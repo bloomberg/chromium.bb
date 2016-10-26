@@ -49,15 +49,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
       const blink::WebFloatPoint& position,
       const blink::WebFloatSize& velocity);
 
-  // When paused in debugger, we send ack for mouse event early. This ensures
-  // that we continue receiving mouse moves and pass them to debugger. Returns
-  // whether we are paused in mouse move event and have sent the ack.
-  bool SendAckForMouseMoveFromDebugger();
-
-  // When resumed from pause in debugger while handling mouse move,
-  // we should not send an extra ack (see SendAckForMouseMoveFromDebugger).
-  void IgnoreAckForMouseMoveFromDebugger();
-
   bool handling_input_event() const { return handling_input_event_; }
   void set_handling_input_event(bool handling_input_event) {
     handling_input_event_ = handling_input_event;
@@ -95,9 +86,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
-
-  // Whether we should not send ack for the current mouse move.
-  bool ignore_ack_for_mouse_move_from_debugger_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetInputHandler);
 };

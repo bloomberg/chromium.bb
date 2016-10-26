@@ -180,8 +180,7 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
       handling_event_overscroll_(nullptr),
       handling_event_type_(WebInputEvent::Undefined),
       context_menu_source_type_(ui::MENU_SOURCE_MOUSE),
-      suppress_next_char_events_(false),
-      ignore_ack_for_mouse_move_from_debugger_(false) {
+      suppress_next_char_events_(false) {
   DCHECK(delegate);
   DCHECK(widget);
   delegate->SetInputHandler(this);
@@ -397,10 +396,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
 
-  // Note that we can't use handling_event_type_ here since it will be
-  // overridden by reentrant calls for events after the paused one.
-  bool can_send_ack = !(ignore_ack_for_mouse_move_from_debugger_ &&
-                        input_event.type == WebInputEvent::MouseMove);
   if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
     // |non_blocking| means it was ack'd already by the InputHandlerProxy
     // so let the delegate know the event has been handled.
@@ -408,8 +403,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   }
 
   if ((dispatch_type == DISPATCH_TYPE_BLOCKING ||
-       dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) &&
-      can_send_ack) {
+       dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN)) {
     std::unique_ptr<InputEventAck> response(new InputEventAck(
         input_event.type, ack_result, swap_latency_info,
         std::move(event_overscroll),
@@ -418,13 +412,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
   } else {
     DCHECK(!event_overscroll) << "Unexpected overscroll for un-acked event";
   }
-  if (can_send_ack && RenderThreadImpl::current()) {
+  if (RenderThreadImpl::current()) {
     RenderThreadImpl::current()
         ->GetRendererScheduler()
         ->DidHandleInputEventOnMainThread(input_event);
   }
-  if (input_event.type == WebInputEvent::MouseMove)
-    ignore_ack_for_mouse_move_from_debugger_ = false;
 
 #if defined(OS_ANDROID)
   // Allow the IME to be shown when the focus changes as a consequence
@@ -481,24 +473,6 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
   }
 
   delegate_->OnDidOverscroll(*params);
-}
-
-bool RenderWidgetInputHandler::SendAckForMouseMoveFromDebugger() {
-  if (handling_event_type_ == WebInputEvent::MouseMove) {
-    // If we pause multiple times during a single mouse move event, we should
-    // only send ACK once.
-    if (!ignore_ack_for_mouse_move_from_debugger_) {
-      std::unique_ptr<InputEventAck> ack(new InputEventAck(
-          handling_event_type_, INPUT_EVENT_ACK_STATE_CONSUMED));
-      delegate_->OnInputEventAck(std::move(ack));
-      return true;
-    }
-  }
-  return false;
-}
-
-void RenderWidgetInputHandler::IgnoreAckForMouseMoveFromDebugger() {
-  ignore_ack_for_mouse_move_from_debugger_ = true;
 }
 
 }  // namespace content
