@@ -207,8 +207,8 @@ chrome.test.runTests([
             receiveStream = captureStream;
             waitForExpectedColors(colorDeviation);
           } else if (transportMethod == 'webrtc') {
-            var sender = new webkitRTCPeerConnection(null);
-            var receiver = new webkitRTCPeerConnection(null);
+            var sender = new RTCPeerConnection();
+            var receiver = new RTCPeerConnection();
             sender.onicecandidate = function (event) {
               if (event.candidate) {
                 receiver.addIceCandidate(new RTCIceCandidate(event.candidate));

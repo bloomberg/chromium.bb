@@ -34,7 +34,7 @@ function gotStream(s) {
     testPassed('Got a stream.');
     stream = s;
 
-    pc = new webkitRTCPeerConnection(null, null);
+    pc = new RTCPeerConnection();
     pc.onnegotiationneeded = onNegotiationNeeded;
 
     pc.addStream(stream);

@@ -8,7 +8,7 @@
 <script>
 
 async_test(function(t) {
-    const localPeerConnection = new webkitRTCPeerConnection(null, null);
+    const localPeerConnection = new RTCPeerConnection();
     localPeerConnection.close();
 
     let counter = 0;
@@ -96,7 +96,7 @@ async_test(function(t) {
     });
 
     const calledCallbacks = [];
-    const pc = new webkitRTCPeerConnection(null, null);
+    const pc = new RTCPeerConnection();
     pc.oniceconnectionstatechange = t.step_func(onIceChange1);
 }, 'Tests the RTCPeerConnection Ice functionality.');
 </script>

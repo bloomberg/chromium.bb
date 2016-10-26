@@ -16,7 +16,7 @@ navigator.webkitGetUserMedia(options, (stream1) => {
     navigator.webkitGetUserMedia(options, (stream2) => {
         assert_false(stream1.id === stream2.id);
 
-        pc = new webkitRTCPeerConnection(null, null);
+        pc = new RTCPeerConnection();
 
         pc.onnegotiationneeded = (event) => {
             assert_equals(pc.getStreamById(stream1.id), stream1);

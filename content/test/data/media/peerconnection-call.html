@@ -518,7 +518,7 @@
   }
 
   function callWithDevicePermissionGranted() {
-    var pc = new webkitRTCPeerConnection(null, null);
+    var pc = new RTCPeerConnection();
     gatherIceCandidates(pc, function(candidates) {
       var hasLoopbackCandidate = false;
       assertEquals(candidates.length > 0, true);
@@ -534,7 +534,7 @@
   }
 
   function callWithNoCandidateExpected() {
-    var pc = new webkitRTCPeerConnection({iceServers:[]}, null);
+    var pc = new RTCPeerConnection();
     gatherIceCandidates(pc, function(candidates) {
       assertEquals(candidates.length, 0);
       reportTestSuccess();
@@ -542,7 +542,7 @@
   }
 
   function callAndExpectNonLoopbackCandidates() {
-    var pc = new webkitRTCPeerConnection(null, null);
+    var pc = new RTCPeerConnection();
     gatherIceCandidates(pc, function(candidates) {
       var hasCandidate = false;
       assertEquals(candidates.length > 0, true);

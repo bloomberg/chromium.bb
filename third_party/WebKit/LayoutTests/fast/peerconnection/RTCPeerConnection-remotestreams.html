@@ -28,7 +28,7 @@ function requestSucceeded2()
 {
     testPassed('requestSucceeded was called.');
     shouldBeEqualToNumber('pc.getRemoteStreams().length', 0);
-    finishJSTest();    
+    finishJSTest();
 }
 
 function requestSucceeded1()
@@ -73,7 +73,7 @@ function onRemoveStream(event) {
     shouldBeFalse('event.stream.active')
 }
 
-pc = new webkitRTCPeerConnection(null, null);
+pc = new RTCPeerConnection();
 pc.onaddstream = onAddStream;
 pc.onremovestream = onRemoveStream;
 getUserMedia({audio:true, video:true}, gotStream);

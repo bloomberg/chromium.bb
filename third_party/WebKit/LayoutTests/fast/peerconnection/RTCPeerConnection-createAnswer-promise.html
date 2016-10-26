@@ -12,7 +12,7 @@
       // In all other cases, createAnswer() fails in the test runner.
 
       defaultError = new DOMException('TEST_ERROR', 'OperationError')
-      pc = new webkitRTCPeerConnection(null, null);
+      pc = new RTCPeerConnection();
 
       // Test that createAnswer with voiceActivityDetection succeeds.
       // voiceActivityDetection is true by default.
@@ -40,7 +40,7 @@
       }, 'createAnswer(1)' );
 
       // Test closed connection
-      closedPC = new webkitRTCPeerConnection(null);
+      closedPC = new RTCPeerConnection();
       closedPC.close();
       promise_test(function() {
         var invalidStateError = new DOMException('', 'InvalidStateError');

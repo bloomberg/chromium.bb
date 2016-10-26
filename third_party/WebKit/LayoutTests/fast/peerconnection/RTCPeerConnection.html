@@ -7,64 +7,66 @@
 <script>
 description("Tests the RTCPeerConnection constructor.");
 
-shouldNotThrow("new webkitRTCPeerConnection(null);");
-shouldNotThrow("new webkitRTCPeerConnection(undefined);");
-shouldNotThrow("new webkitRTCPeerConnection({});");
-shouldNotThrow("new webkitRTCPeerConnection();");
-shouldThrow("new webkitRTCPeerConnection('');");
+shouldBe("webkitRTCPeerConnection", "RTCPeerConnection");
 
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[]});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'stun:foo.com'}]});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'}]});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]});");
+shouldNotThrow("new RTCPeerConnection(null);");
+shouldNotThrow("new RTCPeerConnection(undefined);");
+shouldNotThrow("new RTCPeerConnection({});");
+shouldNotThrow("new RTCPeerConnection();");
+shouldThrow("new RTCPeerConnection('');");
 
-shouldNotThrow("new webkitRTCPeerConnection({fooServers:[]});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:true});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[1, 2, 3]});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[{}]});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[{url:'foo'}]});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'stun:foo.com'}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]});");
 
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'none'});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'relay'});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'all'});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'foo'});");
+shouldNotThrow("new RTCPeerConnection({fooServers:[]});");
+shouldThrow("new RTCPeerConnection({iceServers:true});");
+shouldThrow("new RTCPeerConnection({iceServers:[1, 2, 3]});");
+shouldThrow("new RTCPeerConnection({iceServers:[{}]});");
+shouldThrow("new RTCPeerConnection({iceServers:[{url:'foo'}]});");
+shouldThrow("new RTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]});");
 
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'balanced'});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-bundle'});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-compat'});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'foo'});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], iceTransports:'none'});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], iceTransports:'relay'});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], iceTransports:'all'});");
+shouldThrow("new RTCPeerConnection({iceServers:[], iceTransports:'foo'});");
 
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'negotiate'});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'require'});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'foo'});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], bundlePolicy:'balanced'});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], bundlePolicy:'max-bundle'});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], bundlePolicy:'max-compat'});");
+shouldThrow("new RTCPeerConnection({iceServers:[], bundlePolicy:'foo'});");
+
+shouldNotThrow("new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'negotiate'});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'require'});");
+shouldThrow("new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'foo'});");
 
 // Deprecated.
-shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}});");
-shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}});");
-shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]});");
-shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0},{valid_and_supported_2:0}]});");
-shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_but_unsupported_1:0},{valid_but_unsupported_2:0}]});");
-shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:66}});");
-shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{invalid:1}});");
-shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_but_unsupported_1:1}});");
-shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_but_unsupported_1:1, valid_and_supported_1:1}});");
-shouldThrow("new webkitRTCPeerConnection(null, {optional:{valid_and_supported_1:0}});");
-shouldThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0,valid_and_supported_2:0}]});");
+shouldNotThrow("new RTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}});");
+shouldNotThrow("new RTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}});");
+shouldNotThrow("new RTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]});");
+shouldNotThrow("new RTCPeerConnection(null, {optional:[{valid_and_supported_1:0},{valid_and_supported_2:0}]});");
+shouldNotThrow("new RTCPeerConnection(null, {optional:[{valid_but_unsupported_1:0},{valid_but_unsupported_2:0}]});");
+shouldThrow("new RTCPeerConnection(null, {mandatory:{valid_and_supported_1:66}});");
+shouldThrow("new RTCPeerConnection(null, {mandatory:{invalid:1}});");
+shouldThrow("new RTCPeerConnection(null, {mandatory:{valid_but_unsupported_1:1}});");
+shouldThrow("new RTCPeerConnection(null, {mandatory:{valid_but_unsupported_1:1, valid_and_supported_1:1}});");
+shouldThrow("new RTCPeerConnection(null, {optional:{valid_and_supported_1:0}});");
+shouldThrow("new RTCPeerConnection(null, {optional:[{valid_and_supported_1:0,valid_and_supported_2:0}]});");
 // Optional constraints are ignored even if they are invalid.
-shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{invalid:0}]});");
-shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_1:1});");
-shouldThrow("new webkitRTCPeerConnection(null, {valid_but_unsupported_1:1});");
-shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}});");
+shouldNotThrow("new RTCPeerConnection(null, {optional:[{invalid:0}]});");
+shouldThrow("new RTCPeerConnection(null, {valid_and_supported_1:1});");
+shouldThrow("new RTCPeerConnection(null, {valid_but_unsupported_1:1});");
+shouldThrow("new RTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}});");
 
 // Construct with certificates.
-shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:null});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:undefined});");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[]});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[null]});");
-shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[1337]});");
+shouldThrow("new RTCPeerConnection({iceServers:[], certificates:null});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], certificates:undefined});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[], certificates:[]});");
+shouldThrow("new RTCPeerConnection({iceServers:[], certificates:[null]});");
+shouldThrow("new RTCPeerConnection({iceServers:[], certificates:[1337]});");
 // Global certificate variables so that the "should..." methods can evaluate them.
 var certRSA = null;
 var certECDSA = null;
@@ -72,10 +74,10 @@ var certExpired = null;
 
 function testCertificates1RSA()
 {
-    webkitRTCPeerConnection.generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" })
+    RTCPeerConnection.generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" })
         .then(function(certificate) {
                   certRSA = certificate;
-                  shouldNotThrow('new webkitRTCPeerConnection({iceServers:[], certificates:[certRSA]}, null);');
+                  shouldNotThrow('new RTCPeerConnection({iceServers:[], certificates:[certRSA]}, null);');
                   testCertificates2ECDSA();
               },
               function() {
@@ -85,10 +87,10 @@ function testCertificates1RSA()
 }
 function testCertificates2ECDSA()
 {
-    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
+    RTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
         .then(function(certificate) {
                   certECDSA = certificate;
-                  shouldNotThrow('new webkitRTCPeerConnection({iceServers:[], certificates:[certECDSA]}, null);');
+                  shouldNotThrow('new RTCPeerConnection({iceServers:[], certificates:[certECDSA]}, null);');
                   testCertificates3Expired();
               },
               function() {
@@ -98,11 +100,11 @@ function testCertificates2ECDSA()
 }
 function testCertificates3Expired()
 {
-    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })
+    RTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })
         .then(function(certificate) {
                   certExpired = certificate;
                   shouldBeTrue('certExpired.expires <= new Date().getTime()');
-                  shouldThrow('new webkitRTCPeerConnection({iceServers:[], certificates:[certExpired]}, null);');
+                  shouldThrow('new RTCPeerConnection({iceServers:[], certificates:[certExpired]}, null);');
                   finishJSTest();
               },
               function() {

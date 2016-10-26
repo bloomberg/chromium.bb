@@ -9,7 +9,7 @@
 <script>
 
 async_test(function(test) {
-  var pc = new webkitRTCPeerConnection({iceServers: []}, null);
+  var pc = new RTCPeerConnection();
   assert_equals(pc.signalingState, 'stable');
   pc.onsignalingstatechange = test.step_func(() => {
     assert_equals(pc.signalingState, 'closed');

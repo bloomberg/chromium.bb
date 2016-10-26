@@ -7,7 +7,7 @@
 </head>
 <body>
 <script>
-var pc = new webkitRTCPeerConnection(null);
+var pc = new RTCPeerConnection();
 
 function stringify_equals(d1, d2) {
   return JSON.stringify(d1) == JSON.stringify(d2);

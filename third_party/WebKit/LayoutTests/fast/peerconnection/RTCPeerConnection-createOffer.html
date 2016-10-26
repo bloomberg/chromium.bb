@@ -94,7 +94,7 @@ function createOfferSucceeded1(sessionDescription)
 
 function testExecutionOrderClosedConnection()
 {
-    var localPeerConnection = new webkitRTCPeerConnection(null, null);
+    var localPeerConnection = new RTCPeerConnection();
     localPeerConnection.close();
     var counter = 0;
     window.events = [];
@@ -112,7 +112,7 @@ function testExecutionOrderClosedConnection()
 }
 
 shouldNotThrow('testExecutionOrderClosedConnection()');
-pc = new webkitRTCPeerConnection(null);
+pc = new RTCPeerConnection();
 shouldNotThrow('pc.createOffer(createOfferSucceeded1, unexpectedCallback, {voiceActivityDetection:true, iceRestart:true, offerToReceiveAudio:1, offerToReceiveVideo:1});');
 
 window.jsTestIsAsync = true;

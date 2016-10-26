@@ -49,7 +49,6 @@ textarea {
     width="320" height="240"/>
 
 <script>
-var RTCPeerConnection = webkitRTCPeerConnection;
 var getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
 var attachMediaStream = function(element, stream) {
   element.src = URL.createObjectURL(stream);

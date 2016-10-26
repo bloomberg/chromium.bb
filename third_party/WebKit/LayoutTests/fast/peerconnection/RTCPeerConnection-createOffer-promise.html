@@ -14,7 +14,7 @@
       // runner.
 
       defaultError = new DOMException('TEST_ERROR', 'OperationError')
-      pc = new webkitRTCPeerConnection(null);
+      pc = new RTCPeerConnection();
 
       // Test that creating an offer with voiceActivityDetection, iceRestart,
       // offerToReceiveAudio and offerToReceiveVideo returns an accepted promise.
@@ -69,7 +69,7 @@
       }, 'createOffer(1)' );
 
       // Test closed connection
-      closedPC = new webkitRTCPeerConnection(null);
+      closedPC = new RTCPeerConnection();
       closedPC.close();
       promise_test(function() {
         var invalidStateError = new DOMException('', 'InvalidStateError');

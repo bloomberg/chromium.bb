@@ -6,8 +6,8 @@
 // Tests that an RTCDataChannel with event handlers is not garbage-collected
 // prematurely.
 function testDataChannelGC() {
-  var pc1 = new webkitRTCPeerConnection(null);
-  var pc2 = new webkitRTCPeerConnection(null);
+  var pc1 = new RTCPeerConnection();
+  var pc2 = new RTCPeerConnection();
 
   var iceCandidateHandler = function(rpc) {
     return function(e) {

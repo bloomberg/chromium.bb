@@ -25,7 +25,7 @@ function dataChannelOpen()
 function createPeerConnectionAndDataChannel()
 {
     // The Peer Connection object is leaked
-    var pc = new webkitRTCPeerConnection({iceServers:[]}, null);
+    var pc = new RTCPeerConnection();
     dc = pc.createDataChannel("label");
     dc.onopen = dataChannelOpen;
 }
@@ -34,7 +34,7 @@ var pcB = null;
 var observationB = null;
 
 // Test that the PeerConnection object is gc'd if close is called.
-var pcA = new webkitRTCPeerConnection(null, null);
+var pcA = new RTCPeerConnection();
 // Do not pass the object directly to observeGC function. This may
 // remain live on this function's stack preventing GC from collecting
 // it. Accessing the object inside an inner function will prevent any
@@ -47,7 +47,7 @@ asyncGC(function() {
     observationA = null;
 
     // Test that the PeerConnection object is not gc'd if close is not called.
-    pcB = new webkitRTCPeerConnection(null, null);
+    pcB = new RTCPeerConnection();
     // Do not pass the object directly to observeGC function. This may
     // remain live on this function's stack preventing GC from collecting
     // it. Accessing the object inside an inner function will prevent any

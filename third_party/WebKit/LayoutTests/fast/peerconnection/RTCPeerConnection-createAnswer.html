@@ -36,7 +36,7 @@ function createOfferWithoutDescriptionFailed()
 
 function testExecutionOrderClosedConnection()
 {
-    var localPeerConnection = new webkitRTCPeerConnection(null, null);
+    var localPeerConnection = new RTCPeerConnection();
     localPeerConnection.close();
     var counter = 0;
     window.events = [];
@@ -54,7 +54,7 @@ function testExecutionOrderClosedConnection()
 }
 
 shouldNotThrow('testExecutionOrderClosedConnection()');
-pc = new webkitRTCPeerConnection(null, null);
+pc = new RTCPeerConnection();
 pc.createOffer(unexpectedCallback, createOfferWithoutDescriptionFailed);
 
 window.jsTestIsAsync = true;

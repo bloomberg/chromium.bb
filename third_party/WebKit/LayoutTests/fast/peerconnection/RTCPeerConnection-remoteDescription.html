@@ -52,7 +52,7 @@ function expectedInvalidSessionDescription(error)
 
 function testExecutionOrderClosedConnection()
 {
-    var localPeerConnection = new webkitRTCPeerConnection(null, null);
+    var localPeerConnection = new RTCPeerConnection();
     localPeerConnection.close();
     var counter = 0;
     window.events = [];
@@ -65,13 +65,13 @@ function testExecutionOrderClosedConnection()
         events[counter++] = 2;
     });
     Promise.resolve().then(_ => {
-        events[counter++] = 3; 
+        events[counter++] = 3;
         shouldBe('events', '[1,2,3]');
     });
 }
 
 shouldNotThrow('testExecutionOrderClosedConnection()');
-pc = new webkitRTCPeerConnection(null, null);
+pc = new RTCPeerConnection();
 shouldNotThrow('pc.setRemoteDescription().catch(expectedTypeError)');
 shouldNotThrow('pc.setRemoteDescription(null).catch(expectedInvalidSessionDescription)');
 var sessionDescription = new RTCSessionDescription({type:"answer", sdp:"remote"});

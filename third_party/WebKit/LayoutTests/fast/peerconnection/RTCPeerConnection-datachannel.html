@@ -88,7 +88,7 @@ function pc_onicechange() {
     }
 }
 
-pc = new webkitRTCPeerConnection(null, null);
+pc = new RTCPeerConnection();
 shouldNotThrow('dc = pc.createDataChannel("label1");');
 shouldBe("dc.reliable", "true");
 shouldNotThrow('dc = pc.createDataChannel("label2", {});');
@@ -102,7 +102,7 @@ shouldBe("dc.reliable", "false");
 shouldNotThrow('dc = pc.createDataChannel("label3", {maxRetransmitTime:0});');
 shouldBe("dc.reliable", "false");
 
-pc = new webkitRTCPeerConnection(null, null);
+pc = new RTCPeerConnection();
 pc.oniceconnectionstatechange = pc_onicechange;
 pc.ondatachannel = pc_ondatachannel;
 

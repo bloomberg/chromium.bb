@@ -56,7 +56,7 @@ function expectedInvalidSessionDescription(error)
     testPassed('expectedInvalidSessionDescription was called.')
 }
 
-pc = new webkitRTCPeerConnection(null, null);
+pc = new RTCPeerConnection();
 shouldNotThrow('pc.setLocalDescription().catch(expectedTypeError)');
 shouldNotThrow('pc.setLocalDescription(null).catch(expectedInvalidSessionDescription)');
 var sessionDescription = new RTCSessionDescription({type:"offer", sdp:"local"});

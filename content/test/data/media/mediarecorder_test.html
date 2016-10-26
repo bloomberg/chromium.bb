@@ -42,8 +42,8 @@ function setupPeerConnection(stream) {
   return new Promise(function(resolve, reject) {
     var localStream = stream;
     var remoteStream = null;
-    var localPeerConnection = new webkitRTCPeerConnection(null);
-    var remotePeerConnection = new webkitRTCPeerConnection(null);
+    var localPeerConnection = new RTCPeerConnection();
+    var remotePeerConnection = new RTCPeerConnection();
 
     function createAnswer(description) {
       remotePeerConnection.createAnswer(function(description) {

@@ -23,8 +23,8 @@ var certExpiresPositiveOneDay = null;
 // 1: RSA-2048 using public exponent = 65537.
 function generate1RSA()
 {
-    generateCallString  =  'generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" })';
-    webkitRTCPeerConnection.generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" })
+    generateCallString = 'generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" })';
+    RTCPeerConnection.generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" })
         .then(generate1RSASuccessful, generate1RSAFailed);
 }
 function generate1RSASuccessful(certificate)
@@ -43,8 +43,8 @@ function generate1RSAFailed()
 // 2: ECDSA using NIST P-256.
 function generate2ECDSA()
 {
-    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256" })';
-    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
+    generateCallString = 'generateCertificate({ name: "ECDSA", namedCurve: "P-256" })';
+    RTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
         .then(generate2ECDSASuccessful, generate2ECDSAFailed);
 }
 function generate2ECDSASuccessful(certificate)
@@ -63,20 +63,20 @@ function generate2ECDSAFailed()
 // 3-5: Verify that the |expires| attribute works (generate ECDSA because its faster).
 function generate3ExpiresNegativeOneDay()
 {
-    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:-dayInMs })';
-    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:-dayInMs })
+    generateCallString = 'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:-dayInMs })';
+    RTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:-dayInMs })
         .then(function(certificate) { certExpiresNegativeOneDay = certificate; generate4ExpiresZero(); }, generate4ExpiresZero);
 }
 function generate4ExpiresZero()
 {
-    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })';
-    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })
+    generateCallString = 'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })';
+    RTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })
         .then(function(certificate) { certExpiresZero = certificate; generate5ExpiresPositiveOneDay(); }, generate5ExpiresPositiveOneDay);
 }
 function generate5ExpiresPositiveOneDay()
 {
-    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:dayInMs })';  // +1 day
-    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:dayInMs })
+    generateCallString = 'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:dayInMs })';  // +1 day
+    RTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:dayInMs })
         .then(function(certificate) { certExpiresPositiveOneDay = certificate; generate3to5ExpiresResolved(); }, generate3to5ExpiresResolved);
 }
 function generate3to5ExpiresResolved()
