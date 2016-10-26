@@ -59,7 +59,7 @@ void AndroidManagementClient::OnGetTokenFailure(
   token_request_.reset();
   LOG(ERROR) << "Token request failed: " << error.ToString();
 
-  base::ResetAndReturn(&callback_).Run(RESULT_ERROR);
+  base::ResetAndReturn(&callback_).Run(Result::ERROR);
 }
 
 void AndroidManagementClient::RequestAccessToken() {
@@ -101,17 +101,31 @@ void AndroidManagementClient::OnAndroidManagementChecked(
   Result result;
   switch (status) {
     case DM_STATUS_SUCCESS:
-      result = RESULT_UNMANAGED;
+      result = Result::UNMANAGED;
       break;
     case DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
-      result = RESULT_MANAGED;
+      result = Result::MANAGED;
       break;
     default:
-      result = RESULT_ERROR;
+      result = Result::ERROR;
   }
 
   request_job_.reset();
   base::ResetAndReturn(&callback_).Run(result);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         AndroidManagementClient::Result result) {
+  switch (result) {
+    case AndroidManagementClient::Result::MANAGED:
+      return os << "MANAGED";
+    case AndroidManagementClient::Result::UNMANAGED:
+      return os << "UNMANAGED";
+    case AndroidManagementClient::Result::ERROR:
+      return os << "ERROR";
+  }
+  NOTREACHED();
+  return os;
 }
 
 }  // namespace policy

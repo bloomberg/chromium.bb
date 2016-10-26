@@ -90,9 +90,8 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
                        std::string(), kOAuthToken, std::string(), _,
                        MatchProto(android_management_request_)))
       .WillOnce(SaveArg<4>(&client_id));
-  EXPECT_CALL(
-      callback_observer_,
-      OnCallbackComplete(AndroidManagementClient::Result::RESULT_UNMANAGED))
+  EXPECT_CALL(callback_observer_,
+              OnCallbackComplete(AndroidManagementClient::Result::UNMANAGED))
       .Times(1);
 
   AndroidManagementClient::StatusCallback callback =

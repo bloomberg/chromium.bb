@@ -885,23 +885,21 @@ void ArcAuthService::OnAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   switch (result) {
-    case policy::AndroidManagementClient::Result::RESULT_UNMANAGED:
+    case policy::AndroidManagementClient::Result::UNMANAGED:
       OnAndroidManagementPassed();
       break;
-    case policy::AndroidManagementClient::Result::RESULT_MANAGED:
+    case policy::AndroidManagementClient::Result::MANAGED:
       ShutdownBridgeAndShowUI(
           UIPage::ERROR,
           l10n_util::GetStringUTF16(IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR));
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
-    case policy::AndroidManagementClient::Result::RESULT_ERROR:
+    case policy::AndroidManagementClient::Result::ERROR:
       ShutdownBridgeAndShowUI(
           UIPage::ERROR,
           l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
-    default:
-      NOTREACHED();
   }
 }
 
@@ -909,13 +907,13 @@ void ArcAuthService::OnBackgroundAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   switch (result) {
-    case policy::AndroidManagementClient::Result::RESULT_UNMANAGED:
+    case policy::AndroidManagementClient::Result::UNMANAGED:
       // Do nothing. ARC should be started already.
       break;
-    case policy::AndroidManagementClient::Result::RESULT_MANAGED:
+    case policy::AndroidManagementClient::Result::MANAGED:
       DisableArc();
       break;
-    case policy::AndroidManagementClient::Result::RESULT_ERROR:
+    case policy::AndroidManagementClient::Result::ERROR:
       // This code should not be reached. For background check,
       // retry_on_error should be set.
       NOTREACHED();

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_ANDROID_MANAGEMENT_CLIENT_H_
 
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "base/callback.h"
@@ -31,10 +32,10 @@ class DeviceManagementService;
 class AndroidManagementClient : public OAuth2TokenService::Consumer {
  public:
   // Indicates result of the android management check.
-  enum Result {
-    RESULT_MANAGED,    // Android management is enabled.
-    RESULT_UNMANAGED,  // Android management is disabled.
-    RESULT_ERROR,      // Received a error.
+  enum class Result {
+    MANAGED,    // Android management is enabled.
+    UNMANAGED,  // Android management is disabled.
+    ERROR,      // Received a error.
   };
 
   // A callback which receives Result status of an operation.
@@ -94,6 +95,10 @@ class AndroidManagementClient : public OAuth2TokenService::Consumer {
 
   DISALLOW_COPY_AND_ASSIGN(AndroidManagementClient);
 };
+
+// Outputs the stringified |result| to |os|. This is only for logging purposes.
+std::ostream& operator<<(std::ostream& os,
+                         AndroidManagementClient::Result result);
 
 }  // namespace policy
 

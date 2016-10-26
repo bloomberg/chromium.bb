@@ -66,7 +66,7 @@ void ArcAndroidManagementChecker::StartCheck(const CheckCallback& callback) {
   if (policy_util::IsAccountManaged(profile_) ||
       policy::BrowserPolicyConnector::IsNonEnterpriseUser(
           profile_->GetProfileUserName())) {
-    callback.Run(policy::AndroidManagementClient::Result::RESULT_UNMANAGED);
+    callback.Run(policy::AndroidManagementClient::Result::UNMANAGED);
     return;
   }
 
@@ -105,7 +105,7 @@ void ArcAndroidManagementChecker::StartCheckInternal() {
   if (!token_service_->RefreshTokenIsAvailable(account_id_)) {
     VLOG(2) << "No refresh token is available for android management check.";
     base::ResetAndReturn(&callback_)
-        .Run(policy::AndroidManagementClient::Result::RESULT_ERROR);
+        .Run(policy::AndroidManagementClient::Result::ERROR);
     return;
   }
 
@@ -120,7 +120,7 @@ void ArcAndroidManagementChecker::OnAndroidManagementChecked(
   DCHECK(!callback_.is_null());
   VLOG(2) << "Android management check done " << result << ".";
   if (retry_on_error_ &&
-      result == policy::AndroidManagementClient::Result::RESULT_ERROR) {
+      result == policy::AndroidManagementClient::Result::ERROR) {
     ScheduleRetry();
     return;
   }
