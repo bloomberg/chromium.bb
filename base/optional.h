@@ -34,7 +34,9 @@ namespace internal {
 
 template <typename T, bool = base::is_trivially_destructible<T>::value>
 struct OptionalStorage {
-  constexpr OptionalStorage() {}
+  // Initializing |empty_| here instead of using default member initializing
+  // to avoid errors in g++ 4.8.
+  constexpr OptionalStorage() : empty_('\0') {}
 
   constexpr explicit OptionalStorage(const T& value)
       : is_null_(false), value_(value) {}
@@ -58,16 +60,18 @@ struct OptionalStorage {
   bool is_null_ = true;
   union {
     // |empty_| exists so that the union will always be initialized, even when
-    // it doesn't contain a value. Not initializing it has been observed to
-    // trigger comiler warnings.
-    char empty_ = '\0';
+    // it doesn't contain a value. Union members must be initialized for the
+    // constructor to be 'constexpr'.
+    char empty_;
     T value_;
   };
 };
 
 template <typename T>
 struct OptionalStorage<T, true> {
-  constexpr OptionalStorage() {}
+  // Initializing |empty_| here instead of using default member initializing
+  // to avoid errors in g++ 4.8.
+  constexpr OptionalStorage() : empty_('\0') {}
 
   constexpr explicit OptionalStorage(const T& value)
       : is_null_(false), value_(value) {}
@@ -89,9 +93,9 @@ struct OptionalStorage<T, true> {
   bool is_null_ = true;
   union {
     // |empty_| exists so that the union will always be initialized, even when
-    // it doesn't contain a value. Not initializing it has been observed to
-    // trigger comiler warnings.
-    char empty_ = '\0';
+    // it doesn't contain a value. Union members must be initialized for the
+    // constructor to be 'constexpr'.
+    char empty_;
     T value_;
   };
 };
