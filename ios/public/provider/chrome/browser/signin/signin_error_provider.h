@@ -31,10 +31,6 @@ enum class SigninError {
   HANDLED_INTERNALLY  // Has been displayed to the user already.
 };
 
-// Registers and returns the global SigninErrorProvider.
-void SetSigninErrorProvider(SigninErrorProvider* provider);
-SigninErrorProvider* GetSigninErrorProvider();
-
 // Provides utility methods and constants for interpreting signin errors.
 class SigninErrorProvider {
  public:
