@@ -113,6 +113,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                             MediaNotificationUma.SOURCE_MEDIA);
                 }
 
+                if (mFallbackTitle == null) mFallbackTitle = sanitizeMediaTitle(mTab.getTitle());
                 mCurrentMetadata = getMetadata();
                 mCurrentMediaImage = getNotificationImage();
                 mNotificationInfoBuilder =
