@@ -42,14 +42,15 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   // because key-down events do not mean any character inputs there.
   // (InsertChar issues a DOM "keypress" event, which is distinct from keydown.)
   // Unfortunately, this is not necessary the case for our clients that may
-  // treat a key event as a trigger of text inputs. We need suppression.
-
-  // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
-  const base::char16 ch = event->GetCharacter();
-  const bool is_control_char =
-      (0x00 <= ch && ch <= 0x1f) || (0x7f <= ch && ch <= 0x9f);
-  if (!is_control_char && !ui::IsSystemKeyModifier(event->flags()))
-    return true;
+  // treat keydown as a trigger of text inputs. We need suppression for keydown.
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
+    const base::char16 ch = event->GetCharacter();
+    const bool is_control_char =
+        (0x00 <= ch && ch <= 0x1f) || (0x7f <= ch && ch <= 0x9f);
+    if (!is_control_char && !ui::IsSystemKeyModifier(event->flags()))
+      return true;
+  }
 
   // Case 3:
   // Workaround for apps that doesn't handle hardware keyboard events well.
