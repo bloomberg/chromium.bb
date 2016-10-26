@@ -59,9 +59,6 @@ class ChromeLaunchable : public mash::mojom::Launchable {
       return;
     }
     switch (what) {
-      case mash::mojom::kDocument:
-        CreateNewTab();
-        break;
       case mash::mojom::kWindow:
         CreateNewWindowImpl(false /* is_incognito */);
         break;

@@ -5,8 +5,7 @@
 module mash.mojom;
 
 const uint32 kWindow = 1;
-const uint32 kDocument = 2;
-const uint32 kIncognitoWindow = 3;
+const uint32 kIncognitoWindow = 2;
 
 enum LaunchMode {
   DEFAULT,

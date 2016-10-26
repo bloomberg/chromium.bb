@@ -5018,7 +5018,6 @@ if (is_chromeos) {
       "//ash/autoclick/mus:manifest",
       "//ash/mus:manifest",
       "//ash/touch_hud/mus:manifest",
-      "//mash/app_driver:manifest",
       "//mash/quick_launch:manifest",
       "//mash/session:manifest",
       "//mash/task_viewer:manifest",
@@ -5027,7 +5026,6 @@ if (is_chromeos) {
     ]
     packaged_services = [
       "accessibility_autoclick",
-      "app_driver",
       "ash",
       "mash_session",
       "quick_launch",

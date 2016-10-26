@@ -7,7 +7,6 @@
 #include "ash/autoclick/mus/autoclick_application.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/touch_hud/mus/touch_hud_application.h"
-#include "mash/app_driver/app_driver.h"
 #include "mash/quick_launch/quick_launch.h"
 #include "mash/session/session.h"
 #include "mash/task_viewer/task_viewer.h"
@@ -78,8 +77,6 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
   if (name == "service:font_service")
     return base::WrapUnique(new font_service::FontServiceApp);
 #endif
-  if (name == "service:app_driver")
-    return base::WrapUnique(new mash::app_driver::AppDriver);
   return nullptr;
 }
 
