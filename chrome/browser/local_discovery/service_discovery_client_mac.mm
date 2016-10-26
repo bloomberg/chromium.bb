@@ -186,6 +186,13 @@ ServiceWatcherImplMac::NetServiceBrowserContainer::NetServiceBrowserContainer(
 ServiceWatcherImplMac::NetServiceBrowserContainer::
     ~NetServiceBrowserContainer() {
   DCHECK(IsOnServiceDiscoveryThread());
+
+  // Work around a 10.12 bug: NSNetServiceBrowser doesn't lose interest in its
+  // weak delegate during deallocation, so a subsequently-deallocated delegate
+  // attempts to clear the pointer to itself in an NSNetServiceBrowser that's
+  // already gone.
+  // https://crbug.com/657495, https://openradar.appspot.com/28943305
+  [browser_ setDelegate:nil];
 }
 
 void ServiceWatcherImplMac::NetServiceBrowserContainer::Start() {
@@ -299,6 +306,13 @@ ServiceResolverImplMac::NetServiceContainer::NetServiceContainer(
 
 ServiceResolverImplMac::NetServiceContainer::~NetServiceContainer() {
   DCHECK(IsOnServiceDiscoveryThread());
+
+  // Work around a 10.12 bug: NSNetService doesn't lose interest in its weak
+  // delegate during deallocation, so a subsequently-deallocated delegate
+  // attempts to clear the pointer to itself in an NSNetService that's already
+  // gone.
+  // https://crbug.com/657495, https://openradar.appspot.com/28943305
+  [service_ setDelegate:nil];
 }
 
 void ServiceResolverImplMac::NetServiceContainer::StartResolving() {
