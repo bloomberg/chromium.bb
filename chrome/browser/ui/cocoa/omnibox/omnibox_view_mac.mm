@@ -311,8 +311,11 @@ void OmniboxViewMac::OpenMatch(const AutocompleteMatch& match,
   OmniboxView::OpenMatch(
       match, disposition, alternate_nav_url, pasted_text, selected_line);
   in_coalesced_update_block_ = false;
-  if (do_coalesced_text_update_)
+  if (do_coalesced_text_update_) {
     SetText(coalesced_text_update_);
+    // Ensure location bar icon is updated to reflect text.
+    controller()->OnChanged();
+  }
   do_coalesced_text_update_ = false;
   if (do_coalesced_range_update_)
     SetSelectedRange(coalesced_range_update_);
