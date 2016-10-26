@@ -275,10 +275,12 @@ public class MediaPlayerBridge {
                 return;
             }
 
-            try {
-                getLocalPlayer().setDataSource(mContext, Uri.fromFile(mTempFile));
-            } catch (IOException e) {
-                result = false;
+            if (result) {
+                try {
+                    getLocalPlayer().setDataSource(mContext, Uri.fromFile(mTempFile));
+                } catch (IOException e) {
+                    result = false;
+                }
             }
 
             deleteFile();
