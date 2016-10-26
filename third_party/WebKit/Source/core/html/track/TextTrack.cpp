@@ -457,5 +457,6 @@ DEFINE_TRACE(TextTrack) {
 
 DEFINE_TRACE_WRAPPERS(TextTrack) {
   visitor->traceWrappers(m_cues);
+  EventTargetWithInlineData::traceWrappers(visitor);
 }
 }  // namespace blink

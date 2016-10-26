@@ -91,6 +91,7 @@ class TrackListBase : public EventTargetWithInlineData {
     for (auto track : m_tracks) {
       visitor->traceWrappers(track);
     }
+    EventTargetWithInlineData::traceWrappers(visitor);
   }
 
  private:

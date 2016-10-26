@@ -1870,6 +1870,7 @@ DEFINE_TRACE_WRAPPERS(XMLHttpRequest) {
   visitor->traceWrappers(m_responseLegacyStream);
   visitor->traceWrappers(m_responseDocument);
   visitor->traceWrappers(m_responseArrayBuffer);
+  XMLHttpRequestEventTarget::traceWrappers(visitor);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const XMLHttpRequest* xhr) {

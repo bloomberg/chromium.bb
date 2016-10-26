@@ -169,6 +169,7 @@ DEFINE_TRACE(MIDIPort) {
 
 DEFINE_TRACE_WRAPPERS(MIDIPort) {
   visitor->traceWrappers(m_access);
+  EventTargetWithInlineData::traceWrappers(visitor);
 }
 
 void MIDIPort::open() {

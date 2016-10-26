@@ -312,4 +312,5 @@ DEFINE_TRACE_WRAPPERS(TextTrackList) {
     visitor->traceWrappers(track);
   for (auto track : m_inbandTracks)
     visitor->traceWrappers(track);
+  EventTargetWithInlineData::traceWrappers(visitor);
 }
