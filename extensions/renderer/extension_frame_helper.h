@@ -105,6 +105,7 @@ class ExtensionFrameHelper
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
           override;
+  void DidStartProvisionalLoad() override;
   void DidCreateScriptContext(v8::Local<v8::Context>,
                               int extension_group,
                               int world_id) override;
@@ -164,6 +165,8 @@ class ExtensionFrameHelper
 
   // Map of port requests to callbacks.
   std::map<int, std::unique_ptr<PendingPortRequest>> pending_port_requests_;
+
+  bool delayed_main_world_script_initialization_ = false;
 
   base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_;
 

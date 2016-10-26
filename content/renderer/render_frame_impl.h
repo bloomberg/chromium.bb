@@ -448,6 +448,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsUsingLoFi() const override;
   bool IsPasting() const override;
   blink::WebPageVisibilityState GetVisibilityState() const override;
+  bool IsBrowserSideNavigationPending() override;
 
   // mojom::Frame implementation:
   void GetInterfaceProvider(
@@ -1325,6 +1326,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(dcheng): Remove these members.
   bool committed_first_load_ = false;
   bool name_changed_before_first_commit_ = false;
+
+  bool browser_side_navigation_pending_ = false;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

@@ -5030,6 +5030,7 @@ void RenderFrameImpl::OnCommitNavigation(
 
   NavigateInternal(common_params, StartNavigationParams(), request_params,
                    std::move(stream_override));
+  browser_side_navigation_pending_ = false;
 }
 
 // PlzNavigate
@@ -5066,6 +5067,7 @@ void RenderFrameImpl::OnFailedNavigation(
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
+    browser_side_navigation_pending_ = false;
     return;
   }
 
@@ -5084,6 +5086,7 @@ void RenderFrameImpl::OnFailedNavigation(
   if (request_params.page_state.IsValid())
     history_entry = PageStateToHistoryEntry(request_params.page_state);
   LoadNavigationErrorPage(failed_request, error, replace, history_entry.get());
+  browser_side_navigation_pending_ = false;
 }
 
 WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
@@ -6044,6 +6047,7 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
 
 void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   CHECK(IsBrowserSideNavigationEnabled());
+  browser_side_navigation_pending_ = true;
 
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so
@@ -6468,6 +6472,10 @@ blink::WebPageVisibilityState RenderFrameImpl::visibilityState() const {
 
 blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {
   return visibilityState();
+}
+
+bool RenderFrameImpl::IsBrowserSideNavigationPending() {
+  return browser_side_navigation_pending_;
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

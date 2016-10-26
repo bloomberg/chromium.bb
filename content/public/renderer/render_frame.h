@@ -240,6 +240,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns the current visibility of the frame.
   virtual blink::WebPageVisibilityState GetVisibilityState() const = 0;
 
+  // If PlzNavigate is enabled, returns true in between teh time that Blink
+  // requests navigation until the browser responds with the result.
+  virtual bool IsBrowserSideNavigationPending() = 0;
+
  protected:
   ~RenderFrame() override {}
 
