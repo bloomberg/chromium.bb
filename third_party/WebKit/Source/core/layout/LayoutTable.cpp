@@ -1057,7 +1057,6 @@ void LayoutTable::recalcSections() const {
   m_foot = nullptr;
   m_firstBody = nullptr;
   m_hasColElements = false;
-  m_noCellColspanAtLeast = calcNoCellColspanAtLeast();
 
   // We need to get valid pointers to caption, head, foot and first body again
   LayoutObject* nextSibling;
@@ -1116,6 +1115,7 @@ void LayoutTable::recalcSections() const {
 
   m_effectiveColumns.resize(maxCols);
   m_effectiveColumnPositions.resize(maxCols + 1);
+  m_noCellColspanAtLeast = calcNoCellColspanAtLeast();
 
   ASSERT(selfNeedsLayout());
 
