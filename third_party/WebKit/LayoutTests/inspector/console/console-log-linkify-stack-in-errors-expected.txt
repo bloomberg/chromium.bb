@@ -73,7 +73,7 @@ console-log-linkify-stack-in-errors.html:23 TypeError: Cannot read property 'rem
     at console-log-linkify-stack-in-errors.html:27 console-message > console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:34 Error: some error
     at logError (console-log-linkify-stack-in-errors.html:32)
-    at console-log-linkify-stack-in-errors.html:38 console-message > console-message-text source-code > console-message-url webkit-html-resource-link > object-value-error source-code > object-value-error source-code >  webkit-html-resource-link >  webkit-html-resource-link
+    at console-log-linkify-stack-in-errors.html:38 console-message > console-message-text source-code > console-message-url webkit-html-resource-link > object-value-error source-code >  webkit-html-resource-link >  webkit-html-resource-link
 console-log-linkify-stack-in-errors.html:40 Error message without stacks http://www.chromium.org/ console-message > console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
 console-log-linkify-stack-in-errors.html:42 Error valid stack #2
     at www.chromium.org/boo.js:40
