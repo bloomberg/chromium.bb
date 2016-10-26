@@ -100,11 +100,19 @@ template("blink_core_sources") {
       deps += invoker.deps
     }
 
+    public_deps = [
+      "//third_party/WebKit/Source/core:all_generators",
+    ]
+    if (defined(invoker.public_deps)) {
+      public_deps += invoker.public_deps
+    }
+
     # Take everything else not handled above from the invoker.
     forward_variables_from(invoker,
                            "*",
                            [
                              "deps",
+                             "public_deps",
                              "split_count",
                            ])
   }
