@@ -43,6 +43,7 @@ class FakeRendererScheduler : public RendererScheduler {
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
   void SuspendRenderer() override;
+  void ResumeRenderer() override;
   void AddPendingNavigation(WebScheduler::NavigatingFrameType type) override;
   void RemovePendingNavigation(WebScheduler::NavigatingFrameType type) override;
   void OnNavigationStarted() override;

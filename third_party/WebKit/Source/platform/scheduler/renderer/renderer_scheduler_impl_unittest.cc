@@ -2191,6 +2191,55 @@ TEST_F(RendererSchedulerImplTest, SuspendRenderer) {
               testing::ElementsAre(std::string("L1"), std::string("T1")));
 }
 
+TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
+  // Assume that the renderer is backgrounded.
+  scheduler_->OnRendererBackgrounded();
+
+  // Tasks in some queues don't fire when the renderer is suspended.
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
+  scheduler_->SuspendRenderer();
+  EnableIdleTasks();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D1"), std::string("C1"),
+                                   std::string("I1")));
+
+  // The rest queued tasks fire when the renderer is resumed.
+  run_order.clear();
+  scheduler_->ResumeRenderer();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("T1")));
+
+  run_order.clear();
+  // No crash occurs when the renderer is suspended again, and
+  // tasks in some queues don't fire because of suspended.
+  PostTestTasks(&run_order, "D2 C2 L2 I2 T2");
+  scheduler_->SuspendRenderer();
+  EnableIdleTasks();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D2"), std::string("C2"),
+                                   std::string("I2")));
+
+  // The rest queued tasks fire when the renderer is resumed.
+  run_order.clear();
+  scheduler_->ResumeRenderer();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L2"), std::string("T2")));
+
+  run_order.clear();
+  PostTestTasks(&run_order, "D3 T3");
+  // No crash occurs when the resumed renderer goes foregrounded.
+  // Posted tasks while the renderer is resumed fire.
+  scheduler_->OnRendererForegrounded();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D3"), std::string("T3")));
+}
+
 TEST_F(RendererSchedulerImplTest, UseCaseToString) {
   CheckAllUseCaseToString();
 }

@@ -83,6 +83,8 @@ void FakeRendererScheduler::OnRendererForegrounded() {}
 
 void FakeRendererScheduler::SuspendRenderer() {}
 
+void FakeRendererScheduler::ResumeRenderer() {}
+
 void FakeRendererScheduler::AddPendingNavigation(
     blink::WebScheduler::NavigatingFrameType type) {}
 

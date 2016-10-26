@@ -105,6 +105,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
   void SuspendRenderer() override;
+  void ResumeRenderer() override;
   void AddPendingNavigation(WebScheduler::NavigatingFrameType type) override;
   void RemovePendingNavigation(WebScheduler::NavigatingFrameType type) override;
   void OnNavigationStarted() override;
@@ -326,7 +327,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // Helpers for safely suspending/resuming the timer queue after a
   // background/foreground signal.
   void SuspendTimerQueueWhenBackgrounded();
-  void ResumeTimerQueueWhenForegrounded();
+  void ResumeTimerQueueWhenForegroundedOrResumed();
 
   // The task cost estimators and the UserModel need to be reset upon page
   // nagigation. This function does that. Must be called from the main thread.

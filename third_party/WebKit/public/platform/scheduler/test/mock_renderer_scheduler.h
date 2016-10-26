@@ -42,6 +42,7 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD0(OnRendererBackgrounded, void());
   MOCK_METHOD0(OnRendererForegrounded, void());
   MOCK_METHOD0(SuspendRenderer, void());
+  MOCK_METHOD0(ResumeRenderer, void());
   MOCK_METHOD1(AddPendingNavigation, void(WebScheduler::NavigatingFrameType));
   MOCK_METHOD1(RemovePendingNavigation,
                void(WebScheduler::NavigatingFrameType));

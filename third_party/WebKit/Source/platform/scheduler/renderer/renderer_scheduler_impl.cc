@@ -488,7 +488,7 @@ void RendererSchedulerImpl::OnRendererForegrounded() {
   MainThreadOnly().background_main_thread_load_tracker.Pause(now);
 
   suspend_timers_when_backgrounded_closure_.Cancel();
-  ResumeTimerQueueWhenForegrounded();
+  ResumeTimerQueueWhenForegroundedOrResumed();
 }
 
 void RendererSchedulerImpl::SuspendRenderer() {
@@ -505,6 +505,16 @@ void RendererSchedulerImpl::SuspendRenderer() {
   // e.g. loading tasks or postMessage.
   MainThreadOnly().renderer_suspended = true;
   SuspendTimerQueueWhenBackgrounded();
+}
+
+void RendererSchedulerImpl::ResumeRenderer() {
+  helper_.CheckOnValidThread();
+  DCHECK(MainThreadOnly().renderer_backgrounded);
+  if (helper_.IsShutdown())
+    return;
+  suspend_timers_when_backgrounded_closure_.Cancel();
+  MainThreadOnly().renderer_suspended = false;
+  ResumeTimerQueueWhenForegroundedOrResumed();
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
@@ -1383,8 +1393,10 @@ void RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded() {
   ForceUpdatePolicy();
 }
 
-void RendererSchedulerImpl::ResumeTimerQueueWhenForegrounded() {
-  DCHECK(!MainThreadOnly().renderer_backgrounded);
+void RendererSchedulerImpl::ResumeTimerQueueWhenForegroundedOrResumed() {
+  DCHECK(!MainThreadOnly().renderer_backgrounded ||
+         (MainThreadOnly().renderer_backgrounded &&
+          !MainThreadOnly().renderer_suspended));
   if (!MainThreadOnly().timer_queue_suspended_when_backgrounded)
     return;
 

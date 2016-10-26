@@ -134,6 +134,12 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // automatically resumed when foregrounded.
   virtual void SuspendRenderer() = 0;
 
+  // Tells the scheduler that the render process should be resumed. This can
+  // only be done when the renderer is suspended. TabManager (in the future,
+  // MemoryCoordinator) will suspend the renderer again if continuously
+  // backgrounded.
+  virtual void ResumeRenderer() = 0;
+
   // Tells the scheduler that a navigation task is pending. While any main-frame
   // navigation tasks are pending, the scheduler will ensure that loading tasks
   // are not blocked even if they are expensive. Must be called on the main
