@@ -415,11 +415,14 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       tree->property_trees()->scroll_tree.current_scroll_offset(
           scroll_node->owner_id);
   gfx::PointF scroll_position(scroll_offset.x(), scroll_offset.y());
-  // The scroll position does not include snapping which shifts the scroll
-  // offset to align to a pixel boundary, we need to manually include it here.
-  scroll_position -= tree->property_trees()
-                         ->transform_tree.Node(scroll_node->transform_id)
-                         ->scroll_snap;
+  TransformNode* scroll_ancestor_transform_node =
+      tree->Node(scroll_node->transform_id);
+  if (scroll_ancestor_transform_node->scrolls) {
+    // The scroll position does not include snapping which shifts the scroll
+    // offset to align to a pixel boundary, we need to manually include it here.
+    // In this case, snapping is caused by a scroll.
+    scroll_position -= scroll_ancestor_transform_node->snap_amount;
+  }
 
   gfx::RectF clip(
       scroll_position,
@@ -499,14 +502,20 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
     gfx::Vector2dF unsnapping;
     TransformNode* current;
     TransformNode* parent_node;
+    // Since we are calculating the adjustment for fixed position node or a
+    // scroll child, we need to unsnap only if the snap was caused by a scroll.
     for (current = Node(node->source_node_id); current->id > node->parent_id;
          current = parent(current)) {
-      unsnapping.Subtract(current->scroll_snap);
+      DCHECK(current->scrolls || current->snap_amount.IsZero());
+      if (current->scrolls)
+        unsnapping.Subtract(current->snap_amount);
     }
     for (parent_node = Node(node->parent_id);
          parent_node->id > node->source_node_id;
          parent_node = parent(parent_node)) {
-      unsnapping.Add(parent_node->scroll_snap);
+      DCHECK(parent_node->scrolls || parent_node->snap_amount.IsZero());
+      if (parent_node->scrolls)
+        unsnapping.Add(parent_node->snap_amount);
     }
     // If a node NeedsSourceToParentUpdate, the node is either a fixed position
     // node or a scroll child.
@@ -583,25 +592,27 @@ void TransformTree::UpdateAnimationProperties(TransformNode* node,
 }
 
 void TransformTree::UndoSnapping(TransformNode* node) {
-  // to_parent transform has the scroll snap from previous frame baked in.
+  // to_parent transform has snapping from previous frame baked in.
   // We need to undo it and use the un-snapped transform to compute current
   // target and screen space transforms.
-  node->to_parent.Translate(-node->scroll_snap.x(), -node->scroll_snap.y());
+  node->to_parent.Translate(-node->snap_amount.x(), -node->snap_amount.y());
 }
 
 void TransformTree::UpdateSnapping(TransformNode* node) {
-  if (!node->scrolls || node->to_screen_is_potentially_animated ||
+  if (!node->should_be_snapped || node->to_screen_is_potentially_animated ||
       !ToScreen(node->id).IsScaleOrTranslation() ||
       !node->ancestors_are_invertible) {
     return;
   }
 
-  // Scroll snapping must be done in screen space (the pixels we care about).
-  // This means we effectively snap the screen space transform. If ST is the
+  // Snapping must be done in target space (the pixels we care about) and then
+  // the render pass should also be snapped if necessary. But, we do it in
+  // screen space because it is easier and works most of the time if there is
+  // no intermediate render pass with a snap-destrying transform. If ST is the
   // screen space transform and ST' is ST with its translation components
   // rounded, then what we're after is the scroll delta X, where ST * X = ST'.
-  // I.e., we want a transform that will realize our scroll snap. It follows
-  // that X = ST^-1 * ST'. We cache ST and ST^-1 to make this more efficient.
+  // I.e., we want a transform that will realize our snap. It follows that
+  // X = ST^-1 * ST'. We cache ST and ST^-1 to make this more efficient.
   gfx::Transform rounded = ToScreen(node->id);
   rounded.RoundTranslationComponents();
   gfx::Transform delta = FromScreen(node->id);
@@ -612,14 +623,14 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
 
   gfx::Vector2dF translation = delta.To2dTranslation();
 
-  // Now that we have our scroll delta, we must apply it to each of our
-  // combined, to/from matrices.
+  // Now that we have our delta, we must apply it to each of our combined,
+  // to/from matrices.
   SetToScreen(node->id, rounded);
   node->to_parent.Translate(translation.x(), translation.y());
   gfx::Transform from_screen = FromScreen(node->id);
   from_screen.matrix().postTranslate(-translation.x(), -translation.y(), 0);
   SetFromScreen(node->id, from_screen);
-  node->scroll_snap = translation;
+  node->snap_amount = translation;
 }
 
 void TransformTree::UpdateTransformChanged(TransformNode* node,

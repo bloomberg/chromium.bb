@@ -94,6 +94,8 @@ struct CC_EXPORT TransformNode {
 
   bool scrolls : 1;
 
+  bool should_be_snapped : 1;
+
   // These are used to position nodes wrt the right or bottom of the inner or
   // outer viewport.
   bool affected_by_inner_viewport_bounds_delta_x : 1;
@@ -116,9 +118,10 @@ struct CC_EXPORT TransformNode {
   // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::ScrollOffset scroll_offset;
 
-  // We scroll snap where possible, but this means fixed-pos elements must be
-  // adjusted.  This value stores the snapped amount for this purpose.
-  gfx::Vector2dF scroll_snap;
+  // This value stores the snapped amount whenever we snap. If the snap is due
+  // to a scroll, we need it to calculate fixed-pos elements adjustment, even
+  // otherwise we may need it to undo the snapping next frame.
+  gfx::Vector2dF snap_amount;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::Vector2dF source_offset;

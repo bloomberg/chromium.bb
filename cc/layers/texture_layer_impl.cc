@@ -57,6 +57,10 @@ std::unique_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
   return TextureLayerImpl::Create(tree_impl, id());
 }
 
+bool TextureLayerImpl::IsSnapped() {
+  return true;
+}
+
 void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
 

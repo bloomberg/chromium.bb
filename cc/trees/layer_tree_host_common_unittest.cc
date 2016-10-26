@@ -3524,6 +3524,49 @@ TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
   EXPECT_TRUE(expected_occlusion.IsEqual(actual_occlusion));
 }
 
+TEST_F(LayerTreeHostCommonTest, TextureLayerSnapping) {
+  FakeImplTaskRunnerProvider task_runner_provider;
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
+  std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
+      FakeCompositorFrameSink::Create3d();
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
+                                  &task_graph_runner);
+
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<TextureLayerImpl> child =
+      TextureLayerImpl::Create(host_impl.active_tree(), 2);
+
+  LayerImpl* child_ptr = child.get();
+
+  root->SetBounds(gfx::Size(100, 100));
+  child->SetBounds(gfx::Size(100, 100));
+  child->SetDrawsContent(true);
+  gfx::Transform fractional_translate;
+  fractional_translate.Translate(10.5f, 20.3f);
+  child->test_properties()->transform = fractional_translate;
+
+  host_impl.SetViewportSize(root->bounds());
+
+  root->test_properties()->AddChild(std::move(child));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl.SetVisible(true);
+  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  bool update_lcd_text = false;
+  host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
+
+  EXPECT_NE(child_ptr->ScreenSpaceTransform(), fractional_translate);
+  fractional_translate.RoundTranslationComponents();
+  EXPECT_TRANSFORMATION_MATRIX_EQ(child_ptr->ScreenSpaceTransform(),
+                                  fractional_translate);
+  gfx::RectF layer_bounds_in_screen_space =
+      MathUtil::MapClippedRect(child_ptr->ScreenSpaceTransform(),
+                               gfx::RectF(gfx::SizeF(child_ptr->bounds())));
+  EXPECT_EQ(layer_bounds_in_screen_space, gfx::RectF(11.f, 20.f, 100.f, 100.f));
+}
+
 TEST_F(LayerTreeHostCommonTest,
        OcclusionForLayerWithUninvertibleDrawTransform) {
   FakeImplTaskRunnerProvider task_runner_provider;

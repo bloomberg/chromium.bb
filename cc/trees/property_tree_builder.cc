@@ -493,6 +493,7 @@ bool AddTransformNodeIfNeeded(
   const bool is_scrollable = layer->scrollable();
   const bool is_fixed = PositionConstraint(layer).is_fixed_position();
   const bool is_sticky = StickyPositionConstraint(layer).is_sticky;
+  const bool is_snapped = layer->IsSnapped();
 
   const bool has_significant_transform =
       !Transform(layer).IsIdentityOr2DTranslation();
@@ -523,7 +524,8 @@ bool AddTransformNodeIfNeeded(
   const bool is_at_boundary_of_3d_rendering_context =
       IsAtBoundaryOf3dRenderingContext(layer);
 
-  bool requires_node = is_root || is_scrollable || has_significant_transform ||
+  DCHECK(!is_scrollable || is_snapped);
+  bool requires_node = is_root || is_snapped || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
                        is_page_scale_layer || is_overscroll_elasticity_layer ||
                        has_proxied_transform_related_property ||
@@ -599,6 +601,7 @@ bool AddTransformNodeIfNeeded(
       node->id;
 
   node->scrolls = is_scrollable;
+  node->should_be_snapped = is_snapped;
   node->flattens_inherited_transform = data_for_children->should_flatten;
 
   node->sorting_context_id = layer->sorting_context_id();

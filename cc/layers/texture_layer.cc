@@ -201,6 +201,10 @@ bool TextureLayer::Update() {
   return updated || !update_rect().IsEmpty();
 }
 
+bool TextureLayer::IsSnapped() {
+  return true;
+}
+
 void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
   TRACE_EVENT0("cc", "TextureLayer::PushPropertiesTo");

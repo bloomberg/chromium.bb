@@ -44,7 +44,7 @@ TEST(PropertyTreeSerializationTest, TransformNodeSerialization) {
   original.in_subtree_of_page_scale_layer = false;
   original.post_local_scale_factor = 0.5f;
   original.scroll_offset = gfx::ScrollOffset(1.5f, 1.5f);
-  original.scroll_snap = gfx::Vector2dF(0.4f, 0.4f);
+  original.snap_amount = gfx::Vector2dF(0.4f, 0.4f);
   original.source_offset = gfx::Vector2dF(2.5f, 2.4f);
   original.source_to_parent = gfx::Vector2dF(3.2f, 3.2f);
 

@@ -30,6 +30,7 @@ TransformNode::TransformNode()
       node_and_ancestors_are_flat(true),
       node_and_ancestors_have_only_integer_translation(true),
       scrolls(false),
+      should_be_snapped(false),
       affected_by_inner_viewport_bounds_delta_x(false),
       affected_by_inner_viewport_bounds_delta_y(false),
       affected_by_outer_viewport_bounds_delta_x(false),
@@ -63,6 +64,7 @@ bool TransformNode::operator==(const TransformNode& other) const {
          node_and_ancestors_have_only_integer_translation ==
              other.node_and_ancestors_have_only_integer_translation &&
          scrolls == other.scrolls &&
+         should_be_snapped == other.should_be_snapped &&
          affected_by_inner_viewport_bounds_delta_x ==
              other.affected_by_inner_viewport_bounds_delta_x &&
          affected_by_inner_viewport_bounds_delta_y ==
@@ -76,7 +78,7 @@ bool TransformNode::operator==(const TransformNode& other) const {
          transform_changed == other.transform_changed &&
          post_local_scale_factor == other.post_local_scale_factor &&
          scroll_offset == other.scroll_offset &&
-         scroll_snap == other.scroll_snap &&
+         snap_amount == other.snap_amount &&
          source_offset == other.source_offset &&
          source_to_parent == other.source_to_parent;
 }
@@ -136,6 +138,7 @@ void TransformNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_node_and_ancestors_have_only_integer_translation(
       node_and_ancestors_have_only_integer_translation);
   data->set_scrolls(scrolls);
+  data->set_should_be_snapped(should_be_snapped);
 
   data->set_affected_by_inner_viewport_bounds_delta_x(
       affected_by_inner_viewport_bounds_delta_x);
@@ -151,7 +154,7 @@ void TransformNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_post_local_scale_factor(post_local_scale_factor);
 
   ScrollOffsetToProto(scroll_offset, data->mutable_scroll_offset());
-  Vector2dFToProto(scroll_snap, data->mutable_scroll_snap());
+  Vector2dFToProto(snap_amount, data->mutable_snap_amount());
   Vector2dFToProto(source_offset, data->mutable_source_offset());
   Vector2dFToProto(source_to_parent, data->mutable_source_to_parent());
 }
@@ -192,6 +195,7 @@ void TransformNode::FromProtobuf(const proto::TreeNode& proto) {
   node_and_ancestors_have_only_integer_translation =
       data.node_and_ancestors_have_only_integer_translation();
   scrolls = data.scrolls();
+  should_be_snapped = data.should_be_snapped();
 
   affected_by_inner_viewport_bounds_delta_x =
       data.affected_by_inner_viewport_bounds_delta_x();
@@ -207,7 +211,7 @@ void TransformNode::FromProtobuf(const proto::TreeNode& proto) {
   post_local_scale_factor = data.post_local_scale_factor();
 
   scroll_offset = ProtoToScrollOffset(data.scroll_offset());
-  scroll_snap = ProtoToVector2dF(data.scroll_snap());
+  snap_amount = ProtoToVector2dF(data.snap_amount());
   source_offset = ProtoToVector2dF(data.source_offset());
   source_to_parent = ProtoToVector2dF(data.source_to_parent());
 }
@@ -225,7 +229,7 @@ void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("source_node_id", source_node_id);
   value->SetInteger("sorting_context_id", sorting_context_id);
   MathUtil::AddToTracedValue("scroll_offset", scroll_offset, value);
-  MathUtil::AddToTracedValue("scroll_snap", scroll_snap, value);
+  MathUtil::AddToTracedValue("snap_amount", snap_amount, value);
 }
 
 TransformCachedNodeData::TransformCachedNodeData()

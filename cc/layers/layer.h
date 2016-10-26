@@ -337,6 +337,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetLayerClient(LayerClient* client) { inputs_.client = client; }
 
+  virtual bool IsSnapped();
+
   virtual void PushPropertiesTo(LayerImpl* layer);
 
   // Sets the type proto::LayerType that should be used for serialization

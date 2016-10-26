@@ -137,6 +137,7 @@ class CC_EXPORT TextureLayer : public Layer {
 
   void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   bool Update() override;
+  bool IsSnapped() override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
  protected:

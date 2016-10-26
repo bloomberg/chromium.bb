@@ -383,6 +383,7 @@ class CC_EXPORT LayerImpl {
   virtual void RecreateResources();
 
   virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
+  virtual bool IsSnapped();
   virtual void PushPropertiesTo(LayerImpl* layer);
 
   virtual void GetAllPrioritizedTilesForTracing(

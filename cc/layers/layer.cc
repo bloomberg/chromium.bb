@@ -1113,6 +1113,10 @@ static void PostCopyCallbackToMainThread(
                                                base::Passed(&result)));
 }
 
+bool Layer::IsSnapped() {
+  return scrollable();
+}
+
 void Layer::PushPropertiesTo(LayerImpl* layer) {
   TRACE_EVENT0("cc", "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
