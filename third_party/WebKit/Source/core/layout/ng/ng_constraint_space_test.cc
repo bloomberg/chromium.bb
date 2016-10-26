@@ -57,8 +57,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   auto* space =
       new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
 
-  bool for_inline_or_bfc = true;
-  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+  auto* iterator = space->LayoutOpportunities();
 
   EXPECT_EQ("0,0 600x400", OpportunityToString(iterator->Next()));
   EXPECT_EQ("(empty)", OpportunityToString(iterator->Next()));
@@ -76,8 +75,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
 
   auto* space =
       new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
-  bool for_inline_or_bfc = true;
-  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+  auto* iterator = space->LayoutOpportunities();
 
   // First opportunity should be to the left of the exclusion.
   EXPECT_EQ("0,0 500x400", OpportunityToString(iterator->Next()));
@@ -101,8 +99,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
 
   auto* space =
       new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
-  bool for_inline_or_bfc = true;
-  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+  auto* iterator = space->LayoutOpportunities();
 
   // First opportunity should be to the right of the exclusion.
   EXPECT_EQ("100,0 500x400", OpportunityToString(iterator->Next()));
@@ -151,8 +148,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
 
   auto* space =
       new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
-  bool for_inline_or_bfc = true;
-  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+  auto* iterator = space->LayoutOpportunities();
 
   // 1st Start point
   EXPECT_EQ("0,0 600x200", OpportunityToString(iterator->Next()));
@@ -199,8 +195,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
   auto* space =
       new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
 
-  bool for_inline_or_bfc = true;
-  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+  auto* iterator = space->LayoutOpportunities();
 
   EXPECT_EQ("0,0 600x100", OpportunityToString(iterator->Next()));
   EXPECT_EQ("(empty)", OpportunityToString(iterator->Next()));

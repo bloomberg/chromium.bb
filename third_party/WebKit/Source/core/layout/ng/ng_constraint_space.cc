@@ -132,8 +132,7 @@ void NGConstraintSpace::Subtract(const NGFragment*) {
 NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunities(
     unsigned clear,
     bool for_inline_or_bfc) {
-  NGLayoutOpportunityIterator* iterator =
-      new NGLayoutOpportunityIterator(this, clear, for_inline_or_bfc);
+  NGLayoutOpportunityIterator* iterator = new NGLayoutOpportunityIterator(this);
   return iterator;
 }
 

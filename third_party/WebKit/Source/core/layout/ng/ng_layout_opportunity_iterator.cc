@@ -205,9 +205,11 @@ bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
 
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
     NGConstraintSpace* space,
-    unsigned clear,
-    bool for_inline_or_bfc)
-    : constraint_space_(space) {
+    const NGLogicalOrigin origin_point,
+    const NGLogicalLeader leader_point)
+    : constraint_space_(space),
+      origin_point_(origin_point),
+      leader_point_(leader_point) {
   // TODO(chrome-layout-team): Combine exclusions that shadow each other.
   auto exclusions = constraint_space_->PhysicalSpace()->Exclusions();
   DCHECK(std::is_sorted(exclusions.begin(), exclusions.end(),
