@@ -410,5 +410,22 @@ test_with_window((w) => {
   assert_false( observedAttributes_invoked, 'Get(constructor, observedAttributes) should not be invoked');
 }, 'Get(constructor, observedAttributes) should not execute if ' +
    'attributeChangedCallback is undefined');
+
+test_with_window((w) => {
+  let attributes = {};
+  attributes[Symbol.iterator] = function*() {
+    throw new TypeError();
+  };
+  class X extends w.HTMLElement {
+    constructor() { super(); }
+    attributeChangedCallback() {}
+    static get observedAttributes() {
+      return attributes;
+    }
+  }
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('x-x', X);
+  });
+}, 'Throwing an exception in observedAttributes');
 </script>
 </body>

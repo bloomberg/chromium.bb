@@ -825,9 +825,9 @@ VectorType toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info,
 }
 
 // Gets an iterator from an Object.
-CORE_EXPORT v8::MaybeLocal<v8::Object> getEsIterator(v8::Isolate*,
-                                                     v8::Local<v8::Object>,
-                                                     ExceptionState&);
+CORE_EXPORT v8::Local<v8::Object> getEsIterator(v8::Isolate*,
+                                                v8::Local<v8::Object>,
+                                                ExceptionState&);
 
 // Validates that the passed object is a sequence type per WebIDL spec
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence
@@ -1019,9 +1019,10 @@ VectorType toImplSequence(v8::Isolate* isolate,
     return VectorType();
   }
 
-  v8::Local<v8::Object> iterator;
-  if (!getEsIterator(isolate, value.As<v8::Object>(), exceptionState)
-           .ToLocal(&iterator))
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Object> iterator =
+      getEsIterator(isolate, value.As<v8::Object>(), exceptionState);
+  if (exceptionState.hadException())
     return VectorType();
 
   v8::Local<v8::String> nextKey = v8String(isolate, "next");
@@ -1031,8 +1032,10 @@ VectorType toImplSequence(v8::Isolate* isolate,
   VectorType result;
   while (true) {
     v8::Local<v8::Value> next;
-    if (!iterator->Get(context, nextKey).ToLocal(&next))
+    if (!iterator->Get(context, nextKey).ToLocal(&next)) {
+      exceptionState.rethrowV8Exception(block.Exception());
       return VectorType();
+    }
     // TODO(bashi): Support callable objects.
     if (!next->IsObject() || !next.As<v8::Object>()->IsFunction()) {
       exceptionState.throwTypeError("Iterator.next should be callable.");
@@ -1042,8 +1045,10 @@ VectorType toImplSequence(v8::Isolate* isolate,
     if (!V8ScriptRunner::callFunction(next.As<v8::Function>(),
                                       toExecutionContext(context), iterator, 0,
                                       nullptr, isolate)
-             .ToLocal(&nextResult))
+             .ToLocal(&nextResult)) {
+      exceptionState.rethrowV8Exception(block.Exception());
       return VectorType();
+    }
     if (!nextResult->IsObject()) {
       exceptionState.throwTypeError(
           "Iterator.next() did not return an object.");
@@ -1053,11 +1058,15 @@ VectorType toImplSequence(v8::Isolate* isolate,
     v8::Local<v8::Value> element;
     v8::Local<v8::Value> done;
     if (!resultObject->Get(context, valueKey).ToLocal(&element) ||
-        !resultObject->Get(context, doneKey).ToLocal(&done))
+        !resultObject->Get(context, doneKey).ToLocal(&done)) {
+      exceptionState.rethrowV8Exception(block.Exception());
       return VectorType();
+    }
     v8::Local<v8::Boolean> doneBoolean;
-    if (!done->ToBoolean(context).ToLocal(&doneBoolean))
+    if (!done->ToBoolean(context).ToLocal(&doneBoolean)) {
+      exceptionState.rethrowV8Exception(block.Exception());
       return VectorType();
+    }
     if (doneBoolean->Value())
       break;
     result.append(NativeValueTraits<ValueType>::nativeValue(isolate, element,
