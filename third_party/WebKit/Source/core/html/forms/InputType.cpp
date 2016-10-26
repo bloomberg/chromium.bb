@@ -672,7 +672,7 @@ ColorChooserClient* InputType::colorChooserClient() {
 }
 
 void InputType::applyStep(const Decimal& current,
-                          int count,
+                          double count,
                           AnyStepHandling anyStepHandling,
                           TextFieldEventBehavior eventBehavior,
                           ExceptionState& exceptionState) {
@@ -725,7 +725,7 @@ void InputType::applyStep(const Decimal& current,
       --count;
     }
   }
-  newValue = newValue + stepRange.step() * count;
+  newValue = newValue + stepRange.step() * Decimal::fromDouble(count);
 
   if (!equalIgnoringCase(stepString, "any"))
     newValue = stepRange.alignValueForStep(current, newValue);
@@ -768,7 +768,7 @@ StepRange InputType::createStepRange(AnyStepHandling) const {
   return StepRange();
 }
 
-void InputType::stepUp(int n, ExceptionState& exceptionState) {
+void InputType::stepUp(double n, ExceptionState& exceptionState) {
   if (!isSteppable()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "This form element is not steppable.");

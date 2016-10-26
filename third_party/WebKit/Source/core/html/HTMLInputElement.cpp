@@ -280,7 +280,7 @@ void HTMLInputElement::stepUp(int n, ExceptionState& exceptionState) {
 }
 
 void HTMLInputElement::stepDown(int n, ExceptionState& exceptionState) {
-  m_inputType->stepUp(-n, exceptionState);
+  m_inputType->stepUp(-1.0 * n, exceptionState);
 }
 
 void HTMLInputElement::blur() {

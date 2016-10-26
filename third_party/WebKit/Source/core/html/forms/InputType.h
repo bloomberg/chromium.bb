@@ -139,7 +139,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   bool stepMismatch(const String&) const;
   virtual bool getAllowedValueStep(Decimal*) const;
   virtual StepRange createStepRange(AnyStepHandling) const;
-  virtual void stepUp(int, ExceptionState&);
+  virtual void stepUp(double, ExceptionState&);
   virtual void stepUpFromLayoutObject(int);
   virtual String badInputText() const;
   virtual String rangeOverflowText(const Decimal& maximum) const;
@@ -252,7 +252,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   // Helper for stepUp()/stepDown(). Adds step value * count to the current
   // value.
   void applyStep(const Decimal&,
-                 int count,
+                 double count,
                  AnyStepHandling,
                  TextFieldEventBehavior,
                  ExceptionState&);

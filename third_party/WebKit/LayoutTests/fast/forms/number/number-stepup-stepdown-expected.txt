@@ -21,6 +21,7 @@ PASS stepUp("3", null, null, -1) is "2"
 PASS stepDown("2", null, null) is "1"
 PASS stepDown("1", null, null, 2) is "-1"
 PASS stepDown("-1", null, null, -1) is "0"
+PASS stepDown("0", "1", null, 2147483648) is "2147483648"
 Extra arguments
 PASS input.value = "0"; input.min = null; input.step = null; input.stepUp(1, 2); input.value is "1"
 PASS input.value = "1"; input.stepDown(1, 3); input.value is "0"
