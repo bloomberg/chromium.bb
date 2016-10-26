@@ -235,8 +235,9 @@ void LayerTreeHostRemote::DidStopFlinging() {
 
 void LayerTreeHostRemote::SetDebugState(
     const LayerTreeDebugState& debug_state) {
-  // TODO(khushalsagar): Figure out if we need to send these to the client.
-  NOTREACHED();
+  // If any debugging needs to be enabled, ideally it should be using the
+  // compositor on the client directly. But the setup code will always set this
+  // on initialization, even if the settings end up being a no-op.
 }
 
 const LayerTreeDebugState& LayerTreeHostRemote::GetDebugState() const {

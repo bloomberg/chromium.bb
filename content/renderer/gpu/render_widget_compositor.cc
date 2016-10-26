@@ -25,6 +25,10 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/layer_tree_mutator.h"
 #include "cc/base/switches.h"
+#include "cc/blimp/engine_picture_cache.h"
+#include "cc/blimp/image_serialization_processor.h"
+#include "cc/blimp/layer_tree_host_remote.h"
+#include "cc/blimp/remote_compositor_bridge.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
@@ -46,6 +50,7 @@
 #include "content/common/layer_tree_settings_factory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -233,6 +238,27 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings =
       GenerateLayerTreeSettings(*cmd, compositor_deps_, device_scale_factor);
+
+  if (cmd->HasSwitch(switches::kUseRemoteCompositing) &&
+      cmd->HasSwitch(switches::kUseLayerTreeHostRemote)) {
+    DCHECK(!threaded_);
+
+    cc::LayerTreeHostRemote::InitParams params;
+    params.client = this;
+    params.main_task_runner =
+        compositor_deps_->GetCompositorMainThreadTaskRunner();
+    params.animation_host = cc::AnimationHost::CreateMainInstance();
+    params.remote_compositor_bridge =
+        GetContentClient()->renderer()->CreateRemoteCompositorBridge(
+            this, params.main_task_runner);
+    params.engine_picture_cache =
+        compositor_deps_->GetImageSerializationProcessor()
+            ->CreateEnginePictureCache();
+    params.settings = &settings;
+    layer_tree_host_ = base::MakeUnique<cc::LayerTreeHostRemote>(&params);
+    return;
+  }
+
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.shared_bitmap_manager = compositor_deps_->GetSharedBitmapManager();

@@ -327,10 +327,14 @@ source_set("renderer") {
     "renderer/blimp_content_renderer_client.h",
     "renderer/blimp_engine_picture_cache.cc",
     "renderer/blimp_engine_picture_cache.h",
+    "renderer/blimp_remote_compositor_bridge.cc",
+    "renderer/blimp_remote_compositor_bridge.h",
     "renderer/blob_channel_sender_proxy.cc",
     "renderer/blob_channel_sender_proxy.h",
     "renderer/engine_image_serialization_processor.cc",
     "renderer/engine_image_serialization_processor.h",
+    "renderer/frame_scheduler.cc",
+    "renderer/frame_scheduler.h",
   ]
 
   deps = [
@@ -340,6 +344,7 @@ source_set("renderer") {
     "//blimp/common/proto",
     "//blimp/net",
     "//cc",
+    "//cc/proto",
     "//components/web_cache/renderer",
     "//content/public/common",
     "//content/public/renderer",
@@ -573,6 +578,7 @@ source_set("renderer_unit_tests") {
   sources = [
     "renderer/blimp_engine_picture_cache_unittest.cc",
     "renderer/blob_channel_sender_proxy_unittest.cc",
+    "renderer/frame_scheduler_unittest.cc",
   ]
 
   deps = [

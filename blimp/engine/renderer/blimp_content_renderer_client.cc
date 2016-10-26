@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "blimp/engine/mojo/blob_channel.mojom.h"
+#include "blimp/engine/renderer/blimp_remote_compositor_bridge.h"
 #include "blimp/engine/renderer/blob_channel_sender_proxy.h"
 #include "blimp/engine/renderer/engine_image_serialization_processor.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
@@ -26,6 +27,14 @@ void BlimpContentRendererClient::RenderThreadStarted() {
 cc::ImageSerializationProcessor*
 BlimpContentRendererClient::GetImageSerializationProcessor() {
   return image_serialization_processor_.get();
+}
+
+std::unique_ptr<cc::RemoteCompositorBridge>
+BlimpContentRendererClient::CreateRemoteCompositorBridge(
+    cc::RemoteProtoChannel* remote_proto_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner) {
+  return base::MakeUnique<BlimpRemoteCompositorBridge>(
+      remote_proto_channel, std::move(compositor_main_task_runner));
 }
 
 }  // namespace engine

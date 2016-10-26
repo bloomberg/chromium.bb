@@ -25,6 +25,10 @@ class BlimpContentRendererClient : public content::ContentRendererClient {
   // content::ContentRendererClient implementation.
   void RenderThreadStarted() override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
+  std::unique_ptr<cc::RemoteCompositorBridge> CreateRemoteCompositorBridge(
+      cc::RemoteProtoChannel* remote_proto_channel,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner)
+      override;
 
  private:
   // Manages the process-global web cache.

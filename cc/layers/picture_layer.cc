@@ -208,6 +208,9 @@ void PictureLayer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
 
 void PictureLayer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
                                                   bool inputs_only) {
+  DCHECK(GetLayerTree());
+  DCHECK(GetLayerTree()->engine_picture_cache());
+
   Layer::LayerSpecificPropertiesToProto(proto, inputs_only);
   DropRecordingSourceContentIfInvalid();
   proto::PictureLayerProperties* picture = proto->mutable_picture();

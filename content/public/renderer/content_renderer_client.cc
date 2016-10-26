@@ -4,6 +4,7 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
+#include "cc/blimp/remote_compositor_bridge.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "media/base/renderer_factory.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
@@ -181,6 +182,13 @@ ContentRendererClient::CreateMediaStreamRendererFactory() {
 
 cc::ImageSerializationProcessor*
 ContentRendererClient::GetImageSerializationProcessor() {
+  return nullptr;
+}
+
+std::unique_ptr<cc::RemoteCompositorBridge>
+ContentRendererClient::CreateRemoteCompositorBridge(
+    cc::RemoteProtoChannel* remote_proto_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner) {
   return nullptr;
 }
 

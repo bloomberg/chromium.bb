@@ -21,6 +21,11 @@ message CompositorMessage {
   // Frame Update.
   optional LayerTreeHost layer_tree_host = 3;
 
+  // Client -> Engine
+  // Sent from the client to the engine when a frame update was processed
+  // on the client.
+  optional bool frame_ack = 4;
+
   // One of these is set based on where the message is going to.
   optional CompositorMessageToMain to_main = 1;
   optional CompositorMessageToImpl to_impl = 2;

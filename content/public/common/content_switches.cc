@@ -866,6 +866,10 @@ const char kContentImageTextureTarget[] = "content-image-texture-target";
 // Texture target for CHROMIUM_image backed video frame textures.
 const char kVideoImageTextureTarget[] = "video-image-texture-target";
 
+// Used in conjunction with kUseRemoteCompositing to enable the updated remote
+// compositing path using cc::LayerTreeHostRemote.
+const char kUseLayerTreeHostRemote[] = "use-layer-tree-host-remote";
+
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 

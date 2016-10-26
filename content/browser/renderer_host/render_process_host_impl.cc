@@ -1767,6 +1767,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // --in-process-webgl.
     switches::kUseGL,
     switches::kUseGpuInTests,
+    switches::kUseLayerTreeHostRemote,
     switches::kUseMobileUserAgent,
     switches::kUseRemoteCompositing,
     switches::kV,
