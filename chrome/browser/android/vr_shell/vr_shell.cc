@@ -38,14 +38,8 @@ static constexpr long kPredictionTimeWithoutVsyncNanos = 50000000;
 static constexpr float kZNear = 0.1f;
 static constexpr float kZFar = 1000.0f;
 
-static constexpr gvr::Vec3f kDesktopPositionDefault = {0.0f, 0.0f, -2.0f};
-static constexpr float kDesktopHeightDefault = 1.6f;
-
 // Screen angle in degrees. 0 = vertical, positive = top closer.
 static constexpr float kDesktopScreenTiltDefault = 0;
-
-static constexpr float kScreenHeightRatio = 1.0f;
-static constexpr float kScreenWidthRatio = 16.0f / 9.0f;
 
 static constexpr float kReticleWidth = 0.025f;
 static constexpr float kReticleHeight = 0.025f;
@@ -61,6 +55,10 @@ static constexpr gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
 // TODO(mthiesse): Handedness options.
 static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
 
+// If there is no content quad, and the reticle isn't hitting another element,
+// draw the reticle at this distance.
+static constexpr float kDefaultReticleDistance = 2.0f;
+
 // Fraction of the distance to the object the cursor is drawn at to avoid
 // rounding errors drawing the cursor behind the object.
 static constexpr float kReticleOffset = 0.99f;
@@ -69,9 +67,6 @@ static constexpr float kReticleOffset = 0.99f;
 // the content quad, times this value. This lets the rendering distance
 // adjust according to content quad placement.
 static constexpr float kReticleDistanceMultiplier = 1.5f;
-
-// UI element 0 is the browser content rectangle.
-static constexpr int kBrowserUiElementId = 0;
 
 static constexpr int kFramePrimaryBuffer = 0;
 static constexpr int kFrameHeadlockedBuffer = 1;
@@ -120,9 +115,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
                  ui::WindowAndroid* content_window,
                  content::WebContents* ui_contents,
                  ui::WindowAndroid* ui_window)
-    : desktop_screen_tilt_(kDesktopScreenTiltDefault),
-      desktop_height_(kDesktopHeightDefault),
-      main_contents_(main_contents),
+    : main_contents_(main_contents),
       ui_contents_(ui_contents),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
@@ -132,14 +125,6 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
   html_interface_.reset(new UiInterface);
   content_compositor_.reset(new VrCompositor(content_window, false));
   ui_compositor_.reset(new VrCompositor(ui_window, true));
-
-  float screen_width = kScreenWidthRatio * desktop_height_;
-  float screen_height = kScreenHeightRatio * desktop_height_;
-  std::unique_ptr<ContentRectangle> rect(new ContentRectangle());
-  rect->id = kBrowserUiElementId;
-  rect->size = {screen_width, screen_height, 1.0f};
-  rect->translation = kDesktopPositionDefault;
-  scene_->AddUiElement(rect);
 
   LoadUIContent();
 
@@ -289,13 +274,6 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   gvr::Vec3f forward = MatrixVectorMul(mat, ergo_neutral_pose);
   gvr::Vec3f origin = kHandPosition;
 
-  target_element_ = nullptr;
-
-  ContentRectangle* content_plane =
-      scene_->GetUiElementById(kBrowserUiElementId);
-
-  float distance = content_plane->GetRayDistance(origin, forward);
-
   // If we place the reticle based on elements intersecting the controller beam,
   // we can end up with the reticle hiding behind elements, or jumping laterally
   // in the field of view. This is physically correct, but hard to use. For
@@ -313,12 +291,18 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   // in other directions. Note that this approach uses distance from controller,
   // rather than eye, for simplicity. This will make the sphere slightly
   // off-center.
-  gvr::Vec3f corner = {0.5f, 0.5f, 0.0f};
-  corner = MatrixVectorMul(content_plane->transform.to_world, corner);
-  float max_distance = Distance(origin, corner) * kReticleDistanceMultiplier;
-  if (distance > max_distance || distance <= 0.0f) {
-    distance = max_distance;
+  float distance = kDefaultReticleDistance;
+  ContentRectangle* content_plane = scene_->GetContentQuad();
+  if (content_plane) {
+    distance = content_plane->GetRayDistance(origin, forward);
+    gvr::Vec3f corner = {0.5f, 0.5f, 0.0f};
+    corner = MatrixVectorMul(content_plane->transform.to_world, corner);
+    float max_distance = Distance(origin, corner) * kReticleDistanceMultiplier;
+    if (distance > max_distance || distance <= 0.0f) {
+      distance = max_distance;
+    }
   }
+
   target_point_ = GetRayPoint(origin, forward, distance);
   gvr::Vec3f eye_to_target = target_point_;
   NormalizeVector(eye_to_target);
@@ -328,6 +312,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   float closest_element_distance = std::numeric_limits<float>::infinity();
   int pixel_x = 0;
   int pixel_y = 0;
+  target_element_ = nullptr;
   VrInputManager* input_target = nullptr;
 
   for (std::size_t i = 0; i < scene_->GetUiElements().size(); ++i) {
@@ -354,8 +339,8 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
 
         target_point_ = plane_intersection_point;
         target_element_ = plane;
-        input_target = (plane->id == kBrowserUiElementId)
-            ? content_input_manager_.get() : ui_input_manager_.get();
+        input_target = plane->content_quad ? content_input_manager_.get() :
+            ui_input_manager_.get();
       }
     }
   }
@@ -430,7 +415,7 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   HandleQueuedTasks();
 
   // Update the render position of all UI elements (including desktop).
-  float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
+  const float screen_tilt = kDesktopScreenTiltDefault * M_PI / 180.0f;
   scene_->UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
 
   UpdateController(GetForwardVector(head_pose));
@@ -463,9 +448,6 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
   std::vector<const ContentRectangle*> world_elements;
   for (const auto& rect : scene_->GetUiElements()) {
     if (!rect->visible) {
-      continue;
-    }
-    if (webvr_mode_ && rect->id == kBrowserUiElementId) {
       continue;
     }
     if (rect->lock_to_fov) {
@@ -543,7 +525,7 @@ void VrShell::DrawElements(
   for (const auto& rect : elements) {
     Rectf copy_rect;
     jint texture_handle;
-    if (rect->id == kBrowserUiElementId) {
+    if (rect->content_quad) {
       copy_rect = {0, 0, 1, 1};
       texture_handle = content_texture_id_;
     } else {
@@ -729,12 +711,6 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
   content_compositor_->SurfaceChanged((int)width, (int)height, surface);
-  content::ScreenInfo result;
-  main_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->
-      GetScreenInfo(&result);
-  float dpr = result.device_scale_factor;
-  scene_->GetUiElementById(kBrowserUiElementId)->copy_rect =
-      { 0, 0, width / dpr, height / dpr };
 }
 
 void VrShell::UiSurfaceChanged(JNIEnv* env,

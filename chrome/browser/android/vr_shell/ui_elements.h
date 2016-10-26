@@ -80,6 +80,10 @@ struct ContentRectangle : public WorldRectangle {
   // rather than the world.
   bool lock_to_fov = false;
 
+  // If true, this element is the content quad. Only one content quad may be
+  // added to the scene.
+  bool content_quad = false;
+
   // Specifies the region (in pixels) of a texture to render.
   Recti copy_rect = {0, 0, 0, 0};
 

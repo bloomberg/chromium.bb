@@ -66,6 +66,8 @@ class UiScene {
 
   ContentRectangle* GetUiElementById(int element_id);
 
+  ContentRectangle* GetContentQuad();
+
   // Return a monotonic time in microseconds for coordinating animations.
   static int64_t TimeInMicroseconds();
 
@@ -74,7 +76,9 @@ class UiScene {
                                 ReversibleTransform* transform);
   void ApplyDictToElement(const base::DictionaryValue& dict,
                           ContentRectangle *element);
+
   std::vector<std::unique_ptr<ContentRectangle>> ui_elements_;
+  ContentRectangle* content_element_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

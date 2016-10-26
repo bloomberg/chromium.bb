@@ -131,9 +131,6 @@ class VrShell : public device::GvrDelegate {
   // samplerExternalOES texture data for main content image.
   jint content_texture_id_ = 0;
 
-  float desktop_screen_tilt_;
-  float desktop_height_;
-
   std::unique_ptr<UiScene> scene_;
   std::unique_ptr<UiInterface> html_interface_;
 

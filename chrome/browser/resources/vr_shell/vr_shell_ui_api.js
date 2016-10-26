@@ -106,6 +106,10 @@ var api = (function() {
    */
   class UiElementUpdate {
 
+    setIsContentQuad() {
+      this.contentQuad = true;
+    }
+
     /**
      * Specify a parent for this element. If set, this element is positioned
      * relative to its parent element, rather than absolutely. This allows

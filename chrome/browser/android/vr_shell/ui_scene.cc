@@ -202,6 +202,9 @@ void UiScene::UpdateUiElementFromDict(const base::DictionaryValue& dict) {
 void UiScene::RemoveUiElement(int element_id) {
   for (auto it = ui_elements_.begin(); it != ui_elements_.end(); ++it) {
     if ((*it)->id == element_id) {
+      if ((*it)->content_quad) {
+        content_element_ = nullptr;
+      }
       ui_elements_.erase(it);
       return;
     }
@@ -335,6 +338,10 @@ ContentRectangle* UiScene::GetUiElementById(int element_id) {
   return nullptr;
 }
 
+ContentRectangle* UiScene::GetContentQuad() {
+  return content_element_;
+}
+
 const std::vector<std::unique_ptr<ContentRectangle>>&
 UiScene::GetUiElements() const {
   return ui_elements_;
@@ -383,6 +390,17 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
   ParseVec3f(dict, "scale", &element->scale);
   ParseRotationAxisAngle(dict, "rotation", &element->rotation);
   ParseVec3f(dict, "translation", &element->translation);
+
+  if (dict.GetBoolean("contentQuad", &element->content_quad)) {
+    if (element->content_quad) {
+      CHECK_EQ(content_element_, nullptr);
+      content_element_ = element;
+    } else {
+      if (content_element_ == element) {
+        content_element_ = nullptr;
+      }
+    }
+  }
 
   if (dict.GetInteger("xAnchoring",
                       reinterpret_cast<int*>(&element->x_anchoring))) {

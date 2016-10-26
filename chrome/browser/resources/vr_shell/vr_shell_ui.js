@@ -8,6 +8,30 @@ var vrShellUi = (function() {
   let scene = new ui.Scene();
   let sceneManager;
 
+  class ContentQuad {
+    constructor() {
+      /** @const */ var SCREEN_HEIGHT = 1.6;
+      /** @const */ var SCREEN_DISTANCE = 2.0;
+
+      let element = new api.UiElement(0, 0, 0, 0);
+      element.setIsContentQuad(false);
+      element.setVisible(false);
+      element.setSize(SCREEN_HEIGHT * 16 / 9, SCREEN_HEIGHT);
+      element.setTranslation(0, 0, -SCREEN_DISTANCE);
+      this.elementId = scene.addElement(element);
+    }
+
+    show(visible) {
+      let update = new api.UiElementUpdate();
+      update.setVisible(visible);
+      scene.updateElement(this.elementId, update);
+    }
+
+    getElementId() {
+      return this.elementId;
+    }
+  };
+
   class DomUiElement {
     constructor(domId) {
       let domElement = document.querySelector(domId);
@@ -62,7 +86,7 @@ var vrShellUi = (function() {
   };
 
   class Controls {
-    constructor() {
+    constructor(contentQuadId) {
       this.buttons = [];
       let descriptors = [
           ['#back', function() {
@@ -82,7 +106,7 @@ var vrShellUi = (function() {
       for (let i = 0; i < descriptors.length; i++) {
         // Use an invisible parent to simplify Z-axis movement on hover.
         let position = new api.UiElement(0, 0, 0, 0);
-        position.setParentId(api.getContentElementId());
+        position.setParentId(contentQuadId);
         position.setVisible(false);
         position.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
         position.setTranslation(
@@ -189,12 +213,17 @@ var vrShellUi = (function() {
   class SceneManager {
     constructor() {
       this.mode = api.Mode.UNKNOWN;
-      this.controls = new Controls();
+
+      this.contentQuad = new ContentQuad();
+      let contentId = this.contentQuad.getElementId();
+
+      this.controls = new Controls(contentId);
       this.secureOriginWarnings = new SecureOriginWarnings();
     }
 
     setMode(mode) {
       this.mode = mode;
+      this.contentQuad.show(mode == api.Mode.STANDARD);
       this.controls.show(mode == api.Mode.STANDARD);
       this.secureOriginWarnings.show(mode == api.Mode.WEB_VR);
     }

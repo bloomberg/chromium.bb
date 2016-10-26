@@ -68,6 +68,29 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_EQ(scene.GetUiElements().size(), 0u);
 }
 
+TEST(UiScene, AddRemoveContentQuad) {
+  UiScene scene;
+
+  EXPECT_EQ(scene.GetContentQuad(), nullptr);
+
+  base::DictionaryValue dict;
+  dict.SetInteger("id", 0);
+  dict.SetBoolean("contentQuad", true);
+  scene.AddUiElementFromDict(dict);
+  EXPECT_NE(scene.GetContentQuad(), nullptr);
+
+  dict.SetBoolean("contentQuad", false);
+  scene.UpdateUiElementFromDict(dict);
+  EXPECT_EQ(scene.GetContentQuad(), nullptr);
+
+  dict.SetBoolean("contentQuad", true);
+  scene.UpdateUiElementFromDict(dict);
+  EXPECT_NE(scene.GetContentQuad(), nullptr);
+
+  scene.RemoveUiElement(0);
+  EXPECT_EQ(scene.GetContentQuad(), nullptr);
+}
+
 TEST(UiScene, AddRemoveAnimations) {
   UiScene scene;
   addElement(&scene, 0);
@@ -193,6 +216,7 @@ TEST(UiScene, AddUiElementFromDictionary) {
   dict.SetBoolean("visible", false);
   dict.SetBoolean("hitTestable", false);
   dict.SetBoolean("lockToFov", true);
+  dict.SetBoolean("contentQuad", true);
 
   std::unique_ptr<base::DictionaryValue> copy_rect(new base::DictionaryValue);
   copy_rect->SetInteger("x", 100);
@@ -237,6 +261,7 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_EQ(element->visible, false);
   EXPECT_EQ(element->hit_testable, false);
   EXPECT_EQ(element->lock_to_fov, true);
+  EXPECT_EQ(element->content_quad, true);
 
   EXPECT_EQ(element->copy_rect.x, 100);
   EXPECT_EQ(element->copy_rect.y, 101);
