@@ -412,9 +412,37 @@ void AnalysisCanvas::onClipPath(const SkPath& path,
   INHERITED::onClipRect(path.getBounds(), op, edge_style);
 }
 
+bool doesCoverCanvas(const SkRRect& rr,
+                     const SkMatrix& total_matrix,
+                     const SkIRect& clip_device_bounds) {
+  const SkRect& bounding_rect = rr.rect();
+
+  // We cannot handle non axis aligned rectangles at the moment.
+  if (!total_matrix.isScaleTranslate()) {
+    return false;
+  }
+
+  SkMatrix inverse;
+  if (!total_matrix.invert(&inverse)) {
+    return false;
+  }
+
+  SkRect clip_rect = SkRect::Make(clip_device_bounds);
+  inverse.mapRectScaleTranslate(&clip_rect, clip_rect);
+  return rr.contains(clip_rect);
+}
+
 void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
                                  SkRegion::Op op,
                                  ClipEdgeStyle edge_style) {
+  SkIRect clip_device_bounds;
+  if (getClipDeviceBounds(&clip_device_bounds) &&
+      doesCoverCanvas(rrect, getTotalMatrix(), clip_device_bounds)) {
+    // If the canvas is fully contained within the clip, it is as if we weren't
+    // clipped at all, so bail early.
+    return;
+  }
+
   OnComplexClip();
   INHERITED::onClipRect(rrect.getBounds(), op, edge_style);
 }
