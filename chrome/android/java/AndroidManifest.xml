@@ -83,6 +83,8 @@ by a child template that "extends" this file.
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
 
+    <uses-permission android:name="com.google.android.apps.now.CURRENT_ACCOUNT_ACCESS" />
+
     {% block extra_uses_permissions %}
     {% endblock %}
 
