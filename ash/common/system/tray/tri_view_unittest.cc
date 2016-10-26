@@ -1,0 +1,328 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <memory>
+
+#include "ash/common/system/tray/tri_view.h"
+#include "base/memory/ptr_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/views/test/test_layout_manager.h"
+#include "ui/views/test/test_views.h"
+#include "ui/views/view.h"
+
+namespace ash {
+
+class TriViewTest : public testing::Test {
+ public:
+  TriViewTest();
+
+ protected:
+  // Returns the bounds of |child| in the coordinate space of
+  // |tri_view_|.
+  gfx::Rect GetBoundsInHost(const views::View* child) const;
+
+  // Wrapper functions to access the internals of |tri_view_|.
+  views::View* GetContainer(TriView::Container container) const;
+
+  // The test target.
+  std::unique_ptr<TriView> tri_view_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TriViewTest);
+};
+
+TriViewTest::TriViewTest() : tri_view_(base::MakeUnique<TriView>()) {}
+
+gfx::Rect TriViewTest::GetBoundsInHost(const views::View* child) const {
+  gfx::RectF rect_f(child->bounds());
+  views::View::ConvertRectToTarget(child, tri_view_.get(), &rect_f);
+  return ToNearestRect(rect_f);
+}
+
+views::View* TriViewTest::GetContainer(TriView::Container container) const {
+  return tri_view_->GetContainer(container);
+}
+
+TEST_F(TriViewTest, PaddingBetweenContainers) {
+  const int kPaddingBetweenContainers = 3;
+  const int kViewWidth = 10;
+  const int kViewHeight = 10;
+  const gfx::Size kViewSize(kViewWidth, kViewHeight);
+  const int kStartChildExpectedX = 0;
+  const int kCenterChildExpectedX =
+      kStartChildExpectedX + kViewWidth + kPaddingBetweenContainers;
+  const int kEndChildExpectedX =
+      kCenterChildExpectedX + kViewWidth + kPaddingBetweenContainers;
+
+  tri_view_ = base::MakeUnique<TriView>(kPaddingBetweenContainers);
+  tri_view_->SetBounds(0, 0, 100, 10);
+
+  views::View* start_child = new views::StaticSizedView(kViewSize);
+  views::View* center_child = new views::StaticSizedView(kViewSize);
+  views::View* end_child = new views::StaticSizedView(kViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->Layout();
+
+  EXPECT_EQ(kStartChildExpectedX, GetBoundsInHost(start_child).x());
+  EXPECT_EQ(kCenterChildExpectedX, GetBoundsInHost(center_child).x());
+  EXPECT_EQ(kEndChildExpectedX, GetBoundsInHost(end_child).x());
+}
+
+TEST_F(TriViewTest, VerticalOrientation) {
+  const int kViewWidth = 10;
+  const int kViewHeight = 10;
+  const gfx::Size kViewSize(kViewWidth, kViewHeight);
+
+  tri_view_ = base::MakeUnique<TriView>(TriView::Orientation::VERTICAL);
+  tri_view_->SetBounds(0, 0, 10, 100);
+
+  views::View* start_child = new views::StaticSizedView(kViewSize);
+  views::View* center_child = new views::StaticSizedView(kViewSize);
+  views::View* end_child = new views::StaticSizedView(kViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->Layout();
+
+  EXPECT_EQ(0, GetBoundsInHost(start_child).y());
+  EXPECT_EQ(kViewWidth, GetBoundsInHost(center_child).y());
+  EXPECT_EQ(kViewWidth * 2, GetBoundsInHost(end_child).y());
+}
+
+TEST_F(TriViewTest, MinCrossAxisSize) {
+  const int kMinCrossAxisSize = 15;
+  EXPECT_EQ(0, tri_view_->GetPreferredSize().height());
+  tri_view_->SetMinCrossAxisSize(kMinCrossAxisSize);
+  EXPECT_EQ(kMinCrossAxisSize, tri_view_->GetPreferredSize().height());
+  EXPECT_EQ(kMinCrossAxisSize, tri_view_->GetHeightForWidth(0));
+}
+
+TEST_F(TriViewTest, MainAxisMinSize) {
+  tri_view_->SetBounds(0, 0, 100, 10);
+  const gfx::Size kMinSize(15, 10);
+  tri_view_->SetMinSize(TriView::Container::START, kMinSize);
+  views::View* child = new views::StaticSizedView(gfx::Size(10, 10));
+  tri_view_->AddView(TriView::Container::CENTER, child);
+
+  tri_view_->Layout();
+
+  EXPECT_EQ(kMinSize.width(), GetBoundsInHost(child).x());
+}
+
+TEST_F(TriViewTest, MainAxisMaxSize) {
+  tri_view_->SetBounds(0, 0, 100, 10);
+  const gfx::Size kMaxSize(10, 10);
+
+  tri_view_->SetMaxSize(TriView::Container::START, kMaxSize);
+  views::View* start_child = new views::StaticSizedView(gfx::Size(20, 20));
+  tri_view_->AddView(TriView::Container::START, start_child);
+
+  views::View* center_child = new views::StaticSizedView(gfx::Size(10, 10));
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+
+  tri_view_->Layout();
+
+  EXPECT_EQ(kMaxSize.width(), GetBoundsInHost(center_child).x());
+}
+
+TEST_F(TriViewTest, ViewsAddedToCorrectContainers) {
+  views::View* start_child = new views::StaticSizedView();
+  views::View* center_child = new views::StaticSizedView();
+  views::View* end_child = new views::StaticSizedView();
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  EXPECT_TRUE(GetContainer(TriView::Container::START)->Contains(start_child));
+  EXPECT_EQ(1, GetContainer(TriView::Container::START)->child_count());
+
+  EXPECT_TRUE(GetContainer(TriView::Container::CENTER)->Contains(center_child));
+  EXPECT_EQ(1, GetContainer(TriView::Container::CENTER)->child_count());
+
+  EXPECT_TRUE(GetContainer(TriView::Container::END)->Contains(end_child));
+  EXPECT_EQ(1, GetContainer(TriView::Container::END)->child_count());
+}
+
+TEST_F(TriViewTest, MultipleViewsAddedToTheSameContainer) {
+  views::View* child1 = new views::StaticSizedView();
+  views::View* child2 = new views::StaticSizedView();
+
+  tri_view_->AddView(TriView::Container::START, child1);
+  tri_view_->AddView(TriView::Container::START, child2);
+
+  EXPECT_TRUE(GetContainer(TriView::Container::START)->Contains(child1));
+  EXPECT_TRUE(GetContainer(TriView::Container::START)->Contains(child2));
+}
+
+TEST_F(TriViewTest, ViewsRemovedOnRemoveAllChildren) {
+  views::View* child1 = new views::StaticSizedView();
+  views::View* child2 = new views::StaticSizedView();
+
+  tri_view_->AddView(TriView::Container::START, child1);
+  tri_view_->AddView(TriView::Container::START, child2);
+
+  EXPECT_TRUE(GetContainer(TriView::Container::START)->Contains(child1));
+  EXPECT_TRUE(GetContainer(TriView::Container::START)->Contains(child2));
+  EXPECT_EQ(2, GetContainer(TriView::Container::START)->child_count());
+
+  tri_view_->RemoveAllChildren(TriView::Container::START, false);
+
+  EXPECT_FALSE(GetContainer(TriView::Container::START)->Contains(child1));
+  EXPECT_FALSE(GetContainer(TriView::Container::START)->Contains(child2));
+  EXPECT_EQ(0, GetContainer(TriView::Container::START)->child_count());
+}
+
+TEST_F(TriViewTest, Insets) {
+  const int kInset = 3;
+  const int kViewHeight = 10;
+  const int kExpectedViewHeight = kViewHeight - 2 * kInset;
+  const gfx::Size kStartViewSize(10, kViewHeight);
+  const gfx::Size kCenterViewSize(100, kViewHeight);
+  const gfx::Size kEndViewSize(10, kViewHeight);
+  const int kHostWidth = 100;
+
+  tri_view_->SetBounds(0, 0, kHostWidth, kViewHeight);
+  tri_view_->SetInsets(gfx::Insets(kInset));
+
+  views::View* start_child = new views::StaticSizedView(kStartViewSize);
+  views::View* center_child = new views::StaticSizedView(kCenterViewSize);
+  views::View* end_child = new views::StaticSizedView(kEndViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->SetFlexForContainer(TriView::Container::CENTER, 1.f);
+  tri_view_->Layout();
+
+  EXPECT_EQ(
+      gfx::Rect(kInset, kInset, kStartViewSize.width(), kExpectedViewHeight),
+      GetBoundsInHost(start_child));
+  EXPECT_EQ(gfx::Rect(kInset + kStartViewSize.width(), kInset,
+                      kHostWidth - kStartViewSize.width() -
+                          kEndViewSize.width() - 2 * kInset,
+                      kExpectedViewHeight),
+            GetBoundsInHost(center_child));
+  EXPECT_EQ(gfx::Rect(kHostWidth - kEndViewSize.width() - kInset, kInset,
+                      kEndViewSize.width(), kExpectedViewHeight),
+            GetBoundsInHost(end_child));
+}
+
+TEST_F(TriViewTest, InvisibleContainerDoesntTakeUpSpace) {
+  const int kViewWidth = 10;
+  const int kViewHeight = 10;
+  const gfx::Size kViewSize(kViewWidth, kViewHeight);
+
+  tri_view_->SetBounds(0, 0, 30, 10);
+
+  views::View* start_child = new views::StaticSizedView(kViewSize);
+  views::View* center_child = new views::StaticSizedView(kViewSize);
+  views::View* end_child = new views::StaticSizedView(kViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->SetContainerVisible(TriView::Container::START, false);
+  tri_view_->Layout();
+
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), GetBoundsInHost(start_child));
+  EXPECT_EQ(0, GetBoundsInHost(center_child).x());
+  EXPECT_EQ(kViewWidth, GetBoundsInHost(end_child).x());
+
+  tri_view_->SetContainerVisible(TriView::Container::START, true);
+  tri_view_->Layout();
+
+  EXPECT_EQ(0, GetBoundsInHost(start_child).x());
+  EXPECT_EQ(kViewWidth, GetBoundsInHost(center_child).x());
+  EXPECT_EQ(kViewWidth * 2, GetBoundsInHost(end_child).x());
+}
+
+TEST_F(TriViewTest, NonZeroFlex) {
+  const int kHostWidth = 100;
+  const gfx::Size kDefaultViewSize(10, 10);
+  const gfx::Size kCenterViewSize(100, 10);
+  const gfx::Size kExpectedCenterViewSize(
+      kHostWidth - 2 * kDefaultViewSize.width(), 10);
+
+  tri_view_->SetBounds(0, 0, kHostWidth, 10);
+
+  views::View* start_child = new views::StaticSizedView(kDefaultViewSize);
+  views::View* center_child = new views::StaticSizedView(kCenterViewSize);
+  views::View* end_child = new views::StaticSizedView(kDefaultViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->SetFlexForContainer(TriView::Container::CENTER, 1.f);
+  tri_view_->Layout();
+
+  EXPECT_EQ(kDefaultViewSize, GetBoundsInHost(start_child).size());
+  EXPECT_EQ(kExpectedCenterViewSize, GetBoundsInHost(center_child).size());
+  EXPECT_EQ(kDefaultViewSize, GetBoundsInHost(end_child).size());
+}
+
+TEST_F(TriViewTest, NonZeroFlexTakesPrecedenceOverMinSize) {
+  const int kHostWidth = 25;
+  const gfx::Size kViewSize(10, 10);
+  const gfx::Size kMinCenterSize = kViewSize;
+  const gfx::Size kExpectedCenterSize(kHostWidth - 2 * kViewSize.width(), 10);
+
+  tri_view_->SetBounds(0, 0, kHostWidth, 10);
+
+  views::View* start_child = new views::StaticSizedView(kViewSize);
+  views::View* center_child = new views::StaticSizedView(kViewSize);
+  views::View* end_child = new views::StaticSizedView(kViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->SetFlexForContainer(TriView::Container::CENTER, 1.f);
+  tri_view_->SetMinSize(TriView::Container::CENTER, kMinCenterSize);
+  tri_view_->Layout();
+
+  EXPECT_EQ(kViewSize, GetBoundsInHost(start_child).size());
+  EXPECT_EQ(kExpectedCenterSize,
+            GetBoundsInHost(GetContainer(TriView::Container::CENTER)).size());
+  EXPECT_EQ(kViewSize, GetBoundsInHost(end_child).size());
+}
+
+TEST_F(TriViewTest, NonZeroFlexTakesPrecedenceOverMaxSize) {
+  const int kHostWidth = 100;
+  const gfx::Size kViewSize(10, 10);
+  const gfx::Size kMaxCenterSize(20, 10);
+  const gfx::Size kExpectedCenterSize(kHostWidth - 2 * kViewSize.width(), 10);
+
+  tri_view_->SetBounds(0, 0, kHostWidth, 10);
+
+  views::View* start_child = new views::StaticSizedView(kViewSize);
+  views::View* center_child = new views::StaticSizedView(kViewSize);
+  views::View* end_child = new views::StaticSizedView(kViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->SetFlexForContainer(TriView::Container::CENTER, 1.f);
+  tri_view_->SetMaxSize(TriView::Container::CENTER, kMaxCenterSize);
+  tri_view_->Layout();
+
+  EXPECT_EQ(kViewSize, GetBoundsInHost(start_child).size());
+  EXPECT_EQ(kExpectedCenterSize,
+            GetBoundsInHost(GetContainer(TriView::Container::CENTER)).size());
+  EXPECT_EQ(kViewSize, GetBoundsInHost(end_child).size());
+}
+
+}  // namespace ash
