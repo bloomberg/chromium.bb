@@ -21,9 +21,9 @@ function test()
     function sendCommandToWorker(method, params)
     {
         var requestId = workerRequestId++;
-        InspectorTest.sendCommand("Worker.sendMessageToWorker",
+        InspectorTest.sendCommand("Target.sendMessageToTarget",
             {
-                "workerId": workerId,
+                "targetId": workerId,
                 "message": JSON.stringify({ "method": method,
                                             "params": params,
                                             "id": requestId })
@@ -38,13 +38,12 @@ function test()
             InspectorTest.completeTest();
         }
     }
-    InspectorTest.sendCommand("Worker.enable", {}, didEnableWorkerDebugging);
-    InspectorTest.sendCommand("Worker.setWaitForDebuggerOnStart", { "value": true });
+    InspectorTest.sendCommand("Target.setAutoAttach", {autoAttach: true, waitForDebuggerOnStart: true}, didEnableWorkerDebugging);
     InspectorTest.sendCommand("Runtime.evaluate", { "expression": "startWorker()" });
 
-    InspectorTest.eventHandler["Worker.workerCreated"] = function(messageObject)
+    InspectorTest.eventHandler["Target.attachedToTarget"] = function(messageObject)
     {
-        workerId = messageObject["params"]["workerId"];
+        workerId = messageObject["params"]["targetInfo"]["targetId"];
         InspectorTest.log("Worker created");
         sendCommandToWorker("Debugger.enable", {});
         sendCommandToWorker("Runtime.runIfWaitingForDebugger", {});
@@ -52,7 +51,7 @@ function test()
 
     var pauseCount = 0;
     var evalRequestId;
-    InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
+    InspectorTest.eventHandler["Target.receivedMessageFromTarget"] = function(messageObject)
     {
         var message = JSON.parse(messageObject["params"]["message"]);
         if (message["method"] === "Debugger.paused") {

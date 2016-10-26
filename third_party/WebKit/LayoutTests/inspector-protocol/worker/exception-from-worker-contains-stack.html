@@ -18,7 +18,7 @@ function startWorkers()
 
 function test()
 {
-    InspectorTest.sendCommandOrDie("Worker.enable", {}, didEnableWorkerDebugging);
+    InspectorTest.sendCommandOrDie("Target.setAutoAttach", {autoAttach: true, waitForDebuggerOnStart: false}, didEnableWorkerDebugging);
 
     function didEnableWorkerDebugging(event)
     {
@@ -28,9 +28,9 @@ function test()
     var workerRequestId = 1;
     function sendCommandToWorker(method, params, workerId)
     {
-        InspectorTest.sendCommand("Worker.sendMessageToWorker",
+        InspectorTest.sendCommand("Target.sendMessageToTarget",
             {
-                "workerId": workerId,
+                "targetId": workerId,
                 "message": JSON.stringify({ "method": method,
                                             "params": params,
                                             "id": workerRequestId++ })
@@ -38,9 +38,9 @@ function test()
     }
 
     var waitForWorkers = 2;
-    InspectorTest.eventHandler["Worker.workerCreated"] = function(messageObject)
+    InspectorTest.eventHandler["Target.attachedToTarget"] = function(messageObject)
     {
-        var workerId = messageObject["params"]["workerId"];
+        var workerId = messageObject["params"]["targetInfo"]["targetId"];
         InspectorTest.log("Worker created");
         sendCommandToWorker("Runtime.enable", {}, workerId);
         if (!--waitForWorkers)
@@ -49,7 +49,7 @@ function test()
 
     var workerTerminated = false;
     var messageReceived = false;
-    InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
+    InspectorTest.eventHandler["Target.receivedMessageFromTarget"] = function(messageObject)
     {
         var message = JSON.parse(messageObject["params"]["message"]);
         if (message["method"] === "Runtime.exceptionThrown") {
@@ -61,9 +61,9 @@ function test()
         }
     }
 
-    InspectorTest.eventHandler["Worker.workerTerminated"] = function(messageObject)
+    InspectorTest.eventHandler["Target.detachedFromTarget"] = function(messageObject)
     {
-        InspectorTest.eventHandler["Worker.workerTerminated"] = undefined;
+        InspectorTest.eventHandler["Target.detachedFromTarget"] = undefined;
         workerTerminated = true;
         if (messageReceived && workerTerminated)
             InspectorTest.completeTest();

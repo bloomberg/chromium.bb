@@ -14,7 +14,6 @@ Network.disable finished successfully
 Page.disable finished successfully
 Profiler.disable finished successfully
 Runtime.disable finished successfully
-Worker.disable finished successfully
 
 Animation.enable finished successfully
 Animation.disable finished successfully
@@ -57,7 +56,4 @@ Profiler.disable finished successfully
 
 Runtime.enable finished successfully
 Runtime.disable finished successfully
-
-Worker.enable finished successfully
-Worker.disable finished successfully
 

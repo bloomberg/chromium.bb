@@ -29,14 +29,13 @@ function handleLoad()
 
 function test()
 {
-    InspectorTest.WorkerAgent.disable();
+    InspectorTest.TargetAgent.setAutoAttach(false, false, didDisableWorkerInspection);
     // Debugger should not crash when autoconnecting is immediately followed by termination.
-    InspectorTest.WorkerAgent.setWaitForDebuggerOnStart(true, didDisableWorkerInspection);
 
     function didDisableWorkerInspection()
     {
-        InspectorTest.addSniffer(WebInspector.WorkerManager.prototype, "_workerCreated", workerCreated, true);
-        InspectorTest.WorkerAgent.enable();
+        InspectorTest.addSniffer(WebInspector.SubTargetsManager.prototype, "_attachedToTarget", workerCreated, true);
+        InspectorTest.TargetAgent.setAutoAttach(true, true);
         InspectorTest.addResult("Worker inspection enabled");
     }
 

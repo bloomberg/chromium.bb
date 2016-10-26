@@ -188,10 +188,10 @@ inspector_protocol_generate("protocol_sources") {
     "inspector/protocol/ServiceWorker.h",
     "inspector/protocol/Storage.cpp",
     "inspector/protocol/Storage.h",
+    "inspector/protocol/Target.cpp",
+    "inspector/protocol/Target.h",
     "inspector/protocol/Tracing.cpp",
     "inspector/protocol/Tracing.h",
-    "inspector/protocol/Worker.cpp",
-    "inspector/protocol/Worker.h",
   ]
 
   deps = [

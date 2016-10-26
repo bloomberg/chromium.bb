@@ -23,9 +23,9 @@ function test()
     var workerRequestId = 1;
     function sendCommandToWorker(method, params)
     {
-        InspectorTest.sendCommand("Worker.sendMessageToWorker",
+        InspectorTest.sendCommand("Target.sendMessageToTarget",
             {
-                "workerId": workerId,
+                "targetId": workerId,
                 "message": JSON.stringify({ "method": method,
                                             "params": params,
                                             "id": workerRequestId++ })
@@ -39,24 +39,19 @@ function test()
             InspectorTest.completeTest();
         }
     }
-    InspectorTest.sendCommand("Worker.enable", {}, didEnableWorkerDebugging);
+    InspectorTest.sendCommand("Target.setAutoAttach", {autoAttach: true, waitForDebuggerOnStart: false}, didEnableWorkerDebugging);
 
 
-    InspectorTest.eventHandler["Worker.workerCreated"] = function(messageObject)
+    InspectorTest.eventHandler["Target.attachedToTarget"] = function(messageObject)
     {
-        workerId = messageObject["params"]["workerId"];
+        workerId = messageObject["params"]["targetInfo"]["targetId"];
         InspectorTest.log("Worker created");
-        InspectorTest.sendCommand("Worker.connectToWorker", { "workerId": workerId }, didConnectToWorker);
-
-        function didConnectToWorker(messageObject)
-        {
-            InspectorTest.log("didConnectToWorker");
-            sendCommandToWorker("Debugger.enable", {});
-            sendCommandToWorker("Debugger.pause", {});
-        }
+        InspectorTest.log("didConnectToWorker");
+        sendCommandToWorker("Debugger.enable", {});
+        sendCommandToWorker("Debugger.pause", {});
     }
 
-    InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
+    InspectorTest.eventHandler["Target.receivedMessageFromTarget"] = function(messageObject)
     {
         var message = JSON.parse(messageObject["params"]["message"]);
         if (message["method"] === "Debugger.paused") {

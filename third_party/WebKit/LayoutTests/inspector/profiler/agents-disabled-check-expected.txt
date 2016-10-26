@@ -2,7 +2,6 @@ Test that if a profiler is working all the agents are disabled.
 
 --> WebInspector.targetManager.suspendAllTargets();
 frontend: {"id":<number>,"method":"Page.configureOverlay","params":{"suspended":true}}
-frontend: {"id":<number>,"method":"Worker.setWaitForDebuggerOnStart","params":{"value":false}}
 frontend: {"id":<number>,"method":"Debugger.disable"}
 frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":0}}
 frontend: {"id":<number>,"method":"Page.configureOverlay","params":{"suspended":true}}
@@ -12,7 +11,6 @@ frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":
 
 --> WebInspector.targetManager.resumeAllTargets();
 frontend: {"id":<number>,"method":"Page.configureOverlay","params":{"suspended":false}}
-frontend: {"id":<number>,"method":"Worker.setWaitForDebuggerOnStart","params":{"value":true}}
 frontend: {"id":<number>,"method":"Debugger.enable"}
 frontend: {"id":<number>,"method":"Debugger.setPauseOnExceptions","params":{"state":"none"}}
 frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":4}}

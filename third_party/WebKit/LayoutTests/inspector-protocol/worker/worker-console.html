@@ -41,8 +41,8 @@ function stopWorker()
 function test()
 {
     var workerEventHandler = {};
-    InspectorTest.eventHandler["Worker.workerCreated"] = onWorkerCreated;
-    InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = onWorkerMessage;
+    InspectorTest.eventHandler["Target.attachedToTarget"] = onWorkerCreated;
+    InspectorTest.eventHandler["Target.receivedMessageFromTarget"] = onWorkerMessage;
     workerEventHandler["Runtime.consoleAPICalled"] = onConsoleAPICalledFromWorker;
 
     var workerId;
@@ -50,7 +50,7 @@ function test()
     function onWorkerCreated(payload)
     {
         InspectorTest.log("Worker.created");
-        workerId = payload.params.workerId;
+        workerId = payload.params.targetInfo.targetId;
     }
 
     var requestId = 0;
@@ -64,16 +64,16 @@ function test()
             "params": params,
             "id": requestId
         };
-        InspectorTest.sendCommandOrDie("Worker.sendMessageToWorker", {
-            workerId: workerId,
+        InspectorTest.sendCommandOrDie("Target.sendMessageToTarget", {
+            targetId: workerId,
             message: JSON.stringify(messageObject)
         });
     }
 
     function onWorkerMessage(payload)
     {
-        if (payload.params.workerId !== workerId)
-            InspectorTest.log("workerId mismatch");
+        if (payload.params.targetId !== workerId)
+            InspectorTest.log("targetId mismatch");
         var messageObject = JSON.parse(payload.params.message);
         var messageId = messageObject["id"];
         if (typeof messageId === "number") {
@@ -162,8 +162,8 @@ function test()
 
         function enable1(next)
         {
-            InspectorTest.log("Sending Worker.enable");
-            InspectorTest.sendCommandOrDie("Worker.enable", {}, next);
+            InspectorTest.log("Starting autoattach");
+            InspectorTest.sendCommandOrDie("Target.setAutoAttach", {autoAttach: true, waitForDebuggerOnStart: false}, next);
         },
 
         function consoleEnable1(next)
@@ -190,8 +190,8 @@ function test()
 
         function disable1(next)
         {
-            InspectorTest.log("Sending Worker.disable");
-            InspectorTest.sendCommandOrDie("Worker.disable", {}, next);
+            InspectorTest.log("Stopping autoattach");
+            InspectorTest.sendCommandOrDie("Target.setAutoAttach", {autoAttach: false, waitForDebuggerOnStart: false}, next);
         },
 
         function log3(next)
@@ -208,8 +208,8 @@ function test()
 
         function enable2(next)
         {
-            InspectorTest.log("Sending Worker.enable");
-            InspectorTest.sendCommandOrDie("Worker.enable", {}, next);
+            InspectorTest.log("Starting autoattach");
+            InspectorTest.sendCommandOrDie("Target.setAutoAttach", {autoAttach: true, waitForDebuggerOnStart: false}, next);
         },
 
         function start2(next)
@@ -265,8 +265,8 @@ function test()
 
         function disable2(next)
         {
-            InspectorTest.log("Sending Worker.disable");
-            InspectorTest.sendCommandOrDie("Worker.disable", {}, next);
+            InspectorTest.log("Stopping autoattach");
+            InspectorTest.sendCommandOrDie("Target.setAutoAttach", {autoAttach: false, waitForDebuggerOnStart: false}, next);
         }
     ];
 

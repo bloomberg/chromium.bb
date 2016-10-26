@@ -255,7 +255,7 @@ Response TargetHandler::SetAutoAttach(
     bool auto_attach, bool wait_for_debugger_on_start) {
   wait_for_debugger_on_start_ = wait_for_debugger_on_start;
   if (auto_attach_ == auto_attach)
-    return Response::OK();
+    return Response::FallThrough();
   auto_attach_ = auto_attach;
   if (auto_attach_) {
     ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
@@ -267,7 +267,7 @@ Response TargetHandler::SetAutoAttach(
     ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
     ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeServiceWorker, false);
   }
-  return Response::OK();
+  return Response::FallThrough();
 }
 
 Response TargetHandler::SetAttachToFrames(bool value) {
@@ -313,7 +313,7 @@ Response TargetHandler::SendMessageToTarget(
     const std::string& message) {
   auto it = attached_hosts_.find(target_id);
   if (it == attached_hosts_.end())
-    return Response::InternalError("Not attached to the target");
+    return Response::FallThrough();
   it->second->DispatchProtocolMessage(this, message);
   return Response::OK();
 }

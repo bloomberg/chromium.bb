@@ -898,7 +898,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.PageAgent = target.pageAgent();
         InspectorTest.ProfilerAgent = target.profilerAgent();
         InspectorTest.RuntimeAgent = target.runtimeAgent();
-        InspectorTest.WorkerAgent = target.workerAgent();
+        InspectorTest.TargetAgent = target.targetAgent();
 
         InspectorTest.consoleModel = target.consoleModel;
         InspectorTest.networkManager = WebInspector.NetworkManager.fromTarget(target);
@@ -909,7 +909,6 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.runtimeModel = target.runtimeModel;
         InspectorTest.domModel = WebInspector.DOMModel.fromTarget(target);
         InspectorTest.cssModel = WebInspector.CSSModel.fromTarget(target);
-        InspectorTest.workerManager = target.workerManager;
         InspectorTest.powerProfiler = target.powerProfiler;
         InspectorTest.cpuProfilerModel = target.cpuProfilerModel;
         InspectorTest.heapProfilerModel = target.heapProfilerModel;
@@ -939,12 +938,12 @@ InspectorTest.preloadModule = function(moduleName)
 
 InspectorTest.isDedicatedWorker = function(target)
 {
-    return target && !target.hasBrowserCapability() && target.hasJSCapability() && !target.hasNetworkCapability() && !target.hasWorkerCapability();
+    return target && !target.hasBrowserCapability() && target.hasJSCapability() && !target.hasNetworkCapability() && !target.hasTargetCapability();
 }
 
 InspectorTest.isServiceWorker = function(target)
 {
-    return target && !target.hasBrowserCapability() && !target.hasJSCapability() && target.hasNetworkCapability() && target.hasWorkerCapability();
+    return target && !target.hasBrowserCapability() && !target.hasJSCapability() && target.hasNetworkCapability() && target.hasTargetCapability();
 }
 
 InspectorTest.describeTargetType = function(target)

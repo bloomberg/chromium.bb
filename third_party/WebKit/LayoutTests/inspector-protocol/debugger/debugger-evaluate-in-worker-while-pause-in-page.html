@@ -26,9 +26,9 @@ function test()
 
     function sendCommandToWorker(method, params)
     {
-        InspectorTest.sendCommand("Worker.sendMessageToWorker",
+        InspectorTest.sendCommand("Target.sendMessageToTarget",
             {
-                "workerId": workerId,
+                "targetId": workerId,
                 "message": JSON.stringify({ "method": method,
                                             "params": params,
                                             "id": workerRequestId })
@@ -43,8 +43,7 @@ function test()
     function handleDebuggerPausedInTestFunction(messageObject)
     {
         InspectorTest.log("Paused on 'debugger;'");
-        InspectorTest.sendCommand("Worker.enable", {}, didEnableWorkerDebugging);
-
+        InspectorTest.sendCommand("Target.setAutoAttach", {autoAttach: true, waitForDebuggerOnStart: false}, didEnableWorkerDebugging);
     }
 
     function didEnableWorkerDebugging(messageObject)
@@ -56,20 +55,15 @@ function test()
     }
 
     var savedWorkerRequestId = -1;
-    InspectorTest.eventHandler["Worker.workerCreated"] = function(messageObject)
+    InspectorTest.eventHandler["Target.attachedToTarget"] = function(messageObject)
     {
-        workerId = messageObject["params"]["workerId"];
+        workerId = messageObject["params"]["targetInfo"]["targetId"];
         InspectorTest.log("Worker created");
-        InspectorTest.sendCommand("Worker.connectToWorker", { "workerId": workerId }, didConnectToWorker);
-
-        function didConnectToWorker(messageObject)
-        {
-            InspectorTest.log("didConnectToWorker");
-            savedWorkerRequestId = sendCommandToWorker("Runtime.evaluate", { "expression": "1+1"});
-        }
+        InspectorTest.log("didConnectToWorker");
+        savedWorkerRequestId = sendCommandToWorker("Runtime.evaluate", { "expression": "1+1"});
     }
 
-    InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
+    InspectorTest.eventHandler["Target.receivedMessageFromTarget"] = function(messageObject)
     {
         var message = JSON.parse(messageObject["params"]["message"]);
         if (message["id"] === savedWorkerRequestId) {

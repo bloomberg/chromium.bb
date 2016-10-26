@@ -7,9 +7,9 @@ Debugger-related command should be issued: {
         "targetId": "<id>",
         "message": {
             "id": "<id>",
-            "method": "Worker.sendMessageToWorker",
+            "method": "Target.sendMessageToTarget",
             "params": {
-                "workerId": "<id>",
+                "targetId": "<id>",
                 "message": {
                     "id": "<id>",
                     "method": "Debugger.enable"
@@ -27,9 +27,9 @@ Debugger-related command should be issued: {
         "targetId": "<id>",
         "message": {
             "id": "<id>",
-            "method": "Worker.sendMessageToWorker",
+            "method": "Target.sendMessageToTarget",
             "params": {
-                "workerId": "<id>",
+                "targetId": "<id>",
                 "message": {
                     "id": "<id>",
                     "method": "Debugger.enable"
