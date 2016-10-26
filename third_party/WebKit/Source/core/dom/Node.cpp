@@ -2398,6 +2398,7 @@ void Node::checkSlotChange() {
     Element* parent = parentElement();
     if (parent && isHTMLSlotElement(parent)) {
       HTMLSlotElement& parentSlot = toHTMLSlotElement(*parent);
+      // TODO(hayato): Support slotchange for slots in non-shadow trees.
       if (ShadowRoot* root = containingShadowRoot()) {
         if (root && root->isV1() && !parentSlot.hasAssignedNodesSlow())
           parentSlot.enqueueSlotChangeEvent();

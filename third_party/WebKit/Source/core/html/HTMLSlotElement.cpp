@@ -97,6 +97,8 @@ void HTMLSlotElement::updateDistributedNodesManually() {
 
 const HeapVector<Member<Node>>& HTMLSlotElement::getDistributedNodes() {
   DCHECK(!needsDistributionRecalc());
+  // m_distributedNodes of slots in non-shadow trees are not updated in recalc
+  // distribution flow.
   if (!supportsDistribution())
     updateDistributedNodesManually();
   return m_distributedNodes;
@@ -178,7 +180,7 @@ AtomicString HTMLSlotElement::name() const {
 }
 
 void HTMLSlotElement::attachLayoutTree(const AttachContext& context) {
-  for (auto& node : m_distributedNodes) {
+  for (auto& node : getDistributedNodes()) {
     if (node->needsAttach())
       node->attachLayoutTree(context);
   }
@@ -317,6 +319,8 @@ void HTMLSlotElement::enqueueSlotChangeEvent() {
   }
 
   ShadowRoot* root = containingShadowRoot();
+  // TODO(hayato): Relax this check if slots in non-shadow trees are well
+  // supported.
   DCHECK(root);
   DCHECK(root->isV1());
   root->owner()->setNeedsDistributionRecalc();
