@@ -13,6 +13,7 @@ import psutil
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
+from chromite.lib import metrics
 from chromite.lib import ts_mon_config
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
@@ -57,14 +58,12 @@ def collect_metrics(cycles):
   system_metrics.get_mem_info()
   system_metrics.get_net_info()
   system_metrics.get_proc_info()
+  system_metrics.get_load_avg()
+  puppet_metrics.get_puppet_summary()
   if cycles == 0:
-    # collect once per hour
     system_metrics.get_os_info()
-  else:
-    # clear on all other minutes
-    system_metrics.clear_os_info()
-    puppet_metrics.get_puppet_summary()
-    system_metrics.get_unix_time()  # must be the last in the list
+  system_metrics.get_unix_time()  # must be just before flush
+  metrics.Flush()
 
 
 def main(args):
