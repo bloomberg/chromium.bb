@@ -56,7 +56,7 @@ class ServiceContext : public mojom::Service {
   ~ServiceContext() override;
 
   Connector* connector() { return connector_.get(); }
-  const Identity& identity() { return identity_; }
+  const Identity& identity() { return local_info_.identity; }
 
   // Specify a function to be called when the connection to the service manager
   // is lost.
@@ -69,9 +69,7 @@ class ServiceContext : public mojom::Service {
   void OnStart(const ServiceInfo& info,
                const OnStartCallback& callback) override;
   void OnConnect(const ServiceInfo& source_info,
-                 mojom::InterfaceProviderRequest interfaces,
-                 const InterfaceSet& allowed_interfaces,
-                 const CapabilitySet& allowed_capabilities) override;
+                 mojom::InterfaceProviderRequest interfaces) override;
 
   void OnConnectionError();
 
@@ -89,7 +87,7 @@ class ServiceContext : public mojom::Service {
   service_manager::Service* service_;
   mojo::Binding<mojom::Service> binding_;
   std::unique_ptr<Connector> connector_;
-  service_manager::Identity identity_;
+  service_manager::ServiceInfo local_info_;
   bool should_run_connection_lost_closure_ = false;
 
   base::Closure connection_lost_closure_;

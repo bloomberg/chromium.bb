@@ -25,8 +25,8 @@ class Identity {
   ~Identity();
 
   bool operator<(const Identity& other) const;
-  bool is_null() const { return name_.empty(); }
   bool operator==(const Identity& other) const;
+  bool IsValid() const;
 
   const std::string& name() const { return name_; }
   const std::string& user_id() const { return user_id_; }

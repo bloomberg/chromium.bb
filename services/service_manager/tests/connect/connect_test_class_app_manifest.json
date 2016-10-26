@@ -8,9 +8,6 @@
         "connect_unittests:connect_test_service": [
           "service_manager::test::mojom::ConnectTestService"
         ]
-      },
-      "requires": {
-        "service:service_manager": [ "service_manager:explicit_class" ]
       }
     }
   }

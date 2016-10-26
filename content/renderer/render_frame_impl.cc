@@ -1118,10 +1118,12 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       frame_binding_(this),
       has_accessed_initial_document_(false),
       weak_factory_(this) {
-  // We don't have a service_manager::Connection at this point, so use nullptr.
+  // We don't have a service_manager::Connection at this point, so use empty
+  // identity/specs.
   // TODO(beng): We should fix this, so we can apply policy about which
   //             interfaces get exposed.
-  interface_registry_.reset(new service_manager::InterfaceRegistry);
+  interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
+      service_manager::Identity(), service_manager::InterfaceProviderSpec());
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
@@ -2630,7 +2632,9 @@ bool RenderFrameImpl::IsPasting() const {
 
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
-  interface_registry_->Bind(std::move(request));
+  interface_registry_->Bind(std::move(request),
+                            service_manager::Identity(),
+                            service_manager::InterfaceProviderSpec());
 }
 
 // blink::WebFrameClient implementation ----------------------------------------

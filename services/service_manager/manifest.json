@@ -23,10 +23,6 @@
         // visible to clients run as any user.
         "service_manager:all_users": [ ],
         "service_manager:block_wildcard": [ ],
-        // Clients requesting this class block inbound requests to bind interfaces
-        // from other sources who specify wildcard rules in their manifest
-        // capability interface sets.
-        "service_manager:explicit_class": [ ],
 
         "service_manager:service_manager": [
           "service_manager::mojom::ServiceManager"

@@ -232,8 +232,10 @@ ServiceManagerConnection* MockRenderThread::GetServiceManagerConnection() {
 }
 
 service_manager::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
-  if (!interface_registry_)
-    interface_registry_.reset(new service_manager::InterfaceRegistry);
+  if (!interface_registry_) {
+    interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
+        service_manager::Identity(), service_manager::InterfaceProviderSpec());
+  }
   return interface_registry_.get();
 }
 

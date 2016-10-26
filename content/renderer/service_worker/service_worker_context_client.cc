@@ -196,7 +196,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
             IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
-      : weak_factory(owner), proxy_weak_factory(owner->proxy_) {}
+      : interface_registry(service_manager::Identity(),
+                           service_manager::InterfaceProviderSpec()),
+        weak_factory(owner),
+        proxy_weak_factory(owner->proxy_) {}
 
   ~WorkerContextData() {
     DCHECK(thread_checker.CalledOnValidThread());
@@ -428,7 +431,9 @@ void ServiceWorkerContextClient::OnMessageReceived(
 void ServiceWorkerContextClient::BindInterfaceProviders(
     service_manager::mojom::InterfaceProviderRequest request,
     service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
-  context_->interface_registry.Bind(std::move(request));
+  context_->interface_registry.Bind(std::move(request),
+                                    service_manager::Identity(),
+                                    service_manager::InterfaceProviderSpec());
   context_->remote_interfaces.Bind(std::move(remote_interfaces));
 }
 

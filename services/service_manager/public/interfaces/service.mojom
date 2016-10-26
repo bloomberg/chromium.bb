@@ -59,20 +59,6 @@ interface Service {
   //    A request for an InterfaceProvider by which the source service may
   //    seek to bind interface implementations exported by the target.
   //
-  //  required_interfaces
-  //    A whitelist of interface names that should be made available to the
-  //    source that initiated the connection, in accordance to policy described
-  //    in the source & target's service manifests. Attempts to bind interfaces
-  //    not in this whitelist must not be fulfilled.
-  //
-  //  required_capabilities
-  //    A set of the capability names required by the source initiating the
-  //    connection. |required_interfaces| controls interface binding, so this
-  //    is useful mostly if the target wishes to control behavior based on the
-  //    presence of a value in this set.
-  //
   OnConnect(ServiceInfo source_info,
-            InterfaceProvider&? interfaces,
-            InterfaceSet required_interfaces,
-            CapabilitySet required_capabilities);
+            InterfaceProvider&? interfaces);
 };

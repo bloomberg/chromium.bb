@@ -40,4 +40,8 @@ bool Identity::operator==(const Identity& other) const {
          other.user_id_ == user_id_;
 }
 
+bool Identity::IsValid() const {
+  return IsValidName(name_) && base::IsValidGUID(user_id_);
+}
+
 }  // namespace service_manager

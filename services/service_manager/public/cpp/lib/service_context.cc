@@ -51,7 +51,7 @@ void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
 
 void ServiceContext::OnStart(const ServiceInfo& info,
                              const OnStartCallback& callback) {
-  identity_ = info.identity;
+  local_info_ = info;
   if (!initialize_handler_.is_null())
     initialize_handler_.Run();
 
@@ -62,13 +62,21 @@ void ServiceContext::OnStart(const ServiceInfo& info,
 
 void ServiceContext::OnConnect(
     const ServiceInfo& source_info,
-    mojom::InterfaceProviderRequest interfaces,
-    const InterfaceSet& allowed_interfaces,
-    const CapabilitySet& allowed_capabilities) {
-  // TODO(beng): do something with |allowed_capabilities|.
-  auto registry = base::MakeUnique<InterfaceRegistry>(
-      identity_, source_info.identity, allowed_interfaces);
-  registry->Bind(std::move(interfaces));
+    mojom::InterfaceProviderRequest interfaces) {
+  auto target_it = local_info_.interface_provider_specs.find(
+      mojom::kServiceManager_ConnectorSpec);
+  InterfaceProviderSpec target_spec;
+  if (target_it != local_info_.interface_provider_specs.end())
+    target_spec = target_it->second;
+  auto source_it = source_info.interface_provider_specs.find(
+      mojom::kServiceManager_ConnectorSpec);
+  InterfaceProviderSpec source_spec;
+  if (source_it != source_info.interface_provider_specs.end())
+    source_spec = source_it->second;
+
+  auto registry = base::MakeUnique<InterfaceRegistry>(local_info_.identity,
+                                                      target_spec);
+  registry->Bind(std::move(interfaces), source_info.identity, source_spec);
 
   if (!service_->OnConnect(source_info, registry.get()))
     return;

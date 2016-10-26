@@ -39,7 +39,6 @@ const char kCapability_UserID[] = "service_manager:user_id";
 const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_InstanceName[] = "service_manager:instance_name";
 const char kCapability_AllUsers[] = "service_manager:all_users";
-const char kCapability_ExplicitClass[] = "service_manager:explicit_class";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 }  // namespace
@@ -58,45 +57,6 @@ InterfaceProviderSpec GetPermissiveInterfaceProviderSpec() {
   interfaces.insert("*");
   spec.requires["*"] = interfaces;
   return spec;
-}
-
-CapabilitySet GetRequestedCapabilities(const InterfaceProviderSpec& source_spec,
-                                       const Identity& target) {
-  CapabilitySet capabilities;
-
-  // Start by looking for specs specific to the supplied identity.
-  auto it = source_spec.requires.find(target.name());
-  if (it != source_spec.requires.end()) {
-    std::copy(it->second.begin(), it->second.end(),
-              std::inserter(capabilities, capabilities.begin()));
-  }
-
-  // Apply wild card rules too.
-  it = source_spec.requires.find("*");
-  if (it != source_spec.requires.end()) {
-    std::copy(it->second.begin(), it->second.end(),
-              std::inserter(capabilities, capabilities.begin()));
-  }
-  return capabilities;
-}
-
-void GetCapabilitiesAndInterfacesForConnection(
-    const InterfaceProviderSpec& source_spec,
-    const Identity& target,
-    const InterfaceProviderSpec& target_spec,
-    CapabilitySet* capabilities,
-    InterfaceSet* interfaces) {
-  DCHECK(capabilities && interfaces);
-  *capabilities = GetRequestedCapabilities(source_spec, target);
-  // Flatten all interfaces from capabilities requested by the source into the
-  // allowed interface set in the request.
-  for (const auto& capability : *capabilities) {
-    auto it = target_spec.provides.find(capability);
-    if (it != target_spec.provides.end()) {
-      for (const auto& interface_name : it->second)
-        interfaces->insert(interface_name);
-    }
-  }
 }
 
 bool HasCapability(const InterfaceProviderSpec& spec,
@@ -177,31 +137,12 @@ class ServiceManager::Instance
                                        identity_.user_id());
     }
 
-    InterfaceProviderSpec connection_spec = GetConnectionSpec();
-    CapabilitySet capabilities;
-    InterfaceSet interfaces;
-    Instance* source = service_manager_->GetExistingInstance(params->source());
-    if (source) {
-      GetCapabilitiesAndInterfacesForConnection(source->GetConnectionSpec(),
-                                                identity_, connection_spec,
-                                                &capabilities, &interfaces);
-    } else {
-      interfaces.insert("*");
-    }
-
-    // The target has specified that sources must request one of its provided
-    // classes instead of specifying a wild-card for interfaces.
-    if (HasCapability(connection_spec, kCapability_ExplicitClass) &&
-        (interfaces.count("*") != 0)) {
-      interfaces.erase("*");
-    }
-
     InterfaceProviderSpecMap specs;
+    Instance* source = service_manager_->GetExistingInstance(params->source());
     if (source)
       specs = source->interface_provider_specs_;
     service_->OnConnect(ServiceInfo(params->source(), specs),
-                        params->TakeRemoteInterfaces(), interfaces,
-                        capabilities);
+                        params->TakeRemoteInterfaces());
     return true;
   }
 

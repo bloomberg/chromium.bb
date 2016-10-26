@@ -10,27 +10,83 @@
 #include "services/service_manager/public/cpp/connection.h"
 
 namespace service_manager {
+namespace {
 
-InterfaceRegistry::InterfaceRegistry()
-    : binding_(this), allow_all_interfaces_(true), weak_factory_(this) {}
+// Returns the set of capabilities required from the target.
+CapabilitySet GetRequestedCapabilities(const InterfaceProviderSpec& source_spec,
+                                       const Identity& target) {
+  CapabilitySet capabilities;
+
+  // Start by looking for specs specific to the supplied identity.
+  auto it = source_spec.requires.find(target.name());
+  if (it != source_spec.requires.end()) {
+    std::copy(it->second.begin(), it->second.end(),
+              std::inserter(capabilities, capabilities.begin()));
+  }
+
+  // Apply wild card rules too.
+  it = source_spec.requires.find("*");
+  if (it != source_spec.requires.end()) {
+    std::copy(it->second.begin(), it->second.end(),
+              std::inserter(capabilities, capabilities.begin()));
+  }
+  return capabilities;
+}
+
+// Generates a single set of interfaces that is the union of all interfaces
+// exposed by the target for the capabilities requested by the source.
+InterfaceSet GetAllowedInterfaces(
+    const InterfaceProviderSpec& source_spec,
+    const Identity& target,
+    const InterfaceProviderSpec& target_spec) {
+  InterfaceSet allowed_interfaces;
+  // TODO(beng): remove this once we can assert that an InterfaceRegistry must
+  //             always be constructed with a valid identity.
+  if (!target.IsValid()) {
+    allowed_interfaces.insert("*");
+    return allowed_interfaces;
+  }
+  CapabilitySet capabilities = GetRequestedCapabilities(source_spec, target);
+  for (const auto& capability : capabilities) {
+    auto it = target_spec.provides.find(capability);
+    if (it != target_spec.provides.end()) {
+      for (const auto& interface_name : it->second)
+        allowed_interfaces.insert(interface_name);
+    }
+  }
+  return allowed_interfaces;
+}
+
+
+}  // namespace
 
 InterfaceRegistry::InterfaceRegistry(
-    const Identity& local_identity,
-    const Identity& remote_identity,
-    const InterfaceSet& allowed_interfaces)
+    const Identity& identity,
+    const InterfaceProviderSpec& interface_provider_spec)
     : binding_(this),
-      local_identity_(local_identity),
-      remote_identity_(remote_identity),
-      allowed_interfaces_(allowed_interfaces),
-      allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
-                            allowed_interfaces_.count("*") == 1),
+      identity_(identity),
+      interface_provider_spec_(interface_provider_spec),
       weak_factory_(this) {}
 
 InterfaceRegistry::~InterfaceRegistry() {}
 
 void InterfaceRegistry::Bind(
-    mojom::InterfaceProviderRequest local_interfaces_request) {
+    mojom::InterfaceProviderRequest local_interfaces_request,
+    const Identity& remote_identity,
+    const InterfaceProviderSpec& remote_interface_provider_spec) {
   DCHECK(!binding_.is_bound());
+  remote_identity_ = remote_identity;
+  allowed_interfaces_ = GetAllowedInterfaces(remote_interface_provider_spec,
+                                             identity_,
+                                             interface_provider_spec_);
+  allow_all_interfaces_ =
+      allowed_interfaces_.size() == 1 && allowed_interfaces_.count("*") == 1;
+  if (!allow_all_interfaces_) {
+    for (auto it = name_to_binder_.begin(); it != name_to_binder_.end(); ++it) {
+      if (allowed_interfaces_.count(it->first) == 0)
+        name_to_binder_.erase(it);
+    }
+  }
   binding_.Bind(std::move(local_interfaces_request));
 }
 
@@ -98,7 +154,7 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
     std::stringstream ss;
     ss << "Capability spec prevented service " << remote_identity_.name()
        << " from binding interface: " << interface_name
-       << " exposed by: " << local_identity_.name();
+       << " exposed by: " << identity_.name();
     LOG(ERROR) << ss.str();
     mojo::ReportBadMessage(ss.str());
   } else if (!default_binder_.is_null()) {
@@ -106,7 +162,7 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
   } else {
     LOG(ERROR) << "Failed to locate a binder for interface: " << interface_name
                << " requested by: " << remote_identity_.name()
-               << " exposed by: " << local_identity_.name();
+               << " exposed by: " << identity_.name();
   }
 }
 
@@ -123,6 +179,11 @@ bool InterfaceRegistry::SetInterfaceBinderForName(
 
 bool InterfaceRegistry::CanBindRequestForInterface(
     const std::string& interface_name) const {
+  // Any interface may be registered before the registry is bound to a pipe. At
+  // bind time, the interfaces exposed will be intersected with the requirements
+  // of the source.
+  if (!binding_.is_bound())
+    return true;
   return allow_all_interfaces_ || allowed_interfaces_.count(interface_name);
 }
 

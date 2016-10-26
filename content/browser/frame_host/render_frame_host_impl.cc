@@ -811,8 +811,8 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
 void RenderFrameHostImpl::Create(
     const service_manager::Identity& remote_identity,
     media::mojom::InterfaceFactoryRequest request) {
-  std::unique_ptr<service_manager::InterfaceRegistry> registry(
-      new service_manager::InterfaceRegistry);
+  auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
+      service_manager::Identity(), service_manager::InterfaceProviderSpec());
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
   registry->AddInterface(
       base::Bind(&ProvisionFetcherImpl::Create, this));
@@ -820,7 +820,9 @@ void RenderFrameHostImpl::Create(
   GetContentClient()->browser()->ExposeInterfacesToMediaService(registry.get(),
                                                                 this);
   service_manager::mojom::InterfaceProviderPtr interfaces;
-  registry->Bind(GetProxy(&interfaces));
+  registry->Bind(GetProxy(&interfaces),
+                 service_manager::Identity(),
+                 service_manager::InterfaceProviderSpec());
   media_registries_.push_back(std::move(registry));
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
@@ -2580,7 +2582,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (interface_registry_.get())
     return;
 
-  interface_registry_.reset(new service_manager::InterfaceRegistry);
+  interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
+      service_manager::Identity(), service_manager::InterfaceProviderSpec());
   if (!GetProcess()->GetRemoteInterfaces())
     return;
 
@@ -2864,7 +2867,9 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
 
 void RenderFrameHostImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest interfaces) {
-  interface_registry_->Bind(std::move(interfaces));
+  interface_registry_->Bind(std::move(interfaces),
+                            service_manager::Identity(),
+                            service_manager::InterfaceProviderSpec());
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)

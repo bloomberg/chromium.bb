@@ -656,8 +656,10 @@ ServiceManagerConnection* ChildThreadImpl::GetServiceManagerConnection() {
 }
 
 service_manager::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
-  if (!interface_registry_.get())
-    interface_registry_.reset(new service_manager::InterfaceRegistry);
+  if (!interface_registry_.get()) {
+    interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
+        service_manager::Identity(), service_manager::InterfaceProviderSpec());
+  }
   return interface_registry_.get();
 }
 

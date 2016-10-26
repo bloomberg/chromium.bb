@@ -462,7 +462,8 @@ void EmbeddedWorkerInstance::Start(
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
-  interface_registry_.reset(new service_manager::InterfaceRegistry);
+  interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
+      service_manager::Identity(), service_manager::InterfaceProviderSpec());
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   for (auto& observer : listener_list_)
     observer.OnStarting();
@@ -622,7 +623,9 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMojoStartWorker(
       mojo::GetProxy(&remote_interfaces);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   service_manager::mojom::InterfaceProviderPtr exposed_interfaces;
-  interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
+  interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces),
+                            service_manager::Identity(),
+                            service_manager::InterfaceProviderSpec());
   client_->StartWorker(*params, std::move(exposed_interfaces),
                        std::move(request));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
@@ -733,7 +736,9 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   // worker is enabled, so this code isn't necessary when the flag is enabled.
   if (!ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
     service_manager::mojom::InterfaceProviderPtr exposed_interfaces;
-    interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
+    interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces),
+                              service_manager::Identity(),
+                              service_manager::InterfaceProviderSpec());
     service_manager::mojom::InterfaceProviderPtr remote_interfaces;
     service_manager::mojom::InterfaceProviderRequest request =
         mojo::GetProxy(&remote_interfaces);

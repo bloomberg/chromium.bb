@@ -1222,8 +1222,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
-  std::unique_ptr<service_manager::InterfaceRegistry> registry(
-      new service_manager::InterfaceRegistry);
+  auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
+      service_manager::Identity(), service_manager::InterfaceProviderSpec());
 
   channel_->AddAssociatedInterface(
       base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,

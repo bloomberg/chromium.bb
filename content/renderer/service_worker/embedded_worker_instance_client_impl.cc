@@ -29,7 +29,9 @@ void EmbeddedWorkerInstanceClientImpl::Create(
 void EmbeddedWorkerInstanceClientImpl::ExposeInterfacesToBrowser(
     service_manager::InterfaceRegistry* interface_registry) {
   DCHECK(renderer_request_.is_pending());
-  interface_registry->Bind(std::move(renderer_request_));
+  interface_registry->Bind(std::move(renderer_request_),
+                           service_manager::Identity(),
+                           service_manager::InterfaceProviderSpec());
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted() {
