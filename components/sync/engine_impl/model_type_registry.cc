@@ -188,11 +188,14 @@ void ModelTypeRegistry::DisconnectType(ModelType type) {
   DCHECK_EQ(1U, updaters_erased);
   DCHECK_EQ(1U, committers_erased);
 
-  model_type_workers_.erase(std::remove_if(
-      model_type_workers_.begin(), model_type_workers_.end(),
-      [type](const std::unique_ptr<ModelTypeWorker>& worker) -> bool {
-        return worker->GetModelType() == type;
-      }));
+  auto iter = model_type_workers_.begin();
+  while (iter != model_type_workers_.end()) {
+    if ((*iter)->GetModelType() == type) {
+      iter = model_type_workers_.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
