@@ -197,6 +197,9 @@ static bool isCrossingShadowBoundaries(
          selection.end().anchorNode()->treeScope() != treeScope;
 }
 
+// TODO(yosin): We should make |adjustSelectionInDOMTree()| to return
+// |VisibleSelection| once |VisibleSelection| constructor doesn't call
+// |validate()|.
 void SelectionAdjuster::adjustSelectionInDOMTree(
     VisibleSelection* selection,
     const VisibleSelectionInFlatTree& selectionInFlatTree) {
@@ -219,7 +222,8 @@ void SelectionAdjuster::adjustSelectionInDOMTree(
     // that we don't need to update layout here.
     base.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    *selection = createVisibleSelection(base, extent);
+    *selection = createVisibleSelection(
+        SelectionInDOMTree::Builder().setBaseAndExtent(base, extent).build());
     return;
   }
 

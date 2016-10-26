@@ -33,8 +33,11 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   Text* emptyText = document().createTextNode("");
   document().body()->insertBefore(emptyText, document().body()->firstChild());
   updateAllLifecyclePhases();
-  document().frame()->selection().setSelection(createVisibleSelection(
-      Position(document().body(), 0), Position(document().body(), 2)));
+  document().frame()->selection().setSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position(document().body(), 0))
+          .extend(Position(document().body(), 2))
+          .build());
 
   InsertListCommand* command =
       InsertListCommand::create(document(), InsertListCommand::OrderedList);

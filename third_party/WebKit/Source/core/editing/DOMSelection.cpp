@@ -47,13 +47,6 @@
 
 namespace blink {
 
-static Position createPosition(Node* node, int offset) {
-  DCHECK_GE(offset, 0);
-  if (!node)
-    return Position();
-  return Position(node, offset);
-}
-
 static Node* selectionShadowAncestor(LocalFrame* frame) {
   Node* node = frame->selection().selection().base().anchorNode();
   if (!node)
@@ -299,19 +292,23 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
   if (!isValidForPosition(baseNode) || !isValidForPosition(extentNode))
     return;
 
-  Position base = createPosition(baseNode, baseOffset);
-  Position extent = createPosition(extentNode, extentOffset);
-  const bool selectionHasDirection = true;
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term, we should change FrameSelection::setSelection to take a
   // parameter that does not require clean layout, so that modifying selection
   // no longer performs synchronous layout by itself.
+  // TODO(editing-dev): Once SVG USE element doesn't modifies DOM tree, we
+  // should get rid of this update layout call.
+  // See http://crbug.com/566281
+  // See "svg/text/textpath-reference-crash.html"
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  frame()->selection().setSelection(createVisibleSelection(
-      base, extent, SelDefaultAffinity, selectionHasDirection));
+  frame()->selection().setSelection(
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtentDeprecated(Position(baseNode, baseOffset),
+                                      Position(extentNode, extentOffset))
+          .setIsDirectional(true)
+          .build());
 }
 
 void DOMSelection::modify(const String& alterString,
@@ -393,19 +390,20 @@ void DOMSelection::extend(Node* node,
     return;
 
   const Position& base = frame()->selection().base();
-  const Position& extent = createPosition(node, offset);
-  const bool selectionHasDirection = true;
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term, we should change FrameSelection::setSelection to take a
-  // parameter that does not require clean layout, so that modifying selection
-  // no longer performs synchronous layout by itself.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  const VisibleSelection newSelection = createVisibleSelection(
-      base, extent, TextAffinity::Downstream, selectionHasDirection);
-  frame()->selection().setSelection(newSelection);
+  if (base.isNull()) {
+    // TODO(editing-dev): We should throw |InvalidStateError| if selection is
+    // none to follow the spec.
+    frame()->selection().setSelection(SelectionInDOMTree::Builder()
+                                          .collapse(Position(node, offset))
+                                          .setIsDirectional(true)
+                                          .build());
+    return;
+  }
+  frame()->selection().setSelection(SelectionInDOMTree::Builder()
+                                        .collapse(base)
+                                        .extend(Position(node, offset))
+                                        .setIsDirectional(true)
+                                        .build());
 }
 
 Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState) {

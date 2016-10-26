@@ -56,9 +56,11 @@ void CreateLinkCommand::doApply(EditingState* editingState) {
       return;
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     setEndingSelection(createVisibleSelection(
-        Position::inParentBeforeNode(*anchorElement),
-        Position::inParentAfterNode(*anchorElement), TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::inParentBeforeNode(*anchorElement))
+            .extend(Position::inParentAfterNode(*anchorElement))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
   }
 }
 

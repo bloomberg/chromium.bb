@@ -1439,7 +1439,8 @@ void CompositeEditCommand::moveParagraphWithClones(
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  setEndingSelection(createVisibleSelection(start, end));
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(start).extend(end).build()));
   deleteSelection(editingState, false, false, false);
   if (editingState->isAborted())
     return;
@@ -1598,7 +1599,8 @@ void CompositeEditCommand::moveParagraphs(
 
   DCHECK(!document().needsLayoutTreeUpdate());
 
-  setEndingSelection(createVisibleSelection(start, end));
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(start).extend(end).build()));
   document()
       .frame()
       ->spellChecker()
@@ -1709,9 +1711,12 @@ void CompositeEditCommand::moveParagraphs(
                                 .createRangeForSelection(*documentElement);
   if (endRange.isNull())
     return;
-  setEndingSelection(createVisibleSelection(
-      startRange.startPosition(), endRange.startPosition(),
-      TextAffinity::Downstream, originalIsDirectional));
+  setEndingSelection(
+      createVisibleSelection(SelectionInDOMTree::Builder()
+                                 .collapse(startRange.startPosition())
+                                 .extend(endRange.startPosition())
+                                 .setIsDirectional(originalIsDirectional)
+                                 .build()));
 }
 
 // FIXME: Send an appropriate shouldDeleteRange call.

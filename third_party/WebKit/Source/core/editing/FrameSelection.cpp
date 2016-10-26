@@ -922,10 +922,13 @@ bool FrameSelection::setSelectedRange(const EphemeralRange& range,
   // can be modified by event handlers, we should create |Range| object before
   // calling it.
   Range* logicalRange = createRange(range);
-  VisibleSelection newSelection = createVisibleSelection(
-      range.startPosition(), range.endPosition(), affinity,
-      directional == SelectionDirectionalMode::Directional);
-  setSelection(newSelection, options);
+  setSelection(SelectionInDOMTree::Builder()
+                   .setBaseAndExtent(range)
+                   .setAffinity(affinity)
+                   .setIsDirectional(directional ==
+                                     SelectionDirectionalMode::Directional)
+                   .build(),
+               options);
   m_selectionEditor->setLogicalRange(logicalRange);
   return true;
 }

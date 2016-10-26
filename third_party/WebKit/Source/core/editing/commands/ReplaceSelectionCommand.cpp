@@ -1861,7 +1861,10 @@ void ReplaceSelectionCommand::completeHTMLReplacement(
 
   if (m_selectReplacement) {
     setEndingSelection(createVisibleSelection(
-        start, end, SelDefaultAffinity, endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .setBaseAndExtentDeprecated(start, end)
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     return;
   }
 
@@ -2082,8 +2085,10 @@ bool ReplaceSelectionCommand::performTrivialReplace(
   m_endOfInsertedRange = end;
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
-  VisibleSelection selectionAfterReplace =
-      createVisibleSelection(m_selectReplacement ? start : end, end);
+  VisibleSelection selectionAfterReplace = createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtentDeprecated(m_selectReplacement ? start : end, end)
+          .build());
 
   setEndingSelection(selectionAfterReplace);
 

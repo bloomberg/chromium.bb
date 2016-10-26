@@ -212,9 +212,11 @@ TEST_F(VisibleSelectionTest, ShadowCrossing) {
   Element* one = body->querySelector("#one");
   Element* six = shadowRoot->querySelector("#s6");
 
-  VisibleSelection selection =
-      createVisibleSelection(Position::firstPositionInNode(one),
-                             Position::lastPositionInNode(shadowRoot));
+  VisibleSelection selection = createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position::firstPositionInNode(one))
+          .extend(Position::lastPositionInNode(shadowRoot))
+          .build());
   VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelection(
       SelectionInFlatTree::Builder()
           .collapse(PositionInFlatTree::firstPositionInNode(one))
@@ -245,8 +247,11 @@ TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes) {
   Element* two = body->querySelector("#two");
   Element* five = shadowRoot->querySelector("#s5");
 
-  VisibleSelection selection = createVisibleSelection(
-      Position::firstPositionInNode(one), Position::lastPositionInNode(two));
+  VisibleSelection selection =
+      createVisibleSelection(SelectionInDOMTree::Builder()
+                                 .collapse(Position::firstPositionInNode(one))
+                                 .extend(Position::lastPositionInNode(two))
+                                 .build());
   VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelection(
       SelectionInFlatTree::Builder()
           .collapse(PositionInFlatTree::firstPositionInNode(one))
@@ -288,9 +293,11 @@ TEST_F(VisibleSelectionTest, ShadowNested) {
   Element* one = body->querySelector("#one");
   Element* eight = shadowRoot2->querySelector("#s8");
 
-  VisibleSelection selection =
-      createVisibleSelection(Position::firstPositionInNode(one),
-                             Position::lastPositionInNode(shadowRoot2));
+  VisibleSelection selection = createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position::firstPositionInNode(one))
+          .extend(Position::lastPositionInNode(shadowRoot2))
+          .build());
   VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelection(
       SelectionInFlatTree::Builder()
           .collapse(PositionInFlatTree::firstPositionInNode(one))

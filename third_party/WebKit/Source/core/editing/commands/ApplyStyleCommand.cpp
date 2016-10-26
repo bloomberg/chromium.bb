@@ -190,9 +190,12 @@ void ApplyStyleCommand::updateStartEnd(const Position& newStart,
     m_useEndingSelection = true;
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
-  setEndingSelection(createVisibleSelection(newStart, newEnd,
-                                            VP_DEFAULT_AFFINITY,
-                                            endingSelection().isDirectional()));
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(newStart)
+          .extend(newEnd)
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
   m_start = newStart;
   m_end = newEnd;
 }

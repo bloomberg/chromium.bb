@@ -612,8 +612,11 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
         // anything.
       } else if (Element* table = tableElementJustBefore(visibleStart)) {
         setEndingSelection(createVisibleSelection(
-            Position::beforeNode(table), endingSelection().start(),
-            TextAffinity::Downstream, endingSelection().isDirectional()));
+            SelectionInDOMTree::Builder()
+                .collapse(Position::beforeNode(table))
+                .extend(endingSelection().start())
+                .setIsDirectional(endingSelection().isDirectional())
+                .build()));
         typingAddedToOpenCommand(DeleteKey);
         return;
       }
@@ -730,9 +733,12 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity,
           downstreamEnd.computeOffsetInContainerNode() <=
               caretMinOffset(downstreamEnd.computeContainerNode())) {
         setEndingSelection(createVisibleSelection(
-            endingSelection().end(),
-            Position::afterNode(downstreamEnd.computeContainerNode()),
-            TextAffinity::Downstream, endingSelection().isDirectional()));
+            SelectionInDOMTree::Builder()
+                .setBaseAndExtentDeprecated(
+                    endingSelection().end(),
+                    Position::afterNode(downstreamEnd.computeContainerNode()))
+                .setIsDirectional(endingSelection().isDirectional())
+                .build()));
         typingAddedToOpenCommand(ForwardDeleteKey);
         return;
       }

@@ -18,7 +18,10 @@ TEST_F(SelectionAdjusterTest, adjustSelectionInFlatTree) {
   Node* const foo = sample->firstChild();
   // Select "foo"
   VisibleSelection selection =
-      createVisibleSelection(Position(foo, 0), Position(foo, 3));
+      createVisibleSelection(SelectionInDOMTree::Builder()
+                                 .collapse(Position(foo, 0))
+                                 .extend(Position(foo, 3))
+                                 .build());
   SelectionAdjuster::adjustSelectionInFlatTree(&selectionInFlatTree, selection);
   EXPECT_EQ(PositionInFlatTree(foo, 0), selectionInFlatTree.start());
   EXPECT_EQ(PositionInFlatTree(foo, 3), selectionInFlatTree.end());
