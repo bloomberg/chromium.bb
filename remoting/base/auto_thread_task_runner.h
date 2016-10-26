@@ -34,10 +34,6 @@ class AutoThreadTaskRunner : public base::SingleThreadTaskRunner {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
 
-  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
-    return task_runner_;
-  }
-
  private:
   ~AutoThreadTaskRunner() override;
 

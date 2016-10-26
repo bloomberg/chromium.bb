@@ -414,13 +414,16 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   // Try to launch the process.
   ScopedHandle worker_process;
   ScopedHandle worker_thread;
-  if (!LaunchProcessWithToken(
-          command_line.GetProgram(), command_line.GetCommandLineString(),
-          session_token_.Get(), security_attributes.get(),
-          /* thread_attributes= */ nullptr, /* handles_to_inherit=*/{},
-          /* creation_flags= */ CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
-          base::UTF8ToUTF16(kDefaultDesktopName).c_str(), &worker_process,
-          &worker_thread)) {
+  if (!LaunchProcessWithToken(command_line.GetProgram(),
+                              command_line.GetCommandLineString(),
+                              session_token_.Get(),
+                              security_attributes.get(),
+                              nullptr,
+                              false,
+                              CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
+                              base::UTF8ToUTF16(kDefaultDesktopName).c_str(),
+                              &worker_process,
+                              &worker_thread)) {
     ReportFatalError();
     return;
   }

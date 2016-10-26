@@ -6,8 +6,6 @@ include_rules = [
   "+extensions/browser/api/messaging",
   "+google_apis",
   "+jingle/glue",
-  "+mojo/public",
-  "+mojo/edk/embedder",
   "+net",
   "+remoting/codec",
   "+remoting/protocol",

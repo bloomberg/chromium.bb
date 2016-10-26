@@ -4,12 +4,9 @@
 
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-
-  mojo::edk::Init();
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&base::TestSuite::Run,

@@ -24,6 +24,4 @@ const char kParentWindowSwitchName[] = "parent-window";
 const char kInputSwitchName[] = "input";
 const char kOutputSwitchName[] = "output";
 
-const char kMojoPipeToken[] = "mojo-pipe-token";
-
 }  // namespace remoting
