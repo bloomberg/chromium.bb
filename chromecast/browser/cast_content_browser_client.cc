@@ -30,7 +30,7 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
-#include "chromecast/browser/devtools/cast_devtools_delegate.h"
+#include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/grit/cast_browser_resources.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
@@ -509,7 +509,7 @@ void CastContentBrowserClient::GetAdditionalWebUISchemes(
 
 content::DevToolsManagerDelegate*
 CastContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new CastDevToolsDelegate();
+  return new CastDevToolsManagerDelegate();
 }
 
 #if !defined(OS_ANDROID)

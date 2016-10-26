@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/browser/cast_browser_process.h"
-#include "chromecast/browser/devtools/cast_devtools_delegate.h"
+#include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/common/cast_content_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

@@ -43,8 +43,8 @@ source_set("browser") {
     "cast_quota_permission_context.h",
     "cast_resource_dispatcher_host_delegate.cc",
     "cast_resource_dispatcher_host_delegate.h",
-    "devtools/cast_devtools_delegate.cc",
-    "devtools/cast_devtools_delegate.h",
+    "devtools/cast_devtools_manager_delegate.cc",
+    "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",
     "devtools/remote_debugging_server.h",
     "geolocation/cast_access_token_store.cc",
@@ -192,6 +192,7 @@ config("browser_test_config") {
 
 test("cast_shell_tests") {
   sources = [
+    "test/cast_devtools_delegate_test.cc",
     "test/cast_media_blocker_test.cc",
     "test/cast_test_launcher.cc",
   ]
