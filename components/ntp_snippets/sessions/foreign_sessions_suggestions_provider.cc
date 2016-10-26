@@ -117,11 +117,15 @@ CategoryStatus ForeignSessionsSuggestionsProvider::GetCategoryStatus(
 CategoryInfo ForeignSessionsSuggestionsProvider::GetCategoryInfo(
     Category category) {
   DCHECK_EQ(category, provided_category_);
-  return CategoryInfo(l10n_util::GetStringUTF16(
-                          IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_HEADER),
-                      ContentSuggestionsCardLayout::MINIMAL_CARD,
-                      /*has_more_button=*/true,
-                      /*show_if_empty=*/false);
+  return CategoryInfo(
+      l10n_util::GetStringUTF16(
+          IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_HEADER),
+      ContentSuggestionsCardLayout::MINIMAL_CARD,
+      /*has_more_button=*/true,
+      /*show_if_empty=*/false,
+      l10n_util::GetStringUTF16(IDS_NTP_SUGGESTIONS_SECTION_EMPTY));
+  // TODO(skym): Replace IDS_NTP_SUGGESTIONS_SECTION_EMPTY with a
+  // category-specific string.
 }
 
 void ForeignSessionsSuggestionsProvider::DismissSuggestion(

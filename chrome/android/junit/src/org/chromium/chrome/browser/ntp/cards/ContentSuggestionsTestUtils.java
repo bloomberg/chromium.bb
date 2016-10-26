@@ -29,7 +29,7 @@ public final class ContentSuggestionsTestUtils {
     public static SuggestionsCategoryInfo createInfo(
             @CategoryInt int category, boolean moreButton, boolean showIfEmpty) {
         return new SuggestionsCategoryInfo(
-                category, "", ContentSuggestionsCardLayout.FULL_CARD, moreButton, showIfEmpty);
+                category, "", ContentSuggestionsCardLayout.FULL_CARD, moreButton, showIfEmpty, "");
     }
 
     public static SuggestionsSection createSection(

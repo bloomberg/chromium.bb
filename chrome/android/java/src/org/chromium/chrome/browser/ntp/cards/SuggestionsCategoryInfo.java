@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.support.annotation.StringRes;
-
 import org.chromium.base.Log;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
@@ -48,14 +45,20 @@ public class SuggestionsCategoryInfo {
     /** Whether this category should be shown if it offers no suggestions. */
     private final boolean mShowIfEmpty;
 
+    /**
+     * Description text to use on the status card when there are no suggestions in this category.
+     */
+    private final String mNoSuggestionsMessage;
+
     public SuggestionsCategoryInfo(@CategoryInt int category, String title,
             @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasMoreButton,
-            boolean showIfEmpty) {
+            boolean showIfEmpty, String noSuggestionsMessage) {
         mCategory = category;
         mTitle = title;
         mCardLayout = cardLayout;
         mHasMoreButton = hasMoreButton;
         mShowIfEmpty = showIfEmpty;
+        mNoSuggestionsMessage = noSuggestionsMessage;
     }
 
     public String getTitle() {
@@ -78,6 +81,14 @@ public class SuggestionsCategoryInfo {
 
     public boolean showIfEmpty() {
         return mShowIfEmpty;
+    }
+
+    /**
+     * Returns the string to use as description for the status card that is displayed when there
+     * are no suggestions available for the provided category.
+     */
+    public String getNoSuggestionsMessage() {
+        return mNoSuggestionsMessage;
     }
 
     /**
@@ -106,28 +117,6 @@ public class SuggestionsCategoryInfo {
                 // reload all remote sections. crbug.com/656008
                 adapter.reloadSnippets();
                 break;
-        }
-    }
-
-    /**
-     * Returns the string to use as description for the status card that is displayed when there
-     * are no suggestions available for the provided category.
-     */
-    @StringRes
-    public int getNoSuggestionDescription() {
-        switch (mCategory) {
-            case KnownCategories.BOOKMARKS:
-                return R.string.ntp_status_card_no_bookmarks;
-            case KnownCategories.DOWNLOADS:
-            case KnownCategories.FOREIGN_TABS:
-            case KnownCategories.PHYSICAL_WEB_PAGES:
-            case KnownCategories.RECENT_TABS:
-                Log.wtf(TAG, "Requested description for unsupported category: %d", mCategory);
-                return 0;
-            case KnownCategories.ARTICLES:
-                return R.string.ntp_status_card_no_articles;
-            default:
-                return R.string.ntp_status_card_no_suggestions;
         }
     }
 }

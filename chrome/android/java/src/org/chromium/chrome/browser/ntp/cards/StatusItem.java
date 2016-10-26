@@ -32,9 +32,8 @@ public abstract class StatusItem extends Leaf implements StatusCardViewHolder.Da
         }
 
         @Override
-        @StringRes
-        public int getDescription() {
-            return mCategoryInfo.getNoSuggestionDescription();
+        public String getDescription() {
+            return mCategoryInfo.getNoSuggestionsMessage();
         }
 
         @Override

@@ -313,10 +313,11 @@ CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
 CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
   DCHECK(base::ContainsKey(categories_, category));
   const CategoryContent& content = categories_[category];
-  return CategoryInfo(content.localized_title,
-                      ContentSuggestionsCardLayout::FULL_CARD,
-                      /*has_more_button=*/false,
-                      /*show_if_empty=*/true);
+  return CategoryInfo(
+      content.localized_title, ContentSuggestionsCardLayout::FULL_CARD,
+      /*has_more_button=*/false,
+      /*show_if_empty=*/true,
+      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
 }
 
 void NTPSnippetsService::DismissSuggestion(

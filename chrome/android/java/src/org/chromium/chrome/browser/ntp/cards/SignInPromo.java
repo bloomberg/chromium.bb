@@ -105,9 +105,9 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
     }
 
     @Override
-    @StringRes
-    public int getDescription() {
-        return R.string.snippets_disabled_signed_out_instructions;
+    public String getDescription() {
+        return ContextUtils.getApplicationContext().getString(
+                R.string.snippets_disabled_signed_out_instructions);
     }
 
     @Override

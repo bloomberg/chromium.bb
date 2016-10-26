@@ -41,10 +41,9 @@ public class StatusCardViewHolder extends CardViewHolder {
         int getHeader();
 
         /**
-         * @return Resource ID for the description string.
+         * @return Description string.
          */
-        @StringRes
-        int getDescription();
+        String getDescription();
 
         /**
          * @return Resource ID for the action label string, or 0 if the card does not have a label.

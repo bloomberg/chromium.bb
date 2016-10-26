@@ -60,7 +60,8 @@ class MockProvider : public ContentSuggestionsProvider {
 
   CategoryInfo GetCategoryInfo(Category category) override {
     return CategoryInfo(base::ASCIIToUTF16("Section title"),
-                        ContentSuggestionsCardLayout::FULL_CARD, true, true);
+                        ContentSuggestionsCardLayout::FULL_CARD, true, true,
+                        base::ASCIIToUTF16("No suggestions message"));
   }
 
   void FireSuggestionsChanged(

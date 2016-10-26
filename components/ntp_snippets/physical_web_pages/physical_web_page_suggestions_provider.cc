@@ -9,6 +9,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
@@ -66,11 +68,13 @@ CategoryStatus PhysicalWebPageSuggestionsProvider::GetCategoryStatus(
 
 CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
     Category category) {
-  // TODO(vitaliii): Use a proper string once it's been agreed on.
-  return CategoryInfo(base::ASCIIToUTF16("Physical web pages"),
-                      ContentSuggestionsCardLayout::MINIMAL_CARD,
-                      /* has_more_button */ true,
-                      /* show_if_empty */ false);
+  // TODO(vitaliii): Use the proper strings once they've been agreed on.
+  return CategoryInfo(
+      base::ASCIIToUTF16("Physical web pages"),
+      ContentSuggestionsCardLayout::MINIMAL_CARD,
+      /* has_more_button */ true,
+      /* show_if_empty */ false,
+      l10n_util::GetStringUTF16(IDS_NTP_SUGGESTIONS_SECTION_EMPTY));
 }
 
 void PhysicalWebPageSuggestionsProvider::DismissSuggestion(

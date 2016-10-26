@@ -173,7 +173,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
 
         mSnippetsSource.setInfoForCategory(KnownCategories.ARTICLES,
                 new SuggestionsCategoryInfo(KnownCategories.ARTICLES, "Section Title",
-                        ContentSuggestionsCardLayout.FULL_CARD, false, true));
+                        ContentSuggestionsCardLayout.FULL_CARD, false, true, "No suggestions"));
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES,

@@ -11,19 +11,14 @@
     <message name="IDS_NTP_STATUS_CARD_TITLE_NO_SUGGESTIONS" desc="On the New Tab Page, title of the status card explaining that there is no new content available in the section." formatter_data="android_java">
       That’s all for now
     </message>
-    <message name="IDS_NTP_STATUS_CARD_NO_SUGGESTIONS" desc="On the New Tab Page, text of card explaining to the user that they can expect to see some sort of content suggestions in this area in the future." formatter_data="android_java">
-      Your suggestions appear here
-    </message>
-    <message name="IDS_NTP_STATUS_CARD_NO_BOOKMARKS" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see bookmarks in this area in the future." formatter_data="android_java">
-      Your recently visited bookmarks appear here
-    </message>
-    <message name="IDS_NTP_STATUS_CARD_NO_ARTICLES" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see suggested articles in this area in the future." formatter_data="android_java">
-      Your suggested articles appear here
-    </message>
   </if>
 
   <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page.">
     Articles for you
+  </message>
+
+  <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see suggested articles in this area in the future.">
+    Your suggested articles appear here
   </message>
 
   <message name="IDS_NTP_RECENT_TAB_SUGGESTIONS_SECTION_HEADER" desc="Header of the recent tabs section, which is a list of pages that the user recently viewed, displayed as cards on the New Tab Page.">
@@ -38,8 +33,16 @@
     Recent bookmarks
   </message>
 
+  <message name="IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see bookmarks in this area in the future.">
+    Your recently visited bookmarks appear here
+  </message>
+
   <message name="IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_HEADER" desc="Header of the foreign sessions, which is a list of the user's most recently visited tabs on other devices displayed as cards on the New Tab Page.">
     Continue from another device
+  </message>
+
+  <message name="IDS_NTP_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of card explaining to the user that they can expect to see some sort of content suggestions in this area in the future.">
+    Your suggestions appear here
   </message>
 
 </grit-part>
