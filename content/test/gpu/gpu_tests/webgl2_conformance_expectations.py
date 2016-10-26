@@ -805,11 +805,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'no_angle'], bug=483282)
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
         ['linux', 'amd'], bug=633022)
-    self.Flaky('conformance2/buffers/uniform-buffers.html',
+    self.Fail('conformance2/buffers/uniform-buffers.html',
         ['linux', 'amd'], bug=658842)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
-    self.Flaky('conformance2/rendering/uniform-block-buffer-size.html',
+    self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
         ['linux', 'amd'], bug=658844)
 
     # Conflicting expectations to test that the
