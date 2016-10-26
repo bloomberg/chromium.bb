@@ -99,6 +99,7 @@ static const MDRVA kInvalidMDRVA = static_cast<MDRVA>(-1);
 struct Options {
   string minidump_path;
   bool verbose;
+  int out_fd;
   string so_basedir;
 };
 
@@ -111,6 +112,7 @@ Usage(int argc, const char* argv[]) {
           "\n"
           "Options:\n"
           "  -v         Enable verbose output\n"
+          "  -o <file>  Write coredump to specified file (otherwise use stdout).\n"
           "  -S <dir>   Set soname base directory.  This will force all debug/symbol\n"
           "             lookups to be done in this directory rather than the filesystem\n"
           "             layout as it exists in the crashing image.  This path should end\n"
@@ -122,11 +124,12 @@ static void
 SetupOptions(int argc, const char* argv[], Options* options) {
   extern int optind;
   int ch;
+  const char* output_file = NULL;
 
   // Initialize the options struct as needed.
   options->verbose = false;
 
-  while ((ch = getopt(argc, (char * const *)argv, "hS:v")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, "ho:S:v")) != -1) {
     switch (ch) {
       case 'h':
         Usage(argc, argv);
@@ -137,6 +140,9 @@ SetupOptions(int argc, const char* argv[], Options* options) {
         exit(1);
         break;
 
+      case 'o':
+        output_file = optarg;
+        break;
       case 'S':
         options->so_basedir = optarg;
         break;
@@ -150,6 +156,17 @@ SetupOptions(int argc, const char* argv[], Options* options) {
     fprintf(stderr, "%s: Missing minidump file\n", argv[0]);
     Usage(argc, argv);
     exit(1);
+  }
+
+  if (output_file == NULL || !strcmp(output_file, "-")) {
+    options->out_fd = STDOUT_FILENO;
+  } else {
+    options->out_fd = open(output_file, O_WRONLY|O_CREAT|O_TRUNC, 0664);
+    if (options->out_fd == -1) {
+      fprintf(stderr, "%s: could not open output %s: %s\n", argv[0],
+              output_file, strerror(errno));
+      exit(1);
+    }
   }
 
   options->minidump_path = argv[optind];
@@ -857,7 +874,8 @@ ParseExceptionStream(const Options& options, CrashedProcess* crashinfo,
 }
 
 static bool
-WriteThread(const CrashedProcess::Thread& thread, int fatal_signal) {
+WriteThread(const Options& options, const CrashedProcess::Thread& thread,
+            int fatal_signal) {
   struct prstatus pr;
   memset(&pr, 0, sizeof(pr));
 
@@ -875,18 +893,18 @@ WriteThread(const CrashedProcess::Thread& thread, int fatal_signal) {
   nhdr.n_namesz = 5;
   nhdr.n_descsz = sizeof(struct prstatus);
   nhdr.n_type = NT_PRSTATUS;
-  if (!writea(1, &nhdr, sizeof(nhdr)) ||
-      !writea(1, "CORE\0\0\0\0", 8) ||
-      !writea(1, &pr, sizeof(struct prstatus))) {
+  if (!writea(options.out_fd, &nhdr, sizeof(nhdr)) ||
+      !writea(options.out_fd, "CORE\0\0\0\0", 8) ||
+      !writea(options.out_fd, &pr, sizeof(struct prstatus))) {
     return false;
   }
 
 #if defined(__i386__) || defined(__x86_64__)
   nhdr.n_descsz = sizeof(user_fpregs_struct);
   nhdr.n_type = NT_FPREGSET;
-  if (!writea(1, &nhdr, sizeof(nhdr)) ||
-      !writea(1, "CORE\0\0\0\0", 8) ||
-      !writea(1, &thread.fpregs, sizeof(user_fpregs_struct))) {
+  if (!writea(options.out_fd, &nhdr, sizeof(nhdr)) ||
+      !writea(options.out_fd, "CORE\0\0\0\0", 8) ||
+      !writea(options.out_fd, &thread.fpregs, sizeof(user_fpregs_struct))) {
     return false;
   }
 #endif
@@ -894,9 +912,9 @@ WriteThread(const CrashedProcess::Thread& thread, int fatal_signal) {
 #if defined(__i386__)
   nhdr.n_descsz = sizeof(user_fpxregs_struct);
   nhdr.n_type = NT_PRXFPREG;
-  if (!writea(1, &nhdr, sizeof(nhdr)) ||
-      !writea(1, "LINUX\0\0\0", 8) ||
-      !writea(1, &thread.fpxregs, sizeof(user_fpxregs_struct))) {
+  if (!writea(options.out_fd, &nhdr, sizeof(nhdr)) ||
+      !writea(options.out_fd, "LINUX\0\0\0", 8) ||
+      !writea(options.out_fd, &thread.fpxregs, sizeof(user_fpxregs_struct))) {
     return false;
   }
 #endif
@@ -1214,7 +1232,7 @@ main(int argc, const char* argv[]) {
   ehdr.e_phnum    = 1 +                         // PT_NOTE
                     crashinfo.mappings.size();  // memory mappings
   ehdr.e_shentsize= sizeof(Shdr);
-  if (!writea(1, &ehdr, sizeof(Ehdr)))
+  if (!writea(options.out_fd, &ehdr, sizeof(Ehdr)))
     return 1;
 
   size_t offset = sizeof(Ehdr) + ehdr.e_phnum * sizeof(Phdr);
@@ -1236,7 +1254,7 @@ main(int argc, const char* argv[]) {
   phdr.p_type = PT_NOTE;
   phdr.p_offset = offset;
   phdr.p_filesz = filesz;
-  if (!writea(1, &phdr, sizeof(phdr)))
+  if (!writea(options.out_fd, &phdr, sizeof(phdr)))
     return 1;
 
   phdr.p_type = PT_LOAD;
@@ -1269,7 +1287,7 @@ main(int argc, const char* argv[]) {
       phdr.p_filesz = 0;
       phdr.p_offset = 0;
     }
-    if (!writea(1, &phdr, sizeof(phdr)))
+    if (!writea(options.out_fd, &phdr, sizeof(phdr)))
       return 1;
   }
 
@@ -1278,36 +1296,36 @@ main(int argc, const char* argv[]) {
   nhdr.n_namesz = 5;
   nhdr.n_descsz = sizeof(prpsinfo);
   nhdr.n_type = NT_PRPSINFO;
-  if (!writea(1, &nhdr, sizeof(nhdr)) ||
-      !writea(1, "CORE\0\0\0\0", 8) ||
-      !writea(1, &crashinfo.prps, sizeof(prpsinfo))) {
+  if (!writea(options.out_fd, &nhdr, sizeof(nhdr)) ||
+      !writea(options.out_fd, "CORE\0\0\0\0", 8) ||
+      !writea(options.out_fd, &crashinfo.prps, sizeof(prpsinfo))) {
     return 1;
   }
 
   nhdr.n_descsz = crashinfo.auxv_length;
   nhdr.n_type = NT_AUXV;
-  if (!writea(1, &nhdr, sizeof(nhdr)) ||
-      !writea(1, "CORE\0\0\0\0", 8) ||
-      !writea(1, crashinfo.auxv, crashinfo.auxv_length)) {
+  if (!writea(options.out_fd, &nhdr, sizeof(nhdr)) ||
+      !writea(options.out_fd, "CORE\0\0\0\0", 8) ||
+      !writea(options.out_fd, crashinfo.auxv, crashinfo.auxv_length)) {
     return 1;
   }
 
   for (unsigned i = 0; i < crashinfo.threads.size(); ++i) {
     if (crashinfo.threads[i].tid == crashinfo.crashing_tid) {
-      WriteThread(crashinfo.threads[i], crashinfo.fatal_signal);
+      WriteThread(options, crashinfo.threads[i], crashinfo.fatal_signal);
       break;
     }
   }
 
   for (unsigned i = 0; i < crashinfo.threads.size(); ++i) {
     if (crashinfo.threads[i].tid != crashinfo.crashing_tid)
-      WriteThread(crashinfo.threads[i], 0);
+      WriteThread(options, crashinfo.threads[i], 0);
   }
 
   if (note_align) {
     google_breakpad::scoped_array<char> scratch(new char[note_align]);
     memset(scratch.get(), 0, note_align);
-    if (!writea(1, scratch.get(), note_align))
+    if (!writea(options.out_fd, scratch.get(), note_align))
       return 1;
   }
 
@@ -1316,9 +1334,13 @@ main(int argc, const char* argv[]) {
        iter != crashinfo.mappings.end(); ++iter) {
     const CrashedProcess::Mapping& mapping = iter->second;
     if (mapping.data.size()) {
-      if (!writea(1, mapping.data.c_str(), mapping.data.size()))
+      if (!writea(options.out_fd, mapping.data.c_str(), mapping.data.size()))
         return 1;
     }
+  }
+
+  if (options.out_fd != STDOUT_FILENO) {
+    close(options.out_fd);
   }
 
   return 0;
