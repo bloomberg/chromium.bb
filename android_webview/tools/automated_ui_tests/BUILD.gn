@@ -38,6 +38,7 @@ android_resources("webview_ui_test_app_apk_resources") {
 
 instrumentation_test_apk("webview_ui_test_app_test_apk") {
   apk_name = "WebViewUiTestAppTest"
+  apk_under_test = ":webview_ui_test_app_apk"
   android_manifest = "javatests/AndroidManifest.xml"
   java_files = [
     "javatests/src/org/chromium/webview_ui_test/test/LoadDataTest.java",
@@ -66,5 +67,4 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
   data_deps = [
     ":webview_ui_test_app_apk",
   ]
-  apk_under_test = ":webview_ui_test_app_apk"
 }
