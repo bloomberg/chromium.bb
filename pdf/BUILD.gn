@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
 
 assert(enable_pdf)
@@ -17,10 +18,10 @@ static_library("pdf") {
     "//ppapi/cpp:objects",
     "//ppapi/cpp/private:internal_module",
     "//ui/base",
+    "//ui/gfx/range",
   ]
 
   sources = [
-    "chunk_stream.cc",
     "chunk_stream.h",
     "document_loader.cc",
     "document_loader.h",
@@ -37,6 +38,13 @@ static_library("pdf") {
     "pdf_engine.h",
     "preview_mode_client.cc",
     "preview_mode_client.h",
+    "range_set.cc",
+    "range_set.h",
+    "timer.cc",
+    "timer.h",
+    "url_loader_wrapper.h",
+    "url_loader_wrapper_impl.cc",
+    "url_loader_wrapper_impl.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -69,4 +77,24 @@ static_library("pdf") {
   if (pdf_enable_xfa) {
     defines += [ "PDF_ENABLE_XFA" ]
   }
+}
+
+test("pdf_unittests") {
+  sources = [
+    "chunk_stream_unittest.cc",
+    "document_loader_unittest.cc",
+    "range_set_unittest.cc",
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":pdf",
+    "//base",
+    "//base/test:test_support",
+    "//ppapi/c",
+    "//ppapi/cpp",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx/range",
+  ]
 }
