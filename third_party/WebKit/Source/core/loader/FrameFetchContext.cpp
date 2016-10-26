@@ -215,23 +215,20 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
                                                     FetchResourceType type) {
   bool isMainResource = type == FetchMainResource;
   if (!isMainResource) {
-    RefPtr<SecurityOrigin> outgoingOrigin;
     if (!request.didSetHTTPReferrer()) {
       DCHECK(m_document);
-      outgoingOrigin = m_document->getSecurityOrigin();
       request.setHTTPReferrer(SecurityPolicy::generateReferrer(
           m_document->getReferrerPolicy(), request.url(),
           m_document->outgoingReferrer()));
+      request.addHTTPOriginIfNeeded(m_document->getSecurityOrigin());
     } else {
       CHECK_EQ(SecurityPolicy::generateReferrer(request.getReferrerPolicy(),
                                                 request.url(),
                                                 request.httpReferrer())
                    .referrer,
                request.httpReferrer());
-      outgoingOrigin = SecurityOrigin::createFromString(request.httpReferrer());
+      request.addHTTPOriginIfNeeded(request.httpReferrer());
     }
-
-    request.addHTTPOriginIfNeeded(outgoingOrigin.get());
   }
 
   if (m_document) {

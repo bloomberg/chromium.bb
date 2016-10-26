@@ -237,9 +237,10 @@ void ResourceRequest::clearHTTPReferrer() {
 
 void ResourceRequest::setHTTPOrigin(const SecurityOrigin* origin) {
   setHTTPHeaderField(HTTPNames::Origin, origin->toAtomicString());
-  if (origin->hasSuborigin())
+  if (origin->hasSuborigin()) {
     setHTTPHeaderField(HTTPNames::Suborigin,
                        AtomicString(origin->suborigin()->name()));
+  }
 }
 
 void ResourceRequest::clearHTTPOrigin() {
@@ -248,29 +249,13 @@ void ResourceRequest::clearHTTPOrigin() {
 }
 
 void ResourceRequest::addHTTPOriginIfNeeded(const SecurityOrigin* origin) {
-  if (!httpOrigin().isEmpty())
-    return;  // Request already has an Origin header.
+  if (needsHTTPOrigin())
+    setHTTPOrigin(origin);
+}
 
-  // Don't send an Origin header for GET or HEAD to avoid privacy issues.
-  // For example, if an intranet page has a hyperlink to an external web
-  // site, we don't want to include the Origin of the request because it
-  // will leak the internal host name. Similar privacy concerns have lead
-  // to the widespread suppression of the Referer header at the network
-  // layer.
-  if (httpMethod() == HTTPNames::GET || httpMethod() == HTTPNames::HEAD)
-    return;
-
-  // For non-GET and non-HEAD methods, always send an Origin header so the
-  // server knows we support this feature.
-
-  AtomicString originString = origin->toAtomicString();
-  if (originString.isEmpty()) {
-    // If we don't know what origin header to attach, we attach the value
-    // for an empty origin.
-    setHTTPOrigin(SecurityOrigin::createUnique().get());
-    return;
-  }
-  setHTTPOrigin(origin);
+void ResourceRequest::addHTTPOriginIfNeeded(const String& originString) {
+  if (needsHTTPOrigin())
+    setHTTPOrigin(SecurityOrigin::createFromString(originString).get());
 }
 
 void ResourceRequest::clearHTTPUserAgent() {
@@ -424,6 +409,24 @@ void ResourceRequest::initialize(const KURL& url) {
   m_inputPerfMetricReportPolicy = InputToLoadPerfMetricReportPolicy::NoReport;
   m_redirectStatus = RedirectStatus::NoRedirect;
   m_requestorOrigin = SecurityOrigin::createUnique();
+}
+
+bool ResourceRequest::needsHTTPOrigin() const {
+  if (!httpOrigin().isEmpty())
+    return false;  // Request already has an Origin header.
+
+  // Don't send an Origin header for GET or HEAD to avoid privacy issues.
+  // For example, if an intranet page has a hyperlink to an external web
+  // site, we don't want to include the Origin of the request because it
+  // will leak the internal host name. Similar privacy concerns have lead
+  // to the widespread suppression of the Referer header at the network
+  // layer.
+  if (httpMethod() == HTTPNames::GET || httpMethod() == HTTPNames::HEAD)
+    return false;
+
+  // For non-GET and non-HEAD methods, always send an Origin header so the
+  // server knows we support this feature.
+  return true;
 }
 
 }  // namespace blink

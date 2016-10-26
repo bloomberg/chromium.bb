@@ -139,7 +139,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   // Suborigin header, if appropriate.
   void setHTTPOrigin(const SecurityOrigin*);
   void clearHTTPOrigin();
+
   void addHTTPOriginIfNeeded(const SecurityOrigin*);
+  void addHTTPOriginIfNeeded(const String&);
 
   const AtomicString& httpUserAgent() const {
     return httpHeaderField(HTTPNames::User_Agent);
@@ -312,6 +314,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   void initialize(const KURL&);
 
   const CacheControlHeader& cacheControlHeader() const;
+
+  bool needsHTTPOrigin() const;
 
   KURL m_url;
   WebCachePolicy m_cachePolicy;
