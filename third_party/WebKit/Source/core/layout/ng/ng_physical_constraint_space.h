@@ -60,6 +60,16 @@ struct NGExclusion : public GarbageCollected<NGExclusion> {
 class CORE_EXPORT NGPhysicalConstraintSpace final
     : public GarbageCollectedFinalized<NGPhysicalConstraintSpace> {
  public:
+  NGPhysicalConstraintSpace(
+      NGPhysicalSize container_size,
+      bool fixed_width,
+      bool fixed_height,
+      bool width_direction_triggers_scrollbar,
+      bool height_direction_triggers_scrollbar,
+      NGFragmentationType width_direction_fragmentation_type,
+      NGFragmentationType height_direction_fragmentation_type,
+      bool is_new_fc);
+
   NGPhysicalConstraintSpace();
   NGPhysicalConstraintSpace(NGPhysicalSize);
 
