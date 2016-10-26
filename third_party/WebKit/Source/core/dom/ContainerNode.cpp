@@ -319,7 +319,7 @@ void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild) {
     prev->setNextSibling(&newChild);
   } else {
     DCHECK(firstChild() == nextChild);
-    m_firstChild = &newChild;
+    setFirstChild(&newChild);
   }
   newChild.setParentOrShadowHostNode(this);
   newChild.setPreviousSibling(prev);
@@ -557,9 +557,9 @@ void ContainerNode::removeBetween(Node* previousChild,
   if (previousChild)
     previousChild->setNextSibling(nextChild);
   if (m_firstChild == &oldChild)
-    m_firstChild = nextChild;
+    setFirstChild(nextChild);
   if (m_lastChild == &oldChild)
-    m_lastChild = previousChild;
+    setLastChild(previousChild);
 
   oldChild.setPreviousSibling(nullptr);
   oldChild.setNextSibling(nullptr);
