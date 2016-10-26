@@ -17,6 +17,8 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -118,8 +120,17 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     return false;
   }
 
-  const gfx::NativeWindow parent_window =
-      web_contents->GetTopLevelNativeWindow();
+  gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
+  // In case of coming from background extension page, |parent_window| will
+  // be null. We are going to make the picker modal to the current browser
+  // window.
+  if (!parent_window) {
+    Browser* target_browser = chrome::FindLastActiveWithProfile(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+    if (target_browser)
+      parent_window = target_browser->window()->GetNativeWindow();
+  }
   std::unique_ptr<DesktopMediaList> screen_list;
   std::unique_ptr<DesktopMediaList> window_list;
   std::unique_ptr<DesktopMediaList> tab_list;
