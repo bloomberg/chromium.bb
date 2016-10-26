@@ -918,10 +918,12 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
   // If the current status is different than the new status, the delegate
   // needs to be notified.
   if (delegate_ && (created != was_created)) {
-    if (created)
+    if (created) {
+      SetUpMojoIfNeeded();
       delegate_->RenderFrameCreated(this);
-    else
+    } else {
       delegate_->RenderFrameDeleted(this);
+    }
   }
 
   if (created && render_widget_host_)
