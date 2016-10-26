@@ -9,6 +9,10 @@
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using web::test::HttpServer;
 using web::webViewContainingText;
 

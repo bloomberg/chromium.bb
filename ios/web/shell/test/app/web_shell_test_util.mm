@@ -8,6 +8,10 @@
 
 #import "ios/web/shell/view_controller.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 namespace shell_test_util {
 

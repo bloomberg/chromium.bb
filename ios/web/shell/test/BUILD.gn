@@ -76,6 +76,8 @@ source_set("earl_grey_test_support") {
     "earl_grey/shell_matchers.h",
     "earl_grey/shell_matchers.mm",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 bundle_data("bundle") {

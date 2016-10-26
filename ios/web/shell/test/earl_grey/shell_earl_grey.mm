@@ -10,6 +10,10 @@
 #include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const NSTimeInterval kWaitForPageLoadTimeout = 10.0;
 }  // namespace
