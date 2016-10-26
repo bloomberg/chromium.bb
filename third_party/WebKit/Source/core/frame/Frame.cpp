@@ -48,7 +48,6 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
-#include "platform/UserGestureIndicator.h"
 
 namespace blink {
 
@@ -173,7 +172,10 @@ bool Frame::canNavigate(const Frame& targetFrame) {
     const unsigned allowedBit = 0x2;
     unsigned framebustParams = 0;
     UseCounter::count(&targetFrame, UseCounter::TopNavigationFromSubFrame);
-    bool hasUserGesture = UserGestureIndicator::processingUserGesture();
+    bool hasUserGesture =
+        isLocalFrame()
+            ? toLocalFrame(this)->document()->hasReceivedUserGesture()
+            : false;
     if (hasUserGesture)
       framebustParams |= userGestureBit;
     if (isAllowedNavigation)

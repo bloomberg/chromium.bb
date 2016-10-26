@@ -7111,6 +7111,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "parent.location = '%s');",
       b_url.spec().c_str());
 
+  // Ensure the child has received a user gesture, so that it has permission
+  // to framebust.
+  SimulateMouseClick(
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), 1, 1);
   TestFrameNavigationObserver frame_observer(root);
   EXPECT_TRUE(ExecuteScript(root->child_at(0), script));
   frame_observer.Wait();
