@@ -4,7 +4,8 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 var obj = {}
-Object.defineProperty(obj, 'foo', {enumerable: true, get: function() {return {a:1,b:2}; }});
+Object.defineProperty(obj, 'foo', {enumerable: true, get: function() { return {a:1,b:2}; }});
+Object.defineProperty(obj, 'bar', {enumerable: false, set: function(x) { this.baz = x; }});
 function logObject()
 {
     console.log(obj);

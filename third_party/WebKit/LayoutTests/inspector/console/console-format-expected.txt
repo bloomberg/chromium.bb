@@ -534,9 +534,9 @@ globals[25]
     <svg id="svg-node"></svg>
 console-format.html:7 Object
     bar: (...)
+    getFoo: ()
     get bar: ()
     set bar: (x)
-    getFoo: ()
     __proto__: Object
 console-format.html:8 Array[1]
     0: Object
@@ -545,9 +545,9 @@ console-format.html:8 Array[1]
 globals[26]
 Object
     bar: (...)
+    getFoo: ()
     get bar: ()
     set bar: (x)
-    getFoo: ()
     __proto__: Object
 console-format.html:7 -0
 console-format.html:8 Array[1]
