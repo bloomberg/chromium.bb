@@ -7,7 +7,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "ipc_channel_mojo_unittest\.cc": [
+  "ipc_test_base\.h": [
     "+mojo/edk/test",
   ],
   "ipc_mojo_(bootstrap_unittest|perftest)\.cc": [

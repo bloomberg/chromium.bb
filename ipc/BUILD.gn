@@ -292,6 +292,7 @@ if (!is_ios) {
     deps = [
       "//base",
       "//base/test:test_support",
+      "//mojo/edk/test:test_support",
       "//testing/gtest",
     ]
   }

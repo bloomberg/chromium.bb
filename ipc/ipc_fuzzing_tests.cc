@@ -258,20 +258,15 @@ class FuzzerClientListener : public SimpleListener {
 
 // Runs the fuzzing server child mode. Returns when the preset number of
 // messages have been received.
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(FuzzServerClient) {
-  base::MessageLoopForIO main_message_loop;
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(FuzzServerClient) {
   FuzzerServerListener listener;
-  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("FuzzServerClient"), &listener,
-      main_message_loop.task_runner()));
-  CHECK(channel->Connect());
-  listener.Init(channel.get());
+  Connect(&listener);
+  listener.Init(channel());
   base::RunLoop().Run();
-  return 0;
+  Close();
 }
 
-class IPCFuzzingTest : public IPCTestBase {
-};
+using IPCFuzzingTest = IPCChannelMojoTestBase;
 
 // This test makes sure that the FuzzerClientListener and FuzzerServerListener
 // are working properly by generating two well formed IPC calls.
@@ -282,7 +277,6 @@ TEST_F(IPCFuzzingTest, SanityTest) {
   CreateChannel(&listener);
   listener.Init(channel());
   ASSERT_TRUE(ConnectChannel());
-  ASSERT_TRUE(StartClient());
 
   IPC::Message* msg = NULL;
   int value = 43;
@@ -310,7 +304,6 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
   CreateChannel(&listener);
   listener.Init(channel());
   ASSERT_TRUE(ConnectChannel());
-  ASSERT_TRUE(StartClient());
 
   IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassIS::ID,
                                        IPC::Message::PRIORITY_NORMAL);
@@ -338,7 +331,6 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
   CreateChannel(&listener);
   listener.Init(channel());
   ASSERT_TRUE(ConnectChannel());
-  ASSERT_TRUE(StartClient());
 
   IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassSI::ID,
                                        IPC::Message::PRIORITY_NORMAL);

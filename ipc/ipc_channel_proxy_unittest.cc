@@ -232,13 +232,13 @@ class MessageCountFilter : public IPC::MessageFilter {
   bool message_filtering_enabled_;
 };
 
-class IPCChannelProxyTest : public IPCTestBase {
+class IPCChannelProxyTest : public IPCChannelMojoTestBase {
  public:
   IPCChannelProxyTest() {}
   ~IPCChannelProxyTest() override {}
 
   void SetUp() override {
-    IPCTestBase::SetUp();
+    IPCChannelMojoTestBase::SetUp();
 
     Init("ChannelProxyClient");
 
@@ -248,16 +248,16 @@ class IPCChannelProxyTest : public IPCTestBase {
     thread_->StartWithOptions(options);
 
     listener_.reset(new QuitListener());
-    CreateChannelProxy(listener_.get(), thread_->task_runner().get());
-
-    ASSERT_TRUE(StartClient());
+    channel_proxy_ = IPC::ChannelProxy::Create(
+        TakeHandle().release(), IPC::Channel::MODE_SERVER, listener_.get(),
+        thread_->task_runner());
   }
 
   void TearDown() override {
-    DestroyChannelProxy();
+    channel_proxy_.reset();
     thread_.reset();
     listener_.reset();
-    IPCTestBase::TearDown();
+    IPCChannelMojoTestBase::TearDown();
   }
 
   void SendQuitMessageAndWaitForIdle() {
@@ -270,9 +270,13 @@ class IPCChannelProxyTest : public IPCTestBase {
     return listener_->bad_message_received_;
   }
 
+  IPC::ChannelProxy* channel_proxy() { return channel_proxy_.get(); }
+  IPC::Sender* sender() { return channel_proxy_.get(); }
+
  private:
   std::unique_ptr<base::Thread> thread_;
   std::unique_ptr<QuitListener> listener_;
+  std::unique_ptr<IPC::ChannelProxy> channel_proxy_;
 };
 
 TEST_F(IPCChannelProxyTest, MessageClassFilters) {
@@ -425,17 +429,13 @@ TEST_F(IPCChannelBadMessageTest, BadMessage) {
 
 #endif
 
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ChannelProxyClient) {
-  base::MessageLoopForIO main_message_loop;
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(ChannelProxyClient) {
   ChannelReflectorListener listener;
-  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("ChannelProxyClient"), &listener,
-      main_message_loop.task_runner()));
-  CHECK(channel->Connect());
-  listener.Init(channel.get());
+  Connect(&listener);
+  listener.Init(channel());
 
   base::RunLoop().Run();
-  return 0;
+  Close();
 }
 
 }  // namespace
