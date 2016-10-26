@@ -41,7 +41,6 @@ dictionary RTCConfiguration {
     // TODO(foolip): |rtcpMuxPolicy| default should be "require".
     RTCRtcpMuxPolicy rtcpMuxPolicy;
     // TODO(foolip): DOMString peerIdentity;
-    // TODO(foolip): |certificates| should not be nullable.
-    sequence<RTCCertificate>? certificates;
+    sequence<RTCCertificate> certificates;
     // TODO(foolip): unsigned short iceCandidatePoolSize = 0;
 };

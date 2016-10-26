@@ -60,7 +60,7 @@ shouldThrow("new webkitRTCPeerConnection(null, {valid_but_unsupported_1:1});");
 shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}});");
 
 // Construct with certificates.
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:null});");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:null});");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:undefined});");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[]});");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[null]});");
