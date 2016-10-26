@@ -1,0 +1,23 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("physical_web") {
+  sources = [
+    "create_physical_web_data_source.h",
+    "create_physical_web_data_source.mm",
+    "physical_web_constants.h",
+    "start_physical_web_discovery.h",
+    "start_physical_web_discovery.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/physical_web/data_source",
+    "//components/prefs",
+    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser/geolocation",
+    "//ios/chrome/common/physical_web",
+    "//url",
+  ]
+  libs = [ "CoreLocation.framework" ]
+}

@@ -4,6 +4,21 @@
 
 import("//components/variations/service/generate_ui_string_overrider.gni")
 
+source_set("variations") {
+  sources = [
+    "ios_chrome_variations_service_client.cc",
+    "ios_chrome_variations_service_client.h",
+  ]
+  deps = [
+    "//base",
+    "//components/variations/service",
+    "//components/version_info",
+    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/common",
+    "//ios/web",
+  ]
+}
+
 generate_ui_string_overrider("ios_chrome_ui_string_overrider_factory") {
   inputs = [
     "$root_gen_dir/components/strings/grit/components_chromium_strings.h",

@@ -51,6 +51,11 @@ source_set("browser") {
     "//ios/public/provider/web",
     "//ios/web",
   ]
+
+  libs = [
+    "CoreGraphics.framework",
+    "CoreLocation.framework",
+  ]
 }
 
 buildflag_header("provider_flags") {

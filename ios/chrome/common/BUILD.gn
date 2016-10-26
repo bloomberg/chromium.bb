@@ -19,8 +19,17 @@ source_set("common") {
     "//ios/chrome/common/physical_web:physical_web",
   ]
 
-  libs = [
-    "CoreGraphics.framework",
-    "Foundation.framework",
+  libs = [ "QuartzCore.framework" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "string_util_unittest.mm",
+  ]
+  deps = [
+    ":common",
+    "//base",
+    "//testing/gtest",
   ]
 }

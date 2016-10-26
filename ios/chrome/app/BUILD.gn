@@ -4,8 +4,6 @@
 
 source_set("app") {
   sources = [
-    "application_delegate/memory_warning_helper.h",
-    "application_delegate/memory_warning_helper.mm",
     "deferred_initialization_runner.h",
     "deferred_initialization_runner.mm",
     "safe_mode_crashing_modules_config.h",
@@ -14,13 +12,29 @@ source_set("app") {
     "safe_mode_util.h",
   ]
 
-  deps = [
-    "//base",
-    "//ios/chrome/browser",
+  # TODO(crbug.com/658242): Remove this dependency once all of downstream code
+  # dependencies have been fixed to not require it.
+  public_deps = [
+    "//ios/chrome/app/application_delegate",
   ]
 
-  libs = [
-    "Foundation.framework",
-    "UIKit.framework",
+  deps = [
+    "//base",
+  ]
+
+  libs = [ "Foundation.framework" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "deferred_initialization_runner_unittest.mm",
+    "safe_mode_util_unittest.cc",
+  ]
+  deps = [
+    ":app",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
   ]
 }

@@ -2,7 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("test") {
+# TODO(crbug.com/658242): Temporary target to help transition until all the
+# targets have been modified to depends on :test_support instead.
+group("test") {
+  testonly = true
+  public_deps = [
+    ":test_support",
+  ]
+}
+
+source_set("test_support") {
   testonly = true
   sources = [
     "block_cleanup_test.h",
@@ -44,5 +53,17 @@ source_set("run_all_unittests") {
     ":test",
     "//base",
     "//base/test:test_support",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "google_toolbox_unittest.mm",
+  ]
+  deps = [
+    "//base",
+    "//testing/gtest",
+    "//third_party/google_toolbox_for_mac",
   ]
 }

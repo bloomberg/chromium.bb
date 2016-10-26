@@ -14,11 +14,6 @@ source_set("app_group") {
     "//base",
     "//components/version_info",
   ]
-
-  libs = [
-    "CoreGraphics.framework",
-    "Foundation.framework",
-  ]
 }
 
 # This target will be included into application extensions and the list

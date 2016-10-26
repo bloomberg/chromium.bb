@@ -294,7 +294,10 @@ source_set("web") {
     "web_state/wk_web_view_security_util.mm",
   ]
 
-  libs = [ "WebKit.framework" ]
+  libs = [
+    "CoreGraphics.framework",
+    "WebKit.framework",
+  ]
 
   allow_circular_includes_from = [ ":web_arc" ]
 }
