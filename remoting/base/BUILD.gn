@@ -116,6 +116,7 @@ source_set("unit_tests") {
     ":base",
     ":breakpad",
     "//base",
+    "//mojo/edk/system",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

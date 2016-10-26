@@ -33,6 +33,9 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/socket/client_socket_factory.h"
@@ -410,6 +413,8 @@ class HostProcess : public ConfigWatcher::Delegate,
   scoped_refptr<HostProcess> self_;
 
 #if defined(REMOTING_MULTI_PROCESS)
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
+
   // Accessed on the UI thread.
   std::unique_ptr<IPC::ChannelProxy> daemon_channel_;
 
@@ -454,25 +459,14 @@ HostProcess::~HostProcess() {
 
 bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 #if defined(REMOTING_MULTI_PROCESS)
-  // Parse the handle value and convert it to a handle/file descriptor.
-  std::string channel_name =
-      cmd_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
-
-  int pipe_handle = 0;
-  if (channel_name.empty() ||
-      !base::StringToInt(channel_name, &pipe_handle)) {
-    LOG(ERROR) << "Invalid '" << kDaemonPipeSwitchName
-               << "' value: " << channel_name;
-    return false;
-  }
-
-#if defined(OS_WIN)
-  base::win::ScopedHandle pipe(reinterpret_cast<HANDLE>(pipe_handle));
-  IPC::ChannelHandle channel_handle(pipe.Get());
-#elif defined(OS_POSIX)
-  base::FileDescriptor pipe(pipe_handle, true);
-  IPC::ChannelHandle channel_handle(channel_name, pipe);
-#endif  // defined(OS_POSIX)
+  // Mojo keeps the task runner passed to it alive forever, so an
+  // AutoThreadTaskRunner should not be passed to it. Otherwise, the process may
+  // never shut down cleanly.
+  ipc_support_ = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
+      context_->network_task_runner()->task_runner());
+  mojo::edk::SetParentPipeHandle(
+      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
+          *cmd_line));
 
   // Connect to the daemon process.
   daemon_channel_.reset(
@@ -481,7 +475,10 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(daemon_channel_.get());
-  daemon_channel_->Init(channel_handle, IPC::Channel::MODE_CLIENT,
+  daemon_channel_->Init(mojo::edk::CreateChildMessagePipe(
+                            cmd_line->GetSwitchValueASCII(kMojoPipeToken))
+                            .release(),
+                        IPC::Channel::MODE_CLIENT,
                         /*create_pipe_now=*/true);
 
 #else  // !defined(REMOTING_MULTI_PROCESS)

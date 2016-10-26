@@ -1,6 +1,7 @@
 include_rules = [
   "+breakpad",
   "+google/protobuf",
+  "+mojo/edk/embedder",
   "+net",
   "+third_party/zlib",
   "+ui/base",

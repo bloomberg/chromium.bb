@@ -758,6 +758,10 @@ if (enable_me2me_host) {
     if (is_mac && is_official_build) {
       sources += [ "internal/internal_mac-inl.h" ]
     }
+
+    if (remoting_multi_process != 0) {
+      deps += [ "//mojo/edk/system" ]
+    }
   }
 
   if (is_win) {
