@@ -20,6 +20,11 @@ header("Content-Security-Policy: sandbox allow-scripts");
         }, "print() returns synchronously in a sandboxed page without blocking on user input.");
 
         test(function () {
+            var result = document.execCommand('print', false, null);
+            assert_false(result);
+        }, "execCommand('print', ...) returns synchronously in a sandboxed page without blocking on user input.");
+
+        test(function () {
             var result = confirm("Question?");
             assert_equals(result, false);
         }, "confirm() returns 'false' synchronously in a sandboxed page without blocking on user input.");

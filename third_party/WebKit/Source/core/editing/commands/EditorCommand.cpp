@@ -1538,8 +1538,7 @@ static bool executePrint(LocalFrame& frame,
   FrameHost* host = frame.host();
   if (!host)
     return false;
-  host->chromeClient().print(&frame);
-  return true;
+  return host->chromeClient().print(&frame);
 }
 
 static bool executeRedo(LocalFrame& frame,

@@ -203,7 +203,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual void setToolTip(LocalFrame&, const String&, TextDirection) = 0;
   void clearToolTip(LocalFrame&);
 
-  void print(LocalFrame*);
+  bool print(LocalFrame*);
 
   virtual void annotatedRegionsChanged() = 0;
 

@@ -23,7 +23,9 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/FrameTree.h"
@@ -194,13 +196,23 @@ void ChromeClient::clearToolTip(LocalFrame& frame) {
   setToolTip(frame, String(), LTR);
 }
 
-void ChromeClient::print(LocalFrame* frame) {
+bool ChromeClient::print(LocalFrame* frame) {
+  if (frame->document()->isSandboxed(SandboxModals)) {
+    UseCounter::count(frame, UseCounter::DialogInSandboxedContext);
+    frame->console().addMessage(ConsoleMessage::create(
+        SecurityMessageSource, ErrorMessageLevel,
+        "Ignored call to 'print()'. The document is sandboxed, and the "
+        "'allow-modals' keyword is not set."));
+    return false;
+  }
+
   // Defer loads in case the client method runs a new event loop that would
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
   ScopedPageLoadDeferrer deferrer;
 
   printDelegate(frame);
+  return true;
 }
 
 }  // namespace blink
