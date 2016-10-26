@@ -472,6 +472,9 @@ bool CompositedLayerMapping::
   if (clippingContainer->enclosingLayer() == scrollParent)
     return false;
 
+  if (clippingContainer->enclosingLayer()->hasRootScrollerAsDescendant())
+    return false;
+
   if (compositingAncestor->layoutObject()->isDescendantOf(clippingContainer))
     return false;
 
@@ -545,10 +548,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
   // that sibling need not be composited at all. In such scenarios, an ancestor
   // clipping layer is necessary to apply the composited clip for this layer.
   bool needsAncestorClip =
-      owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent) &&
-      !m_owningLayer.clippingContainer()
-           ->enclosingLayer()
-           ->hasRootScrollerAsDescendant();
+      owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent);
 
   if (updateClippingLayers(needsAncestorClip, needsDescendantsClippingLayer))
     layerConfigChanged = true;
