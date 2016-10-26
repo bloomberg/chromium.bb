@@ -5,31 +5,44 @@
 <script src="spellcheck_test.js"></script>
 
 <script>
-// This file tests the functionality of spellcheck_test.js
-
-test(
-    () => spellingMarker(0, 1, 'description').assertValid(),
-    'spellingMarker returns valid Marker.');
-
-test(
-    () => grammarMarker(0, 1, 'description').assertValid(),
-    'grammarMarker returns valid Marker.');
+// This file shows sample usage of spellcheck_test.js
 
 spellcheck_test(
-    '<div contentEditable>|</div>',
-    'insertText wellcome.',
-    spellingMarker(0, 8, 'welcome'), // 'wellcome'
-    'Mark misspellings and give replacement suggestions after typing.');
+    '<div contenteditable>|</div>',
+    'insertText zz.',
+    '<div contenteditable>_zz_.</div>',
+    'Mark misspellings after typing.');
 
 spellcheck_test(
-    '<div contentEditable>|</div>',
-    'insertText zz zz.',
-    [spellingMarker(0, 2), spellingMarker(3, 2)], // Both 'zz's
-    'Mark multiple misspellings after typing.');
-
-spellcheck_test(
-    '<div contentEditable>|</div>',
+    '<div contenteditable>|</div>',
     'insertText You has the right.',
-    grammarMarker(4, 3), // 'has'
+    '<div contenteditable>You ~has~ the right.</div>',
     'Mark ungrammatical phrases after typing.');
+
+spellcheck_test(
+    '<div contenteditable>|</div>',
+    'insertText orange,zz,apple.',
+    // Grammar marker under the whole sentence, and spelling marker under 'zz'.
+    '<div contenteditable>~orange,_zz_,apple.~</div>',
+    'Mark overlapping grammer and spelling errors.');
+
+spellcheck_test(
+    '<textarea>|</textarea>',
+    document => {
+      document.querySelector('textarea').focus();
+      document.execCommand('insertText', false, 'zz.');
+    },
+    '<textarea>_zz_.</textarea>',
+    'Mark misspellings in <textarea>.');
+
+spellcheck_test(
+    '<input type="text">|',
+    document => {
+      document.querySelector('input').focus();
+      document.execCommand('insertText', false, 'asd.');
+    },
+    '<input type="text" value="_asd_.">',
+    'Mark misspellings in <input>.');
+
+// TODO(xiaochengh): Design interface for checking marker description.
 </script>

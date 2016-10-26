@@ -5,235 +5,278 @@
 'use strict';
 
 // This file provides
-// |spellcheck_test(sample, tester, expectedMarkers, opt_title)| asynchronous
-// test to W3C test harness for easier writing of editing test cases.
+// |spellcheck_test(sample, tester, expectedText, opt_title)| asynchronous test
+// to W3C test harness for easier writing of spellchecker test cases.
 //
 // |sample| is an HTML fragment text which is inserted as |innerHTML|. It should
 // have at least one focus boundary point marker "|" and at most one anchor
 // boundary point marker "^" indicating the initial selection.
+// TODO(editing-dev): Make initial selection work with TEXTAREA and INPUT.
 //
 // |tester| is either name with parameter of execCommand or function taking
 // one parameter |Document|.
 //
-// |expectedMarkers| is either a |Marker| or a |Marker| array, where each
-// |Marker| is an |Object| with the following properties:
-// - |location| and |length| are integers indicating the range of the marked
-//   text. It must hold that |location >= 0| and |length > 0|.
-// - |type| is an optional string indicating the marker type. When present, it
-//   must be equal to either "spelling" or "grammer". When absent, it is
-//   regarded as "spelling".
-// - |description| is an optional string indicating the description of a marker.
+// |expectedText| is an HTML fragment indicating the expected result, where text
+// with spelling marker is surrounded by '_', and text with grammar marker is
+// surrounded by '~'.
 //
 // |opt_title| is an optional string giving the title of the test case.
 //
-// Examples:
-//
-// spellcheck_test(
-//     '<div contentEditable>|</div>',
-//     'insertText wellcome.',
-//     spellingMarker(0, 8, 'welcome'), // 'wellcome'
-//     'Mark misspellings and give replacement suggestions after typing.');
-//
-// spellcheck_test(
-//     '<div contentEditable>|</div>',
-//     'insertText You has the right.',
-//     grammarMarker(4, 3), // 'has'
-//     'Mark ungrammatical phrases after typing.');
+// See spellcheck_test.html for sample usage.
 
 (function() {
 const Sample = window.Sample;
 
-/** @type {string} */
-const kSpelling = 'spelling';
-/** @type {string} */
-const kGrammar = 'grammar';
+// TODO(editing-dev): Once we can import JavaScript file from scripts, we should
+// import "imported/wpt/html/resources/common.js", since |HTML5_VOID_ELEMENTS|
+// is defined in there.
+/**
+ * @const @type {!Set<string>}
+ * only void (without end tag) HTML5 elements
+ */
+const HTML5_VOID_ELEMENTS = new Set([
+  'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
+  'keygen', 'link', 'meta', 'param', 'source','track', 'wbr' ]);
 
-class Marker {
+// TODO(editing-dev): Reduce code duplication with assert_selection's Serializer
+// once we can import and export Javascript modules.
+
+/**
+ * @param {!Node} node
+ * @return {boolean}
+ */
+function isCharacterData(node) {
+  return node.nodeType === Node.TEXT_NODE ||
+      node.nodeType === Node.COMMENT_NODE;
+}
+
+/**
+ * @param {!Node} node
+ * @return {boolean}
+ */
+function isElement(node) {
+  return node.nodeType === Node.ELEMENT_NODE;
+}
+
+/**
+ * @param {!Node} node
+ * @return {boolean}
+ */
+function isHTMLInputElement(node) {
+  return node.nodeName === 'INPUT';
+}
+
+/**
+ * @param {!Node} node
+ * @return {boolean}
+ */
+function isHTMLTextAreaElement(node) {
+  return node.nodeName === 'TEXTAREA';
+}
+
+/**
+ * @param {?Range} range
+ * @param {!Node} node
+ * @param {number} offset
+ */
+function isAtRangeEnd(range, node, offset) {
+  return range && node === range.endContainer && offset === range.endOffset;
+}
+
+class MarkerSerializer {
   /**
    * @public
-   * @param {number} location
-   * @param {number} length
-   * @param {string=} opt_type
-   * @param {string=} opt_description
+   * @param {!Object} markerTypes
    */
-  constructor(location, length, opt_type, opt_description) {
-    /** @type {number} */
-    this.location_ = location;
-    /** @type {number} */
-    this.length_ = length;
-    /** @type {string} */
-    this.type_ = opt_type || 'spelling';
-    /** @type {boolean} */
-    this.ignoreDescription_ = opt_description === undefined;
-    /** @type {string} */
-    this.description_ = opt_description || '';
+  constructor(markerTypes) {
+    /** @type {!Array<string>} */
+    this.strings_ = [];
+    /** @type {!Object} */
+    this.markerTypes_ = markerTypes;
+    /** @type {!Object} */
+    this.activeMarkerRanges_ = {};
+    for (let type in markerTypes)
+      this.activeMarkerRanges_[type] = null;
   }
 
-  /** @return {number} */
-  get location() { return this.location_; }
-
-  /** @return {number} */
-  get length() { return this.length_; }
-
-  /** @return {string} */
-  get type() { return this.type_; }
-
-  /** @return {boolean} */
-  get ignoreDescription() { return this.ignoreDescription_; }
-
-  /** @return {string} */
-  get description() { return this.description_; }
+  /**
+   * @private
+   * @param {string} string
+   */
+  emit(string) { this.strings_.push(string); }
 
   /**
-   * @public
+   * @private
+   * @param {!Node} node
+   * @param {number} offset
    */
-  assertValid() {
-    // TODO(xiaochengh): Add proper assert descriptions when needed.
-    assert_true(Number.isInteger(this.location_));
-    assert_greater_than_equal(this.location_, 0);
-    assert_true(Number.isInteger(this.length_));
-    assert_greater_than(this.length_, 0);
-    assert_true(this.type_ === kSpelling || this.type_ === kGrammar);
-    assert_true(typeof this.description_ === 'string');
-  }
+  advancedTo(node, offset) {
+    for (let type in this.markerTypes_) {
+      // Handle the ending of the current active marker.
+      if (isAtRangeEnd(this.activeMarkerRanges_[type], node, offset)) {
+        this.activeMarkerRanges_[type] = null;
+        this.emit(this.markerTypes_[type]);
+      }
 
-  /**
-   * @public
-   * @param {!Marker} expected
-   */
-  assertMatch(expected) {
-    try {
-      assert_equals(this.location, expected.location);
-      assert_equals(this.length, expected.length);
-      assert_equals(this.type, expected.type);
-      if (expected.ignoreDescription)
+      // Handle the starting of the next active marker.
+      if (this.activeMarkerRanges_[type])
         return;
-      assert_equals(this.description, expected.description);
-    } catch (error) {
-      throw new Error(`Expected ${expected} but got ${this}.`);
+      /** @type {number} */
+      const markerCount = window.internals.markerCountForNode(node, type);
+      for (let i = 0; i < markerCount; ++i) {
+        const marker = window.internals.markerRangeForNode(node, type, i);
+        assert_equals(
+            marker.startContainer, node,
+            'Internal error: marker range not starting in the annotated node.');
+        assert_equals(
+            marker.endContainer, node,
+            'Internal error: marker range not ending in the annotated node.');
+        if (marker.startOffset === offset) {
+          assert_greater_than(marker.endOffset, offset,
+                              'Internal error: marker range is collapsed.');
+          this.activeMarkerRanges_[type] = marker;
+          this.emit(this.markerTypes_[type]);
+          break;
+        }
+      }
     }
   }
 
-  /** @override */
-  toString() {
-    return `${this.type_} marker at ` +
-        `[${this.location_}, ${this.location_ + this.length_}]` +
-        (this.description_ ? ` with description "${this.description_}"` : ``);
-  }
-}
-
-/**
- * @param {number} location
- * @param {number} length
- * @param {string=} opt_description
- * @return {!Marker}
- */
-function spellingMarker(location, length, opt_description) {
-  return new Marker(location, length, kSpelling, opt_description);
-}
-
-/**
- * @param {number} location
- * @param {number} length
- * @param {string=} opt_description
- * @return {!Marker}
- */
-function grammarMarker(location, length, opt_description) {
-  return new Marker(location, length, kGrammar, opt_description);
-}
-
-/**
- * @param {!Marker} marker1
- * @param {!Marker} marker2
- * @return {number}
- */
-function markerComparison(marker1, marker2) {
-  return marker1.location - marker2.location;
-}
-
-/**
- * @param {!Array<!Marker>} expectedMarkers
- */
-function checkExpectedMarkers(expectedMarkers) {
-  if (expectedMarkers.length === 0)
-    return;
-  expectedMarkers.forEach(marker => marker.assertValid());
-  expectedMarkers.sort(markerComparison);
-  expectedMarkers.reduce((lastMarker, currentMarker) => {
-    assert_less_than(
-        lastMarker.location + lastMarker.length, currentMarker.location,
-        'Marker ranges should be disjoint.');
-    return currentMarker;
-  });
-}
-
-/**
- * @param {!Node} node
- * @param {string} type
- * @param {!Array<!Marker>} markers
- */
-function extractMarkersOfType(node, type, markers) {
-  /** @type {!HTMLBodyElement} */
-  const body = node.ownerDocument.body;
-  /** @type {number} */
-  const markerCount = window.internals.markerCountForNode(node, type);
-  for (let i = 0; i < markerCount; ++i) {
-    /** @type {!Range} */
-    const markerRange = window.internals.markerRangeForNode(node, type, i);
+  /**
+   * @private
+   * @param {!CharacterData} node
+   */
+  handleCharacterData(node) {
     /** @type {string} */
-    const description = window.internals.markerDescriptionForNode(node, type, i);
+    const text = node.nodeValue;
     /** @type {number} */
-    const location = window.internals.locationFromRange(body, markerRange);
-    /** @type {number} */
-    const length = window.internals.lengthFromRange(body, markerRange);
-
-    markers.push(new Marker(location, length, type, description));
+    const length = text.length;
+    for (let offset = 0; offset < length; ++offset) {
+      this.advancedTo(node, offset);
+      this.emit(text[offset]);
+    }
+    this.advancedTo(node, length);
   }
-}
 
-/**
- * @param {!Node} node
- * @param {!Array<!Marker>} markers
- */
-function extractAllMarkersRecursivelyTo(node, markers) {
-  extractMarkersOfType(node, kSpelling, markers);
-  extractMarkersOfType(node, kGrammar, markers);
-  node.childNodes.forEach(
-      child => extractAllMarkersRecursivelyTo(child, markers));
-}
+  /**
+   * @private
+   * @param {!HTMLElement} element
+   */
+  handleInnerEditorOf(element) {
+    /** @type {!ShadowRoot} */
+    const shadowRoot = window.internals.shadowRoot(element);
+    assert_not_equals(
+        shadowRoot, undefined,
+        'Internal error: text form control element not having shadow tree as ' +
+        'inner editor.');
+    /** @type {!HTMLDivElement} */
+    const innerEditor = shadowRoot.firstChild;
+    assert_equals(innerEditor.tagName, 'DIV',
+                  'Internal error: inner editor is not DIV');
+    innerEditor.childNodes.forEach(child => {
+      assert_true(isCharacterData(child),
+                  'Internal error: inner editor having child node that is ' +
+                  'not CharacterData.');
+      this.handleCharacterData(child);
+    });
+  }
 
-/**
- * @param {!Document} doc
- * @return {!Array<!Marker>}
- */
-function extractAllMarkers(doc) {
-  /** @type {!Array<!Marker>} */
-  const markers = [];
-  extractAllMarkersRecursivelyTo(doc.body, markers);
-  markers.sort(markerComparison);
-  return markers;
+  /**
+   * @private
+   * @param {!HTMLInputElement} element
+   */
+  handleInputNode(element) {
+    this.emit(' value="');
+    this.handleInnerEditorOf(element);
+    this.emit('"');
+  }
+
+  /**
+   * @private
+   * @param {!HTMLElement} element
+   */
+  handleElementNode(element) {
+    /** @type {string} */
+    const tagName = element.tagName.toLowerCase();
+    this.emit(`<${tagName}`);
+    Array.from(element.attributes)
+        .sort((attr1, attr2) => attr1.name.localeCompare(attr2.name))
+        .forEach(attr => {
+          if (attr.value === '')
+            return this.emit(` ${attr.name}`);
+          const value = attr.value.replace(/&/g, '&amp;')
+                            .replace(/\u0022/g, '&quot;')
+                            .replace(/\u0027/g, '&apos;');
+          this.emit(` ${attr.name}="${value}"`);
+        });
+    if (isHTMLInputElement(element) && element.value)
+      this.handleInputNode(element);
+    this.emit('>');
+    if (HTML5_VOID_ELEMENTS.has(tagName))
+      return;
+    this.serializeChildren(element);
+    this.emit(`</${tagName}>`);
+  }
+
+  /**
+   * @public
+   * @param {!HTMLDocument} document
+   */
+  serialize(document) {
+    if (document.body)
+        this.serializeChildren(document.body);
+    else
+        this.serializeInternal(document.documentElement);
+    return this.strings_.join('');
+  }
+
+  /**
+   * @private
+   * @param {!HTMLElement} element
+   */
+  serializeChildren(element) {
+    // For TEXTAREA, handle its inner editor instead of its children.
+    if (isHTMLTextAreaElement(element) && element.value) {
+      this.handleInnerEditorOf(element);
+      return;
+    }
+
+    element.childNodes.forEach(child => this.serializeInternal(child));
+  }
+
+  /**
+   * @private
+   * @param {!Node} node
+   */
+  serializeInternal(node) {
+    if (isElement(node))
+      return this.handleElementNode(node);
+    if (isCharacterData(node))
+      return this.handleCharacterData(node);
+    throw new Error(`Unexpected node ${node}`);
+  }
 }
 
 /**
  * @param {!Test} testObject
- * @param {!Sample} sample,
- * @param {!Array<!Marker>} expectedMarkers
+ * @param {!Sample} sample
+ * @param {string} expectedText
  * @param {number} remainingRetry
  * @param {number} retryInterval
  */
 function verifyMarkers(
-    testObject, sample, expectedMarkers, remainingRetry, retryInterval) {
+    testObject, sample, expectedText, remainingRetry, retryInterval) {
   assert_not_equals(
       window.internals, undefined,
       'window.internals is required for running automated spellcheck tests.');
 
-  /** @type {!Array<!Marker>} */
-  const actualMarkers = extractAllMarkers(sample.document);
+  /** @type {!MarkerSerializer} */
+  const serializer = new MarkerSerializer({
+    spelling: '_',
+    grammar: '~'});
+
   try {
-    assert_equals(actualMarkers.length, expectedMarkers.length,
-                  'Number of markers mismatch.');
-    actualMarkers.forEach(
-        (marker, index) => marker.assertMatch(expectedMarkers[index]));
+    assert_equals(serializer.serialize(sample.document), expectedText);
     testObject.done();
     sample.remove();
   } catch (error) {
@@ -249,7 +292,7 @@ function verifyMarkers(
     // know the completion of spellchecking instead of passively waiting for
     // markers to appear or disappear.
     testObject.step_timeout(
-        () => verifyMarkers(testObject, sample, expectedMarkers,
+        () => verifyMarkers(testObject, sample, expectedText,
                             remainingRetry - 1, retryInterval),
         retryInterval);
   }
@@ -271,47 +314,39 @@ const testQueue = [];
 /**
  * @param {string} inputText
  * @param {function(!Document)|string} tester
- * @param {!Marker|!Array<!Marker>} expectedMarkers
+ * @param {string} expectedText
  * @param {string=} opt_title
  */
-function invokeSpellcheckTest(inputText, tester, expectedMarkers, opt_title) {
+function invokeSpellcheckTest(inputText, tester, expectedText, opt_title) {
   spellcheckTestRunning = true;
 
-  /** @type {!Test} */
-  const testObject = async_test(opt_title, {isSpellcheckTest: true});
+  async_test(testObject => {
+    // TODO(xiaochengh): Merge the following part with |assert_selection|.
+    /** @type {!Sample} */
+    const sample = new Sample(inputText);
+    if (typeof(tester) === 'function') {
+      tester.call(window, sample.document);
+    } else if (typeof(tester) === 'string') {
+      const strings = tester.split(/ (.+)/);
+      sample.document.execCommand(strings[0], false, strings[1]);
+    } else {
+      assert_unreached(`Invalid tester: ${tester}`);
+    }
 
-  if (!(expectedMarkers instanceof Array))
-    expectedMarkers = [expectedMarkers]
-  testObject.step(() => checkExpectedMarkers(expectedMarkers));
+    /** @type {number} */
+    const kMaxRetry = 10;
+    /** @type {number} */
+    const kRetryInterval = 50;
 
-  if (window.testRunner)
-    window.testRunner.setMockSpellCheckerEnabled(true);
-
-  // TODO(xiaochengh): Merge the following part with |assert_selection|.
-  /** @type {!Sample} */
-  const sample = new Sample(inputText);
-  if (typeof(tester) === 'function') {
-    tester.call(window, sample.document);
-  } else if (typeof(tester) === 'string') {
-    const strings = tester.split(/ (.+)/);
-    sample.document.execCommand(strings[0], false, strings[1]);
-  } else {
-    testObject.step(() => assert_unreached(`Invalid tester: ${tester}`));
-  }
-
-  /** @type {number} */
-  const kMaxRetry = 10;
-  /** @type {number} */
-  const kRetryInterval = 50;
-
-  // TODO(xiaochengh): We should make SpellCheckRequester::didCheck trigger
-  // something in JavaScript (e.g., a |Promise|), so that we can actively know
-  // the completion of spellchecking instead of passively waiting for markers to
-  // appear or disappear.
-  testObject.step_timeout(
-      () => verifyMarkers(testObject, sample, expectedMarkers,
-                          kMaxRetry, kRetryInterval),
-      kRetryInterval);
+    // TODO(xiaochengh): We should make SpellCheckRequester::didCheck trigger
+    // something in JavaScript (e.g., a |Promise|), so that we can actively know
+    // the completion of spellchecking instead of passively waiting for markers
+    // to appear or disappear.
+    testObject.step_timeout(
+        () => verifyMarkers(testObject, sample, expectedText,
+                            kMaxRetry, kRetryInterval),
+        kRetryInterval);
+  }, opt_title, {isSpellcheckTest: true});
 }
 
 add_result_callback(testObj => {
@@ -323,29 +358,29 @@ add_result_callback(testObj => {
     if (args === undefined)
       return;
     invokeSpellcheckTest(args.inputText, args.tester,
-                         args.expectedMarkers, args.opt_title);
+                         args.expectedText, args.opt_title);
 });
 
 /**
  * @param {string} inputText
  * @param {function(!Document)|string} tester
- * @param {!Marker|!Array<!Marker>} expectedMarkers
+ * @param {string} expectedText
  * @param {string=} opt_title
  */
-function spellcheckTest(inputText, tester, expectedMarkers, opt_title) {
+function spellcheckTest(inputText, tester, expectedText, opt_title) {
+  if (window.testRunner)
+    window.testRunner.setMockSpellCheckerEnabled(true);
+
   if (spellcheckTestRunning) {
     testQueue.push({
         inputText: inputText, tester: tester,
-        expectedMarkers: expectedMarkers, opt_title: opt_title});
+        expectedText: expectedText, opt_title: opt_title});
     return;
   }
 
-  invokeSpellcheckTest(inputText, tester, expectedMarkers, opt_title);
+  invokeSpellcheckTest(inputText, tester, expectedText, opt_title);
 }
 
 // Export symbols
-window.Marker = Marker;
-window.spellingMarker = spellingMarker;
-window.grammarMarker = grammarMarker;
 window.spellcheck_test = spellcheckTest;
 })();
