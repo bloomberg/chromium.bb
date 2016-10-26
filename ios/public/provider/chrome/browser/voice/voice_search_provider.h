@@ -8,8 +8,14 @@
 #include <Foundation/Foundation.h>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 
 class AudioSessionController;
+class VoiceSearchController;
+
+namespace ios {
+class ChromeBrowserState;
+}
 
 // VoiceSearchProvider allows embedders to provide functionality related to
 // voice search.
@@ -23,6 +29,10 @@ class VoiceSearchProvider {
 
   // Returns the singleton audio session controller.
   virtual AudioSessionController* GetAudioSessionController() const;
+
+  // Creates a new VoiceSearchController object.
+  virtual scoped_refptr<VoiceSearchController> CreateVoiceSearchController(
+      ios::ChromeBrowserState* browser_state) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchProvider);

@@ -1,0 +1,38 @@
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
+
+#import <UIKit/UIKit.h>
+
+VoiceSearchController::VoiceSearchController() {}
+
+VoiceSearchController::~VoiceSearchController() {}
+
+void VoiceSearchController::SetDelegate(
+    id<VoiceSearchControllerDelegate> delegate) {}
+
+void VoiceSearchController::PrepareToAppear() {}
+
+void VoiceSearchController::StartRecognition(
+    UIViewController* presenting_view_controller,
+    Tab* current_tab) {}
+
+bool VoiceSearchController::IsTextToSpeechEnabled() {
+  return false;
+}
+
+bool VoiceSearchController::IsTextToSpeechSupported() {
+  return false;
+}
+
+bool VoiceSearchController::IsVisible() {
+  return false;
+}
+
+bool VoiceSearchController::IsPlayingAudio() {
+  return false;
+}
+
+void VoiceSearchController::DismissMicPermissionsHelp() {}

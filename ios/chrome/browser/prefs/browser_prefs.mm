@@ -41,6 +41,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -96,6 +97,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
+  RegisterVoiceSearchBrowserStatePrefs(registry);
 
   registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   registry->RegisterBooleanPref(

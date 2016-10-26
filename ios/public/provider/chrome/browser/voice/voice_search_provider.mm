@@ -4,10 +4,18 @@
 
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 
+#import "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
+
 NSArray* VoiceSearchProvider::GetAvailableLanguages() const {
   return @[];
 }
 
 AudioSessionController* VoiceSearchProvider::GetAudioSessionController() const {
-  return nil;
+  return nullptr;
+}
+
+scoped_refptr<VoiceSearchController>
+VoiceSearchProvider::CreateVoiceSearchController(
+    ios::ChromeBrowserState* browser_state) const {
+  return scoped_refptr<VoiceSearchController>(nullptr);
 }

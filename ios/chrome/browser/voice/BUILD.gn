@@ -13,9 +13,27 @@ source_set("voice") {
     "speech_input_locale_match_config.mm",
   ]
 
+  deps = [
+    "//components/pref_registry",
+    "//components/prefs",
+  ]
+
   public_deps = [
     "//base",
     "//ios/chrome/browser",
+    "//ios/public/provider/chrome/browser",
+  ]
+}
+
+source_set("prefs") {
+  sources = [
+    "voice_search_prefs_registration.cc",
+    "voice_search_prefs_registration.h",
+  ]
+
+  deps = [
+    "//components/pref_registry",
+    "//components/prefs",
     "//ios/public/provider/chrome/browser",
   ]
 }

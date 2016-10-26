@@ -135,7 +135,7 @@ VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {
 }
 
 bool ChromeBrowserProvider::ShouldEmbedderRegisterVoiceSearchPrefs() const {
-  return true;
+  return false;
 }
 
 }  // namespace ios

@@ -110,12 +110,6 @@ const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 // True if the memory debugging tools should be visible.
 const char kShowMemoryDebuggingTools[] = "ios.memory.show_debugging_tools";
 
-// User preferred speech input language for voice search.
-const char kVoiceSearchLocale[] = "ios.speechinput.voicesearch_locale";
-
-// Boolean which indicates if TTS after voice search is enabled.
-const char kVoiceSearchTTS[] = "ios.speechinput.voicesearch_tts";
-
 // List which contains the last known list of accounts.
 const char kSigninLastAccounts[] = "ios.signin.last_accounts";
 

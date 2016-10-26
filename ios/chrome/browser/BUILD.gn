@@ -175,6 +175,7 @@ source_set("browser_no_public_deps") {
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/common",
     "//ios/net",
+    "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//ios/web:user_agent",
     "//net",

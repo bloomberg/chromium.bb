@@ -32,8 +32,13 @@ source_set("browser") {
     "updatable_resource_provider.mm",
     "voice/audio_session_controller.h",
     "voice/logo_animation_controller.h",
+    "voice/voice_search_controller.h",
+    "voice/voice_search_controller.mm",
+    "voice/voice_search_controller_delegate.h",
     "voice/voice_search_language.h",
     "voice/voice_search_language.mm",
+    "voice/voice_search_prefs.cc",
+    "voice/voice_search_prefs.h",
     "voice/voice_search_provider.h",
     "voice/voice_search_provider.mm",
   ]

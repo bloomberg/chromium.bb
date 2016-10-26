@@ -5,6 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_PREF_NAMES_H_
 #define IOS_CHROME_BROWSER_PREF_NAMES_H_
 
+// TODO(rohitrao): Remove this include once embedders are migrated to use the
+// new pref header.
+#include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
+
 namespace prefs {
 
 extern const char kAcceptLanguages[];
@@ -37,9 +41,6 @@ extern const char kNetworkPredictionWifiOnly[];
 
 extern const char kNtpShownBookmarksFolder[];
 extern const char kShowMemoryDebuggingTools[];
-
-extern const char kVoiceSearchLocale[];
-extern const char kVoiceSearchTTS[];
 
 extern const char kSigninLastAccounts[];
 extern const char kSigninLastAccountsMigrated[];

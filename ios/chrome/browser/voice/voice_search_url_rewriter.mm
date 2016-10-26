@@ -11,8 +11,8 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
+#include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
