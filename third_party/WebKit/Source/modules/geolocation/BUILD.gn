@@ -15,4 +15,7 @@ blink_modules_sources("geolocation") {
     "NavigatorGeolocation.cpp",
     "NavigatorGeolocation.h",
   ]
+  deps = [
+    "//device/geolocation/public/interfaces:interfaces_blink",
+  ]
 }
