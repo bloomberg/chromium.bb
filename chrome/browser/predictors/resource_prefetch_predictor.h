@@ -38,6 +38,7 @@ class URLRequest;
 
 namespace predictors {
 
+class TestObserver;
 class ResourcePrefetcherManager;
 
 // Contains logic for learning what can be prefetched and for kicking off
@@ -100,6 +101,20 @@ class ResourcePrefetchPredictor
                                   URLRequestSummary* summary);
   };
 
+  // Stores the data learned from a single navigation.
+  struct PageRequestSummary {
+    explicit PageRequestSummary(const GURL& main_frame_url);
+    PageRequestSummary(const PageRequestSummary& other);
+    ~PageRequestSummary();
+
+    GURL main_frame_url;
+    GURL initial_url;
+
+    // Stores all subresource requests within a single navigation, from initial
+    // main frame request to navigation completion.
+    std::vector<URLRequestSummary> subresource_requests;
+  };
+
   ResourcePrefetchPredictor(const ResourcePrefetchPredictorConfig& config,
                             Profile* profile);
   ~ResourcePrefetchPredictor() override;
@@ -131,6 +146,19 @@ class ResourcePrefetchPredictor
 
   // Called when the main frame of a page completes loading.
   void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
+
+  // Starts prefetching if it is enabled and prefetching data exists for the
+  // |main_frame_url| either at the URL or at the host level.
+  void StartPrefetching(const GURL& main_frame_url);
+
+  // Stops prefetching that may be in progress corresponding to
+  // |main_frame_url|.
+  void StopPrefetching(const GURL& main_frame_url);
+
+  // Sets the |observer| to be notified when the resource prefetch predictor
+  // data changes. Previously registered observer will be discarded. Call
+  // this with nullptr parameter to de-register observer.
+  void SetObserverForTesting(TestObserver* observer);
 
  private:
   friend class ::PredictorsHandler;
@@ -164,48 +192,6 @@ class ResourcePrefetchPredictor
     NOT_INITIALIZED = 0,
     INITIALIZING = 1,
     INITIALIZED = 2
-  };
-
-  // Stores information about inflight navigations.
-  struct PageRequestSummary {
-    explicit PageRequestSummary(const GURL& initial_url);
-    ~PageRequestSummary();
-
-    GURL initial_url;
-
-    // Stores all subresources requests within a single navigation, from initial
-    // main frame request to navigation completion.
-    std::vector<URLRequestSummary> subresource_requests;
-  };
-
-  // Used to fetch the visit count for a URL from the History database.
-  class GetUrlVisitCountTask : public history::HistoryDBTask {
-   public:
-    typedef ResourcePrefetchPredictor::URLRequestSummary URLRequestSummary;
-    typedef ResourcePrefetchPredictor::PageRequestSummary PageRequestSummary;
-    typedef base::Callback<void(size_t,  // Visit count.
-                                const NavigationID&,
-                                const PageRequestSummary&)>
-        VisitInfoCallback;
-
-    GetUrlVisitCountTask(const NavigationID& navigation_id,
-                         std::unique_ptr<PageRequestSummary> summary,
-                         VisitInfoCallback callback);
-
-    bool RunOnDBThread(history::HistoryBackend* backend,
-                       history::HistoryDatabase* db) override;
-
-    void DoneRunOnMainThread() override;
-
-   private:
-    ~GetUrlVisitCountTask() override;
-
-    int visit_count_;
-    NavigationID navigation_id_;
-    std::unique_ptr<PageRequestSummary> summary_;
-    VisitInfoCallback callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(GetUrlVisitCountTask);
   };
 
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
@@ -261,15 +247,6 @@ class ResourcePrefetchPredictor
                                  const PrefetchDataMap& data_map,
                                  std::vector<GURL>* urls);
 
- public:
-  // Starts prefetching if it is enabled and prefetching data exists for the
-  // NavigationID either at the URL or at the host level.
-  void StartPrefetching(const GURL& main_frame_url);
-
-  // Stops prefetching that may be in progress corresponding to |navigation_id|.
-  void StopPrefetching(const GURL& main_frame_url);
-
- private:
   // Starts initialization by posting a task to the DB thread to read the
   // predictor database.
   void StartInitialization();
@@ -298,8 +275,7 @@ class ResourcePrefetchPredictor
   void DeleteUrls(const history::URLRows& urls);
 
   // Callback for GetUrlVisitCountTask.
-  void OnVisitCountLookup(size_t visit_count,
-                          const NavigationID& navigation_id,
+  void OnVisitCountLookup(size_t url_visit_count,
                           const PageRequestSummary& summary);
 
   // Removes the oldest entry in the input |data_map|, also deleting it from the
@@ -357,6 +333,7 @@ class ResourcePrefetchPredictor
   }
 
   Profile* const profile_;
+  TestObserver* observer_;
   ResourcePrefetchPredictorConfig const config_;
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
@@ -375,6 +352,28 @@ class ResourcePrefetchPredictor
       history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictor);
+};
+
+// An interface used to notify that data in the ResourcePrefetchPredictor
+// has changed. All methods are invoked on the UI thread.
+class TestObserver {
+ public:
+  // De-registers itself from |predictor_| on destruction.
+  virtual ~TestObserver();
+
+  virtual void OnNavigationLearned(
+      size_t url_visit_count,
+      const ResourcePrefetchPredictor::PageRequestSummary& summary) {}
+
+ protected:
+  // |predictor| must be non-NULL and has to outlive the TestObserver.
+  // Also the predictor must not have a TestObserver set.
+  explicit TestObserver(ResourcePrefetchPredictor* predictor);
+
+ private:
+  ResourcePrefetchPredictor* predictor_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 }  // namespace predictors

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 
 namespace predictors {
@@ -37,11 +38,22 @@ std::ostream& operator<<(std::ostream& stream, const PrefetchData& data);
 std::ostream& operator<<(std::ostream& stream, const ResourceData& resource);
 std::ostream& operator<<(std::ostream& stream, const RedirectData& data);
 std::ostream& operator<<(std::ostream& stream, const RedirectStat& redirect);
+std::ostream& operator<<(
+    std::ostream& stream,
+    const ResourcePrefetchPredictor::PageRequestSummary& summary);
+std::ostream& operator<<(
+    std::ostream& stream,
+    const ResourcePrefetchPredictor::URLRequestSummary& summary);
+std::ostream& operator<<(std::ostream& stream, const NavigationID& id);
 
 bool operator==(const PrefetchData& lhs, const PrefetchData& rhs);
 bool operator==(const ResourceData& lhs, const ResourceData& rhs);
 bool operator==(const RedirectData& lhs, const RedirectData& rhs);
 bool operator==(const RedirectStat& lhs, const RedirectStat& rhs);
+bool operator==(const ResourcePrefetchPredictor::PageRequestSummary& lhs,
+                const ResourcePrefetchPredictor::PageRequestSummary& rhs);
+bool operator==(const ResourcePrefetchPredictor::URLRequestSummary& lhs,
+                const ResourcePrefetchPredictor::URLRequestSummary& rhs);
 
 }  // namespace predictors
 

@@ -8,6 +8,9 @@
 
 namespace predictors {
 
+using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
+using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
+
 void InitializeResourceData(ResourceData* resource,
                             const std::string& resource_url,
                             content::ResourceType resource_type,
@@ -89,6 +92,28 @@ std::ostream& operator<<(std::ostream& os, const RedirectStat& redirect) {
             << redirect.consecutive_misses() << "]";
 }
 
+std::ostream& operator<<(std::ostream& os, const PageRequestSummary& summary) {
+  os << "[" << summary.main_frame_url << "," << summary.initial_url << "]"
+     << std::endl;
+  for (const auto& request : summary.subresource_requests)
+    os << "\t\t" << request << std::endl;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const URLRequestSummary& summary) {
+  return os << "[" << summary.navigation_id << "," << summary.resource_url
+            << "," << summary.resource_type << "," << summary.priority << ","
+            << summary.mime_type << "," << summary.was_cached << ","
+            << summary.redirect_url << "," << summary.has_validators << ","
+            << summary.always_revalidate << "]";
+}
+
+std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
+  return os << navigation_id.render_process_id << ","
+            << navigation_id.render_frame_id << ","
+            << navigation_id.main_frame_url;
+}
+
 bool operator==(const PrefetchData& lhs, const PrefetchData& rhs) {
   bool equal = lhs.primary_key() == rhs.primary_key() &&
                lhs.resources_size() == rhs.resources_size();
@@ -132,6 +157,23 @@ bool operator==(const RedirectStat& lhs, const RedirectStat& rhs) {
          lhs.number_of_hits() == rhs.number_of_hits() &&
          lhs.number_of_misses() == rhs.number_of_misses() &&
          lhs.consecutive_misses() == rhs.consecutive_misses();
+}
+
+bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs) {
+  return lhs.main_frame_url == rhs.main_frame_url &&
+         lhs.initial_url == rhs.initial_url &&
+         lhs.subresource_requests == rhs.subresource_requests;
+}
+
+bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs) {
+  return lhs.navigation_id == rhs.navigation_id &&
+         lhs.resource_url == rhs.resource_url &&
+         lhs.resource_type == rhs.resource_type &&
+         lhs.priority == rhs.priority && lhs.mime_type == rhs.mime_type &&
+         lhs.was_cached == rhs.was_cached &&
+         lhs.redirect_url == rhs.redirect_url &&
+         lhs.has_validators == rhs.has_validators &&
+         lhs.always_revalidate == rhs.always_revalidate;
 }
 
 }  // namespace predictors

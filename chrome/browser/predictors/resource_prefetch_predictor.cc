@@ -39,6 +39,8 @@
 
 using content::BrowserThread;
 
+namespace predictors {
+
 namespace {
 
 // Sorted by decreasing likelihood according to HTTP archive.
@@ -67,9 +69,55 @@ float ComputeRedirectConfidence(const predictors::RedirectStat& redirect) {
          (redirect.number_of_hits() + redirect.number_of_misses());
 }
 
-}  // namespace
+// Used to fetch the visit count for a URL from the History database.
+class GetUrlVisitCountTask : public history::HistoryDBTask {
+ public:
+  using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
+  using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
+  typedef base::Callback<void(size_t,  // URL visit count.
+                              const PageRequestSummary&)>
+      VisitInfoCallback;
 
-namespace predictors {
+  GetUrlVisitCountTask(std::unique_ptr<PageRequestSummary> summary,
+                       VisitInfoCallback callback);
+
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override;
+
+  void DoneRunOnMainThread() override;
+
+ private:
+  ~GetUrlVisitCountTask() override;
+
+  int visit_count_;
+  std::unique_ptr<PageRequestSummary> summary_;
+  VisitInfoCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetUrlVisitCountTask);
+};
+
+GetUrlVisitCountTask::GetUrlVisitCountTask(
+    std::unique_ptr<PageRequestSummary> summary,
+    VisitInfoCallback callback)
+    : visit_count_(0), summary_(std::move(summary)), callback_(callback) {
+  DCHECK(summary_.get());
+}
+
+bool GetUrlVisitCountTask::RunOnDBThread(history::HistoryBackend* backend,
+                                         history::HistoryDatabase* db) {
+  history::URLRow url_row;
+  if (db->GetRowForURL(summary_->main_frame_url, &url_row))
+    visit_count_ = url_row.visit_count();
+  return true;
+}
+
+void GetUrlVisitCountTask::DoneRunOnMainThread() {
+  callback_.Run(visit_count_, *summary_);
+}
+
+GetUrlVisitCountTask::~GetUrlVisitCountTask() {}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor static functions.
@@ -310,35 +358,12 @@ bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
   return true;
 }
 
-ResourcePrefetchPredictor::GetUrlVisitCountTask::GetUrlVisitCountTask(
-    const NavigationID& navigation_id,
-    std::unique_ptr<PageRequestSummary> summary,
-    VisitInfoCallback callback)
-    : visit_count_(0),
-      navigation_id_(navigation_id),
-      summary_(std::move(summary)),
-      callback_(callback) {
-  DCHECK(summary_.get());
-}
-
-bool ResourcePrefetchPredictor::GetUrlVisitCountTask::RunOnDBThread(
-    history::HistoryBackend* backend,
-    history::HistoryDatabase* db) {
-  history::URLRow url_row;
-  if (db->GetRowForURL(navigation_id_.main_frame_url, &url_row))
-    visit_count_ = url_row.visit_count();
-  return true;
-}
-
-void ResourcePrefetchPredictor::GetUrlVisitCountTask::DoneRunOnMainThread() {
-  callback_.Run(visit_count_, navigation_id_, *summary_);
-}
-
-ResourcePrefetchPredictor::GetUrlVisitCountTask::~GetUrlVisitCountTask() {}
+ResourcePrefetchPredictor::PageRequestSummary::PageRequestSummary(
+    const GURL& i_main_frame_url)
+    : main_frame_url(i_main_frame_url), initial_url(i_main_frame_url) {}
 
 ResourcePrefetchPredictor::PageRequestSummary::PageRequestSummary(
-    const GURL& i_initial_url)
-    : initial_url(i_initial_url) {}
+    const PageRequestSummary& other) = default;
 
 ResourcePrefetchPredictor::PageRequestSummary::~PageRequestSummary() {}
 
@@ -349,6 +374,7 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
     const ResourcePrefetchPredictorConfig& config,
     Profile* profile)
     : profile_(profile),
+      observer_(nullptr),
       config_(config),
       initialization_state_(NOT_INITIALIZED),
       tables_(PredictorDatabaseFactory::GetForProfile(profile)
@@ -364,8 +390,7 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
     DCHECK(config_.IsHostLearningEnabled());
 }
 
-ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {
-}
+ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {}
 
 void ResourcePrefetchPredictor::RecordURLRequest(
     const URLRequestSummary& request) {
@@ -419,6 +444,40 @@ void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
   }
 }
 
+void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
+  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
+               url.spec());
+  if (!prefetch_manager_.get())  // Prefetching not enabled.
+    return;
+
+  std::vector<GURL> subresource_urls;
+  if (!GetPrefetchData(url, &subresource_urls)) {
+    // No prefetching data at host or URL level.
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
+                 prefetch_manager_, url, subresource_urls));
+}
+
+void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
+  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StopPrefetching", "url",
+               url.spec());
+  if (!prefetch_manager_.get())  // Not enabled.
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ResourcePrefetcherManager::MaybeRemovePrefetch,
+                 prefetch_manager_, url));
+}
+
+void ResourcePrefetchPredictor::SetObserverForTesting(TestObserver* observer) {
+  observer_ = observer;
+}
+
 void ResourcePrefetchPredictor::Shutdown() {
   if (prefetch_manager_.get()) {
     prefetch_manager_->ShutdownOnUIThread();
@@ -432,16 +491,16 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  StartPrefetching(request.navigation_id.main_frame_url);
+  const GURL& main_frame_url = request.navigation_id.main_frame_url;
+  StartPrefetching(main_frame_url);
 
   // Cleanup older navigations.
   CleanupAbandonedNavigations(request.navigation_id);
 
   // New empty navigation entry.
-  const GURL& initial_url = request.navigation_id.main_frame_url;
   inflight_navigations_.insert(
       std::make_pair(request.navigation_id,
-                     base::MakeUnique<PageRequestSummary>(initial_url)));
+                     base::MakeUnique<PageRequestSummary>(main_frame_url)));
 }
 
 void ResourcePrefetchPredictor::OnMainFrameResponse(
@@ -457,6 +516,7 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
     const URLRequestSummary& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  const GURL& main_frame_url = response.navigation_id.main_frame_url;
   std::unique_ptr<PageRequestSummary> summary;
   NavigationMap::iterator nav_it =
       inflight_navigations_.find(response.navigation_id);
@@ -471,14 +531,14 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
 
   // If we lost the information about the first hop for some reason.
   if (!summary) {
-    const GURL& initial_url = response.navigation_id.main_frame_url;
-    summary = base::MakeUnique<PageRequestSummary>(initial_url);
+    summary = base::MakeUnique<PageRequestSummary>(main_frame_url);
   }
 
   // A redirect will not lead to another OnMainFrameRequest call, so record the
   // redirect url as a new navigation id and save the initial url.
   NavigationID navigation_id(response.navigation_id);
   navigation_id.main_frame_url = response.redirect_url;
+  summary->main_frame_url = response.redirect_url;
   inflight_navigations_.insert(
       std::make_pair(navigation_id, std::move(summary)));
 }
@@ -505,8 +565,6 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   if (nav_it == inflight_navigations_.end())
     return;
 
-  const NavigationID navigation_id(nav_it->first);
-
   // Remove the navigation from the inflight navigations.
   std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
   inflight_navigations_.erase(nav_it);
@@ -518,7 +576,7 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   DCHECK(history_service);
   history_service->ScheduleDBTask(
       std::unique_ptr<history::HistoryDBTask>(new GetUrlVisitCountTask(
-          navigation_id, std::move(summary),
+          std::move(summary),
           base::Bind(&ResourcePrefetchPredictor::OnVisitCountLookup,
                      AsWeakPtr()))),
       &history_lookup_consumer_);
@@ -584,36 +642,6 @@ bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
   }
 
   return urls->size() > initial_size;
-}
-
-void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
-  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
-               url.spec());
-  if (!prefetch_manager_.get())  // Prefetching not enabled.
-    return;
-
-  std::vector<GURL> subresource_urls;
-  if (!GetPrefetchData(url, &subresource_urls)) {
-    // No prefetching data at host or URL level.
-    return;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                 prefetch_manager_, url, subresource_urls));
-}
-
-void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
-  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StopPrefetching", "url",
-               url.spec());
-  if (!prefetch_manager_.get())  // Not enabled.
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResourcePrefetcherManager::MaybeRemovePrefetch,
-                 prefetch_manager_, url));
 }
 
 void ResourcePrefetchPredictor::StartInitialization() {
@@ -809,23 +837,22 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInRedirectDataMap(
 }
 
 void ResourcePrefetchPredictor::OnVisitCountLookup(
-    size_t visit_count,
-    const NavigationID& navigation_id,
+    size_t url_visit_count,
     const PageRequestSummary& summary) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HistoryVisitCountForUrl",
-                       visit_count);
+                       url_visit_count);
 
   // TODO(alexilin): make only one request to DB thread.
 
   // URL level data - merge only if we already saved the data, or it
   // meets the cutoff requirement.
-  const std::string url_spec = navigation_id.main_frame_url.spec();
+  const std::string url_spec = summary.main_frame_url.spec();
   bool already_tracking = url_table_cache_->find(url_spec) !=
       url_table_cache_->end();
-  bool should_track_url = already_tracking ||
-      (visit_count >= config_.min_url_visit_count);
+  bool should_track_url =
+      already_tracking || (url_visit_count >= config_.min_url_visit_count);
 
   if (should_track_url && config_.IsURLLearningEnabled()) {
     LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL,
@@ -836,12 +863,15 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
 
   // Host level data - no cutoff, always learn the navigation if enabled.
   if (config_.IsHostLearningEnabled()) {
-    const std::string host = navigation_id.main_frame_url.host();
+    const std::string host = summary.main_frame_url.host();
     LearnNavigation(host, PREFETCH_KEY_TYPE_HOST, summary.subresource_requests,
                     config_.max_hosts_to_track, host_table_cache_.get(),
                     summary.initial_url.host(),
                     host_redirect_table_cache_.get());
   }
+
+  if (observer_)
+    observer_->OnNavigationLearned(url_visit_count, summary);
 }
 
 void ResourcePrefetchPredictor::LearnNavigation(
@@ -1128,6 +1158,18 @@ void ResourcePrefetchPredictor::ConnectToHistoryService() {
   DCHECK(!history_service_observer_.IsObserving(history_service));
   history_service_observer_.Add(history_service);
   return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TestObserver.
+
+TestObserver::~TestObserver() {
+  predictor_->SetObserverForTesting(nullptr);
+}
+
+TestObserver::TestObserver(ResourcePrefetchPredictor* predictor)
+    : predictor_(predictor) {
+  predictor_->SetObserverForTesting(this);
 }
 
 }  // namespace predictors
