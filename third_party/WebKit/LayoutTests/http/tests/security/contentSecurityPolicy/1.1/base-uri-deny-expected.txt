@@ -10,7 +10,7 @@ PASS document.baseURI is document.location.href
 PASS window.e.documentURI is "http://127.0.0.1:8000/security/contentSecurityPolicy/1.1/base-uri-deny.html"
 PASS window.e.referrer is ""
 PASS window.e.blockedURI is "http://example.com/base"
-PASS window.e.violatedDirective is "base-uri 'self'"
+PASS window.e.violatedDirective is "base-uri"
 PASS window.e.effectiveDirective is "base-uri"
 PASS window.e.originalPolicy is "base-uri 'self'"
 PASS window.e.sourceFile is "http://127.0.0.1:8000/security/contentSecurityPolicy/1.1/base-uri-deny.html"

@@ -1086,7 +1086,7 @@ static void gatherSecurityPolicyViolationEventData(
     }
   }
   init.setReferrer(document->referrer());
-  init.setViolatedDirective(directiveText);
+  init.setViolatedDirective(effectiveDirective);
   init.setEffectiveDirective(effectiveDirective);
   init.setOriginalPolicy(header);
   init.setDisposition(headerType == ContentSecurityPolicyHeaderTypeEnforce

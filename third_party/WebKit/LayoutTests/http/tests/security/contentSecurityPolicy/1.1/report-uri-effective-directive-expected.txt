@@ -5,4 +5,4 @@ CONTENT_TYPE: application/csp-report
 HTTP_REFERER: http://127.0.0.1:8000/security/contentSecurityPolicy/1.1/report-uri-effective-directive.php
 REQUEST_METHOD: POST
 === POST DATA ===
-{"csp-report":{"document-uri":"http://127.0.0.1:8000/security/contentSecurityPolicy/1.1/report-uri-effective-directive.php","referrer":"","violated-directive":"default-src 'self'","effective-directive":"script-src","original-policy":"default-src 'self'; report-uri ../resources/save-report.php?test=report-uri-effective-directive.php","disposition":"enforce","blocked-uri":"inline","line-number":6,"status-code":200}}
+{"csp-report":{"document-uri":"http://127.0.0.1:8000/security/contentSecurityPolicy/1.1/report-uri-effective-directive.php","referrer":"","violated-directive":"script-src","effective-directive":"script-src","original-policy":"default-src 'self'; report-uri ../resources/save-report.php?test=report-uri-effective-directive.php","disposition":"enforce","blocked-uri":"inline","line-number":6,"status-code":200}}

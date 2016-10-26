@@ -8,4 +8,4 @@ CONTENT_TYPE: application/csp-report
 HTTP_REFERER: http://127.0.0.1:8000/security/contentSecurityPolicy/report-uri-multiple.php
 REQUEST_METHOD: POST
 === POST DATA ===
-{"csp-report":{"document-uri":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-uri-multiple.php","referrer":"","violated-directive":"img-src http://*","effective-directive":"img-src","original-policy":"img-src http://*; script-src 'self'; report-uri resources/save-report.php?test=report-uri-multiple.php","disposition":"report","blocked-uri":"ftp://blah.test","line-number":8,"source-file":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-uri-multiple.php","status-code":200}}
+{"csp-report":{"document-uri":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-uri-multiple.php","referrer":"","violated-directive":"img-src","effective-directive":"img-src","original-policy":"img-src http://*; script-src 'self'; report-uri resources/save-report.php?test=report-uri-multiple.php","disposition":"report","blocked-uri":"ftp://blah.test","line-number":8,"source-file":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-uri-multiple.php","status-code":200}}
