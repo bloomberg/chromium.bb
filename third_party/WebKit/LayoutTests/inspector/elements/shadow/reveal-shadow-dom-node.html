@@ -11,7 +11,7 @@ function test()
     var nodeChangesRemaining = 2;
     function selectedNodeChanged(event)
     {
-        var node = event.data;
+        var node = event.data.node;
         if (node.nodeName() === "BODY")
             return;
         InspectorTest.addResult("SelectedNodeChanged: " + node.localName() + " " + shadowDOMPart(node));

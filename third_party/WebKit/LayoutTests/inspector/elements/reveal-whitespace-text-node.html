@@ -20,7 +20,7 @@ function test()
     }
 
     function selectedNodeChanged(event) {
-        var node = event.data;
+        var node = event.data.node;
         InspectorTest.addResult("SelectedNodeChanged: " + node.localName());
         InspectorTest.completeTest();
     }

@@ -10,7 +10,7 @@ function test()
     InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
     function selectedNodeChanged(event)
     {
-        var node = event.data;
+        var node = event.data.node;
         if (!node)
             return;
         if (node.getAttribute("id") == "div") {

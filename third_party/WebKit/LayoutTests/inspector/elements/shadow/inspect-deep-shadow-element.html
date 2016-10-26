@@ -16,7 +16,7 @@ function test()
 
     function selectedNodeChanged(event)
     {
-        var node = event.data;
+        var node = event.data.node;
         if (!node)
             return;
         if (node.getAttribute("id") == tests[0][0]) {
