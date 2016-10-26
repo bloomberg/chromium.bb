@@ -6,11 +6,11 @@ package org.chromium.content.browser.accessibility;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.util.SparseArray;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
 
@@ -20,6 +20,9 @@ import org.chromium.content.browser.ContentViewCore;
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibilityManager {
+    private SparseArray<AccessibilityAction> mAccessibilityActionMap =
+            new SparseArray<AccessibilityAction>();
+
     LollipopBrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
         super(nativeBrowserAccessibilityManagerAndroid, contentViewCore);
@@ -108,65 +111,16 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
         // Do nothing on Lollipop and higher.
     }
 
-    @CalledByNative
     @Override
-    protected void addAccessibilityNodeInfoActions(AccessibilityNodeInfo node,
-            int virtualViewId, boolean canScrollForward, boolean canScrollBackward,
-            boolean canScrollUp, boolean canScrollDown, boolean canScrollLeft,
-            boolean canScrollRight, boolean clickable, boolean editableText, boolean enabled,
-            boolean focusable, boolean focused, boolean isCollapsed, boolean isExpanded,
-            boolean hasNonEmptyValue) {
-        node.addAction(AccessibilityAction.ACTION_NEXT_HTML_ELEMENT);
-        node.addAction(AccessibilityAction.ACTION_PREVIOUS_HTML_ELEMENT);
-        node.addAction(AccessibilityAction.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
-        node.addAction(AccessibilityAction.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
-
-        if (editableText && enabled) {
-            node.addAction(AccessibilityAction.ACTION_SET_TEXT);
-            node.addAction(AccessibilityAction.ACTION_PASTE);
-
-            if (hasNonEmptyValue) {
-                node.addAction(AccessibilityAction.ACTION_SET_SELECTION);
-                node.addAction(AccessibilityAction.ACTION_CUT);
-                node.addAction(AccessibilityAction.ACTION_COPY);
-            }
+    protected void addAction(AccessibilityNodeInfo node, int actionId) {
+        // The Lollipop SDK requires us to call AccessibilityNodeInfo.addAction with an
+        // AccessibilityAction argument, but to simplify things and share more code with
+        // the pre-L SDK, we just cache a set of AccessibilityActions mapped by their ID.
+        AccessibilityAction action = mAccessibilityActionMap.get(actionId);
+        if (action == null) {
+            action = new AccessibilityAction(actionId, null);
+            mAccessibilityActionMap.put(actionId, action);
         }
-
-        if (canScrollForward) {
-            node.addAction(AccessibilityAction.ACTION_SCROLL_FORWARD);
-        }
-
-        if (canScrollBackward) {
-            node.addAction(AccessibilityAction.ACTION_SCROLL_BACKWARD);
-        }
-
-        // TODO(dmazzoni): add custom actions for scrolling up, down,
-        // left, and right.
-
-        if (focusable) {
-            if (focused) {
-                node.addAction(AccessibilityAction.ACTION_CLEAR_FOCUS);
-            } else {
-                node.addAction(AccessibilityAction.ACTION_FOCUS);
-            }
-        }
-
-        if (mAccessibilityFocusId == virtualViewId) {
-            node.addAction(AccessibilityAction.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
-        } else {
-            node.addAction(AccessibilityAction.ACTION_ACCESSIBILITY_FOCUS);
-        }
-
-        if (clickable) {
-            node.addAction(AccessibilityAction.ACTION_CLICK);
-        }
-
-        if (isCollapsed) {
-            node.addAction(AccessibilityAction.ACTION_EXPAND);
-        }
-
-        if (isExpanded) {
-            node.addAction(AccessibilityAction.ACTION_COLLAPSE);
-        }
+        node.addAction(action);
     }
 }

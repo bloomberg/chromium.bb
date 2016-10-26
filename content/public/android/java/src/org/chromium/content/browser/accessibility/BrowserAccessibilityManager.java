@@ -49,12 +49,12 @@ public class BrowserAccessibilityManager {
 
     // Constants from AccessibilityNodeInfo defined in the M SDK.
     // Source: https://developer.android.com/reference/android/R.id.html
-    private static final int ACTION_CONTEXT_CLICK = 0x0102003c;
-    private static final int ACTION_SHOW_ON_SCREEN = 0x01020036;
-    private static final int ACTION_SCROLL_UP = 0x01020038;
-    private static final int ACTION_SCROLL_DOWN = 0x0102003a;
-    private static final int ACTION_SCROLL_LEFT = 0x01020039;
-    private static final int ACTION_SCROLL_RIGHT = 0x0102003b;
+    protected static final int ACTION_CONTEXT_CLICK = 0x0102003c;
+    protected static final int ACTION_SHOW_ON_SCREEN = 0x01020036;
+    protected static final int ACTION_SCROLL_UP = 0x01020038;
+    protected static final int ACTION_SCROLL_DOWN = 0x0102003a;
+    protected static final int ACTION_SCROLL_LEFT = 0x01020039;
+    protected static final int ACTION_SCROLL_RIGHT = 0x0102003b;
 
     private final AccessibilityNodeProvider mAccessibilityNodeProvider;
     private ContentViewCore mContentViewCore;
@@ -843,8 +843,18 @@ public class BrowserAccessibilityManager {
         }
     }
 
-    // LollipopBrowserAccessibilityManager overrides this with the non-deprecated APIs.
+    // For anything lower than API level 21 (Lollipop), calls AccessibilityNodeInfo.addAction(int)
+    // if it's a supported action, and does nothing otherwise.  For 21 and higher, this is
+    // overridden in LollipopBrowserAccessibilityManager using the new non-deprecated API.
     @SuppressWarnings("deprecation")
+    protected void addAction(AccessibilityNodeInfo node, int actionId) {
+        // Before API level 21, it's not possible to expose actions other than the "legacy standard"
+        // ones.
+        if (actionId > AccessibilityNodeInfo.ACTION_SET_TEXT) return;
+
+        node.addAction(actionId);
+    }
+
     @CalledByNative
     protected void addAccessibilityNodeInfoActions(AccessibilityNodeInfo node,
             int virtualViewId, boolean canScrollForward, boolean canScrollBackward,
@@ -852,74 +862,74 @@ public class BrowserAccessibilityManager {
             boolean canScrollRight, boolean clickable, boolean editableText, boolean enabled,
             boolean focusable, boolean focused, boolean isCollapsed, boolean isExpanded,
             boolean hasNonEmptyValue) {
-        node.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
-        node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
-        node.addAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
-        node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
-        node.addAction(ACTION_SHOW_ON_SCREEN);
-        node.addAction(ACTION_CONTEXT_CLICK);
+        addAction(node, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
+        addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
+        addAction(node, AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
+        addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
+        addAction(node, ACTION_SHOW_ON_SCREEN);
+        addAction(node, ACTION_CONTEXT_CLICK);
 
         if (editableText && enabled) {
             // TODO: don't support actions that modify it if it's read-only (but
             // SET_SELECTION and COPY are okay).
-            node.addAction(ACTION_SET_TEXT);
-            node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
+            addAction(node, ACTION_SET_TEXT);
+            addAction(node, AccessibilityNodeInfo.ACTION_PASTE);
 
             if (hasNonEmptyValue) {
-                node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
-                node.addAction(AccessibilityNodeInfo.ACTION_CUT);
-                node.addAction(AccessibilityNodeInfo.ACTION_COPY);
+                addAction(node, AccessibilityNodeInfo.ACTION_SET_SELECTION);
+                addAction(node, AccessibilityNodeInfo.ACTION_CUT);
+                addAction(node, AccessibilityNodeInfo.ACTION_COPY);
             }
         }
 
         if (canScrollForward) {
-            node.addAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+            addAction(node, AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
         }
 
         if (canScrollBackward) {
-            node.addAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
+            addAction(node, AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
         }
 
         if (canScrollUp) {
-            node.addAction(ACTION_SCROLL_UP);
+            addAction(node, ACTION_SCROLL_UP);
         }
 
         if (canScrollDown) {
-            node.addAction(ACTION_SCROLL_DOWN);
+            addAction(node, ACTION_SCROLL_DOWN);
         }
 
         if (canScrollLeft) {
-            node.addAction(ACTION_SCROLL_LEFT);
+            addAction(node, ACTION_SCROLL_LEFT);
         }
 
         if (canScrollRight) {
-            node.addAction(ACTION_SCROLL_RIGHT);
+            addAction(node, ACTION_SCROLL_RIGHT);
         }
 
         if (focusable) {
             if (focused) {
-                node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_FOCUS);
+                addAction(node, AccessibilityNodeInfo.ACTION_CLEAR_FOCUS);
             } else {
-                node.addAction(AccessibilityNodeInfo.ACTION_FOCUS);
+                addAction(node, AccessibilityNodeInfo.ACTION_FOCUS);
             }
         }
 
         if (mAccessibilityFocusId == virtualViewId) {
-            node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+            addAction(node, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
         } else {
-            node.addAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+            addAction(node, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
         }
 
         if (clickable) {
-            node.addAction(AccessibilityNodeInfo.ACTION_CLICK);
+            addAction(node, AccessibilityNodeInfo.ACTION_CLICK);
         }
 
         if (isCollapsed) {
-            node.addAction(ACTION_EXPAND);
+            addAction(node, ACTION_EXPAND);
         }
 
         if (isExpanded) {
-            node.addAction(ACTION_COLLAPSE);
+            addAction(node, ACTION_COLLAPSE);
         }
     }
 
