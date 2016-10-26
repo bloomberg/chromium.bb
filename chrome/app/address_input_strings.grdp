@@ -52,6 +52,14 @@ limitations under the License.
     Suburb
   </message>
   <message
+      name="IDS_LIBADDRESSINPUT_TOWNLAND"
+      desc="A small geographical division of land in Ireland, shown as part of
+            an address input. Semantically similar to a neighborhood or local
+            district, this is typically the smallest division of land which can
+            be named in an address. See: http://en.wikipedia.org/wiki/Townland">
+    Townland
+  </message>
+  <message
       name="IDS_LIBADDRESSINPUT_VILLAGE_TOWNSHIP"
       desc="A unit used in postal addresses in Malaysia, which is smaller than the
             city/town, and represents a village, township, or precinct.">
@@ -61,6 +69,12 @@ limitations under the License.
       name="IDS_LIBADDRESSINPUT_ADDRESS_LINE_1_LABEL"
       desc="E.g., 18th Street, Unit 3.">
     Street address
+  </message>
+  <message
+      name="IDS_LIBADDRESSINPUT_EIR_CODE_LABEL"
+      desc="Eircode. A two part, seven character alpha-numeric code used by
+            the postcode system in Ireland.">
+    Eircode
   </message>
   <message
       name="IDS_LIBADDRESSINPUT_PIN_CODE_LABEL"

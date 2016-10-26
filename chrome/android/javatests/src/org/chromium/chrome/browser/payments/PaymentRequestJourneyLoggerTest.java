@@ -158,7 +158,8 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, mReadyToEdit);
         setTextInEditorAndWait(
-                new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul", "999-999-9999"},
+                new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul", "1043",
+                        "999-999-9999"},
                 mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 

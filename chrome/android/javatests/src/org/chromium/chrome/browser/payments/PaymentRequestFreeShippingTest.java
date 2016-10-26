@@ -95,13 +95,13 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
-                "999-999-9999"}, mEditorTextUpdate);
+                "1043", "999-999-9999"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
-                "999-999-9999"});
+                "1043", "999-999-9999"});
     }
 
     /** Quickly pressing on "add address" and then [X] should not crash. */
