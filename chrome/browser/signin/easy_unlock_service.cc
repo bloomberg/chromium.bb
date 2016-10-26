@@ -60,8 +60,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user_manager.h"
 #endif
 
 #if defined(OS_WIN)
@@ -913,8 +913,8 @@ void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {
   // If this is called before the session is started, the chances are Chrome
   // is restarting in order to apply user flags. Don't check TPM keys in this
   // case.
-  if (!user_manager::UserManager::Get() ||
-      !user_manager::UserManager::Get()->IsSessionStarted())
+  if (!session_manager::SessionManager::Get() ||
+      !session_manager::SessionManager::Get()->IsSessionStarted())
     return;
 
   // TODO(tbarzic): Set check_private_key only if previous sign-in attempt

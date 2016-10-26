@@ -83,7 +83,6 @@ class ChromeUserManagerImpl
   user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
       const override;
   user_manager::UserList GetUnlockUsers() const override;
-  void SessionStarted() override;
   void SaveUserOAuthStatus(
       const AccountId& account_id,
       user_manager::User::OAuthTokenStatus oauth_token_status) override;

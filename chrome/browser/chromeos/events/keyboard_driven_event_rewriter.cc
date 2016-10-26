@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "components/user_manager/user_manager.h"
+#include "components/session_manager/core/session_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
@@ -21,8 +21,8 @@ KeyboardDrivenEventRewriter* instance = nullptr;
 // Returns true if and only if it is on login screen (i.e. user is not logged
 // in) and the keyboard driven flag in the OEM manifest is on.
 bool ShouldStripModifiersForArrowKeysAndEnter() {
-  if (user_manager::UserManager::IsInitialized() &&
-      !user_manager::UserManager::Get()->IsSessionStarted()) {
+  if (session_manager::SessionManager::Get() &&
+      !session_manager::SessionManager::Get()->IsSessionStarted()) {
     return system::InputDeviceSettings::Get()
         ->ForceKeyboardDrivenUINavigation();
   }

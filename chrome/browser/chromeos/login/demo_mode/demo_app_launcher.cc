@@ -21,8 +21,8 @@
 #include "chromeos/login/user_names.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -100,7 +100,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
                                   extensions::SOURCE_CHROME_INTERNAL, true));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   LoginDisplayHost::default_host()->Finalize();
 }

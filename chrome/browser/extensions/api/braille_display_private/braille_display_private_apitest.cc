@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -332,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   // Log in.
   user_manager::UserManager::Get()->UserLoggedIn(
       AccountId::FromUserEmail(kTestUserName), kTestUserName, true);
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(
       ProfileHelper::GetSigninProfile()->IsSameProfile(profile))

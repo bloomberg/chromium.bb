@@ -77,7 +77,7 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
         content::Details<Profile>(profile()));
 
     // This call will set session state to SESSION_STATE_ACTIVE (same one).
-    user_manager->SessionStarted();
+    session_manager_->SessionStarted();
 
     // Now is the good time to retrieve other logged in users for this session.
     // First user has been already marked as logged in and active in

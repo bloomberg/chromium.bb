@@ -39,7 +39,6 @@ component("user_manager") {
     ]
     deps += [
       "//components/prefs",
-      "//components/session_manager/core",
       "//google_apis",
       "//url",
     ]

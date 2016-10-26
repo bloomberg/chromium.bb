@@ -375,16 +375,6 @@ user_manager::UserList ChromeUserManagerImpl::GetUnlockUsers() const {
   return unlock_users;
 }
 
-void ChromeUserManagerImpl::SessionStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ChromeUserManager::SessionStarted();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::Source<UserManager>(this),
-      content::Details<const user_manager::User>(GetActiveUser()));
-}
-
 void ChromeUserManagerImpl::RemoveUserInternal(
     const AccountId& account_id,
     user_manager::RemoveUserDelegate* delegate) {

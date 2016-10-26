@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/session/kiosk_auto_launcher_session_manager_delegate.h"
@@ -20,6 +21,8 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/login/user_names.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -91,6 +94,22 @@ ChromeSessionManager::ChromeSessionManager(
 }
 
 ChromeSessionManager::~ChromeSessionManager() {
+}
+
+void ChromeSessionManager::SessionStarted() {
+  session_manager::SessionManager::SessionStarted();
+  SetSessionState(session_manager::SessionState::ACTIVE);
+
+  // Notifies UserManager so that it can update login state.
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (user_manager)
+    user_manager->OnSessionStarted();
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::Source<session_manager::SessionManager>(this),
+      content::Details<const user_manager::User>(
+          user_manager->GetActiveUser()));
 }
 
 }  // namespace chromeos

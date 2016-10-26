@@ -2,6 +2,7 @@ include_rules = [
   "+ash/public/interfaces",
   "+components/arc",
   "+components/drive",
+  "+components/session_manager/core",
   "+components/user_manager",
   "+mash/shelf/public/interfaces",
   "+media",

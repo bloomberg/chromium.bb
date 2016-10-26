@@ -108,6 +108,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -399,7 +400,7 @@ std::unique_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
 }
 
 bool IsSessionStarted() {
-  return user_manager::UserManager::Get()->IsSessionStarted();
+  return session_manager::SessionManager::Get()->IsSessionStarted();
 }
 
 void PolicyChangedCallback(const base::Closure& callback,

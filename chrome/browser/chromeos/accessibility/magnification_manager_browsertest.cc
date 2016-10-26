@@ -22,6 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_details.h"
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginOffToOff) {
   // Confirms that magnifier is still disabled just after login.
   EXPECT_FALSE(IsMagnifierEnabled());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that magnifier is still disabled just after session starts.
   EXPECT_FALSE(IsMagnifierEnabled());
@@ -235,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToOff) {
   EXPECT_TRUE(IsMagnifierEnabled());
   EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that magnifier is disabled just after session start.
   EXPECT_FALSE(IsMagnifierEnabled());
@@ -264,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginOffToFull) {
   // Confirms that magnifier is keeping disabled.
   EXPECT_FALSE(IsMagnifierEnabled());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that the magnifier is enabled and configured according to the
   // explicitly set prefs just after session start.
@@ -301,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToFull) {
   EXPECT_TRUE(IsMagnifierEnabled());
   EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that the magnifier is enabled and configured according to the
   // explicitly set prefs just after session start.
@@ -331,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToUnset) {
   EXPECT_TRUE(IsMagnifierEnabled());
   EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that magnifier is disabled.
   EXPECT_FALSE(IsMagnifierEnabled());
@@ -352,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginAsNewUserOff) {
   // Confirms that magnifier is keeping disabled.
   EXPECT_FALSE(IsMagnifierEnabled());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that magnifier is keeping disabled.
   EXPECT_FALSE(IsMagnifierEnabled());
@@ -376,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginAsNewUserFull) {
   EXPECT_TRUE(IsMagnifierEnabled());
   EXPECT_EQ(ash::MAGNIFIER_FULL, GetMagnifierType());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that magnifier keeps enabled.
   EXPECT_TRUE(IsMagnifierEnabled());
@@ -396,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginAsNewUserUnset) {
   // Confirms that magnifier is keeping disabled.
   EXPECT_FALSE(IsMagnifierEnabled());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that magnifier is keeping disabled.
   EXPECT_FALSE(IsMagnifierEnabled());
@@ -464,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, TypePref) {
   // Logs in
   user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
                                                  kTestUserName, true);
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that magnifier is disabled just after login.
   EXPECT_FALSE(IsMagnifierEnabled());

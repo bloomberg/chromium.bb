@@ -1742,7 +1742,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // browser before it is dereferenced by the login host.
   if (login_host)
     login_host->Finalize();
-  user_manager::UserManager::Get()->SessionStarted();
+  g_browser_process->platform_part()->SessionManager()->SessionStarted();
   chromeos::BootTimesRecorder::Get()->LoginDone(
       user_manager::UserManager::Get()->IsCurrentUserNew());
 

@@ -63,6 +63,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/user_manager/known_user.h"
@@ -151,7 +152,7 @@ bool CanShowDebuggingFeatures() {
              chromeos::switches::kSystemDevMode) &&
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kLoginManager) &&
-         !user_manager::UserManager::Get()->IsSessionStarted();
+         !session_manager::SessionManager::Get()->IsSessionStarted();
 }
 
 void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {

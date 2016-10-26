@@ -57,7 +57,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
                     bool browser_restart) override;
   void SwitchActiveUser(const AccountId& account_id) override;
   void SwitchToLastActiveUser() override;
-  void SessionStarted() override;
+  void OnSessionStarted() override;
   void RemoveUser(const AccountId& account_id,
                   RemoveUserDelegate* delegate) override;
   void RemoveUserFromList(const AccountId& account_id) override;
@@ -97,7 +97,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   bool IsLoggedInAsKioskApp() const override;
   bool IsLoggedInAsArcKioskApp() const override;
   bool IsLoggedInAsStub() const override;
-  bool IsSessionStarted() const override;
   bool IsUserNonCryptohomeDataEphemeral(
       const AccountId& account_id) const override;
   bool IsUserCryptohomeDataEphemeral(
@@ -336,9 +335,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_ = STAGE_NOT_LOADED;
-
-  // True if SessionStarted() has been called.
-  bool session_started_ = false;
 
   // Cached flag of whether currently logged-in user is owner or not.
   // May be accessed on different threads, requires locking.

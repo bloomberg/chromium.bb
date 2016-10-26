@@ -255,10 +255,6 @@ bool FakeUserManager::IsLoggedInAsStub() const {
   return false;
 }
 
-bool FakeUserManager::IsSessionStarted() const {
-  return false;
-}
-
 bool FakeUserManager::IsUserNonCryptohomeDataEphemeral(
     const AccountId& account_id) const {
   return false;

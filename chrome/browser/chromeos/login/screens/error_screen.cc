@@ -35,7 +35,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
-#include "components/user_manager/user_manager.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -283,7 +283,7 @@ void ErrorScreen::OnDiagnoseButtonClicked() {
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   LoginDisplayHost::default_host()->Finalize();
 }

@@ -27,6 +27,19 @@ class SESSION_EXPORT SessionManager {
   SessionState session_state() const { return session_state_; }
   virtual void SetSessionState(SessionState state);
 
+  // Returns true if we're logged in and browser has been started i.e.
+  // browser_creator.LaunchBrowser(...) was called after sign in
+  // or restart after crash.
+  virtual bool IsSessionStarted() const;
+
+  // Called when browser session is started i.e. after
+  // browser_creator.LaunchBrowser(...) was called after user sign in.
+  // When user is at the image screen IsUserLoggedIn() will return true
+  // but IsSessionStarted() will return false. During the kiosk splash screen,
+  // we perform additional initialization after the user is logged in but
+  // before the session has been started.
+  virtual void SessionStarted();
+
   // Let session delegate executed on its plan of actions depending on the
   // current session type / state.
   void Start();
@@ -46,8 +59,11 @@ class SESSION_EXPORT SessionManager {
   // g_browser_process->platform_part().
   static SessionManager* instance;
 
-  SessionState session_state_;
+  SessionState session_state_ = SessionState::UNKNOWN;
   std::unique_ptr<SessionManagerDelegate> delegate_;
+
+  // True if SessionStarted() has been called.
+  bool session_started_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };
@@ -64,7 +80,7 @@ class SESSION_EXPORT SessionManagerDelegate {
   virtual void Start() = 0;
 
  protected:
-  session_manager::SessionManager* session_manager_;
+  session_manager::SessionManager* session_manager_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionManagerDelegate);

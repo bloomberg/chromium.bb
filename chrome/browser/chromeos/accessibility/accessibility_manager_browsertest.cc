@@ -27,6 +27,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
@@ -308,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsMonoAudioEnabled());
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that the features are still disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -367,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Logs in.
   user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
                                                  kTestUserName, true);
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that the features are disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -467,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   EXPECT_FALSE(IsMonoAudioEnabled());
 
   // Logs in.
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that features are enabled by restoring from pref just after login.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -486,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   // Logs in.
   user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
                                                  kTestUserName, true);
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   EXPECT_FALSE(observer.observed());
   observer.reset();
@@ -562,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   // Logs in.
   user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
                                                  kTestUserName, true);
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   EXPECT_FALSE(observer.observed());
   observer.reset();
@@ -683,7 +684,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
   EXPECT_TRUE(IsMonoAudioEnabled());
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that the features keep enabled after session starts.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -707,7 +708,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   const AccountId account_id = AccountId::FromUserEmail(GetParam());
   user_manager::UserManager::Get()->UserLoggedIn(
       account_id, account_id.GetUserEmail(), true);
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
   // This object watches for IME preference changes and reflects those in
   // the IME framework state.
   chromeos::Preferences prefs;
@@ -753,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   // Log in.
   user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
                                                  kTestUserName, true);
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that the features are disabled.
   EXPECT_FALSE(IsLargeCursorEnabled());

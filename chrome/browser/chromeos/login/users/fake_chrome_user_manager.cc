@@ -160,8 +160,7 @@ const AccountId& FakeChromeUserManager::GetOwnerAccountId() const {
   return owner_account_id_;
 }
 
-void FakeChromeUserManager::SessionStarted() {
-}
+void FakeChromeUserManager::OnSessionStarted() {}
 
 void FakeChromeUserManager::RemoveUser(
     const AccountId& account_id,

@@ -28,9 +28,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crx_file/id_util.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
@@ -469,7 +469,7 @@ void StartupAppLauncher::LaunchApp() {
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_KIOSK));
   KioskAppManager::Get()->InitSession(profile_, app_id_);
 
-  user_manager::UserManager::Get()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,

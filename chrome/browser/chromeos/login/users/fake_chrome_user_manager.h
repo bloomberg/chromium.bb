@@ -60,7 +60,7 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
       const override;
   void SwitchActiveUser(const AccountId& account_id) override;
   const AccountId& GetOwnerAccountId() const override;
-  void SessionStarted() override;
+  void OnSessionStarted() override;
   void RemoveUser(const AccountId& account_id,
                   user_manager::RemoveUserDelegate* delegate) override;
   void RemoveUserFromList(const AccountId& account_id) override;

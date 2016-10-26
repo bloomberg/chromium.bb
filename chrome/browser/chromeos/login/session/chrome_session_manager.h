@@ -28,6 +28,9 @@ class ChromeSessionManager : public session_manager::SessionManager {
       session_manager::SessionManagerDelegate* delegate);
   ~ChromeSessionManager() override;
 
+  // session_manager::SessionManager:
+  void SessionStarted() override;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManager);
 };
 

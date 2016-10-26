@@ -26,7 +26,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_type.h"
@@ -250,14 +249,10 @@ void UserManagerBase::SwitchToLastActiveUser() {
   last_session_active_account_id_.clear();
 }
 
-void UserManagerBase::SessionStarted() {
+void UserManagerBase::OnSessionStarted() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  session_started_ = true;
 
   CallUpdateLoginState();
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
-
   GetLocalState()->CommitPendingWrite();
 }
 
@@ -594,11 +589,6 @@ bool UserManagerBase::IsLoggedInAsArcKioskApp() const {
 bool UserManagerBase::IsLoggedInAsStub() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return IsUserLoggedIn() && IsStubAccountId(active_user_->GetAccountId());
-}
-
-bool UserManagerBase::IsSessionStarted() const {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  return session_started_;
 }
 
 bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(

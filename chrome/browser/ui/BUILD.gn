@@ -530,6 +530,7 @@ split_static_library("ui") {
     "//components/search_engines",
     "//components/security_interstitials/core",
     "//components/security_state",
+    "//components/session_manager/core",
     "//components/sessions",
     "//components/signin/core/account_id",
     "//components/signin/core/browser",
