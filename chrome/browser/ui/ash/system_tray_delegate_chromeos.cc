@@ -353,7 +353,7 @@ void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
       status == ash::LoginStatus::LOCKED ||
       wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
     scoped_refptr<chromeos::HelpAppLauncher> help_app(
-        new chromeos::HelpAppLauncher(GetNativeWindow()));
+        new chromeos::HelpAppLauncher(nullptr /* parent_window */));
     help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
   } else {
     chrome::ScopedTabbedBrowserDisplayer displayer(
@@ -819,12 +819,6 @@ void SystemTrayDelegateChromeOS::ScreenIsLocked() {
 
 void SystemTrayDelegateChromeOS::ScreenIsUnlocked() {
   ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
-}
-
-gfx::NativeWindow SystemTrayDelegateChromeOS::GetNativeWindow() const {
-  int container_id = SystemTrayClient::GetDialogParentContainerId();
-  return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                  container_id);
 }
 
 // content::NotificationObserver implementation.

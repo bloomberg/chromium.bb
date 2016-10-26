@@ -34,6 +34,8 @@ class LoginWebDialog : public ui::WebDialogDelegate {
     virtual ~Delegate() {}
   };
 
+  // If |parent_window| is null then the dialog is placed in the modal dialog
+  // container on the primary display.
   LoginWebDialog(content::BrowserContext* browser_context,
                  Delegate* delegate,
                  gfx::NativeWindow parent_window,

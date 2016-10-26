@@ -7,12 +7,11 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
+class GURL;
 class Profile;
 
 namespace chromeos {
@@ -38,7 +37,9 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_DEVICE_ATTRIBUTES = 6218780,
   };
 
-  // Parent window is used to show dialog.
+  // The dialog is shown as a child of |parent_window|. If |parent_window| is
+  // null then the dialog is placed in the modal dialog container on the primary
+  // display.
   explicit HelpAppLauncher(gfx::NativeWindow parent_window);
 
   // Shows specified help topic.

@@ -164,8 +164,6 @@ class SystemTrayDelegateChromeOS
   void ScreenIsLocked() override;
   void ScreenIsUnlocked() override;
 
-  gfx::NativeWindow GetNativeWindow() const;
-
   // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,
