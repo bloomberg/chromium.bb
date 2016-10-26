@@ -134,6 +134,7 @@ bool GetListName(ListType list_id, std::string* list) {
       break;
     case MODULEWHITELIST:
       *list = kModuleWhitelist;
+      break;
     case RESOURCEBLACKLIST:
       *list = kResourceBlacklist;
       break;
