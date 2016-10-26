@@ -173,9 +173,10 @@ cr.define('settings', function() {
       r.BLUETOOTH_ADD_DEVICE.createChild('bluetoothPairDevice');
 </if>
 
-  r.PASSWORDS = r.ADVANCED.createSection('/passwords', 'passwordsAndForms');
+  r.PASSWORDS =
+      r.ADVANCED.createSection('/passwordsAndForms', 'passwordsAndForms');
   r.AUTOFILL = r.PASSWORDS.createChild('/autofill');
-  r.MANAGE_PASSWORDS = r.PASSWORDS.createChild('/managePasswords');
+  r.MANAGE_PASSWORDS = r.PASSWORDS.createChild('/passwords');
 
   r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
   r.LANGUAGES_DETAIL = r.LANGUAGES.createChild('edit');
