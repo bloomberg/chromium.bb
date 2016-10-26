@@ -771,12 +771,12 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState) {
   SimpleResultPromise* result = new SimpleResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
-  // 4. Run the following steps in parallel (done in closeTask()).
+  // 5. Run the following steps in parallel (done in closeTask()).
   m_pendingActions.append(PendingAction::CreatePendingClose(result));
   if (!m_actionTimer.isActive())
     m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
-  // 5. Return promise.
+  // 6. Return promise.
   return promise;
 }
 

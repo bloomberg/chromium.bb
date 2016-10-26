@@ -396,20 +396,24 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
   session_keys_change_cb_.Run(session_id, key_added, std::move(keys_info));
 }
 
+// Runs the parallel steps from https://w3c.github.io/encrypted-media/#close.
 void AesDecryptor::CloseSession(const std::string& session_id,
                                 std::unique_ptr<SimpleCdmPromise> promise) {
   // Validate that this is a reference to an active session and then forget it.
   std::set<std::string>::iterator it = valid_sessions_.find(session_id);
   DCHECK(it != valid_sessions_.end());
 
+  // 5.1. Let cdm be the CDM instance represented by session's cdm instance
+  //      value.
+  // 5.2. Use cdm to close the session associated with session.
   valid_sessions_.erase(it);
-
-  // Close the session.
   DeleteKeysForSession(session_id);
-  promise->resolve();
 
-  // Resolve the closed attribute.
+  // 5.3. Queue a task to run the following steps:
+  // 5.3.1. Run the Session Closed algorithm on the session.
   session_closed_cb_.Run(session_id);
+  // 5.3.2. Resolve promise.
+  promise->resolve();
 }
 
 void AesDecryptor::RemoveSession(const std::string& session_id,
