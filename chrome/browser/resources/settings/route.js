@@ -142,7 +142,7 @@ cr.define('settings', function() {
   r.SITE_SETTINGS_SITE_DETAILS =
       r.SITE_SETTINGS_ALL.createChild('/siteSettings/siteDetails');
 
-  r.SITE_SETTINGS_HANDLERS = r.SITE_SETTINGS.createChild('handlers');
+  r.SITE_SETTINGS_HANDLERS = r.SITE_SETTINGS.createChild('/handlers');
 
   // TODO(tommycli): Find a way to refactor these repetitive category routes.
   r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS =
