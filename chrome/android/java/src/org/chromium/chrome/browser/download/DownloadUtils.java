@@ -200,9 +200,12 @@ public class DownloadUtils {
     public static boolean isAllowedToDownloadPage(Tab tab) {
         if (tab == null) return false;
 
-        // Don't allow downloading internal pages.
-        if (tab.getUrl().startsWith(UrlConstants.CHROME_SCHEME)) return false;
-        if (tab.getUrl().startsWith(UrlConstants.CHROME_NATIVE_SCHEME)) return false;
+        // Only allow HTTP and HTTPS pages, as that is these are the only scenarios supported by the
+        // background/offline page saving.
+        if (!tab.getUrl().startsWith(UrlConstants.HTTP_SCHEME)
+                && !tab.getUrl().startsWith(UrlConstants.HTTPS_SCHEME)) {
+            return false;
+        }
         if (tab.isShowingErrorPage()) return false;
         if (tab.isShowingInterstitialPage()) return false;
 
