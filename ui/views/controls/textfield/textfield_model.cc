@@ -431,10 +431,7 @@ bool TextfieldModel::MoveCursorTo(const gfx::SelectionModel& cursor) {
 bool TextfieldModel::MoveCursorTo(const gfx::Point& point, bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  gfx::SelectionModel cursor = render_text_->FindCursorPosition(point);
-  if (select)
-    cursor.set_selection_start(render_text_->selection().start());
-  return render_text_->MoveCursorTo(cursor);
+  return render_text_->MoveCursorTo(point, select);
 }
 
 base::string16 TextfieldModel::GetSelectedText() const {

@@ -351,6 +351,12 @@ class GFX_EXPORT RenderText {
   // grapheme boundary), it is a no-op and returns false.
   bool MoveCursorTo(const SelectionModel& selection_model);
 
+  // Moves the cursor to the text index corresponding to |point|. If |select| is
+  // true, a selection is made with the current selection start index. If the
+  // resultant text indices do not lie on valid grapheme boundaries, it is a no-
+  // op and returns false.
+  bool MoveCursorTo(const gfx::Point& point, bool select);
+
   // Set the selection_model_ based on |range|.
   // If the |range| start or end is greater than text length, it is modified
   // to be the text length.

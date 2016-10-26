@@ -685,6 +685,13 @@ bool RenderText::MoveCursorTo(const SelectionModel& model) {
   return changed;
 }
 
+bool RenderText::MoveCursorTo(const gfx::Point& point, bool select) {
+  gfx::SelectionModel model = FindCursorPosition(point);
+  if (select)
+    model.set_selection_start(selection().start());
+  return MoveCursorTo(model);
+}
+
 bool RenderText::SelectRange(const Range& range) {
   uint32_t text_length = static_cast<uint32_t>(text().length());
   Range sel(std::min(range.start(), text_length),

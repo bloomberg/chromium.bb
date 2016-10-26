@@ -29,6 +29,8 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/drag_controller.h"
+#include "ui/views/selection_controller.h"
+#include "ui/views/selection_controller_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/word_lookup_client.h"
 
@@ -44,6 +46,7 @@ class VIEWS_EXPORT Textfield : public View,
                                public ContextMenuController,
                                public DragController,
                                public WordLookupClient,
+                               public SelectionControllerDelegate,
                                public ui::TouchEditable,
                                public ui::TextInputClient {
  public:
@@ -210,9 +213,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Set the accessible name of the text field.
   void SetAccessibleName(const base::string16& name);
 
-  // Returns whether there is a drag operation originating from the textfield.
-  bool HasTextBeingDragged();
-
   // View overrides:
   gfx::Insets GetInsets() const override;
   int GetBaseline() const override;
@@ -223,6 +223,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
   WordLookupClient* GetWordLookupClient() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
@@ -269,6 +270,9 @@ class VIEWS_EXPORT Textfield : public View,
   bool GetDecoratedWordAtPoint(const gfx::Point& point,
                                gfx::DecoratedText* decorated_word,
                                gfx::Point* baseline_point) override;
+
+  // SelectionControllerDelegate overrides:
+  bool HasTextBeingDragged() const override;
 
   // ui::TouchEditable overrides:
   void SelectRect(const gfx::Point& start, const gfx::Point& end) override;
@@ -327,7 +331,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Returns the TextfieldModel's text/cursor/selection rendering model.
   gfx::RenderText* GetRenderText() const;
 
-  gfx::Point last_click_location() const { return last_click_location_; }
+  gfx::Point GetLastClickLocation() const;
 
   // Get the text from the selection clipboard.
   virtual base::string16 GetSelectionClipboardText() const;
@@ -344,6 +348,20 @@ class VIEWS_EXPORT Textfield : public View,
   // use TextfieldController::HandleKeyEvent, to intercept the key event.
   bool OnKeyPressed(const ui::KeyEvent& event) final;
   bool OnKeyReleased(const ui::KeyEvent& event) final;
+
+  // SelectionControllerDelegate overrides:
+  gfx::RenderText* GetRenderTextForSelectionController() override;
+  bool IsReadOnly() const override;
+  void SetTextBeingDragged(bool value) override;
+  int GetViewHeight() const override;
+  int GetViewWidth() const override;
+  int GetDragSelectionDelay() const override;
+  void OnBeforePointerAction() override;
+  void OnAfterPointerAction(bool text_changed, bool selection_changed) override;
+  // Callers within Textfield should call UpdateAfterChange depending on the
+  // return value.
+  bool PasteSelectionClipboard() override;
+  void UpdateSelectionClipboard() override;
 
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers
@@ -370,9 +388,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Helper function to call MoveCursorTo on the TextfieldModel.
   void MoveCursorTo(const gfx::Point& point, bool select);
 
-  // Helper function to update the selection on a mouse drag.
-  void SelectThroughLastDragLocation();
-
   // Convenience method to notify the InputMethod and TouchSelectionController.
   void OnCaretBoundsChanged();
 
@@ -395,9 +410,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Utility function to prepare the context menu.
   void UpdateContextMenu();
 
-  // Tracks the mouse clicks for single/double/triple clicks.
-  void TrackMouseClicks(const ui::MouseEvent& event);
-
   // Returns true if the current text input type allows access by the IME.
   bool ImeEditingAllowed() const;
 
@@ -406,13 +418,6 @@ class VIEWS_EXPORT Textfield : public View,
   void RevealPasswordChar(int index);
 
   void CreateTouchSelectionControllerAndNotifyIt();
-
-  // Updates the selection clipboard to any non-empty text selection for a non-
-  // password textfield.
-  void UpdateSelectionClipboard() const;
-
-  // Pastes the selection clipboard for the specified mouse event.
-  void PasteSelectionClipboard(const ui::MouseEvent& event);
 
   // Called when editing a textfield fails because the textfield is readonly.
   void OnEditFailed();
@@ -487,8 +492,9 @@ class VIEWS_EXPORT Textfield : public View,
   // The timer to reveal the last typed password character.
   base::OneShotTimer password_reveal_timer_;
 
-  // Tracks whether a user action is being performed; i.e. OnBeforeUserAction()
-  // has been called, but OnAfterUserAction() has not yet been called.
+  // Tracks whether a user action is being performed which may change the
+  // textfield; i.e. OnBeforeUserAction() has been called, but
+  // OnAfterUserAction() has not yet been called.
   bool performing_user_action_;
 
   // True if InputMethod::CancelComposition() should not be called.
@@ -504,18 +510,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Is the user potentially dragging and dropping from this view?
   bool initiating_drag_;
 
-  // A timer and point used to modify the selection when dragging.
-  base::RepeatingTimer drag_selection_timer_;
-  gfx::Point last_drag_location_;
-
-  // State variables used to track double and triple clicks.
-  size_t aggregated_clicks_;
-  base::TimeTicks last_click_time_;
-  gfx::Point last_click_location_;
-  gfx::Range double_click_word_;
-
   std::unique_ptr<ui::TouchEditingControllerDeprecated>
       touch_selection_controller_;
+
+  SelectionController selection_controller_;
 
   // Used to track touch drag starting location and offset to enable touch
   // scrolling.
