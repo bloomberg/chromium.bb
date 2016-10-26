@@ -48,15 +48,16 @@ static FontWeight doubleToFontWeight(double value) {
   return fontWeights[clampedIndex];
 }
 
-class ParentFontWeightChecker : public InterpolationType::ConversionChecker {
+class InheritedFontWeightChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentFontWeightChecker> create(
+  static std::unique_ptr<InheritedFontWeightChecker> create(
       FontWeight fontWeight) {
-    return wrapUnique(new ParentFontWeightChecker(fontWeight));
+    return wrapUnique(new InheritedFontWeightChecker(fontWeight));
   }
 
  private:
-  ParentFontWeightChecker(FontWeight fontWeight) : m_fontWeight(fontWeight) {}
+  InheritedFontWeightChecker(FontWeight fontWeight)
+      : m_fontWeight(fontWeight) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
@@ -91,7 +92,7 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertInherit(
     return nullptr;
   FontWeight inheritedFontWeight = state.parentStyle()->fontWeight();
   conversionCheckers.append(
-      ParentFontWeightChecker::create(inheritedFontWeight));
+      InheritedFontWeightChecker::create(inheritedFontWeight));
   return createFontWeightValue(inheritedFontWeight);
 }
 
@@ -113,7 +114,7 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertValue(
     case CSSValueLighter: {
       FontWeight inheritedFontWeight = state.parentStyle()->fontWeight();
       conversionCheckers.append(
-          ParentFontWeightChecker::create(inheritedFontWeight));
+          InheritedFontWeightChecker::create(inheritedFontWeight));
       if (keyword == CSSValueBolder)
         return createFontWeightValue(
             FontDescription::bolderWeight(inheritedFontWeight));

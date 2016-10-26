@@ -76,15 +76,16 @@ class UnderlyingVisibilityChecker
   const EVisibility m_visibility;
 };
 
-class ParentVisibilityChecker : public InterpolationType::ConversionChecker {
+class InheritedVisibilityChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentVisibilityChecker> create(
+  static std::unique_ptr<InheritedVisibilityChecker> create(
       EVisibility visibility) {
-    return wrapUnique(new ParentVisibilityChecker(visibility));
+    return wrapUnique(new InheritedVisibilityChecker(visibility));
   }
 
  private:
-  ParentVisibilityChecker(EVisibility visibility) : m_visibility(visibility) {}
+  InheritedVisibilityChecker(EVisibility visibility)
+      : m_visibility(visibility) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
@@ -127,7 +128,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertInherit(
     return nullptr;
   EVisibility inheritedVisibility = state.parentStyle()->visibility();
   conversionCheckers.append(
-      ParentVisibilityChecker::create(inheritedVisibility));
+      InheritedVisibilityChecker::create(inheritedVisibility));
   return createVisibilityValue(inheritedVisibility);
 }
 

@@ -29,20 +29,21 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInitial(
       CSSColorInterpolationType::createInterpolableColor(initialColor));
 }
 
-class ParentPaintChecker : public InterpolationType::ConversionChecker {
+class InheritedPaintChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentPaintChecker> create(CSSPropertyID property,
-                                                    const StyleColor& color) {
-    return wrapUnique(new ParentPaintChecker(property, color));
+  static std::unique_ptr<InheritedPaintChecker> create(
+      CSSPropertyID property,
+      const StyleColor& color) {
+    return wrapUnique(new InheritedPaintChecker(property, color));
   }
-  static std::unique_ptr<ParentPaintChecker> create(CSSPropertyID property) {
-    return wrapUnique(new ParentPaintChecker(property));
+  static std::unique_ptr<InheritedPaintChecker> create(CSSPropertyID property) {
+    return wrapUnique(new InheritedPaintChecker(property));
   }
 
  private:
-  ParentPaintChecker(CSSPropertyID property)
+  InheritedPaintChecker(CSSPropertyID property)
       : m_property(property), m_validColor(false) {}
-  ParentPaintChecker(CSSPropertyID property, const StyleColor& color)
+  InheritedPaintChecker(CSSPropertyID property, const StyleColor& color)
       : m_property(property), m_validColor(true), m_color(color) {}
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -67,11 +68,11 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInherit(
   StyleColor parentColor;
   if (!PaintPropertyFunctions::getColor(cssProperty(), *state.parentStyle(),
                                         parentColor)) {
-    conversionCheckers.append(ParentPaintChecker::create(cssProperty()));
+    conversionCheckers.append(InheritedPaintChecker::create(cssProperty()));
     return nullptr;
   }
   conversionCheckers.append(
-      ParentPaintChecker::create(cssProperty(), parentColor));
+      InheritedPaintChecker::create(cssProperty(), parentColor));
   return InterpolationValue(
       CSSColorInterpolationType::createInterpolableColor(parentColor));
 }

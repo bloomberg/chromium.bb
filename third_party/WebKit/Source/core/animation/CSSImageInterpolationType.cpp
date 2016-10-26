@@ -169,18 +169,18 @@ InterpolationValue CSSImageInterpolationType::maybeConvertInitial(
       ImagePropertyFunctions::getInitialStyleImage(cssProperty()), true);
 }
 
-class ParentImageChecker : public InterpolationType::ConversionChecker {
+class InheritedImageChecker : public InterpolationType::ConversionChecker {
  public:
-  ~ParentImageChecker() final {}
+  ~InheritedImageChecker() final {}
 
-  static std::unique_ptr<ParentImageChecker> create(
+  static std::unique_ptr<InheritedImageChecker> create(
       CSSPropertyID property,
       StyleImage* inheritedImage) {
-    return wrapUnique(new ParentImageChecker(property, inheritedImage));
+    return wrapUnique(new InheritedImageChecker(property, inheritedImage));
   }
 
  private:
-  ParentImageChecker(CSSPropertyID property, StyleImage* inheritedImage)
+  InheritedImageChecker(CSSPropertyID property, StyleImage* inheritedImage)
       : m_property(property), m_inheritedImage(inheritedImage) {}
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -208,7 +208,7 @@ InterpolationValue CSSImageInterpolationType::maybeConvertInherit(
       cssProperty(), *state.parentStyle());
   StyleImage* refableImage = const_cast<StyleImage*>(inheritedImage);
   conversionCheckers.append(
-      ParentImageChecker::create(cssProperty(), refableImage));
+      InheritedImageChecker::create(cssProperty(), refableImage));
   return maybeConvertStyleImage(inheritedImage, true);
 }
 

@@ -12,15 +12,15 @@
 
 namespace blink {
 
-class ParentNumberChecker : public InterpolationType::ConversionChecker {
+class InheritedNumberChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentNumberChecker> create(CSSPropertyID property,
-                                                     double number) {
-    return wrapUnique(new ParentNumberChecker(property, number));
+  static std::unique_ptr<InheritedNumberChecker> create(CSSPropertyID property,
+                                                        double number) {
+    return wrapUnique(new InheritedNumberChecker(property, number));
   }
 
  private:
-  ParentNumberChecker(CSSPropertyID property, double number)
+  InheritedNumberChecker(CSSPropertyID property, double number)
       : m_property(property), m_number(number) {}
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -66,7 +66,7 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertInherit(
                                           inheritedNumber))
     return nullptr;
   conversionCheckers.append(
-      ParentNumberChecker::create(cssProperty(), inheritedNumber));
+      InheritedNumberChecker::create(cssProperty(), inheritedNumber));
   return createNumberValue(inheritedNumber);
 }
 

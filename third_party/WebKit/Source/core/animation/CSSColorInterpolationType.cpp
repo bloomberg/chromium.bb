@@ -152,15 +152,16 @@ Color CSSColorInterpolationType::resolveInterpolableColor(
                   round(alpha));
 }
 
-class ParentColorChecker : public InterpolationType::ConversionChecker {
+class InheritedColorChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentColorChecker> create(CSSPropertyID property,
-                                                    const StyleColor& color) {
-    return wrapUnique(new ParentColorChecker(property, color));
+  static std::unique_ptr<InheritedColorChecker> create(
+      CSSPropertyID property,
+      const StyleColor& color) {
+    return wrapUnique(new InheritedColorChecker(property, color));
   }
 
  private:
-  ParentColorChecker(CSSPropertyID property, const StyleColor& color)
+  InheritedColorChecker(CSSPropertyID property, const StyleColor& color)
       : m_property(property), m_color(color) {}
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -198,7 +199,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertInherit(
   const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(
       cssProperty(), *state.parentStyle());
   conversionCheckers.append(
-      ParentColorChecker::create(cssProperty(), inheritedColor));
+      InheritedColorChecker::create(cssProperty(), inheritedColor));
   return convertStyleColorPair(inheritedColor, inheritedColor);
 }
 

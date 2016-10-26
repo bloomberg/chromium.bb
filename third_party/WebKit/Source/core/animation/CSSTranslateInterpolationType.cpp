@@ -15,32 +15,33 @@ namespace blink {
 
 namespace {
 
-class ParentTranslateChecker : public InterpolationType::ConversionChecker {
+class InheritedTranslateChecker : public InterpolationType::ConversionChecker {
  public:
-  ~ParentTranslateChecker() {}
+  ~InheritedTranslateChecker() {}
 
-  static std::unique_ptr<ParentTranslateChecker> create(
-      PassRefPtr<TranslateTransformOperation> parentTranslate) {
-    return wrapUnique(new ParentTranslateChecker(std::move(parentTranslate)));
+  static std::unique_ptr<InheritedTranslateChecker> create(
+      PassRefPtr<TranslateTransformOperation> inheritedTranslate) {
+    return wrapUnique(
+        new InheritedTranslateChecker(std::move(inheritedTranslate)));
   }
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    const TransformOperation* parentTranslate =
+    const TransformOperation* inheritedTranslate =
         environment.state().parentStyle()->translate();
-    if (m_parentTranslate == parentTranslate)
+    if (m_inheritedTranslate == inheritedTranslate)
       return true;
-    if (!m_parentTranslate || !parentTranslate)
+    if (!m_inheritedTranslate || !inheritedTranslate)
       return false;
-    return *m_parentTranslate == *parentTranslate;
+    return *m_inheritedTranslate == *inheritedTranslate;
   }
 
  private:
-  ParentTranslateChecker(
-      PassRefPtr<TranslateTransformOperation> parentTranslate)
-      : m_parentTranslate(parentTranslate) {}
+  InheritedTranslateChecker(
+      PassRefPtr<TranslateTransformOperation> inheritedTranslate)
+      : m_inheritedTranslate(inheritedTranslate) {}
 
-  RefPtr<TransformOperation> m_parentTranslate;
+  RefPtr<TransformOperation> m_inheritedTranslate;
 };
 
 enum TranslateComponentIndex : unsigned {
@@ -99,10 +100,11 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertInitial(
 InterpolationValue CSSTranslateInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  TranslateTransformOperation* parentTranslate =
+  TranslateTransformOperation* inheritedTranslate =
       state.parentStyle()->translate();
-  conversionCheckers.append(ParentTranslateChecker::create(parentTranslate));
-  return convertTranslateOperation(parentTranslate,
+  conversionCheckers.append(
+      InheritedTranslateChecker::create(inheritedTranslate));
+  return convertTranslateOperation(inheritedTranslate,
                                    state.parentStyle()->effectiveZoom());
 }
 

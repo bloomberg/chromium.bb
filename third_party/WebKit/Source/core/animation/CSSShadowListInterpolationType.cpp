@@ -47,30 +47,30 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertInitial(
       ShadowListPropertyFunctions::getInitialShadowList(cssProperty()), 1);
 }
 
-class ParentShadowListChecker : public InterpolationType::ConversionChecker {
+class InheritedShadowListChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentShadowListChecker> create(
+  static std::unique_ptr<InheritedShadowListChecker> create(
       CSSPropertyID property,
       PassRefPtr<ShadowList> shadowList) {
     return wrapUnique(
-        new ParentShadowListChecker(property, std::move(shadowList)));
+        new InheritedShadowListChecker(property, std::move(shadowList)));
   }
 
  private:
-  ParentShadowListChecker(CSSPropertyID property,
-                          PassRefPtr<ShadowList> shadowList)
+  InheritedShadowListChecker(CSSPropertyID property,
+                             PassRefPtr<ShadowList> shadowList)
       : m_property(property), m_shadowList(shadowList) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    const ShadowList* parentShadowList =
+    const ShadowList* inheritedShadowList =
         ShadowListPropertyFunctions::getShadowList(
             m_property, *environment.state().parentStyle());
-    if (!parentShadowList && !m_shadowList)
+    if (!inheritedShadowList && !m_shadowList)
       return true;
-    if (!parentShadowList || !m_shadowList)
+    if (!inheritedShadowList || !m_shadowList)
       return false;
-    return *parentShadowList == *m_shadowList;
+    return *inheritedShadowList == *m_shadowList;
   }
 
   const CSSPropertyID m_property;
@@ -82,12 +82,13 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   if (!state.parentStyle())
     return nullptr;
-  const ShadowList* parentShadowList =
+  const ShadowList* inheritedShadowList =
       ShadowListPropertyFunctions::getShadowList(cssProperty(),
                                                  *state.parentStyle());
-  conversionCheckers.append(ParentShadowListChecker::create(
-      cssProperty(), const_cast<ShadowList*>(parentShadowList)));  // Take ref.
-  return convertShadowList(parentShadowList,
+  conversionCheckers.append(InheritedShadowListChecker::create(
+      cssProperty(),
+      const_cast<ShadowList*>(inheritedShadowList)));  // Take ref.
+  return convertShadowList(inheritedShadowList,
                            state.parentStyle()->effectiveZoom());
 }
 

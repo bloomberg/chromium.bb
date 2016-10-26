@@ -60,20 +60,20 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertInitial(
   return maybeConvertLengthList(initialLengthList, 1);
 }
 
-class ParentLengthListChecker : public InterpolationType::ConversionChecker {
+class InheritedLengthListChecker : public InterpolationType::ConversionChecker {
  public:
-  ~ParentLengthListChecker() final {}
+  ~InheritedLengthListChecker() final {}
 
-  static std::unique_ptr<ParentLengthListChecker> create(
+  static std::unique_ptr<InheritedLengthListChecker> create(
       CSSPropertyID property,
       const Vector<Length>& inheritedLengthList) {
     return wrapUnique(
-        new ParentLengthListChecker(property, inheritedLengthList));
+        new InheritedLengthListChecker(property, inheritedLengthList));
   }
 
  private:
-  ParentLengthListChecker(CSSPropertyID property,
-                          const Vector<Length>& inheritedLengthList)
+  InheritedLengthListChecker(CSSPropertyID property,
+                             const Vector<Length>& inheritedLengthList)
       : m_property(property), m_inheritedLengthList(inheritedLengthList) {}
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -95,7 +95,7 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertInherit(
   bool success = LengthListPropertyFunctions::getLengthList(
       cssProperty(), *state.parentStyle(), inheritedLengthList);
   conversionCheckers.append(
-      ParentLengthListChecker::create(cssProperty(), inheritedLengthList));
+      InheritedLengthListChecker::create(cssProperty(), inheritedLengthList));
   if (!success)
     return nullptr;
   return maybeConvertLengthList(inheritedLengthList,

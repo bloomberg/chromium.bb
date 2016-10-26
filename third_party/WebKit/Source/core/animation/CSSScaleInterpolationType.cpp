@@ -53,14 +53,14 @@ struct Scale {
   double array[3];
 };
 
-class ParentScaleChecker : public InterpolationType::ConversionChecker {
+class InheritedScaleChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentScaleChecker> create(const Scale& scale) {
-    return wrapUnique(new ParentScaleChecker(scale));
+  static std::unique_ptr<InheritedScaleChecker> create(const Scale& scale) {
+    return wrapUnique(new InheritedScaleChecker(scale));
   }
 
  private:
-  ParentScaleChecker(const Scale& scale) : m_scale(scale) {}
+  InheritedScaleChecker(const Scale& scale) : m_scale(scale) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
@@ -131,9 +131,9 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertInitial(
 InterpolationValue CSSScaleInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  Scale parentScale(state.parentStyle()->scale());
-  conversionCheckers.append(ParentScaleChecker::create(parentScale));
-  return InterpolationValue(parentScale.createInterpolableValue());
+  Scale inheritedScale(state.parentStyle()->scale());
+  conversionCheckers.append(InheritedScaleChecker::create(inheritedScale));
+  return InterpolationValue(inheritedScale.createInterpolableValue());
 }
 
 InterpolationValue CSSScaleInterpolationType::maybeConvertValue(

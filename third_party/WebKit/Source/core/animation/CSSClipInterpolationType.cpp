@@ -57,23 +57,23 @@ static ClipAutos getClipAutos(const ComputedStyle& style) {
                    style.clipBottom().isAuto(), style.clipLeft().isAuto());
 }
 
-class ParentAutosChecker : public InterpolationType::ConversionChecker {
+class InheritedAutosChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentAutosChecker> create(
-      const ClipAutos& parentAutos) {
-    return wrapUnique(new ParentAutosChecker(parentAutos));
+  static std::unique_ptr<InheritedAutosChecker> create(
+      const ClipAutos& inheritedAutos) {
+    return wrapUnique(new InheritedAutosChecker(inheritedAutos));
   }
 
  private:
-  ParentAutosChecker(const ClipAutos& parentAutos)
-      : m_parentAutos(parentAutos) {}
+  InheritedAutosChecker(const ClipAutos& inheritedAutos)
+      : m_inheritedAutos(inheritedAutos) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    return m_parentAutos == getClipAutos(*environment.state().parentStyle());
+    return m_inheritedAutos == getClipAutos(*environment.state().parentStyle());
   }
 
-  const ClipAutos m_parentAutos;
+  const ClipAutos m_inheritedAutos;
 };
 
 class CSSClipNonInterpolableValue : public NonInterpolableValue {
@@ -182,9 +182,9 @@ InterpolationValue CSSClipInterpolationType::maybeConvertInitial(
 InterpolationValue CSSClipInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  ClipAutos parentAutos = getClipAutos(*state.parentStyle());
-  conversionCheckers.append(ParentAutosChecker::create(parentAutos));
-  if (parentAutos.isAuto)
+  ClipAutos inheritedAutos = getClipAutos(*state.parentStyle());
+  conversionCheckers.append(InheritedAutosChecker::create(inheritedAutos));
+  if (inheritedAutos.isAuto)
     return nullptr;
   return createClipValue(state.parentStyle()->clip(),
                          state.parentStyle()->effectiveZoom());

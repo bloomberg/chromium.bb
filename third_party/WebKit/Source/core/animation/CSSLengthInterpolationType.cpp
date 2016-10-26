@@ -28,15 +28,15 @@ float CSSLengthInterpolationType::effectiveZoom(
              : 1;
 }
 
-class ParentLengthChecker : public InterpolationType::ConversionChecker {
+class InheritedLengthChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<ParentLengthChecker> create(CSSPropertyID property,
-                                                     const Length& length) {
-    return wrapUnique(new ParentLengthChecker(property, length));
+  static std::unique_ptr<InheritedLengthChecker> create(CSSPropertyID property,
+                                                        const Length& length) {
+    return wrapUnique(new InheritedLengthChecker(property, length));
   }
 
  private:
-  ParentLengthChecker(CSSPropertyID property, const Length& length)
+  InheritedLengthChecker(CSSPropertyID property, const Length& length)
       : m_property(property), m_length(length) {}
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -78,7 +78,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertInherit(
                                           inheritedLength))
     return nullptr;
   conversionCheckers.append(
-      ParentLengthChecker::create(cssProperty(), inheritedLength));
+      InheritedLengthChecker::create(cssProperty(), inheritedLength));
   return LengthInterpolationFunctions::maybeConvertLength(
       inheritedLength, effectiveZoom(*state.parentStyle()));
 }
