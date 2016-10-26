@@ -33,6 +33,25 @@ class CSPDirectiveListTest : public ::testing::Test {
   Persistent<ContentSecurityPolicy> csp;
 };
 
+TEST_F(CSPDirectiveListTest, Header) {
+  struct TestCase {
+    const char* list;
+    const char* expected;
+  } cases[] = {{"script-src 'self'", "script-src 'self'"},
+               {"  script-src 'self'  ", "script-src 'self'"},
+               {"\t\tscript-src 'self'", "script-src 'self'"},
+               {"script-src 'self' \t", "script-src 'self'"}};
+
+  for (const auto& test : cases) {
+    Member<CSPDirectiveList> directiveList =
+        createList(test.list, ContentSecurityPolicyHeaderTypeReport);
+    EXPECT_EQ(test.expected, directiveList->header());
+    directiveList =
+        createList(test.list, ContentSecurityPolicyHeaderTypeEnforce);
+    EXPECT_EQ(test.expected, directiveList->header());
+  }
+}
+
 TEST_F(CSPDirectiveListTest, IsMatchingNoncePresent) {
   struct TestCase {
     const char* list;

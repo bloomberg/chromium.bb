@@ -807,7 +807,7 @@ bool CSPDirectiveList::shouldSendCSPHeader(Resource::Type type) const {
 // directive-list    = [ directive *( ";" [ directive ] ) ]
 //
 void CSPDirectiveList::parse(const UChar* begin, const UChar* end) {
-  m_header = String(begin, end - begin);
+  m_header = String(begin, end - begin).stripWhiteSpace();
 
   if (begin == end)
     return;
