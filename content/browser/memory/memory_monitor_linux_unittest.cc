@@ -64,7 +64,7 @@ TEST_F(MemoryMonitorLinuxTest, GetFreeMemoryUntilCriticalMB) {
   delegate_.ResetCalls();
 
   delegate_.SetFreeMemoryKB(64 * kKBperMB, 32 * kKBperMB, 16 * kKBperMB);
-  EXPECT_EQ(112, monitor_->GetFreeMemoryUntilCriticalMB());
+  EXPECT_EQ(64, monitor_->GetFreeMemoryUntilCriticalMB());
   EXPECT_EQ(1U, delegate_.calls());
   delegate_.ResetCalls();
 

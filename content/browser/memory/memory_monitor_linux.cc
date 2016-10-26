@@ -33,9 +33,11 @@ int MemoryMonitorLinux::GetFreeMemoryUntilCriticalMB() {
   if (mem_info.available > 0)
     return mem_info.available >> kShiftKiBtoMiB;
 
-  // If there is no "available" value, guess at it based on free memory and
-  // what the OS can easily discard.
-  return (mem_info.free + mem_info.buffers + mem_info.cached) >> kShiftKiBtoMiB;
+  // If there is no "available" value, guess at it based on free memory.
+  // Though there will be easily discardable memory (buffers and caches), we
+  // don't count them because discarding them will affect the overall
+  // performance of the OS.
+  return mem_info.free >> kShiftKiBtoMiB;
 }
 
 // static
