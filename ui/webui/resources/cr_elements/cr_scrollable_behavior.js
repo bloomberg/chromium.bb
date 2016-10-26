@@ -36,7 +36,7 @@
 
 /** @polymerBehavior */
 var CrScrollableBehavior = {
-  attached: function() {
+  ready: function() {
     var scrollableElements = this.root.querySelectorAll('[scrollable]');
 
     // Setup the intial scrolling related classes for each scrollable container.
@@ -48,15 +48,6 @@ var CrScrollableBehavior = {
     // Listen to the 'scroll' event for each scrollable container.
     for (let scrollable of scrollableElements)
       scrollable.addEventListener('scroll', this.updateScrollEvent_.bind(this));
-  },
-
-  detached: function() {
-    // Remove 'scroll' event listeners.
-    var scrollableElements = this.root.querySelectorAll('[scrollable]');
-    for (let scrollable of scrollableElements) {
-      scrollable.removeEventListener(
-          'scroll', this.updateScrollEvent_.bind(this));
-    }
   },
 
   /**
