@@ -14,6 +14,8 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#elif defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
 #endif
 
 namespace base {
@@ -40,6 +42,14 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
 
     // A SchedulerWorker starts out waiting for work.
     WaitForWork();
+
+#if defined(OS_WIN)
+    // This is required as SequencedWorkerPool previously blindly CoInitialized
+    // all of its threads.
+    // TODO: Get rid of this broad COM scope and force tasks that care about a
+    // CoInitialized environment to request one (via an upcoming ExecutionMode).
+    win::ScopedCOMInitializer com_initializer;
+#endif
 
     while (!outer_->task_tracker_->IsShutdownComplete() &&
            !outer_->should_exit_for_testing_.IsSet()) {
