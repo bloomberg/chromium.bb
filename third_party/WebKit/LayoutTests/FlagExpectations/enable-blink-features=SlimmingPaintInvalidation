@@ -11,20 +11,21 @@
 crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]
 
 # Missing enclosingIntRect for scale transforms.
-crbug.com/648769 paint/invalidation/invalidation-with-scale-transform.html [ Failure ]
-crbug.com/648769 paint/invalidation/transform-inline-layered-child.html [ Failure ]
-crbug.com/648769 paint/invalidation/transform-layout-repaint.html [ Failure ]
-crbug.com/648769 fast/sub-pixel/sub-pixel-accumulates-to-layers.html [ Failure ]
+#crbug.com/648769 paint/invalidation/invalidation-with-scale-transform.html [ Failure ]
+#crbug.com/648769 paint/invalidation/transform-inline-layered-child.html [ Failure ]
+#crbug.com/648769 paint/invalidation/transform-layout-repaint.html [ Failure ]
+#crbug.com/648769 fast/sub-pixel/sub-pixel-accumulates-to-layers.html [ Failure ]
 
-# We use FrameView::x() and FrameView::y() which are integers to generate FrameView
-# preTranslation, but the old path uses offsets in the layout tree. Not sure if it's
-# a bug of the new path or the old path.
-Bug(none) paint/invalidation/repaint-during-scroll-with-zoom.html [ Failure ]
+# Rebaselined: We use FrameView::x() and FrameView::y() which are integers to
+# generate FrameViewpreTranslation, but the old path uses offsets in the layout tree.
+# paint/invalidation/repaint-during-scroll-with-zoom.html
 
-# Missing SVG transform enclosingIntRect.
-crbug.com/651521 paint/invalidation/svg/absolute-sized-document-no-scrollbars.svg [ Failure ]
-crbug.com/651521 paint/invalidation/svg/tabgroup.svg [ Failure ]
-crbug.com/651521 paint/invalidation/svg/window.svg [ Failure ]
-crbug.com/651521 paint/invalidation/svg/animated-path-inside-transformed-html.xhtml [ Failure ]
-crbug.com/651521 paint/invalidation/svg/js-late-gradient-and-object-creation.svg [ Failure ]
-crbug.com/651521 paint/invalidation/svg/js-late-pattern-and-object-creation.svg [ Failure ]
+# Rebaselined because we expand local paint invalidation rect to whole pixels
+# before mapping it to backing so it may cover extra pixels causing incremental
+# invalidation not applicable.
+# paint/invalidation/border-radius-repaint-2.html
+# paint/invalidation/flexbox/repaint-rtl-column.html
+# paint/invalidation/flexbox/repaint.html
+# paint/invalidation/line-flow-with-floats-4.html
+# paint/invalidation/line-flow-with-floats-5.html
+# paint/invalidation/window-resize-percent-html.html

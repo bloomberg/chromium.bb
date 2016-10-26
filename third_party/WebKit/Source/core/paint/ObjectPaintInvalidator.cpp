@@ -411,7 +411,7 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (m_object.shouldDoFullPaintInvalidation())
     return m_object.fullPaintInvalidationReason();
 
-  if (m_context.oldBounds.isEmpty() && m_context.newBounds.isEmpty())
+  if (m_context.oldBounds.rect.isEmpty() && m_context.newBounds.rect.isEmpty())
     return PaintInvalidationNone;
 
   if (backgroundObscurationChanged)
@@ -431,16 +431,17 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
 
   // If the size is zero on one of our bounds then we know we're going to have
   // to do a full invalidation of either old bounds or new bounds.
-  if (m_context.oldBounds.isEmpty())
+  if (m_context.oldBounds.rect.isEmpty())
     return PaintInvalidationBecameVisible;
-  if (m_context.newBounds.isEmpty())
+  if (m_context.newBounds.rect.isEmpty())
     return PaintInvalidationBecameInvisible;
 
   // If we shifted, we don't know the exact reason so we are conservative and
   // trigger a full invalidation. Shifting could be caused by some layout
   // property (left / top) or some in-flow layoutObject inserted / removed
   // before us in the tree.
-  if (m_context.newBounds.location() != m_context.oldBounds.location())
+  if (m_context.newBounds.rect.location() !=
+      m_context.oldBounds.rect.location())
     return PaintInvalidationBoundsChange;
 
   if (m_context.newLocation != m_context.oldLocation)
@@ -452,7 +453,7 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (m_object.isBox())
     return PaintInvalidationIncremental;
 
-  if (m_context.oldBounds != m_context.newBounds)
+  if (m_context.oldBounds.rect != m_context.newBounds.rect)
     return PaintInvalidationBoundsChange;
 
   return PaintInvalidationNone;
@@ -513,7 +514,8 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
       return PaintInvalidationDelayedFull;
     default:
       DCHECK(isImmediateFullPaintInvalidationReason(reason));
-      fullyInvalidatePaint(reason, m_context.oldBounds, m_context.newBounds);
+      fullyInvalidatePaint(reason, m_context.oldBounds.rect,
+                           m_context.newBounds.rect);
   }
 
   m_context.paintingLayer->setNeedsRepaint();

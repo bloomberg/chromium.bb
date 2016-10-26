@@ -1,0 +1,61 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [874, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#3F3F3F",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 600, 874, 180],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 866, 764],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 780],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 224, 784, 548],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [137, 88, 607, 604],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    }
+  ]
+}
+

@@ -65,17 +65,16 @@ static LayoutRect computeBottomDelta(const LayoutPoint& location,
 }
 
 bool BoxPaintInvalidator::incrementallyInvalidatePaint() {
-  DCHECK(m_context.oldBounds.location() == m_context.newBounds.location());
-  LayoutRect rightDelta = computeRightDelta(m_context.newBounds.location(),
-                                            m_context.oldBounds.size(),
-                                            m_context.newBounds.size(), 0);
-  LayoutRect bottomDelta = computeBottomDelta(m_context.newBounds.location(),
-                                              m_context.oldBounds.size(),
-                                              m_context.newBounds.size(), 0);
+  const LayoutRect& oldRect = m_context.oldBounds.rect;
+  const LayoutRect& newRect = m_context.newBounds.rect;
+  DCHECK(oldRect.location() == newRect.location());
+  LayoutRect rightDelta =
+      computeRightDelta(newRect.location(), oldRect.size(), newRect.size(), 0);
+  LayoutRect bottomDelta =
+      computeBottomDelta(newRect.location(), oldRect.size(), newRect.size(), 0);
 
   if (m_box.styleRef().hasBorder() || m_box.styleRef().hasBackground()) {
-    LayoutSize oldBorderBoxSize =
-        computePreviousBorderBoxSize(m_context.oldBounds.size());
+    LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldRect.size());
     LayoutSize newBorderBoxSize = m_box.size();
     DCHECK(m_context.oldLocation == m_context.newLocation);
     rightDelta.unite(computeRightDelta(m_context.newLocation, oldBorderBoxSize,
@@ -99,8 +98,10 @@ void BoxPaintInvalidator::invalidatePaintRectClippedByOldAndNewBounds(
     return;
 
   ObjectPaintInvalidator objectPaintInvalidator(m_box);
-  LayoutRect rectClippedByOldBounds = intersection(rect, m_context.oldBounds);
-  LayoutRect rectClippedByNewBounds = intersection(rect, m_context.newBounds);
+  LayoutRect rectClippedByOldBounds =
+      intersection(rect, m_context.oldBounds.rect);
+  LayoutRect rectClippedByNewBounds =
+      intersection(rect, m_context.newBounds.rect);
   // Invalidate only once if the clipped rects equal.
   if (rectClippedByOldBounds == rectClippedByNewBounds) {
     objectPaintInvalidator.invalidatePaintUsingContainer(
@@ -157,17 +158,27 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
       return reason;
   }
 
-  // If the transform is not identity or translation, incremental invalidation
-  // is not applicable because the difference between oldBounds and newBounds
-  // doesn't cover all area needing invalidation.
-  // FIXME: Should also consider ancestor transforms since
-  // paintInvalidationContainer. crbug.com/426111.
   if (reason == PaintInvalidationIncremental &&
-      m_context.oldBounds != m_context.newBounds &&
-      m_context.paintInvalidationContainer != m_box && m_box.hasLayer() &&
-      m_box.layer()->transform() &&
-      !m_box.layer()->transform()->isIdentityOrTranslation())
-    return PaintInvalidationBoundsChange;
+      m_context.oldBounds.rect != m_context.newBounds.rect) {
+    if (m_context.newBounds.coversExtraPixels ||
+        m_context.oldBounds.coversExtraPixels) {
+      // Incremental invalidation is not applicable because the difference
+      // between oldBounds and newBounds may not cover all changed pixels along
+      // the edges.
+      return PaintInvalidationBoundsChange;
+    }
+
+    // If the transform is not identity or translation, incremental invalidation
+    // is not applicable because the difference between oldBounds and newBounds
+    // doesn't cover all area needing invalidation.
+    // TODO(crbug.com/426111): Should also consider ancestor transforms
+    // since paintInvalidationContainer. Combine this logic into the above
+    // boundsCoversExtraPixels logic.
+    if (m_context.paintInvalidationContainer != m_box && m_box.hasLayer() &&
+        m_box.layer()->transform() &&
+        !m_box.layer()->transform()->isIdentityOrTranslation())
+      return PaintInvalidationBoundsChange;
+  }
 
   const ComputedStyle& style = m_box.styleRef();
   if (style.backgroundLayers().thisOrNextLayersUseContentBox() ||
@@ -180,7 +191,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
 
   if (!style.hasBackground() && !style.hasBoxDecorations()) {
     if (reason == PaintInvalidationIncremental &&
-        m_context.oldBounds != m_context.newBounds &&
+        m_context.oldBounds.rect != m_context.newBounds.rect &&
         m_box.hasNonCompositedScrollbars())
       return PaintInvalidationBorderBoxChange;
     return reason;
@@ -193,7 +204,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   }
 
   LayoutSize oldBorderBoxSize =
-      computePreviousBorderBoxSize(m_context.oldBounds.size());
+      computePreviousBorderBoxSize(m_context.oldBounds.rect.size());
   LayoutSize newBorderBoxSize = m_box.size();
 
   if (oldBorderBoxSize == newBorderBoxSize)
@@ -251,7 +262,7 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded() {
 }
 
 bool BoxPaintInvalidator::needsToSavePreviousBoxSizes() {
-  LayoutSize paintInvalidationSize = m_context.newBounds.size();
+  LayoutSize paintInvalidationSize = m_context.newBounds.rect.size();
   // Don't save old box sizes if the paint rect is empty because we'll
   // full invalidate once the paint rect becomes non-empty.
   if (paintInvalidationSize.isEmpty())

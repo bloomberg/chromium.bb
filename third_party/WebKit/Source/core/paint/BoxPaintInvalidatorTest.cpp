@@ -9,6 +9,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 
 namespace blink {
 
@@ -46,13 +47,13 @@ TEST_F(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
   Element* target = document().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 200px");
   document().view()->updateAllLifecyclePhases();
-  const auto* rasterInvalidations =
-      &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  EXPECT_EQ(2u, rasterInvalidations->size());
-  EXPECT_EQ(IntRect(60, 0, 60, 240), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 120, 120, 120), (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[1].reason);
+  const auto& rasterInvalidations =
+      getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(2u, rasterInvalidations.size());
+  EXPECT_EQ(IntRect(60, 0, 60, 240), rasterInvalidations[0].rect);
+  EXPECT_EQ(PaintInvalidationIncremental, rasterInvalidations[0].reason);
+  EXPECT_EQ(IntRect(0, 120, 120, 120), rasterInvalidations[1].rect);
+  EXPECT_EQ(PaintInvalidationIncremental, rasterInvalidations[1].reason);
   document().view()->setTracksPaintInvalidations(false);
 }
 
@@ -61,13 +62,13 @@ TEST_F(BoxPaintInvalidatorTest, IncrementalInvalidationShrink) {
   Element* target = document().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 20px; height: 80px");
   document().view()->updateAllLifecyclePhases();
-  const auto* rasterInvalidations =
-      &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  EXPECT_EQ(2u, rasterInvalidations->size());
-  EXPECT_EQ(IntRect(30, 0, 40, 140), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 100, 70, 40), (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[1].reason);
+  const auto& rasterInvalidations =
+      getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(2u, rasterInvalidations.size());
+  EXPECT_EQ(IntRect(30, 0, 40, 140), rasterInvalidations[0].rect);
+  EXPECT_EQ(PaintInvalidationIncremental, rasterInvalidations[0].reason);
+  EXPECT_EQ(IntRect(0, 100, 70, 40), rasterInvalidations[1].rect);
+  EXPECT_EQ(PaintInvalidationIncremental, rasterInvalidations[1].reason);
   document().view()->setTracksPaintInvalidations(false);
 }
 
@@ -76,12 +77,92 @@ TEST_F(BoxPaintInvalidatorTest, IncrementalInvalidationMixed) {
   Element* target = document().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 80px");
   document().view()->updateAllLifecyclePhases();
+  const auto& rasterInvalidations =
+      getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(2u, rasterInvalidations.size());
+  EXPECT_EQ(IntRect(60, 0, 60, 120), rasterInvalidations[0].rect);
+  EXPECT_EQ(PaintInvalidationIncremental, rasterInvalidations[0].reason);
+  EXPECT_EQ(IntRect(0, 100, 70, 40), rasterInvalidations[1].rect);
+  EXPECT_EQ(PaintInvalidationIncremental, rasterInvalidations[1].reason);
+  document().view()->setTracksPaintInvalidations(false);
+}
+
+TEST_F(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
+  ScopedSlimmingPaintInvalidationForTest scopedSlimmingPaintInvalidation(true);
+
+  Element* target = document().getElementById("target");
+  LayoutObject* targetObject = target->layoutObject();
+  EXPECT_FALSE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
+
+  // Should do full invalidation if new geometry has subpixels.
+  document().view()->setTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr, "width: 100.6px; height: 70.3px");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_TRUE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
   const auto* rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   EXPECT_EQ(2u, rasterInvalidations->size());
-  EXPECT_EQ(IntRect(60, 0, 60, 120), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(IntRect(0, 0, 70, 140), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[0].reason);
+  EXPECT_EQ(IntRect(0, 0, 121, 111), (*rasterInvalidations)[1].rect);
+  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[1].reason);
+  document().view()->setTracksPaintInvalidations(false);
+
+  // Should do full invalidation if old geometry has subpixels.
+  document().view()->setTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr, "width: 50px; height: 100px");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_FALSE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
+  rasterInvalidations =
+      &getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(2u, rasterInvalidations->size());
+  EXPECT_EQ(IntRect(0, 0, 121, 111), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[0].reason);
+  EXPECT_EQ(IntRect(0, 0, 70, 140), (*rasterInvalidations)[1].rect);
+  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[1].reason);
+  document().view()->setTracksPaintInvalidations(false);
+}
+
+TEST_F(BoxPaintInvalidatorTest, SubpixelChangeWithoutVisualRectChange) {
+  ScopedSlimmingPaintInvalidationForTest scopedSlimmingPaintInvalidation(true);
+
+  Element* target = document().getElementById("target");
+  LayoutObject* targetObject = target->layoutObject();
+  EXPECT_EQ(LayoutRect(0, 0, 70, 140),
+            targetObject->previousPaintInvalidationRect());
+  EXPECT_FALSE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
+
+  // Should do full invalidation if new geometry has subpixels even if the paint
+  // invalidation rect doesn't change.
+  document().view()->setTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr,
+                       "margin-top: 0.6px; width: 50px; height: 99.3px");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(0, 0, 70, 140),
+            targetObject->previousPaintInvalidationRect());
+  EXPECT_TRUE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
+  const auto* rasterInvalidations =
+      &getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(1u, rasterInvalidations->size());
+  EXPECT_EQ(IntRect(0, 0, 70, 140), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationLocationChange, (*rasterInvalidations)[0].reason);
+  document().view()->setTracksPaintInvalidations(false);
+
+  // When changing size in subpixels keeping the paint invalidation rect
+  // unchanged, incremental incremental should cover all the changed pixels.
+  document().view()->setTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr,
+                       "margin-top: 0.6px; width: 49.3px; height: 98.5px");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(0, 0, 70, 140),
+            targetObject->previousPaintInvalidationRect());
+  EXPECT_TRUE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
+  rasterInvalidations =
+      &getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(2u, rasterInvalidations->size());
+  EXPECT_EQ(IntRect(59, 0, 11, 140), (*rasterInvalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 100, 70, 40), (*rasterInvalidations)[1].rect);
+  EXPECT_EQ(IntRect(0, 119, 70, 21), (*rasterInvalidations)[1].rect);
   EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[1].reason);
   document().view()->setTracksPaintInvalidations(false);
 }

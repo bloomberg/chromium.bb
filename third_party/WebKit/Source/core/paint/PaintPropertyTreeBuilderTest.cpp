@@ -1698,6 +1698,41 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
             rectWithTransformProperties->transform()->parent());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
+  setBodyInnerHTML(
+      "<svg id=svg style='position: relative; left: 0.6px; top: 0.3px'>"
+      "  <foreignObject id=foreign x='3.5' y='5.4' transform='translate(1,1)'>"
+      "    <div id=div style='position: absolute; left: 5.6px; top: 7.3px'>"
+      "    </div>"
+      "  </foreignObject>"
+      "</svg>");
+
+  const auto* svgProperties =
+      getLayoutObjectByElementId("svg")->paintProperties();
+  EXPECT_EQ(nullptr, svgProperties->paintOffsetTranslation());
+  EXPECT_EQ(LayoutPoint(LayoutUnit(8.6), LayoutUnit(8.3)),
+            svgProperties->localBorderBoxProperties()->paintOffset);
+  // Paint offset of SVGRoot be baked into svgLocalToBorderBoxTransform after
+  // snapped to pixels.
+  EXPECT_EQ(TransformationMatrix().translate(9, 8),
+            svgProperties->svgLocalToBorderBoxTransform()->matrix());
+
+  const auto* foreignObjectProperties =
+      getLayoutObjectByElementId("foreign")->paintProperties();
+  EXPECT_EQ(nullptr, foreignObjectProperties->paintOffsetTranslation());
+  // Paint offset of foreignObject should be originated from SVG root and
+  // snapped to pixels.
+  EXPECT_EQ(LayoutPoint(4, 5),
+            foreignObjectProperties->localBorderBoxProperties()->paintOffset);
+
+  const auto* divProperties =
+      getLayoutObjectByElementId("div")->paintProperties();
+  // Paint offset of descendant of foreignObject accumulates on paint offset of
+  // foreignObject.
+  EXPECT_EQ(LayoutPoint(LayoutUnit(4 + 5.6), LayoutUnit(5 + 7.3)),
+            divProperties->localBorderBoxProperties()->paintOffset);
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, NoRenderingContextByDefault) {
   setBodyInnerHTML("<div style='transform: translateZ(0)'></div>");
 

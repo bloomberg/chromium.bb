@@ -17,6 +17,13 @@ class LayoutObject;
 class PaintLayer;
 struct PaintPropertyTreeBuilderContext;
 
+struct PaintInvalidationRectInBacking {
+  LayoutRect rect;
+  // True if the rect have been expanded to whole pixels or be rotated, skewed,
+  // etc., so covers more pixels than the object covers.
+  bool coversExtraPixels = false;
+};
+
 struct PaintInvalidatorContext {
   PaintInvalidatorContext(
       const PaintPropertyTreeBuilderContext& treeBuilderContext)
@@ -68,8 +75,8 @@ struct PaintInvalidatorContext {
 
   PaintLayer* paintingLayer = nullptr;
 
-  LayoutRect oldBounds;
-  LayoutRect newBounds;
+  PaintInvalidationRectInBacking oldBounds;
+  PaintInvalidationRectInBacking newBounds;
   LayoutPoint oldLocation;
   LayoutPoint newLocation;
 };
@@ -84,11 +91,11 @@ class PaintInvalidator {
   void processPendingDelayedPaintInvalidations();
 
  private:
-  LayoutRect mapLocalRectToPaintInvalidationBacking(
+  PaintInvalidationRectInBacking mapLocalRectToPaintInvalidationBacking(
       const LayoutObject&,
       const FloatRect&,
       const PaintInvalidatorContext&);
-  LayoutRect computePaintInvalidationRectInBacking(
+  PaintInvalidationRectInBacking computePaintInvalidationRectInBacking(
       const LayoutObject&,
       const PaintInvalidatorContext&);
   LayoutPoint computeLocationFromPaintInvalidationBacking(

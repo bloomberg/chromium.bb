@@ -1205,9 +1205,9 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
       paintInvalidationState.paintInvalidationContainer();
   DCHECK(paintInvalidationContainer == containerForPaintInvalidation());
 
-  context.oldBounds = previousPaintInvalidationRect();
+  context.oldBounds.rect = previousPaintInvalidationRect();
   context.oldLocation = previousPositionFromPaintInvalidationBacking();
-  context.newBounds =
+  context.newBounds.rect =
       paintInvalidationState.computePaintInvalidationRectInBacking();
   context.newLocation =
       paintInvalidationState.computePositionFromPaintInvalidationBacking();
@@ -1215,11 +1215,11 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
   IntSize adjustment =
       scrollAdjustmentForPaintInvalidation(paintInvalidationContainer);
   context.newLocation.move(adjustment);
-  context.newBounds.move(adjustment);
+  context.newBounds.rect.move(adjustment);
 
-  adjustVisualRectForRasterEffects(context.newBounds);
+  adjustVisualRectForRasterEffects(context.newBounds.rect);
 
-  setPreviousPaintInvalidationRect(context.newBounds);
+  setPreviousPaintInvalidationRect(context.newBounds.rect);
   setPreviousPositionFromPaintInvalidationBacking(context.newLocation);
 
   if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() &&
