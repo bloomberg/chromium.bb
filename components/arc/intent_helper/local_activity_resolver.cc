@@ -19,9 +19,8 @@ bool LocalActivityResolver::ShouldChromeHandleUrl(const GURL& url) {
   }
 
   for (const IntentFilter& filter : intent_filters_) {
-    if (filter.match(url)) {
+    if (filter.match(url))
       return false;
-    }
   }
 
   // Didn't find any matches for Android so let Chrome handle it.
@@ -31,9 +30,8 @@ bool LocalActivityResolver::ShouldChromeHandleUrl(const GURL& url) {
 void LocalActivityResolver::UpdateIntentFilters(
     mojo::Array<mojom::IntentFilterPtr> mojo_intent_filters) {
   intent_filters_.clear();
-  for (mojom::IntentFilterPtr& mojo_filter : mojo_intent_filters) {
+  for (mojom::IntentFilterPtr& mojo_filter : mojo_intent_filters)
     intent_filters_.emplace_back(mojo_filter);
-  }
 }
 
 }  // namespace arc

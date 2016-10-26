@@ -203,6 +203,7 @@ source_set("unit_tests") {
     "intent_helper/font_size_util_unittest.cc",
     "intent_helper/intent_filter_unittest.cc",
     "intent_helper/link_handler_model_impl_unittest.cc",
+    "intent_helper/local_activity_resolver_unittest.cc",
     "intent_helper/page_transition_util_unittest.cc",
   ]
 
