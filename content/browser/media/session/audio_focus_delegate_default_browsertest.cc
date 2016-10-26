@@ -12,7 +12,7 @@
 
 namespace content {
 
-class MediaSessionDelegateDefaultBrowserTest : public ContentBrowserTest {
+class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableDefaultMediaSession);
@@ -46,19 +46,19 @@ class MediaSessionDelegateDefaultBrowserTest : public ContentBrowserTest {
 };
 
 // Two windows from the same BrowserContext.
-IN_PROC_BROWSER_TEST_F(MediaSessionDelegateDefaultBrowserTest,
+IN_PROC_BROWSER_TEST_F(AudioFocusDelegateDefaultBrowserTest,
                        ActiveWebContentsPauseOthers) {
   Run(shell()->web_contents(), CreateBrowser()->web_contents());
 }
 
 // Regular BrowserContext is interrupted by OffTheRecord one.
-IN_PROC_BROWSER_TEST_F(MediaSessionDelegateDefaultBrowserTest,
+IN_PROC_BROWSER_TEST_F(AudioFocusDelegateDefaultBrowserTest,
                        RegularBrowserInterruptsOffTheRecord) {
   Run(shell()->web_contents(), CreateOffTheRecordBrowser()->web_contents());
 }
 
 // OffTheRecord BrowserContext is interrupted by regular one.
-IN_PROC_BROWSER_TEST_F(MediaSessionDelegateDefaultBrowserTest,
+IN_PROC_BROWSER_TEST_F(AudioFocusDelegateDefaultBrowserTest,
                        OffTheRecordInterruptsRegular) {
   Run(CreateOffTheRecordBrowser()->web_contents(), shell()->web_contents());
 }
