@@ -1,36 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src=../../resources/testharness.js></script>
-<script src=../../resources/testharnessreport.js></script>
-<script src=resources/util.js></script>
-<title>Testing moving cursor to a misspelled word</title>
-</head>
-<body>
-<div id="src" contenteditable></div>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+
 <script>
-var node = document.getElementById('src');
-
-var steps = [
-    function() {
-        node.focus();
-        document.execCommand('InsertText', false, 'z');
-        document.execCommand('InsertText', false, 'z');
-        document.execCommand('InsertText', false, ' ');
-    },
-    function() {
-        testRunner.execCommand('DeleteBackward');
-        testRunner.execCommand('DeleteBackward');
-        document.execCommand('InsertText', false, ' ');
-    }
-];
-
-var assertions = [
-    () => assert_true(internals.hasSpellingMarker(document, 0, 2)),
-    () => assert_false(internals.hasSpellingMarker(document, 0, 1))
-];
-
-runSpellingTest(steps, assertions, 'Blink spellchecks a word again when changing a misspelled word');
+spellcheck_test(
+    '<div contenteditable>zz&nbsp;|</div>',
+    '',
+    '<div contenteditable>_zz_ </div>',
+    {
+      title: 'Has marker on initially misspelled word.',
+      callback: sample => spellcheck_test(
+          sample,
+          document => {
+            testRunner.execCommand('DeleteBackward');
+            testRunner.execCommand('DeleteBackward');
+            document.execCommand('InsertText', false, ' ');
+          },
+          '<div contenteditable>z </div>',
+          'Blink spellchecks a word again when changing a misspelled word')
+    });
 </script>
-</body>
-</html>
