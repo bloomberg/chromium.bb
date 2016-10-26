@@ -25,32 +25,45 @@ void ColumnBalancer::traverse() {
 void ColumnBalancer::traverseSubtree(const LayoutBox& box) {
   if (box.childrenInline() && box.isLayoutBlockFlow()) {
     // Look for breaks between lines.
-    for (const RootInlineBox* line = toLayoutBlockFlow(box).firstRootBox();
-         line; line = line->nextRootBox()) {
-      LayoutUnit lineTopInFlowThread =
-          m_flowThreadOffset + line->lineTopWithLeading();
-      if (lineTopInFlowThread < logicalTopInFlowThread())
-        continue;
-      if (lineTopInFlowThread >= logicalBottomInFlowThread())
-        break;
-      examineLine(*line);
-    }
+    traverseLines(toLayoutBlockFlow(box));
   }
-
-  const LayoutFlowThread* flowThread = columnSet().flowThread();
-  bool isHorizontalWritingMode = flowThread->isHorizontalWritingMode();
-
-  // The break-after value from the previous in-flow block-level object to be
-  // joined with the break-before value of the next in-flow block-level sibling.
-  EBreak previousBreakAfterValue = BreakAuto;
 
   // Look for breaks between and inside block-level children. Even if this is a
   // block flow with inline children, there may be interesting floats to examine
   // here.
-  for (const LayoutObject* child = box.slowFirstChild(); child;
-       child = child->nextSibling()) {
-    if (!child->isBox() || child->isInline())
+  traverseChildren(box);
+}
+
+void ColumnBalancer::traverseLines(const LayoutBlockFlow& blockFlow) {
+  for (const RootInlineBox* line = blockFlow.firstRootBox(); line;
+       line = line->nextRootBox()) {
+    LayoutUnit lineTopInFlowThread =
+        m_flowThreadOffset + line->lineTopWithLeading();
+    if (lineTopInFlowThread < logicalTopInFlowThread())
       continue;
+    if (lineTopInFlowThread >= logicalBottomInFlowThread())
+      break;
+    examineLine(*line);
+  }
+}
+
+void ColumnBalancer::traverseChildren(const LayoutObject& object) {
+  // The break-after value from the previous in-flow block-level object to be
+  // joined with the break-before value of the next in-flow block-level sibling.
+  EBreak previousBreakAfterValue = BreakAuto;
+
+  const LayoutFlowThread* flowThread = columnSet().flowThread();
+  bool isHorizontalWritingMode = flowThread->isHorizontalWritingMode();
+
+  for (const LayoutObject* child = object.slowFirstChild(); child;
+       child = child->nextSibling()) {
+    if (!child->isBox()) {
+      // Keep traversing inside inlines. There may be floats there.
+      if (child->isLayoutInline())
+        traverseChildren(*child);
+      continue;
+    }
+
     const LayoutBox& childBox = toLayoutBox(*child);
     LayoutRect overflowRect = childBox.layoutOverflowRect();
     LayoutUnit childLogicalBottomWithOverflow =

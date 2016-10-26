@@ -90,6 +90,9 @@ class ColumnBalancer {
  private:
   void traverseSubtree(const LayoutBox&);
 
+  void traverseLines(const LayoutBlockFlow&);
+  void traverseChildren(const LayoutObject&);
+
   const LayoutMultiColumnSet& m_columnSet;
   const LayoutUnit m_logicalTopInFlowThread;
   const LayoutUnit m_logicalBottomInFlowThread;
