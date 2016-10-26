@@ -55,9 +55,11 @@ using google_breakpad::MinidumpBreakpadInfo;
 
 struct Options {
   Options()
-      : minidumpPath() {}
+      : minidumpPath(), hexdump(false), hexdump_width(hexdump_width) {}
 
   string minidumpPath;
+  bool hexdump;
+  unsigned int hexdump_width;
 };
 
 static void DumpRawStream(Minidump *minidump,
@@ -99,8 +101,9 @@ static void DumpRawStream(Minidump *minidump,
   printf("\n\n");
 }
 
-static bool PrintMinidumpDump(const string& minidump_file) {
-  Minidump minidump(minidump_file);
+static bool PrintMinidumpDump(const Options& options) {
+  Minidump minidump(options.minidumpPath,
+                    options.hexdump);
   if (!minidump.Read()) {
     BPLOG(ERROR) << "minidump.Read() failed";
     return false;
@@ -218,6 +221,7 @@ Usage(int argc, const char *argv[], bool error) {
           "\n"
           "Options:\n"
           "  <minidump> should be a minidump.\n"
+          "  -x:\t Display memory in a hexdump like format\n"
           "  -h:\t Usage\n",
           argv[0]);
 }
@@ -227,8 +231,11 @@ static void
 SetupOptions(int argc, const char *argv[], Options *options) {
   int ch;
 
-  while ((ch = getopt(argc, (char * const *)argv, "h")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, "xh")) != -1) {
     switch (ch) {
+      case 'x':
+        options->hexdump = true;
+        break;
       case 'h':
         Usage(argc, argv, false);
         exit(0);
@@ -254,5 +261,5 @@ int main(int argc, const char *argv[]) {
   Options options;
   BPLOG_INIT(&argc, &argv);
   SetupOptions(argc, argv, &options);
-  return PrintMinidumpDump(options.minidumpPath) ? 0 : 1;
+  return PrintMinidumpDump(options) ? 0 : 1;
 }

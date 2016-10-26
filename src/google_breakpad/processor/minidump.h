@@ -236,6 +236,7 @@ class MinidumpMemoryRegion : public MinidumpObject,
 
   // Print a human-readable representation of the object to stdout.
   void Print() const;
+  void SetPrintMode(bool hexdump, unsigned int width);
 
  protected:
   explicit MinidumpMemoryRegion(Minidump* minidump);
@@ -251,6 +252,10 @@ class MinidumpMemoryRegion : public MinidumpObject,
   // Implementation for GetMemoryAtAddress
   template<typename T> bool GetMemoryAtAddressInternal(uint64_t address,
                                                        T*        value) const;
+
+  // Knobs for controlling display of memory printing.
+  bool hexdump_;
+  unsigned int hexdump_width_;
 
   // The largest memory region that will be read from a minidump.  The
   // default is 1MB.
@@ -1104,7 +1109,9 @@ class MinidumpLinuxMapsList : public MinidumpStream {
 class Minidump {
  public:
   // path is the pathname of a file containing the minidump.
-  explicit Minidump(const string& path);
+  explicit Minidump(const string& path,
+                    bool hexdump=false,
+                    unsigned int hexdump_width=16);
   // input is an istream wrapping minidump data. Minidump holds a
   // weak pointer to input, and the caller must ensure that the stream
   // is valid as long as the Minidump object is.
@@ -1214,6 +1221,9 @@ class Minidump {
   // Is the OS Android.
   bool IsAndroid();
 
+  // Get current hexdump display settings.
+  unsigned int HexdumpMode() const { return hexdump_ ? hexdump_width_ : 0; }
+
  private:
   // MinidumpStreamInfo is used in the MinidumpStreamMap.  It lets
   // the Minidump object locate interesting streams quickly, and
@@ -1274,6 +1284,10 @@ class Minidump {
   // construction or after a failed Read(); true following a successful
   // Read().
   bool                      valid_;
+
+  // Knobs for controlling display of memory printing.
+  bool                      hexdump_;
+  unsigned int              hexdump_width_;
 
   DISALLOW_COPY_AND_ASSIGN(Minidump);
 };
