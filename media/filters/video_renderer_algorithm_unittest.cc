@@ -284,18 +284,17 @@ class VideoRendererAlgorithmTest : public testing::Test {
 
   int GetCurrentFrameDropCount() const {
     DCHECK_GT(frames_queued(), 0u);
-    return algorithm_.frame_queue_[algorithm_.last_frame_index_].drop_count;
+    return algorithm_.frame_queue_.front().drop_count;
   }
 
   int GetCurrentFrameDisplayCount() const {
     DCHECK_GT(frames_queued(), 0u);
-    return algorithm_.frame_queue_[algorithm_.last_frame_index_].render_count;
+    return algorithm_.frame_queue_.front().render_count;
   }
 
   int GetCurrentFrameIdealDisplayCount() const {
     DCHECK_GT(frames_queued(), 0u);
-    return algorithm_.frame_queue_[algorithm_.last_frame_index_]
-        .ideal_render_count;
+    return algorithm_.frame_queue_.front().ideal_render_count;
   }
 
   int AccountForMissedIntervalsAndStep(TickGenerator* tg) {

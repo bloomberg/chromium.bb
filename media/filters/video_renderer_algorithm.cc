@@ -58,10 +58,6 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   if (frames_dropped)
     *frames_dropped = frames_dropped_during_enqueue_;
   frames_dropped_during_enqueue_ = 0;
-
-  // Once Render() is called |last_frame_index_| has meaning and should thus be
-  // preserved even if better frames come in before it due to out of order
-  // timestamps.
   have_rendered_frames_ = true;
 
   // Step 1: Update the current render interval for subroutines.
@@ -77,7 +73,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   UpdateFrameStatistics();
   const bool have_known_duration = average_frame_duration_ > base::TimeDelta();
   if (!was_time_moving_ || !have_known_duration || render_interval_.is_zero()) {
-    ReadyFrame& ready_frame = frame_queue_[last_frame_index_];
+    ReadyFrame& ready_frame = frame_queue_.front();
     DCHECK(ready_frame.frame);
 
     // If duration is unknown, we don't have enough frames to make a good guess
@@ -151,14 +147,14 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
 
   // Drop some debugging information if a frame had poor cadence.
   if (cadence_estimator_.has_cadence()) {
-    const ReadyFrame& last_frame_info = frame_queue_[last_frame_index_];
-    if (static_cast<size_t>(frame_to_render) != last_frame_index_ &&
+    const ReadyFrame& last_frame_info = frame_queue_.front();
+    if (frame_to_render &&
         last_frame_info.render_count < last_frame_info.ideal_render_count) {
       last_render_had_glitch_ = true;
       DVLOG(2) << "Under-rendered frame " << last_frame_info.frame->timestamp()
                << "; only " << last_frame_info.render_count
                << " times instead of " << last_frame_info.ideal_render_count;
-    } else if (static_cast<size_t>(frame_to_render) == last_frame_index_ &&
+    } else if (!frame_to_render &&
                last_frame_info.render_count >=
                    last_frame_info.ideal_render_count) {
       DVLOG(2) << "Over-rendered frame " << last_frame_info.frame->timestamp()
@@ -197,7 +193,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
 
     // Increment the frame counter for all frames removed after the last
     // rendered frame.
-    cadence_frame_counter_ += frame_to_render - last_frame_index_;
+    cadence_frame_counter_ += frame_to_render;
     frame_queue_.erase(frame_queue_.begin(),
                        frame_queue_.begin() + frame_to_render);
   }
@@ -210,8 +206,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   }
 
   // Step 8: Congratulations, the frame selection gauntlet has been passed!
-  last_frame_index_ = 0;
-
+  //
   // If we ended up choosing a frame selected by cadence, carry over the overage
   // values from the previous frame.  Overage is treated as having been
   // displayed and dropped for each count.  If the frame wasn't selected by
@@ -273,7 +268,7 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
   // given |deadline|.  We also always expire anything inserted before the last
   // rendered frame.
   size_t frames_dropped_without_rendering = 0;
-  size_t frames_to_expire = last_frame_index_;
+  size_t frames_to_expire = 0;
   const base::TimeTicks minimum_start_time =
       deadline - max_acceptable_drift_ - average_frame_duration_;
   for (; frames_to_expire < frame_queue_.size() - 1; ++frames_to_expire) {
@@ -289,13 +284,9 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
     return 0;
   }
 
-  cadence_frame_counter_ += frames_to_expire - last_frame_index_;
+  cadence_frame_counter_ += frames_to_expire;
   frame_queue_.erase(frame_queue_.begin(),
                      frame_queue_.begin() + frames_to_expire);
-
-  last_frame_index_ = last_frame_index_ > frames_to_expire
-                          ? last_frame_index_ - frames_to_expire
-                          : 0;
 
   UpdateEffectiveFramesQueued();
   return frames_dropped_without_rendering;
@@ -309,18 +300,17 @@ void VideoRendererAlgorithm::OnLastFrameDropped() {
   // If frames were expired by RemoveExpiredFrames() this count may be zero when
   // the OnLastFrameDropped() call comes in.
   if (!have_rendered_frames_ || frame_queue_.empty() ||
-      !frame_queue_[last_frame_index_].render_count) {
+      !frame_queue_.front().render_count) {
     return;
   }
 
-  ++frame_queue_[last_frame_index_].drop_count;
-  DCHECK_LE(frame_queue_[last_frame_index_].drop_count,
-            frame_queue_[last_frame_index_].render_count);
+  ++frame_queue_.front().drop_count;
+  DCHECK_LE(frame_queue_.front().drop_count, frame_queue_.front().render_count);
   UpdateEffectiveFramesQueued();
 }
 
 void VideoRendererAlgorithm::Reset(ResetFlag reset_flag) {
-  frames_dropped_during_enqueue_ = last_frame_index_ = 0;
+  frames_dropped_during_enqueue_ = 0;
   have_rendered_frames_ = last_render_had_glitch_ = false;
   render_interval_ = base::TimeDelta();
   frame_queue_.clear();
@@ -363,7 +353,7 @@ void VideoRendererAlgorithm::EnqueueFrame(
   // Drop any frames inserted before or at the last rendered frame if we've
   // already rendered any frames.
   const size_t new_frame_index = it - frame_queue_.begin();
-  if (new_frame_index <= last_frame_index_ && have_rendered_frames_) {
+  if (new_frame_index <= 0 && have_rendered_frames_) {
     DVLOG(2) << "Dropping frame inserted before the last rendered frame.";
     ++frames_dropped_during_enqueue_;
     return;
@@ -440,7 +430,7 @@ void VideoRendererAlgorithm::AccountForMissedIntervals(
   // Only update render count if the frame was rendered at all; it may not have
   // been if the frame is at the head because we haven't rendered anything yet
   // or because previous frames were removed via RemoveExpiredFrames().
-  ReadyFrame& ready_frame = frame_queue_[last_frame_index_];
+  ReadyFrame& ready_frame = frame_queue_.front();
   if (!ready_frame.render_count)
     return;
 
@@ -521,14 +511,13 @@ void VideoRendererAlgorithm::UpdateFrameStatistics() {
 }
 
 void VideoRendererAlgorithm::UpdateCadenceForFrames() {
-  for (size_t i = last_frame_index_; i < frame_queue_.size(); ++i) {
+  for (size_t i = 0; i < frame_queue_.size(); ++i) {
     // It's always okay to adjust the ideal render count, since the cadence
     // selection method will still count its current render count towards
     // cadence selection.
     frame_queue_[i].ideal_render_count =
         cadence_estimator_.has_cadence()
-            ? cadence_estimator_.GetCadenceForFrame(cadence_frame_counter_ +
-                                                    (i - last_frame_index_))
+            ? cadence_estimator_.GetCadenceForFrame(cadence_frame_counter_ + i)
             : 0;
   }
 }
@@ -541,7 +530,7 @@ int VideoRendererAlgorithm::FindBestFrameByCadence(
 
   DCHECK(!frame_queue_.empty());
   DCHECK(cadence_estimator_.has_cadence());
-  const ReadyFrame& current_frame = frame_queue_[last_frame_index_];
+  const ReadyFrame& current_frame = frame_queue_.front();
 
   if (remaining_overage) {
     DCHECK_EQ(*remaining_overage, 0);
@@ -549,7 +538,7 @@ int VideoRendererAlgorithm::FindBestFrameByCadence(
 
   // If the current frame is below cadence, we should prefer it.
   if (current_frame.render_count < current_frame.ideal_render_count)
-    return last_frame_index_;
+    return 0;
 
   // For over-rendered frames we need to ensure we skip frames and subtract
   // each skipped frame's ideal cadence from the over-render count until we
@@ -559,7 +548,7 @@ int VideoRendererAlgorithm::FindBestFrameByCadence(
 
   // If the current frame is on cadence or over cadence, find the next frame
   // with a positive ideal render count.
-  for (size_t i = last_frame_index_ + 1; i < frame_queue_.size(); ++i) {
+  for (size_t i = 1; i < frame_queue_.size(); ++i) {
     const ReadyFrame& frame = frame_queue_[i];
     if (frame.ideal_render_count > render_count_overage) {
       if (remaining_overage)
@@ -590,7 +579,7 @@ int VideoRendererAlgorithm::FindBestFrameByCoverage(
   int best_frame_by_coverage = -1;
   base::TimeDelta best_coverage;
   std::vector<base::TimeDelta> coverage(frame_queue_.size(), base::TimeDelta());
-  for (size_t i = last_frame_index_; i < frame_queue_.size(); ++i) {
+  for (size_t i = 0; i < frame_queue_.size(); ++i) {
     const ReadyFrame& frame = frame_queue_[i];
 
     // Frames which start after the deadline interval have zero coverage.
@@ -658,7 +647,7 @@ int VideoRendererAlgorithm::FindBestFrameByDrift(
   int best_frame_by_drift = -1;
   *selected_frame_drift = base::TimeDelta::Max();
 
-  for (size_t i = last_frame_index_; i < frame_queue_.size(); ++i) {
+  for (size_t i = 0; i < frame_queue_.size(); ++i) {
     const base::TimeDelta drift =
         CalculateAbsoluteDriftForFrame(deadline_min, i);
     // We use <= here to prefer the latest frame with minimum drift.
@@ -701,8 +690,7 @@ void VideoRendererAlgorithm::UpdateEffectiveFramesQueued() {
   // If we don't have cadence, subtract off any frames which are before
   // the last rendered frame or are past their expected rendering time.
   if (!cadence_estimator_.has_cadence()) {
-    size_t expired_frames = last_frame_index_;
-    DCHECK_LT(last_frame_index_, frame_queue_.size());
+    size_t expired_frames = 0;
     for (; expired_frames < frame_queue_.size(); ++expired_frames) {
       const ReadyFrame& frame = frame_queue_[expired_frames];
       if (frame.end_time.is_null() || frame.end_time > last_deadline_max_)

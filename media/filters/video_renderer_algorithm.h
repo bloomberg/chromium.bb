@@ -265,14 +265,6 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   using VideoFrameQueue = std::deque<ReadyFrame>;
   VideoFrameQueue frame_queue_;
 
-  // The index of the last frame rendered; presumed to be the first frame if no
-  // frame has been rendered yet. Updated by Render() and EnqueueFrame() if any
-  // frames are added or removed.
-  //
-  // In most cases this value is zero, but when out of order timestamps are
-  // present, the last rendered frame may be moved.
-  size_t last_frame_index_;
-
   // Handles cadence detection and frame cadence assignments.
   VideoCadenceEstimator cadence_estimator_;
 
