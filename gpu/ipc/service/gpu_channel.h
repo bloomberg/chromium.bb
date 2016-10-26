@@ -100,8 +100,6 @@ class GPU_EXPORT GpuChannel
     return preempted_flag_;
   }
 
-  const std::string& channel_id() const { return channel_id_; }
-
   virtual base::ProcessId GetClientPID() const;
 
   int client_id() const { return client_id_; }
@@ -233,9 +231,6 @@ class GPU_EXPORT GpuChannel
   std::unique_ptr<IPC::SyncChannel> channel_;
 
   IPC::Listener* unhandled_message_listener_;
-
-  // Uniquely identifies the channel within this GPU process.
-  std::string channel_id_;
 
   // Used to implement message routing functionality to CommandBuffer objects
   IPC::MessageRouter router_;

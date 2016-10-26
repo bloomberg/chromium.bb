@@ -628,19 +628,14 @@ IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event) {
   DCHECK(shutdown_event);
   DCHECK(!channel_);
 
-  IPC::ChannelHandle client_handle;
-  IPC::ChannelHandle server_handle;
-  IPC::Channel::GenerateMojoChannelHandlePair(
-      "gpu", &client_handle, &server_handle);
-  channel_id_ = client_handle.name;
-
-  channel_ =
-      IPC::SyncChannel::Create(server_handle, IPC::Channel::MODE_SERVER,
-                               this, io_task_runner_, false, shutdown_event);
+  mojo::MessagePipe pipe;
+  channel_ = IPC::SyncChannel::Create(pipe.handle0.release(),
+                                      IPC::Channel::MODE_SERVER, this,
+                                      io_task_runner_, false, shutdown_event);
 
   channel_->AddFilter(filter_.get());
 
-  return client_handle;
+  return pipe.handle1.release();
 }
 
 void GpuChannel::SetUnhandledMessageListener(IPC::Listener* listener) {

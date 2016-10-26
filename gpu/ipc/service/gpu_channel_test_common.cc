@@ -117,9 +117,9 @@ base::ProcessId TestGpuChannel::GetClientPID() const {
 }
 
 IPC::ChannelHandle TestGpuChannel::Init(base::WaitableEvent* shutdown_event) {
-  channel_id_ = "ChannelMojo-gpu";
   filter_->OnFilterAdded(&sink_);
-  return IPC::ChannelHandle(channel_id());
+  mojo::MessagePipe pipe;
+  return pipe.handle0.release();
 }
 
 bool TestGpuChannel::Send(IPC::Message* msg) {

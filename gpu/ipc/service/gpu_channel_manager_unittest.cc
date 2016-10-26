@@ -28,11 +28,10 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
       kClientId, kClientTracingId, false /* preempts */,
       false /* allow_view_command_buffers */,
       false /* allow_real_time_streams */);
-  EXPECT_NE("", channel_handle.name);
+  EXPECT_TRUE(channel_handle.is_mojo_channel_handle());
 
   GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
   ASSERT_TRUE(channel);
-  EXPECT_EQ(channel_handle.name, channel->channel_id());
 }
 
 }  // namespace gpu
