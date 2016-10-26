@@ -50,7 +50,7 @@ struct DEVICE_GENERIC_SENSOR_EXPORT SensorReading {
 
 // This structure represents sensor reading buffer: sensor reading and seqlock
 // for synchronization.
-struct SensorReadingSharedBuffer {
+struct DEVICE_GENERIC_SENSOR_EXPORT SensorReadingSharedBuffer {
   SensorReadingSharedBuffer();
   ~SensorReadingSharedBuffer();
   SensorReadingField<OneWriterSeqLock> seqlock;

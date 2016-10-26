@@ -34,6 +34,7 @@ component("generic_sensor") {
 
   deps = [
     "//base",
+    "//device/base/synchronization",
   ]
 
   public_deps = [

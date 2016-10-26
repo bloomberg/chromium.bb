@@ -27,6 +27,7 @@ blink_modules_sources("sensor") {
   ]
 
   deps = [
+    "//device/base/synchronization",
     "//device/generic_sensor/public/cpp",
     "//device/generic_sensor/public/interfaces:interfaces_blink",
   ]
