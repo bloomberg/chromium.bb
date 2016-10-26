@@ -114,6 +114,18 @@ base::MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
   return current_state_;
 }
 
+void MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting(
+    base::MemoryState memory_state) {
+  // This changes the current state temporariy for testing. The state will be
+  // updated later by the task posted at ScheduleUpdateState.
+  base::MemoryState prev_state = current_state_;
+  current_state_ = memory_state;
+  if (prev_state != current_state_) {
+    NotifyStateToClients();
+    NotifyStateToChildren();
+  }
+}
+
 void MemoryCoordinatorImpl::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {

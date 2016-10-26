@@ -60,6 +60,10 @@ class MemoryCoordinatorImplTest : public testing::Test {
         SetGetCurrentMemoryStateCallback(base::Bind(
             &MemoryCoordinator::GetCurrentMemoryState,
             base::Unretained(coordinator_.get())));
+    base::MemoryCoordinatorProxy::GetInstance()->
+        SetSetCurrentMemoryStateForTestingCallback(base::Bind(
+            &MemoryCoordinator::SetCurrentMemoryStateForTesting,
+            base::Unretained(coordinator_.get())));
   }
 
   MockMemoryMonitor* GetMockMemoryMonitor() {
@@ -165,6 +169,36 @@ TEST_F(MemoryCoordinatorImplTest, UpdateState) {
     EXPECT_EQ(base::MemoryState::NORMAL, client.state());
     base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
   }
+}
+
+TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
+  coordinator_->expected_renderer_size_ = 10;
+  coordinator_->new_renderers_until_throttled_ = 4;
+  coordinator_->new_renderers_until_suspended_ = 2;
+  coordinator_->new_renderers_back_to_normal_ = 5;
+  coordinator_->new_renderers_back_to_throttled_ = 3;
+  DCHECK(coordinator_->ValidateParameters());
+
+  MockMemoryCoordinatorClient client;
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
+  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetCurrentMemoryState());
+  EXPECT_EQ(base::MemoryState::NORMAL,
+            base::MemoryCoordinatorProxy::GetInstance()->
+                GetCurrentMemoryState());
+  EXPECT_EQ(base::MemoryState::NORMAL, client.state());
+
+  base::MemoryCoordinatorProxy::GetInstance()->SetCurrentMemoryStateForTesting(
+      base::MemoryState::THROTTLED);
+  EXPECT_EQ(base::MemoryState::THROTTLED,
+            coordinator_->GetCurrentMemoryState());
+  EXPECT_EQ(base::MemoryState::THROTTLED,
+            base::MemoryCoordinatorProxy::GetInstance()->
+                GetCurrentMemoryState());
+  base::RunLoop loop;
+  loop.RunUntilIdle();
+  EXPECT_TRUE(client.is_called());
+  EXPECT_EQ(base::MemoryState::THROTTLED, client.state());
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
 }
 
 }  // namespace content

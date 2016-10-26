@@ -51,6 +51,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   MemoryMonitor* memory_monitor() { return memory_monitor_.get(); }
 
   base::MemoryState GetCurrentMemoryState() const override;
+  void SetCurrentMemoryStateForTesting(base::MemoryState memory_state) override;
 
   // NotificationObserver implementation:
   void Observe(int type,
@@ -60,6 +61,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
  private:
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextState);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateState);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, SetMemoryStateForTesting);
 
   friend struct MemoryCoordinatorSingletonTraits;
 

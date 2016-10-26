@@ -132,6 +132,10 @@ base::MemoryState MemoryCoordinator::GetCurrentMemoryState() const {
   return base::MemoryState::UNKNOWN;
 }
 
+void MemoryCoordinator::SetCurrentMemoryStateForTesting(
+    base::MemoryState memory_state) {
+}
+
 void MemoryCoordinator::AddChildForTesting(
     int dummy_render_process_id, mojom::ChildMemoryCoordinatorPtr child) {
   mojom::MemoryCoordinatorHandlePtr mch;

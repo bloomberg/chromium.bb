@@ -56,6 +56,7 @@ class CONTENT_EXPORT MemoryCoordinator {
   virtual void OnChildAdded(int render_process_id) {}
 
   virtual base::MemoryState GetCurrentMemoryState() const;
+  virtual void SetCurrentMemoryStateForTesting(base::MemoryState memory_state);
 
  protected:
   // Constructor. Protected as this is a singleton, but accessible for

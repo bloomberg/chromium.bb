@@ -17,14 +17,25 @@ MemoryCoordinatorProxy* MemoryCoordinatorProxy::GetInstance() {
 }
 
 MemoryState MemoryCoordinatorProxy::GetCurrentMemoryState() const {
-  if (!callback_)
+  if (!getter_callback_)
     return MemoryState::NORMAL;
-  return callback_.Run();
+  return getter_callback_.Run();
+}
+
+void MemoryCoordinatorProxy::SetCurrentMemoryStateForTesting(
+    MemoryState memory_state) {
+  DCHECK(setter_callback_);
+  setter_callback_.Run(memory_state);
 }
 
 void MemoryCoordinatorProxy::SetGetCurrentMemoryStateCallback(
     GetCurrentMemoryStateCallback callback) {
-  callback_ = callback;
+  getter_callback_ = callback;
+}
+
+void MemoryCoordinatorProxy::SetSetCurrentMemoryStateForTestingCallback(
+    SetCurrentMemoryStateCallback callback) {
+  setter_callback_ = callback;
 }
 
 }  // namespace base

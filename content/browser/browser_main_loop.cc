@@ -1400,6 +1400,10 @@ void BrowserMainLoop::InitializeMemoryManagementComponent() {
         SetGetCurrentMemoryStateCallback(base::Bind(
             &MemoryCoordinator::GetCurrentMemoryState,
             base::Unretained(MemoryCoordinator::GetInstance())));
+    base::MemoryCoordinatorProxy::GetInstance()->
+        SetSetCurrentMemoryStateForTestingCallback(base::Bind(
+            &MemoryCoordinator::SetCurrentMemoryStateForTesting,
+            base::Unretained(MemoryCoordinator::GetInstance())));
     return;
   }
 
