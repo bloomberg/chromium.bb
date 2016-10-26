@@ -1232,7 +1232,9 @@ void ContentSecurityPolicy::dispatchViolationEvents(
     const SecurityPolicyViolationEventInit& violationData,
     Element* element,
     Document* document) {
-  if (!document->domWindow())
+  // If the document is detached or closed (thus clearing its event queue)
+  // between the violation occuring and this event dispatch, exit early.
+  if (!document->domWindow() || !document->domWindow()->getEventQueue())
     return;
 
   SecurityPolicyViolationEvent* event = SecurityPolicyViolationEvent::create(
