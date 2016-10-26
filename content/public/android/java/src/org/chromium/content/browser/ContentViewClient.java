@@ -26,11 +26,15 @@ import org.chromium.base.Log;
  */
 public class ContentViewClient {
     // Tag used for logging.
-    private static final String TAG = "cr.ContentViewClient";
+    private static final String TAG = "cr_ContentViewClient";
 
     // Default value to signal that the ContentView's size should not be overridden.
     private static final int UNSPECIFIED_MEASURE_SPEC =
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+
+    private static final String GEO_SCHEME = "geo";
+    private static final String TEL_SCHEME = "tel";
+    private static final String MAILTO_SCHEME = "mailto";
 
     public void onUpdateTitle(String title) {
     }
@@ -144,6 +148,14 @@ public class ContentViewClient {
         // Perform generic parsing of the URI to turn it into an Intent.
         try {
             intent = Intent.parseUri(intentUrl, Intent.URI_INTENT_SCHEME);
+
+            String scheme = intent.getScheme();
+            if (!scheme.equals(GEO_SCHEME) && !scheme.equals(TEL_SCHEME)
+                    && !scheme.equals(MAILTO_SCHEME)) {
+                Log.w(TAG, "Invalid scheme for URI %s", intentUrl);
+                return;
+            }
+
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         } catch (Exception ex) {
             Log.w(TAG, "Bad URI %s", intentUrl, ex);
