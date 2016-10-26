@@ -38,6 +38,8 @@ namespace blink {
 
 namespace {
 
+const GLuint64 kMaxClientWaitTimeout = 0u;
+
 GLsync syncObjectOrZero(const WebGLSync* object) {
   return object ? object->object() : nullptr;
 }
@@ -3086,18 +3088,17 @@ void WebGL2RenderingContextBase::deleteSync(WebGLSync* sync) {
 
 GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync,
                                                   GLbitfield flags,
-                                                  GLint64 timeout) {
+                                                  GLuint64 timeout) {
   if (isContextLost() || !validateWebGLObject("clientWaitSync", sync))
     return GL_WAIT_FAILED;
 
-  if (timeout < -1) {
-    synthesizeGLError(GL_INVALID_VALUE, "clientWaitSync", "timeout < -1");
+  if (timeout > kMaxClientWaitTimeout) {
+    synthesizeGLError(GL_INVALID_OPERATION, "clientWaitSync",
+                      "timeout > MAX_CLIENT_WAIT_TIMEOUT_WEBGL");
     return GL_WAIT_FAILED;
   }
 
-  GLuint64 timeout64 =
-      timeout == -1 ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout);
-  return contextGL()->ClientWaitSync(syncObjectOrZero(sync), flags, timeout64);
+  return contextGL()->ClientWaitSync(syncObjectOrZero(sync), flags, timeout);
 }
 
 void WebGL2RenderingContextBase::waitSync(WebGLSync* sync,
@@ -3106,14 +3107,17 @@ void WebGL2RenderingContextBase::waitSync(WebGLSync* sync,
   if (isContextLost() || !validateWebGLObject("waitSync", sync))
     return;
 
-  if (timeout < -1) {
-    synthesizeGLError(GL_INVALID_VALUE, "waitSync", "timeout < -1");
+  if (flags) {
+    synthesizeGLError(GL_INVALID_VALUE, "waitSync", "invalid flags");
     return;
   }
 
-  GLuint64 timeout64 =
-      timeout == -1 ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout);
-  contextGL()->WaitSync(syncObjectOrZero(sync), flags, timeout64);
+  if (timeout != -1) {
+    synthesizeGLError(GL_INVALID_VALUE, "waitSync", "invalid timeout");
+    return;
+  }
+
+  // This is intentionally changed to an no-op in WebGL2.
 }
 
 ScriptValue WebGL2RenderingContextBase::getSyncParameter(
@@ -3786,7 +3790,7 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState,
     case GL_MAX_ARRAY_TEXTURE_LAYERS:
       return getIntParameter(scriptState, pname);
     case GC3D_MAX_CLIENT_WAIT_TIMEOUT_WEBGL:
-      return WebGLAny(scriptState, 0u);
+      return WebGLAny(scriptState, kMaxClientWaitTimeout);
     case GL_MAX_COLOR_ATTACHMENTS:
       return getIntParameter(scriptState, pname);
     case GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS:

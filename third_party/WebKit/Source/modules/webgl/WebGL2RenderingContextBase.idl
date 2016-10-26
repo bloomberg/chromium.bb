@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-typedef long long      GLint64;
+typedef long long GLint64;
+typedef unsigned long long GLuint64;
 
 [
     RuntimeEnabled=UnsafeES3APIs,
@@ -414,7 +415,7 @@ typedef long long      GLint64;
     WebGLSync fenceSync(GLenum condition, GLbitfield flags);
     GLboolean isSync(WebGLSync? sync);
     void deleteSync(WebGLSync? sync);
-    GLenum clientWaitSync(WebGLSync? sync, GLbitfield flags, GLint64 timeout);
+    GLenum clientWaitSync(WebGLSync? sync, GLbitfield flags, GLuint64 timeout);
     void waitSync(WebGLSync? sync, GLbitfield flags, GLint64 timeout);
 
     [CallWith=ScriptState] any getSyncParameter(WebGLSync? sync, GLenum pname);

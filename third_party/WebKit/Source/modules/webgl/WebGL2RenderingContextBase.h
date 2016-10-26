@@ -658,7 +658,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   WebGLSync* fenceSync(GLenum, GLbitfield);
   GLboolean isSync(WebGLSync*);
   void deleteSync(WebGLSync*);
-  GLenum clientWaitSync(WebGLSync*, GLbitfield, GLint64);
+  GLenum clientWaitSync(WebGLSync*, GLbitfield, GLuint64);
   void waitSync(WebGLSync*, GLbitfield, GLint64);
 
   ScriptValue getSyncParameter(ScriptState*, WebGLSync*, GLenum);
