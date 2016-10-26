@@ -56,8 +56,8 @@ class ChromeMetadataSource : public ::i18n::addressinput::Source,
   const std::string validation_data_url_;
   net::URLRequestContextGetter* const getter_;  // weak
 
-  // Maps from active URL fetcher to request metadata. The value is owned.
-  std::map<const net::URLFetcher*, Request*> requests_;
+  // Maps from active URL fetcher to request metadata.
+  std::map<const net::URLFetcher*, std::unique_ptr<Request>> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetadataSource);
 };

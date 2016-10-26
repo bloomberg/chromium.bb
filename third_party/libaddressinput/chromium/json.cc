@@ -10,7 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace i18n {
@@ -49,7 +49,7 @@ class Json::JsonImpl {
       : owned_(Parse(json, &parser_error_)),
         dict_(*owned_) {}
 
-  ~JsonImpl() { base::STLDeleteElements(&sub_dicts_); }
+  ~JsonImpl() {}
 
   bool parser_error() const { return parser_error_; }
 
@@ -60,7 +60,9 @@ class Json::JsonImpl {
         if (it.value().IsType(base::Value::TYPE_DICTIONARY)) {
           const base::DictionaryValue* sub_dict = NULL;
           it.value().GetAsDictionary(&sub_dict);
-          sub_dicts_.push_back(new Json(new JsonImpl(*sub_dict)));
+          owned_sub_dicts_.push_back(
+              base::WrapUnique(new Json(new JsonImpl(*sub_dict))));
+          sub_dicts_.push_back(owned_sub_dicts_.back().get());
         }
       }
     }
@@ -79,6 +81,7 @@ class Json::JsonImpl {
   bool parser_error_;
   const base::DictionaryValue& dict_;
   std::vector<const Json*> sub_dicts_;
+  std::vector<std::unique_ptr<Json>> owned_sub_dicts_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonImpl);
 };
