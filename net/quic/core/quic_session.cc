@@ -737,8 +737,12 @@ size_t QuicSession::GetNumOpenIncomingStreams() const {
 }
 
 size_t QuicSession::GetNumOpenOutgoingStreams() const {
-  return GetNumDynamicOutgoingStreams() - GetNumDrainingOutgoingStreams() +
-         GetNumLocallyClosedOutgoingStreamsHighestOffset();
+  CHECK_GE(GetNumDynamicOutgoingStreams() +
+               GetNumLocallyClosedOutgoingStreamsHighestOffset(),
+           GetNumDrainingOutgoingStreams());
+  return GetNumDynamicOutgoingStreams() +
+         GetNumLocallyClosedOutgoingStreamsHighestOffset() -
+         GetNumDrainingOutgoingStreams();
 }
 
 size_t QuicSession::GetNumActiveStreams() const {
