@@ -112,12 +112,6 @@ crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.htm
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
-# JVV skia change to circles
-crbug.com/653991 virtual/gpu-rasterization/fast/images/color-profile-mask-image-svg.html    [ NeedsManualRebaseline ]
-crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-css.html            [ NeedsManualRebaseline ]
-crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-image-document.html [ NeedsManualRebaseline ]
-crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation.html                [ NeedsManualRebaseline ]
-
 crbug.com/658479 paint/invalidation/background-resize-height.html [ Failure Pass ]
 
 # ====== Paint team owned tests to here ======
