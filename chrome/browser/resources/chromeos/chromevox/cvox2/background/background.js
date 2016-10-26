@@ -480,7 +480,14 @@ Background.prototype = {
           this.pageSel_.select();
       }
     } else {
-      range.select();
+      // Ensure we don't select the editable when we first encounter it.
+      var lca = null;
+      if (range.start.node && prevRange.start.node) {
+        lca = AutomationUtil.getLeastCommonAncestor(prevRange.start.node,
+                                                    range.start.node);
+      }
+      if (!lca || lca.state.editable || !range.start.node.state.editable)
+        range.select();
     }
 
     o.withRichSpeechAndBraille(

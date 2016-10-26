@@ -1043,15 +1043,25 @@ Output.prototype = {
           var text = node.value;
           if (!node.state.editable && node.name == text)
             return;
+
+          var selectedText = '';
           if (text !== undefined) {
             if (node.textSelStart !== undefined) {
               options.annotation.push(new Output.SelectionSpan(
                   node.textSelStart,
                   node.textSelEnd));
+
+              selectedText =
+                  node.value.substring(node.textSelStart, node.textSelEnd);
             }
           }
           options.annotation.push(token);
-          this.append_(buff, text, options);
+          if (selectedText) {
+            this.append_(buff, selectedText, options);
+            this.append_(buff, Msgs.getMsg('selected'), options);
+          } else {
+            this.append_(buff, text, options);
+          }
         } else if (token == 'name') {
           options.annotation.push(token);
           var earcon = node ? this.findEarcon_(node, opt_prevNode) : null;

@@ -297,4 +297,19 @@ AutomationUtil.getTopLevelRoot = function(node) {
   return root;
 };
 
+/**
+ * @param {!AutomationNode} prevNode
+ * @param {!AutomationNode} node
+ * @return {AutomationNode}
+ */
+AutomationUtil.getLeastCommonAncestor = function(prevNode, node) {
+  if (prevNode == node)
+    return node;
+
+  var prevAncestors = AutomationUtil.getAncestors(prevNode);
+  var ancestors = AutomationUtil.getAncestors(node);
+  var divergence = AutomationUtil.getDivergence(prevAncestors, ancestors);
+  return ancestors[divergence - 1];
+};
+
 });  // goog.scope
