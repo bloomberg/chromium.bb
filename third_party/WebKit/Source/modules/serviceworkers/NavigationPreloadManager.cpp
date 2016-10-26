@@ -25,9 +25,19 @@ ScriptPromise NavigationPreloadManager::setHeaderValue(ScriptState*,
   return ScriptPromise();
 }
 
-ScriptPromise NavigationPreloadManager::getState(ScriptState*) {
-  NOTIMPLEMENTED();
-  return ScriptPromise();
+ScriptPromise NavigationPreloadManager::getState(ScriptState* scriptState) {
+  ServiceWorkerContainerClient* client =
+      ServiceWorkerContainerClient::from(m_registration->getExecutionContext());
+  if (!client || !client->provider()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(InvalidStateError, "No provider."));
+  }
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  m_registration->webRegistration()->getNavigationPreloadState(
+      client->provider(),
+      wrapUnique(new GetNavigationPreloadStateCallbacks(resolver)));
+  return promise;
 }
 
 NavigationPreloadManager::NavigationPreloadManager(

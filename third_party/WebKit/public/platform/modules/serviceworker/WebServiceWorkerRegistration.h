@@ -13,6 +13,7 @@ namespace blink {
 
 class WebServiceWorkerProvider;
 class WebServiceWorkerRegistrationProxy;
+struct WebNavigationPreloadState;
 
 // The interface of the registration representation in the embedder. The
 // embedder implements this interface and passes its handle
@@ -28,6 +29,9 @@ class WebServiceWorkerRegistration {
       WebCallbacks<bool, const WebServiceWorkerError&>;
   using WebEnableNavigationPreloadCallbacks =
       WebCallbacks<void, const WebServiceWorkerError&>;
+  using WebGetNavigationPreloadStateCallbacks =
+      WebCallbacks<const WebNavigationPreloadState&,
+                   const WebServiceWorkerError&>;
 
   // The handle interface that retains a reference to the implementation of
   // WebServiceWorkerRegistration in the embedder and is owned by
@@ -53,6 +57,9 @@ class WebServiceWorkerRegistration {
       bool enable,
       WebServiceWorkerProvider*,
       std::unique_ptr<WebEnableNavigationPreloadCallbacks>) {}
+  virtual void getNavigationPreloadState(
+      WebServiceWorkerProvider*,
+      std::unique_ptr<WebGetNavigationPreloadStateCallbacks>) {}
 };
 
 }  // namespace blink

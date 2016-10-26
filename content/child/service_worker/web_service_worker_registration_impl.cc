@@ -13,6 +13,7 @@
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"
 
@@ -158,6 +159,18 @@ void WebServiceWorkerRegistrationImpl::enableNavigationPreload(
   dispatcher->EnableNavigationPreload(provider_impl->provider_id(),
                                       registration_id(), enable,
                                       std::move(callbacks));
+}
+
+void WebServiceWorkerRegistrationImpl::getNavigationPreloadState(
+    blink::WebServiceWorkerProvider* provider,
+    std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks) {
+  WebServiceWorkerProviderImpl* provider_impl =
+      static_cast<WebServiceWorkerProviderImpl*>(provider);
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  DCHECK(dispatcher);
+  dispatcher->GetNavigationPreloadState(
+      provider_impl->provider_id(), registration_id(), std::move(callbacks));
 }
 
 int64_t WebServiceWorkerRegistrationImpl::registration_id() const {

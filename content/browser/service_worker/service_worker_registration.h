@@ -95,6 +95,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     return active_version() || waiting_version();
   }
 
+  bool is_navigation_preload_enabled() const {
+    return is_navigation_preload_enabled_;
+  }
+
   ServiceWorkerVersion* GetNewestVersion() const;
 
   void AddListener(Listener* listener);

@@ -10,6 +10,7 @@
 namespace blink {
 
 class ScriptPromiseResolver;
+struct WebNavigationPreloadState;
 struct WebServiceWorkerError;
 
 class EnableNavigationPreloadCallbacks final
@@ -25,6 +26,22 @@ class EnableNavigationPreloadCallbacks final
  private:
   Persistent<ScriptPromiseResolver> m_resolver;
   WTF_MAKE_NONCOPYABLE(EnableNavigationPreloadCallbacks);
+};
+
+class GetNavigationPreloadStateCallbacks final
+    : public WebServiceWorkerRegistration::
+          WebGetNavigationPreloadStateCallbacks {
+ public:
+  GetNavigationPreloadStateCallbacks(ScriptPromiseResolver*);
+  ~GetNavigationPreloadStateCallbacks() override;
+
+  // WebGetNavigationPreloadStateCallbacks interface.
+  void onSuccess(const WebNavigationPreloadState&) override;
+  void onError(const WebServiceWorkerError&) override;
+
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
+  WTF_MAKE_NONCOPYABLE(GetNavigationPreloadStateCallbacks);
 };
 
 }  // namespace blink

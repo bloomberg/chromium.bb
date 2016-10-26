@@ -364,6 +364,11 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/vertical-move-relayout.html 
 crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Skip ]
 # ====== LayoutNG-only failures until here ======
 
+# Requires ServiceWorkerNavigationPreload feature enabled. Run under
+# virtual/service-worker-navigation-preload only.
+crbug.com/649558 http/tests/serviceworker/navigation-preload/ [ Skip ]
+crbug.com/649558 virtual/mojo-service-worker/http/tests/serviceworker/navigation-preload/ [ Skip ]
+
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 

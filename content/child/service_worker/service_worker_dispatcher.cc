@@ -24,6 +24,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_constants.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "url/url_constants.h"
 
@@ -81,6 +82,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnDidGetRegistrationForReady)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidEnableNavigationPreload,
                         OnDidEnableNavigationPreload)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetNavigationPreloadState,
+                        OnDidGetNavigationPreloadState)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                         OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdateError,
@@ -93,6 +96,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnGetRegistrationsError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_EnableNavigationPreloadError,
                         OnEnableNavigationPreloadError)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GetNavigationPreloadStateError,
+                        OnGetNavigationPreloadStateError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
@@ -220,6 +225,17 @@ void ServiceWorkerDispatcher::EnableNavigationPreload(
       enable_navigation_preload_callbacks_.Add(callbacks.release());
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_EnableNavigationPreload(
       CurrentWorkerId(), request_id, provider_id, registration_id, enable));
+}
+
+void ServiceWorkerDispatcher::GetNavigationPreloadState(
+    int provider_id,
+    int64_t registration_id,
+    std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks) {
+  DCHECK(callbacks);
+  int request_id =
+      get_navigation_preload_state_callbacks_.Add(callbacks.release());
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetNavigationPreloadState(
+      CurrentWorkerId(), request_id, provider_id, registration_id));
 }
 
 void ServiceWorkerDispatcher::AddProviderContext(
@@ -547,6 +563,20 @@ void ServiceWorkerDispatcher::OnDidEnableNavigationPreload(int thread_id,
   enable_navigation_preload_callbacks_.Remove(request_id);
 }
 
+void ServiceWorkerDispatcher::OnDidGetNavigationPreloadState(int thread_id,
+                                                             int request_id,
+                                                             bool enabled) {
+  WebGetNavigationPreloadStateCallbacks* callbacks =
+      get_navigation_preload_state_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+  // TODO(falken): Implement populating headerValue.
+  callbacks->onSuccess(
+      blink::WebNavigationPreloadState(enabled, blink::WebString()));
+  get_navigation_preload_state_callbacks_.Remove(request_id);
+}
+
 void ServiceWorkerDispatcher::OnRegistrationError(
     int thread_id,
     int request_id,
@@ -672,6 +702,21 @@ void ServiceWorkerDispatcher::OnEnableNavigationPreloadError(
   callbacks->onError(
       WebServiceWorkerError(error_type, blink::WebString::fromUTF8(message)));
   enable_navigation_preload_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerDispatcher::OnGetNavigationPreloadStateError(
+    int thread_id,
+    int request_id,
+    WebServiceWorkerError::ErrorType error_type,
+    const std::string& message) {
+  WebGetNavigationPreloadStateCallbacks* callbacks =
+      get_navigation_preload_state_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+  callbacks->onError(
+      WebServiceWorkerError(error_type, blink::WebString::fromUTF8(message)));
+  get_navigation_preload_state_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(

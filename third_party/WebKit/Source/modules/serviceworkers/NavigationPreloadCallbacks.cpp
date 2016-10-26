@@ -6,7 +6,9 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "modules/serviceworkers/NavigationPreloadState.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
+#include "public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 
 namespace blink {
 
@@ -26,6 +28,34 @@ void EnableNavigationPreloadCallbacks::onSuccess() {
 }
 
 void EnableNavigationPreloadCallbacks::onError(
+    const WebServiceWorkerError& error) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+}
+
+GetNavigationPreloadStateCallbacks::GetNavigationPreloadStateCallbacks(
+    ScriptPromiseResolver* resolver)
+    : m_resolver(resolver) {
+  DCHECK(m_resolver);
+}
+
+GetNavigationPreloadStateCallbacks::~GetNavigationPreloadStateCallbacks() {}
+
+void GetNavigationPreloadStateCallbacks::onSuccess(
+    const WebNavigationPreloadState& state) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  NavigationPreloadState dict;
+  dict.setEnabled(state.enabled);
+  if (!state.headerValue.isNull())
+    dict.setHeaderValue(state.headerValue);
+  m_resolver->resolve(dict);
+}
+
+void GetNavigationPreloadStateCallbacks::onError(
     const WebServiceWorkerError& error) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())

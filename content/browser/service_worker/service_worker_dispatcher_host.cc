@@ -53,6 +53,8 @@ const char kUserDeniedPermissionMessage[] =
 const char kInvalidStateErrorMessage[] = "The object is in an invalid state.";
 const char kEnableNavigationPreloadErrorPrefix[] =
     "Failed to enable or disable navigation preload: ";
+const char kGetNavigationPreloadStateErrorPrefix[] =
+    "Failed to get navigation preload state: ";
 
 const uint32_t kFilteredMessageClasses[] = {
     ServiceWorkerMsgStart, EmbeddedWorkerMsgStart,
@@ -188,6 +190,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_TerminateWorker, OnTerminateWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_EnableNavigationPreload,
                         OnEnableNavigationPreload)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetNavigationPreloadState,
+                        OnGetNavigationPreloadState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -722,6 +726,69 @@ void ServiceWorkerDispatcherHost::OnEnableNavigationPreload(
   // TODO(falken): Write to disk before resolving the promise.
   registration->EnableNavigationPreload(enable);
   Send(new ServiceWorkerMsg_DidEnableNavigationPreload(thread_id, request_id));
+}
+
+void ServiceWorkerDispatcherHost::OnGetNavigationPreloadState(
+    int thread_id,
+    int request_id,
+    int provider_id,
+    int64_t registration_id) {
+  ProviderStatus provider_status;
+  ServiceWorkerProviderHost* provider_host =
+      GetProviderHostForRequest(&provider_status, provider_id);
+  switch (provider_status) {
+    case ProviderStatus::NO_CONTEXT:  // fallthrough
+    case ProviderStatus::DEAD_HOST:
+      Send(new ServiceWorkerMsg_GetNavigationPreloadStateError(
+          thread_id, request_id, WebServiceWorkerError::ErrorTypeAbort,
+          std::string(kGetNavigationPreloadStateErrorPrefix) +
+              std::string(kShutdownErrorMessage)));
+      return;
+    case ProviderStatus::NO_HOST:
+      bad_message::ReceivedBadMessage(
+          this, bad_message::SWDH_GET_NAVIGATION_PRELOAD_STATE_NO_HOST);
+      return;
+    case ProviderStatus::NO_URL:
+      Send(new ServiceWorkerMsg_GetNavigationPreloadStateError(
+          thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
+          std::string(kGetNavigationPreloadStateErrorPrefix) +
+              std::string(kNoDocumentURLErrorMessage)));
+      return;
+    case ProviderStatus::OK:
+      break;
+  }
+
+  ServiceWorkerRegistration* registration =
+      GetContext()->GetLiveRegistration(registration_id);
+  if (!registration) {
+    // |registration| must be alive because a renderer retains a registration
+    // reference at this point.
+    bad_message::ReceivedBadMessage(
+        this,
+        bad_message::SWDH_GET_NAVIGATION_PRELOAD_STATE_BAD_REGISTRATION_ID);
+    return;
+  }
+
+  std::vector<GURL> urls = {provider_host->document_url(),
+                            registration->pattern()};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::SWDH_GET_NAVIGATION_PRELOAD_STATE_INVALID_ORIGIN);
+    return;
+  }
+
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          registration->pattern(), provider_host->topmost_frame_url(),
+          resource_context_, render_process_id_, provider_host->frame_id())) {
+    Send(new ServiceWorkerMsg_GetNavigationPreloadStateError(
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
+        std::string(kGetNavigationPreloadStateErrorPrefix) +
+            std::string(kUserDeniedPermissionMessage)));
+    return;
+  }
+
+  Send(new ServiceWorkerMsg_DidGetNavigationPreloadState(
+      thread_id, request_id, registration->is_navigation_preload_enabled()));
 }
 
 void ServiceWorkerDispatcherHost::OnPostMessageToWorker(

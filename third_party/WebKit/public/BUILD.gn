@@ -376,6 +376,7 @@ source_set("blink_headers") {
     "platform/modules/screen_orientation/WebScreenOrientationClient.h",
     "platform/modules/screen_orientation/WebScreenOrientationLockType.h",
     "platform/modules/screen_orientation/WebScreenOrientationType.h",
+    "platform/modules/serviceworker/WebNavigationPreloadState.h",
     "platform/modules/serviceworker/WebServiceWorker.h",
     "platform/modules/serviceworker/WebServiceWorkerCache.h",
     "platform/modules/serviceworker/WebServiceWorkerCacheError.h",
