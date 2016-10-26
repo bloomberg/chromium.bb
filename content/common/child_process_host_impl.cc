@@ -27,8 +27,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "ipc/attachment_broker.h"
-#include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -92,19 +90,6 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 #if defined(OS_WIN)
   AddFilter(new FontCacheDispatcher());
 #endif
-
-#if USE_ATTACHMENT_BROKER
-#if defined(OS_MACOSX)
-  // On Mac, the privileged AttachmentBroker needs a reference to the Mach port
-  // Provider, which is only available in the chrome/ module. The attachment
-  // broker must already be created.
-  DCHECK(IPC::AttachmentBroker::GetGlobal());
-#else
-  // Construct the privileged attachment broker early in the life cycle of a
-  // child process.
-  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
-#endif  // defined(OS_MACOSX)
-#endif  // USE_ATTACHMENT_BROKER
 }
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
@@ -114,10 +99,6 @@ ChildProcessHostImpl::~ChildProcessHostImpl() {
   if (!channel_)
     return;
 
-#if USE_ATTACHMENT_BROKER
-  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-      channel_.get());
-#endif
   for (size_t i = 0; i < filters_.size(); ++i) {
     filters_[i]->OnChannelClosing();
     filters_[i]->OnFilterRemoved();
@@ -175,18 +156,8 @@ void ChildProcessHostImpl::CreateChannelMojo() {
 }
 
 bool ChildProcessHostImpl::InitChannel() {
-#if USE_ATTACHMENT_BROKER
-  DCHECK(base::MessageLoopForIO::IsCurrent());
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get(), base::ThreadTaskRunnerHandle::Get());
-#endif
-  if (!channel_->Connect()) {
-#if USE_ATTACHMENT_BROKER
-    IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-        channel_.get());
-#endif
+  if (!channel_->Connect())
     return false;
-  }
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel_.get());

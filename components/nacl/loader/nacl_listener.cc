@@ -31,7 +31,6 @@
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "components/nacl/loader/nacl_validation_query.h"
 #include "content/public/common/mojo_channel_switches.h"
-#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -172,7 +171,6 @@ NaClListener::NaClListener()
       number_of_cores_(-1),  // unknown/error
 #endif
       is_started_(false) {
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   DCHECK(g_listener == NULL);
@@ -249,9 +247,6 @@ void NaClListener::Listen() {
                                       &shutdown_event_);
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
-  IPC::AttachmentBroker* global = IPC::AttachmentBroker::GetGlobal();
-  if (global && !global->IsPrivilegedBroker())
-    global->RegisterBrokerCommunicationChannel(channel_.get());
   channel_->Init(handle.release(), IPC::Channel::MODE_CLIENT, true);
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::RunLoop().Run();

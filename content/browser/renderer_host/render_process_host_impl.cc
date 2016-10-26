@@ -166,8 +166,6 @@
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "ipc/attachment_broker.h"
-#include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -722,19 +720,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     AddObserver(BootstrapSandboxManager::GetInstance());
 #endif
 
-#if USE_ATTACHMENT_BROKER
-  // Construct the privileged attachment broker early in the life cycle of a
-  // render process. This ensures that when a test is being run in one of the
-  // single process modes, the global attachment broker is the privileged
-  // attachment broker, rather than an unprivileged attachment broker.
-#if defined(OS_MACOSX)
-  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded(
-      MachBroker::GetInstance());
-#else
-  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
-#endif  // defined(OS_MACOSX)
-#endif  // USE_ATTACHMENT_BROKER
-
   InitializeChannelProxy();
 }
 
@@ -784,11 +769,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
     ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
     gpu_observer_registered_ = false;
   }
-
-#if USE_ATTACHMENT_BROKER
-  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-      channel_.get());
-#endif
 
   is_dead_ = true;
 
@@ -994,10 +974,6 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
 #endif  // OS_ANDROID
   if (!channel_)
     channel_.reset(new IPC::ChannelProxy(this, io_task_runner.get()));
-#if USE_ATTACHMENT_BROKER
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get(), io_task_runner);
-#endif
   channel_->Init(std::move(channel_factory), true /* create_pipe_now */);
 
   // Note that Channel send is effectively paused and unpaused at various points
@@ -1027,10 +1003,6 @@ void RenderProcessHostImpl::ResetChannelProxy() {
   if (!channel_)
     return;
 
-#if USE_ATTACHMENT_BROKER
-  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-      channel_.get());
-#endif
   channel_.reset();
   channel_connected_ = false;
 }

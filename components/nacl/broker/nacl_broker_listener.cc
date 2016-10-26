@@ -23,7 +23,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/sandbox_init.h"
-#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -38,15 +37,9 @@ void SendReply(IPC::Channel* channel, int32_t pid, bool result) {
 
 }  // namespace
 
-NaClBrokerListener::NaClBrokerListener() {
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
-}
+NaClBrokerListener::NaClBrokerListener() = default;
 
-NaClBrokerListener::~NaClBrokerListener() {
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker() && channel_)
-    broker->DeregisterBrokerCommunicationChannel(channel_.get());
-}
+NaClBrokerListener::~NaClBrokerListener() = default;
 
 void NaClBrokerListener::Listen() {
   mojo::ScopedMessagePipeHandle handle(
@@ -57,9 +50,6 @@ void NaClBrokerListener::Listen() {
   IPC::ChannelHandle channel_handle(handle.release());
 
   channel_ = IPC::Channel::CreateClient(channel_handle, this);
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker())
-    broker->RegisterBrokerCommunicationChannel(channel_.get());
   CHECK(channel_->Connect());
   run_loop_.Run();
 }
