@@ -13,19 +13,36 @@
 <dom-module id="settings-sync-page">
   <template>
     <style include="settings-shared">
-      #create-password-box {
-        /* The password fields line up with the encryption radio box text. */
+      #create-password-box,
+      #reset-sync-message-box {
+        /* In order to line up with the encryption radio box text. */
         -webkit-margin-start: 36px;
       }
 
       paper-input {
         width: var(--paper-input-max-width);
+        --paper-input-container-focus-color: var(--google-blue-500);
+        --paper-input-container-input: {
+          font-size: inherit;
+        };
+      }
+
+      #saveNewPassphrase {
+        margin-top: 20px;
+      }
+
+      #existingPassphraseContainer,
+      #passphraseRecoverHint {
+        align-items: flex-end;
       }
 
       #existingPassphraseInput {
         /* The submit button for the existing passphrase is on the same line. */
         -webkit-margin-end: 16px;
         display: inline-block;
+        --paper-input-container: {
+          padding: 0;
+        };
       }
     </style>
     <div id="[[pages.SPINNER]]" class="settings-box first"
@@ -153,27 +170,40 @@
           </paper-radio-button>
           <paper-radio-button name="encrypt-with-passphrase"
               class="list-item" disabled="[[syncPrefs.encryptAllData]]">
-            <span>
-              [[encryptWithPassphraseBody_(syncPrefs.fullEncryptionBody)]]
-            </span>
+            <template is="dom-if" if="[[syncPrefs.fullEncryptionBody]]">
+              <span>[[syncPrefs.fullEncryptionBody]]</span>
+            </template>
+            <template is="dom-if" if="[[!syncPrefs.fullEncryptionBody]]">
+              <span>$i18nRaw{encryptWithSyncPassphraseLabel}</span>
+            </template>
           </paper-radio-button>
         </paper-radio-group>
+        <div id="reset-sync-message-box" class="list-item"
+            hidden="[[!syncPrefs.encryptAllData]]">
+          <span>$i18nRaw{passphraseResetHint}</span>
+        </div>
       </div>
 
       <template is="dom-if" if="[[creatingNewPassphrase_]]">
         <div class="list-frame">
           <div id="create-password-box">
-            <div>$i18n{passphraseExplanationText}</div>
+            <div class="list-item">
+              <span>$i18nRaw{passphraseExplanationText}</span>
+            </div>
             <paper-input id="passphraseInput" type="password"
+                value="{{passphrase_}}"
                 placeholder="$i18n{passphrasePlaceholder}"
                 error-message="$i18n{emptyPassphraseError}">
             </paper-input>
             <paper-input id="passphraseConfirmationInput" type="password"
+                value="{{confirmation_}}"
                 placeholder="$i18n{passphraseConfirmationPlaceholder}"
                 error-message="$i18n{mismatchedPassphraseError}">
             </paper-input>
             <paper-button id="saveNewPassphrase"
-                on-tap="onSaveNewPassphraseTap_" class="action-button">
+                on-tap="onSaveNewPassphraseTap_" class="action-button"
+                disabled="[[!isSaveNewPassphraseEnabled_(passphrase_,
+                                                         confirmation_)]]">
               $i18n{save}
             </paper-button>
           </div>
@@ -182,25 +212,27 @@
 
       <template is="dom-if" if="[[syncPrefs.passphraseRequired]]">
         <div class="list-frame">
-          <div id="askCustomPassphraseMessage" class="list-item"
-              hidden$="[[!syncPrefs.passphraseTypeIsCustom]]">
-            [[syncPrefs.enterPassphraseBody]]
-          </div>
-          <div id="askOldGooglePassphraseMessage" class="list-item"
-              hidden$="[[syncPrefs.passphraseTypeIsCustom]]">
-            [[syncPrefs.enterGooglePassphraseBody]]
-          </div>
           <div class="list-item">
+            <span>
+              [[enterPassphrasePrompt_(syncPrefs.passphraseTypeIsCustom)]]
+              <a href="$i18nRaw{syncErrorHelpUrl}" target="_blank">
+                $i18n{learnMore}
+              </a>
+            </span>
+          </div>
+          <div id="existingPassphraseContainer" class="list-item">
             <paper-input id="existingPassphraseInput" type="password"
+                value="{{existingPassphrase_}}"
                 placeholder="$i18n{passphrasePlaceholder}"
                 error-message="$i18n{incorrectPassphraseError}">
             </paper-input>
             <paper-button id="submitExistingPassphrase"
-                on-tap="onSubmitExistingPassphraseTap_" class="action-button">
+                on-tap="onSubmitExistingPassphraseTap_" class="action-button"
+                disabled="[[!existingPassphrase_]]">
               $i18n{submitPassphraseButton}
             </paper-button>
           </div>
-          <div class="list-item">
+          <div id="passphraseRecoverHint" class="list-item">
             <span>$i18nRaw{passphraseRecover}</span>
           </div>
         </div>

@@ -1074,12 +1074,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
     {"encryptWithGoogleCredentialsLabel",
      IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL},
-    {"encryptWithSyncPassphraseLabel",
-     IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL},
-    {"encryptWithSyncPassphraseLearnMoreLink",
-     IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LEARN_MORE_LINK},
     {"useDefaultSettingsButton", IDS_SETTINGS_USE_DEFAULT_SETTINGS},
-    {"passphraseExplanationText", IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT},
     {"emptyPassphraseError", IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR},
     {"mismatchedPassphraseError", IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR},
     {"incorrectPassphraseError", IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR},
@@ -1106,16 +1101,33 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("supervisedUsersUrl",
                          chrome::kLegacySupervisedUserManagementURL);
 
+  html_source->AddString(
+      "encryptWithSyncPassphraseLabel",
+      l10n_util::GetStringFUTF8(
+          IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL,
+          base::ASCIIToUTF16(chrome::kSyncEncryptionHelpURL)));
+
   std::string sync_dashboard_url =
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kSyncGoogleDashboardURL),
           g_browser_process->GetApplicationLocale())
           .spec();
   html_source->AddString("syncDashboardUrl", sync_dashboard_url);
+
+  html_source->AddString(
+      "passphraseExplanationText",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+  html_source->AddString(
+      "passphraseResetHint",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
       "passphraseRecover",
       l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RECOVER,
                                 base::ASCIIToUTF16(sync_dashboard_url)));
+
+  html_source->AddString("syncErrorHelpUrl", chrome::kSyncErrorsHelpURL);
 
   html_source->AddString("activityControlsUrl",
                          chrome::kGoogleAccountActivityControlsURL);

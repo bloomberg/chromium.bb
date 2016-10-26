@@ -99,6 +99,33 @@ Polymer({
       value: false,
     },
 
+    /**
+     * The passphrase input field value.
+     * @private
+     */
+    passphrase_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * The passphrase confirmation input field value.
+     * @private
+     */
+    confirmation_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * The existing passphrase input field value.
+     * @private
+     */
+    existingPassphrase_: {
+      type: String,
+      value: '',
+    },
+
     /** @private {!settings.SyncBrowserProxy} */
     browserProxy_: {
       type: Object,
@@ -260,6 +287,16 @@ Polymer({
   },
 
   /**
+   * @param {string} passphrase The passphrase input field value
+   * @param {string} confirmation The passphrase confirmation input field value.
+   * @return {boolean} Whether the passphrase save button should be enabled.
+   * @private
+   */
+  isSaveNewPassphraseEnabled_: function(passphrase, confirmation) {
+    return passphrase !== '' && confirmation !== '';
+  },
+
+  /**
    * Sends the newly created custom sync passphrase to the browser.
    * @private
    */
@@ -273,7 +310,7 @@ Polymer({
 
     this.syncPrefs.encryptAllData = true;
     this.syncPrefs.setNewPassphrase = true;
-    this.syncPrefs.passphrase = this.$$('#passphraseInput').value;
+    this.syncPrefs.passphrase = this.passphrase_;
 
     this.browserProxy_.setSyncEncryption(this.syncPrefs).then(
         this.handlePageStatusChanged_.bind(this));
@@ -288,9 +325,8 @@ Polymer({
 
     this.syncPrefs.setNewPassphrase = false;
 
-    var existingPassphraseInput = this.$$('#existingPassphraseInput');
-    this.syncPrefs.passphrase = existingPassphraseInput.value;
-    existingPassphraseInput.value = '';
+    this.syncPrefs.passphrase = this.existingPassphrase_;
+    this.existingPassphrase_ = '';
 
     this.browserProxy_.setSyncEncryption(this.syncPrefs).then(
         this.handlePageStatusChanged_.bind(this));
@@ -343,14 +379,14 @@ Polymer({
   },
 
   /**
-   * Computed binding returning the encryption text body.
+   * Computed binding returning text of the prompt for entering the passphrase.
    * @private
    */
-  encryptWithPassphraseBody_: function() {
-    if (this.syncPrefs && this.syncPrefs.fullEncryptionBody)
-      return this.syncPrefs.fullEncryptionBody;
+  enterPassphrasePrompt_: function() {
+    if (this.syncPrefs && this.syncPrefs.passphraseTypeIsCustom)
+      return this.syncPrefs.enterPassphraseBody;
 
-    return this.i18n('encryptWithSyncPassphraseLabel');
+    return this.syncPrefs.enterGooglePassphraseBody;
   },
 
   /**
@@ -374,24 +410,17 @@ Polymer({
 
   /**
    * Checks the supplied passphrases to ensure that they are not empty and that
-   * they match each other. Additionally, displays error UI if they are
-   * invalid.
+   * they match each other. Additionally, displays error UI if they are invalid.
    * @return {boolean} Whether the check was successful (i.e., that the
    *     passphrases were valid).
    * @private
    */
   validateCreatedPassphrases_: function() {
-    var passphraseInput = this.$$('#passphraseInput');
-    var passphraseConfirmationInput = this.$$('#passphraseConfirmationInput');
+    var emptyPassphrase = !this.passphrase_;
+    var mismatchedPassphrase = this.passphrase_ != this.confirmation_;
 
-    var passphrase = passphraseInput.value;
-    var confirmation = passphraseConfirmationInput.value;
-
-    var emptyPassphrase = !passphrase;
-    var mismatchedPassphrase = passphrase != confirmation;
-
-    passphraseInput.invalid = emptyPassphrase;
-    passphraseConfirmationInput.invalid =
+    this.$$('#passphraseInput').invalid = emptyPassphrase;
+    this.$$('#passphraseConfirmationInput').invalid =
         !emptyPassphrase && mismatchedPassphrase;
 
     return !emptyPassphrase && !mismatchedPassphrase;

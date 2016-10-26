@@ -868,9 +868,6 @@ void PeopleHandler::PushSyncPrefs() {
   } else if (passphrase_type == syncer::PassphraseType::CUSTOM_PASSPHRASE) {
     args.SetString("fullEncryptionBody",
                    GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
-  } else {
-    args.SetString("fullEncryptionBody",
-                   GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_DATA));
   }
 
   CallJavascriptFunction("cr.webUIListenerCallback",

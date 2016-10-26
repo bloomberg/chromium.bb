@@ -263,27 +263,27 @@ cr.define('settings_people_page_sync_page', function() {
         assertTrue(encryptWithPassphrase.checked);
       });
 
-      test('CreatingPassphraseEmptyPassphrase', function() {
+      test('SaveButtonDisabledWhenPassphraseOrConfirmationEmpty', function() {
         MockInteractions.tap(encryptWithPassphrase);
         Polymer.dom.flush();
 
         assertTrue(!!syncPage.$$('#create-password-box'));
         var saveNewPassphrase = syncPage.$$('#saveNewPassphrase');
-        assertTrue(!!saveNewPassphrase);
-
-        MockInteractions.tap(saveNewPassphrase);
-        Polymer.dom.flush();
-
         var passphraseInput = syncPage.$$('#passphraseInput');
         var passphraseConfirmationInput =
             syncPage.$$('#passphraseConfirmationInput');
-        assertTrue(!!passphraseInput);
-        assertTrue(!!passphraseConfirmationInput);
 
-        assertTrue(passphraseInput.invalid);
-        assertFalse(passphraseConfirmationInput.invalid);
+        passphraseInput.value = '';
+        passphraseConfirmationInput.value = '';
+        assertTrue(saveNewPassphrase.disabled);
 
-        assertFalse(syncPage.syncPrefs.encryptAllData);
+        passphraseInput.value = 'foo';
+        passphraseConfirmationInput.value = '';
+        assertTrue(saveNewPassphrase.disabled);
+
+        passphraseInput.value = 'foo';
+        passphraseConfirmationInput.value = 'bar';
+        assertFalse(saveNewPassphrase.disabled);
       });
 
       test('CreatingPassphraseMismatchedPassphrase', function() {
@@ -353,6 +353,25 @@ cr.define('settings_people_page_sync_page', function() {
         Polymer.dom.flush();
 
         assertTrue(syncPage.$.encryptionRadioGroupContainer.hidden);
+      });
+
+      test('ExistingPassphraseSubmitButtonDisabledWhenExistingPassphraseEmpty',
+           function() {
+        var prefs = getSyncAllPrefs();
+        prefs.encryptAllData = true;
+        prefs.passphraseRequired = true;
+        cr.webUIListenerCallback('sync-prefs-changed', prefs);
+
+        Polymer.dom.flush();
+
+        var existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
+        var submitExistingPassphrase = syncPage.$$('#submitExistingPassphrase');
+
+        existingPassphraseInput.value = '';
+        assertTrue(submitExistingPassphrase.disabled);
+
+        existingPassphraseInput.value = 'foo';
+        assertFalse(submitExistingPassphrase.disabled);
       });
 
       test('EnterExistingWrongPassphrase', function() {
