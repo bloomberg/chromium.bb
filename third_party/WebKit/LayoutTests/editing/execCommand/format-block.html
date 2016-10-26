@@ -1,35 +1,29 @@
-<!DOCTYPE html>
-<html>
-<body>
-<script src="../../resources/dump-as-markup.js"></script>
-<div id="test" style="border:1px solid black" contenteditable="true">
-<p id="item1">Make Pre</p>
-<br>
-<div>Foo<br><span id="item2">Make h1</span><br>baz</div>
-<br>
-<address id="item3">Attempt to apply the current formatting here</address>
-</div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-    testRunner.dumpEditingCallbacks();
+test(() => assert_selection(
+    '<div contenteditable><p>|abc</p></div>',
+    'formatBlock pre',
+    '<div contenteditable><pre>|abc</pre></div>'),
+    'Convert P to PRE');
 
-Markup.description("This test uses FormatBlock to modify three of the paragraphs below");
-Markup.dump("test", "Before FormatBlock");
+test(() => assert_selection(
+    '<div contenteditable><span>|abc</span></div>',
+    'formatBlock h1',
+    '<div contenteditable><h1><span>|abc</span></h1></div>'),
+    'Wrap SPAN with H1');
 
-var s = window.getSelection();
-var r = document.createRange();
-var p1 = document.getElementById("item1");
-var p2 = document.getElementById("item2");
-var p3 = document.getElementById("item3");
-s.collapse(p1, 0);
-document.execCommand("FormatBlock", false, "pre");
-s.collapse(p2, 0);
-document.execCommand("FormatBlock", false, "h1");
-s.collapse(p3, 0);
-document.execCommand("FormatBlock", false, "address");
+test(() => assert_selection(
+    '<div contenteditable><address>|abc</address></div>',
+    'formatBlock p',
+    '<div contenteditable><p>|abc</p></div>'),
+    'Convert ADDRESS to P');
 
-Markup.dump("test", "After FormatBlock");
-
+test(() => assert_selection(
+    '<div contenteditable><address>|abc</address></div>',
+    'formatBlock address',
+    '<div contenteditable><address>|abc</address></div>'),
+    'Keep existing block');
 </script>
-</body>
-</html>
