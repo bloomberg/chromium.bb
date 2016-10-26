@@ -106,7 +106,6 @@ class SystemTrayDelegateChromeOS
   void ActivateIMEProperty(const std::string& key) override;
   void ManageBluetoothDevices() override;
   void ToggleBluetooth() override;
-  void ShowOtherNetworkDialog(const std::string& type) override;
   bool GetBluetoothAvailable() override;
   bool GetBluetoothEnabled() override;
   bool GetBluetoothDiscovering() override;

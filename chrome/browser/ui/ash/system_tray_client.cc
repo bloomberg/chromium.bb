@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
+#include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -32,6 +33,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::DBusThreadManager;
@@ -219,6 +221,15 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
   // Dialog will default to the primary display.
   chromeos::NetworkConfigView::ShowInContainer(network_id,
                                                GetDialogParentContainerId());
+}
+
+void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
+  int container_id = GetDialogParentContainerId();
+  if (type == shill::kTypeCellular) {
+    chromeos::ChooseMobileNetworkDialog::ShowDialogInContainer(container_id);
+    return;
+  }
+  chromeos::NetworkConfigView::ShowForTypeInContainer(type, container_id);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

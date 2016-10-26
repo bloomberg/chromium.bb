@@ -409,7 +409,6 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
   ResetInfoBubble();
   bool close_bubble = false;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   if (sender == button_wifi_) {
     bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
     handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
@@ -426,7 +425,8 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
     WmShell::Get()->system_tray_controller()->ShowProxySettings();
     close_bubble = true;
   } else if (sender == other_mobile_) {
-    delegate->ShowOtherNetworkDialog(shill::kTypeCellular);
+    WmShell::Get()->system_tray_controller()->ShowNetworkCreate(
+        shill::kTypeCellular);
     close_bubble = true;
   } else if (sender == other_wifi_) {
     OnOtherWifiClicked();
@@ -992,8 +992,7 @@ void NetworkStateListDetailedView::OnNetworkEntryClicked(views::View* sender) {
 void NetworkStateListDetailedView::OnOtherWifiClicked() {
   WmShell::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-  delegate->ShowOtherNetworkDialog(shill::kTypeWifi);
+  WmShell::Get()->system_tray_controller()->ShowNetworkCreate(shill::kTypeWifi);
 }
 
 void NetworkStateListDetailedView::RelayoutScrollList() {

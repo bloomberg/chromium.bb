@@ -59,6 +59,11 @@ interface SystemTrayClient {
   // which may include showing payment or captive portal UI when appropriate.
   ShowNetworkConfigure(string network_id);
 
+  // Shows UI to create a new network connection. The |type| is a Shill/Flimflam
+  // network type from third_party/cros_system_api/dbus/shill/dbus-constants.h
+  // ('wifi', 'cellular', etc.).
+  ShowNetworkCreate(string type);
+
   // Shows settings related to networking. If |network_id| is empty, shows
   // general settings. Otherwise shows settings for the individual network.
   // On devices |network_id| is a GUID, but on Linux desktop and in tests it can

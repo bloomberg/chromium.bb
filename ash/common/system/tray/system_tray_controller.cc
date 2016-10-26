@@ -88,6 +88,11 @@ void SystemTrayController::ShowNetworkConfigure(const std::string& network_id) {
     system_tray_client_->ShowNetworkConfigure(network_id);
 }
 
+void SystemTrayController::ShowNetworkCreate(const std::string& type) {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowNetworkCreate(type);
+}
+
 void SystemTrayController::ShowNetworkSettings(const std::string& network_id) {
   if (ConnectToSystemTrayClient())
     system_tray_client_->ShowNetworkSettings(network_id);

@@ -55,13 +55,11 @@
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -100,7 +98,6 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -560,17 +557,6 @@ void SystemTrayDelegateChromeOS::ToggleBluetooth() {
   bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
                                  base::Bind(&base::DoNothing),
                                  base::Bind(&base::DoNothing));
-}
-
-void SystemTrayDelegateChromeOS::ShowOtherNetworkDialog(
-    const std::string& type) {
-  if (type == shill::kTypeCellular) {
-    ChooseMobileNetworkDialog::ShowDialogInContainer(
-        SystemTrayClient::GetDialogParentContainerId());
-    return;
-  }
-  NetworkConfigView::ShowForTypeInContainer(
-      type, SystemTrayClient::GetDialogParentContainerId());
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothAvailable() {
