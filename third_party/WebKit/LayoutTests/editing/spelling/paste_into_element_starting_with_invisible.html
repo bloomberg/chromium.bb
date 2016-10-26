@@ -1,31 +1,27 @@
 <!doctype html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="resources/util.js"></script>
-
-<div id="source">
-zz.
-</div>
-
-<div contenteditable>
-<span id="target">[]</span>
-</div>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 
 <script>
 // Regression test for crbug.com/640456
 
-function copyAndPaste() {
-    var source = document.getElementById('source');
-    var target = document.getElementById('target');
-    var sel = window.getSelection();
-    sel.selectAllChildren(source);
-    document.execCommand('copy');
-    sel.collapse(target.firstChild, 1);
-    document.execCommand('paste');
-}
-
-runSpellingTest(
-    [() => copyAndPaste()],
-    [() => assert_true(internals.hasSpellingMarker(document, 1, 2))],
-    'Spelling markers should appear immediately after pasting.');
+spellcheck_test(
+    [
+      '<div contenteditable>\n',
+        '<span id="target">[|]</span>\n',
+      '</div>'
+    ].join(''),
+    document => {
+      document.getSelection().setClipboardData('zz.');
+      document.execCommand('paste');
+    },
+    [
+      '<div contenteditable>\n',
+        '<span id="target">[_zz_.]</span>\n',
+      '</div>'
+    ].join(''),
+    'Spelling markers should appear immediately after pasting.'
+);
 </script>
