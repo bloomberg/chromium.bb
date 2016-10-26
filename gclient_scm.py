@@ -534,6 +534,13 @@ class GitWrapper(SCMWrapper):
       target = 'HEAD'
       if options.upstream and upstream_branch:
         target = upstream_branch
+
+      # Builds can create hard links which update source files' ctimes, causing
+      # git to become confused over what files are out-of-date. Calling
+      # `git status` resynchronizes git and allows `git reset --hard` to not
+      # re-checkout files (and thus forcing unnecessary rebuilds)".
+      self._Run(['status'], options)
+
       self._Run(['reset', '--hard', target], options)
 
     if current_type == 'detached':
