@@ -159,6 +159,33 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
   EXPECT_EQ("Test Content", delegate_.data_received());
 }
 
+// Received a malformed SDCH encoded response when there is no SdchManager.
+TEST_F(URLRequestHttpJobSetUpSourceTest,
+       SdchNotAdvertisedGotMalformedSdchResponse) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Encoding: sdch\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // This test expects TestURLRequestContexts to have no SdchManager.
+  DCHECK(!context_.sdch_manager());
+
+  std::unique_ptr<URLRequest> request = context_.CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate_);
+  std::unique_ptr<TestURLRequestHttpJob> job(
+      new TestURLRequestHttpJob(request.get()));
+  test_job_interceptor_->set_main_intercept_job(std::move(job));
+  request->Start();
+
+  base::RunLoop().Run();
+  EXPECT_EQ(ERR_CONTENT_DECODING_INIT_FAILED, delegate_.request_status());
+}
+
 class URLRequestHttpJobTest : public ::testing::Test {
  protected:
   URLRequestHttpJobTest() : context_(true) {

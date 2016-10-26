@@ -133,7 +133,9 @@ SdchPolicyDelegate::SdchPolicyDelegate(
       sdch_manager_(sdch_manager),
       dictionary_set_(std::move(dictionary_set)),
       response_code_(response_code),
-      net_log_(net_log) {}
+      net_log_(net_log) {
+  DCHECK(sdch_manager_);
+}
 
 SdchPolicyDelegate::~SdchPolicyDelegate() {}
 

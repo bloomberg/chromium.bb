@@ -1117,14 +1117,16 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
         break;
       case SourceStream::TYPE_SDCH:
       case SourceStream::TYPE_SDCH_POSSIBLE: {
-        GURL url = request()->url();
-        std::unique_ptr<SdchPolicyDelegate> delegate(new SdchPolicyDelegate(
-            type == SourceStream::TYPE_SDCH_POSSIBLE, this, mime_type, url,
-            is_cached_content_, request()->context()->sdch_manager(),
-            std::move(dictionaries_advertised_), GetResponseCode(),
-            request()->net_log()));
-        downstream.reset(new SdchSourceStream(std::move(upstream),
-                                              std::move(delegate), type));
+        if (request()->context()->sdch_manager()) {
+          GURL url = request()->url();
+          std::unique_ptr<SdchPolicyDelegate> delegate(new SdchPolicyDelegate(
+              type == SourceStream::TYPE_SDCH_POSSIBLE, this, mime_type, url,
+              is_cached_content_, request()->context()->sdch_manager(),
+              std::move(dictionaries_advertised_), GetResponseCode(),
+              request()->net_log()));
+          downstream.reset(new SdchSourceStream(std::move(upstream),
+                                                std::move(delegate), type));
+        }
         break;
       }
       case SourceStream::TYPE_GZIP:
