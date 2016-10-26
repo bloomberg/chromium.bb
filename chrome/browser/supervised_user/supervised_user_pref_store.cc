@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_source.h"
@@ -118,6 +119,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
                        safe_search_util::YOUTUBE_RESTRICT_MODERATE);
     prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
     prefs_->SetBoolean(prefs::kSigninAllowed, false);
+    prefs_->SetBoolean(ntp_snippets::prefs::kEnableSnippets, false);
 
     // Copy supervised user settings to prefs.
     for (const auto& entry : kSupervisedUserSettingsPrefMapping) {
