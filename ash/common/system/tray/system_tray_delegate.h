@@ -225,9 +225,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Retrieves the session length limit. Returns |false| if no limit is set.
   virtual bool GetSessionLengthLimit(base::TimeDelta* session_length_limit);
 
-  // Get the system tray menu size in pixels (dependent on the language).
-  virtual int GetSystemTrayMenuWidth();
-
   // The active user has been changed. This will be called when the UI is ready
   // to be switched to the new user.
   // Note: This will happen after SessionStateObserver::ActiveUserChanged fires.

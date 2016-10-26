@@ -442,6 +442,11 @@ Press Ctrl+Alt+Z to disable.
         Close <ph name="WINDOW_TITLE">$1</ph>
       </message>
 
+      <!-- Localized layout constants (like chrome's locale_settings.grd) -->
+      <message name="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS" desc="Width of the system tray menu in display-independent pixels" use_name_for_id="true">
+        300
+      </message>
+
       <!-- ChromeOS-specific strings -->
       <if expr="chromeos">
         <part file="ash_chromeos_strings.grdp" />

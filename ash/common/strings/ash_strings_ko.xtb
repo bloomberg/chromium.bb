@@ -260,4 +260,5 @@
 <translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="938582441709398163">키보드 오버레이</translation>
 <translation id="939252827960237676">캡처화면을 저장하지 못했습니다.</translation>
+<translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">350</translation>
 </translationbundle>

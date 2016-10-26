@@ -27,7 +27,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   bool GetBluetoothAvailable() override;
   bool GetBluetoothEnabled() override;
   bool GetBluetoothDiscovering() override;
-  int GetSystemTrayMenuWidth() override;
 
  private:
   bool bluetooth_enabled_;

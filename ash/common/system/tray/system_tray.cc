@@ -539,11 +539,12 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     // (like network) replaces most of the menu.
     full_system_tray_menu_ = items.size() > 1;
     // The menu width is fixed, and it is a per language setting.
-    int menu_width = std::max(
-        MaterialDesignController::IsSystemTrayMenuMaterial()
-            ? kMinimumSystemTrayMenuWidthMd
-            : kMinimumSystemTrayMenuWidth,
-        WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
+    int menu_width =
+        std::max(MaterialDesignController::IsSystemTrayMenuMaterial()
+                     ? kMinimumSystemTrayMenuWidthMd
+                     : kMinimumSystemTrayMenuWidth,
+                 l10n_util::GetLocalizedContentsWidthInPixels(
+                     IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS));
 
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            GetAnchorAlignment(), menu_width,

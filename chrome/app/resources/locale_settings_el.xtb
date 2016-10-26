@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="IDS_SPELLCHECK_DICTIONARY">el</translation>
-<translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">350</translation>
 <translation id="IDS_OPTIONS_DIALOG_LEFT_COLUMN_WIDTH_CHARS">20</translation>
 <translation id="IDS_OPTIONS_RESET_CONFIRM_BOX_WIDTH_CHARS">80</translation>
 <translation id="IDS_URLPICKER_DIALOG_WIDTH_CHARS">80</translation>

@@ -609,11 +609,6 @@ bool SystemTrayDelegateChromeOS::GetSessionLengthLimit(
   return have_session_length_limit_;
 }
 
-int SystemTrayDelegateChromeOS::GetSystemTrayMenuWidth() {
-  return l10n_util::GetLocalizedContentsWidthInPixels(
-      IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
-}
-
 void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
   SetProfile(ProfileManager::GetActiveUserProfile());
   GetSystemTrayNotifier()->NotifyUserUpdate();

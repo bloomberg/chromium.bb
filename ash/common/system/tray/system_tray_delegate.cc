@@ -150,10 +150,6 @@ bool SystemTrayDelegate::GetSessionLengthLimit(
   return false;
 }
 
-int SystemTrayDelegate::GetSystemTrayMenuWidth() {
-  return 0;
-}
-
 void SystemTrayDelegate::ActiveUserWasChanged() {}
 
 bool SystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
