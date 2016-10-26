@@ -15,6 +15,12 @@ cr.define('settings_dropdown_menu', function() {
        */
       var selectElement;
 
+      /**
+       * The "Custom" option in the <select> menu.
+       * @type {HTMLOptionElement}
+       */
+      var customOption;
+
       function waitUntilDropdownUpdated() {
         return new Promise(function(resolve) { dropdown.async(resolve); });
       }
@@ -28,7 +34,9 @@ cr.define('settings_dropdown_menu', function() {
       setup(function() {
         PolymerTest.clearBody();
         dropdown = document.createElement('settings-dropdown-menu');
-        selectElement = dropdown.$$('select');
+        selectElement = assert(dropdown.$$('select'));
+        var options = selectElement.options;
+        customOption = assert(options[options.length - 1]);
         document.body.appendChild(dropdown);
       });
 
@@ -84,11 +92,13 @@ cr.define('settings_dropdown_menu', function() {
         }).then(function() {
           assertEquals('a', dropdown.pref.value);
 
-          // Updating the pref selects an item.
-          dropdown.set('pref.value', 'b');
+          // Item remains selected after updating menu items.
+          var newMenuOptions = dropdown.menuOptions.slice().reverse();
+          dropdown.menuOptions = newMenuOptions;
           return waitUntilDropdownUpdated();
         }).then(function() {
-          assertEquals('b', selectElement.value);
+          assertEquals('AAA',
+              selectElement.selectedOptions[0].textContent.trim());
         });
       });
 
@@ -107,6 +117,9 @@ cr.define('settings_dropdown_menu', function() {
         return waitUntilDropdownUpdated().then(function() {
           // "Custom" initially selected.
           assertEquals(dropdown.notFoundValue_, selectElement.value);
+          assertEquals('block', getComputedStyle(customOption).display);
+          assertFalse(customOption.disabled);
+
           // Pref should not have changed.
           assertEquals('f', dropdown.pref.value);
         });
@@ -123,11 +136,10 @@ cr.define('settings_dropdown_menu', function() {
           value: 200,
         };
 
-        console.log('running test');
         return waitForTimeout(100).then(function() {
           return waitUntilDropdownUpdated();
         }).then(function() {
-          assertTrue(dropdown.$.dropdownMenu.disabled);
+          assertTrue(selectElement.disabled);
           assertEquals('SETTINGS_DROPDOWN_NOT_FOUND_ITEM', selectElement.value);
 
           dropdown.menuOptions = [{value: 100, name: 'Option 100'},
@@ -138,8 +150,13 @@ cr.define('settings_dropdown_menu', function() {
         }).then(function() {
           // Dropdown menu enables itself and selects the new menu option
           // correpsonding to the pref value.
-          assertFalse(dropdown.$.dropdownMenu.disabled);
+          assertFalse(selectElement.disabled);
           assertEquals('200', selectElement.value);
+
+          // The "Custom" option should not show up in the dropdown list or be
+          // reachable via type-ahead.
+          assertEquals('none', getComputedStyle(customOption).display);
+          assertTrue(customOption.disabled);
         });
       });
     });

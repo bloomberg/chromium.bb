@@ -47,18 +47,13 @@ Polymer({
     },
 
     /**
-     * The current selected value, as a string.
-     * @private
-     */
-    selected_: String,
-
-    /**
-     * The value of the 'custom' item.
+     * The value of the "custom" item.
      * @private
      */
     notFoundValue_: {
       type: String,
       value: 'SETTINGS_DROPDOWN_NOT_FOUND_ITEM',
+      readOnly: true,
     },
   },
 
@@ -75,13 +70,13 @@ Polymer({
    * @private
    */
   onChange_: function() {
-    this.selected_ = this.$.dropdownMenu.value;
+    var selected = this.$.dropdownMenu.value;
 
-    if (this.selected_ == this.notFoundValue_)
+    if (selected == this.notFoundValue_)
       return;
 
     var prefValue = Settings.PrefUtil.stringToPrefValue(
-        this.selected_, assert(this.pref));
+        selected, assert(this.pref));
     if (prefValue !== undefined)
       this.set('pref.value', prefValue);
   },
@@ -99,22 +94,30 @@ Polymer({
       return menuItem.value == prefValue;
     });
 
-    // Need to wait for the dom-repeat to render, before assigning a value to
-    // |selected_|, otherwise select#value is not populated correctly.
+    // Wait for the dom-repeat to populate the <select> before setting
+    // <select>#value so the correct option gets selected.
     this.async(function() {
-      this.selected_ = option == undefined ?
+      this.$.dropdownMenu.value = option == undefined ?
           this.notFoundValue_ :
           Settings.PrefUtil.prefToString(assert(this.pref));
     }.bind(this));
   },
 
   /**
-   * @param {string} selected
+   * @param {?DropdownMenuOptionList} menuOptions
+   * @param {string} prefValue
    * @return {boolean}
    * @private
    */
-  isSelectedNotFound_: function(selected) {
-    return this.menuOptions.length > 0 && selected == this.notFoundValue_;
+  showNotFoundValue_: function(menuOptions, prefValue) {
+    // Don't show "Custom" before the options load.
+    if (!menuOptions || !menuOptions.length)
+      return false;
+
+    var option = menuOptions.find(function(menuItem) {
+      return menuItem.value == prefValue;
+    });
+    return !option;
   },
 
   /**

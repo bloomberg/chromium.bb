@@ -7,16 +7,20 @@
 
 <dom-module id="settings-dropdown-menu">
   <template>
-    <style include="settings-shared md-select"></style>
+    <style include="settings-shared md-select">
+      /* Hide "Custom" value when unselectable. */
+      option:disabled {
+        display: none;
+      }
+    </style>
     <div class="md-select-wrapper">
       <select class="md-select" id="dropdownMenu" on-change="onChange_"
-          value="[[selected_]]"
           disabled="[[shouldDisableMenu_(disabled, menuOptions)]]">
         <template is="dom-repeat" items="[[menuOptions]]">
           <option value="[[item.value]]">[[item.name]]</option>
         </template>
         <option value="[[notFoundValue_]]"
-            hidden$="[[!isSelectedNotFound_(selected_)]]">
+            disabled="[[!showNotFoundValue_(menuOptions, pref.value)]]">
           $i18n{custom}
         </option>
       </select>
