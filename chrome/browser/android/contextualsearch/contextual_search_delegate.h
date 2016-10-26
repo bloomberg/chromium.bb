@@ -185,19 +185,20 @@ class ContextualSearchDelegate
       const std::string& json_string);
 
   // Decodes the given json response string and extracts parameters.
-  void DecodeSearchTermFromJsonResponse(const std::string& response,
-                                        std::string* search_term,
-                                        std::string* display_text,
-                                        std::string* alternate_term,
-                                        std::string* mid,
-                                        std::string* prevent_preload,
-                                        int* mention_start,
-                                        int* mention_end,
-                                        std::string* context_language,
-                                        std::string* thumbnail_url,
-                                        std::string* caption,
-                                        std::string* quick_action_uri,
-                                        std::string* quick_action_category);
+  void DecodeSearchTermFromJsonResponse(
+      const std::string& response,
+      std::string* search_term,
+      std::string* display_text,
+      std::string* alternate_term,
+      std::string* mid,
+      std::string* prevent_preload,
+      int* mention_start,
+      int* mention_end,
+      std::string* context_language,
+      std::string* thumbnail_url,
+      std::string* caption,
+      std::string* quick_action_uri,
+      QuickActionCategory* quick_action_category);
 
   // Extracts the start and end location from a mentions list, and sets the
   // integers referenced by |startResult| and |endResult|.

@@ -173,7 +173,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string thumbnail_url = "";
   std::string caption = "";
   std::string quick_action_uri = "";
-  std::string quick_action_category = "";
+  QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
@@ -455,7 +455,7 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     std::string* thumbnail_url,
     std::string* caption,
     std::string* quick_action_uri,
-    std::string* quick_action_category) {
+    QuickActionCategory* quick_action_category) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =

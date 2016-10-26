@@ -4,42 +4,111 @@
 
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+import android.widget.ImageView;
+
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
+import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
+import org.chromium.ui.resources.dynamics.ViewResourceInflater;
 
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stores information related to a Contextual Search "quick action."
  */
-public class ContextualSearchQuickActionControl {
+public class ContextualSearchQuickActionControl extends ViewResourceInflater {
+    private static final Map<Integer, Integer> ICON_MAP;
+    static {
+        Map<Integer, Integer> icons = new HashMap<>();
+        icons.put(QuickActionCategory.ADDRESS, R.drawable.ic_place_googblue_36dp);
+        icons.put(QuickActionCategory.EMAIL, R.drawable.ic_email_googblue_36dp);
+        icons.put(QuickActionCategory.EVENT, R.drawable.ic_event_googblue_36dp);
+        icons.put(QuickActionCategory.PHONE, R.drawable.ic_phone_googblue_36dp);
+        ICON_MAP = Collections.unmodifiableMap(icons);
+    }
+
+    private static final Map<Integer, Integer> DEFAULT_APP_CAPTION_MAP;
+    static {
+        Map<Integer, Integer> captions = new HashMap<>();
+        captions.put(QuickActionCategory.ADDRESS,
+                R.string.contextual_search_quick_action_caption_open);
+        captions.put(QuickActionCategory.EMAIL,
+                R.string.contextual_search_quick_action_caption_email);
+        captions.put(QuickActionCategory.EVENT,
+                R.string.contextual_search_quick_action_caption_event);
+        captions.put(QuickActionCategory.PHONE,
+                R.string.contextual_search_quick_action_caption_phone);
+        DEFAULT_APP_CAPTION_MAP = Collections.unmodifiableMap(captions);
+    }
+
+    private static final Map<Integer, Integer> FALLBACK_CAPTION_MAP;
+    static {
+        Map<Integer, Integer> captions = new HashMap<>();
+        captions.put(QuickActionCategory.ADDRESS,
+                R.string.contextual_search_quick_action_caption_generic_map);
+        captions.put(QuickActionCategory.EMAIL,
+                R.string.contextual_search_quick_action_caption_generic_email);
+        captions.put(QuickActionCategory.EVENT,
+                R.string.contextual_search_quick_action_caption_generic_event);
+        captions.put(QuickActionCategory.PHONE,
+                R.string.contextual_search_quick_action_caption_phone);
+        FALLBACK_CAPTION_MAP = Collections.unmodifiableMap(captions);
+    }
+
+    private Context mContext;
     private String mQuickActionUri;
+    private int mQuickActionCategory;
+    private boolean mHasQuickAction;
+    private Intent mIntent;
+    private String mCaption;
+
+    /**
+     * @param context The Android Context used to inflate the View.
+     * @param resourceLoader The resource loader that will handle the snapshot capturing.
+     */
+    public ContextualSearchQuickActionControl(Context context,
+            DynamicResourceLoader resourceLoader) {
+        super(R.layout.contextual_search_quick_action_icon_view,
+                R.id.contextual_search_quick_action_icon_view,
+                context, null, resourceLoader);
+        mContext = context;
+    }
 
     /**
      * @param quickActionUri The URI for the intent associated with the quick action. If the URI is
      *                       the empty string or cannot be parsed no quick action will be available.
-     * @param quickActionCategory The category for the quick action.
+     * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
      */
-    public void setQuickAction(String quickActionUri, String quickActionCategory) {
-        mQuickActionUri = quickActionUri;
-
-        // TODO(twellington): resolve the intent to determine what caption and icon to use.
-    }
-
-    /**
-     * Sends the intent associated with the quick action if one is available.
-     * @param activity The {@link Activity} used to send the intent.
-     */
-    public void sendIntent(Activity activity) {
-        // TODO(twellington): use resolved intent rather than parsing mQuickActionUri directly.
-        Intent intent;
-        try {
-            intent = Intent.parseUri(mQuickActionUri, 0);
-        } catch (URISyntaxException e) {
-            // Ignore parsing errors.
+    public void setQuickAction(String quickActionUri, int quickActionCategory) {
+        if (TextUtils.isEmpty(quickActionUri) || quickActionCategory == QuickActionCategory.NONE) {
+            reset();
             return;
         }
-        activity.startActivity(intent);
+
+        mQuickActionUri = quickActionUri;
+        mQuickActionCategory = quickActionCategory;
+
+        resolveIntent();
+    }
+    /**
+     * Sends the intent associated with the quick action if one is available.
+     */
+    public void sendIntent() {
+        if (mIntent == null) return;
+        mIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        IntentUtils.safeStartActivity(mContext, mIntent);
     }
 
     /**
@@ -47,8 +116,7 @@ public class ContextualSearchQuickActionControl {
      *         available.
      */
     public String getCaption() {
-        // TODO(twellington): Use quickActionCategory to determine the caption string.
-        return null;
+        return mCaption;
     }
 
     /**
@@ -56,19 +124,14 @@ public class ContextualSearchQuickActionControl {
      *         action is available.
      */
     public int getIconResId() {
-        // TODO(twellington): Implement associating a drawable resource or app icon with the
-        // the quick action. This icon res id should eventually get set on
-        // ContextualSearchImageControl which needs to be refactored to include support for a
-        // static icon.
-        return 0;
+        return mHasQuickAction ? getViewId() : 0;
     }
 
     /**
      * @return Whether there is currently a quick action available.
      */
     public boolean hasQuickAction() {
-        // TODO(twellington): Determine if a quick action is available by resolving the intent.
-        return false;
+        return mHasQuickAction;
     }
 
     /**
@@ -76,5 +139,98 @@ public class ContextualSearchQuickActionControl {
      */
     public void reset() {
         mQuickActionUri = "";
+        mQuickActionCategory = QuickActionCategory.NONE;
+        mHasQuickAction = false;
+        mIntent = null;
+        mCaption = "";
+    }
+
+    @Override
+    protected boolean shouldAttachView() {
+        return false;
+    }
+
+    private void resolveIntent() {
+        try {
+            mIntent = Intent.parseUri(mQuickActionUri, 0);
+        } catch (URISyntaxException e) {
+            // If the intent cannot be parsed, there is no quick action available.
+            reset();
+            return;
+        }
+
+        PackageManager packageManager = mContext.getPackageManager();
+
+        // If a default is set, PackageManager#resolveActivity() will return the ResolveInfo
+        // for the default activity.
+        ResolveInfo possibleDefaultActivity = packageManager.resolveActivity(mIntent, 0);
+
+        // PackageManager#queryIntentActivities() will return a list of activities that can handle
+        // the intent, sorted from best to worst. If there are no matching activities, an empty
+        // list is returned.
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(
+                mIntent, 0);
+
+        int numMatchingActivities = 0;
+        ResolveInfo defaultActivityResolveInfo = null;
+        for (ResolveInfo resolveInfo : resolveInfoList) {
+            // TODO(twellington): do not count browser activities as a match?
+            if (resolveInfo.activityInfo != null && resolveInfo.activityInfo.exported) {
+                numMatchingActivities++;
+
+                // Return early if this resolveInfo matches the possibleDefaultActivity.
+                ActivityInfo possibleDefaultActivityInfo = possibleDefaultActivity.activityInfo;
+                if (possibleDefaultActivityInfo == null) continue;
+
+                ActivityInfo resolveActivityInfo = resolveInfo.activityInfo;
+                boolean matchesPossibleDefaultActivity =
+                        TextUtils.equals(resolveActivityInfo.name,
+                                possibleDefaultActivityInfo.name)
+                        && TextUtils.equals(resolveActivityInfo.packageName,
+                                possibleDefaultActivityInfo.packageName);
+
+                if (matchesPossibleDefaultActivity) {
+                    defaultActivityResolveInfo = resolveInfo;
+                    break;
+                }
+            }
+        }
+
+        if (numMatchingActivities == 0) {
+            reset();
+            return;
+        }
+
+        mHasQuickAction = true;
+        Drawable iconDrawable = null;
+        int iconResId = 0;
+        if (defaultActivityResolveInfo != null) {
+            iconDrawable = defaultActivityResolveInfo.loadIcon(mContext.getPackageManager());
+
+            if (mQuickActionCategory != QuickActionCategory.PHONE) {
+                // Use the default app's name to construct the caption.
+                mCaption = mContext.getResources().getString(
+                        DEFAULT_APP_CAPTION_MAP.get(mQuickActionCategory),
+                        defaultActivityResolveInfo.loadLabel(packageManager));
+            } else {
+                // The caption for phone numbers does not use the app's name.
+                mCaption = mContext.getResources().getString(
+                        DEFAULT_APP_CAPTION_MAP.get(mQuickActionCategory));
+            }
+        } else {
+            iconResId = ICON_MAP.get(mQuickActionCategory);
+            mCaption = mContext.getResources().getString(
+                    FALLBACK_CAPTION_MAP.get(mQuickActionCategory));
+        }
+
+        inflate();
+
+        if (iconDrawable != null) {
+            ((ImageView) getView()).setImageDrawable(iconDrawable);
+        } else {
+            ((ImageView) getView()).setImageResource(iconResId);
+        }
+
+        invalidate();
     }
 }

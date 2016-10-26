@@ -148,7 +148,7 @@ class ContextualSearchFakeServer
         private final String mThumbnailUrl;
         private final String mCaption;
         private final String mQuickActionUri;
-        private final String mQuickActionCategory;
+        private final int mQuickActionCategory;
 
         boolean mDidStartResolution;
         boolean mDidFinishResolution;
@@ -174,7 +174,7 @@ class ContextualSearchFakeServer
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjust, String contextLanguage,
                 String thumbnailUrl, String caption, String quickActionUri,
-                String quickActionCategory) {
+                int quickActionCategory) {
             super(nodeId);
 
             mIsNetworkUnavailable = isNetworkUnavailable;
@@ -302,7 +302,7 @@ class ContextualSearchFakeServer
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjust, String contextLanguage,
                 String thumbnailUrl, String caption, String quickActionUri,
-                String quickActionCategory) {
+                int quickActionCategory) {
             super(nodeId, isNetworkUnavailable, responseCode, searchTerm, displayText,
                     alternateTerm, mid, doPreventPreload, startAdjust, endAdjust, contextLanguage,
                     thumbnailUrl, caption, quickActionUri, quickActionCategory);
@@ -537,7 +537,7 @@ class ContextualSearchFakeServer
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            String quickActionCategory) {
+            int quickActionCategory) {
         mBaseManager.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
@@ -581,18 +581,19 @@ class ContextualSearchFakeServer
 
         registerFakeTapSearch(new FakeTapSearch(
                 "search", false, 200, "Search", "Search", "alternate-term", "", false, 0, 0, "",
-                "", "", "", ""));
+                "", "", "", QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch(
                 "term", false, 200, "Term", "Term", "alternate-term", "", false, 0, 0, "",
-                "", "", "", ""));
+                "", "", "", QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch("resolution", false, 200, "Resolution",
-                "Resolution", "alternate-term", "", false, 0, 0, "", "", "", "", ""));
+                "Resolution", "alternate-term", "", false, 0, 0, "", "", "", "",
+                QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch("german", false, 200, "Deutsche", "Deutsche",
-                "alternate-term", "", false, 0, 0, "de", "", "", "", ""));
+                "alternate-term", "", false, 0, 0, "de", "", "", "", QuickActionCategory.NONE));
 
         registerFakeSlowResolveSearch(new FakeSlowResolveSearch(
                 "search", false, 200, "Search", "Search", "alternate-term", "", false, 0, 0, "",
-                "", "", "", ""));
+                "", "", "", QuickActionCategory.NONE));
     }
 
     /**

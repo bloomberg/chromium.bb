@@ -62,40 +62,40 @@ public class ContextualSearchImageControl
     }
 
     // ============================================================================================
-    // Static Icon
+    // Quick Action Icon
     // ============================================================================================
 
     /**
-     * The resource id of the static icon to display.
+     * The resource id of the quick action icon to display.
      */
-    private int mStaticIconResourceId;
+    private int mQuickActionIconResourceId;
 
     /**
-     * Whether the static icon is visible.
+     * Whether the quick action icon is visible.
      */
-    private boolean mStaticIconVisible;
+    private boolean mQuickActionIconVisible;
 
     /**
-     * @param resId The resource id of the static icon to display.
+     * @param resId The resource id of the quick action icon to display.
      */
-    public void setStaticIconResourceId(int resId) {
-        mStaticIconResourceId = resId;
-        mStaticIconVisible = true;
+    public void setQuickActionIconResourceId(int resId) {
+        mQuickActionIconResourceId = resId;
+        mQuickActionIconVisible = true;
         animateStaticImageVisibility(true);
     }
 
     /**
-     * @return The resource id of the static icon to display.
+     * @return The resource id of the quick action icon to display.
      */
-    public int getStaticIconResourceId() {
-        return mStaticIconResourceId;
+    public int getQuickActionIconResourceId() {
+        return mQuickActionIconResourceId;
     }
 
     /**
-     * @return Whether the static icon is visible.
+     * @return Whether the quick action icon is visible.
      */
-    public boolean getStaticIconVisible() {
-        return mStaticIconVisible;
+    public boolean getQuickActionIconVisible() {
+        return mQuickActionIconVisible;
     }
 
     // ============================================================================================
@@ -116,8 +116,8 @@ public class ContextualSearchImageControl
      * @param thumbnailUrl The URL of the thumbnail to display
      */
     public void setThumbnailUrl(String thumbnailUrl) {
-        // If a static icon is showing, the thumbnail should not be shown.
-        if (mStaticIconVisible) return;
+        // If a quick action icon is showing, the thumbnail should not be shown.
+        if (mQuickActionIconVisible) return;
 
         mThumbnailUrl = thumbnailUrl;
     }
@@ -153,7 +153,7 @@ public class ContextualSearchImageControl
     }
 
     // ============================================================================================
-    // Static Image -- either a thumbnail or static icon
+    // Static Image -- either a thumbnail or quick action icon
     // ============================================================================================
 
     /**
@@ -169,12 +169,12 @@ public class ContextualSearchImageControl
 
     /**
      * Hides the static image if it is visible and makes the icon sprite visible. Also resets the
-     * thumbnail URL and static icon resource id.
+     * thumbnail URL and quick action icon resource id.
      * @param animate Whether hiding the thumbnail should be animated.
      */
-    public void hideStaticIcon(boolean animate) {
+    public void hideStaticImage(boolean animate) {
         getIconSpriteControl().setIsVisible(true);
-        if ((mThumbnailVisible || mStaticIconVisible) && animate) {
+        if ((mThumbnailVisible || mQuickActionIconVisible) && animate) {
             animateStaticImageVisibility(false);
         } else {
             mOverlayPanelAnimation.cancelAnimation(this, AnimationType.STATIC_IMAGE_VISIBILITY);
@@ -196,18 +196,18 @@ public class ContextualSearchImageControl
     /**
      * @return The static image visibility percentage, which dictates how and where to draw the
      *         static image. The static image is not visible at all at 0.f and completely visible at
-     *         1.f. The static image may be either a thumbnail or static icon.
+     *         1.f. The static image may be either a thumbnail or quick action icon.
      */
     public float getStaticImageVisibilityPercentage() {
         return mStaticImageVisibilityPercentage;
     }
 
     /**
-     * Called when the static image finishes hiding to reset thumbnail and static icon values.
+     * Called when the static image finishes hiding to reset thumbnail and quick action icon values.
      */
     private void onStaticImageHidden() {
-        mStaticIconResourceId = 0;
-        mStaticIconVisible = false;
+        mQuickActionIconResourceId = 0;
+        mQuickActionIconVisible = false;
 
         mThumbnailUrl = "";
         mThumbnailVisible = false;

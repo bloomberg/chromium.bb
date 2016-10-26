@@ -2339,6 +2339,27 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_CONTEXTUAL_SEARCH_ERROR" desc="A network error message">
         Error: <ph name="ERROR_CODE">%1$s<ex>404</ex></ph>
       </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_OPEN" desc="Caption displayed in the Contextual Search bar prompting the user to open an app related to the selected text e.g. when an address is selected the caption will say 'Open in Maps'.">
+        Open in <ph name="APP_NAME">%1$s<ex>Maps</ex></ph>
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_GENERIC_MAP" desc="Caption displayed in the Contextual Search bar prompting the user to open a maps app with the selected address. This is displayed if more than one app may be used to open the address.">
+        Open in maps app
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_EMAIL" desc="Caption displayed in the Contextual Search bar prompting the user to create an email addressed to the selected email address.">
+        Create email in <ph name="APP_NAME">%1$s<ex>Gmail</ex></ph>
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_GENERIC_EMAIL" desc="Caption displayed in the Contextual Search bar prompting the user to create an email addressed to the selected email address. This is displayed if more than one app may be used to create the email.">
+        Create email
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_EVENT" desc="Caption displayed in the Contextual Search bar prompting the user to create an event using the selected date/time.">
+        Create event in <ph name="APP_NAME">%1$s<ex>Calendar</ex></ph>
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_GENERIC_EVENT" desc="Caption displayed in the Contextual Search bar prompting the user to create an event using the selected date/time. This is displayed if more than one app may be used to create the event.">
+        Create event
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_PHONE" desc="Caption displayed in the Contextual Search bar prompting the user to call the selected phone number.">
+        Call
+      </message>
 
       <!-- Web apps -->
       <message name="IDS_WEBAPP_ACTIVITY_TITLE" desc="Title in recent tasks list for web apps, i.e. web pages that are shown in a separate window">

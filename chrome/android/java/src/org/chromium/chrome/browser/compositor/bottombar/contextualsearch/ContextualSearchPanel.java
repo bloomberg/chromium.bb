@@ -252,7 +252,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
         setProgressBarCompletion(0);
         setProgressBarVisible(false);
-        getImageControl().hideStaticIcon(false);
+        getImageControl().hideStaticImage(false);
 
         super.onClosed(reason);
 
@@ -490,7 +490,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param searchTerm The string that represents the search term.
      */
     public void setSearchTerm(String searchTerm) {
-        getImageControl().hideStaticIcon(true);
+        getImageControl().hideStaticImage(true);
         getSearchBarControl().setSearchTerm(searchTerm);
         mPanelMetrics.onSearchRequestStarted();
     }
@@ -501,7 +501,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param end The portion of the context from the selection to its end.
      */
     public void setSearchContext(String selection, String end) {
-        getImageControl().hideStaticIcon(true);
+        getImageControl().hideStaticImage(true);
         getSearchBarControl().setSearchContext(selection, end);
         mPanelMetrics.onSearchRequestStarted();
     }
@@ -520,10 +520,10 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param searchTerm The string that represents the search term.
      * @param thumbnailUrl The URL of the thumbnail to display.
      * @param quickActionUri The URI for the intent associated with the quick action.
-     * @param quickActionCategory The category for the quick action.
+     * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
      */
     public void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
-            String quickActionCategory) {
+            int quickActionCategory) {
         mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
         getSearchBarControl().animateSearchTermResolution();

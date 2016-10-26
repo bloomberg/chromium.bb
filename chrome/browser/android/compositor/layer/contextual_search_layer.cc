@@ -45,7 +45,7 @@ void ContextualSearchLayer::SetProperties(
     int search_bar_shadow_resource_id,
     int sprite_resource_id,
     int search_provider_icon_sprite_metadata_resource_id,
-    int static_icon_resource_id,
+    int quick_action_icon_resource_id,
     int arrow_up_resource_id,
     int close_icon_resource_id,
     int progress_bar_background_resource_id,
@@ -82,7 +82,7 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_shadow_opacity,
     bool search_provider_icon_sprite_visible,
     float search_provider_icon_sprite_completion_percentage,
-    bool static_icon_visible,
+    bool quick_action_icon_visible,
     bool thumbnail_visible,
     float static_image_visibility_percentage,
     int static_image_size,
@@ -384,8 +384,8 @@ void ContextualSearchLayer::SetProperties(
   SetupIconLayer(search_provider_icon_sprite_visible,
                  search_provider_icon_sprite_metadata_resource_id,
                  search_provider_icon_sprite_completion_percentage,
-                 static_icon_visible,
-                 static_icon_resource_id,
+                 quick_action_icon_visible,
+                 quick_action_icon_resource_id,
                  thumbnail_visible,
                  static_image_visibility_percentage);
 }
@@ -398,8 +398,8 @@ void ContextualSearchLayer::SetupIconLayer(
     bool search_provider_icon_sprite_visible,
     int search_provider_icon_sprite_metadata_resource_id,
     float search_provider_icon_sprite_completion_percentage,
-    bool static_icon_visible,
-    int static_icon_resource_id,
+    bool quick_action_icon_visible,
+    int quick_action_icon_resource_id,
     bool thumbnail_visible,
     float static_image_visibility_percentage) {
   icon_layer_->SetBounds(gfx::Size(static_image_size_, static_image_size_));
@@ -407,26 +407,28 @@ void ContextualSearchLayer::SetupIconLayer(
 
   scoped_refptr<cc::UIResourceLayer> static_image_layer;
 
-  if (static_icon_visible) {
-    if (static_icon_layer_->parent() != icon_layer_)
-      icon_layer_->AddChild(static_icon_layer_);
+  if (quick_action_icon_visible) {
+    if (quick_action_icon_layer_->parent() != icon_layer_)
+      icon_layer_->AddChild(quick_action_icon_layer_);
 
-    ui::ResourceManager::Resource* static_icon_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       static_icon_resource_id);
-    static_icon_layer_->SetUIResourceId(
-        static_icon_resource->ui_resource->id());
-    static_icon_layer_->SetBounds(gfx::Size(static_image_size_,
-                                            static_image_size_));
+    ui::ResourceManager::Resource* quick_action_icon_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
+                                       quick_action_icon_resource_id);
+    if (quick_action_icon_resource) {
+      quick_action_icon_layer_->SetUIResourceId(
+          quick_action_icon_resource->ui_resource->id());
+      quick_action_icon_layer_->SetBounds(gfx::Size(static_image_size_,
+                                                    static_image_size_));
 
-    SetStaticImageProperties(static_icon_layer_, 0, 0,
-                             static_image_visibility_percentage);
-  } else if (static_icon_layer_->parent()) {
-    static_icon_layer_->RemoveFromParent();
+      SetStaticImageProperties(quick_action_icon_layer_, 0, 0,
+                               static_image_visibility_percentage);
+    }
+  } else if (quick_action_icon_layer_->parent()) {
+    quick_action_icon_layer_->RemoveFromParent();
   }
 
   // Thumbnail
-  if (!static_icon_visible && thumbnail_visible) {
+  if (!quick_action_icon_visible && thumbnail_visible) {
     if (thumbnail_layer_->parent() != icon_layer_)
           icon_layer_->AddChild(thumbnail_layer_);
 
@@ -696,7 +698,7 @@ ContextualSearchLayer::ContextualSearchLayer(
       icon_layer_(cc::Layer::Create()),
       search_provider_icon_sprite_(CrushedSpriteLayer::Create()),
       thumbnail_layer_(cc::UIResourceLayer::Create()),
-      static_icon_layer_(cc::UIResourceLayer::Create()),
+      quick_action_icon_layer_(cc::UIResourceLayer::Create()),
       arrow_icon_(cc::UIResourceLayer::Create()),
       search_promo_(cc::UIResourceLayer::Create()),
       search_promo_container_(cc::SolidColorLayer::Create()),
@@ -739,15 +741,15 @@ ContextualSearchLayer::ContextualSearchLayer(
   progress_bar_->SetIsDrawable(true);
   progress_bar_->SetFillCenter(true);
 
-  // Icon - holds thumbnail, search provider sprite and/or static icon
+  // Icon - holds thumbnail, search provider sprite and/or quick action icon
   icon_layer_->SetIsDrawable(true);
   layer_->AddChild(icon_layer_);
 
   // Thumbnail
   thumbnail_layer_->SetIsDrawable(true);
 
-  // Static icon
-  static_icon_layer_->SetIsDrawable(true);
+  // Quick action icon
+  quick_action_icon_layer_->SetIsDrawable(true);
 
   // Content layer
   text_layer_->SetIsDrawable(true);

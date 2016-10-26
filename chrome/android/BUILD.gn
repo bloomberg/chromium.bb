@@ -201,6 +201,7 @@ android_library("chrome_java") {
     "//chrome:content_settings_type_javagen",
     "//chrome:data_use_ui_message_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
+    "//chrome:quick_action_category_enum_javagen",
   ]
 
   # Manifest used for linting (determining unused resources).

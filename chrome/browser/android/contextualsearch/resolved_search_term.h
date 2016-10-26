@@ -9,6 +9,16 @@
 
 #include "base/macros.h"
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.contextualsearch
+enum QuickActionCategory {
+  QUICK_ACTION_CATEGORY_NONE,
+  QUICK_ACTION_CATEGORY_ADDRESS,
+  QUICK_ACTION_CATEGORY_EMAIL,
+  QUICK_ACTION_CATEGORY_EVENT,
+  QUICK_ACTION_CATEGORY_PHONE
+};
+
 // Encapsulates the various parts of a Resolved Search Term, which tells
 // Contextual Search what to search for and how that term appears in the
 // surrounding text.
@@ -28,7 +38,7 @@ struct ResolvedSearchTerm {
                      const std::string& thumbnail_url,
                      const std::string& caption,
                      const std::string& quick_action_uri,
-                     const std::string& quick_action_category);
+                     const QuickActionCategory& quick_action_category);
   ~ResolvedSearchTerm();
 
   const bool is_invalid;
@@ -45,7 +55,7 @@ struct ResolvedSearchTerm {
   const std::string thumbnail_url;
   const std::string caption;
   const std::string quick_action_uri;
-  const std::string quick_action_category;
+  const QuickActionCategory quick_action_category;
 
   DISALLOW_COPY_AND_ASSIGN(ResolvedSearchTerm);
 };

@@ -40,7 +40,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      int search_bar_shadow_resource_id,
                      int sprite_resource_id,
                      int search_provider_icon_sprite_metadata_resource_id,
-                     int static_icon_resource_id,
+                     int  quick_action_icon_resource_id,
                      int arrow_up_resource_id,
                      int close_icon_resource_id,
                      int progress_bar_background_resource_id,
@@ -77,7 +77,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float search_bar_shadow_opacity,
                      bool search_provider_icon_sprite_visible,
                      float search_provider_icon_sprite_completion_percentage,
-                     bool static_icon_visible,
+                     bool quick_action_icon_visible,
                      bool thumbnail_visible,
                      float static_image_visibility_percentage,
                      int static_image_size,
@@ -102,8 +102,8 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   void SetupIconLayer(bool search_provider_icon_sprite_visible,
                       int search_provider_icon_sprite_metadata_resource_id,
                       float search_provider_icon_sprite_completion_percentage,
-                      bool static_icon_visible,
-                      int static_icon_resource_id,
+                      bool quick_action_icon_visible,
+                      int quick_action_icon_resource_id,
                       bool thumbnail_visible,
                       float static_image_visibility_percentage);
 
@@ -134,7 +134,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::Layer> icon_layer_;
   scoped_refptr<CrushedSpriteLayer> search_provider_icon_sprite_;
   scoped_refptr<cc::UIResourceLayer> thumbnail_layer_;
-  scoped_refptr<cc::UIResourceLayer> static_icon_layer_;
+  scoped_refptr<cc::UIResourceLayer> quick_action_icon_layer_;
   scoped_refptr<cc::UIResourceLayer> arrow_icon_;
   scoped_refptr<cc::UIResourceLayer> search_promo_;
   scoped_refptr<cc::SolidColorLayer> search_promo_container_;

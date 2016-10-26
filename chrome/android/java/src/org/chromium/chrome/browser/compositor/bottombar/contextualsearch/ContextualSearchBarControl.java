@@ -87,7 +87,7 @@ public class ContextualSearchBarControl
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
         mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader);
-        mQuickActionControl = new ContextualSearchQuickActionControl();
+        mQuickActionControl = new ContextualSearchQuickActionControl(context, loader);
 
         mTextLayerMinHeight = context.getResources().getDimension(
                 R.dimen.contextual_search_text_layer_min_height);
@@ -214,15 +214,15 @@ public class ContextualSearchBarControl
     /**
      * Sets the quick action if one is available.
      * @param quickActionUri The URI for the intent associated with the quick action.
-     * @param quickActionCategory The category for the quick action.
+     * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
      */
-    public void setQuickAction(String quickActionUri, String quickActionCategory) {
+    public void setQuickAction(String quickActionUri, int quickActionCategory) {
         mQuickActionControl.setQuickAction(quickActionUri, quickActionCategory);
         if (mQuickActionControl.hasQuickAction()) {
             // TODO(twellington): should the quick action caption be stored separately from the
             // regular caption?
             mCaptionControl.setCaption(mQuickActionControl.getCaption());
-            mImageControl.setStaticIconResourceId(mQuickActionControl.getIconResId());
+            mImageControl.setQuickActionIconResourceId(mQuickActionControl.getIconResId());
         }
     }
 

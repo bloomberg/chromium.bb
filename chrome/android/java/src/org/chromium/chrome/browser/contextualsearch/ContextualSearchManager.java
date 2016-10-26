@@ -657,14 +657,16 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      * @param thumbnailUrl The URL of the thumbnail to display in our UX.
      * @param caption The caption to display.
      * @param quickActionUri The URI for the intent associated with the quick action.
-     * @param quickActionCategory The category for the quick action.
+     * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
             final String mid, boolean doPreventPreload, int selectionStartAdjust,
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
-            final String caption, final String quickActionUri, final String quickActionCategory) {
+            final String caption, final String quickActionUri, final int quickActionCategory) {
+        // TODO(twellington): Convert quickActionCategory to an enum value and pass that instead
+        //                    of an int.
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
@@ -676,7 +678,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            String quickActionCategory) {
+            int quickActionCategory) {
         // Show an appropriate message for what to search for.
         String message;
         boolean doLiteralSearch = false;

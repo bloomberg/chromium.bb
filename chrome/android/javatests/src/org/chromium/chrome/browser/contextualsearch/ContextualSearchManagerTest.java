@@ -367,13 +367,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         private final String mThumbnailUrl;
         private final String mCaption;
         private final String mQuickActionUri;
-        private final String mQuickActionCategory;
+        private final int mQuickActionCategory;
 
         public FakeResponseOnMainThread(boolean isNetworkUnavailable, int responseCode,
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjudst, String contextLanguage,
                 String thumbnailUrl, String caption, String quickActionUri,
-                String quickActionCategory) {
+                int quickActionCategory) {
             mIsNetworkUnavailable = isNetworkUnavailable;
             mResponseCode = responseCode;
             mSearchTerm = searchTerm;
@@ -406,7 +406,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
         fakeResponse(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm,
-                null, doPreventPreload, 0, 0, "", "", "", "", "");
+                null, doPreventPreload, 0, 0, "", "", "", "", QuickActionCategory.NONE);
     }
 
     /**
@@ -416,7 +416,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode, String searchTerm,
             String displayText, String alternateTerm, String mid, boolean doPreventPreload,
             int startAdjust, int endAdjust, String contextLanguage, String thumbnailUrl,
-            String caption, String quickActionUri, String quickActionCategory) {
+            String caption, String quickActionUri, int quickActionCategory) {
         if (mFakeServer.getSearchTermRequested() != null) {
             getInstrumentation().runOnMainSync(new FakeResponseOnMainThread(isNetworkUnavailable,
                     responseCode, searchTerm, displayText, alternateTerm, mid, doPreventPreload,
@@ -2145,7 +2145,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         waitForPanelToPeek();
 
         fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
-                null, false, -14, 0, "", "", "", "", "");
+                null, false, -14, 0, "", "", "", "", QuickActionCategory.NONE);
         waitForSelectionToBe("United States Intelligence");
     }
 
@@ -2691,7 +2691,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             }
         });
 
-        imageControl.hideStaticIcon(false);
+        imageControl.hideStaticImage(false);
 
         assertTrue(iconSpriteControl.isVisible());
         assertFalse(imageControl.getThumbnailVisible());

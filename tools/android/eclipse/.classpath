@@ -172,6 +172,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/popup_item_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/private_key_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/profile_account_management_metrics_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/quick_action_category_enum_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/readback_response_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/result_codes_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/screen_orientation_values_java"/>
