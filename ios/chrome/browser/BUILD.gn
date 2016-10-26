@@ -149,6 +149,7 @@ source_set("browser_no_public_deps") {
     "xcallback_parameters.mm",
   ]
   deps = [
+    ":injected_js",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -285,8 +286,10 @@ source_set("about_flags") {
 
 # TODO(crbug.com/487804): use js_compile_checked instead once the errors have
 # been fixed.
+# TODO(crbug.com/658242): this target should be split in individual targets
+# and the correct dependency used.
 js_compile_unchecked("injected_js") {
-  visibility = [ ":browser" ]
+  visibility = [ ":browser_no_public_deps" ]
   sources = [
     "find_in_page/resources/find_in_page.js",
     "passwords/resources/credential_manager.js",
