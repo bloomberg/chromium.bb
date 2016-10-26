@@ -1,113 +1,86 @@
 <!doctype html>
-<html>
-<head>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="resources/util.js"></script>
-</head>
-<body>
-<div>
-<textarea id="testTextArea"></textarea>
-<input id="testInput" type="text"></input>
-<div id="testEditable" contenteditable></div>
-<div id="testSourcePlain">You has the right.</div>
-<div id="testSourceDecorated">I have a<b>n ki</b>wi. I have no idea.</div>
-<div id="testSourceMulti">I have an grape. I have an muscat. I don't know.</div>
-</div>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 <script>
-var testTextArea = document.getElementById('testTextArea');
-var testInput = document.getElementById('testInput');
-var testEditable = document.getElementById('testEditable');
-var testSourcePlain = document.getElementById('testSourcePlain');
-var testSourceDecorated = document.getElementById('testSourceDecorated');
-var testSourceMulti = document.getElementById('testSourceMulti');
-
-var sel = window.getSelection();
-
-function findFirstTextNode(node)
+function pasteHTMLToDest(document, html)
 {
-    function iterToFindFirstTextNode(node)
-    {
-        if (node instanceof Text)
-            return node;
-
-        var childNodes = node.childNodes;
-        for (var i = 0; i < childNodes.length; ++i) {
-            var n = iterToFindFirstTextNode(childNodes[i]);
-            if (n)
-                return n;
-        }
-
-        return null;
-    }
-
-
-    if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement)
-        return iterToFindFirstTextNode(internals.shadowRoot(node));
-    else
-        return iterToFindFirstTextNode(node);
+  document.getSelection().setClipboardData(html);
+  document.getElementById('dest').focus();
+  document.execCommand('Paste');
 }
 
-function verifyMarker(node, expectedMarked)
-{
-    if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement)
-        node.focus();
-    else
-        sel.selectAllChildren(node);
+spellcheck_test(
+    '<div contenteditable id="dest">|</div>',
+    document => pasteHTMLToDest(document, 'You has the right.'),
+    '<div contenteditable id="dest">You ~has~ the right.</div>',
+    'Paste plain text into editable <div>.');
 
-    var textNode = findFirstTextNode(node);
-    var num = internals.markerCountForNode(textNode, 'grammar');
-    assert_equals(num, expectedMarked.length);
+spellcheck_test(
+    '<div contenteditable id="dest">|</div>',
+    document => pasteHTMLToDest(document,
+                                'I have a<b>n ki</b>wi. I have no idea.'),
+    [
+      '<div contenteditable id="dest">',
+        'I have ~a~<b>~n~ ki</b>wi. I have no idea.',
+      '</div>'
+    ].join(''),
+    'Paste decorated text into editable <div>.');
 
-    for (var i = 0; i < num; ++i) {
-        var range = internals.markerRangeForNode(textNode, 'grammar', i);
-        assert_equals(range.toString(), expectedMarked[i]);
-    }
-}
+spellcheck_test(
+    '<div contenteditable id="dest">|</div>',
+    document => pasteHTMLToDest(
+        document, 'I have an grape. I have an muscat. I don\'t know.'),
+    [
+      '<div contenteditable id="dest">',
+        'I have ~an~ grape. I have ~an~ muscat. I don\'t know.',
+      '</div>'
+    ].join(''),
+    'Paste text with multiple errors into editable <div>.');
 
-function pasteText(source, dest)
-{
-    sel.selectAllChildren(source);
-    document.execCommand('Copy');
-    if (dest instanceof HTMLInputElement || dest instanceof HTMLTextAreaElement) {
-        dest.value = '';
-        dest.focus();
-    } else {
-        dest.innerHTML = '';
-        sel.selectAllChildren(dest);
-    }
-    document.execCommand('Paste');
-};
+spellcheck_test(
+    '<input id="dest" type="text">|',
+    document => pasteHTMLToDest(document, 'You has the right.'),
+    '<input id="dest" type="text" value="You ~has~ the right.">',
+    'Paste plain text into <input>.');
 
-var steps = [
-    () => pasteText(testSourcePlain, testEditable),
-    () => pasteText(testSourceDecorated, testEditable),
-    () => pasteText(testSourceMulti, testEditable),
+spellcheck_test(
+    '<input id="dest" type="text">|',
+    document => pasteHTMLToDest(document,
+                                'I have a<b>n ki</b>wi. I have no idea.'),
+    '<input id="dest" type="text" value="I have ~an~ kiwi. I have no idea.">',
+    'Paste decorated text into <input>.');
 
-    () => pasteText(testSourcePlain, testInput),
-    () => pasteText(testSourceDecorated, testInput),
-    () => pasteText(testSourceMulti, testInput),
+spellcheck_test(
+    '<input id="dest" type="text">|',
+    document => pasteHTMLToDest(
+        document, 'I have an grape. I have an muscat. I don\'t know.'),
+    '<input id="dest" type="text" ' +
+      'value="I have ~an~ grape. I have ~an~ muscat. I don\'t know.">',
+    'Paste text with multiple errors into <input>.');
 
-    () => pasteText(testSourcePlain, testTextArea),
-    () => pasteText(testSourceDecorated, testTextArea),
-    () => pasteText(testSourceMulti, testTextArea)
-];
+spellcheck_test(
+    '<textarea id="dest">|</textarea>',
+    document => pasteHTMLToDest(document, 'You has the right.'),
+    '<textarea id="dest">You ~has~ the right.</textarea>',
+    'Paste plain text into <textarea>.');
 
-var assertions = [
-    () => verifyMarker(testEditable, ['has']),
-    () => verifyMarker(testEditable, ['a']), // Checks only 'a'.
-    () => verifyMarker(testEditable, ['an', 'an']),
+spellcheck_test(
+    '<textarea id="dest">|</textarea>',
+    document => pasteHTMLToDest(document,
+                                'I have a<b>n ki</b>wi. I have no idea.'),
+    '<textarea id="dest">I have ~an~ kiwi. I have no idea.</textarea>',
+    'Paste decorated text into <textarea>.');
 
-    () => verifyMarker(testInput, ['has']),
-    () => verifyMarker(testInput, ['an']),
-    () => verifyMarker(testInput, ['an', 'an']),
-
-    () => verifyMarker(testTextArea, ['has']),
-    () => verifyMarker(testTextArea, ['an']),
-    () => verifyMarker(testTextArea, ['an', 'an']),
-];
-
-runSpellingTest(steps, assertions, 'Grammar checking for pasted text.');
+spellcheck_test(
+    '<textarea id="dest">|</textarea>',
+    document => pasteHTMLToDest(
+        document, 'I have an grape. I have an muscat. I don\'t know.'),
+    [
+      '<textarea id="dest">',
+        'I have ~an~ grape. I have ~an~ muscat. I don\'t know.',
+      '</textarea>'
+    ].join(''),
+    'Paste text with multiple errors into <textarea>.');
 </script>
-</body>
-</html>
