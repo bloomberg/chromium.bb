@@ -186,9 +186,6 @@ class PDFEngine {
     // Get the background color of the PDF.
     virtual uint32_t GetBackgroundColor() = 0;
 
-    // Cancel browser initiated document download.
-    virtual void CancelBrowserDownload() = 0;
-
     // Sets selection status.
     virtual void IsSelectingChanged(bool is_selecting) {}
   };
@@ -300,6 +297,8 @@ class PDFEngine {
   // general scrolling - the engine will not repaint due to this.
   virtual void SetScrollPosition(const pp::Point& position) = 0;
 #endif
+
+  virtual bool IsProgressiveLoad() = 0;
 
   virtual std::string GetMetadata(const std::string& key) = 0;
 };

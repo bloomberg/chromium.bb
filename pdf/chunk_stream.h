@@ -6,103 +6,46 @@
 #define PDF_CHUNK_STREAM_H_
 
 #include <stddef.h>
-#include <string.h>
 
-#include <algorithm>
-#include <array>
-#include <memory>
+#include <map>
+#include <utility>
 #include <vector>
-
-#include "pdf/range_set.h"
 
 namespace chrome_pdf {
 
 // This class collects a chunks of data into one data stream. Client can check
 // if data in certain range is available, and get missing chunks of data.
-template <uint32_t N>
 class ChunkStream {
  public:
-  static constexpr uint32_t kChunkSize = N;
-  using ChunkData = typename std::array<unsigned char, N>;
+  ChunkStream();
+  ~ChunkStream();
 
-  ChunkStream() {}
-  ~ChunkStream() {}
+  void Clear();
 
-  void SetChunkData(uint32_t chunk_index, std::unique_ptr<ChunkData> data) {
-    if (!data)
-      return;
-    if (chunk_index >= data_.size()) {
-      data_.resize(chunk_index + 1);
-    }
-    if (!data_[chunk_index]) {
-      ++filled_chunks_count_;
-    }
-    data_[chunk_index] = std::move(data);
-    filled_chunks_.Union(gfx::Range(chunk_index, chunk_index + 1));
-  }
+  void Preallocate(size_t stream_size);
+  size_t GetSize() const;
 
-  bool ReadData(const gfx::Range& range, void* buffer) const {
-    if (!IsRangeAvailable(range)) {
-      return false;
-    }
-    unsigned char* data_buffer = static_cast<unsigned char*>(buffer);
-    uint32_t start = range.start();
-    while (start != range.end()) {
-      const uint32_t chunk_index = GetChunkIndex(start);
-      const uint32_t chunk_start = start % kChunkSize;
-      const uint32_t len =
-          std::min(kChunkSize - chunk_start, range.end() - start);
-      memcpy(data_buffer, data_[chunk_index]->data() + chunk_start, len);
-      data_buffer += len;
-      start += len;
-    }
-    return true;
-  }
+  bool WriteData(size_t offset, void* buffer, size_t size);
+  bool ReadData(size_t offset, size_t size, void* buffer) const;
 
-  uint32_t GetChunkIndex(uint32_t offset) const { return offset / kChunkSize; }
+  // Returns vector of pairs where first is an offset, second is a size.
+  bool GetMissedRanges(size_t offset, size_t size,
+      std::vector<std::pair<size_t, size_t> >* ranges) const;
+  bool IsRangeAvailable(size_t offset, size_t size) const;
+  size_t GetFirstMissingByte() const;
 
-  gfx::Range GetChunksRange(uint32_t offset, uint32_t size) const {
-    return gfx::Range(GetChunkIndex(offset),
-                      GetChunkIndex(offset + size + kChunkSize - 1));
-  }
-
-  bool IsRangeAvailable(const gfx::Range& range) const {
-    if (!range.IsValid() || range.is_reversed() ||
-        (eof_pos_ > 0 && eof_pos_ < range.end()))
-      return false;
-    if (range.is_empty())
-      return true;
-    const gfx::Range chunks_range(GetChunkIndex(range.start()),
-                                  GetChunkIndex(range.end() + kChunkSize - 1));
-    return filled_chunks_.Contains(chunks_range);
-  }
-
-  void set_eof_pos(uint32_t eof_pos) { eof_pos_ = eof_pos; }
-  uint32_t eof_pos() const { return eof_pos_; }
-
-  const RangeSet& filled_chunks() const { return filled_chunks_; }
-
-  bool IsComplete() const {
-    return eof_pos_ > 0 && IsRangeAvailable(gfx::Range(0, eof_pos_));
-  }
-
-  void Clear() {
-    data_.clear();
-    eof_pos_ = 0;
-    filled_chunks_.Clear();
-    filled_chunks_count_ = 0;
-  }
-
-  uint32_t filled_chunks_count() const { return filled_chunks_count_; }
-  uint32_t total_chunks_count() const {
-    return GetChunkIndex(eof_pos_ + kChunkSize - 1);
-  }
+  // Finds the first byte of the missing byte interval that offset belongs to.
+  size_t GetFirstMissingByteInInterval(size_t offset) const;
+  // Returns the last byte of the missing byte interval that offset belongs to.
+  size_t GetLastMissingByteInInterval(size_t offset) const;
 
  private:
-  std::vector<std::unique_ptr<ChunkData>> data_;
-  uint32_t eof_pos_ = 0;
-  RangeSet filled_chunks_;
-  uint32_t filled_chunks_count_ = 0;
+  std::vector<unsigned char> data_;
+
+  // Pair, first - begining of the chunk, second - size of the chunk.
+  std::map<size_t, size_t> chunks_;
+
+  size_t stream_size_;
 };
 
 };  // namespace chrome_pdf
