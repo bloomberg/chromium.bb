@@ -10,11 +10,10 @@
 
 namespace arc {
 
-namespace {
-
 const char kMountPointName[] = "arc-content";
 
-}  // namespace
+const base::FilePath::CharType kMountPointPath[] =
+    FILE_PATH_LITERAL("/special/arc-content");
 
 GURL ArcUrlToExternalFileUrl(const GURL& arc_url) {
   // Return "externalfile:arc-content/<|arc_url| escaped>".

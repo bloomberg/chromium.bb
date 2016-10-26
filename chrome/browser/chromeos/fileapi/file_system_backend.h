@@ -67,15 +67,12 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
  public:
   using storage::FileSystemBackend::OpenFileSystemCallback;
 
-  // FileSystemBackend will take an ownership of a |mount_points|
-  // reference. On the other hand, |system_mount_points| will be kept as a raw
-  // pointer and it should outlive FileSystemBackend instance.
-  // The ownerships of |drive_delegate| and |file_system_provider_delegate| are
-  // also taken.
+  // |system_mount_points| should outlive FileSystemBackend instance.
   FileSystemBackend(
-      FileSystemBackendDelegate* drive_delegate,
-      FileSystemBackendDelegate* file_system_provider_delegate,
-      FileSystemBackendDelegate* mtp_delegate,
+      std::unique_ptr<FileSystemBackendDelegate> drive_delegate,
+      std::unique_ptr<FileSystemBackendDelegate> file_system_provider_delegate,
+      std::unique_ptr<FileSystemBackendDelegate> mtp_delegate,
+      std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate,
       scoped_refptr<storage::ExternalMountPoints> mount_points,
       storage::ExternalMountPoints* system_mount_points);
   ~FileSystemBackend() override;
@@ -154,6 +151,9 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
 
   // The delegate instance for the MTP file system related operations.
   std::unique_ptr<FileSystemBackendDelegate> mtp_delegate_;
+
+  // The delegate instance for the ARC content file system related operations.
+  std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate_;
 
   // Mount points specific to the owning context (i.e. per-profile mount
   // points).

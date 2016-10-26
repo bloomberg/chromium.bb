@@ -5,9 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_CONTENT_FILE_SYSTEM_URL_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_CONTENT_FILE_SYSTEM_URL_UTIL_H_
 
+#include "base/files/file_path.h"
 #include "url/gurl.h"
 
 namespace arc {
+
+// The name of the ARC content file system mount point.
+extern const char kMountPointName[];
+
+// The path of the ARC content file system mount point.
+extern const base::FilePath::CharType kMountPointPath[];
 
 // Converts a URL which can be used within the ARC container to an externalfile:
 // URL which can be used by Chrome.

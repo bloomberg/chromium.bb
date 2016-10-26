@@ -222,6 +222,8 @@ source_set("chromeos") {
     "arc/fileapi/arc_content_file_system_backend_delegate.h",
     "arc/fileapi/arc_content_file_system_file_stream_reader.cc",
     "arc/fileapi/arc_content_file_system_file_stream_reader.h",
+    "arc/fileapi/arc_content_file_system_service.cc",
+    "arc/fileapi/arc_content_file_system_service.h",
     "arc/fileapi/arc_content_file_system_url_util.cc",
     "arc/fileapi/arc_content_file_system_url_util.h",
     "arc/intent_helper/arc_external_protocol_dialog.cc",

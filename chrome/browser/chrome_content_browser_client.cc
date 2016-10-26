@@ -200,6 +200,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
@@ -2751,11 +2752,12 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       content::BrowserContext::GetMountPoints(browser_context);
   DCHECK(external_mount_points);
   chromeos::FileSystemBackend* backend = new chromeos::FileSystemBackend(
-      new drive::FileSystemBackendDelegate,
-      new chromeos::file_system_provider::BackendDelegate,
-      new chromeos::MTPFileSystemBackendDelegate(storage_partition_path),
-      external_mount_points,
-      storage::ExternalMountPoints::GetSystemInstance());
+      base::MakeUnique<drive::FileSystemBackendDelegate>(),
+      base::MakeUnique<chromeos::file_system_provider::BackendDelegate>(),
+      base::MakeUnique<chromeos::MTPFileSystemBackendDelegate>(
+          storage_partition_path),
+      base::MakeUnique<arc::ArcContentFileSystemBackendDelegate>(),
+      external_mount_points, storage::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();
   DCHECK(backend->CanHandleType(storage::kFileSystemTypeExternal));
   additional_backends->push_back(backend);

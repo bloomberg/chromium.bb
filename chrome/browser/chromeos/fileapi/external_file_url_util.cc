@@ -27,7 +27,8 @@ namespace chromeos {
 bool IsExternalFileURLType(storage::FileSystemType type) {
   return type == storage::kFileSystemTypeDrive ||
          type == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
-         type == storage::kFileSystemTypeProvided;
+         type == storage::kFileSystemTypeProvided ||
+         type == storage::kFileSystemTypeArcContent;
 }
 
 GURL FileSystemURLToExternalFileURL(

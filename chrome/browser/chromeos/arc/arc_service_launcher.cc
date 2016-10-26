@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_service.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
@@ -34,6 +35,9 @@ void ArcServiceLauncher::Initialize() {
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcBootErrorNotification>(
       arc_service_manager_->arc_bridge_service()));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcContentFileSystemService>(
+          arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcDownloadsWatcherService>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(
