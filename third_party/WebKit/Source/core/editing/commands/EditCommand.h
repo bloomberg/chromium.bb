@@ -68,6 +68,9 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
   Document& document() const { return *m_document.get(); }
   CompositeEditCommand* parent() const { return m_parent; }
   void setStartingSelection(const VisibleSelection&);
+  void setEndingSelection(const SelectionInDOMTree&);
+  // TODO(yosin): We should get rid of overloads of |setEndingSelection()|
+  // except for taking |SelectionInDOMTree|.
   void setEndingSelection(const VisibleSelection&);
   void setEndingSelection(const VisiblePosition&);
 
