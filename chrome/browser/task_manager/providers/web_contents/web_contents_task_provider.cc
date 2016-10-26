@@ -68,19 +68,20 @@ class WebContentsEntry : public content::WebContentsObserver {
   // notifies the provider's observer of the tasks removal.
   void ClearTaskForFrame(RenderFrameHost* render_frame_host);
 
+  // Calls |on_task| for each task managed by this WebContentsEntry.
+  void ForEachTask(const base::Callback<void(RendererTask*)>& on_task);
+
   // The provider that owns this entry.
   WebContentsTaskProvider* provider_;
 
   // The RenderFrameHosts associated with this entry's WebContents that we're
   // tracking mapped by their SiteInstances.
   using FramesList = std::vector<RenderFrameHost*>;
-  using SiteInstanceToFramesMap = std::map<SiteInstance*, FramesList>;
-  SiteInstanceToFramesMap frames_by_site_instance_;
+  std::map<SiteInstance*, FramesList> frames_by_site_instance_;
 
   // The RendererTasks that we create for the task manager, mapped by their
-  // RenderFrameHosts.
-  using FramesToTasksMap = std::map<RenderFrameHost*, RendererTask*>;
-  FramesToTasksMap tasks_by_frames_;
+  // RenderFrameHosts. This owns the RenderTasks.
+  std::map<RenderFrameHost*, RendererTask*> tasks_by_frames_;
 
   // States whether we did record a main frame for this entry.
   SiteInstance* main_frame_site_instance_;
@@ -108,18 +109,17 @@ void WebContentsEntry::CreateAllTasks() {
 }
 
 void WebContentsEntry::ClearAllTasks(bool notify_observer) {
-  for (const auto& pair : frames_by_site_instance_) {
-    const FramesList& frames_list = pair.second;
-    DCHECK(!frames_list.empty());
-    RendererTask* task = tasks_by_frames_[frames_list[0]];
+  ForEachTask(base::Bind(
+      [](WebContentsTaskProvider* provider, bool notify_observer,
+         content::WebContents* web_contents, RendererTask* task) {
+        task->set_termination_status(web_contents->GetCrashedStatus());
+        task->set_termination_error_code(web_contents->GetCrashedErrorCode());
 
-    task->set_termination_status(web_contents()->GetCrashedStatus());
-    task->set_termination_error_code(web_contents()->GetCrashedErrorCode());
-
-    if (notify_observer)
-      provider_->NotifyObserverTaskRemoved(task);
-    delete task;
-  }
+        if (notify_observer)
+          provider->NotifyObserverTaskRemoved(task);
+        delete task;
+      },
+      provider_, notify_observer, web_contents()));
 
   frames_by_site_instance_.clear();
   tasks_by_frames_.clear();
@@ -173,31 +173,33 @@ void WebContentsEntry::OnRendererUnresponsive(
 
 void WebContentsEntry::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  RendererTask* task = GetTaskForFrame(web_contents()->GetMainFrame());
-  if (!task)
+  RendererTask* main_frame_task =
+      GetTaskForFrame(web_contents()->GetMainFrame());
+  if (!main_frame_task)
     return;
 
-  // Listening to WebContentsObserver::TitleWasSet() only is not enough in
-  // some cases when the the webpage doesn't have a title. That's why we update
-  // the title here as well.
-  task->UpdateTitle();
+  main_frame_task->UpdateRapporSampleName();
 
-  // Call RendererTask::UpdateFavicon() to set the current favicon to the
-  // default favicon. If the page has a non-default favicon,
-  // RendererTask::OnFaviconUpdated() will update the current favicon once
-  // FaviconDriver figures out the correct favicon for the page.
-  task->UpdateFavicon();
-  task->UpdateRapporSampleName();
+  ForEachTask(base::Bind([](RendererTask* task) {
+    // Listening to WebContentsObserver::TitleWasSet() only is not enough in
+    // some cases when the the web page doesn't have a title. That's why we
+    // update the title here as well.
+    task->UpdateTitle();
+
+    // Call RendererTask::UpdateFavicon() to set the current favicon to the
+    // default favicon. If the page has a non-default favicon,
+    // RendererTask::OnFaviconUpdated() will update the current favicon once
+    // FaviconDriver figures out the correct favicon for the page.
+    task->UpdateFavicon();
+  }));
 }
 
 void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
                                    bool explicit_set) {
-  RendererTask* task = GetTaskForFrame(web_contents()->GetMainFrame());
-  if (!task)
-    return;
-
-  task->UpdateTitle();
-  task->UpdateFavicon();
+  ForEachTask(base::Bind([](RendererTask* task) {
+    task->UpdateTitle();
+    task->UpdateFavicon();
+  }));
 }
 
 void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {
@@ -275,6 +277,17 @@ void WebContentsEntry::ClearTaskForFrame(RenderFrameHost* render_frame_host) {
 
     if (site_instance == main_frame_site_instance_)
       main_frame_site_instance_ = nullptr;
+  }
+}
+
+void WebContentsEntry::ForEachTask(
+    const base::Callback<void(RendererTask*)>& on_task) {
+  for (const auto& pair : frames_by_site_instance_) {
+    const FramesList& frames_list = pair.second;
+    DCHECK(!frames_list.empty());
+    RendererTask* task = tasks_by_frames_[frames_list[0]];
+
+    on_task.Run(task);
   }
 }
 

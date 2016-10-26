@@ -1487,7 +1487,7 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
 
   if (SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
       (!frame_tree_node_->IsMainFrame() ||
-       rfh->GetSiteInstance()->is_default_subframe_site_instance())) {
+       rfh->GetSiteInstance()->IsDefaultSubframeSiteInstance())) {
     // Always attempt a transfer in these cases.
     return true;
   }

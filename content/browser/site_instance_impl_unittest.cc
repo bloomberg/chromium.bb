@@ -813,8 +813,8 @@ TEST_F(SiteInstanceTest, DefaultSubframeSiteInstance) {
 
   EXPECT_NE(main_instance, subframe_instance);
   EXPECT_EQ(subframe_instance, main_instance->GetDefaultSubframeSiteInstance());
-  EXPECT_FALSE(main_instance->is_default_subframe_site_instance());
-  EXPECT_TRUE(subframe_instance->is_default_subframe_site_instance());
+  EXPECT_FALSE(main_instance->IsDefaultSubframeSiteInstance());
+  EXPECT_TRUE(subframe_instance->IsDefaultSubframeSiteInstance());
 
   EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());
   EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
@@ -828,8 +828,8 @@ TEST_F(SiteInstanceTest, DefaultSubframeSiteInstance) {
   // SiteInstance with a different ID from the original.
   subframe_instance = main_instance->GetDefaultSubframeSiteInstance();
   EXPECT_NE(subframe_instance->GetId(), subframe_instance_id);
-  EXPECT_FALSE(main_instance->is_default_subframe_site_instance());
-  EXPECT_TRUE(subframe_instance->is_default_subframe_site_instance());
+  EXPECT_FALSE(main_instance->IsDefaultSubframeSiteInstance());
+  EXPECT_TRUE(subframe_instance->IsDefaultSubframeSiteInstance());
   EXPECT_EQ(subframe_instance->GetDefaultSubframeSiteInstance(),
             subframe_instance);
   EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());

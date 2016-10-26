@@ -19,43 +19,16 @@
 
 namespace task_manager {
 
-namespace {
-
-base::string16 AdjustTitle(const content::SiteInstance* site_instance) {
-  DCHECK(site_instance);
-
-  // By default, subframe rows display the site, like this:
-  //     "Subframe: http://example.com/"
-  const GURL& site_url = site_instance->GetSiteURL();
-  std::string name = site_url.spec();
-
-  // If |site_url| wraps a chrome extension id, we can display the extension
-  // name instead, which is more human-readable.
-  if (site_url.SchemeIs(extensions::kExtensionScheme)) {
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(site_instance->GetBrowserContext())
-            ->enabled_extensions()
-            .GetExtensionOrAppByURL(site_url);
-    if (extension)
-      name = extension->name();
-  }
-
-  int message_id = site_instance->GetBrowserContext()->IsOffTheRecord() ?
-      IDS_TASK_MANAGER_SUBFRAME_INCOGNITO_PREFIX :
-      IDS_TASK_MANAGER_SUBFRAME_PREFIX;
-  return l10n_util::GetStringFUTF16(message_id, base::UTF8ToUTF16(name));
-}
-
-}  // namespace
-
 SubframeTask::SubframeTask(content::RenderFrameHost* render_frame_host,
                            content::WebContents* web_contents,
                            RendererTask* main_task)
-    : RendererTask(AdjustTitle(render_frame_host->GetSiteInstance()),
+    : RendererTask(base::string16(),
                    nullptr,
                    web_contents,
                    render_frame_host->GetProcess()),
+      site_instance_(render_frame_host->GetSiteInstance()),
       main_task_(main_task) {
+  set_title(GetTitle());
   // Note that we didn't get the RenderProcessHost from the WebContents, but
   // rather from the RenderFrameHost. Out-of-process iframes reside on
   // different processes than that of their main frame.
@@ -65,8 +38,7 @@ SubframeTask::~SubframeTask() {
 }
 
 void SubframeTask::UpdateTitle() {
-  // This will be called when the title changes on the WebContents's main frame,
-  // but this Task represents other frames, so we don't care.
+  set_title(GetTitle());
 }
 
 void SubframeTask::UpdateFavicon() {
@@ -81,6 +53,40 @@ Task* SubframeTask::GetParentTask() const {
 void SubframeTask::Activate() {
   // Activate the root task.
   main_task_->Activate();
+}
+
+base::string16 SubframeTask::GetTitle() {
+  DCHECK(site_instance_);
+
+  if (site_instance_->IsDefaultSubframeSiteInstance()) {
+    base::string16 main_task_title =
+        main_task_->GetTitleFromWebContents(main_task_->web_contents());
+    int message_id = site_instance_->GetBrowserContext()->IsOffTheRecord()
+                         ? IDS_TASK_MANAGER_ISOLATED_INCOGNITO_SUBFRAMES_PREFIX
+                         : IDS_TASK_MANAGER_ISOLATED_SUBFRAMES_PREFIX;
+    return l10n_util::GetStringFUTF16(message_id, main_task_title);
+  }
+
+  // By default, subframe rows display the site, like this:
+  //     "Subframe: http://example.com/"
+  const GURL& site_url = site_instance_->GetSiteURL();
+  std::string name = site_url.spec();
+
+  // If |site_url| wraps a chrome extension id, we can display the extension
+  // name instead, which is more human-readable.
+  if (site_url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(site_instance_->GetBrowserContext())
+            ->enabled_extensions()
+            .GetExtensionOrAppByURL(site_url);
+    if (extension)
+      name = extension->name();
+  }
+
+  int message_id = site_instance_->GetBrowserContext()->IsOffTheRecord()
+                       ? IDS_TASK_MANAGER_SUBFRAME_INCOGNITO_PREFIX
+                       : IDS_TASK_MANAGER_SUBFRAME_PREFIX;
+  return l10n_util::GetStringFUTF16(message_id, base::UTF8ToUTF16(name));
 }
 
 }  // namespace task_manager

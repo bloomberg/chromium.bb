@@ -80,6 +80,8 @@ class RendererTask : public Task,
     termination_error_code_ = error_code;
   }
 
+  content::WebContents* web_contents() const { return web_contents_; }
+
  protected:
   // Returns the title of the given |web_contents|.
   static base::string16 GetTitleFromWebContents(
@@ -98,8 +100,6 @@ class RendererTask : public Task,
                                                   bool is_extension,
                                                   bool is_incognito,
                                                   bool is_background);
-
-  content::WebContents* web_contents() const { return web_contents_; }
 
  private:
   // The WebContents of the task this object represents.

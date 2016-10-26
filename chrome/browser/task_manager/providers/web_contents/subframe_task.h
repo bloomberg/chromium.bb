@@ -10,6 +10,7 @@
 
 namespace content {
 class RenderFrameHost;
+class SiteInstance;
 class WebContents;
 }  // namespace content
 
@@ -33,8 +34,13 @@ class SubframeTask : public RendererTask {
   Task* GetParentTask() const override;
 
  private:
+  base::string16 GetTitle();
+
+  content::SiteInstance* site_instance_;
+
   // The task for the main frame of this WebContents.
   RendererTask* main_task_;
+
   DISALLOW_COPY_AND_ASSIGN(SubframeTask);
 };
 

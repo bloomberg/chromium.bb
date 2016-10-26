@@ -239,6 +239,10 @@ bool SiteInstanceImpl::RequiresDedicatedProcess() {
   return DoesSiteRequireDedicatedProcess(GetBrowserContext(), site_);
 }
 
+bool SiteInstanceImpl::IsDefaultSubframeSiteInstance() const {
+  return is_default_subframe_site_instance_;
+}
+
 void SiteInstanceImpl::IncrementActiveFrameCount() {
   active_frame_count_++;
 }

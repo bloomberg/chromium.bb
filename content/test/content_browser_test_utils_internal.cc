@@ -227,7 +227,7 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
     SiteInstanceImpl* site_instance =
         static_cast<SiteInstanceImpl*>(legend_entry.second);
     std::string description = site_instance->GetSiteURL().spec();
-    if (site_instance->is_default_subframe_site_instance())
+    if (site_instance->IsDefaultSubframeSiteInstance())
       description = "default subframe process";
     base::StringAppendF(&result, "\n%s%s = %s", prefix,
                         legend_entry.first.c_str(), description.c_str());
