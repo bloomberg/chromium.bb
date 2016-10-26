@@ -1,15 +1,17 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-<p>This tests the NSResponder method indent:.  You should see an indented 'foo' below.</p>
-<div id="div" contenteditable="true">foo</div>
-
-<script>
-var div = document.getElementById("div");
-var sel = window.getSelection();
-
-sel.collapse(div, 0);
-
-document.execCommand("Indent");
+test(() => assert_selection(
+    '<div contenteditable>|foo</div>',
+    'indent',
+    [
+        '<div contenteditable>',
+            '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+                '|foo',
+            '</blockquote>',
+        '</div>'
+    ].join('')),
+    'Indent at caret');
 </script>
