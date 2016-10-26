@@ -4,6 +4,9 @@
 -NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedInjectedSrcdocSubframe
 -RequestDataResourceDispatcherHostBrowserTest.*
 
+# NavigationPreload dosn't work well with PlzNavigate yet. https://crbug.com/649558
+-ServiceWorkerBrowserTest/ServiceWorkerNavigationPreloadTest.*
+
 # Fail in Debug
 -DevToolsProtocolTest.ControlNavigationsMainFrame
 -IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
