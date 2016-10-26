@@ -46,7 +46,7 @@ String LayoutThemeMobile::extraDefaultStyleSheet() {
 }
 
 String LayoutThemeMobile::extraMediaControlsStyleSheet() {
-  return loadResourceAsASCIIString("mediaControlsAndroidNew.css");
+  return loadResourceAsASCIIString("mediaControlsAndroid.css");
 }
 
 String LayoutThemeMobile::extraFullscreenStyleSheet() {

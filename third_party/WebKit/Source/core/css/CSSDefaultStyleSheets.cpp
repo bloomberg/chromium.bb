@@ -150,7 +150,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(
   // <audio>.
   if (!m_mediaControlsStyleSheet &&
       (isHTMLVideoElement(element) || isHTMLAudioElement(element))) {
-    String mediaRules = loadResourceAsASCIIString("mediaControlsNew.css") +
+    String mediaRules = loadResourceAsASCIIString("mediaControls.css") +
                         LayoutTheme::theme().extraMediaControlsStyleSheet();
     m_mediaControlsStyleSheet = parseUASheet(mediaRules);
     m_defaultStyle->addRulesFromSheet(mediaControlsStyleSheet(), screenEval());
