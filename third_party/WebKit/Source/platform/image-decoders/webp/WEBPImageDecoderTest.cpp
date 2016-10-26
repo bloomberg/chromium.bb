@@ -159,14 +159,10 @@ void testByteByByteSizeAvailable(const char* webpFile,
     } else {
       EXPECT_TRUE(decoder->isSizeAvailable());
       EXPECT_FALSE(decoder->size().isEmpty());
-#if USE(SKCOLORXFORM)
       if (hasColorProfile)
         EXPECT_TRUE(decoder->hasColorProfile());
       else
         EXPECT_FALSE(decoder->hasColorProfile());
-#else
-      EXPECT_FALSE(decoder->hasColorProfile());
-#endif
       EXPECT_EQ(1u, decoder->frameCount());
       EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount());
     }

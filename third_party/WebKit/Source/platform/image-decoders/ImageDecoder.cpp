@@ -332,19 +332,14 @@ size_t ImagePlanes::rowBytes(int i) const {
 
 namespace {
 
-#if USE(SKCOLORXFORM)
-
 // The output device color space is global and shared across multiple threads.
 SpinLock gTargetColorSpaceLock;
 SkColorSpace* gTargetColorSpace = nullptr;
-
-#endif  // USE(SKCOLORXFORM)
 
 }  // namespace
 
 // static
 void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
-#if USE(SKCOLORXFORM)
   if (profile.isEmpty())
     return;
 
@@ -361,7 +356,6 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
 
   // UMA statistics.
   BitmapImageMetrics::countGamma(gTargetColorSpace);
-#endif  // USE(SKCOLORXFORM)
 }
 
 void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
@@ -380,7 +374,6 @@ void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
     return;
 
-#if USE(SKCOLORXFORM)
   m_sourceToOutputDeviceColorTransform = nullptr;
 
   // Create the input profile.
@@ -411,7 +404,6 @@ void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
 
   m_sourceToOutputDeviceColorTransform =
       SkColorSpaceXform::New(srcSpace.get(), gTargetColorSpace);
-#endif  // USE(SKCOLORXFORM)
 }
 
 }  // namespace blink

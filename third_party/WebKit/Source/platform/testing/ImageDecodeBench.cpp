@@ -309,7 +309,6 @@ int main(int argc, char* argv[]) {
 
   bool applyColorCorrection = false;
 
-#if USE(SKCOLORXFORM)
   if (argc >= 2 && strcmp(argv[1], "--color-correct") == 0)
     applyColorCorrection = (--argc, ++argv, true);
 
@@ -319,12 +318,6 @@ int main(int argc, char* argv[]) {
             argv[0]);
     exit(1);
   }
-#else
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s file [iterations] [packetSize]\n", argv[0]);
-    exit(1);
-  }
-#endif
 
   // Control decode bench iterations and packet size.
 

@@ -363,7 +363,6 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
   const int left = frameRect.x();
   const int top = frameRect.y();
 
-#if USE(SKCOLORXFORM)
   // TODO (msarett):
   // Here we apply the color space transformation to the dst space.
   // It does not really make sense to transform to a gamma-encoded
@@ -390,7 +389,6 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
       }
     }
   }
-#endif  // USE(SKCOLORXFORM)
 
   // During the decoding of the current frame, we may have set some pixels to be
   // transparent (i.e. alpha < 255). If the alpha blend source was
@@ -540,7 +538,6 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
     WEBP_CSP_MODE mode = outputMode(m_formatFlags & ALPHA_FLAG);
     if (!m_premultiplyAlpha)
       mode = outputMode(false);
-#if USE(SKCOLORXFORM)
     if (colorTransform()) {
       // Swizzling between RGBA and BGRA is zero cost in a color transform.
       // So when we have a color transform, we should decode to whatever is
@@ -551,7 +548,6 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
       // either faster or the same cost as RGBA.
       mode = MODE_BGRA;
     }
-#endif
     WebPInitDecBuffer(&m_decoderBuffer);
     m_decoderBuffer.colorspace = mode;
     m_decoderBuffer.u.RGBA.stride =

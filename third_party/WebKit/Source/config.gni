@@ -58,13 +58,6 @@ if (use_low_quality_image_interpolation) {
   feature_defines_list += [ "WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION=1" ]
 }
 
-if (!is_android) {
-  feature_defines_list += [
-    "WTF_USE_ICCJPEG=1",
-    "WTF_USE_SKCOLORXFORM=1",
-  ]
-}
-
 if (use_webaudio_ffmpeg) {
   feature_defines_list += [ "WTF_USE_WEBAUDIO_FFMPEG=1" ]
 }

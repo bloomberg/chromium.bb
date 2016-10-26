@@ -28,6 +28,7 @@
 #define ImageDecoder_h
 
 #include "SkColorPriv.h"
+#include "SkColorSpaceXform.h"
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ImageOrientation.h"
@@ -42,13 +43,8 @@
 #include "wtf/text/WTFString.h"
 #include <memory>
 
-#if USE(SKCOLORXFORM)
-#include "SkColorSpaceXform.h"
-#endif
-
 namespace blink {
 
-#if USE(SKCOLORXFORM)
 #if SK_B32_SHIFT
 inline SkColorSpaceXform::ColorFormat xformColorFormat() {
   return SkColorSpaceXform::kRGBA_8888_ColorFormat;
@@ -58,7 +54,6 @@ inline SkColorSpaceXform::ColorFormat xformColorFormat() {
   return SkColorSpaceXform::kBGRA_8888_ColorFormat;
 }
 #endif
-#endif  // USE(SKCOLORXFORM)
 
 // ImagePlanes can be used to decode color components into provided buffers
 // instead of using an ImageFrame.
@@ -228,12 +223,10 @@ class PLATFORM_EXPORT ImageDecoder {
                                         unsigned iccLength,
                                         bool useSRGB);
 
-#if USE(SKCOLORXFORM)
   // Transformation from encoded color space to target color space.
   SkColorSpaceXform* colorTransform() {
     return m_sourceToOutputDeviceColorTransform.get();
   }
-#endif
 
   // Sets the "decode failure" flag.  For caller convenience (since so
   // many callers want to return false after calling this), returns false
@@ -359,9 +352,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool m_hasColorProfile = false;
   ImageFrame::ICCProfile m_colorProfile;
 
-#if USE(SKCOLORXFORM)
   std::unique_ptr<SkColorSpaceXform> m_sourceToOutputDeviceColorTransform;
-#endif
 };
 
 }  // namespace blink

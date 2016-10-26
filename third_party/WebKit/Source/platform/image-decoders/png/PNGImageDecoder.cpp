@@ -377,7 +377,6 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
 
   png_bytep srcPtr = row;
   if (hasAlpha) {
-#if USE(SKCOLORXFORM)
     // Here we apply the color space transformation to the dst space.
     // It does not really make sense to transform to a gamma-encoded
     // space and then immediately after, perform a linear premultiply.
@@ -395,7 +394,6 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
                    kUnpremul_SkAlphaType);
       srcPtr = (png_bytep)dstRow;
     }
-#endif
 
     if (buffer.premultiplyAlpha()) {
       for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
@@ -417,7 +415,6 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
       buffer.setRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2], 255);
     }
 
-#if USE(SKCOLORXFORM)
     // We'll apply the color space xform to opaque pixels after they have been
     // written to the ImageFrame, purely because SkColorSpaceXform supports
     // RGBA (and not RGB).
@@ -425,7 +422,6 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
       xform->apply(xformColorFormat(), dstRow, xformColorFormat(), dstRow,
                    size().width(), kOpaque_SkAlphaType);
     }
-#endif
   }
 
   if (alphaMask != 255 && !buffer.hasAlpha())
