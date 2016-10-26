@@ -61,6 +61,7 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/gl/gl_switches.h"
 
 #if !defined(OS_ANDROID)
 #include <signal.h>
@@ -241,6 +242,9 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // BrowserThreadsStarted).  The GPU process will be created as soon as a
   // renderer needs it, which always happens after main loop starts.
   { switches::kDisableGpuEarlyInit, "" },
+  // TODO(halliwell): Cast builds don't support ES3. Remove this switch when
+  // support is added (crbug.com/659395)
+  { switches::kDisableES3GLContext, "" },
   // Enable navigator.connection API.
   // TODO(derekjchow): Remove this switch when enabled by default.
   { switches::kEnableNetworkInformation, "" },

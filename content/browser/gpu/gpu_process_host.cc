@@ -108,6 +108,7 @@ namespace {
 static const char* const kSwitchNames[] = {
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableBreakpad,
+    switches::kDisableES3GLContext,
     switches::kDisableGpuSandbox,
     switches::kDisableGpuWatchdog,
     switches::kDisableGLExtensions,
