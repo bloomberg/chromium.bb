@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +50,7 @@ public class NewTabPageAdapter
     private final View mAboveTheFoldView;
     private final UiConfig mUiConfig;
     private final ItemTouchCallbacks mItemTouchCallbacks = new ItemTouchCallbacks();
+    private final OfflinePageBridge mOfflineBridge;
     private NewTabPageRecyclerView mRecyclerView;
 
     /**
@@ -129,11 +131,16 @@ public class NewTabPageAdapter
      * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
      *                         (logo, search box, most visited tiles)
      * @param uiConfig the NTP UI configuration, to be passed to created views.
+     * @param offlineBridge the OfflinePageBridge used to determine if articles are available
+     *                      offline.
+     *
      */
-    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
+    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig,
+            OfflinePageBridge offlineBridge) {
         mNewTabPageManager = manager;
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
+        mOfflineBridge = offlineBridge;
         mRoot = new InnerNode(this) {
             @Override
             protected List<TreeNode> getChildren() {
@@ -161,7 +168,7 @@ public class NewTabPageAdapter
 
         mSigninPromo = new SignInPromo(mRoot, this);
         DestructionObserver signInObserver = mSigninPromo.getObserver();
-        if (signInObserver != null) mNewTabPageManager.setDestructionObserver(signInObserver);
+        if (signInObserver != null) mNewTabPageManager.addDestructionObserver(signInObserver);
 
         resetSections(/*alwaysAllowEmptySections=*/false);
         mNewTabPageManager.getSuggestionsSource().setObserver(this);
@@ -221,7 +228,7 @@ public class NewTabPageAdapter
         // Create the section if needed.
         SuggestionsSection section = mSections.get(category);
         if (section == null) {
-            section = new SuggestionsSection(mRoot, info);
+            section = new SuggestionsSection(mRoot, info, mNewTabPageManager, mOfflineBridge);
             mSections.put(category, section);
         }
 

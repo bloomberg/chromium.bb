@@ -23,6 +23,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -143,7 +144,7 @@ public class NewTabPage
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
 
-    private DestructionObserver mDestructionObserver;
+    private final ObserverList<DestructionObserver> mDestructionObservers = new ObserverList<>();
 
     /**
      * Allows clients to listen for updates to the scroll changes of the search box on the
@@ -623,10 +624,9 @@ public class NewTabPage
         }
 
         @Override
-        public void setDestructionObserver(DestructionObserver destructionObserver) {
+        public void addDestructionObserver(DestructionObserver destructionObserver) {
             if (mIsDestroyed) return;
-            assert mDestructionObserver == null;
-            mDestructionObserver = destructionObserver;
+            mDestructionObservers.addObserver(destructionObserver);
         }
 
         @Override
@@ -933,9 +933,10 @@ public class NewTabPage
         if (mMostVisitedItemRemovedController != null) {
             mTab.getSnackbarManager().dismissSnackbars(mMostVisitedItemRemovedController);
         }
-        if (mDestructionObserver != null) {
-            mDestructionObserver.onDestroy();
+        for (DestructionObserver observer : mDestructionObservers) {
+            observer.onDestroy();
         }
+        mDestructionObservers.clear();
         TemplateUrlService.getInstance().removeObserver(this);
         mTab.removeObserver(mTabObserver);
         mTabObserver = null;

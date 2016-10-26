@@ -57,7 +57,9 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -299,7 +301,7 @@ public class NewTabPageView extends FrameLayout
         /**
          * Registers a {@link DestructionObserver}, notified when the New Tab Page goes away.
          */
-        void setDestructionObserver(DestructionObserver destructionObserver);
+        void addDestructionObserver(DestructionObserver destructionObserver);
 
         /**
          * @return whether the {@link NewTabPage} associated with this manager is the current page
@@ -389,7 +391,8 @@ public class NewTabPageView extends FrameLayout
 
         // Set up snippets
         if (mUseCardsUi) {
-            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig);
+            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig,
+                    OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()));
             mRecyclerView.setAdapter(mNewTabPageAdapter);
 
             int scrollOffset;

@@ -29,7 +29,9 @@ import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 
@@ -76,7 +78,8 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 View aboveTheFold = new View(getActivity());
 
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
-                mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mUiConfig);
+                mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mUiConfig,
+                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()));
                 mRecyclerView.setAdapter(mAdapter);
             }
         });
@@ -346,7 +349,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void setDestructionObserver(DestructionObserver destructionObserver) {}
+        public void addDestructionObserver(DestructionObserver destructionObserver) {}
 
         @Override
         public void closeContextMenu() {

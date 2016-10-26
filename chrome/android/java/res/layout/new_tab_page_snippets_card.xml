@@ -68,11 +68,11 @@
             android:id="@+id/offline_icon"
             android:layout_width="@dimen/snippets_offline_icon_size"
             android:layout_height="@dimen/snippets_offline_icon_size"
+            android:layout_marginStart="6dp"
             android:alpha="0.46"
-            android:paddingStart="6dp"
             android:src="@drawable/offline_pin_black"
             android:contentDescription="@string/accessibility_ntp_offline_badge"
-            android:visibility="invisible" />
+            android:visibility="gone" />
 
     </LinearLayout>
 

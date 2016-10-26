@@ -23,6 +23,10 @@ public final class SnippetsConfig {
                 && OfflinePageBridge.isBackgroundLoadingEnabled();
     }
 
+    public static boolean isOfflineBadgeEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_OFFLINE_BADGE);
+    }
+
     public static boolean isSectionDismissalEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL);
     }

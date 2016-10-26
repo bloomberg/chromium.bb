@@ -53,6 +53,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabReparenting,
     &kWebApks,
     &ntp_snippets::kContentSuggestionsFeature,
+    &ntp_snippets::kOfflineBadgeFeature,
     &ntp_snippets::kSaveToOfflineFeature,
     &ntp_snippets::kSectionDismissalFeature,
     &offline_pages::kBackgroundLoaderForDownloadsFeature,

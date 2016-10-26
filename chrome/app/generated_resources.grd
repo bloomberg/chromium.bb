@@ -15269,6 +15269,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_SAVE_TO_OFFLINE_DESCRIPTION" desc="Description for the flag to enable offline page suggestions on the New Tab page." translateable="false">
         If enabled, the Snippets context menu (see #enable-ntp-snippets) will contain the option to save linked page for offline viewing.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_BADGE_NAME" desc="Name for the flag to enable offline badges for snippets on the New Tab page." translateable="false">
+        Show offline badge for offline available snippets on the ntp.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_BADGE_DESCRIPTION" desc="Description for the flag to enable offline badges for snippets on the New Tab page." translateable="false">
+        If enabled, Snippets that are available offline will have an offline badge.
+      </message>
       <message name="IDS_FLAGS_ENABLE_NTP_DOWNLOAD_SUGGESTIONS_NAME" desc="Name for the flag to enable downloads suggestions on the New Tab page." translateable="false">
         Show downloads on the New Tab page
       </message>

@@ -60,6 +60,7 @@ public class SnippetArticleViewHolder
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
     private final ImageView mThumbnailView;
+    private final ImageView mOfflineBadge;
     private final View mPublisherBar;
 
     private FetchImageCallback mImageCallback;
@@ -86,6 +87,7 @@ public class SnippetArticleViewHolder
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
         mPublisherBar = itemView.findViewById(R.id.publisher_bar);
+        mOfflineBadge = (ImageView) itemView.findViewById(R.id.offline_icon);
 
         new ImpressionTracker(itemView, this);
 
@@ -176,6 +178,9 @@ public class SnippetArticleViewHolder
     public void onBindViewHolder(SnippetArticle article) {
         super.onBindViewHolder();
 
+        // No longer listen for offline status changes to the old article.
+        if (mArticle != null) mArticle.setOfflineStatusChangeRunnable(null);
+
         mArticle = article;
         updateLayout();
 
@@ -232,6 +237,20 @@ public class SnippetArticleViewHolder
             fetchFaviconFromLocalCache(new URI(mArticle.mUrl), true);
         } catch (URISyntaxException e) {
             setDefaultFaviconOnView();
+        }
+
+        mOfflineBadge.setVisibility(View.GONE);
+        if (SnippetsConfig.isOfflineBadgeEnabled()) {
+            Runnable offlineChecker = new Runnable() {
+                @Override
+                public void run() {
+                    if (mArticle.isAvailableOffline() || mArticle.isAmpAvailableOffline()) {
+                        mOfflineBadge.setVisibility(View.VISIBLE);
+                    }
+                }
+            };
+            mArticle.setOfflineStatusChangeRunnable(offlineChecker);
+            offlineChecker.run();
         }
     }
 

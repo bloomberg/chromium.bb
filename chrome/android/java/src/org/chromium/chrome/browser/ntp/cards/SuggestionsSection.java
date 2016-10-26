@@ -4,19 +4,28 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
+import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * A group of suggestions, with a header, a status card, and a progress indicator.
+ * A group of suggestions, with a header, a status card, and a progress indicator. This is
+ * responsible for tracking whether its suggestions have been saved offline.
  */
 public class SuggestionsSection extends InnerNode {
     private final List<TreeNode> mChildren = new ArrayList<>();
@@ -27,14 +36,32 @@ public class SuggestionsSection extends InnerNode {
     private final ProgressItem mProgressIndicator = new ProgressItem();
     private final ActionItem mMoreButton;
     private final SuggestionsCategoryInfo mCategoryInfo;
+    private final OfflinePageBridge mOfflinePageBridge;
 
-    public SuggestionsSection(NodeParent parent, SuggestionsCategoryInfo info) {
+    public SuggestionsSection(NodeParent parent, SuggestionsCategoryInfo info,
+            NewTabPageManager manager, OfflinePageBridge offlineBridge) {
         super(parent);
         mHeader = new SectionHeader(info.getTitle());
         mCategoryInfo = info;
         mMoreButton = new ActionItem(info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
         resetChildren();
+
+        mOfflinePageBridge = offlineBridge;
+        final OfflinePageModelObserver offlinePageObserver = new OfflinePageModelObserver() {
+            @Override
+            public void offlinePageModelChanged() {
+                markSnippetsAvailableOffline();
+            }
+        };
+
+        mOfflinePageBridge.addObserver(offlinePageObserver);
+        manager.addDestructionObserver(new DestructionObserver() {
+            @Override
+            public void onDestroy() {
+                mOfflinePageBridge.removeObserver(offlinePageObserver);
+            }
+        });
     }
 
     private class SuggestionsList extends ChildNode {
@@ -130,12 +157,36 @@ public class SuggestionsSection extends InnerNode {
         mSuggestions.clear();
         mSuggestions.addAll(suggestions);
 
+        markSnippetsAvailableOffline();
+
         if (mMoreButton != null) {
             mMoreButton.setPosition(mSuggestions.size());
             mMoreButton.setDismissable(mSuggestions.isEmpty());
         }
         resetChildren();
         notifySectionChanged(itemCountBefore);
+    }
+
+
+    /** Checks which SnippetArticles are available offline, and updates them accordingly. */
+    private void markSnippetsAvailableOffline() {
+        final Set<String> urls = new HashSet<>();
+        Promise<Set<String>> promise = new Promise<>();
+
+        for (final SnippetArticle article : mSuggestions) {
+            urls.add(article.mUrl);
+            urls.add(article.mAmpUrl);
+
+            promise.then(new Callback<Set<String>>() {
+                @Override
+                public void onResult(Set<String> offlineUrls) {
+                    if (offlineUrls.contains(article.mUrl)) article.setAvailableOffline(true);
+                    if (offlineUrls.contains(article.mAmpUrl)) article.setAmpAvailableOffline(true);
+                }
+            });
+        }
+
+        mOfflinePageBridge.checkPagesExistOffline(urls, promise.fulfillmentCallback());
     }
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */

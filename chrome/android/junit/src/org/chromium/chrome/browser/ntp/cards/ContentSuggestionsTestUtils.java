@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +34,9 @@ public final class ContentSuggestionsTestUtils {
                 category, "", ContentSuggestionsCardLayout.FULL_CARD, moreButton, showIfEmpty, "");
     }
 
-    public static SuggestionsSection createSection(
-            boolean moreButton, boolean showIfEmpty, NodeParent parent) {
+    public static SuggestionsSection createSection(boolean moreButton, boolean showIfEmpty,
+            NodeParent parent, NewTabPageManager manager, OfflinePageBridge bridge) {
         SuggestionsCategoryInfo info = createInfo(42, moreButton, showIfEmpty);
-        return new SuggestionsSection(parent, info);
+        return new SuggestionsSection(parent, info, manager, bridge);
     }
 }
