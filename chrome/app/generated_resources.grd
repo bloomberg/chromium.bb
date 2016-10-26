@@ -9200,6 +9200,9 @@ I don't think this site should be blocked!
       <message name="IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
         <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>Automatically report<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>
+      <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE" desc="SafeBrowsing Scout label next to checkbox">
+        <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>Automatically send<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> some system information and page content to Google to help detect dangerous apps and sites. <ph name="PRIVACY_PAGE_LINK">$1</ph>
+      </message>
 
       <!-- Harmful download interstitial V3 -->
       <message name="IDS_HARMFUL_V3_HEADING" desc="The large heading at the top of the social engineering interstitial.">
@@ -9920,6 +9923,9 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_OPTIONS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING" desc="Checkbox label: should Chrome upload information about suspicious downloads and websites to Safe Browsing">
           Automatically report details of possible security incidents to Google
+        </message>
+        <message name="IDS_OPTIONS_SAFEBROWSING_ENABLE_SCOUT_REPORTING" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing for malware detection">
+          Automatically send some system information and page content to Google to help detect dangerous apps and sites
         </message>
 
         <if expr="chromeos">

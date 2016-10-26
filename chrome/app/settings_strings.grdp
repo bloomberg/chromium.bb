@@ -1482,6 +1482,9 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING" desc="Checkbox label: should Chrome upload information about suspicious downloads and websites to Safe Browsing">
     Automatically report details of possible security incidents to Google
   </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_SCOUT_REPORTING" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing for malware detection">
+    Automatically send some system information and page content to Google to help detect dangerous apps and sites
+  </message>
   <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
     Use a web service to help resolve spelling errors
   </message>

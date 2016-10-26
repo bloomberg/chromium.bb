@@ -1189,7 +1189,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION" desc="Explanation of the dialog asking whether the user wants to upload suspected malicious files for analysis">
         You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.
       </message>
-
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION_SCOUT" desc="Explanation of the dialog asking whether the user wants to upload some system information and page content for Safe Browsing analysis">
+        You can help make Chrome safer and easier to use by automatically sending some system information and page content to Google to help detect dangerous apps and sites.
+      </message>
+      
       <!-- Page Information Window -->
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT" desc="The text of the identity section when the page is secure and no Certificate Transparency information is present.">
         Chrome verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate. The server did not supply any Certificate Transparency information.
