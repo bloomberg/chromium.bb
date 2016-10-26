@@ -226,7 +226,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ScreenOrientationProvider.lockOrientation((byte) orientationValue);
+                ScreenOrientationProvider.lockOrientation(null, (byte) orientationValue);
             }
         });
         mCallbackHelper.waitForCallback(callCount);

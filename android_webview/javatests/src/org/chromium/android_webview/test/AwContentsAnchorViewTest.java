@@ -190,7 +190,8 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     private FrameLayout updateContainerView() throws InterruptedException {
         FrameLayout containerView  = new FrameLayout(getActivity());
         getActivity().addView(containerView);
-        mViewDelegate.updateCurrentContainerView(containerView);
+        mViewDelegate.updateCurrentContainerView(containerView,
+                DisplayAndroid.get(mContainerView.getContext()));
         return containerView;
     }
 

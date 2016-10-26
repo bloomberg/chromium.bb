@@ -47,7 +47,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
         assertEquals(displayAndroid.getDisplayWidth(), actualWidth, 10f);
 
         float displayWidth = (displayAndroid.getDisplayWidth());
-        float deviceDpi = (float) (160f * displayAndroid.getDIPScale());
+        float deviceDpi = 160f * displayAndroid.getDIPScale();
 
         loadDataSync(awContents, onPageFinishedHelper, pageHighDpi, "text/html", false);
         actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
@@ -78,7 +78,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
         DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         float displayWidth =
-                (float) (displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
+                displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale();
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals(displayWidth, actualWidth, 10f);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
@@ -104,7 +104,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
         DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         float displayWidth =
-                (float) (displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
+                displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale();
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals(displayWidth, actualWidth, 10f);
         assertEquals(1.0f, getScaleOnUiThread(awContents));

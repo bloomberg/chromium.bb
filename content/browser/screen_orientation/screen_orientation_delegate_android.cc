@@ -6,6 +6,8 @@
 
 #include "content/browser/android/content_view_core_impl.h"
 #include "jni/ScreenOrientationProvider_jni.h"
+#include "ui/android/window_android.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
@@ -39,8 +41,11 @@ bool ScreenOrientationDelegateAndroid::FullScreenRequired(
 void ScreenOrientationDelegateAndroid::Lock(
     WebContents* web_contents,
     blink::WebScreenOrientationLockType lock_orientation) {
+  gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
   Java_ScreenOrientationProvider_lockOrientation(
-      base::android::AttachCurrentThread(), lock_orientation);
+      base::android::AttachCurrentThread(),
+      window ? window->GetJavaObject() : nullptr,
+      lock_orientation);
 }
 
 bool ScreenOrientationDelegateAndroid::ScreenOrientationProviderSupported() {
@@ -49,8 +54,10 @@ bool ScreenOrientationDelegateAndroid::ScreenOrientationProviderSupported() {
 }
 
 void ScreenOrientationDelegateAndroid::Unlock(WebContents* web_contents) {
+  gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
   Java_ScreenOrientationProvider_unlockOrientation(
-      base::android::AttachCurrentThread());
+      base::android::AttachCurrentThread(),
+      window ? window->GetJavaObject() : nullptr);
 }
 
 } // namespace content

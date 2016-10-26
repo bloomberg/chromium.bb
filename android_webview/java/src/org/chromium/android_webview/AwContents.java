@@ -915,7 +915,8 @@ public class AwContents implements SmartClipProvider,
         updateNativeAwGLFunctor();
         mContainerView.setWillNotDraw(false);
 
-        mViewAndroidDelegate.updateCurrentContainerView(mContainerView);
+        mViewAndroidDelegate.updateCurrentContainerView(mContainerView,
+                mWindowAndroid.getWindowAndroid().getDisplay());
         mContentViewCore.setContainerView(mContainerView);
         if (mAwPdfExporter != null) {
             mAwPdfExporter.setContainerView(mContainerView);
@@ -2081,7 +2082,7 @@ public class AwContents implements SmartClipProvider,
      */
     public float getScale() {
         if (isDestroyed(WARN)) return 1;
-        return (float) (mPageScaleFactor * mContentViewCore.getDeviceScaleFactor());
+        return mPageScaleFactor * mContentViewCore.getDeviceScaleFactor();
     }
 
     /**
