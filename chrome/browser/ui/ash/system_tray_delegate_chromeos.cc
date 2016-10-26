@@ -37,6 +37,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -475,19 +476,19 @@ void SystemTrayDelegateChromeOS::ConnectToBluetoothDevice(
   if (device->IsPaired() && !device->IsConnectable())
     return;
   if (device->IsPaired() || !device->IsPairable()) {
-    ash::WmShell::Get()->RecordUserMetricsAction(
-        ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_KNOWN_DEVICE);
+    base::RecordAction(
+        base::UserMetricsAction("StatusArea_Bluetooth_Connect_Known"));
     device->Connect(NULL,
                     base::Bind(&base::DoNothing),
                     base::Bind(&BluetoothDeviceConnectError));
-  } else {  // Show paring dialog for the unpaired device.
-    ash::WmShell::Get()->RecordUserMetricsAction(
-        ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_UNKNOWN_DEVICE);
-    BluetoothPairingDialog* dialog =
-        new BluetoothPairingDialog(GetNativeWindow(), device);
-    // The dialog deletes itself on close.
-    dialog->Show();
+    return;
   }
+  // Show pairing dialog for the unpaired device.
+  base::RecordAction(
+      base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
+  BluetoothPairingDialog* dialog = new BluetoothPairingDialog(device);
+  // The dialog deletes itself on close.
+  dialog->ShowInContainer(SystemTrayClient::GetDialogParentContainerId());
 }
 
 bool SystemTrayDelegateChromeOS::IsBluetoothDiscovering() {

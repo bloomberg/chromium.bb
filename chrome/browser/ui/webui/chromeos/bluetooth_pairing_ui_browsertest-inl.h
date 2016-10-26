@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/auto_reset.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test_utils.h"
@@ -58,9 +57,8 @@ void BluetoothPairingUITest::ShowDialog() {
       .WillOnce(testing::Return(mock_device_.get()));
 
   chromeos::BluetoothPairingDialog* dialog =
-      new chromeos::BluetoothPairingDialog(
-          browser()->window()->GetNativeWindow(), mock_device_.get());
-  dialog->Show();
+      new chromeos::BluetoothPairingDialog(mock_device_.get());
+  dialog->ShowInContainer(ash::kShellWindowId_SystemModalContainer);
 
   content::WebUI* webui = dialog->GetWebUIForTest();
   content::WebContents* webui_webcontents = webui->GetWebContents();

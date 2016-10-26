@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 
+#include <string>
+
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -30,10 +33,8 @@ const int kDefaultHeight = 280;
 // BluetoothPairingDialog, public:
 
 BluetoothPairingDialog::BluetoothPairingDialog(
-    gfx::NativeWindow parent_window,
     const device::BluetoothDevice* device)
-    : parent_window_(parent_window),
-      webui_(nullptr) {
+    : webui_(nullptr) {
   device_data_.SetString("address", device->GetAddress());
   device_data_.SetString("name", device->GetNameForDisplay());
   device_data_.SetBoolean("paired", device->IsPaired());
@@ -43,12 +44,15 @@ BluetoothPairingDialog::BluetoothPairingDialog(
 BluetoothPairingDialog::~BluetoothPairingDialog() {
 }
 
-void BluetoothPairingDialog::Show() {
+void BluetoothPairingDialog::ShowInContainer(int container_id) {
+  // Dialog must be in a modal window container.
+  DCHECK(container_id == ash::kShellWindowId_SystemModalContainer ||
+         container_id == ash::kShellWindowId_LockSystemModalContainer);
+
   // Bluetooth settings are currently stored on the device, accessible for
   // everyone who uses the machine. As such we can use the active user profile.
-  chrome::ShowWebDialog(parent_window_,
-                        ProfileManager::GetActiveUserProfile(),
-                        this);
+  chrome::ShowWebDialogInContainer(
+      container_id, ProfileManager::GetActiveUserProfile(), this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

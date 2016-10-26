@@ -332,12 +332,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_BRIGHTNESS_CHANGED:
       RecordAction(UserMetricsAction("StatusArea_BrightnessChanged"));
       break;
-    case UMA_STATUS_AREA_BLUETOOTH_CONNECT_KNOWN_DEVICE:
-      RecordAction(UserMetricsAction("StatusArea_Bluetooth_Connect_Known"));
-      break;
-    case UMA_STATUS_AREA_BLUETOOTH_CONNECT_UNKNOWN_DEVICE:
-      RecordAction(UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
-      break;
     case UMA_STATUS_AREA_BLUETOOTH_DISABLED:
       RecordAction(UserMetricsAction("StatusArea_Bluetooth_Disabled"));
       break;
