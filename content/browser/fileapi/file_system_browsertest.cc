@@ -26,8 +26,8 @@ using storage::QuotaManager;
 
 namespace content {
 
-// This browser test is aimed towards exercising the FileAPI bindings and
-// the actual implementation that lives in the browser side.
+// This browser test is aimed towards exercising the File System API bindings
+// and the actual implementation that lives in the browser side.
 class FileSystemBrowserTest : public ContentBrowserTest {
  public:
   FileSystemBrowserTest() {}

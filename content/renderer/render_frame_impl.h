@@ -674,6 +674,14 @@ class CONTENT_EXPORT RenderFrameImpl
   // process; for layout tests, this allows the test to mock out services at
   // the Mojo IPC layer.
   void MaybeEnableMojoBindings();
+  // Adds the given file chooser request to the file_chooser_completion_ queue
+  // (see that var for more) and requests the chooser be displayed if there are
+  // no other waiting items in the queue.
+  //
+  // Returns true if the chooser was successfully scheduled. False means we
+  // didn't schedule anything.
+  bool ScheduleFileChooser(const FileChooserParams& params,
+                           blink::WebFileChooserCompletion* completion);
 
   // Plugin-related functions --------------------------------------------------
 
@@ -939,15 +947,6 @@ class CONTENT_EXPORT RenderFrameImpl
                             const base::string16& default_value,
                             const GURL& frame_url,
                             base::string16* result);
-
-  // Adds the given file chooser request to the file_chooser_completion_ queue
-  // (see that var for more) and requests the chooser be displayed if there are
-  // no other waiting items in the queue.
-  //
-  // Returns true if the chooser was successfully scheduled. False means we
-  // didn't schedule anything.
-  bool ScheduleFileChooser(const FileChooserParams& params,
-                           blink::WebFileChooserCompletion* completion);
 
   // Loads the appropriate error page for the specified failure into the frame.
   // |entry| is only used by PlzNavigate when navigating to a history item.

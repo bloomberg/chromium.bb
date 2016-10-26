@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/render_view_impl.h"
@@ -19,7 +20,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFileChooserCompletion.h"
-#include "third_party/WebKit/public/web/WebFileChooserParams.h"
 
 namespace content {
 
@@ -135,29 +135,27 @@ int32_t PepperFileChooserHost::OnShow(
     return PP_ERROR_NO_USER_GESTURE;
   }
 
-  blink::WebFileChooserParams params;
+  FileChooserParams params;
   if (save_as) {
-    params.saveAs = true;
-    params.initialValue = blink::WebString::fromUTF8(
-        suggested_file_name.data(), suggested_file_name.size());
+    params.mode = FileChooserParams::Save;
+    params.default_file_name =
+        base::FilePath::FromUTF8Unsafe(suggested_file_name).BaseName();
   } else {
-    params.multiSelect = open_multiple;
+    params.mode = open_multiple ? FileChooserParams::OpenMultiple
+                                : FileChooserParams::Open;
   }
-  std::vector<blink::WebString> mime_types(accept_mime_types.size());
-  for (size_t i = 0; i < accept_mime_types.size(); i++) {
-    mime_types[i] = blink::WebString::fromUTF8(accept_mime_types[i].data(),
-                                               accept_mime_types[i].size());
-  }
-  params.acceptTypes = mime_types;
-  params.directory = false;
-  params.needLocalPath = true;
+  params.accept_types.reserve(accept_mime_types.size());
+  for (const auto& mime_type : accept_mime_types)
+    params.accept_types.push_back(base::UTF8ToUTF16(mime_type));
+  params.need_local_path = true;
+
   params.requestor = renderer_ppapi_host_->GetDocumentURL(pp_instance());
 
   handler_ = new CompletionHandler(AsWeakPtr());
   RenderFrameImpl* render_frame = static_cast<RenderFrameImpl*>(
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance()));
 
-  if (!render_frame || !render_frame->runFileChooser(params, handler_)) {
+  if (!render_frame || !render_frame->ScheduleFileChooser(params, handler_)) {
     delete handler_;
     handler_ = NULL;
     return PP_ERROR_NOACCESS;

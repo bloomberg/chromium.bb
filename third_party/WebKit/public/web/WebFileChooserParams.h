@@ -49,9 +49,6 @@ struct WebFileChooserParams {
   bool saveAs;
   // |title| is the title for a file chooser dialog. It can be an empty string.
   WebString title;
-  // |initialValue| is a filename which the dialog should select by default.
-  // It can be an empty string.
-  WebString initialValue;
   // This contains MIME type strings such as "audio/*" "text/plain" or file
   // extensions beginning with a period (.) such as ".mp3" ".txt".
   // The dialog may restrict selectable files to files with the specified MIME

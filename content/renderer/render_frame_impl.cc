@@ -2334,6 +2334,11 @@ bool RenderFrameImpl::ScheduleFileChooser(
     const FileChooserParams& params,
     blink::WebFileChooserCompletion* completion) {
   static const size_t kMaximumPendingFileChooseRequests = 4;
+
+  // Do not open the file dialog in a hidden RenderFrame.
+  if (IsHidden())
+    return false;
+
   if (file_chooser_completions_.size() > kMaximumPendingFileChooseRequests) {
     // This sanity check prevents too many file choose requests from getting
     // queued which could DoS the user. Getting these is most likely a
@@ -4022,9 +4027,6 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
 bool RenderFrameImpl::runFileChooser(
     const blink::WebFileChooserParams& params,
     blink::WebFileChooserCompletion* chooser_completion) {
-  // Do not open the file dialog in a hidden RenderFrame.
-  if (IsHidden())
-    return false;
 
   FileChooserParams ipc_params;
   if (params.directory)
@@ -4036,8 +4038,6 @@ bool RenderFrameImpl::runFileChooser(
   else
     ipc_params.mode = FileChooserParams::Open;
   ipc_params.title = params.title;
-  ipc_params.default_file_name =
-      blink::WebStringToFilePath(params.initialValue).BaseName();
   ipc_params.accept_types.reserve(params.acceptTypes.size());
   for (const auto& type : params.acceptTypes)
     ipc_params.accept_types.push_back(type);

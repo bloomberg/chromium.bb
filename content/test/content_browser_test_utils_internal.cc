@@ -30,7 +30,6 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -357,6 +356,7 @@ void FileChooserDelegate::RunFileChooser(RenderFrameHost* render_frame_host,
   render_frame_host->FilesSelectedInChooser(files, FileChooserParams::Open);
 
   file_chosen_ = true;
+  params_ = params;
 }
 
 FrameTestNavigationManager::FrameTestNavigationManager(

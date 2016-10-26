@@ -19,6 +19,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -149,11 +150,15 @@ class FileChooserDelegate : public WebContentsDelegate {
                       const FileChooserParams& params) override;
 
   // Whether the file dialog was shown.
-  bool file_chosen() { return file_chosen_; }
+  bool file_chosen() const { return file_chosen_; }
+
+  // Copy of the params passed to RunFileChooser.
+  FileChooserParams params() const { return params_; }
 
  private:
   base::FilePath file_;
   bool file_chosen_;
+  FileChooserParams params_;
 };
 
 // This class is a TestNavigationManager that only monitors notifications within
