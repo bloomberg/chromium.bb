@@ -9,7 +9,6 @@
 #include "core/layout/ng/ng_physical_fragment_base.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -19,11 +18,7 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
   NGPhysicalFragment(NGPhysicalSize size,
                      NGPhysicalSize overflow,
                      HeapVector<Member<const NGPhysicalFragmentBase>>& children,
-                     NGMarginStrut margin_strut)
-      : NGPhysicalFragmentBase(size, overflow, FragmentBox),
-        margin_strut_(margin_strut) {
-    children_.swap(children);
-  }
+                     NGMarginStrut margin_strut);
 
   const HeapVector<Member<const NGPhysicalFragmentBase>>& Children() const {
     return children_;
@@ -31,10 +26,7 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    visitor->trace(children_);
-    NGPhysicalFragmentBase::traceAfterDispatch(visitor);
-  }
+  DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   HeapVector<Member<const NGPhysicalFragmentBase>> children_;
