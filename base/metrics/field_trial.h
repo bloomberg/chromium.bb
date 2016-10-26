@@ -266,12 +266,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // untouched.
   bool GetState(State* field_trial_state);
 
-  // Adds the field trial to the allocator whose memory is to be shared with
-  // child processes. Assumes the calling code has a lock around the call to
-  // this function, since the check for the allocator is not thread-safe.
-  void AddToAllocatorWhileLocked(
-      base::SharedPersistentMemoryAllocator* allocator);
-
   // Returns the group_name. A winner need not have been chosen.
   std::string group_name_internal() const { return group_name_; }
 
@@ -318,6 +312,9 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // Whether this trial is registered with the global FieldTrialList and thus
   // should notify it when its group is queried.
   bool trial_registered_;
+
+  // Reference to related field trial struct and data in shared memory.
+  SharedPersistentMemoryAllocator::Reference ref_;
 
   // When benchmarking is enabled, field trials all revert to the 'default'
   // group.
@@ -396,7 +393,7 @@ class BASE_EXPORT FieldTrialList {
   // PermutedEntropyProvider (which is used when UMA is not enabled). If
   // |override_entropy_provider| is not null, then it will be used for
   // randomization instead of the provider given when the FieldTrialList was
-  // instanciated.
+  // instantiated.
   static FieldTrial* FactoryGetFieldTrialWithRandomizationSeed(
       const std::string& trial_name,
       FieldTrial::Probability total_probability,
@@ -520,6 +517,10 @@ class BASE_EXPORT FieldTrialList {
   // Remove an observer.
   static void RemoveObserver(Observer* observer);
 
+  // Grabs the lock and adds the field trial to the allocator. This should only
+  // be called from FinalizeGroupChoice().
+  static void OnGroupFinalized(FieldTrial* field_trial);
+
   // Notify all observers that a group has been finalized for |field_trial|.
   static void NotifyFieldTrialGroupSelection(FieldTrial* field_trial);
 
@@ -542,6 +543,13 @@ class BASE_EXPORT FieldTrialList {
   // and duplicates its handle to a read-only handle, which gets stored in
   // |readonly_allocator_handle|.
   static void InstantiateFieldTrialAllocatorIfNeeded();
+
+  // Adds the field trial to the allocator. Caller must hold a lock before
+  // calling this.
+  static void AddToAllocatorWhileLocked(FieldTrial* field_trial);
+
+  // Activate the corresponding field trial entry struct in shared memory.
+  static void ActivateFieldTrialEntryWhileLocked(FieldTrial* field_trial);
 
   // A map from FieldTrial names to the actual instances.
   typedef std::map<std::string, FieldTrial*> RegistrationMap;
@@ -583,8 +591,8 @@ class BASE_EXPORT FieldTrialList {
   // Allocator used to instantiate field trial in child processes. In the
   // future, we may want to move this to a more generic place if we want to
   // start passing more data other than field trials.
-  std::unique_ptr<base::SharedPersistentMemoryAllocator>
-      field_trial_allocator_ = nullptr;
+  std::unique_ptr<SharedPersistentMemoryAllocator> field_trial_allocator_ =
+      nullptr;
 
 #if defined(OS_WIN)
   // Readonly copy of the handle to the allocator. Needs to be a member variable

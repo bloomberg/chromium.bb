@@ -309,7 +309,8 @@ FieldTrial::FieldTrial(const std::string& trial_name,
       enable_field_trial_(true),
       forced_(false),
       group_reported_(false),
-      trial_registered_(false) {
+      trial_registered_(false),
+      ref_(SharedPersistentMemoryAllocator::kReferenceNull) {
   DCHECK_GT(total_probability, 0);
   DCHECK(!trial_name_.empty());
   DCHECK(!default_group_name_.empty());
@@ -340,6 +341,10 @@ void FieldTrial::FinalizeGroupChoice() {
   // finalized.
   DCHECK(!forced_);
   SetGroupChoice(default_group_name_, kDefaultGroupNumber);
+
+  // Add the field trial to shared memory.
+  if (kUseSharedMemoryForFieldTrials)
+    FieldTrialList::OnGroupFinalized(this);
 }
 
 bool FieldTrial::GetActiveGroup(ActiveGroup* active_group) const {
@@ -673,30 +678,6 @@ void FieldTrialList::AppendFieldTrialHandleIfNeeded(
 #endif
 
 // static
-void FieldTrialList::CreateTrialsFromSharedMemory(
-    std::unique_ptr<SharedMemory> shm) {
-  const SharedPersistentMemoryAllocator shalloc(std::move(shm), 0,
-                                                kAllocatorName, true);
-  PersistentMemoryAllocator::Iterator iter(&shalloc);
-
-  SharedPersistentMemoryAllocator::Reference ref;
-  while ((ref = iter.GetNextOfType(kFieldTrialType)) !=
-         SharedPersistentMemoryAllocator::kReferenceNull) {
-    const FieldTrialEntry* entry =
-        shalloc.GetAsObject<const FieldTrialEntry>(ref, kFieldTrialType);
-    FieldTrial* trial =
-        CreateFieldTrial(entry->GetTrialName(), entry->GetGroupName());
-
-    if (entry->activated) {
-      // Call |group()| to mark the trial as "used" and notify observers, if
-      // any. This is useful to ensure that field trials created in child
-      // processes are properly reported in crash reports.
-      trial->group();
-    }
-  }
-}
-
-// static
 void FieldTrialList::CopyFieldTrialStateToFlags(
     const char* field_trial_handle_switch,
     CommandLine* cmd_line) {
@@ -772,6 +753,14 @@ void FieldTrialList::RemoveObserver(Observer* observer) {
 }
 
 // static
+void FieldTrialList::OnGroupFinalized(FieldTrial* field_trial) {
+  if (!global_)
+    return;
+  AutoLock auto_lock(global_->lock_);
+  AddToAllocatorWhileLocked(field_trial);
+}
+
+// static
 void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
   if (!global_)
     return;
@@ -785,10 +774,8 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
     if (!field_trial->enable_field_trial_)
       return;
 
-    if (kUseSharedMemoryForFieldTrials) {
-      field_trial->AddToAllocatorWhileLocked(
-          global_->field_trial_allocator_.get());
-    }
+    if (kUseSharedMemoryForFieldTrials)
+      ActivateFieldTrialEntryWhileLocked(field_trial);
   }
 
   global_->observer_list_->Notify(
@@ -796,9 +783,43 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
       field_trial->trial_name(), field_trial->group_name_internal());
 }
 
+// static
+size_t FieldTrialList::GetFieldTrialCount() {
+  if (!global_)
+    return 0;
+  AutoLock auto_lock(global_->lock_);
+  return global_->registered_.size();
+}
+
+// static
+void FieldTrialList::CreateTrialsFromSharedMemory(
+    std::unique_ptr<SharedMemory> shm) {
+  const SharedPersistentMemoryAllocator shalloc(std::move(shm), 0,
+                                                kAllocatorName, true);
+  PersistentMemoryAllocator::Iterator iter(&shalloc);
+
+  SharedPersistentMemoryAllocator::Reference ref;
+  while ((ref = iter.GetNextOfType(kFieldTrialType)) !=
+         SharedPersistentMemoryAllocator::kReferenceNull) {
+    const FieldTrialEntry* entry =
+        shalloc.GetAsObject<const FieldTrialEntry>(ref, kFieldTrialType);
+    FieldTrial* trial =
+        CreateFieldTrial(entry->GetTrialName(), entry->GetGroupName());
+
+    if (entry->activated) {
+      // Call |group()| to mark the trial as "used" and notify observers, if
+      // any. This is useful to ensure that field trials created in child
+      // processes are properly reported in crash reports.
+      trial->group();
+    }
+  }
+}
+
 #if !defined(OS_NACL)
 // static
 void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
+  if (!global_)
+    return;
   AutoLock auto_lock(global_->lock_);
   // Create the allocator if not already created and add all existing trials.
   if (global_->field_trial_allocator_ != nullptr)
@@ -816,27 +837,33 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
 
   // Add all existing field trials.
   for (const auto& registered : global_->registered_) {
-    registered.second->AddToAllocatorWhileLocked(
-        global_->field_trial_allocator_.get());
+    AddToAllocatorWhileLocked(registered.second);
   }
 
 #if defined(OS_WIN)
-  // Set |readonly_allocator_handle_| so we can pass it to be inherited and via
-  // the command line.
+  // Set |readonly_allocator_handle_| so we can pass it to be inherited and
+  // via the command line.
   global_->readonly_allocator_handle_ =
       CreateReadOnlyHandle(global_->field_trial_allocator_.get());
 #endif
 }
 #endif
 
-void FieldTrial::AddToAllocatorWhileLocked(
-    SharedPersistentMemoryAllocator* allocator) {
+// static
+void FieldTrialList::AddToAllocatorWhileLocked(FieldTrial* field_trial) {
+  SharedPersistentMemoryAllocator* allocator =
+      global_->field_trial_allocator_.get();
+
   // Don't do anything if the allocator hasn't been instantiated yet.
   if (allocator == nullptr)
     return;
 
-  State trial_state;
-  if (!GetState(&trial_state))
+  // Or if we've already added it.
+  if (field_trial->ref_ != SharedPersistentMemoryAllocator::kReferenceNull)
+    return;
+
+  FieldTrial::State trial_state;
+  if (!field_trial->GetState(&trial_state))
     return;
 
   size_t trial_name_size = trial_state.trial_name.size() + 1;
@@ -869,14 +896,27 @@ void FieldTrial::AddToAllocatorWhileLocked(
   group_name[trial_state.group_name.size()] = '\0';
 
   allocator->MakeIterable(ref);
+  field_trial->ref_ = ref;
 }
 
 // static
-size_t FieldTrialList::GetFieldTrialCount() {
-  if (!global_)
-    return 0;
-  AutoLock auto_lock(global_->lock_);
-  return global_->registered_.size();
+void FieldTrialList::ActivateFieldTrialEntryWhileLocked(
+    FieldTrial* field_trial) {
+  SharedPersistentMemoryAllocator* allocator =
+      global_->field_trial_allocator_.get();
+  SharedPersistentMemoryAllocator::Reference ref = field_trial->ref_;
+  if (ref == SharedPersistentMemoryAllocator::kReferenceNull) {
+    // It's fine to do this even if the allocator hasn't been instantiated
+    // yet -- it'll just return early.
+    AddToAllocatorWhileLocked(field_trial);
+  } else {
+    // It's also okay to do this even though the callee doesn't have a lock --
+    // the only thing that happens on a stale read here is a slight performance
+    // hit from the child re-synchronizing activation state.
+    FieldTrialEntry* entry =
+        allocator->GetAsObject<FieldTrialEntry>(ref, kFieldTrialType);
+    entry->activated = true;
+  }
 }
 
 // static
