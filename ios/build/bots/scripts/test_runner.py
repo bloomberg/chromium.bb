@@ -19,6 +19,15 @@ import gtest_utils
 import xctest_utils
 
 
+XCTEST_PROJECT = os.path.abspath(os.path.join(
+  os.path.dirname(__file__),
+  'TestProject',
+  'TestProject.xcodeproj',
+))
+
+XCTEST_SCHEME = 'TestProject'
+
+
 class Error(Exception):
   """Base class for errors."""
   pass
@@ -191,6 +200,14 @@ class TestRunner(object):
     """
     raise NotImplementedError
 
+  def get_launch_env(self):
+    """Returns a dict of environment variables to use to launch the test app.
+
+    Returns:
+      A dict of environment variables.
+    """
+    return os.environ.copy()
+
   def set_up(self):
     """Performs setup actions which must occur prior to every test launch."""
     raise NotImplementedError
@@ -225,7 +242,11 @@ class TestRunner(object):
       parser = gtest_utils.GTestLogParser()
 
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        cmd,
+        env=self.get_launch_env(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
 
     while True:
       line = proc.stdout.readline()
@@ -236,6 +257,7 @@ class TestRunner(object):
       print line
 
     proc.wait()
+    sys.stdout.flush()
 
     for test in parser.FailedTests(include_flaky=True):
       # Test cases are named as <test group>.<test case>. If the test case
@@ -501,7 +523,14 @@ class DeviceTestRunner(TestRunner):
   """Class for running tests on devices."""
 
   def __init__(
-    self, app_path, xcode_version, out_dir, env_vars=None, test_args=None):
+    self,
+    app_path,
+    xcode_version,
+    out_dir,
+    env_vars=None,
+    test_args=None,
+    xctest=False,
+  ):
     """Initializes a new instance of this class.
 
     Args:
@@ -511,13 +540,22 @@ class DeviceTestRunner(TestRunner):
       env_vars: List of environment variables to pass to the test itself.
       test_args: List of strings to pass as arguments to the test when
         launching.
+      xctest: Whether or not this is an XCTest.
 
     Raises:
       AppNotFoundError: If the given app does not exist.
+      PlugInsNotFoundError: If the PlugIns directory does not exist for XCTests.
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
+      XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
     super(DeviceTestRunner, self).__init__(
-      app_path, xcode_version, out_dir, env_vars=env_vars, test_args=test_args)
+      app_path,
+      xcode_version,
+      out_dir,
+      env_vars=env_vars,
+      test_args=test_args,
+      xctest=xctest,
+    )
 
     self.udid = subprocess.check_output(['idevice_id', '--list']).rstrip()
     if len(self.udid.splitlines()) != 1:
@@ -567,6 +605,17 @@ class DeviceTestRunner(TestRunner):
     Returns:
       A list of strings forming the command to launch the test.
     """
+    if self.xctest_path:
+      return [
+        'xcodebuild',
+        'test-without-building',
+        'BUILT_PRODUCTS_DIR=%s' % os.path.dirname(self.app_path),
+        'NSUnbufferedIO=YES',
+        '-destination', 'id=%s' % self.udid,
+        '-project', XCTEST_PROJECT,
+        '-scheme', XCTEST_SCHEME,
+      ]
+
     cmd = [
       'idevice-app-runner',
       '--udid', self.udid,
@@ -589,3 +638,18 @@ class DeviceTestRunner(TestRunner):
       cmd.extend(args)
 
     return cmd
+
+  def get_launch_env(self):
+    """Returns a dict of environment variables to use to launch the test app.
+
+    Returns:
+      A dict of environment variables.
+    """
+    env = super(DeviceTestRunner, self).get_launch_env()
+    if self.xctest_path:
+      # e.g. ios_web_shell_test_host
+      env['APP_TARGET_NAME'] = (
+        os.path.splitext(os.path.basename(self.app_path))[0])
+      # e.g. ios_web_shell_test
+      env['TEST_TARGET_NAME'] = env['APP_TARGET_NAME'].rsplit('_', 1)[0]
+    return env

@@ -52,6 +52,7 @@ def main(args, test_args):
         args.out_dir,
         env_vars=args.env_var,
         test_args=test_args,
+        xctest=args.xctest,
       )
 
     return 0 if tr.launch() else 1
