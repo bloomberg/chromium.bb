@@ -12,7 +12,6 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Used for recording metrics about Chrome launches that need to be recorded before the native
@@ -21,16 +20,6 @@ import java.util.concurrent.TimeUnit;
  */
 @JNINamespace("metrics")
 public class LaunchMetrics {
-    /**
-     * Caches a set of times histogram samples.
-     * TODO(asvitkine): Remove after internal code is migrated to CachedMetrics.
-     */
-    public static class TimesHistogramSample extends CachedMetrics.TimesHistogramSample {
-        public TimesHistogramSample(String histogramName, TimeUnit timeUnit) {
-            super(histogramName, timeUnit);
-        }
-    }
-
     // Each list item is a pair of the url and where it was added from e.g. from the add to
     // homescreen menu item, an app banner, or unknown. The mapping of int source values to
     // their string names is found in the C++ ShortcutInfo struct.
