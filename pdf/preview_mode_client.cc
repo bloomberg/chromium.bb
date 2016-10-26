@@ -162,6 +162,8 @@ bool PreviewModeClient::IsPrintPreview() {
   return false;
 }
 
+void PreviewModeClient::CancelBrowserDownload() {}
+
 uint32_t PreviewModeClient::GetBackgroundColor() {
   NOTREACHED();
   return 0;

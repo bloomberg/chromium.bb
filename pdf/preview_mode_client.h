@@ -71,6 +71,7 @@ class PreviewModeClient : public PDFEngine::Client {
   void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
+  void CancelBrowserDownload() override;
   uint32_t GetBackgroundColor() override;
 
  private:
