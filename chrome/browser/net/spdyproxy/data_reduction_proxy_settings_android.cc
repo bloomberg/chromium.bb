@@ -116,6 +116,12 @@ DataReductionProxySettingsAndroid::GetContentLengths(
                                     received_content_length);
 }
 
+jlong DataReductionProxySettingsAndroid::GetTotalHttpContentLengthSaved(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return Settings()->GetTotalHttpContentLengthSaved();
+}
+
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyOriginalContentLengths(
     JNIEnv* env,

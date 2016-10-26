@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -101,6 +102,7 @@ import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -222,6 +224,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     private DataUseSnackbarController mDataUseSnackbarController;
+    private DataReductionPromoSnackbarController mDataReductionPromoSnackbarController;
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
@@ -471,6 +474,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                                    getApplicationContext())
                         && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingEndedBar();
+                }
+
+                // Only alert about data savings once the first paint has happened. It doesn't make
+                // sense to show a snackbar about savings when nothing has been displayed yet.
+                if (DataReductionProxySettings.getInstance().isSnackbarPromoAllowed(tab.getUrl())) {
+                    if (mDataReductionPromoSnackbarController == null) {
+                        mDataReductionPromoSnackbarController =
+                                new DataReductionPromoSnackbarController(
+                                        getApplicationContext(), getSnackbarManager());
+                    }
+                    mDataReductionPromoSnackbarController.maybeShowDataReductionPromoSnackbar(
+                            DataReductionProxySettings.getInstance()
+                                    .getTotalHttpContentLengthSaved());
                 }
             }
 

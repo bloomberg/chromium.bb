@@ -93,6 +93,13 @@ class DataReductionProxyCompressionStats {
   // Clears all data saving statistics.
   void ClearDataSavingStatistics();
 
+  // Returns the total size of all HTTP content received from the network.
+  int64_t GetHttpReceivedContentLength();
+
+  // Returns the value the total original size of all HTTP content received from
+  // the network.
+  int64_t GetHttpOriginalContentLength();
+
   // Returns a list of all the daily content lengths.
   ContentLengthList GetDailyContentLengths(const char* pref_name);
 

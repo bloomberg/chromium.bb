@@ -67,6 +67,9 @@ class DataReductionProxySettingsAndroid {
   jlong GetDataReductionLastUpdateTime(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  jlong GetTotalHttpContentLengthSaved(
+        JNIEnv* env,
+        const base::android::JavaParamRef<jobject>& obj);
   ScopedJavaLocalRef<jlongArray> GetDailyOriginalContentLengths(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

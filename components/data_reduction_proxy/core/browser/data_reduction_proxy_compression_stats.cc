@@ -569,6 +569,14 @@ void DataReductionProxyCompressionStats::ResetStatistics() {
   }
 }
 
+int64_t DataReductionProxyCompressionStats::GetHttpReceivedContentLength() {
+  return GetInt64(prefs::kHttpReceivedContentLength);
+}
+
+int64_t DataReductionProxyCompressionStats::GetHttpOriginalContentLength() {
+  return GetInt64(prefs::kHttpOriginalContentLength);
+}
+
 ContentLengthList DataReductionProxyCompressionStats::GetDailyContentLengths(
     const char* pref_name) {
   ContentLengthList content_lengths;

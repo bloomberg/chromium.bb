@@ -158,6 +158,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
   // daily original and received content lengths.
   int64_t GetDataReductionLastUpdateTime();
 
+  // Returns the difference between the total original size of all HTTP content
+  // received from the network and the actual size of the HTTP content received.
+  int64_t GetTotalHttpContentLengthSaved();
+
   // Returns aggregate received and original content lengths over the specified
   // number of days, as well as the time these stats were last updated.
   void GetContentLengths(unsigned int days,
