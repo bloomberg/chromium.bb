@@ -98,8 +98,7 @@
     <iron-list id="downloads-list" items="{{items_}}"
         hidden="[[!hasDownloads_]]">
       <template>
-        <downloads-item data="[[item]]" hide-date="[[item.hideDate]]">
-        </downloads-item>
+        <downloads-item data="[[item]]"></downloads-item>
       </template>
     </iron-list>
     <div id="no-downloads" hidden="[[hasDownloads_]]">

@@ -150,7 +150,8 @@ cr.define('downloads', function() {
         if (!current)
           continue;
         var prev = this.items_[i - 1];
-        current.hideDate = !!prev && prev.date_string == current.date_string;
+        var hideDate = !!prev && prev.date_string == current.date_string;
+        this.set('items_.' + i + '.hideDate', hideDate);
       }
     },
 
