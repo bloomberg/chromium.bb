@@ -64,6 +64,7 @@ if (is_win) {
       "//base",
       "//chrome/common:constants",
       "//chrome/common:version_header",
+      "//chrome/install_static:install_static_util",
       "//chrome/installer/util:with_rc_strings",
       "//chrome_elf:constants",
       "//components/base32",

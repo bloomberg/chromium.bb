@@ -14,7 +14,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 InstallerCrashReporterClient::InstallerCrashReporterClient(
@@ -121,6 +123,21 @@ bool InstallerCrashReporterClient::GetCollectStatsConsent() {
 #else
   return false;
 #endif
+}
+
+bool InstallerCrashReporterClient::GetCollectStatsInSample() {
+  // TODO(grt): remove duplication of code.
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  base::win::RegKey key(HKEY_CURRENT_USER, dist->GetRegistryPath().c_str(),
+                        KEY_QUERY_VALUE | KEY_WOW64_32KEY);
+  if (!key.Valid())
+    return true;
+  DWORD out_value = 0;
+  if (key.ReadValueDW(install_static::kRegValueChromeStatsSample, &out_value) !=
+      ERROR_SUCCESS) {
+    return true;
+  }
+  return out_value == 1;
 }
 
 bool InstallerCrashReporterClient::ReportingIsEnforcedByPolicy(bool* enabled) {

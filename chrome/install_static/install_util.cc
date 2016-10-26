@@ -45,6 +45,7 @@ const wchar_t kRegPathClientStateMedium[] =
 const wchar_t kRegPathChromePolicy[] = L"SOFTWARE\\Policies\\Chromium";
 #endif
 
+const wchar_t kRegValueChromeStatsSample[] = L"UsageStatsInSample";
 const wchar_t kRegValueUsageStats[] = L"usagestats";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
@@ -86,14 +87,6 @@ const wchar_t kBrowserCrashDumpMetricsSubKey[] = L"\\BrowserCrashDumpAttempts";
 
 const wchar_t kRegPathGoogleUpdate[] = L"Software\\Google\\Update";
 const wchar_t kRegGoogleUpdateVersion[] = L"version";
-
-// Registry key to store the stats/crash sampling state of Chrome. If set to 1,
-// stats and crash reports will be uploaded in line with the user's consent,
-// otherwise, uploads will be disabled. It is used to sample clients, to reduce
-// server load for metics and crashes. This is controlled by the
-// MetricsReporting feature in chrome_metrics_services_manager_client.cc and is
-// written when metrics services are started up and when consent changes.
-const wchar_t kRegValueChromeStatsSample[] = L"UsageStatsInSample";
 
 void Trace(const wchar_t* format_string, ...) {
   static const int kMaxLogBufferSize = 1024;

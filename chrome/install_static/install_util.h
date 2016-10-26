@@ -34,6 +34,13 @@ extern const wchar_t kRegPathClientState[];
 extern const wchar_t kRegPathClientStateMedium[];
 extern const wchar_t kRegPathChromePolicy[];
 extern const wchar_t kRegApField[];
+// Registry key to store the stats/crash sampling state of Chrome. If set to 1,
+// stats and crash reports will be uploaded in line with the user's consent,
+// otherwise, uploads will be disabled. It is used to sample clients, to reduce
+// server load for metics and crashes. This is controlled by the
+// MetricsReporting feature in chrome_metrics_services_manager_client.cc and is
+// written when metrics services are started up and when consent changes.
+extern const wchar_t kRegValueChromeStatsSample[];
 // Used to retrieve consent for uploading crashes and metrics.
 extern const wchar_t kRegValueUsageStats[];
 extern const wchar_t kUninstallArgumentsField[];

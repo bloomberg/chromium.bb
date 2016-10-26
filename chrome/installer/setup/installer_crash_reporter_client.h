@@ -36,6 +36,7 @@ class InstallerCrashReporterClient
   size_t RegisterCrashKeys() override;
   bool IsRunningUnattended() override;
   bool GetCollectStatsConsent() override;
+  bool GetCollectStatsInSample() override;
   bool ReportingIsEnforcedByPolicy(bool* enabled) override;
   bool EnableBreakpadForProcess(const std::string& process_type) override;
 
