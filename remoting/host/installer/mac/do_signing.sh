@@ -128,7 +128,11 @@ sign() {
   fi
 
   echo Signing "${name}"
-  codesign -vv -s "${id}" --keychain "${keychain}" "${name}"
+  if [[ -n "${keychain}" ]]; then
+    codesign -vv -s "${id}" --keychain "${keychain}" "${name}"
+  else
+    codesign -vv -s "${id}" "${name}"
+  fi
   codesign -v "${name}"
 }
 
@@ -150,8 +154,12 @@ sign_installer() {
   local id="${3}"
 
   local package="${input_dir}/${PKG_DIR}/${PKG_FINAL}"
-  productsign --sign "${id}" --keychain "${keychain}" \
-      "${package}" "${package}.signed"
+  if [[ -n "${keychain}" ]]; then
+    productsign --sign "${id}" --keychain "${keychain}" \
+        "${package}" "${package}.signed"
+  else
+    productsign --sign "${id}" "${package}" "${package}.signed"
+  fi
   mv -f "${package}.signed" "${package}"
 }
 
@@ -195,38 +203,117 @@ cleanup() {
 }
 
 usage() {
-  echo "Usage: ${ME} output_dir input_dir [keychain codesign_id"\
+  echo "Usage: ${ME} -o output_dir -i input_dir "\
+      "[-c codesign_id] [-p productsign_id] [-k keychain]" >&2
+  echo >&2
+  echo "Usage (legacy): ${ME} output_dir input_dir [keychain codesign_id"\
       "[productsign_id]]" >&2
+  echo >&2
   echo "  Sign the binaries using the specified <codesign_id>, build" >&2
-  echo "  the installer and then sign the installer using the given" >&2
+  echo "  the installer, and then sign the installer using the given" >&2
   echo "  <productsign_id>." >&2
-  echo "  If the <keychain> and signing ids are not specified then the" >&2
+  echo "  If the signing ids are not specified then the" >&2
   echo "  installer is built without signing any binaries." >&2
+  echo "  If <keychain> is specified, it must contain all the signing ids." >&2
+  echo "  If not specified, then the default keychains will be used." >&2
 }
 
 main() {
-  local output_dir="$(shell_safe_path "${1}")"
-  local input_dir="$(shell_safe_path "${2}")"
+  local output_dir=""
+  local input_dir=""
   local do_sign_binaries=0
-  local keychain=""
-  if [[ ${#} -ge 3 ]]; then
-    keychain="$(shell_safe_path "${3}")"
-    do_sign_binaries=1
-    echo "Signing binaries using ${keychain}"
-  else
-    echo "Not signing binaries (no keychain or identify specified)"
-  fi
   local codesign_id=""
-  if [[ ${#} -ge 4 ]]; then
-    codesign_id="${4}"
-  fi
   local productsign_id=""
-  if [[ ${#} -ge 5 ]]; then
-    productsign_id="${5}"
+  local keychain=""
+
+  local opt_count=${#}
+  local OPTNAME OPTIND OPTARG
+  while getopts ":o:i:c:p:k:h" OPTNAME; do
+    case ${OPTNAME} in
+      o )
+        output_dir="$(shell_safe_path "${OPTARG}")"
+        ;;
+      i )
+        input_dir="$(shell_safe_path "${OPTARG}")"
+        ;;
+      c )
+        codesign_id="${OPTARG}"
+        ;;
+      p )
+        productsign_id="${OPTARG}"
+        ;;
+      k )
+        keychain="$(shell_safe_path "${OPTARG}")"
+        ;;
+      h )
+        usage
+        exit 0
+        ;;
+      * )
+        err "Invalid command-line option: ${OPTARG}"
+        usage
+        exit 1
+        ;;
+    esac
+  done
+  shift $(($OPTIND - 1))
+
+  # The opts need to be either all "flag-style" or all "position-style", not
+  # both. If there are any leftover opts at this point, it should be all the
+  # original ones (i.e. all positional).
+  # TODO(mmoss): The positional handling is legacy and can go away once the
+  # signing system has been migrated to using flags, which provides more
+  # flexibility for adding/removing opts if needed. b/31931170
+  if [[ ${#} -ne 0 ]]; then
+    if [[ ${opt_count} -ne ${#} ]]; then
+      err "Please use all flag opts, or all positional opts, not both."
+      usage
+      exit 1
+    fi
+    if [[ ${#} < 2 ]]; then
+      err "Too few positional opts."
+      usage
+      exit 1
+    fi
+    output_dir="$(shell_safe_path "${1}")"
+    input_dir="$(shell_safe_path "${2}")"
+    keychain=""
+    if [[ ${#} -ge 3 ]]; then
+      keychain="$(shell_safe_path "${3}")"
+    fi
+    codesign_id=""
+    if [[ ${#} -ge 4 ]]; then
+      codesign_id="${4}"
+    fi
+    productsign_id=""
+    if [[ ${#} -ge 5 ]]; then
+      productsign_id="${5}"
+    fi
   fi
 
-  if [[ "${do_sign_binaries}" == 1 && -z "${codesign_id}" ]]; then
-    err_exit "Can't sign binaries - please specify a codesign_id"
+  if [[ -z "${output_dir}" || -z "${input_dir}" ]]; then
+    err "output_dir and input_dir are required."
+    usage
+    exit 1
+  fi
+
+  # There's no point in specifying a keychain but no identity, so it's probably
+  # being called incorrectly.
+  if [[ -n "${keychain}" && -z "${codesign_id}" ]]; then
+    err_exit "Can't use keychain without a codesign_id"
+  fi
+
+  if [[ -n "${codesign_id}" ]]; then
+    do_sign_binaries=1
+    echo "Signing binaries with identity: ${codesign_id}"
+    if [[ -n "${productsign_id}" ]]; then
+      echo "Signing installer with identity: ${productsign_id}"
+    fi
+    if [[ -n "${keychain}" ]]; then
+      echo "Using keychain: ${keychain}"
+    fi
+  else
+    echo "Not signing binaries (no identify specified)"
   fi
 
   setup "${input_dir}"
@@ -244,11 +331,6 @@ main() {
 
   cleanup
 }
-
-if [[ ${#} < 2 ]]; then
-  usage
-  exit 1
-fi
 
 main "${@}"
 exit ${?}
