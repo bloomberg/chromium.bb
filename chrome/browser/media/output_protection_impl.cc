@@ -5,38 +5,42 @@
 #include "chrome/browser/media/output_protection_impl.h"
 
 #include "base/logging.h"
+#include "chrome/browser/media/output_protection_proxy.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-
-using media::mojom::OutputProtection;
 
 // static
 void OutputProtectionImpl::Create(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<OutputProtection> request) {
+    media::mojom::OutputProtectionRequest request) {
   DVLOG(2) << __FUNCTION__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host);
-  mojo::MakeStrongBinding(
-      base::MakeUnique<OutputProtectionImpl>(render_frame_host),
-      std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<OutputProtectionImpl>(
+                              render_frame_host->GetProcess()->GetID(),
+                              render_frame_host->GetRoutingID()),
+                          std::move(request));
 }
 
-OutputProtectionImpl::OutputProtectionImpl(
-    content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host), weak_factory_(this) {
-  DCHECK(render_frame_host_);
+OutputProtectionImpl::OutputProtectionImpl(int render_process_id,
+                                           int render_frame_id)
+    : render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
+      weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-OutputProtectionImpl::~OutputProtectionImpl() {}
+OutputProtectionImpl::~OutputProtectionImpl() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
 
 void OutputProtectionImpl::QueryStatus(const QueryStatusCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  NOTIMPLEMENTED();
-
-  callback.Run(false, 0, 0);
+  GetProxy()->QueryStatus(base::Bind(&OutputProtectionImpl::OnQueryStatusResult,
+                                     weak_factory_.GetWeakPtr(), callback));
 }
 
 void OutputProtectionImpl::EnableProtection(
@@ -45,7 +49,38 @@ void OutputProtectionImpl::EnableProtection(
   DVLOG(2) << __FUNCTION__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  NOTIMPLEMENTED();
+  GetProxy()->EnableProtection(
+      desired_protection_mask,
+      base::Bind(&OutputProtectionImpl::OnEnableProtectionResult,
+                 weak_factory_.GetWeakPtr(), callback));
+}
 
-  callback.Run(false);
+void OutputProtectionImpl::OnQueryStatusResult(
+    const QueryStatusCallback& callback,
+    bool success,
+    uint32_t link_mask,
+    uint32_t protection_mask) {
+  DVLOG(2) << __FUNCTION__ << ": success=" << success
+           << ", link_mask=" << link_mask
+           << ", protection_mask=" << protection_mask;
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  callback.Run(success, link_mask, protection_mask);
+}
+
+void OutputProtectionImpl::OnEnableProtectionResult(
+    const EnableProtectionCallback& callback,
+    bool success) {
+  DVLOG(2) << __FUNCTION__ << ": success=" << success;
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  callback.Run(success);
+}
+
+// Helper function to lazily create the |proxy_| and return it.
+chrome::OutputProtectionProxy* OutputProtectionImpl::GetProxy() {
+  if (!proxy_) {
+    proxy_ = base::MakeUnique<chrome::OutputProtectionProxy>(render_process_id_,
+                                                             render_frame_id_);
+  }
+
+  return proxy_.get();
 }

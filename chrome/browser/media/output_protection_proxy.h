@@ -35,18 +35,13 @@ class OutputProtectionProxy {
   typedef base::Callback<void(bool /* success */)> EnableProtectionCallback;
 
   OutputProtectionProxy(int render_process_id, int render_frame_id);
+  ~OutputProtectionProxy();
 
   void QueryStatus(const QueryStatusCallback& callback);
   void EnableProtection(uint32_t desired_method_mask,
                         const EnableProtectionCallback& callback);
 
  private:
-  // Makes sure this class can only be deleted on the UI thread.
-  friend class base::DeleteHelper<OutputProtectionProxy>;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  ~OutputProtectionProxy();
-
   // Callbacks for QueryStatus(). It also checks the network link and adds it
   // to the |link_mask|.
   void ProcessQueryStatusResult(const QueryStatusCallback& callback,

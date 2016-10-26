@@ -43,7 +43,7 @@ OutputProtectionDelegate::OutputProtectionDelegate(int render_process_id,
       client_id_(ui::DisplayConfigurator::kInvalidClientId),
       display_id_(0),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  // This can be constructed on IO or UI thread.
 }
 
 OutputProtectionDelegate::~OutputProtectionDelegate() {

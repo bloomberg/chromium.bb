@@ -20,7 +20,6 @@ OutputProtectionProxy::OutputProtectionProxy(int render_process_id,
       output_protection_delegate_(render_process_id, render_frame_id),
 #endif  // defined(OS_CHROMEOS)
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 OutputProtectionProxy::~OutputProtectionProxy() {
