@@ -71,6 +71,7 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings->SetBoolean(kSettingCloudPrintDialog, false);
   pdf_settings->SetBoolean(kSettingPrintWithPrivet, false);
   pdf_settings->SetBoolean(kSettingPrintWithExtension, false);
+  pdf_settings->SetInteger(kSettingScaleFactor, 100);
   return UpdatePrintSettings(*pdf_settings);
 }
 

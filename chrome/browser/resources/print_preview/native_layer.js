@@ -287,7 +287,7 @@ cr.define('print_preview', function() {
         'deviceName': destination == null ? 'foo' : destination.id,
         'generateDraftData': documentInfo.isModifiable,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
-
+        'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
         // NOTE: Even though the following fields don't directly relate to the
         // preview, they still need to be included.
         'duplex': printTicketStore.duplex.getValue() ?
@@ -367,6 +367,7 @@ cr.define('print_preview', function() {
         'printWithCloudPrint': !destination.isLocal,
         'printWithPrivet': destination.isPrivet,
         'printWithExtension': destination.isExtension,
+        'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
         'deviceName': destination.id,
         'isFirstRequest': false,
         'requestID': -1,
@@ -660,13 +661,17 @@ cr.define('print_preview', function() {
      * @param {number} pageCount The number of pages.
      * @param {number} previewResponseId The preview request id that resulted in
      *      this response.
+     * @param {number} fitToPageScaling The scaling percentage required to fit
+     *      the document to page, rounded to the nearest integer.
      * @private
      */
-    onDidGetPreviewPageCount_: function(pageCount, previewResponseId) {
+    onDidGetPreviewPageCount_: function(pageCount, previewResponseId,
+                                        fitToPageScaling) {
       var pageCountChangeEvent = new Event(
           NativeLayer.EventType.PAGE_COUNT_READY);
       pageCountChangeEvent.pageCount = pageCount;
       pageCountChangeEvent.previewResponseId = previewResponseId;
+      pageCountChangeEvent.fitToPageScaling = fitToPageScaling;
       this.dispatchEvent(pageCountChangeEvent);
     },
 

@@ -2068,6 +2068,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kEnableDefaultMediaSessionChoices)},
 #endif  // !OS_ANDROID
+#if defined(ENABLE_PRINT_PREVIEW)
+    {"print-scaling", IDS_FLAGS_PRINT_SCALING_NAME,
+     IDS_FLAGS_PRINT_SCALING_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPrintScaling)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

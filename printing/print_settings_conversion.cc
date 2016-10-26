@@ -176,13 +176,15 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   base::string16 device_name;
   bool collate = false;
   int copies = 1;
+  int scale_factor = 100;
 
   if (!job_settings.GetBoolean(kSettingCollate, &collate) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
       !job_settings.GetInteger(kSettingColor, &color) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
       !job_settings.GetBoolean(kSettingLandscape, &landscape) ||
-      !job_settings.GetString(kSettingDeviceName, &device_name)) {
+      !job_settings.GetString(kSettingDeviceName, &device_name) ||
+      !job_settings.GetInteger(kSettingScaleFactor, &scale_factor)) {
     return false;
   }
 
@@ -192,6 +194,7 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   settings->set_device_name(device_name);
   settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode));
   settings->set_color(static_cast<ColorModel>(color));
+  settings->set_scale_factor(static_cast<double>(scale_factor) / 100.0);
 
 #if defined(OS_WIN)
   // Modifiable implies HTML and not other formats like PDF.

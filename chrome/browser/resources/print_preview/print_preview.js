@@ -19,6 +19,13 @@ cr.define('print_preview', function() {
     print_preview.Component.call(this);
 
     /**
+     * Whether the print scaling feature is enabled.
+     * @type {boolean}
+     * @private
+     */
+    this.scalingEnabled_ = loadTimeData.getBoolean('scalingEnabled');
+
+    /**
      * Used to communicate with Chromium's print system.
      * @type {!print_preview.NativeLayer}
      * @private
@@ -123,6 +130,18 @@ cr.define('print_preview', function() {
         new print_preview.MediaSizeSettings(this.printTicketStore_.mediaSize);
     this.addChild(this.mediaSizeSettings_);
 
+    if (this.scalingEnabled_) {
+      /**
+       * Component that renders the scaling settings.
+       * @type {!print_preview.ScalingSettings}
+       * @private
+       */
+      this.scalingSettings_ =
+          new print_preview.ScalingSettings(this.printTicketStore_.scaling,
+                                            this.printTicketStore_.fitToPage);
+      this.addChild(this.scalingSettings_);
+    }
+
     /**
      * Component that renders the layout settings.
      * @type {!print_preview.LayoutSettings}
@@ -201,6 +220,10 @@ cr.define('print_preview', function() {
         this.dpiSettings_,
         this.otherOptionsSettings_,
         this.advancedOptionsSettings_];
+    if (this.scalingEnabled_) {
+      settingsSections.splice(4, 0, this.scalingSettings_);
+    }
+
     /**
      * Component representing more/less settings button.
      * @type {!print_preview.MoreSettings}
@@ -349,6 +372,12 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS,
           this.onPrintPresetOptionsFromDocument_.bind(this));
+      if (this.scalingEnabled_) {
+        this.tracker.add(
+            this.nativeLayer_,
+            print_preview.NativeLayer.EventType.PAGE_COUNT_READY,
+            this.onPageCountReady_.bind(this));
+      }
       this.tracker.add(
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRIVET_PRINT_FAILED,
@@ -469,6 +498,8 @@ cr.define('print_preview', function() {
       this.pageSettings_.decorate($('page-settings'));
       this.copiesSettings_.decorate($('copies-settings'));
       this.mediaSizeSettings_.decorate($('media-size-settings'));
+      if (this.scalingEnabled_)
+        this.scalingSettings_.decorate($('scaling-settings'));
       this.layoutSettings_.decorate($('layout-settings'));
       this.colorSettings_.decorate($('color-settings'));
       this.marginSettings_.decorate($('margin-settings'));
@@ -496,6 +527,8 @@ cr.define('print_preview', function() {
       this.pageSettings_.isEnabled = isEnabled;
       this.copiesSettings_.isEnabled = isEnabled;
       this.mediaSizeSettings_.isEnabled = isEnabled;
+      if (this.scalingEnabled_)
+          this.scalingSettings_.isEnabled = isEnabled;
       this.layoutSettings_.isEnabled = isEnabled;
       this.colorSettings_.isEnabled = isEnabled;
       this.marginSettings_.isEnabled = isEnabled;
@@ -1000,6 +1033,20 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when the Page Count Ready message is received to update the fit to
+     * page scaling value in the scaling settings.
+     * @param {Event} event Event object representing the page count ready
+     *     message
+     * @private
+     */
+    onPageCountReady_: function(event) {
+      if (event.fitToPageScaling >= 0) {
+        this.scalingSettings_.updateFitToPageScaling(
+              event.fitToPageScaling);
+      }
+    },
+
+    /**
      * Called when privet printing fails.
      * @param {Event} event Event object representing the failure.
      * @private
@@ -1269,6 +1316,7 @@ cr.define('print_preview', function() {
 <include src="data/ticket_items/duplex.js">
 <include src="data/ticket_items/header_footer.js">
 <include src="data/ticket_items/media_size.js">
+<include src="data/ticket_items/scaling.js">
 <include src="data/ticket_items/landscape.js">
 <include src="data/ticket_items/margins_type.js">
 <include src="data/ticket_items/page_range.js">
@@ -1290,6 +1338,7 @@ cr.define('print_preview', function() {
 <include src="settings/copies_settings.js">
 <include src="settings/dpi_settings.js">
 <include src="settings/media_size_settings.js">
+<include src="settings/scaling_settings.js">
 <include src="settings/layout_settings.js">
 <include src="settings/color_settings.js">
 <include src="settings/margin_settings.js">

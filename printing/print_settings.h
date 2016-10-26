@@ -93,6 +93,9 @@ class PRINTING_EXPORT PrintSettings {
   void set_dpi(int dpi) { dpi_ = dpi; }
   int dpi() const { return dpi_; }
 
+  void set_scale_factor(double scale_factor) { scale_factor_ = scale_factor; }
+  double scale_factor() const { return scale_factor_; }
+
   void set_supports_alpha_blend(bool supports_alpha_blend) {
     supports_alpha_blend_ = supports_alpha_blend;
   }
@@ -205,6 +208,9 @@ class PRINTING_EXPORT PrintSettings {
 
   // Printer's device effective dots per inch in both axis.
   int dpi_;
+
+  // Scale factor
+  double scale_factor_;
 
   // Is the orientation landscape or portrait.
   bool landscape_;

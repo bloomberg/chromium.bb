@@ -5094,6 +5094,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disabled
       </message>
 
+      <!-- Print scaling feature -->
+      <message name="IDS_FLAGS_PRINT_SCALING_NAME" desc="Name for the flag to add the print scaling feature to print preview.">
+        Print Scaling.
+      </message>
+      <message name="IDS_FLAGS_PRINT_SCALING_DESCRIPTION" desc="Description for the flag to add the print scaling feature to print preview.">
+        If enabled, an option to scale documents will be available in print preview.
+      </message>
+
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
         Components
@@ -8602,6 +8610,9 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_COPIES_LABEL" desc="Copies option label.">
           Copies
         </message>
+        <message name="IDS_PRINT_PREVIEW_SCALING_LABEL" desc="Scaling option label.">
+          Scale
+        </message>
         <message name="IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT" desc="Example page range text.">
           e.g. 1-5, 8, 11-13
         </message>
@@ -8658,6 +8669,9 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_PRINT_PREVIEW_COPIES_INSTRUCTION" desc="Instruction shown when the user enters an invalid number of copies.">
           Use a number to indicate how many copies to print (1 to 999).
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SCALING_INSTRUCTION" desc="Instruction shown when the user enters an invalid scaling value.">
+          Scale amount must be an integer between 10 and 200.
         </message>
         <message name="IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL" desc="ARIA label used by screen reader to explain the purpose of the page selection textbox">
           Print Specific Pages

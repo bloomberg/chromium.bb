@@ -44,6 +44,7 @@ struct PrintMsg_Print_Params {
   int margin_top;
   int margin_left;
   double dpi;
+  double scale_factor;
   int desired_dpi;
   int document_cookie;
   bool selection_only;
@@ -119,6 +120,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // Specifies dots per inch.
   IPC_STRUCT_TRAITS_MEMBER(dpi)
+
+  // Specifies the scale factor in percent
+  IPC_STRUCT_TRAITS_MEMBER(scale_factor)
 
   // Desired apparent dpi on paper.
   IPC_STRUCT_TRAITS_MEMBER(desired_dpi)
@@ -265,6 +269,9 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidGetPreviewPageCount_Params)
 
   // Indicates whether the previewed document is modifiable.
   IPC_STRUCT_MEMBER(bool, is_modifiable)
+
+  // Scaling % to fit to page
+  IPC_STRUCT_MEMBER(int, fit_to_page_scaling)
 
   // The id of the preview request.
   IPC_STRUCT_MEMBER(int, preview_request_id)

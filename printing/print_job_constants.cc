@@ -54,6 +54,9 @@ const char kSettingDeviceName[] = "deviceName";
 // Option to disable scaling. True if scaling is disabled else false.
 const char kSettingDisableScaling[] = "disableScaling";
 
+// Scaling value required to fit the document to page.
+const char kSettingFitToPageScaling[] = "fitToPageScaling";
+
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 
@@ -163,6 +166,9 @@ const char kSettingPrintWithPrivet[] = "printWithPrivet";
 // Print using extension option: true if destination is an extension printer,
 // false if not.
 const char kSettingPrintWithExtension[] = "printWithExtension";
+
+// Scaling factor
+const char kSettingScaleFactor[] = "scaleFactor";
 
 // Ticket option. Contains the ticket in CJT format.
 const char kSettingTicket[] = "ticket";

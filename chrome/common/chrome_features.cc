@@ -94,6 +94,12 @@ const base::Feature kMaterialDesignExtensions{
 const base::Feature kOverrideYouTubeFlashEmbed{
     "OverrideYouTubeFlashEmbed", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the Print Scaling feature in print preview.
+#if defined(ENABLE_PRINT_PREVIEW)
+const base::Feature kPrintScaling{"PrintScaling",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.
 const base::Feature kPushMessagingBackgroundMode{

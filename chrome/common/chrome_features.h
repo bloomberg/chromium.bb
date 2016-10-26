@@ -65,11 +65,15 @@ extern const base::Feature kMaterialDesignSettings;
 extern const base::Feature kNativeNotifications;
 #endif  // defined(OS_MACOSX)
 
+extern const base::Feature kOverrideYouTubeFlashEmbed;
+
 #if defined(ENABLE_PLUGINS)
 extern const base::Feature kPreferHtmlOverPlugins;
 #endif
 
-extern const base::Feature kOverrideYouTubeFlashEmbed;
+#if defined(ENABLE_PRINT_PREVIEW)
+extern const base::Feature kPrintScaling;
+#endif
 
 extern const base::Feature kPushMessagingBackgroundMode;
 

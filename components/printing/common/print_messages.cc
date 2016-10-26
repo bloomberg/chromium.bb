@@ -47,6 +47,7 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
     margin_top(0),
     margin_left(0),
     dpi(0),
+    scale_factor(1.0f),
     desired_dpi(0),
     document_cookie(0),
     selection_only(false),
@@ -59,8 +60,7 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
     display_header_footer(false),
     title(),
     url(),
-    should_print_backgrounds(false) {
-}
+    should_print_backgrounds(false) {}
 
 PrintMsg_Print_Params::PrintMsg_Print_Params(
     const PrintMsg_Print_Params& other) = default;
@@ -74,6 +74,7 @@ void PrintMsg_Print_Params::Reset() {
   margin_top = 0;
   margin_left = 0;
   dpi = 0;
+  scale_factor = 1.0f;
   desired_dpi = 0;
   document_cookie = 0;
   selection_only = false;
