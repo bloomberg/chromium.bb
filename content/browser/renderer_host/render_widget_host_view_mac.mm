@@ -451,7 +451,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
       fullscreen_parent_host_view_(nullptr),
-      needs_begin_frames_(false),
       needs_flush_input_(false),
       weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
@@ -494,6 +493,16 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
+
+  // Because of the way Mac pumps messages during resize, (see the code
+  // in RenderMessageFilter::OnMessageReceived), SetNeedsBeginFrame
+  // messages are not delayed on Mac.  This leads to creation-time
+  // raciness where renderer sends a SetNeedsBeginFrame(true) before
+  // the renderer host is created to recieve it.  In general, all
+  // renderers want begin frames initially anyway, so start this value
+  // at true here to avoid startup raciness and decrease latency.
+  needs_begin_frames_ = true;
+  UpdateNeedsBeginFramesInternal();
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {

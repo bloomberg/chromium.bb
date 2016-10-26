@@ -949,6 +949,10 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   [view->cocoa_view() scrollWheel:event1];
   ASSERT_EQ(1U, process_host->sink().message_count());
 
+  // Flush and clear other messages (e.g. begin frames) the RWHVMac also sends.
+  base::RunLoop().RunUntilIdle();
+  process_host->sink().ClearMessages();
+
   // Send an ACK for the first wheel event, so that the queue will be flushed.
   InputEventAck ack(blink::WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -961,7 +965,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
   [NSApp postEvent:event2 atStart:NO];
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(2U, process_host->sink().message_count());
+  ASSERT_EQ(1U, process_host->sink().message_count());
 
   // Clean up.
   host->ShutdownAndDestroyWidget(true);
