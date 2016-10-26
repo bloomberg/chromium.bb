@@ -168,9 +168,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // other id; then the nearest ancestor of node id1 whose id is smaller than
   // id2 is the lowest common ancestor of the pair of nodes, and the transform
   // from this lowest common ancestor to node id2 is only a 2d translation.
-  bool ComputeTransform(int source_id,
-                        int dest_id,
-                        gfx::Transform* transform) const;
+  bool ComputeTransformForTesting(int source_id,
+                                  int dest_id,
+                                  gfx::Transform* transform) const;
 
   void OnTransformAnimated(const gfx::Transform& transform,
                            int id,
@@ -252,14 +252,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return nodes_affected_by_outer_viewport_bounds_delta_;
   }
 
-  gfx::Transform FromTarget(int node_id, int effect) const;
-  void SetFromTarget(int node_id, const gfx::Transform& transform);
-
-  // TODO(sunxd): Remove target space transforms in cached data when we
-  // completely implement computing draw transforms on demand.
-  gfx::Transform ToTarget(int node_id, int effect_id) const;
-  void SetToTarget(int node_id, const gfx::Transform& transform);
-
   const gfx::Transform& FromScreen(int node_id) const;
   void SetFromScreen(int node_id, const gfx::Transform& transform);
 
@@ -303,9 +295,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void UpdateLocalTransform(TransformNode* node);
   void UpdateScreenSpaceTransform(TransformNode* node,
                                   TransformNode* parent_node,
-                                  TransformNode* target_node);
-  void UpdateSurfaceContentsScale(TransformNode* node);
-  void UpdateTargetSpaceTransform(TransformNode* node,
                                   TransformNode* target_node);
   void UpdateAnimationProperties(TransformNode* node,
                                  TransformNode* parent_node);
@@ -657,9 +646,6 @@ class CC_EXPORT PropertyTrees final {
   gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(
       int transform_id,
       int effect_id) const;
-  bool ComputeTransformToTarget(int transform_id,
-                                int effect_id,
-                                gfx::Transform* transform) const;
 
   bool ComputeTransformFromTarget(int transform_id,
                                   int effect_id,

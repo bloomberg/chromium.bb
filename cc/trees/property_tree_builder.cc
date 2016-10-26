@@ -641,9 +641,6 @@ bool AddTransformNodeIfNeeded(
         data_from_ancestor.page_scale_factor);
   }
 
-  if (has_surface && !is_root)
-    node->needs_surface_contents_scale = true;
-
   node->source_node_id = source_index;
   node->post_local_scale_factor = post_local_scale_factor;
   if (is_root) {

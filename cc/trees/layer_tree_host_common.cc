@@ -412,7 +412,7 @@ static void ComputeInitialRenderSurfaceLayerList(
       }
     }
     bool layer_should_be_drawn = draw_property_utils::LayerNeedsUpdate(
-        layer, layer_is_drawn, property_trees->transform_tree);
+        layer, layer_is_drawn, property_trees);
     if (!layer_should_be_drawn)
       continue;
 
@@ -649,8 +649,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   draw_property_utils::UpdatePropertyTrees(property_trees,
                                            can_render_to_separate_surface);
   draw_property_utils::FindLayersThatNeedUpdates(
-      inputs->root_layer->GetLayerTree(), property_trees->transform_tree,
-      property_trees->effect_tree, &update_layer_list);
+      inputs->root_layer->GetLayerTree(), property_trees, &update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

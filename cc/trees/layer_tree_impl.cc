@@ -1030,14 +1030,9 @@ bool LayerTreeImpl::UpdateDrawProperties(
           // We are calculating transform between two render surfaces. So, we
           // need to apply the surface contents scale at target and remove the
           // surface contents scale at source.
-          property_trees()->ComputeTransformToTarget(
+          property_trees()->GetToTarget(
               it->render_surface()->TransformTreeIndex(),
               occlusion_surface->EffectTreeIndex(), &draw_transform);
-          const EffectNode* occlusion_effect_node =
-              property_trees()->effect_tree.Node(
-                  occlusion_surface->EffectTreeIndex());
-          draw_property_utils::PostConcatSurfaceContentsScale(
-              occlusion_effect_node, &draw_transform);
           const EffectNode* effect_node = property_trees()->effect_tree.Node(
               it->render_surface()->EffectTreeIndex());
           draw_property_utils::ConcatInverseSurfaceContentsScale(

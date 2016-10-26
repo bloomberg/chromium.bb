@@ -37,14 +37,12 @@ TEST(PropertyTreeSerializationTest, TransformNodeSerialization) {
   original.node_and_ancestors_are_flat = false;
   original.node_and_ancestors_have_only_integer_translation = false;
   original.scrolls = false;
-  original.needs_surface_contents_scale = false;
   original.affected_by_inner_viewport_bounds_delta_x = false;
   original.affected_by_inner_viewport_bounds_delta_y = false;
   original.affected_by_outer_viewport_bounds_delta_x = false;
   original.affected_by_outer_viewport_bounds_delta_y = false;
   original.in_subtree_of_page_scale_layer = false;
   original.post_local_scale_factor = 0.5f;
-  original.surface_contents_scale = gfx::Vector2dF(0.5f, 0.5f);
   original.scroll_offset = gfx::ScrollOffset(1.5f, 1.5f);
   original.scroll_snap = gfx::Vector2dF(0.4f, 0.4f);
   original.source_offset = gfx::Vector2dF(2.5f, 2.4f);
@@ -399,20 +397,20 @@ class PropertyTreeTestComputeTransformRoot : public PropertyTreeTest {
 
     gfx::Transform expected;
     gfx::Transform transform;
-    bool success = tree.ComputeTransform(0, 0, &transform);
+    bool success = tree.ComputeTransformForTesting(0, 0, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     transform.MakeIdentity();
     expected.Translate(2, 2);
-    success = tree.ComputeTransform(0, -1, &transform);
+    success = tree.ComputeTransformForTesting(0, -1, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     transform.MakeIdentity();
     expected.MakeIdentity();
     expected.Translate(-2, -2);
-    success = tree.ComputeTransform(-1, 0, &transform);
+    success = tree.ComputeTransformForTesting(-1, 0, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
   }
@@ -444,28 +442,28 @@ class PropertyTreeTestComputeTransformChild : public PropertyTreeTest {
     gfx::Transform transform;
 
     expected.Translate(3, 3);
-    bool success = tree.ComputeTransform(1, 0, &transform);
+    bool success = tree.ComputeTransformForTesting(1, 0, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     transform.MakeIdentity();
     expected.MakeIdentity();
     expected.Translate(-3, -3);
-    success = tree.ComputeTransform(0, 1, &transform);
+    success = tree.ComputeTransformForTesting(0, 1, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     transform.MakeIdentity();
     expected.MakeIdentity();
     expected.Translate(5, 5);
-    success = tree.ComputeTransform(1, -1, &transform);
+    success = tree.ComputeTransformForTesting(1, -1, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     transform.MakeIdentity();
     expected.MakeIdentity();
     expected.Translate(-5, -5);
-    success = tree.ComputeTransform(-1, 1, &transform);
+    success = tree.ComputeTransformForTesting(-1, 1, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
   }
@@ -505,14 +503,14 @@ class PropertyTreeTestComputeTransformSibling : public PropertyTreeTest {
     gfx::Transform transform;
 
     expected.Translate(4, 4);
-    bool success = tree.ComputeTransform(2, 1, &transform);
+    bool success = tree.ComputeTransformForTesting(2, 1, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     transform.MakeIdentity();
     expected.MakeIdentity();
     expected.Translate(-4, -4);
-    success = tree.ComputeTransform(1, 2, &transform);
+    success = tree.ComputeTransformForTesting(1, 2, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
   }
@@ -569,14 +567,14 @@ class PropertyTreeTestComputeTransformSiblingSingularAncestor
     gfx::Transform transform;
 
     expected.Translate(4, 4);
-    bool success = tree.ComputeTransform(3, 2, &transform);
+    bool success = tree.ComputeTransformForTesting(3, 2, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     transform.MakeIdentity();
     expected.MakeIdentity();
     expected.Translate(-4, -4);
-    success = tree.ComputeTransform(2, 3, &transform);
+    success = tree.ComputeTransformForTesting(2, 3, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
   }
@@ -611,7 +609,6 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     effect_tree.Node(effect_parent)->has_render_surface = true;
     effect_tree.Node(effect_parent)->surface_contents_scale =
         gfx::Vector2dF(1.f, 1.f);
-    tree.Node(parent)->needs_surface_contents_scale = true;
     tree.SetTargetId(parent, grand_parent);
     tree.SetContentTargetId(parent, parent);
     tree.Node(parent)->source_node_id = grand_parent;
@@ -639,15 +636,16 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     gfx::Transform flattened_rotation_about_x = rotation_about_x;
     flattened_rotation_about_x.FlattenTo2d();
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x,
-                                    tree.ToTarget(child, effect_parent));
+    gfx::Transform to_target;
+    property_trees.GetToTarget(child, effect_parent, &to_target);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x, to_target);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         flattened_rotation_about_x * rotation_about_x, tree.ToScreen(child));
 
+    property_trees.GetToTarget(grand_child, effect_parent, &to_target);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
-        flattened_rotation_about_x * rotation_about_x,
-        tree.ToTarget(grand_child, effect_parent));
+        flattened_rotation_about_x * rotation_about_x, to_target);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_x *
                                         flattened_rotation_about_x *
@@ -655,8 +653,8 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
                                     tree.ToScreen(grand_child));
 
     gfx::Transform grand_child_to_child;
-    bool success =
-        tree.ComputeTransform(grand_child, child, &grand_child_to_child);
+    bool success = tree.ComputeTransformForTesting(grand_child, child,
+                                                   &grand_child_to_child);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x, grand_child_to_child);
 
@@ -666,14 +664,16 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
 
+    property_trees.GetToTarget(grand_child, effect_parent, &to_target);
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x * rotation_about_x,
-                                    tree.ToTarget(grand_child, effect_parent));
+                                    to_target);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         flattened_rotation_about_x * rotation_about_x * rotation_about_x,
         tree.ToScreen(grand_child));
 
-    success = tree.ComputeTransform(grand_child, child, &grand_child_to_child);
+    success = tree.ComputeTransformForTesting(grand_child, child,
+                                              &grand_child_to_child);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x, grand_child_to_child);
   }
@@ -708,11 +708,11 @@ class PropertyTreeTestMultiplicationOrder : public PropertyTreeTest {
     gfx::Transform transform;
     gfx::Transform inverse;
 
-    bool success = tree.ComputeTransform(1, -1, &transform);
+    bool success = tree.ComputeTransformForTesting(1, -1, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
-    success = tree.ComputeTransform(-1, 1, &inverse);
+    success = tree.ComputeTransformForTesting(-1, 1, &inverse);
     EXPECT_TRUE(success);
 
     transform = transform * inverse;
@@ -748,159 +748,19 @@ class PropertyTreeTestComputeTransformWithUninvertibleTransform
     gfx::Transform transform;
     gfx::Transform inverse;
 
-    bool success = tree.ComputeTransform(1, 0, &transform);
+    bool success = tree.ComputeTransformForTesting(1, 0, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 
     // To compute this would require inverting the 0 matrix, so we cannot
     // succeed.
-    success = tree.ComputeTransform(0, 1, &inverse);
+    success = tree.ComputeTransformForTesting(0, 1, &inverse);
     EXPECT_FALSE(success);
   }
 };
 
 DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
     PropertyTreeTestComputeTransformWithUninvertibleTransform);
-
-class PropertyTreeTestComputeTransformWithSurfaceContentsScale
-    : public PropertyTreeTest {
- protected:
-  void StartTest() override {
-    PropertyTrees property_trees;
-    TransformTree& tree = property_trees.transform_tree;
-    TransformNode& root = *tree.Node(0);
-    root.id = 0;
-    tree.SetTargetId(root.id, 0);
-    tree.UpdateTransforms(0);
-
-    TransformNode grand_parent;
-    grand_parent.local.Scale(2.f, 2.f);
-    grand_parent.source_node_id = 0;
-    grand_parent.needs_surface_contents_scale = true;
-    int grand_parent_id = tree.Insert(grand_parent, 0);
-    tree.SetTargetId(grand_parent_id, 0);
-    tree.UpdateTransforms(grand_parent_id);
-
-    TransformNode parent;
-    parent.local.Translate(15.f, 15.f);
-    parent.source_node_id = grand_parent_id;
-    int parent_id = tree.Insert(parent, grand_parent_id);
-    tree.SetTargetId(parent_id, grand_parent_id);
-    tree.UpdateTransforms(parent_id);
-
-    TransformNode child;
-    child.local.Scale(3.f, 3.f);
-    child.source_node_id = parent_id;
-    int child_id = tree.Insert(child, parent_id);
-    tree.SetTargetId(child_id, grand_parent_id);
-    tree.UpdateTransforms(child_id);
-
-    TransformNode grand_child;
-    grand_child.local.Scale(5.f, 5.f);
-    grand_child.source_node_id = child_id;
-    grand_child.needs_surface_contents_scale = true;
-    int grand_child_id = tree.Insert(grand_child, child_id);
-    tree.SetTargetId(grand_child_id, grand_parent_id);
-    SetupTransformTreeForTest(&tree);
-    tree.UpdateTransforms(grand_child_id);
-
-    EXPECT_EQ(gfx::Vector2dF(2.f, 2.f),
-              tree.Node(grand_parent_id)->surface_contents_scale);
-    EXPECT_EQ(gfx::Vector2dF(30.f, 30.f),
-              tree.Node(grand_child_id)->surface_contents_scale);
-
-    // Compute transform from grand_parent to grand_child.
-    gfx::Transform expected_transform_without_surface_contents_scale;
-    expected_transform_without_surface_contents_scale.Scale(1.f / 15.f,
-                                                            1.f / 15.f);
-    expected_transform_without_surface_contents_scale.Translate(-15.f, -15.f);
-
-    gfx::Transform expected_transform_with_dest_surface_contents_scale;
-    expected_transform_with_dest_surface_contents_scale.Scale(30.f, 30.f);
-    expected_transform_with_dest_surface_contents_scale.Scale(1.f / 15.f,
-                                                              1.f / 15.f);
-    expected_transform_with_dest_surface_contents_scale.Translate(-15.f, -15.f);
-
-    gfx::Transform expected_transform_with_source_surface_contents_scale;
-    expected_transform_with_source_surface_contents_scale.Scale(1.f / 15.f,
-                                                                1.f / 15.f);
-    expected_transform_with_source_surface_contents_scale.Translate(-15.f,
-                                                                    -15.f);
-    expected_transform_with_source_surface_contents_scale.Scale(0.5f, 0.5f);
-
-    gfx::Transform transform;
-    bool success =
-        tree.ComputeTransform(grand_parent_id, grand_child_id, &transform);
-    EXPECT_TRUE(success);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected_transform_without_surface_contents_scale, transform);
-
-    success =
-        tree.ComputeTransform(grand_parent_id, grand_child_id, &transform);
-    const TransformNode* grand_child_node = tree.Node(grand_child_id);
-    transform.matrix().postScale(grand_child_node->surface_contents_scale.x(),
-                                 grand_child_node->surface_contents_scale.y(),
-                                 1.f);
-    EXPECT_TRUE(success);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected_transform_with_dest_surface_contents_scale, transform);
-
-    success =
-        tree.ComputeTransform(grand_parent_id, grand_child_id, &transform);
-    const TransformNode* grand_parent_node = tree.Node(grand_parent_id);
-    EXPECT_NE(grand_parent_node->surface_contents_scale.x(), 0.f);
-    EXPECT_NE(grand_parent_node->surface_contents_scale.y(), 0.f);
-    transform.Scale(1.0 / grand_parent_node->surface_contents_scale.x(),
-                    1.0 / grand_parent_node->surface_contents_scale.y());
-    EXPECT_TRUE(success);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected_transform_with_source_surface_contents_scale, transform);
-
-    // Now compute transform from grand_child to grand_parent.
-    expected_transform_without_surface_contents_scale.MakeIdentity();
-    expected_transform_without_surface_contents_scale.Translate(15.f, 15.f);
-    expected_transform_without_surface_contents_scale.Scale(15.f, 15.f);
-
-    expected_transform_with_dest_surface_contents_scale.MakeIdentity();
-    expected_transform_with_dest_surface_contents_scale.Scale(2.f, 2.f);
-    expected_transform_with_dest_surface_contents_scale.Translate(15.f, 15.f);
-    expected_transform_with_dest_surface_contents_scale.Scale(15.f, 15.f);
-
-    expected_transform_with_source_surface_contents_scale.MakeIdentity();
-    expected_transform_with_source_surface_contents_scale.Translate(15.f, 15.f);
-    expected_transform_with_source_surface_contents_scale.Scale(15.f, 15.f);
-    expected_transform_with_source_surface_contents_scale.Scale(1.f / 30.f,
-                                                                1.f / 30.f);
-
-    success =
-        tree.ComputeTransform(grand_child_id, grand_parent_id, &transform);
-    EXPECT_TRUE(success);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected_transform_without_surface_contents_scale, transform);
-
-    success =
-        tree.ComputeTransform(grand_child_id, grand_parent_id, &transform);
-    transform.matrix().postScale(grand_parent_node->surface_contents_scale.x(),
-                                 grand_parent_node->surface_contents_scale.y(),
-                                 1.f);
-    EXPECT_TRUE(success);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected_transform_with_dest_surface_contents_scale, transform);
-
-    success =
-        tree.ComputeTransform(grand_child_id, grand_parent_id, &transform);
-    EXPECT_NE(grand_child_node->surface_contents_scale.x(), 0.f);
-    EXPECT_NE(grand_child_node->surface_contents_scale.y(), 0.f);
-    transform.Scale(1.0 / grand_child_node->surface_contents_scale.x(),
-                    1.0 / grand_child_node->surface_contents_scale.y());
-    EXPECT_TRUE(success);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected_transform_with_source_surface_contents_scale, transform);
-  }
-};
-
-DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
-    PropertyTreeTestComputeTransformWithSurfaceContentsScale);
 
 class PropertyTreeTestComputeTransformToTargetWithZeroSurfaceContentsScale
     : public PropertyTreeTest {
@@ -915,7 +775,6 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSurfaceContentsScale
     TransformNode grand_parent;
     grand_parent.local.Scale(2.f, 0.f);
     grand_parent.source_node_id = 0;
-    grand_parent.needs_surface_contents_scale = true;
     int grand_parent_id = tree.Insert(grand_parent, 0);
     tree.SetTargetId(grand_parent_id, 0);
     tree.SetContentTargetId(grand_parent_id, grand_parent_id);
@@ -942,7 +801,8 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSurfaceContentsScale
     expected_transform.Translate(4.f, 5.f);
 
     gfx::Transform transform;
-    bool success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
+    bool success =
+        tree.ComputeTransformForTesting(child_id, grand_parent_id, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
 
@@ -954,7 +814,8 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSurfaceContentsScale
 
     draw_property_utils::ComputeTransforms(&tree);
 
-    success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
+    success =
+        tree.ComputeTransformForTesting(child_id, grand_parent_id, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
 
@@ -966,7 +827,8 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSurfaceContentsScale
 
     draw_property_utils::ComputeTransforms(&tree);
 
-    success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
+    success =
+        tree.ComputeTransformForTesting(child_id, grand_parent_id, &transform);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
   }
@@ -1014,8 +876,8 @@ class PropertyTreeTestFlatteningWhenDestinationHasOnlyFlatAncestors
     flattened_rotation_about_x.FlattenTo2d();
 
     gfx::Transform grand_child_to_parent;
-    bool success =
-        tree.ComputeTransform(grand_child, parent, &grand_child_to_parent);
+    bool success = tree.ComputeTransformForTesting(grand_child, parent,
+                                                   &grand_child_to_parent);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_x,
                                     grand_child_to_parent);
@@ -1140,18 +1002,23 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     property_trees.ResetCachedData();
 
     gfx::Transform from_target;
-    EXPECT_FALSE(tree.ToTarget(child, effect_parent).GetInverse(&from_target));
+    gfx::Transform to_target;
+    property_trees.GetToTarget(child, effect_parent, &to_target);
+    EXPECT_FALSE(to_target.GetInverse(&from_target));
     // The following checks are to ensure that snapping is skipped because of
     // singular transform (and not because of other reasons which also cause
     // snapping to be skipped).
     EXPECT_TRUE(child_node->scrolls);
-    EXPECT_TRUE(tree.ToTarget(child, effect_parent).IsScaleOrTranslation());
+    property_trees.GetToTarget(child, effect_parent, &to_target);
+    EXPECT_TRUE(to_target.IsScaleOrTranslation());
     EXPECT_FALSE(child_node->to_screen_is_potentially_animated);
     EXPECT_FALSE(child_node->ancestors_are_invertible);
 
-    gfx::Transform rounded = tree.ToTarget(child, effect_parent);
+    gfx::Transform rounded;
+    property_trees.GetToTarget(child, effect_parent, &rounded);
     rounded.RoundTranslationComponents();
-    EXPECT_NE(tree.ToTarget(child, effect_parent), rounded);
+    property_trees.GetToTarget(child, effect_parent, &to_target);
+    EXPECT_NE(to_target, rounded);
   }
 };
 

@@ -94,8 +94,6 @@ struct CC_EXPORT TransformNode {
 
   bool scrolls : 1;
 
-  bool needs_surface_contents_scale : 1;
-
   // These are used to position nodes wrt the right or bottom of the inner or
   // outer viewport.
   bool affected_by_inner_viewport_bounds_delta_x : 1;
@@ -114,8 +112,6 @@ struct CC_EXPORT TransformNode {
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
   float post_local_scale_factor;
-
-  gfx::Vector2dF surface_contents_scale;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::ScrollOffset scroll_offset;
@@ -152,8 +148,6 @@ struct CC_EXPORT TransformCachedNodeData {
   TransformCachedNodeData(const TransformCachedNodeData& other);
   ~TransformCachedNodeData();
 
-  gfx::Transform from_target;
-  gfx::Transform to_target;
   gfx::Transform from_screen;
   gfx::Transform to_screen;
   int target_id;

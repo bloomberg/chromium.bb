@@ -10123,9 +10123,9 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
 
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
-  TransformNode* node =
-      host_impl_->active_tree()->property_trees()->transform_tree.Node(
-          test_layer->transform_tree_index());
+  EffectNode* node =
+      host_impl_->active_tree()->property_trees()->effect_tree.Node(
+          test_layer->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 
   gfx::Transform external_transform;
@@ -10139,8 +10139,8 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
   // Transform node's sublayer scale should include the device transform scale.
   host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
-  node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
-      test_layer->transform_tree_index());
+  node = host_impl_->active_tree()->property_trees()->effect_tree.Node(
+      test_layer->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 
   // Clear the external transform.
@@ -10150,8 +10150,8 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
 
   host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
-  node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
-      test_layer->transform_tree_index());
+  node = host_impl_->active_tree()->property_trees()->effect_tree.Node(
+      test_layer->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 }
 
@@ -11384,9 +11384,9 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
 
   DrawFrame();
 
-  TransformNode* node =
-      host_impl_->active_tree()->property_trees()->transform_tree.Node(
-          in_subtree_of_page_scale_layer->transform_tree_index());
+  EffectNode* node =
+      host_impl_->active_tree()->property_trees()->effect_tree.Node(
+          in_subtree_of_page_scale_layer->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 
   host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
@@ -11394,8 +11394,8 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   DrawFrame();
 
   in_subtree_of_page_scale_layer = host_impl_->active_tree()->LayerById(100);
-  node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
-      in_subtree_of_page_scale_layer->transform_tree_index());
+  node = host_impl_->active_tree()->property_trees()->effect_tree.Node(
+      in_subtree_of_page_scale_layer->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 }
 

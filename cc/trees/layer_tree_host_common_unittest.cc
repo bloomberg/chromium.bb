@@ -213,8 +213,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     draw_property_utils::UpdatePropertyTrees(property_trees,
                                              can_render_to_separate_surface);
     draw_property_utils::FindLayersThatNeedUpdates(
-        root_layer->GetLayerTree(), property_trees->transform_tree,
-        property_trees->effect_tree, &update_layer_list_);
+        root_layer->GetLayerTree(), property_trees, &update_layer_list_);
   }
 
   void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(
@@ -9894,22 +9893,21 @@ TEST_F(LayerTreeHostCommonTest,
   test_layer->SetBounds(gfx::Size(30, 30));
   test_layer->SetDrawsContent(true);
 
-  // We want layer between the two targets to create a clip node and transform
+  // We want layer between the two targets to create a clip node and effect
   // node but it shouldn't create a render surface.
   between_targets->SetMasksToBounds(true);
-  between_targets->Set3dSortingContextId(2);
+  between_targets->test_properties()->opacity = 0.5f;
 
   ExecuteCalculateDrawProperties(root);
 
-  TransformTree& tree =
-      root->layer_tree_impl()->property_trees()->transform_tree;
-  TransformNode* node = tree.Node(render_surface1->transform_tree_index());
+  EffectTree& tree = root->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = tree.Node(render_surface1->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 
-  node = tree.Node(between_targets->transform_tree_index());
+  node = tree.Node(between_targets->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 
-  node = tree.Node(render_surface2->transform_tree_index());
+  node = tree.Node(render_surface2->effect_tree_index());
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 
   EXPECT_EQ(gfx::Rect(15, 15), test_layer->visible_layer_rect());

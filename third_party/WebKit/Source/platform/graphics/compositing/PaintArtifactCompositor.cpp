@@ -454,9 +454,6 @@ class PropertyTreeManager {
 
 void PropertyTreeManager::setDeviceScaleFactor(float deviceScaleFactor) {
   auto& rootTransformNode = *transformTree().Node(kRealRootNodeId);
-  rootTransformNode.needs_surface_contents_scale = true;
-  rootTransformNode.surface_contents_scale =
-      gfx::Vector2dF(deviceScaleFactor, deviceScaleFactor);
   // TODO(jaydasika) : We shouldn't set ToScreen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
   // cc.

@@ -42,7 +42,6 @@ message TranformNodeData {
   optional bool node_and_ancestors_are_flat = 20;
   optional bool node_and_ancestors_have_only_integer_translation = 21;
   optional bool scrolls = 22;
-  optional bool needs_surface_contents_scale = 23;
   optional bool affected_by_inner_viewport_bounds_delta_x = 24;
   optional bool affected_by_inner_viewport_bounds_delta_y = 25;
   optional bool affected_by_outer_viewport_bounds_delta_x = 26;
@@ -51,7 +50,6 @@ message TranformNodeData {
   optional bool transform_changed = 40;
   optional float post_local_scale_factor = 29;
 
-  optional Vector2dF surface_contents_scale = 34;
   optional ScrollOffset scroll_offset = 35;
   optional Vector2dF scroll_snap = 36;
   optional Vector2dF source_offset = 37;
@@ -61,8 +59,6 @@ message TranformNodeData {
 
 // Proto for TransformCachedNodeData
 message TransformCachedNodeData {
-  optional Transform from_target = 1;
-  optional Transform to_target = 2;
   optional Transform from_screen = 3;
   optional Transform to_screen = 4;
   optional int64 target_id = 5;

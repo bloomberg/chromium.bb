@@ -30,7 +30,6 @@ TransformNode::TransformNode()
       node_and_ancestors_are_flat(true),
       node_and_ancestors_have_only_integer_translation(true),
       scrolls(false),
-      needs_surface_contents_scale(false),
       affected_by_inner_viewport_bounds_delta_x(false),
       affected_by_inner_viewport_bounds_delta_y(false),
       affected_by_outer_viewport_bounds_delta_x(false),
@@ -64,7 +63,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
          node_and_ancestors_have_only_integer_translation ==
              other.node_and_ancestors_have_only_integer_translation &&
          scrolls == other.scrolls &&
-         needs_surface_contents_scale == other.needs_surface_contents_scale &&
          affected_by_inner_viewport_bounds_delta_x ==
              other.affected_by_inner_viewport_bounds_delta_x &&
          affected_by_inner_viewport_bounds_delta_y ==
@@ -77,7 +75,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
              other.in_subtree_of_page_scale_layer &&
          transform_changed == other.transform_changed &&
          post_local_scale_factor == other.post_local_scale_factor &&
-         surface_contents_scale == other.surface_contents_scale &&
          scroll_offset == other.scroll_offset &&
          scroll_snap == other.scroll_snap &&
          source_offset == other.source_offset &&
@@ -139,7 +136,6 @@ void TransformNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_node_and_ancestors_have_only_integer_translation(
       node_and_ancestors_have_only_integer_translation);
   data->set_scrolls(scrolls);
-  data->set_needs_surface_contents_scale(needs_surface_contents_scale);
 
   data->set_affected_by_inner_viewport_bounds_delta_x(
       affected_by_inner_viewport_bounds_delta_x);
@@ -154,8 +150,6 @@ void TransformNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_transform_changed(transform_changed);
   data->set_post_local_scale_factor(post_local_scale_factor);
 
-  Vector2dFToProto(surface_contents_scale,
-                   data->mutable_surface_contents_scale());
   ScrollOffsetToProto(scroll_offset, data->mutable_scroll_offset());
   Vector2dFToProto(scroll_snap, data->mutable_scroll_snap());
   Vector2dFToProto(source_offset, data->mutable_source_offset());
@@ -198,7 +192,6 @@ void TransformNode::FromProtobuf(const proto::TreeNode& proto) {
   node_and_ancestors_have_only_integer_translation =
       data.node_and_ancestors_have_only_integer_translation();
   scrolls = data.scrolls();
-  needs_surface_contents_scale = data.needs_surface_contents_scale();
 
   affected_by_inner_viewport_bounds_delta_x =
       data.affected_by_inner_viewport_bounds_delta_x();
@@ -213,7 +206,6 @@ void TransformNode::FromProtobuf(const proto::TreeNode& proto) {
   transform_changed = data.transform_changed();
   post_local_scale_factor = data.post_local_scale_factor();
 
-  surface_contents_scale = ProtoToVector2dF(data.surface_contents_scale());
   scroll_offset = ProtoToScrollOffset(data.scroll_offset());
   scroll_snap = ProtoToVector2dF(data.scroll_snap());
   source_offset = ProtoToVector2dF(data.source_offset());
@@ -246,16 +238,13 @@ TransformCachedNodeData::~TransformCachedNodeData() {}
 
 bool TransformCachedNodeData::operator==(
     const TransformCachedNodeData& other) const {
-  return from_target == other.from_target && to_target == other.to_target &&
-         from_screen == other.from_screen && to_screen == other.to_screen &&
+  return from_screen == other.from_screen && to_screen == other.to_screen &&
          target_id == other.target_id &&
          content_target_id == other.content_target_id;
 }
 
 void TransformCachedNodeData::ToProtobuf(
     proto::TransformCachedNodeData* proto) const {
-  TransformToProto(from_target, proto->mutable_from_target());
-  TransformToProto(to_target, proto->mutable_to_target());
   TransformToProto(from_screen, proto->mutable_from_screen());
   TransformToProto(to_screen, proto->mutable_to_screen());
   proto->set_target_id(target_id);
@@ -264,8 +253,6 @@ void TransformCachedNodeData::ToProtobuf(
 
 void TransformCachedNodeData::FromProtobuf(
     const proto::TransformCachedNodeData& proto) {
-  from_target = ProtoToTransform(proto.from_target());
-  to_target = ProtoToTransform(proto.to_target());
   from_screen = ProtoToTransform(proto.from_screen());
   to_screen = ProtoToTransform(proto.to_screen());
   target_id = proto.target_id();
