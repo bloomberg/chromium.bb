@@ -31,11 +31,12 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
 
   // Provides completed stack profiles to the metrics provider. Intended for use
   // when receiving profiles over IPC. In-process StackSamplingProfiler users
-  // should use GetProfilerCallback() instead.
+  // should use GetProfilerCallback() instead. |profiles| is not const& because
+  // it must be passed with std::move.
   static void ReceiveCompletedProfiles(
       const CallStackProfileParams& params,
       base::TimeTicks start_timestamp,
-      const base::StackSamplingProfiler::CallStackProfiles& profiles);
+      base::StackSamplingProfiler::CallStackProfiles profiles);
 
   // MetricsProvider:
   void OnRecordingEnabled() override;

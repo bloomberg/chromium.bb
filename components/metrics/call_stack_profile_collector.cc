@@ -4,6 +4,8 @@
 
 #include "components/metrics/call_stack_profile_collector.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -29,13 +31,12 @@ void CallStackProfileCollector::Create(
 void CallStackProfileCollector::Collect(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
-    const std::vector<CallStackProfile>& profiles) {
+    std::vector<CallStackProfile> profiles) {
   if (params.process != expected_process_)
     return;
 
-  CallStackProfileMetricsProvider::ReceiveCompletedProfiles(params,
-                                                            start_timestamp,
-                                                            profiles);
+  CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
+      params, start_timestamp, std::move(profiles));
 }
 
 }  // namespace metrics

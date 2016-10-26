@@ -65,28 +65,34 @@ class ChildCallStackProfileCollector {
   friend class ChildCallStackProfileCollectorTest;
 
   // Bundles together a set of collected profiles and the collection state for
-  // storage, pending availability of the parent mojo interface.
+  // storage, pending availability of the parent mojo interface. |profiles|
+  // is not const& because it must be passed with std::move.
   struct ProfilesState {
     ProfilesState();
-    ProfilesState(const ProfilesState&);
+    ProfilesState(ProfilesState&&);
     ProfilesState(
         const CallStackProfileParams& params,
         base::TimeTicks start_timestamp,
-        const base::StackSamplingProfiler::CallStackProfiles& profiles);
+        base::StackSamplingProfiler::CallStackProfiles profiles);
     ~ProfilesState();
+
+    ProfilesState& operator=(ProfilesState&&);
 
     CallStackProfileParams params;
     base::TimeTicks start_timestamp;
 
     // The sampled profiles.
     base::StackSamplingProfiler::CallStackProfiles profiles;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ProfilesState);
   };
 
   using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
 
   void Collect(const CallStackProfileParams& params,
                base::TimeTicks start_timestamp,
-               const std::vector<CallStackProfile>& profiles);
+               std::vector<CallStackProfile> profiles);
 
   // This object may be accessed on any thread, including the profiler
   // thread. The expected use case for the object is to be created and have

@@ -5,6 +5,7 @@
 #include "components/metrics/child_call_stack_profile_collector.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -35,11 +36,11 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
 
     void Collect(const CallStackProfileParams& params,
                  base::TimeTicks start_timestamp,
-                 const std::vector<CallStackProfile>& profiles) override {
+                 std::vector<CallStackProfile> profiles) override {
       this->profiles.push_back(ChildCallStackProfileCollector::ProfilesState(
           params,
           start_timestamp,
-          profiles));
+          std::move(profiles)));
     }
 
     std::vector<ChildCallStackProfileCollector::ProfilesState> profiles;
@@ -53,10 +54,13 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
   ChildCallStackProfileCollectorTest()
       : receiver_impl_(new Receiver(GetProxy(&receiver_))) {}
 
-  void CollectProfiles(
+  void CollectEmptyProfiles(
       const CallStackProfileParams& params,
-      const base::StackSamplingProfiler::CallStackProfiles& profiles) {
-    child_collector_.GetProfilerCallback(params).Run(profiles);
+      size_t profile_count) {
+    base::StackSamplingProfiler::CallStackProfiles profiles;
+    for (size_t i = 0; i < profile_count; ++i)
+      profiles.push_back(base::StackSamplingProfiler::CallStackProfile());
+    child_collector_.GetProfilerCallback(params).Run(std::move(profiles));
   }
 
   const std::vector<ChildCallStackProfileCollector::ProfilesState>&
@@ -77,13 +81,12 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   EXPECT_EQ(0u, profiles().size());
 
   // Add profiles before providing the interface.
-  CollectProfiles(
+  CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
                              CallStackProfileParams::UI_THREAD,
                              CallStackProfileParams::JANKY_TASK,
                              CallStackProfileParams::PRESERVE_ORDER),
-      { base::StackSamplingProfiler::CallStackProfile(),
-            base::StackSamplingProfiler::CallStackProfile() });
+      2);
   ASSERT_EQ(1u, profiles().size());
   EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS,
             profiles()[0].params.process);
@@ -111,12 +114,12 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   // Add profiles after providing the interface. They should also be passed to
   // it.
   receiver_impl_->profiles.clear();
-  CollectProfiles(
+  CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::GPU_PROCESS,
                              CallStackProfileParams::GPU_MAIN_THREAD,
                              CallStackProfileParams::THREAD_HUNG,
                              CallStackProfileParams::PRESERVE_ORDER),
-      { base::StackSamplingProfiler::CallStackProfile() });
+      1);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, profiles().size());
   ASSERT_EQ(1u, receiver_impl_->profiles.size());
@@ -138,13 +141,12 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {
   EXPECT_EQ(0u, profiles().size());
 
   // Add profiles before providing a null interface.
-  CollectProfiles(
+  CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
                              CallStackProfileParams::UI_THREAD,
                              CallStackProfileParams::JANKY_TASK,
                              CallStackProfileParams::PRESERVE_ORDER),
-      { base::StackSamplingProfiler::CallStackProfile(),
-            base::StackSamplingProfiler::CallStackProfile() });
+      2);
   ASSERT_EQ(1u, profiles().size());
   EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS,
             profiles()[0].params.process);
@@ -163,12 +165,12 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {
   EXPECT_EQ(0u, profiles().size());
 
   // Add profiles after providing a null interface. They should also be flushed.
-  CollectProfiles(
+  CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::GPU_PROCESS,
                              CallStackProfileParams::GPU_MAIN_THREAD,
                              CallStackProfileParams::THREAD_HUNG,
                              CallStackProfileParams::PRESERVE_ORDER),
-      { base::StackSamplingProfiler::CallStackProfile() });
+      1);
   EXPECT_EQ(0u, profiles().size());
 }
 

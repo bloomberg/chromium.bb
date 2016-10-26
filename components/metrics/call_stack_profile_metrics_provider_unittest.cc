@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
@@ -42,9 +44,9 @@ class CallStackProfileMetricsProviderTest : public testing::Test {
   ~CallStackProfileMetricsProviderTest() override {}
 
   // Utility function to append profiles to the metrics provider.
-  void AppendProfiles(const CallStackProfileParams& params,
-                      const Profiles& profiles) {
-    CallStackProfileMetricsProvider::GetProfilerCallback(params).Run(profiles);
+  void AppendProfiles(const CallStackProfileParams& params, Profiles profiles) {
+    CallStackProfileMetricsProvider::GetProfilerCallback(params).Run(
+        std::move(profiles));
   }
 
  private:
@@ -199,7 +201,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
     profile.profile_duration = profile_durations[i];
     profile.sampling_period = profile_sampling_periods[i];
 
-    profiles.push_back(profile);
+    profiles.push_back(std::move(profile));
   }
 
   CallStackProfileMetricsProvider provider;
@@ -209,7 +211,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
                              CallStackProfileParams::UI_THREAD,
                              CallStackProfileParams::PROCESS_STARTUP,
                              CallStackProfileParams::MAY_SHUFFLE),
-      profiles);
+      std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -316,6 +318,8 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
 
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
@@ -324,7 +328,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
                              CallStackProfileParams::UI_THREAD,
                              CallStackProfileParams::PROCESS_STARTUP,
                              CallStackProfileParams::MAY_SHUFFLE),
-      std::vector<Profile>(1, profile));
+      std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -399,6 +403,8 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
 
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
@@ -406,7 +412,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
                                         CallStackProfileParams::UI_THREAD,
                                         CallStackProfileParams::PROCESS_STARTUP,
                                         CallStackProfileParams::PRESERVE_ORDER),
-                 std::vector<Profile>(1, profile));
+                 std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -453,6 +459,8 @@ TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
 
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
@@ -461,7 +469,7 @@ TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
                              CallStackProfileParams::UI_THREAD,
                              CallStackProfileParams::PROCESS_STARTUP,
                              CallStackProfileParams::MAY_SHUFFLE),
-      std::vector<Profile>(1, profile));
+      std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -494,6 +502,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
     profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
     // Use the sampling period to distinguish the two profiles.
     profile.sampling_period = base::TimeDelta::FromMilliseconds(i);
+    Profiles profiles;
+    profiles.push_back(std::move(profile));
 
     provider.OnRecordingEnabled();
     AppendProfiles(
@@ -501,7 +511,7 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
                                CallStackProfileParams::UI_THREAD,
                                CallStackProfileParams::PROCESS_STARTUP,
                                CallStackProfileParams::MAY_SHUFFLE),
-        std::vector<Profile>(1, profile));
+        std::move(profiles));
     ChromeUserMetricsExtension uma_proto;
     provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -525,13 +535,15 @@ TEST_F(CallStackProfileMetricsProviderTest,
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
 
   AppendProfiles(
       CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
                              CallStackProfileParams::UI_THREAD,
                              CallStackProfileParams::PROCESS_STARTUP,
                              CallStackProfileParams::MAY_SHUFFLE),
-      std::vector<Profile>(1, profile));
+      std::move(profiles));
 
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
@@ -550,6 +562,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
 
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingDisabled();
@@ -558,7 +572,7 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
                              CallStackProfileParams::UI_THREAD,
                              CallStackProfileParams::PROCESS_STARTUP,
                              CallStackProfileParams::MAY_SHUFFLE),
-      std::vector<Profile>(1, profile));
+      std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -586,7 +600,9 @@ TEST_F(CallStackProfileMetricsProviderTest,
                                  CallStackProfileParams::MAY_SHUFFLE));
 
   provider.OnRecordingDisabled();
-  callback.Run(std::vector<Profile>(1, profile));
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
+  callback.Run(std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -615,7 +631,9 @@ TEST_F(CallStackProfileMetricsProviderTest,
 
   provider.OnRecordingDisabled();
   provider.OnRecordingEnabled();
-  callback.Run(std::vector<Profile>(1, profile));
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
+  callback.Run(std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -643,7 +661,9 @@ TEST_F(CallStackProfileMetricsProviderTest,
                                  CallStackProfileParams::MAY_SHUFFLE));
 
   provider.OnRecordingEnabled();
-  callback.Run(std::vector<Profile>(1, profile));
+  Profiles profiles;
+  profiles.push_back(std::move(profile));
+  callback.Run(std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 

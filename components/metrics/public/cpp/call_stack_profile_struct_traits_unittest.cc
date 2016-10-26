@@ -49,9 +49,9 @@ class CallStackProfileCollectorTestImpl
     callback.Run(in);
   }
 
-  void BounceProfile(const base::StackSamplingProfiler::CallStackProfile& in,
+  void BounceProfile(base::StackSamplingProfiler::CallStackProfile in,
                      const BounceProfileCallback& callback) override {
-    callback.Run(in);
+    callback.Run(std::move(in));
   }
 
   void BounceTrigger(CallStackProfileParams::Trigger in,
@@ -263,7 +263,7 @@ TEST_F(CallStackProfileStructTraitsTest, Profile) {
 
     Profile output;
     EXPECT_EQ(input.expect_success,
-              proxy_->BounceProfile(input.profile, &output));
+              proxy_->BounceProfile(input.profile.CopyForTesting(), &output));
 
     if (!input.expect_success)
       continue;
