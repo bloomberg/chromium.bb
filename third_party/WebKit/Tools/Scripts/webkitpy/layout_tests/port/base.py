@@ -967,9 +967,6 @@ class Port(object):
                 return True
         return False
 
-    def is_chromium(self):
-        return True
-
     def name(self):
         """Returns a name that uniquely identifies this particular type of port
         (e.g., "mac-snowleopard" or "linux-trusty" and can be passed
