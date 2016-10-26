@@ -708,8 +708,7 @@ sandbox::ResultCode StartSandboxedProcess(
     return sandbox::SBOX_ALL_OK;
   }
 
-  scoped_refptr<sandbox::TargetPolicy> policy =
-      g_broker_services->CreatePolicy();
+  sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
   // Add any handles to be inherited to the policy.
   for (HANDLE handle : handles_to_inherit)
@@ -737,7 +736,7 @@ sandbox::ResultCode StartSandboxedProcess(
 
 #if !defined(NACL_WIN64)
   if (type_str == switches::kRendererProcess && IsWin32kLockdownEnabled()) {
-    result = AddWin32kLockdownPolicy(policy.get(), false);
+    result = AddWin32kLockdownPolicy(policy, false);
     if (result != sandbox::SBOX_ALL_OK)
       return result;
   }
@@ -751,12 +750,12 @@ sandbox::ResultCode StartSandboxedProcess(
   if (result != sandbox::SBOX_ALL_OK)
     return result;
 
-  result = SetJobLevel(*cmd_line, sandbox::JOB_LOCKDOWN, 0, policy.get());
+  result = SetJobLevel(*cmd_line, sandbox::JOB_LOCKDOWN, 0, policy);
   if (result != sandbox::SBOX_ALL_OK)
     return result;
 
   if (!delegate->DisableDefaultPolicy()) {
-    result = AddPolicyForSandboxedProcess(policy.get());
+    result = AddPolicyForSandboxedProcess(policy);
     if (result != sandbox::SBOX_ALL_OK)
       return result;
   }
@@ -765,7 +764,7 @@ sandbox::ResultCode StartSandboxedProcess(
   if (type_str == switches::kRendererProcess ||
       type_str == switches::kPpapiPluginProcess) {
     AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
-                 sandbox::TargetPolicy::FILES_ALLOW_READONLY, policy.get());
+                 sandbox::TargetPolicy::FILES_ALLOW_READONLY, policy);
   }
 #endif
 
@@ -776,7 +775,7 @@ sandbox::ResultCode StartSandboxedProcess(
     cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
   }
 
-  result = AddGenericPolicy(policy.get());
+  result = AddGenericPolicy(policy);
 
   if (result != sandbox::SBOX_ALL_OK) {
     NOTREACHED();
@@ -801,7 +800,7 @@ sandbox::ResultCode StartSandboxedProcess(
   policy->SetStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
   policy->SetStderrHandle(GetStdHandle(STD_ERROR_HANDLE));
 
-  if (!delegate->PreSpawnTarget(policy.get()))
+  if (!delegate->PreSpawnTarget(policy))
     return sandbox::SBOX_ERROR_DELEGATE_PRE_SPAWN;
 
   TRACE_EVENT_BEGIN0("startup", "StartProcessWithAccess::LAUNCHPROCESS");

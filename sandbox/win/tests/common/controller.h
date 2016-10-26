@@ -139,7 +139,7 @@ class TestRunner {
   int InternalRunTest(const wchar_t* command);
 
   BrokerServices* broker_;
-  scoped_refptr<TargetPolicy> policy_;
+  TargetPolicy* policy_;
   DWORD timeout_;
   SboxTestsState state_;
   bool is_init_;

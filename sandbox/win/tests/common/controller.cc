@@ -136,12 +136,15 @@ void TestRunner::Init(JobLevel job_level,
 }
 
 TargetPolicy* TestRunner::GetPolicy() {
-  return policy_.get();
+  return policy_;
 }
 
 TestRunner::~TestRunner() {
   if (target_process_.IsValid() && kill_on_destruction_)
     ::TerminateProcess(target_process_.Get(), 0);
+
+  if (policy_)
+    policy_->Release();
 }
 
 bool TestRunner::AddRule(TargetPolicy::SubSystem subsystem,
