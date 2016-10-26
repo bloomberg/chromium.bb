@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <string>
 
+#include "base/memory/memory_coordinator_client_registry.h"
+#include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -24,6 +26,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 
 using content::NavigationController;
 using content::RenderWidgetHost;
@@ -88,12 +91,14 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
           SessionRestoreStatsCollector::UmaStatsReportingDelegate>());
   shared_tab_loader_ = this;
   this_retainer_ = this;
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 TabLoader::~TabLoader() {
   DCHECK(tabs_loading_.empty() && tabs_to_load_.empty());
   DCHECK(shared_tab_loader_ == this);
   shared_tab_loader_ = nullptr;
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
@@ -131,12 +136,8 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
     // There is already at least one tab loading (the active tab). As such we
     // only have to start the timeout timer here. But, don't restore background
     // tabs if the system is under memory pressure.
-    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level =
-        CurrentMemoryPressureLevel();
-
-    if (memory_pressure_level !=
-        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
-      OnMemoryPressure(memory_pressure_level);
+    if (ShouldStopLoadingTabs()) {
+      StopLoadingTabs();
       return;
     }
 
@@ -159,11 +160,8 @@ void TabLoader::LoadNextTab() {
     // large delay between a memory pressure event and receiving a notification
     // of that event (in that case tab restore can trigger memory pressure but
     // will complete before the notification arrives).
-    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level =
-        CurrentMemoryPressureLevel();
-    if (memory_pressure_level !=
-        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
-      OnMemoryPressure(memory_pressure_level);
+    if (ShouldStopLoadingTabs()) {
+      StopLoadingTabs();
       return;
     }
 
@@ -242,16 +240,40 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* controller) {
     LoadNextTab();
 }
 
-base::MemoryPressureListener::MemoryPressureLevel
-    TabLoader::CurrentMemoryPressureLevel() {
-  if (base::MemoryPressureMonitor::Get())
-    return base::MemoryPressureMonitor::Get()->GetCurrentPressureLevel();
-
-  return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+bool TabLoader::ShouldStopLoadingTabs() const {
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
+    return base::MemoryCoordinatorProxy::GetInstance()->GetCurrentMemoryState()
+        != base::MemoryState::NORMAL;
+  if (base::MemoryPressureMonitor::Get()) {
+    return base::MemoryPressureMonitor::Get()->GetCurrentPressureLevel() !=
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  }
+  return false;
 }
 
 void TabLoader::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  if (ShouldStopLoadingTabs())
+    StopLoadingTabs();
+}
+
+void TabLoader::OnMemoryStateChange(base::MemoryState state) {
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      break;
+    case base::MemoryState::THROTTLED:
+      StopLoadingTabs();
+      break;
+    case base::MemoryState::SUSPENDED:
+      // Note that SUSPENDED never occurs in the main browser process so far.
+      // Fall through.
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
+      break;
+  }
+}
+
+void TabLoader::StopLoadingTabs() {
   // When receiving a resource pressure level warning, we stop pre-loading more
   // tabs since we are running in danger of loading more tabs by throwing out
   // old ones.
