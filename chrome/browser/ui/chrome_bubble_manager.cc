@@ -10,6 +10,7 @@
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_delegate.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -159,7 +160,8 @@ void ChromeBubbleManager::DidToggleFullscreenModeForTab(
 
 void ChromeBubbleManager::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  CloseAllBubbles(BUBBLE_CLOSE_NAVIGATED);
+  if (!load_details.is_in_page)
+    CloseAllBubbles(BUBBLE_CLOSE_NAVIGATED);
 }
 
 void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleNeverShown(

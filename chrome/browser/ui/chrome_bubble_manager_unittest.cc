@@ -73,6 +73,18 @@ TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnNavigate) {
   ASSERT_FALSE(bubble_ref);
 }
 
+TEST_F(ChromeBubbleManagerTest, DontCloseBubbleWhenNavigationIsInPage) {
+  AddTab(browser(), GURL("https://foo/0"));
+
+  std::unique_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
+  BubbleReference bubble_ref = manager_->ShowBubble(std::move(delegate));
+
+  NavigateAndCommitActiveTab(GURL("https://foo/0#0"));
+
+  ASSERT_TRUE(bubble_ref)
+      << "The bubble shouldn't be destroyed when it is an in-page navigation.";
+}
+
 TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnOwningFrameDestroy) {
   AddTab(browser(), GURL("https://foo/0"));
 
