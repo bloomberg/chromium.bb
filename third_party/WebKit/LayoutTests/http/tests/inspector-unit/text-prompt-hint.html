@@ -76,9 +76,9 @@ function test()
 
     function dumpTextPrompt()
     {
-        UnitTest.addResult("");
         UnitTest.addResult("Text:" + prompt.text());
-        UnitTest.addResult("UserEnteredText:" + prompt.userEnteredText());
+        UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
+        UnitTest.addResult("");
     }
 
     function typeCharacter(character)
@@ -91,7 +91,7 @@ function test()
 
         var selection = element.getComponentSelection();
         var range = selection.getRangeAt(0);
-        var textNode = prompt._autocompleteElement ? prompt._autocompleteElement.previousSibling : element.childTextNodes()[element.childTextNodes().length-1];
+        var textNode = prompt._ghostTextElement ? prompt._ghostTextElement.previousSibling : element.childTextNodes()[element.childTextNodes().length - 1];
         if (!character)
             textNode.textContent = textNode.textContent.substring(0,textNode.textContent.length-1);
         else

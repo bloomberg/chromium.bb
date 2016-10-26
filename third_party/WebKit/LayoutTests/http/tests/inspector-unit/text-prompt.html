@@ -14,8 +14,8 @@ function test() {
     prompt.attachAndStartEditing(div);
     prompt.setText("hey");
     prompt.complete();
-    UnitTest.addResult("UserEnteredText:" + prompt.userEnteredText());
     UnitTest.addResult("Text:" + prompt.text());
+    UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
     UnitTest.completeTest();
 }
 </script>

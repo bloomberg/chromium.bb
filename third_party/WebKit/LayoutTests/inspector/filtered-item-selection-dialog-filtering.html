@@ -62,7 +62,7 @@ function test()
             for (var i = 0; i < items.length; ++i)
                 output.push(delegate.itemKeyAt(items[i]));
             InspectorTest.addResult("Output:" + JSON.stringify(output));
-            InspectorTest.addResult("Completion:" + JSON.stringify(filteredSelectionDialog._prompt.text()));
+            InspectorTest.addResult("Completion:" + JSON.stringify(filteredSelectionDialog._prompt.textWithCurrentSuggestion()));
         }
 
         function accept()
@@ -121,7 +121,7 @@ function test()
 </head>
 
 <body onload="runTest()">
-<p> 
+<p>
 Check to see that FilteredItemSelectionDialog uses proper regex to filter results.
 </p>
 

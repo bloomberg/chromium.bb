@@ -1,28 +1,28 @@
 Tests that the hint displays properly on a WebInspector.TextPrompt with autocomplete.
 Requesting completions
+Text:testT
+TextWithCurrentSuggestion:testT
 
 Text:testT
-UserEnteredText:testT
+TextWithCurrentSuggestion:testTextPrompt
 
-Text:testTextPrompt
-UserEnteredText:testT
+Text:testTe
+TextWithCurrentSuggestion:testTextPrompt
 
-Text:testTextPrompt
-UserEnteredText:testTe
 Requesting completions
+Text:testTe
+TextWithCurrentSuggestion:testTextPrompt
 
-Text:testTextPrompt
-UserEnteredText:testTe
 Requesting completions
-
 Text:testTez
-UserEnteredText:testTez
-Requesting completions
+TextWithCurrentSuggestion:testTez
 
-Text:testTextPrompt
-UserEnteredText:testTe
 Requesting completions
+Text:testTe
+TextWithCurrentSuggestion:testTextPrompt
 
-Text:testTextPrompt
-UserEnteredText:testT
+Requesting completions
+Text:testT
+TextWithCurrentSuggestion:testTextPrompt
+
 
