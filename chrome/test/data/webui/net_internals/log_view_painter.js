@@ -190,6 +190,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestHexEncodedBytes());
   runTestCase(painterTestCertVerifierJob());
   runTestCase(painterTestCertVerifyResult());
+  runTestCase(painterTestCheckedCert());
   runTestCase(painterTestProxyConfigOneProxyAllSchemes());
   runTestCase(painterTestProxyConfigTwoProxiesAllSchemes());
   runTestCase(painterTestDontStripCookiesURLRequest());
@@ -1582,6 +1583,47 @@ function painterTestCertVerifyResult() {
     '                         --> is_issued_by_additional_trust_anchor =' +
     ' false\n                         --> common_name_fallback_used = true\n' +
     '                         --> public_key_hashes = ["hash1","hash2"]';
+
+  return testCase;
+}
+
+/**
+ * Tests the formatting of checked certificates
+ */
+function painterTestCheckedCert() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098481';
+
+  testCase.logEntries = [
+    {
+      'params': {
+        'certificate': {
+          'certificates': [
+            '-----BEGIN CERTIFICATE-----\n1\n-----END CERTIFICATE-----\n',
+            '-----BEGIN CERTIFICATE-----\n2\n-----END CERTIFICATE-----\n'
+          ]
+        }
+      },
+      'phase': EventPhase.PHASE_NONE,
+      'source': {
+        'id': 752,
+        'type': EventSourceType.SOCKET
+      },
+      'time': '954124697',
+      'type': EventType.CERT_CT_COMPLIANCE_CHECKED
+    }
+  ];
+
+  testCase.expectedText =
+  't=1338865223178 [st=0]  CERT_CT_COMPLIANCE_CHECKED\n' +
+  '                        --> certificate =\n' +
+  '                               -----BEGIN CERTIFICATE-----\n' +
+  '                               1\n' +
+  '                               -----END CERTIFICATE-----\n' +
+  '                               \n' +
+  '                               -----BEGIN CERTIFICATE-----\n' +
+  '                               2\n' +
+  '                               -----END CERTIFICATE-----';
 
   return testCase;
 }
