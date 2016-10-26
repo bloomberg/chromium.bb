@@ -39,7 +39,7 @@
 using content::BrowserThread;
 using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
-using net::registry_controlled_domains::GetCanonicalHostRegistryLength;
+using net::registry_controlled_domains::GetRegistryLength;
 using policy::URLBlacklist;
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherConditionSet;
@@ -280,13 +280,12 @@ bool SupervisedUserURLFilter::HasFilteredScheme(const GURL& url) {
 }
 
 // static
-bool SupervisedUserURLFilter::HostMatchesPattern(
-    const std::string& canonical_host,
-    const std::string& pattern) {
+bool SupervisedUserURLFilter::HostMatchesPattern(const std::string& host,
+                                                 const std::string& pattern) {
   std::string trimmed_pattern = pattern;
-  std::string trimmed_host = canonical_host;
+  std::string trimmed_host = host;
   if (base::EndsWith(pattern, ".*", base::CompareCase::SENSITIVE)) {
-    size_t registry_length = GetCanonicalHostRegistryLength(
+    size_t registry_length = GetRegistryLength(
         trimmed_host, EXCLUDE_UNKNOWN_REGISTRIES, EXCLUDE_PRIVATE_REGISTRIES);
     // A host without a known registry part does not match.
     if (registry_length == 0)

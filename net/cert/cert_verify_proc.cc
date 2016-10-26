@@ -565,11 +565,13 @@ static bool CheckNameConstraints(const std::vector<std::string>& dns_names,
     if (host_info.IsIPAddress())
       continue;
 
+    const size_t registry_len = registry_controlled_domains::GetRegistryLength(
+        dns_name,
+        registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+        registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
     // If the name is not in a known TLD, ignore it. This permits internal
     // names.
-    if (!registry_controlled_domains::HostHasRegistryControlledDomain(
-            dns_name, registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
+    if (registry_len == 0)
       continue;
 
     for (size_t j = 0; domains[j][0]; ++j) {

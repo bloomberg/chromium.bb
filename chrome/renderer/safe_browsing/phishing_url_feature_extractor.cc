@@ -40,8 +40,9 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
     // Disallow unknown registries so that we don't classify
     // partial hostnames (e.g. "www.subdomain").
     size_t registry_length =
-        net::registry_controlled_domains::GetCanonicalHostRegistryLength(
-            host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+        net::registry_controlled_domains::GetRegistryLength(
+            host,
+            net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
             net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 
     if (registry_length == 0 || registry_length == std::string::npos) {
