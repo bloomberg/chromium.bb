@@ -68,6 +68,11 @@ public class DataReductionPreferences extends PreferenceFragment {
     public void onDestroy() {
         super.onDestroy();
 
+        if (mWasEnabledAtCreation && !mIsEnabled) {
+            // If the user manually disables Data Saver, don't show the infobar promo.
+            DataReductionPromoUtils.saveInfoBarPromoDisplayed();
+        }
+
         int statusChange;
         if (mFromPromo) {
             statusChange = mIsEnabled
