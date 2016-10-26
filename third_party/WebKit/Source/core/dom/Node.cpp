@@ -1910,7 +1910,6 @@ EventTargetData& Node::ensureEventTargetData() {
   setHasEventTargetData(true);
   EventTargetData* data = new EventTargetData;
   eventTargetDataMap().set(this, data);
-  ScriptWrappableVisitor::writeBarrier(this, data);
   return *data;
 }
 
