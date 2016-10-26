@@ -238,7 +238,7 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
 
 void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(USE_X11)
   BrowserList::MoveBrowsersInWorkspaceToFront(
       views::X11DesktopHandler::get()->GetWorkspace());
 #endif
