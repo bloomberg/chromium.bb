@@ -718,6 +718,8 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name,
       setNeedsStyleRecalc(
           SubtreeStyleChange,
           StyleChangeReasonForTracing::fromAttribute(valueAttr));
+      if (m_inputType->valueMode() == ValueMode::kValue)
+        setTextAsOfLastFormControlChangeEvent(sanitizeValue(value));
     }
     m_needsToUpdateViewValue = true;
     setNeedsValidityCheck();
