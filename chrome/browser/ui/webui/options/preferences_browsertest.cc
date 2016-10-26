@@ -52,7 +52,9 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif
@@ -936,19 +938,20 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
 // initialization of the proxy settings page.
 IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSInitializeProxy) {
   // Boolean pref.
-  pref_names_.push_back(chromeos::kProxySingle);
+  pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxySingle);
   non_default_values_.push_back(new base::FundamentalValue(true));
 
   // Integer prefs.
-  pref_names_.push_back(chromeos::kProxySingleHttpPort);
+  pref_names_.push_back(
+      chromeos::proxy_cros_settings_parser::kProxySingleHttpPort);
   non_default_values_.push_back(new base::FundamentalValue(8080));
 
   // String pref.
-  pref_names_.push_back(chromeos::kProxySingleHttp);
+  pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxySingleHttp);
   non_default_values_.push_back(new base::StringValue("127.0.0.1"));
 
   // List pref.
-  pref_names_.push_back(chromeos::kProxyIgnoreList);
+  pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxyIgnoreList);
   base::ListValue* list = new base::ListValue();
   list->AppendString("*.google.com");
   list->AppendString("1.2.3.4:22");
@@ -956,10 +959,10 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSInitializeProxy) {
 
   // Verify that no policy is presented to the UI. This must be verified on the
   // kProxyType and the kUseSharedProxies prefs.
-  pref_names_.push_back(chromeos::kProxyType);
+  pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxyType);
   non_default_values_.push_back(new base::FundamentalValue(2));
 
-  pref_names_.push_back(prefs::kUseSharedProxies);
+  pref_names_.push_back(proxy_config::prefs::kUseSharedProxies);
   non_default_values_.push_back(new base::FundamentalValue(false));
 
   std::string observed_json;
@@ -974,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ONCPolicy) {
 
   // Verify that per-network policy is presented to the UI. This must be
   // verified on the kProxyType.
-  pref_names_.push_back(chromeos::kProxyType);
+  pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxyType);
   non_default_values_.push_back(new base::FundamentalValue(3));
 
   std::string observed_json;
@@ -986,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ONCPolicy) {
   // Verify that 'use-shared-proxies' is not affected by per-network policy.
   pref_names_.clear();
   non_default_values_.clear();
-  pref_names_.push_back(prefs::kUseSharedProxies);
+  pref_names_.push_back(proxy_config::prefs::kUseSharedProxies);
   non_default_values_.push_back(new base::FundamentalValue(false));
 
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
@@ -1000,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, DeviceONCPolicy) {
 
   // Verify that the policy is presented to the UI. This verification must be
   // done on the kProxyType pref.
-  pref_names_.push_back(chromeos::kProxyType);
+  pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxyType);
   non_default_values_.push_back(new base::FundamentalValue(3));
 
   std::string observed_json;
@@ -1012,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, DeviceONCPolicy) {
   // Verify that 'use-shared-proxies' is not affected by per-network policy.
   pref_names_.clear();
   non_default_values_.clear();
-  pref_names_.push_back(prefs::kUseSharedProxies);
+  pref_names_.push_back(proxy_config::prefs::kUseSharedProxies);
   non_default_values_.push_back(new base::FundamentalValue(false));
 
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
@@ -1030,11 +1033,11 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, UserProxyPolicy) {
 
   // Verify that the policy is presented to the UI. This verification must be
   // done on the kProxyType pref.
-  pref_names_.push_back(chromeos::kProxyType);
+  pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxyType);
   non_default_values_.push_back(new base::FundamentalValue(3));
 
   // Verify that 'use-shared-proxies' is controlled by the policy.
-  pref_names_.push_back(prefs::kUseSharedProxies);
+  pref_names_.push_back(proxy_config::prefs::kUseSharedProxies);
   non_default_values_.push_back(new base::FundamentalValue(false));
 
   std::string observed_json;
@@ -1049,8 +1052,10 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, UserProxyPolicy) {
 IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSSetProxy) {
   ASSERT_NO_FATAL_FAILURE(SetupJavaScriptTestEnvironment(pref_names_, NULL));
 
-  SetProxyPref(chromeos::kProxySingleHttpPort, base::FundamentalValue(123));
-  SetProxyPref(chromeos::kProxySingleHttp, base::StringValue("www.adomain.xy"));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySingleHttpPort,
+               base::FundamentalValue(123));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySingleHttp,
+               base::StringValue("www.adomain.xy"));
 
   VerifyCurrentProxyServer("www.adomain.xy:123",
                            onc::ONC_SOURCE_NONE);
@@ -1062,13 +1067,18 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
   ASSERT_NO_FATAL_FAILURE(SetupJavaScriptTestEnvironment(pref_names_, NULL));
 
   // Set to manual, per scheme proxy.
-  SetProxyPref(chromeos::kProxySingle, base::FundamentalValue(false));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySingle,
+               base::FundamentalValue(false));
 
   // Set hosts but no ports.
-  SetProxyPref(chromeos::kProxyHttpUrl, base::StringValue("a.com"));
-  SetProxyPref(chromeos::kProxyHttpsUrl, base::StringValue("4.3.2.1"));
-  SetProxyPref(chromeos::kProxyFtpUrl, base::StringValue("c.com"));
-  SetProxyPref(chromeos::kProxySocks, base::StringValue("d.com"));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyHttpUrl,
+               base::StringValue("a.com"));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyHttpsUrl,
+               base::StringValue("4.3.2.1"));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyFtpUrl,
+               base::StringValue("c.com"));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySocks,
+               base::StringValue("d.com"));
 
   // Verify default ports.
   VerifyCurrentProxyServer(
@@ -1076,10 +1086,14 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
       onc::ONC_SOURCE_NONE);
 
   // Set and verify the ports.
-  SetProxyPref(chromeos::kProxyHttpPort, base::FundamentalValue(1));
-  SetProxyPref(chromeos::kProxyHttpsPort, base::FundamentalValue(2));
-  SetProxyPref(chromeos::kProxyFtpPort, base::FundamentalValue(3));
-  SetProxyPref(chromeos::kProxySocksPort, base::FundamentalValue(4));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyHttpPort,
+               base::FundamentalValue(1));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyHttpsPort,
+               base::FundamentalValue(2));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyFtpPort,
+               base::FundamentalValue(3));
+  SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySocksPort,
+               base::FundamentalValue(4));
 
   VerifyCurrentProxyServer(
       "http=a.com:1;https=4.3.2.1:2;ftp=c.com:3;socks=socks4://d.com:4",

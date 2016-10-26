@@ -127,16 +127,6 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
   }
 }
 
-void RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kDeviceOpenNetworkConfiguration);
-}
-
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kUseSharedProxies, false);
-
-  registry->RegisterListPref(prefs::kOpenNetworkConfiguration);
-}
-
 }  // namespace proxy_config
 
 }  // namespace chromeos

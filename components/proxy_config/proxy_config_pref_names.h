@@ -11,9 +11,9 @@ namespace proxy_config {
 namespace prefs {
 
 PROXY_CONFIG_EXPORT extern const char kProxy[];
+PROXY_CONFIG_EXPORT extern const char kUseSharedProxies[];
 
 }  // namespace prefs
 }  // namespace proxy_config
 
 #endif  // COMPONENTS_PROXY_CONFIG_PROXY_CONFIG_PREF_NAMES_H_
-

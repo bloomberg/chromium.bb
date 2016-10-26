@@ -10,6 +10,9 @@ namespace prefs {
 // Preference to store proxy settings.
 const char kProxy[] = "proxy";
 
+// A boolean pref that controls whether proxy settings from shared network
+// settings (accordingly from device policy) are applied or ignored.
+const char kUseSharedProxies[] = "settings.use_shared_proxies";
+
 }  // namespace prefs
 }  // namespace proxy_config
-

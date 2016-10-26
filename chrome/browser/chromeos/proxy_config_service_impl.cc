@@ -19,6 +19,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -66,13 +67,13 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* profile_prefs,
 
   if (profile_prefs) {
     profile_pref_registrar_.Init(profile_prefs);
-    profile_pref_registrar_.Add(prefs::kOpenNetworkConfiguration,
+    profile_pref_registrar_.Add(::onc::prefs::kOpenNetworkConfiguration,
                                 proxy_change_callback);
-    profile_pref_registrar_.Add(prefs::kUseSharedProxies,
+    profile_pref_registrar_.Add(::proxy_config::prefs::kUseSharedProxies,
                                 proxy_change_callback);
   }
   local_state_pref_registrar_.Init(local_state_prefs);
-  local_state_pref_registrar_.Add(prefs::kDeviceOpenNetworkConfiguration,
+  local_state_pref_registrar_.Add(::onc::prefs::kDeviceOpenNetworkConfiguration,
                                   proxy_change_callback);
 
   // Register for changes to the default network.
@@ -170,7 +171,8 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
   }
 
   // This network is shared and not managed by the user's domain.
-  bool use_shared_proxies = profile_prefs->GetBoolean(prefs::kUseSharedProxies);
+  bool use_shared_proxies =
+      profile_prefs->GetBoolean(::proxy_config::prefs::kUseSharedProxies);
   VLOG(1) << "Use proxy of shared network: " << use_shared_proxies;
   return !use_shared_proxies;
 }
@@ -178,7 +180,8 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
 // static
 std::unique_ptr<ProxyConfigDictionary>
 ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
-    const PrefService* profile_prefs) {
+    const PrefService* profile_prefs,
+    const PrefService* local_state_prefs) {
   // Apply Pref Proxy configuration if available.
   net::ProxyConfig pref_proxy_config;
   ProxyPrefs::ConfigState pref_state =
@@ -205,8 +208,7 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
   ::onc::ONCSource onc_source;
   std::unique_ptr<ProxyConfigDictionary> proxy_config =
       chromeos::proxy_config::GetProxyConfigForNetwork(
-          profile_prefs, g_browser_process->local_state(), *network,
-          &onc_source);
+          profile_prefs, local_state_prefs, *network, &onc_source);
   if (!chromeos::ProxyConfigServiceImpl::IgnoreProxy(
           profile_prefs, network->profile_path(), onc_source))
     return proxy_config;

@@ -213,6 +213,7 @@
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/invalidation/impl/invalidator_storage.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
@@ -419,7 +420,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::HIDDetectionScreenHandler::RegisterPrefs(registry);
   chromeos::DemoModeDetector::RegisterPrefs(registry);
   chromeos::Preferences::RegisterPrefs(registry);
-  chromeos::proxy_config::RegisterPrefs(registry);
   chromeos::RegisterDisplayLocalStatePrefs(registry);
   chromeos::ResetScreenHandler::RegisterPrefs(registry);
   chromeos::ResourceReporter::RegisterPrefs(registry);
@@ -435,6 +435,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::echo_offer::RegisterPrefs(registry);
   extensions::ExtensionAssetsManagerChromeOS::RegisterPrefs(registry);
   invalidation::InvalidatorStorage::RegisterPrefs(registry);
+  ::onc::RegisterPrefs(registry);
   policy::AutoEnrollmentClient::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorChromeOS::RegisterPrefs(registry);
   policy::DeviceCloudPolicyManagerChromeOS::RegisterPrefs(registry);
@@ -601,12 +602,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::PinStorage::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
   chromeos::PrinterPrefManager::RegisterProfilePrefs(registry);
-  chromeos::proxy_config::RegisterProfilePrefs(registry);
   chromeos::SAMLOfflineSigninLimiter::RegisterProfilePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EPKPChallengeUserKey::RegisterProfilePrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
+  ::onc::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)

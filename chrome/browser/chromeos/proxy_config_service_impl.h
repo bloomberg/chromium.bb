@@ -63,10 +63,11 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // Returns Pref Proxy configuration if available or a proxy config dictionary
   // applied to the default network.
-  // Returns NULL if no Pref Proxy configuration and no active network.
-  // |profile_prefs| must be not NULL.
+  // Returns null if no Pref Proxy configuration and no active network.
+  // |profile_prefs| and |local_state_prefs| must be not null.
   static std::unique_ptr<ProxyConfigDictionary> GetActiveProxyConfigDictionary(
-      const PrefService* profile_prefs);
+      const PrefService* profile_prefs,
+      const PrefService* local_state_prefs);
 
  private:
   // Called when any proxy preference changes.

@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/user_manager/user_manager.h"
@@ -150,10 +151,10 @@ void CoreChromeOSOptionsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!ProfileHelper::IsSigninProfile(profile)) {
     profile_prefs = profile->GetPrefs();
-    ObservePref(prefs::kOpenNetworkConfiguration);
+    ObservePref(onc::prefs::kOpenNetworkConfiguration);
   }
   ObservePref(proxy_config::prefs::kProxy);
-  ObservePref(prefs::kDeviceOpenNetworkConfiguration);
+  ObservePref(onc::prefs::kDeviceOpenNetworkConfiguration);
   proxy_config_service_.SetPrefs(profile_prefs,
                                  g_browser_process->local_state());
 }
@@ -187,9 +188,10 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
 
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!CrosSettings::IsCrosSettings(pref_name)) {
-    std::string controlling_pref = pref_name == prefs::kUseSharedProxies
-                                       ? proxy_config::prefs::kProxy
-                                       : std::string();
+    std::string controlling_pref =
+        pref_name == proxy_config::prefs::kUseSharedProxies
+            ? proxy_config::prefs::kProxy
+            : std::string();
     base::Value* value = CreateValueForPref(pref_name, controlling_pref);
     if (!IsSettingShared(pref_name) || !IsSecondaryUser(profile))
       return value;
@@ -390,16 +392,17 @@ void CoreChromeOSOptionsHandler::OnPreferenceChanged(
     const std::string& pref_name) {
   // Redetermine the current proxy settings and notify the UI if any of these
   // preferences change.
-  if (pref_name == prefs::kOpenNetworkConfiguration ||
-      pref_name == prefs::kDeviceOpenNetworkConfiguration ||
+  if (pref_name == onc::prefs::kOpenNetworkConfiguration ||
+      pref_name == onc::prefs::kDeviceOpenNetworkConfiguration ||
       pref_name == proxy_config::prefs::kProxy) {
     NotifyProxyPrefsChanged();
     return;
   }
-  if (pref_name == prefs::kUseSharedProxies) {
+  if (pref_name == proxy_config::prefs::kUseSharedProxies) {
     // kProxy controls kUseSharedProxies and decides if it's managed by
     // policy/extension.
-    NotifyPrefChanged(prefs::kUseSharedProxies, proxy_config::prefs::kProxy);
+    NotifyPrefChanged(proxy_config::prefs::kUseSharedProxies,
+                      proxy_config::prefs::kProxy);
     return;
   }
   ::options::CoreOptionsHandler::OnPreferenceChanged(service, pref_name);
@@ -416,13 +419,15 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
 
 void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
   proxy_config_service_.UpdateFromPrefs();
-  for (size_t i = 0; i < kProxySettingsCount; ++i) {
+  for (size_t i = 0; i < proxy_cros_settings_parser::kProxySettingsCount; ++i) {
     base::Value* value = NULL;
     proxy_cros_settings_parser::GetProxyPrefValue(
-        proxy_config_service_, kProxySettings[i], &value);
+        proxy_config_service_, proxy_cros_settings_parser::kProxySettings[i],
+        &value);
     DCHECK(value);
     std::unique_ptr<base::Value> ptr(value);
-    DispatchPrefChangeNotification(kProxySettings[i], std::move(ptr));
+    DispatchPrefChangeNotification(
+        proxy_cros_settings_parser::kProxySettings[i], std::move(ptr));
   }
 }
 

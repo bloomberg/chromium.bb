@@ -36,10 +36,6 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
 void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
                               const NetworkState& network);
 
-void RegisterPrefs(PrefRegistrySimple* registry);
-
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
 }  // namespace proxy_config
 
 }  // namespace chromeos

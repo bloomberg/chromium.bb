@@ -22,6 +22,7 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -317,14 +318,15 @@ const base::DictionaryValue* GetPolicyForNetwork(
   *onc_source = ::onc::ONC_SOURCE_NONE;
 
   const base::DictionaryValue* network_policy = GetPolicyForNetworkFromPref(
-      profile_prefs, prefs::kOpenNetworkConfiguration, network);
+      profile_prefs, ::onc::prefs::kOpenNetworkConfiguration, network);
   if (network_policy) {
     VLOG(1) << "Network " << network.path() << " is managed by user policy.";
     *onc_source = ::onc::ONC_SOURCE_USER_POLICY;
     return network_policy;
   }
   network_policy = GetPolicyForNetworkFromPref(
-      local_state_prefs, prefs::kDeviceOpenNetworkConfiguration, network);
+      local_state_prefs, ::onc::prefs::kDeviceOpenNetworkConfiguration,
+      network);
   if (network_policy) {
     VLOG(1) << "Network " << network.path() << " is managed by device policy.";
     *onc_source = ::onc::ONC_SOURCE_DEVICE_POLICY;

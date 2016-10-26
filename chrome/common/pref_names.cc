@@ -647,10 +647,6 @@ const char kDataSaverPromptsShown[] =
 // A string pref that contains version where "What's new" promo was shown.
 const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 
-// A boolean pref that controls whether proxy settings from shared network
-// settings (accordingly from device policy) are applied or ignored.
-const char kUseSharedProxies[] = "settings.use_shared_proxies";
-
 // Power state of the current displays from the last run.
 const char kDisplayPowerState[] = "settings.display.power_state";
 // A dictionary pref that stores per display preferences.
@@ -783,13 +779,6 @@ const char kAttestationExtensionWhitelist[] = "attestation.extension_whitelist";
 
 // A boolean pref indicating whether the projection touch HUD is enabled or not.
 const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
-
-// A pref to configure networks. Its value must be a list of
-// NetworkConfigurations according to the OpenNetworkConfiguration
-// specification.
-// Currently, this pref is only used to store the policy. The user's
-// configuration is still stored in Shill.
-const char kOpenNetworkConfiguration[] = "onc";
 
 // A boolean pref recording whether user has dismissed the multiprofile
 // itroduction dialog show.
@@ -1290,13 +1279,6 @@ const char kWebRTCUDPPortRange[] = "webrtc.udp_port_range";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
-
-// A pref to configure networks device-wide. Its value must be a list of
-// NetworkConfigurations according to the OpenNetworkConfiguration
-// specification.
-// Currently, this pref is only used to store the policy. The user's
-// configuration is still stored in Shill.
-const char kDeviceOpenNetworkConfiguration[] = "device_onc";
 
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";

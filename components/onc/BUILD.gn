@@ -7,11 +7,15 @@ component("onc") {
     "onc_constants.cc",
     "onc_constants.h",
     "onc_export.h",
+    "onc_pref_names.cc",
+    "onc_pref_names.h",
   ]
 
   defines = [ "ONC_IMPLEMENTATION" ]
 
   deps = [
     "//base",
+    "//components/pref_registry",
+    "//components/prefs",
   ]
 }

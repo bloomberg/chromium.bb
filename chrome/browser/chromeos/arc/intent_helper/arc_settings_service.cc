@@ -25,6 +25,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/intent_helper/font_size_util.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -194,8 +195,8 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kUse24HourClock);
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
   AddPrefToObserve(proxy_config::prefs::kProxy);
-  AddPrefToObserve(prefs::kDeviceOpenNetworkConfiguration);
-  AddPrefToObserve(prefs::kOpenNetworkConfiguration);
+  AddPrefToObserve(onc::prefs::kDeviceOpenNetworkConfiguration);
+  AddPrefToObserve(onc::prefs::kOpenNetworkConfiguration);
   AddPrefToObserve(prefs::kAccessibilityVirtualKeyboardEnabled);
 
   reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
@@ -285,8 +286,8 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncUse24HourClock();
   } else if (pref_name == proxy_config::prefs::kProxy) {
     SyncProxySettings();
-  } else if (pref_name == prefs::kDeviceOpenNetworkConfiguration ||
-             pref_name == prefs::kOpenNetworkConfiguration) {
+  } else if (pref_name == onc::prefs::kDeviceOpenNetworkConfiguration ||
+             pref_name == onc::prefs::kOpenNetworkConfiguration) {
     // Only update proxy settings if kProxy pref is not applied.
     if (IsPrefProxyConfigApplied()) {
       LOG(ERROR) << "Open Network Configuration proxy settings are not applied,"
@@ -395,7 +396,8 @@ void ArcSettingsServiceImpl::SyncUse24HourClock() const {
 void ArcSettingsServiceImpl::SyncProxySettings() const {
   std::unique_ptr<ProxyConfigDictionary> proxy_config_dict =
       chromeos::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
-          ProfileManager::GetActiveUserProfile()->GetPrefs());
+          ProfileManager::GetActiveUserProfile()->GetPrefs(),
+          g_browser_process->local_state());
   if (!proxy_config_dict)
     return;
 

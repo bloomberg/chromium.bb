@@ -29,6 +29,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -241,9 +242,9 @@ class ProxyConfigServiceImplTest : public testing::Test {
     NetworkHandler::Initialize();
 
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service_.registry());
-    chromeos::proxy_config::RegisterPrefs(pref_service_.registry());
+    ::onc::RegisterPrefs(pref_service_.registry());
     PrefProxyConfigTrackerImpl::RegisterProfilePrefs(profile_prefs_.registry());
-    chromeos::proxy_config::RegisterProfilePrefs(profile_prefs_.registry());
+    ::onc::RegisterProfilePrefs(profile_prefs_.registry());
   }
 
   void SetUpProxyConfigService(PrefService* profile_prefs) {
@@ -516,9 +517,9 @@ TEST_F(ProxyConfigServiceImplTest, SharedEthernetAndUserPolicy) {
   std::unique_ptr<base::ListValue> network_configs(new base::ListValue);
   network_configs->Append(std::move(ethernet_policy));
 
-  profile_prefs_.SetUserPref(prefs::kUseSharedProxies,
+  profile_prefs_.SetUserPref(::proxy_config::prefs::kUseSharedProxies,
                              new base::FundamentalValue(false));
-  profile_prefs_.SetManagedPref(prefs::kOpenNetworkConfiguration,
+  profile_prefs_.SetManagedPref(::onc::prefs::kOpenNetworkConfiguration,
                                 network_configs.release());
 
   net::ProxyConfig actual_config;

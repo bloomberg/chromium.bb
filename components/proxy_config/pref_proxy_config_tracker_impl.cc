@@ -218,6 +218,8 @@ void PrefProxyConfigTrackerImpl::RegisterProfilePrefs(
       ProxyConfigDictionary::CreateSystem();
   pref_service->RegisterDictionaryPref(proxy_config::prefs::kProxy,
                                        default_settings);
+  pref_service->RegisterBooleanPref(proxy_config::prefs::kUseSharedProxies,
+                                    false);
 }
 
 // static

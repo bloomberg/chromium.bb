@@ -14,48 +14,6 @@
 
 namespace chromeos {
 
-// Common prefix of all proxy prefs.
-const char kProxyPrefsPrefix[] = "cros.session.proxy";
-
-// Names of proxy preferences.
-const char kProxyPacUrl[]         = "cros.session.proxy.pacurl";
-const char kProxySingleHttp[]     = "cros.session.proxy.singlehttp";
-const char kProxySingleHttpPort[] = "cros.session.proxy.singlehttpport";
-const char kProxyHttpUrl[]        = "cros.session.proxy.httpurl";
-const char kProxyHttpPort[]       = "cros.session.proxy.httpport";
-const char kProxyHttpsUrl[]       = "cros.session.proxy.httpsurl";
-const char kProxyHttpsPort[]      = "cros.session.proxy.httpsport";
-const char kProxyType[]           = "cros.session.proxy.type";
-const char kProxySingle[]         = "cros.session.proxy.single";
-const char kProxyFtpUrl[]         = "cros.session.proxy.ftpurl";
-const char kProxyFtpPort[]        = "cros.session.proxy.ftpport";
-const char kProxySocks[]          = "cros.session.proxy.socks";
-const char kProxySocksPort[]      = "cros.session.proxy.socksport";
-const char kProxyIgnoreList[]     = "cros.session.proxy.ignorelist";
-const char kProxyUsePacUrl[]      = "cros.session.proxy.usepacurl";
-
-const char* const kProxySettings[] = {
-  kProxyPacUrl,
-  kProxySingleHttp,
-  kProxySingleHttpPort,
-  kProxyHttpUrl,
-  kProxyHttpPort,
-  kProxyHttpsUrl,
-  kProxyHttpsPort,
-  kProxyType,
-  kProxySingle,
-  kProxyFtpUrl,
-  kProxyFtpPort,
-  kProxySocks,
-  kProxySocksPort,
-  kProxyIgnoreList,
-  kProxyUsePacUrl,
-};
-
-// We have to explicitly export this because the arraysize macro doesn't like
-// extern arrays as their size is not known on compile time.
-const size_t kProxySettingsCount = arraysize(kProxySettings);
-
 namespace {
 
 base::Value* CreateServerHostValue(const UIProxyConfig::ManualProxy& proxy) {
@@ -113,6 +71,37 @@ net::ProxyServer CreateProxyServerFromPort(
 }  // namespace
 
 namespace proxy_cros_settings_parser {
+
+// Common prefix of all proxy prefs.
+const char kProxyPrefsPrefix[] = "cros.session.proxy";
+
+// Names of proxy preferences.
+const char kProxyPacUrl[] = "cros.session.proxy.pacurl";
+const char kProxySingleHttp[] = "cros.session.proxy.singlehttp";
+const char kProxySingleHttpPort[] = "cros.session.proxy.singlehttpport";
+const char kProxyHttpUrl[] = "cros.session.proxy.httpurl";
+const char kProxyHttpPort[] = "cros.session.proxy.httpport";
+const char kProxyHttpsUrl[] = "cros.session.proxy.httpsurl";
+const char kProxyHttpsPort[] = "cros.session.proxy.httpsport";
+const char kProxyType[] = "cros.session.proxy.type";
+const char kProxySingle[] = "cros.session.proxy.single";
+const char kProxyFtpUrl[] = "cros.session.proxy.ftpurl";
+const char kProxyFtpPort[] = "cros.session.proxy.ftpport";
+const char kProxySocks[] = "cros.session.proxy.socks";
+const char kProxySocksPort[] = "cros.session.proxy.socksport";
+const char kProxyIgnoreList[] = "cros.session.proxy.ignorelist";
+const char kProxyUsePacUrl[] = "cros.session.proxy.usepacurl";
+
+const char* const kProxySettings[] = {
+    kProxyPacUrl,    kProxySingleHttp, kProxySingleHttpPort, kProxyHttpUrl,
+    kProxyHttpPort,  kProxyHttpsUrl,   kProxyHttpsPort,      kProxyType,
+    kProxySingle,    kProxyFtpUrl,     kProxyFtpPort,        kProxySocks,
+    kProxySocksPort, kProxyIgnoreList, kProxyUsePacUrl,
+};
+
+// We have to explicitly export this because the arraysize macro doesn't like
+// extern arrays as their size is not known on compile time.
+const size_t kProxySettingsCount = arraysize(kProxySettings);
 
 bool IsProxyPref(const std::string& path) {
   return base::StartsWith(path, kProxyPrefsPrefix,
