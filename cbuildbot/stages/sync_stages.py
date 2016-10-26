@@ -371,6 +371,18 @@ class SyncStage(generic_stages.BuilderStage):
       self.buildbucket_client = buildbucket_lib.BuildbucketClient(
           service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
 
+    if (self._run.config.name == constants.CQ_MASTER and
+        self._run.InProduction() and
+        self.buildbucket_client is None):
+      # If it's CQ-master build, running on a buildbot and in production
+      # mode, buildbucket_client cannot be None in order to schedule
+      # slave builds.
+      raise buildbucket_lib.NoBuildbucketClientException(
+          'Buildbucket_client is None. '
+          'Please check if the buildbot has a valid service account file. '
+          'Please find the service account json file at %s.' %
+          constants.CHROMEOS_SERVICE_ACCOUNT)
+
   def _GetManifestVersionsRepoUrl(self, internal=None, test=False):
     if internal is None:
       internal = self._run.config.internal
@@ -528,17 +540,8 @@ class SyncStage(generic_stages.BuilderStage):
       dryrun: Whether a dryrun.
     """
     if self.buildbucket_client is None:
-      if cros_build_lib.HostIsCIBuilder() and not dryrun:
-        # If it's a buildbot running on a CI builder and not in dryrun.
-        # mode, buildbucket_client cannot be None in order to trigger
-        # slave builds.
-        raise buildbucket_lib.NoBuildbucketClientException(
-            'No Buildbucket_client created. '
-            'Please check the service account file %s.' %
-            constants.CHROMEOS_SERVICE_ACCOUNT)
-      else:
-        logging.info('No buildbucket_client. Skip scheduling slaves.')
-        return
+      logging.info('No buildbucket_client. Skip scheduling slaves.')
+      return
 
     build_id, _ = self._run.GetCIDBHandle()
     if build_id is None:
@@ -687,7 +690,9 @@ class ManifestVersionedSyncStage(SyncStage):
         force=self._force,
         branch=self._run.manifest_branch,
         dry_run=dry_run,
-        master=self._run.config.master))
+        master=self._run.config.master,
+        testjob=self._run.options.test_job,
+        buildbucket_client=self.buildbucket_client))
 
   def _SetAndroidVersionIfApplicable(self, manifest):
     """If 'android' is in |manifest|, write version to the BuilderRun object.
@@ -915,7 +920,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
         force=self._force,
         branch=self._run.manifest_branch,
         dry_run=self._run.options.debug,
-        master=self._run.config.master)
+        master=self._run.config.master,
+        buildbucket_client=self.buildbucket_client)
 
   def Initialize(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""

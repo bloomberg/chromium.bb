@@ -12,6 +12,7 @@ from chromite.lib import config_lib
 from chromite.lib import failures_lib
 from chromite.lib import results_lib
 from chromite.lib import constants
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import tree_status
@@ -138,6 +139,23 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def __init__(self, *args, **kwargs):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
+    self.buildbucket_client = None
+
+    if self._run.config.name == constants.CQ_MASTER:
+      if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
+        self.buildbucket_client = buildbucket_lib.BuildbucketClient(
+            service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
+
+      if (self._run.InProduction() and
+          self.buildbucket_client is None):
+        # If it's running on buildbot and is in production mode,
+        # buildbucket_client cannot be None in order to get slave builds
+        # statuses.
+        raise buildbucket_lib.NoBuildbucketClientException(
+            'Buildbucket_client is None. '
+            'Please check if the buildbot has a valid service account file. '
+            'Please find the service account json file at %s.' %
+            constants.CHROMEOS_SERVICE_ACCOUNT)
 
   def _GetLocalBuildStatus(self):
     """Return the status for this build as a dictionary."""
