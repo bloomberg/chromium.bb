@@ -716,6 +716,19 @@ PrerenderContents* PrerenderManager::GetPrerenderContentsForRoute(
   return web_contents ? GetPrerenderContents(web_contents) : nullptr;
 }
 
+PrerenderContents* PrerenderManager::GetPrerenderContentsForProcess(
+    int render_process_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (auto& prerender_data : active_prerenders_) {
+    PrerenderContents* prerender_contents = prerender_data->contents();
+    if (prerender_contents->GetRenderViewHost()->GetProcess()->GetID() ==
+        render_process_id) {
+      return prerender_contents;
+    }
+  }
+  return nullptr;
+}
+
 std::vector<WebContents*> PrerenderManager::GetAllPrerenderingContents() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<WebContents*> result;

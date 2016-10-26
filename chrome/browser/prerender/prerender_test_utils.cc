@@ -7,9 +7,11 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -29,6 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request_filter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -346,6 +349,7 @@ void DestructionWaiter::DestructionMarker::OnPrerenderStop(
 
 TestPrerender::TestPrerender()
     : contents_(nullptr),
+      final_status_(FINAL_STATUS_MAX),
       number_of_loads_(0),
       expected_number_of_loads_(0),
       started_(false),
@@ -354,6 +358,12 @@ TestPrerender::TestPrerender()
 TestPrerender::~TestPrerender() {
   if (contents_)
     contents_->RemoveObserver(this);
+}
+
+FinalStatus TestPrerender::GetFinalStatus() const {
+  if (contents_)
+    return contents_->final_status();
+  return final_status_;
 }
 
 void TestPrerender::WaitForCreate() {
@@ -408,6 +418,7 @@ void TestPrerender::OnPrerenderStopLoading(PrerenderContents* contents) {
 void TestPrerender::OnPrerenderStop(PrerenderContents* contents) {
   DCHECK(contents_);
   contents_ = nullptr;
+  final_status_ = contents->final_status();
   stopped_ = true;
   stop_loop_.Quit();
   // If there is a WaitForLoads call and it has yet to see the expected number
@@ -528,36 +539,6 @@ TestPrerenderContents* PrerenderInProcessBrowserTest::GetPrerenderContentsFor(
       prerender_data ? prerender_data->contents() : nullptr);
 }
 
-std::unique_ptr<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
-    const std::string& html_file,
-    FinalStatus expected_final_status,
-    int expected_number_of_loads) {
-  GURL url = src_server()->GetURL(MakeAbsolute(html_file));
-  return PrerenderTestURL(url, expected_final_status, expected_number_of_loads);
-}
-
-std::unique_ptr<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
-    const GURL& url,
-    FinalStatus expected_final_status,
-    int expected_number_of_loads) {
-  std::vector<FinalStatus> expected_final_status_queue(1,
-                                                       expected_final_status);
-  auto prerenders = PrerenderTestURLImpl(url, expected_final_status_queue,
-                                         expected_number_of_loads);
-  CHECK_EQ(1u, prerenders.size());
-  return std::move(prerenders[0]);
-}
-
-std::vector<std::unique_ptr<TestPrerender>>
-PrerenderInProcessBrowserTest::PrerenderTestURL(
-    const std::string& html_file,
-    const std::vector<FinalStatus>& expected_final_status_queue,
-    int expected_number_of_loads) {
-  GURL url = src_server()->GetURL(MakeAbsolute(html_file));
-  return PrerenderTestURLImpl(url, expected_final_status_queue,
-                              expected_number_of_loads);
-}
-
 net::EmbeddedTestServer* PrerenderInProcessBrowserTest::src_server() {
   if (https_src_server_)
     return https_src_server_.get();
@@ -629,8 +610,7 @@ base::string16 PrerenderInProcessBrowserTest::MatchTaskManagerPrerender(
 std::vector<std::unique_ptr<TestPrerender>>
 PrerenderInProcessBrowserTest::NavigateWithPrerenders(
     const GURL& loader_url,
-    const std::vector<FinalStatus>& expected_final_status_queue,
-    int expected_number_of_loads) {
+    const std::vector<FinalStatus>& expected_final_status_queue) {
   CHECK(!expected_final_status_queue.empty());
   std::vector<std::unique_ptr<TestPrerender>> prerenders;
   for (size_t i = 0; i < expected_final_status_queue.size(); i++) {
@@ -641,10 +621,23 @@ PrerenderInProcessBrowserTest::NavigateWithPrerenders(
   // Navigate to the loader URL and then wait for the first prerender to be
   // created.
   ui_test_utils::NavigateToURL(current_browser(), loader_url);
-  prerenders.at(0)->WaitForCreate();
-  prerenders.at(0)->WaitForLoads(expected_number_of_loads);
+  prerenders[0]->WaitForCreate();
 
   return prerenders;
+}
+
+GURL PrerenderInProcessBrowserTest::ServeLoaderURL(
+    const std::string& loader_path,
+    const std::string& replacement_variable,
+    const GURL& url_to_prerender,
+    const std::string& loader_query) {
+  base::StringPairs replacement_text;
+  replacement_text.push_back(
+      make_pair(replacement_variable, url_to_prerender.spec()));
+  std::string replacement_path;
+  net::test_server::GetFilePathWithReplacements(loader_path, replacement_text,
+                                                &replacement_path);
+  return src_server()->GetURL(replacement_path + loader_query);
 }
 
 void CreateCountingInterceptorOnIO(
