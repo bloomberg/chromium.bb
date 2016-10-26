@@ -78,7 +78,7 @@ void DeviceEventRouter::OnDiskRemoved(
     return;
 
   const std::string& device_path = disk.system_path_prefix();
-  if (!disk.mount_path().empty() &&
+  if (!disk.is_read_only() && !disk.mount_path().empty() &&
       GetDeviceState(device_path) != DEVICE_HARD_UNPLUGGED_AND_REPORTED) {
     OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED,
                   device_path);
