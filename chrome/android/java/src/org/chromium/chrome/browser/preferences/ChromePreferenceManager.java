@@ -137,9 +137,7 @@ public class ChromePreferenceManager {
      * @param displayed Whether the promotion was shown.
      */
     public void setPromosSkippedOnFirstStart(boolean displayed) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(PROMOS_SKIPPED_ON_FIRST_START, displayed);
-        ed.apply();
+        writeBoolean(PROMOS_SKIPPED_ON_FIRST_START, displayed);
     }
 
     /**
@@ -351,9 +349,7 @@ public class ChromePreferenceManager {
 
     /** Writes the cached value for whether app link is enabled. */
     public void setCachedInstantAppsEnabled(boolean isEnabled) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(INSTANT_APPS_KEY, isEnabled);
-        ed.apply();
+        writeBoolean(INSTANT_APPS_KEY, isEnabled);
     }
 
     /** Checks the cached value for the webapk feature. */
@@ -363,9 +359,7 @@ public class ChromePreferenceManager {
 
     /** Writes the cached value for the webapk feature is enabled. */
     public void setCachedWebApkRuntimeEnabled(boolean isEnabled) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(WEBAPK_RUNTIME_KEY, isEnabled);
-        ed.apply();
+        writeBoolean(WEBAPK_RUNTIME_KEY, isEnabled);
     }
 
     public boolean getCachedChromeDefaultBrowser() {
@@ -373,9 +367,7 @@ public class ChromePreferenceManager {
     }
 
     public void setCachedChromeDefaultBrowser(boolean isDefault) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(CHROME_DEFAULT_BROWSER, isDefault);
-        ed.apply();
+        writeBoolean(CHROME_DEFAULT_BROWSER, isDefault);
     }
 
     /** Checks if the user dismissed the sign in promo from the new tab page. */
@@ -385,9 +377,7 @@ public class ChromePreferenceManager {
 
     /** Set whether the user dismissed the sign in promo from the new tab page. */
     public void setNewTabPageSigninPromoDismissed(boolean isPromoDismissed) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(NTP_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
-        ed.apply();
+        writeBoolean(NTP_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
     }
 
     /**
@@ -395,9 +385,7 @@ public class ChromePreferenceManager {
      * @param isEnabled If Chrome Home is enabled.
      */
     public void setChromeHomeEnabled(boolean isEnabled) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(CHROME_HOME_ENABLED_KEY, isEnabled);
-        ed.apply();
+        writeBoolean(CHROME_HOME_ENABLED_KEY, isEnabled);
     }
 
     /**
@@ -437,6 +425,18 @@ public class ChromePreferenceManager {
     private void writeString(String key, String value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putString(key, value);
+        ed.apply();
+    }
+
+    /**
+     * Writes the given boolean to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    private void writeBoolean(String key, boolean value) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putBoolean(key, value);
         ed.apply();
     }
 }

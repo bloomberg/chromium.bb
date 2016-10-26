@@ -5556,11 +5556,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search." translateable="false">
           Whether or not Contextual Search is enabled.
         </message>
-       <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION" desc="Title for the flag to enable Contextual Search integration with Contextual Cards data in the bar." translateable="false">
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION" desc="Title for the flag to enable Contextual Search integration with Contextual Cards data in the bar." translateable="false">
           Contextual Search - Contextual Cards Integration
         </message>
         <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION_DESCRIPTION" desc="Description for the flag to enable Contextual Search integration with Contextual Cards data in the bar." translateable="false">
           Whether or not integration of Contextual Cards data in the Contextual Search Bar is enabled.
+        </message>
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_SINGLE_ACTIONS" desc="Title for the flag to enable Contextual Search single actions using Contextual Cards data in the bar." translateable="false">
+          Contextual Search - Single Actions
+        </message>
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_SINGLE_ACTIONS_DESCRIPTION" desc="Description for the flag to enable Contextual Search single actions using Contextual Cards data in the bar." translateable="false">
+          Whether or not single actions using Contextual Cards data in the Contextual Search Bar is enabled.
         </message>
       </if>
       <message name="IDS_FLAGS_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">

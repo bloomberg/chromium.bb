@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.components.variations.VariationsAssociatedData;
 
@@ -104,6 +105,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsContextualCardsBarIntegrationEnabled;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabEnabled;
+    private static Boolean sContextualSearchSingleActionsEnabled;
 
     /**
      * Don't instantiate.
@@ -403,6 +405,22 @@ public class ContextualSearchFieldTrial {
             sIsOnlineDetectionDisabled = getBooleanParam(ONLINE_DETECTION_DISABLED);
         }
         return sIsOnlineDetectionDisabled;
+    }
+
+    // ---------------
+    // Features.
+    // ---------------
+
+    /**
+     * @return Whether or not single actions based on Contextual Cards is enabled.
+     */
+    static boolean isContextualSearchSingleActionsEnabled() {
+        if (sContextualSearchSingleActionsEnabled == null) {
+            sContextualSearchSingleActionsEnabled =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_SINGLE_ACTIONS);
+        }
+
+        return sContextualSearchSingleActionsEnabled;
     }
 
     // --------------------------------------------------------------------------------------------

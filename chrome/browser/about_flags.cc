@@ -744,6 +744,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      SINGLE_VALUE_TYPE(
          switches::kEnableContextualSearchContextualCardsBarIntegration)},
+    {"cs-contextual-cards-single-actions",
+     IDS_FLAGS_CONTEXTUAL_SEARCH_SINGLE_ACTIONS,
+     IDS_FLAGS_CONTEXTUAL_SEARCH_SINGLE_ACTIONS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSingleActions)},
 #endif  // OS_ANDROID
     {"show-autofill-type-predictions",
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,

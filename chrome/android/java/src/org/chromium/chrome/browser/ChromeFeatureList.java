@@ -48,10 +48,12 @@ public abstract class ChromeFeatureList {
         return sTestEnabledFeatures.contains(featureName);
     }
 
+    // Alphabetical:
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
     public static final String AUTOFILL_SCAN_CARDHOLDER_NAME = "AutofillScanCardholderName";
     public static final String CCT_EXTERNAL_LINK_HANDLING = "CCTExternalLinkHandling";
     public static final String CHROME_HOME = "ChromeHome";
+    public static final String CONTEXTUAL_SEARCH_SINGLE_ACTIONS = "ContextualSearchSingleActions";
     /** Whether we show an important sites dialog in the "Clear Browsing Data" flow. */
     public static final String IMPORTANT_SITES_IN_CBD = "ImportantSitesInCBD";
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";

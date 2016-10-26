@@ -39,6 +39,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV1,
     &kCCTExternalLinkHandling,
     &kChromeHomeFeature,
+    &kContextualSearchSingleActions,
     &kDownloadsUiFeature,
     &kImportantSitesInCBD,
     &kNoCreditCardAbort,
@@ -63,6 +64,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
 
 }  // namespace
 
+// Alphabetical:
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -71,6 +73,9 @@ const base::Feature kCCTExternalLinkHandling{"CCTExternalLinkHandling",
 
 const base::Feature kChromeHomeFeature{"ChromeHome",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSearchSingleActions{
+    "ContextualSearchSingleActions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadsUiFeature{"DownloadsUi",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

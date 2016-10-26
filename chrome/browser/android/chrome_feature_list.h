@@ -12,9 +12,11 @@
 namespace chrome {
 namespace android {
 
+// Alphabetical:
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kChromeHomeFeature;
+extern const base::Feature kContextualSearchSingleActions;
 extern const base::Feature kDownloadsUiFeature;
 extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kNoCreditCardAbort;
