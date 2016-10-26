@@ -764,8 +764,8 @@
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/payments'\
                   '|chrome/android/javatests/src/org/chromium/chrome/browser/payments'\
                   '|chrome/test/data/android/payments'\
+                  '|components/payments'\
                   '|third_party/WebKit/LayoutTests/payments/'\
-                  '|third_party/WebKit/public/platform/modules/payments'\
                   '|third_party/WebKit/Source/modules/payments'\
     },
     'pepper_api': {
