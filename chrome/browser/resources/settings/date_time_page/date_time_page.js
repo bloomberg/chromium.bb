@@ -11,22 +11,19 @@
 cr.exportPath('settings');
 
 /**
- * Possible values of the system time-zone auto-detection policy. Must stay in
- * sync with AutomaticTimezoneDetectionType in chrome_device_policy.proto.
+ * Describes the status of the auto-detect policy.
  * @enum {number}
- * @const
  */
-settings.AutomaticTimezoneDetectionPolicy = {
-  USERS_DECIDE: 0,
-  DISABLED: 1,
-  IP_ONLY: 2,
-  SEND_WIFI_ACCESS_POINTS: 3,
+settings.TimeZoneAutoDetectPolicy = {
+  NONE: 0,
+  FORCED_ON: 1,
+  FORCED_OFF: 2,
 };
 
 Polymer({
   is: 'settings-date-time-page',
 
-  behaviors: [PrefsBehavior],
+  behaviors: [PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
     /** Preferences state. */
@@ -36,96 +33,173 @@ Polymer({
     },
 
     /**
-     * If the time zone is managed at the system level, the user cannot control
-     * any time zone settings.
-     * @private
+     * The time zone auto-detect policy.
+     * @private {settings.TimeZoneAutoDetectPolicy}
      */
-    systemTimeZoneManaged_: {
+    timeZoneAutoDetectPolicy_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('systemTimeZoneManaged');
+        if (!loadTimeData.valueExists('timeZoneAutoDetectValueFromPolicy'))
+          return settings.TimeZoneAutoDetectPolicy.NONE;
+        return loadTimeData.getBoolean('timeZoneAutoDetectValueFromPolicy') ?
+            settings.TimeZoneAutoDetectPolicy.FORCED_ON :
+            settings.TimeZoneAutoDetectPolicy.FORCED_OFF;
       },
     },
 
     /**
-     * If the time zone auto-detection setting is managed at the system level,
-     * the user cannot override the setting unless the policy is USERS_DECIDE.
+     * Whether a policy controls the time zone auto-detect setting.
      * @private
      */
-    systemTimeZoneDetectionManaged_: {
+    hasTimeZoneAutoDetectPolicy_: {
       type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean(
-            'systemTimeZoneDetectionManaged');
-      },
+      computed:
+          'computeHasTimeZoneAutoDetectPolicy_(timeZoneAutoDetectPolicy_)',
     },
 
     /**
-     * Value of the system time zone auto-detection policy, or null if system
-     * time zone auto-detection is not managed.
-     * @private {?settings.AutomaticTimezoneDetectionPolicy}
+     * The effective time zone auto-detect setting.
+     * @private
      */
-    systemTimeZoneDetectionPolicyValue_: {
-      type: Number,
+    timeZoneAutoDetect_: {
+      type: Boolean,
+      computed: 'computeTimeZoneAutoDetect_(' +
+          'timeZoneAutoDetectPolicy_,' +
+          'prefs.settings.resolve_timezone_by_geolocation.value)',
+    },
+
+    /**
+     * A fake preference to provide cr-policy-pref-indicator with policy info.
+     * @private {!chrome.settingsPrivate.PrefObject|undefined}
+     */
+    fakeTimeZonePolicyPref_: Object,
+
+    /**
+     * Initialized with the current time zone so the menu displays the
+     * correct value. The full option list is fetched lazily if necessary by
+     * maybeGetTimeZoneList_.
+     * @private {!DropdownMenuOptionList}
+     */
+    timeZoneList_: {
+      type: Array,
       value: function() {
-        return loadTimeData.valueExists('systemTimeZoneDetectionPolicyValue') ?
-            /** @type {settings.AutomaticTimezoneDetectionPolicy} */(
-                loadTimeData.getInteger('systemTimeZoneDetectionPolicyValue')) :
-            null;
+        return [{
+          name: loadTimeData.getString('timeZoneName'),
+          value: loadTimeData.getString('timeZoneID'),
+        }];
       },
     },
   },
 
   observers: [
-    // TODO(michaelpg): Implement a BrowserProxy to listen for policy changes.
-    'updateTimeZoneDetectionCheckbox_(' +
-        'prefs.settings.resolve_timezone_by_geolocation.value,' +
-        'systemTimeZoneManaged_,' +
-        'systemTimeZoneDetectionManaged_,' +
-        'systemTimeZoneDetectionPolicyValue_)',
+    'maybeGetTimeZoneList_(' +
+        'prefs.cros.system.timezone.value, timeZoneAutoDetect_)',
   ],
 
-  /**
-   * Processes all the time zone preferences and policy interactions in one
-   * observer function instead of complicating the HTML with computed bindings.
-   * @param {boolean} userPrefValue
-   * @param {boolean} systemTimeZoneManaged
-   * @param {boolean} systemTimeZoneDetectionManaged
-   * @param {?settings.AutomaticTimezoneDetectionPolicy}
-   *     systemTimeZoneDetectionPolicyValue
-   */
-  updateTimeZoneDetectionCheckbox_(userPrefValue,
-                                   systemTimeZoneManaged,
-                                   systemTimeZoneDetectionManaged,
-                                   systemTimeZoneDetectionPolicyValue) {
-    var checkbox = this.$.timeZoneDetectionCheckbox;
+  attached: function() {
+    this.addWebUIListener(
+        'time-zone-auto-detect-policy',
+        this.onTimeZoneAutoDetectPolicyChanged_.bind(this));
+    chrome.send('dateTimePageReady');
 
-    // Time zone auto-detection is disabled when the time zone is managed.
-    if (systemTimeZoneManaged) {
-      checkbox.disabled = true;
-      checkbox.checked = false;
-      return;
-    }
-
-    // The time zone auto-detection policy may force-disable auto-detection.
-    if (systemTimeZoneDetectionManaged &&
-        systemTimeZoneDetectionPolicyValue !=
-        settings.AutomaticTimezoneDetectionPolicy.USERS_DECIDE) {
-      checkbox.disabled = true;
-      checkbox.checked =
-          systemTimeZoneDetectionPolicyValue !=
-          settings.AutomaticTimezoneDetectionPolicy.DISABLED;
-      return;
-    }
-
-    // If there is no policy, or the policy is USERS_DECIDE, the pref is used.
-    checkbox.disabled = false;
-    checkbox.checked = userPrefValue;
+    this.maybeGetTimeZoneList_();
   },
 
-  /** @param {!Event} e */
-  onTimeZoneDetectionCheckboxChange_: function(e) {
+  /**
+   * @param {boolean} managed Whether the auto-detect setting is controlled.
+   * @param {boolean} valueFromPolicy The value of the auto-detect setting
+   *     forced by policy.
+   * @private
+   */
+  onTimeZoneAutoDetectPolicyChanged_: function(managed, valueFromPolicy) {
+    if (!managed) {
+      this.timeZoneAutoDetectPolicy_ = settings.TimeZoneAutoDetectPolicy.NONE;
+      this.fakeTimeZonePolicyPref_ = undefined;
+      return;
+    }
+
+    this.timeZoneAutoDetectPolicy_ = valueFromPolicy ?
+        settings.TimeZoneAutoDetectPolicy.FORCED_ON :
+        settings.TimeZoneAutoDetectPolicy.FORCED_OFF;
+
+    if (!this.fakeTimeZonePolicyPref_) {
+      this.fakeTimeZonePolicyPref_ = {
+        key: 'fakeTimeZonePref',
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: 0,
+        policySource: chrome.settingsPrivate.PolicySource.DEVICE_POLICY,
+        policyEnforcement: chrome.settingsPrivate.PolicyEnforcement.ENFORCED,
+      };
+    }
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onTimeZoneAutoDetectCheckboxChange_: function(e) {
     this.setPrefValue(
         'settings.resolve_timezone_by_geolocation', e.target.checked);
+  },
+
+  /**
+   * @param {settings.TimeZoneAutoDetectPolicy} timeZoneAutoDetectPolicy
+   * @return {boolean}
+   * @private
+   */
+  computeHasTimeZoneAutoDetectPolicy_: function(timeZoneAutoDetectPolicy) {
+    return timeZoneAutoDetectPolicy != settings.TimeZoneAutoDetectPolicy.NONE;
+  },
+
+  /**
+   * @param {settings.TimeZoneAutoDetectPolicy} timeZoneAutoDetectPolicy
+   * @param {boolean} prefValue Value of the geolocation pref.
+   * @return {boolean} Whether time zone auto-detect is enabled.
+   * @private
+   */
+  computeTimeZoneAutoDetect_: function(timeZoneAutoDetectPolicy, prefValue) {
+    switch (timeZoneAutoDetectPolicy) {
+      case settings.TimeZoneAutoDetectPolicy.NONE:
+        return prefValue;
+      case settings.TimeZoneAutoDetectPolicy.FORCED_ON:
+        return true;
+      case settings.TimeZoneAutoDetectPolicy.FORCED_OFF:
+        return false;
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * Fetches the list of time zones if necessary.
+   * @private
+   */
+  maybeGetTimeZoneList_: function() {
+    // Only fetch the list once.
+    if (this.timeZoneList_.length > 1 || !CrSettingsPrefs.isInitialized)
+      return;
+
+    // If auto-detect is enabled, we only need the current time zone.
+    if (this.timeZoneAutoDetect_ &&
+        this.getPref('cros.system.timezone').value ==
+            this.timeZoneList_[0].value) {
+      return;
+    }
+
+    cr.sendWithPromise('getTimeZones').then(this.setTimeZoneList_.bind(this));
+  },
+
+  /**
+   * Converts the C++ response into an array of menu options.
+   * @param {!Array<!Array<string>>} timeZones C++ time zones response.
+   * @private
+   */
+  setTimeZoneList_: function(timeZones) {
+    this.timeZoneList_ = timeZones.map(function(timeZonePair) {
+      return {
+        name: timeZonePair[1],
+        value: timeZonePair[0],
+      };
+    });
   },
 });

@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/strings/string16.h"
+
 namespace base {
 class ListValue;
 }
@@ -16,6 +18,9 @@ namespace chromeos {
 struct TimeZoneResponseData;
 
 namespace system {
+
+// Gets the current timezone's display name.
+base::string16 GetCurrentTimezoneName();
 
 // Creates a list of pairs of each timezone's ID and name.
 std::unique_ptr<base::ListValue> GetTimezoneList();

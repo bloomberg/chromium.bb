@@ -147,6 +147,11 @@ base::string16 GetTimezoneName(const icu::TimeZone& timezone) {
 namespace chromeos {
 namespace system {
 
+base::string16 GetCurrentTimezoneName() {
+  return GetTimezoneName(
+      chromeos::system::TimezoneSettings::GetInstance()->GetTimezone());
+}
+
 // Creates a list of pairs of each timezone's ID and name.
 std::unique_ptr<base::ListValue> GetTimezoneList() {
   const auto& timezones =

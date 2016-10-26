@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -19,19 +23,25 @@ namespace settings {
 
 namespace {
 
+// Returns whether the system time zone automatic detection policy is disabled
+// by a flag.
+bool IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSystemTimezoneAutomaticDetectionPolicy);
+}
+
 // Returns whether the system's automatic time zone detection setting is
 // managed, which may override the user's setting.
 bool IsSystemTimezoneAutomaticDetectionManaged() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSystemTimezoneAutomaticDetectionPolicy)) {
+  if (IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
     return false;
-  }
+
   return g_browser_process->local_state()->IsManagedPreference(
       prefs::kSystemTimezoneAutomaticDetectionPolicy);
 }
 
-// Returns the system's current automatic time zone detection policy value,
-// which corresponds to the SystemTimezoneProto's AutomaticTimezoneDetectionType
+// Returns the system's automatic time zone detection policy value, which
+// corresponds to the SystemTimezoneProto's AutomaticTimezoneDetectionType
 // enum and determines whether the user's setting will be overridden.
 int GetSystemTimezoneAutomaticDetectionPolicyValue() {
   DCHECK(IsSystemTimezoneAutomaticDetectionManaged());
@@ -40,39 +50,108 @@ int GetSystemTimezoneAutomaticDetectionPolicyValue() {
       prefs::kSystemTimezoneAutomaticDetectionPolicy);
 }
 
+// Returns whether the user can set the automatic detection setting, based on
+// flags and policies.
+bool IsTimezoneAutomaticDetectionUserEditable() {
+  if (system::HasSystemTimezonePolicy())
+    return false;
+
+  if (IsSystemTimezoneAutomaticDetectionManaged()) {
+    return GetSystemTimezoneAutomaticDetectionPolicyValue() ==
+        enterprise_management::SystemTimezoneProto::USERS_DECIDE;
+  }
+
+  return true;
+}
+
 }  // namespace
 
-DateTimeHandler::DateTimeHandler() {}
+DateTimeHandler::DateTimeHandler() : weak_ptr_factory_(this) {}
 
 DateTimeHandler::~DateTimeHandler() {}
 
 DateTimeHandler* DateTimeHandler::Create(
     content::WebUIDataSource* html_source) {
-  html_source->AddBoolean("systemTimeZoneManaged",
-      chromeos::system::HasSystemTimezonePolicy());
+  // Set the initial time zone to show.
+  html_source->AddString("timeZoneName", system::GetCurrentTimezoneName());
+  html_source->AddString(
+      "timeZoneID",
+      system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
 
-  bool system_time_zone_automatic_detection_managed =
-      IsSystemTimezoneAutomaticDetectionManaged();
-  html_source->AddBoolean("systemTimeZoneDetectionManaged",
-      system_time_zone_automatic_detection_managed);
-  if (system_time_zone_automatic_detection_managed) {
-    html_source->AddInteger("systemTimeZoneDetectionPolicyValue",
-        GetSystemTimezoneAutomaticDetectionPolicyValue());
+  if (!IsTimezoneAutomaticDetectionUserEditable()) {
+    html_source->AddBoolean("timeZoneAutoDetectValueFromPolicy",
+                            g_browser_process->platform_part()
+                                ->GetTimezoneResolverManager()
+                                ->ShouldApplyResolvedTimezone());
   }
 
   return new DateTimeHandler;
 }
 
 void DateTimeHandler::RegisterMessages() {
-  // TODO(michaelpg): Add time zone message handlers.
+  web_ui()->RegisterMessageCallback(
+      "dateTimePageReady", base::Bind(&DateTimeHandler::HandleDateTimePageReady,
+                                      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getTimeZones",
+      base::Bind(&DateTimeHandler::HandleGetTimeZones, base::Unretained(this)));
 }
 
 void DateTimeHandler::OnJavascriptAllowed() {
-  // TODO(michaelpg): Add policy observers.
+  // The system time zone policy disables auto-detection entirely. (However,
+  // the time zone policy does not override the user's time zone itself.)
+  system_timezone_policy_subscription_ =
+      CrosSettings::Get()->AddSettingsObserver(
+          kSystemTimezonePolicy,
+          base::Bind(&DateTimeHandler::NotifyTimezoneAutomaticDetectionPolicy,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  if (IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
+    return;
+
+  // The auto-detection policy can force auto-detection on or off.
+  local_state_pref_change_registrar_.Init(g_browser_process->local_state());
+  local_state_pref_change_registrar_.Add(
+      prefs::kSystemTimezoneAutomaticDetectionPolicy,
+      base::Bind(&DateTimeHandler::NotifyTimezoneAutomaticDetectionPolicy,
+                 base::Unretained(this)));
 }
 
 void DateTimeHandler::OnJavascriptDisallowed() {
-  // TODO(michaelpg): Remove policy observers.
+  system_timezone_policy_subscription_.reset();
+
+  if (!IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
+    local_state_pref_change_registrar_.RemoveAll();
+}
+
+void DateTimeHandler::HandleDateTimePageReady(const base::ListValue* args) {
+  AllowJavascript();
+
+  // Send the time zone automatic detection policy in case it changed after the
+  // handler was created.
+  NotifyTimezoneAutomaticDetectionPolicy();
+}
+
+void DateTimeHandler::HandleGetTimeZones(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  ResolveJavascriptCallback(*callback_id, *system::GetTimezoneList().release());
+}
+
+void DateTimeHandler::NotifyTimezoneAutomaticDetectionPolicy() {
+  bool managed = !IsTimezoneAutomaticDetectionUserEditable();
+  bool force_enabled = managed &&
+                       g_browser_process->platform_part()
+                           ->GetTimezoneResolverManager()
+                           ->ShouldApplyResolvedTimezone();
+
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("time-zone-auto-detect-policy"),
+                         base::FundamentalValue(managed),
+                         base::FundamentalValue(force_enabled));
 }
 
 }  // namespace settings

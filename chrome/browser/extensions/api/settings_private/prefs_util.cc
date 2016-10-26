@@ -259,6 +259,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Time zone settings.
+  (*s_whitelist)["cros.system.timezone"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.resolve_timezone_by_geolocation"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
