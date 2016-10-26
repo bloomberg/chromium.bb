@@ -1900,7 +1900,13 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
     return;
   }
   tab_strip_model_->SetTabBlocked(index, blocked);
-  if (!blocked && tab_strip_model_->GetActiveWebContents() == web_contents)
+
+  bool browser_active = BrowserList::GetInstance()->GetLastActive() == this;
+  bool contents_is_active =
+      tab_strip_model_->GetActiveWebContents() == web_contents;
+  // If the WebContents is foremost (the active tab in the front-most browser)
+  // and is being unblocked, focus it to make sure that input works again.
+  if (!blocked && contents_is_active && browser_active)
     web_contents->Focus();
 }
 
