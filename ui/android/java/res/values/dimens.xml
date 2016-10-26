@@ -12,7 +12,7 @@
     -->
     <dimen name="color_picker_gradient_margin">14.5dp</dimen>
     <dimen name="color_button_height">60dp</dimen>
-    <dimen name="dropdown_item_height">44dp</dimen>
+    <dimen name="dropdown_item_height">50dp</dimen>
     <dimen name="dropdown_item_divider_height">1px</dimen>
 
     <!--
