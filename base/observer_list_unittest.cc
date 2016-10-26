@@ -606,7 +606,8 @@ TEST(ObserverListTest, IteratorOutlivesList) {
   ListDestructor a(observer_list);
   observer_list->AddObserver(&a);
 
-  FOR_EACH_OBSERVER(Foo, *observer_list, Observe(0));
+  for (auto& observer : *observer_list)
+    observer.Observe(0);
   // If this test fails, there'll be Valgrind errors when this function goes out
   // of scope.
 }

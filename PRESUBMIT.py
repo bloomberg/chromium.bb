@@ -308,15 +308,6 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'FOR_EACH_OBSERVER(',
-      (
-        'Use range-based for loops to iterate through base::ObserverList, e.g.',
-        '        for (auto& observer : observers) { observer.Observe(); }',
-      ),
-      True,
-      (),
-    ),
-    (
       r'STLDeleteContainerPointers',  # http://crbug.com/555865
       (
         'This call is obsolete with C++ 11; create a container with owning',
