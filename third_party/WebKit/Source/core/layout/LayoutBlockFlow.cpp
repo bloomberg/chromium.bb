@@ -3128,6 +3128,12 @@ void LayoutBlockFlow::collapseAnonymousBlockChild(LayoutBlockFlow* child) {
       LayoutInvalidationReason::ChildAnonymousBlockChanged);
 
   child->moveAllChildrenTo(this, child->nextSibling(), child->hasLayer());
+  // If we make an object's children inline we are going to frustrate any future
+  // attempts to remove floats from its children's float-lists before the next
+  // layout happens so clear down all the floatlists now - they will be rebuilt
+  // at layout.
+  if (child->childrenInline())
+    removeFloatingObjectsFromDescendants();
   setChildrenInline(child->childrenInline());
 
   children()->removeChildNode(this, child, child->hasLayer());
