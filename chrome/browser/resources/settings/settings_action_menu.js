@@ -106,7 +106,6 @@ Polymer({
     // Removing 'resize' listener when dialog is closed.
     this.removeResizeListener_();
     HTMLDialogElement.prototype.close.call(this);
-    window.dispatchEvent(new CustomEvent('resize'));
   },
 
   /**
