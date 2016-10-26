@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace test {
@@ -19,16 +18,32 @@ class ScopedFeatureList;
 class FieldTrialList;
 }  // namespace base
 
-namespace network_time {
-// A test fixture that allows configuring the network time queries field trial.
-class FieldTrialTest : public ::testing::Test {
- public:
-  FieldTrialTest();
-  ~FieldTrialTest() override;
+namespace net {
+namespace test_server {
+struct HttpRequest;
+class HttpResponse;
+}  // namespace test_server
+}  // namespace net
 
- protected:
-  void SetNetworkQueriesWithVariationsService(bool enable,
-                                              float query_probability);
+namespace network_time {
+
+std::unique_ptr<net::test_server::HttpResponse> GoodTimeResponseHandler(
+    const net::test_server::HttpRequest& request);
+
+// Allows tests to configure the network time queries field trial.
+class FieldTrialTest {
+ public:
+  enum FetchesOnDemandStatus {
+    ENABLE_FETCHES_ON_DEMAND,
+    DISABLE_FETCHES_ON_DEMAND,
+  };
+
+  FieldTrialTest();
+  virtual ~FieldTrialTest();
+  void SetNetworkQueriesWithVariationsService(
+      bool enable,
+      float query_probability,
+      FetchesOnDemandStatus fetches_on_demand);
 
  private:
   std::unique_ptr<base::FieldTrialList> field_trial_list_;

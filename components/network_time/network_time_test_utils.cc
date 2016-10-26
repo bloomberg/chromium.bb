@@ -11,15 +11,43 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/http/http_response_headers.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace network_time {
 
-FieldTrialTest::FieldTrialTest() : ::testing::Test() {}
+// Returns a valid time response.  Update as follows:
+//
+// curl http://clients2.google.com/time/1/current?cup2key=1:123123123
+//
+// where 1 is the key version and 123123123 is the nonce.  Copy the nonce, the
+// response, and the x-cup-server-proof header into the test.
+std::unique_ptr<net::test_server::HttpResponse> GoodTimeResponseHandler(
+    const net::test_server::HttpRequest& request) {
+  net::test_server::BasicHttpResponse* response =
+      new net::test_server::BasicHttpResponse();
+  response->set_code(net::HTTP_OK);
+  response->set_content(
+      ")]}'\n"
+      "{\"current_time_millis\":1461621971825,\"server_nonce\":-6."
+      "006853099049523E85}");
+  response->AddCustomHeader(
+      "x-cup-server-proof",
+      "304402202e0f24db1ea69f1bbe81da4108f381fcf7a2781c53cf7663cb47083cb5fe8e"
+      "fd"
+      "022009d2b67c0deceaaf849f7c529be96701ed5f15d5efcaf401a94e0801accc9832:"
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+  return std::unique_ptr<net::test_server::HttpResponse>(response);
+}
+
+FieldTrialTest::FieldTrialTest() {}
 FieldTrialTest::~FieldTrialTest() {}
 
 void FieldTrialTest::SetNetworkQueriesWithVariationsService(
     bool enable,
-    float query_probability) {
+    float query_probability,
+    FetchesOnDemandStatus fetches_on_demand) {
   const std::string kTrialName = "Trial";
   const std::string kGroupName = "group";
   const base::Feature kFeature{"NetworkTimeServiceQuerying",
@@ -31,6 +59,8 @@ void FieldTrialTest::SetNetworkQueriesWithVariationsService(
   std::map<std::string, std::string> params;
   params["RandomQueryProbability"] = base::DoubleToString(query_probability);
   params["CheckTimeIntervalSeconds"] = base::Int64ToString(360);
+  params["EnableFetchesOnDemand"] =
+      fetches_on_demand == ENABLE_FETCHES_ON_DEMAND ? "true" : "";
 
   // There are 3 things here: a FieldTrial, a FieldTrialList, and a
   // FeatureList.  Don't get confused!  The FieldTrial is reference-counted,

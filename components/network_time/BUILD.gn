@@ -51,6 +51,8 @@ source_set("network_time_test_support") {
     "//base",
     "//base/test:test_support",
     "//components/variations",
+    "//net",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

@@ -39,9 +39,16 @@ NetworkErrorResponseHandler(const net::test_server::HttpRequest& request) {
 
 }  // namespace
 
-class SSLErrorClassificationTest : public network_time::FieldTrialTest {
+class SSLErrorClassificationTest : public ::testing::Test {
  public:
-  SSLErrorClassificationTest() : network_time::FieldTrialTest() {}
+  SSLErrorClassificationTest()
+      : field_trial_test_(new network_time::FieldTrialTest()) {}
+  network_time::FieldTrialTest* field_trial_test() {
+    return field_trial_test_.get();
+  }
+
+ private:
+  std::unique_ptr<network_time::FieldTrialTest> field_trial_test_;
 };
 
 TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
@@ -349,7 +356,8 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
       std::unique_ptr<base::TickClock>(tick_clock), &pref_service,
       new net::TestURLRequestContextGetter(io_thread.task_runner()));
   network_time_tracker.SetTimeServerURLForTesting(test_server.GetURL("/"));
-  SetNetworkQueriesWithVariationsService(true, 0.0);
+  field_trial_test()->SetNetworkQueriesWithVariationsService(
+      true, 0.0, network_time::FieldTrialTest::ENABLE_FETCHES_ON_DEMAND);
 
   // No sync attempt.
   EXPECT_EQ(
