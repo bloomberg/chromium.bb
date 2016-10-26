@@ -12,12 +12,13 @@ WebPublicSuffixListImpl::~WebPublicSuffixListImpl() {
 }
 
 size_t WebPublicSuffixListImpl::getPublicSuffixLength(
-    const blink::WebString& host) {
-  size_t result = net::registry_controlled_domains::GetRegistryLength(
-      host.utf8(),
-      net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  return result ? result : host.length();
+    const blink::WebString& canonical_host) {
+  size_t result =
+      net::registry_controlled_domains::GetCanonicalHostRegistryLength(
+          canonical_host.utf8(),
+          net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  return result ? result : canonical_host.length();
 }
 
 } // namespace content

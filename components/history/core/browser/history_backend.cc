@@ -494,7 +494,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
         origin_url.SchemeIs(url::kFtpScheme)) {
       std::string host(origin_url.host());
       size_t registry_length =
-          net::registry_controlled_domains::GetRegistryLength(
+          net::registry_controlled_domains::GetCanonicalHostRegistryLength(
               host,
               net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
               net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);

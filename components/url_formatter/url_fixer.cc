@@ -201,20 +201,15 @@ void AddDesiredTLD(const std::string& desired_tld, std::string* domain) {
   if (desired_tld.empty() || domain->empty())
     return;
 
-  // Check the TLD.  If the return value is positive, we already have a TLD, so
-  // abort.  If the return value is std::string::npos, there's no valid host,
-  // but we can try to append a TLD anyway, since the host may become valid once
-  // the TLD is attached -- for example, "999999999999" is detected as a broken
-  // IP address and marked invalid, but attaching ".com" makes it legal.  When
-  // the return value is 0, there's a valid host with no known TLD, so we can
-  // definitely append the user's TLD.  We disallow unknown registries here so
-  // users can input "mail.yahoo" and hit ctrl-enter to get
-  // "www.mail.yahoo.com".
-  const size_t registry_length =
-      net::registry_controlled_domains::GetRegistryLength(
+  // Abort if we already have a known TLD. In the case of an invalid host,
+  // HostHasRegistryControlledDomain will return false and we will try to
+  // append a TLD (which may make it valid). For example, "999999999999" is
+  // detected as a broken IP address and marked invalid, but attaching ".com"
+  // makes it legal.  We disallow unknown registries here so users can input
+  // "mail.yahoo" and hit ctrl-enter to get "www.mail.yahoo.com".
+  if (net::registry_controlled_domains::HostHasRegistryControlledDomain(
           *domain, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  if ((registry_length != 0) && (registry_length != std::string::npos))
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
     return;
 
   // Add the suffix at the end of the domain.

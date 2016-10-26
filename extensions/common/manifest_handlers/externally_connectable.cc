@@ -20,6 +20,7 @@
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace rcd = net::registry_controlled_domains;
@@ -139,9 +140,20 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         continue;
       }
 
+      url::CanonHostInfo host_info;
+      std::string canonical_host =
+          net::CanonicalizeHost(pattern.host(), &host_info);
+      if (canonical_host.empty()) {
+        // CanonicalizeHost returns empty string on error. The URL parsing
+        // combined with host().empty() should have caught this above.
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kErrorInvalidMatchPattern, *it);
+        return std::unique_ptr<ExternallyConnectableInfo>();
+      }
+
       // Wildcards on subdomains of a TLD are not allowed.
-      size_t registry_length = rcd::GetRegistryLength(
-          pattern.host(),
+      bool has_registry = rcd::HostHasRegistryControlledDomain(
+          canonical_host,
           // This means that things that look like TLDs - the foobar in
           // http://google.foobar - count as TLDs.
           rcd::INCLUDE_UNKNOWN_REGISTRIES,
@@ -149,17 +161,9 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
           // codereview.appspot.com and evil.appspot.com are different.
           rcd::INCLUDE_PRIVATE_REGISTRIES);
 
-      if (registry_length == std::string::npos) {
-        // The URL parsing combined with host().empty() should have caught this.
-        NOTREACHED() << *it;
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kErrorInvalidMatchPattern, *it);
-        return std::unique_ptr<ExternallyConnectableInfo>();
-      }
-
       // Broad match patterns like "*.com", "*.co.uk", and even "*.appspot.com"
       // are not allowed. However just "appspot.com" is ok.
-      if (registry_length == 0 && pattern.match_subdomains()) {
+      if (!has_registry && pattern.match_subdomains()) {
         // Warning not error for forwards compatibility.
         install_warnings->push_back(
             InstallWarning(ErrorUtils::FormatErrorMessage(
