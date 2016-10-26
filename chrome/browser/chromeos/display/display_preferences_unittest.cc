@@ -300,8 +300,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   window_tree_host_manager->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(id1, display::Display::ROTATE_90,
                                         display::Display::ROTATION_SOURCE_USER);
-  EXPECT_TRUE(display_manager()->SetDisplayUIScale(id1, 1.25f));
-  EXPECT_FALSE(display_manager()->SetDisplayUIScale(id2, 1.25f));
+  EXPECT_TRUE(ash::test::DisplayManagerTestApi(display_manager())
+                  .SetDisplayUIScale(id1, 1.25f));
+  EXPECT_FALSE(ash::test::DisplayManagerTestApi(display_manager())
+                   .SetDisplayUIScale(id2, 1.25f));
 
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
@@ -678,7 +680,8 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   display_manager()->SetLayoutForCurrentDisplays(ash::test::CreateDisplayLayout(
       display_manager(), display::DisplayPlacement::TOP, 10));
-  display_manager()->SetDisplayUIScale(id1, 1.25f);
+  ash::test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(id1, 1.25f);
   window_tree_host_manager->SetPrimaryDisplayId(id2);
   int64_t new_primary = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   window_tree_host_manager->SetOverscanInsets(new_primary,

@@ -44,6 +44,21 @@ DisplayInfoList CreateDisplayInfoListFromString(
   return display_info_list;
 }
 
+scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForUIScale(
+    const display::ManagedDisplayInfo& info,
+    float ui_scale) {
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
+  auto iter = std::find_if(
+      modes.begin(), modes.end(),
+      [ui_scale](const scoped_refptr<display::ManagedDisplayMode>& mode) {
+        return mode->ui_scale() == ui_scale;
+      });
+  if (iter == modes.end())
+    return scoped_refptr<display::ManagedDisplayMode>();
+  return *iter;
+}
+
 }  // namespace
 
 DisplayManagerTestApi::DisplayManagerTestApi(DisplayManager* display_manager)
@@ -111,6 +126,21 @@ void DisplayManagerTestApi::SetAvailableColorProfiles(
 const display::ManagedDisplayInfo&
 DisplayManagerTestApi::GetInternalManagedDisplayInfo(int64_t display_id) {
   return display_manager_->display_info_[display_id];
+}
+
+bool DisplayManagerTestApi::SetDisplayUIScale(int64_t id, float ui_scale) {
+  if (!display_manager_->IsActiveDisplayId(id) ||
+      !display::Display::IsInternalDisplayId(id)) {
+    return false;
+  }
+  const display::ManagedDisplayInfo& info =
+      display_manager_->GetDisplayInfo(id);
+
+  scoped_refptr<display::ManagedDisplayMode> mode =
+      GetDisplayModeForUIScale(info, ui_scale);
+  if (!mode)
+    return false;
+  return display_manager_->SetDisplayMode(id, mode);
 }
 
 ScopedDisable125DSFForUIScaling::ScopedDisable125DSFForUIScaling() {

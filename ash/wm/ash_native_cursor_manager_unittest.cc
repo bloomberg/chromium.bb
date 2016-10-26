@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -183,13 +184,15 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_UIScaleShouldNotChangeCursor) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display_id, 1.0f);
+  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetDisplayUIScale(display_id, 1.0f);
 
   // 2x display should keep using 2x cursor regardless of the UI scale.
   UpdateDisplay("800x800*2");
@@ -197,7 +200,8 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_UIScaleShouldNotChangeCursor) {
       2.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display_id, 2.0f);
+  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetDisplayUIScale(display_id, 2.0f);
   EXPECT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());

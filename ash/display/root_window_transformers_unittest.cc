@@ -283,7 +283,8 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   EXPECT_EQ("299,150", event_handler.GetLocationAndReset());
   magnifier->SetEnabled(false);
 
-  display_manager()->SetDisplayUIScale(display1.id(), 1.25f);
+  test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(display1.id(), 1.25f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display2 = display_manager()->GetSecondaryDisplay();
   magnifier->SetEnabled(true);

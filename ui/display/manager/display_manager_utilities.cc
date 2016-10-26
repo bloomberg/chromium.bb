@@ -20,33 +20,50 @@ namespace {
 // 800, 1024, 1280, 1440, 1600 and 1920 pixel width respectively on
 // 2560 pixel width 2x density display. Please see crbug.com/233375
 // for the full list of resolutions.
-const float kUIScalesFor2x[] = {0.5f,   0.625f, 0.8f, 1.0f,
-                                1.125f, 1.25f,  1.5f, 2.0f};
-const float kUIScalesFor1_25x[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.25f};
-const float kUIScalesFor1280[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f};
-const float kUIScalesFor1366[] = {0.5f, 0.6f, 0.75f, 1.0f, 1.125f};
+constexpr float kUIScalesFor2x[] = {0.5f,   0.625f, 0.8f, 1.0f,
+                                    1.125f, 1.25f,  1.5f, 2.0f};
+constexpr float kUIScalesFor1_25x[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.25f};
+constexpr float kUIScalesFor1280[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f};
+constexpr float kUIScalesFor1366[] = {0.5f, 0.6f, 0.75f, 1.0f, 1.125f};
 
-std::vector<float> GetScalesForDisplay(
+// The default UI scales for the above display densities.
+constexpr float kDefaultUIScaleFor2x = 1.0f;
+constexpr float kDefaultUIScaleFor1_25x = 0.8f;
+constexpr float kDefaultUIScaleFor1280 = 1.0f;
+constexpr float kDefaultUIScaleFor1366 = 1.0f;
+
+// Encapsulates the list of UI scales and the default one.
+struct DisplayUIScales {
+  std::vector<float> scales;
+  float default_scale;
+};
+
+DisplayUIScales GetScalesForDisplay(
     const scoped_refptr<display::ManagedDisplayMode>& native_mode) {
 #define ASSIGN_ARRAY(v, a) v.assign(a, a + arraysize(a))
 
-  std::vector<float> ret;
+  DisplayUIScales ret;
   if (native_mode->device_scale_factor() == 2.0f) {
-    ASSIGN_ARRAY(ret, kUIScalesFor2x);
+    ASSIGN_ARRAY(ret.scales, kUIScalesFor2x);
+    ret.default_scale = kDefaultUIScaleFor2x;
     return ret;
   } else if (native_mode->device_scale_factor() == 1.25f) {
-    ASSIGN_ARRAY(ret, kUIScalesFor1_25x);
+    ASSIGN_ARRAY(ret.scales, kUIScalesFor1_25x);
+    ret.default_scale = kDefaultUIScaleFor1_25x;
     return ret;
   }
   switch (native_mode->size().width()) {
     case 1280:
-      ASSIGN_ARRAY(ret, kUIScalesFor1280);
+      ASSIGN_ARRAY(ret.scales, kUIScalesFor1280);
+      ret.default_scale = kDefaultUIScaleFor1280;
       break;
     case 1366:
-      ASSIGN_ARRAY(ret, kUIScalesFor1366);
+      ASSIGN_ARRAY(ret.scales, kUIScalesFor1366);
+      ret.default_scale = kDefaultUIScaleFor1366;
       break;
     default:
-      ASSIGN_ARRAY(ret, kUIScalesFor1280);
+      ASSIGN_ARRAY(ret.scales, kUIScalesFor1280);
+      ret.default_scale = kDefaultUIScaleFor1280;
 #if defined(OS_CHROMEOS)
       if (base::SysInfo::IsRunningOnChromeOS())
         NOTREACHED() << "Unknown resolution:" << native_mode->size().ToString();
@@ -89,11 +106,13 @@ CreateInternalManagedDisplayModeList(
   float native_ui_scale = (native_mode->device_scale_factor() == 1.25f)
                               ? 1.0f
                               : native_mode->device_scale_factor();
-  for (float ui_scale : GetScalesForDisplay(native_mode)) {
+  const DisplayUIScales display_ui_scales = GetScalesForDisplay(native_mode);
+  for (float ui_scale : display_ui_scales.scales) {
     scoped_refptr<ManagedDisplayMode> mode(new ManagedDisplayMode(
         native_mode->size(), native_mode->refresh_rate(),
         native_mode->is_interlaced(), ui_scale == native_ui_scale, ui_scale,
         native_mode->device_scale_factor()));
+    mode->set_is_default(ui_scale == display_ui_scales.default_scale);
     display_mode_list.push_back(mode);
   }
   return display_mode_list;

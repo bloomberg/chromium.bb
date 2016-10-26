@@ -62,6 +62,10 @@ class DisplayManagerTestApi {
   const display::ManagedDisplayInfo& GetInternalManagedDisplayInfo(
       int64_t display_id);
 
+  // Sets the UI scale for the |display_id|. Returns false if the
+  // display_id is not an internal display.
+  bool SetDisplayUIScale(int64_t display_id, float scale);
+
  private:
   friend class ScopedSetInternalDisplayId;
   // Sets the display id for internal display and

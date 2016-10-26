@@ -163,7 +163,8 @@ TEST_F(CursorWindowControllerTest, DSF) {
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 
-  ASSERT_TRUE(display_manager()->SetDisplayUIScale(primary_id, 2.0f));
+  ASSERT_TRUE(test::DisplayManagerTestApi(display_manager())
+                  .SetDisplayUIScale(primary_id, 2.0f));
   ASSERT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());

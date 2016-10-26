@@ -744,19 +744,23 @@ TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
       secondary_id);
   EXPECT_EQ(1, observer.CountAndReset());
 
-  display_manager()->SetDisplayUIScale(secondary_id, 1.125f);
+  test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display_manager()->SetDisplayUIScale(secondary_id, 1.125f);
+  test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display_manager()->SetDisplayUIScale(primary_id, 1.125f);
+  test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(primary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display_manager()->SetDisplayUIScale(primary_id, 1.125f);
+  test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(primary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -1143,7 +1147,8 @@ TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
-  display_manager()->SetDisplayUIScale(display1.id(), 1.25f);
+  test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(display1.id(), 1.25f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display2 = display_manager()->GetSecondaryDisplay();
   EXPECT_EQ("0,0 375x250", display1.bounds().ToString());

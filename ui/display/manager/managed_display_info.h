@@ -52,6 +52,9 @@ class DISPLAY_EXPORT ManagedDisplayMode
 
   bool native() const { return native_; }
 
+  bool is_default() const { return is_default_; }
+  void set_is_default(bool is_default) { is_default_ = is_default; }
+
   // Missing from ui::ManagedDisplayMode
   float ui_scale() const { return ui_scale_; }
   float device_scale_factor() const { return device_scale_factor_; }
@@ -64,6 +67,7 @@ class DISPLAY_EXPORT ManagedDisplayMode
   float refresh_rate_;         // Refresh rate of the display, in Hz.
   bool is_interlaced_;         // True if mode is interlaced.
   bool native_;                // True if mode is native mode of the display.
+  bool is_default_ = false;    // True if mode is one with default UI scale.
   float ui_scale_;             // The UI scale factor of the mode.
   float device_scale_factor_;  // The device scale factor of the mode.
 
