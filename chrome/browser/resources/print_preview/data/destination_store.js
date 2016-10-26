@@ -564,7 +564,7 @@ cr.define('print_preview', function() {
     var categoryStandardMisc = [];
     var categoryCustom = [];
     for (var i = 0, media; media = mediaSize.option[i]; i++) {
-      var name = media.name;
+      var name = media.name || 'CUSTOM';
       var category;
       if (name.startsWith('NA_')) {
         category = categoryStandardNA;
