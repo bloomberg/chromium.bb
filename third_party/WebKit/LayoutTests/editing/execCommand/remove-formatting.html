@@ -1,41 +1,49 @@
-<!DOCTYPE html>
-<html>
-<body>
-<script src="../../resources/dump-as-markup.js"></script>
-<div id="test" contenteditable="true">
-<b>foo</b><a href="http://www.google.com/">bar</a><i>baz</i><br>
-<table border="1"><tr><td>foo</td><td>bar</td><td>baz</td></tr></table>
-<u>foo</u>bar<span style="text-decoration:line-through">baz</span><br>
-</div>
-<pre id="console"></pre>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+test(() => assert_selection(
+    '<div contenteditable><a href="http://foo">bar</a></div>',
+    selection => {
+        assert_false(selection.document.execCommand('removeFormat'),
+                     'RemoveFormat enabled with no selection');
+    },
+    '<div contenteditable><a href="http://foo">bar</a></div>'),
+    'RemoveFormat command with no selection');
 
-if (window.testRunner)
-    testRunner.dumpEditingCallbacks();
+test(() => assert_selection(
+    '<div contenteditable><b>|abc</b></div>',
+    selection => {
+        assert_false(selection.document.execCommand('removeFormat'),
+                     'RemoveFormat enabled with no selection');
+    },
+    '<div contenteditable><b>|abc</b></div>'),
+    'RemoveFormat command with caret');
 
-function log(message) {
-    var console = document.getElementById("console");
-    console.innerHTML += message + '\n';
-}
-
-var e = document.getElementById("test");
-var s = window.getSelection();
-
-if (document.queryCommandEnabled("RemoveFormat"))
-    log("Failure: RemoveFormat enabled with no selection.");
-s.collapse(e, 0);
-if (document.queryCommandEnabled("RemoveFormat"))
-    log("Failure: RemoveFormat enabled with a caret selection.");
-document.execCommand("SelectAll");
-if (!document.queryCommandEnabled("RemoveFormat"))
-    log("Failure: RemoveFormat disabled with an editable selection.");
-if (!document.execCommand("RemoveFormat"))
-    log("Failure: execCommand('RemoveFormat') returned false.");
-
-Markup.description('This is a test for execCommand("RemoveFormat"). It demonstrates a bug: everything in the editable region below should be selected, as everything was selected before Remove Format was performed.');
-Markup.dump(e, 'markup');
-Markup.dump('console', 'console');
-
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<b>^abc</b>',
+            '<a href="#foo">def</a>',
+            '<i>ghi</i><br>',
+            '<table><tbody><tr><td>one</td><td>two</td></tr></tbody></table>',
+            '<u>jkl</u>',
+            'mno',
+            '<span style="text-decoration:line-through">baz|</span><br>',
+        '</div>',
+    ].join(''),
+    'removeFormat',
+    [
+        '<div contenteditable>',
+            '^abc',
+            '<a href="#foo">def</a>',
+            'ghi<br>',
+            '<table><tbody><tr><td>one</td><td>two</td></tr></tbody></table>',
+            'jkl',
+            'mno',
+            'baz|<br>',
+        '</div>',
+    ].join('')),
+    'RemoveFormat command with range selection');
 </script>
-</body>
-</html>
