@@ -22,7 +22,6 @@ declare_args() {
   ozone_platform = ""
 
   # Enable individual platforms.
-  ozone_platform_caca = false
   ozone_platform_cast = false
   ozone_platform_gbm = false
   ozone_platform_headless = false
@@ -59,7 +58,7 @@ declare_args() {
   }
 }
 
-assert(use_ozone || !(ozone_platform_caca || ozone_platform_cast ||
-                          ozone_platform_gbm || ozone_platform_headless ||
-                          ozone_platform_x11 || ozone_platform_wayland),
+assert(use_ozone || !(ozone_platform_cast || ozone_platform_gbm ||
+                          ozone_platform_headless || ozone_platform_x11 ||
+                          ozone_platform_wayland),
        "Must set use_ozone to select ozone platforms")

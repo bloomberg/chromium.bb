@@ -24,11 +24,6 @@ if (ozone_platform_headless) {
   ozone_platform_deps += [ "platform/headless" ]
 }
 
-if (ozone_platform_caca) {
-  ozone_platforms += [ "caca" ]
-  ozone_platform_deps += [ "platform/caca" ]
-}
-
 if (ozone_platform_gbm) {
   ozone_platforms += [ "gbm" ]
   ozone_platform_deps += [ "platform/drm:gbm" ]
