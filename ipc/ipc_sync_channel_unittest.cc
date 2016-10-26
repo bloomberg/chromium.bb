@@ -8,7 +8,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -29,7 +28,6 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_sync_message_unittest.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::WaitableEvent;
@@ -43,14 +41,14 @@ class Worker : public Listener, public Sender {
   // Will create a channel without a name.
   Worker(Channel::Mode mode,
          const std::string& thread_name,
-         mojo::ScopedMessagePipeHandle channel_handle)
+         const std::string& channel_name)
       : done_(
             new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED)),
         channel_created_(
             new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED)),
-        channel_handle_(std::move(channel_handle)),
+        channel_name_(channel_name),
         mode_(mode),
         ipc_thread_((thread_name + "_ipc").c_str()),
         listener_thread_((thread_name + "_listener").c_str()),
@@ -60,17 +58,17 @@ class Worker : public Listener, public Sender {
         is_shutdown_(false) {}
 
   // Will create a named channel and use this name for the threads' name.
-  Worker(mojo::ScopedMessagePipeHandle channel_handle, Channel::Mode mode)
+  Worker(const std::string& channel_name, Channel::Mode mode)
       : done_(
             new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED)),
         channel_created_(
             new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED)),
-        channel_handle_(std::move(channel_handle)),
+        channel_name_(channel_name),
         mode_(mode),
-        ipc_thread_("ipc thread"),
-        listener_thread_("listener thread"),
+        ipc_thread_((channel_name + "_ipc").c_str()),
+        listener_thread_((channel_name + "_listener").c_str()),
         overrided_thread_(NULL),
         shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -135,10 +133,7 @@ class Worker : public Listener, public Sender {
     DCHECK_EQ(answer, (succeed ? 10 : 0));
     return result;
   }
-  mojo::MessagePipeHandle TakeChannelHandle() {
-    DCHECK(channel_handle_.is_valid());
-    return channel_handle_.release();
-  }
+  const std::string& channel_name() { return channel_name_; }
   Channel::Mode mode() { return mode_; }
   WaitableEvent* done_event() { return done_.get(); }
   WaitableEvent* shutdown_event() { return &shutdown_event_; }
@@ -176,9 +171,9 @@ class Worker : public Listener, public Sender {
   }
 
   virtual SyncChannel* CreateChannel() {
-    std::unique_ptr<SyncChannel> channel =
-        SyncChannel::Create(TakeChannelHandle(), mode_, this,
-                            ipc_thread_.task_runner(), true, &shutdown_event_);
+    std::unique_ptr<SyncChannel> channel = SyncChannel::Create(
+        channel_name_, mode_, this, ipc_thread_.task_runner().get(), true,
+        &shutdown_event_);
     return channel.release();
   }
 
@@ -244,7 +239,7 @@ class Worker : public Listener, public Sender {
 
   std::unique_ptr<WaitableEvent> done_;
   std::unique_ptr<WaitableEvent> channel_created_;
-  mojo::ScopedMessagePipeHandle channel_handle_;
+  std::string channel_name_;
   Channel::Mode mode_;
   std::unique_ptr<SyncChannel> channel_;
   base::Thread ipc_thread_;
@@ -296,11 +291,8 @@ class IPCSyncChannelTest : public testing::Test {
 
 class SimpleServer : public Worker {
  public:
-  SimpleServer(bool pump_during_send,
-               mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_SERVER,
-               "simpler_server",
-               std::move(channel_handle)),
+  SimpleServer(bool pump_during_send, const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "simpler_server", channel_name),
         pump_during_send_(pump_during_send) {}
   void Run() override {
     SendAnswerToLife(pump_during_send_, true);
@@ -312,10 +304,8 @@ class SimpleServer : public Worker {
 
 class SimpleClient : public Worker {
  public:
-  explicit SimpleClient(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "simple_client",
-               std::move(channel_handle)) {}
+  explicit SimpleClient(const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "simple_client", channel_name) {}
 
   void OnAnswer(int* answer) override {
     *answer = 42;
@@ -325,10 +315,8 @@ class SimpleClient : public Worker {
 
 void Simple(bool pump_during_send) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(
-      new SimpleServer(pump_during_send, std::move(pipe.handle0)));
-  workers.push_back(new SimpleClient(std::move(pipe.handle1)));
+  workers.push_back(new SimpleServer(pump_during_send, "Simple"));
+  workers.push_back(new SimpleClient("Simple"));
   RunTest(workers);
 }
 
@@ -350,11 +338,8 @@ TEST_F(IPCSyncChannelTest, MAYBE_Simple) {
 // ChannelProxy::Init separately) process.
 class TwoStepServer : public Worker {
  public:
-  TwoStepServer(bool create_pipe_now,
-                mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_SERVER,
-               "simpler_server",
-               std::move(channel_handle)),
+  TwoStepServer(bool create_pipe_now, const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "simpler_server", channel_name),
         create_pipe_now_(create_pipe_now) {}
 
   void Run() override {
@@ -364,8 +349,8 @@ class TwoStepServer : public Worker {
 
   SyncChannel* CreateChannel() override {
     SyncChannel* channel =
-        SyncChannel::Create(TakeChannelHandle(), mode(), this,
-                            ipc_thread().task_runner(), create_pipe_now_,
+        SyncChannel::Create(channel_name(), mode(), this,
+                            ipc_thread().task_runner().get(), create_pipe_now_,
                             shutdown_event())
             .release();
     return channel;
@@ -376,11 +361,8 @@ class TwoStepServer : public Worker {
 
 class TwoStepClient : public Worker {
  public:
-  TwoStepClient(bool create_pipe_now,
-                mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "simple_client",
-               std::move(channel_handle)),
+  TwoStepClient(bool create_pipe_now, const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "simple_client", channel_name),
         create_pipe_now_(create_pipe_now) {}
 
   void OnAnswer(int* answer) override {
@@ -390,8 +372,8 @@ class TwoStepClient : public Worker {
 
   SyncChannel* CreateChannel() override {
     SyncChannel* channel =
-        SyncChannel::Create(TakeChannelHandle(), mode(), this,
-                            ipc_thread().task_runner(), create_pipe_now_,
+        SyncChannel::Create(channel_name(), mode(), this,
+                            ipc_thread().task_runner().get(), create_pipe_now_,
                             shutdown_event())
             .release();
     return channel;
@@ -402,11 +384,8 @@ class TwoStepClient : public Worker {
 
 void TwoStep(bool create_server_pipe_now, bool create_client_pipe_now) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(
-      new TwoStepServer(create_server_pipe_now, std::move(pipe.handle0)));
-  workers.push_back(
-      new TwoStepClient(create_client_pipe_now, std::move(pipe.handle1)));
+  workers.push_back(new TwoStepServer(create_server_pipe_now, "TwoStep"));
+  workers.push_back(new TwoStepClient(create_client_pipe_now, "TwoStep"));
   RunTest(workers);
 }
 
@@ -423,10 +402,8 @@ TEST_F(IPCSyncChannelTest, TwoStepInitialization) {
 
 class DelayClient : public Worker {
  public:
-  explicit DelayClient(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "delay_client",
-               std::move(channel_handle)) {}
+  explicit DelayClient(const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "delay_client", channel_name) {}
 
   void OnAnswerDelay(Message* reply_msg) override {
     SyncChannelTestMsg_AnswerToLife::WriteReplyParams(reply_msg, 42);
@@ -437,10 +414,8 @@ class DelayClient : public Worker {
 
 void DelayReply(bool pump_during_send) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(
-      new SimpleServer(pump_during_send, std::move(pipe.handle0)));
-  workers.push_back(new DelayClient(std::move(pipe.handle1)));
+  workers.push_back(new SimpleServer(pump_during_send, "DelayReply"));
+  workers.push_back(new DelayClient("DelayReply"));
   RunTest(workers);
 }
 
@@ -456,10 +431,8 @@ class NoHangServer : public Worker {
  public:
   NoHangServer(WaitableEvent* got_first_reply,
                bool pump_during_send,
-               mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_SERVER,
-               "no_hang_server",
-               std::move(channel_handle)),
+               const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "no_hang_server", channel_name),
         got_first_reply_(got_first_reply),
         pump_during_send_(pump_during_send) {}
   void Run() override {
@@ -476,11 +449,8 @@ class NoHangServer : public Worker {
 
 class NoHangClient : public Worker {
  public:
-  NoHangClient(WaitableEvent* got_first_reply,
-               mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "no_hang_client",
-               std::move(channel_handle)),
+  NoHangClient(WaitableEvent* got_first_reply, const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "no_hang_client", channel_name),
         got_first_reply_(got_first_reply) {}
 
   void OnAnswerDelay(Message* reply_msg) override {
@@ -501,11 +471,9 @@ void NoHang(bool pump_during_send) {
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(new NoHangServer(&got_first_reply, pump_during_send,
-                                     std::move(pipe.handle0)));
   workers.push_back(
-      new NoHangClient(&got_first_reply, std::move(pipe.handle1)));
+      new NoHangServer(&got_first_reply, pump_during_send, "NoHang"));
+  workers.push_back(new NoHangClient(&got_first_reply, "NoHang"));
   RunTest(workers);
 }
 
@@ -521,10 +489,8 @@ class UnblockServer : public Worker {
  public:
   UnblockServer(bool pump_during_send,
                 bool delete_during_send,
-                mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_SERVER,
-               "unblock_server",
-               std::move(channel_handle)),
+                const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "unblock_server", channel_name),
         pump_during_send_(pump_during_send),
         delete_during_send_(delete_during_send) {}
   void Run() override {
@@ -555,11 +521,8 @@ class UnblockServer : public Worker {
 
 class UnblockClient : public Worker {
  public:
-  UnblockClient(bool pump_during_send,
-                mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "unblock_client",
-               std::move(channel_handle)),
+  UnblockClient(bool pump_during_send, const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "unblock_client", channel_name),
         pump_during_send_(pump_during_send) {}
 
   void OnAnswer(int* answer) override {
@@ -573,10 +536,9 @@ class UnblockClient : public Worker {
 
 void Unblock(bool server_pump, bool client_pump, bool delete_during_send) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(new UnblockServer(server_pump, delete_during_send,
-                                      std::move(pipe.handle0)));
-  workers.push_back(new UnblockClient(client_pump, std::move(pipe.handle1)));
+  workers.push_back(
+      new UnblockServer(server_pump, delete_during_send, "Unblock"));
+  workers.push_back(new UnblockClient(client_pump, "Unblock"));
   RunTest(workers);
 }
 
@@ -610,10 +572,8 @@ class RecursiveServer : public Worker {
   RecursiveServer(bool expected_send_result,
                   bool pump_first,
                   bool pump_second,
-                  mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_SERVER,
-               "recursive_server",
-               std::move(channel_handle)),
+                  const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "recursive_server", channel_name),
         expected_send_result_(expected_send_result),
         pump_first_(pump_first),
         pump_second_(pump_second) {}
@@ -634,10 +594,8 @@ class RecursiveClient : public Worker {
  public:
   RecursiveClient(bool pump_during_send,
                   bool close_channel,
-                  mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "recursive_client",
-               std::move(channel_handle)),
+                  const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "recursive_client", channel_name),
         pump_during_send_(pump_during_send),
         close_channel_(close_channel) {}
 
@@ -668,11 +626,9 @@ class RecursiveClient : public Worker {
 void Recursive(
     bool server_pump_first, bool server_pump_second, bool client_pump) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(new RecursiveServer(
-      true, server_pump_first, server_pump_second, std::move(pipe.handle0)));
-  workers.push_back(
-      new RecursiveClient(client_pump, false, std::move(pipe.handle1)));
+  workers.push_back(new RecursiveServer(true, server_pump_first,
+                                        server_pump_second, "Recursive"));
+  workers.push_back(new RecursiveClient(client_pump, false, "Recursive"));
   RunTest(workers);
 }
 
@@ -693,11 +649,9 @@ TEST_F(IPCSyncChannelTest, Recursive) {
 void RecursiveNoHang(
     bool server_pump_first, bool server_pump_second, bool client_pump) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(new RecursiveServer(
-      false, server_pump_first, server_pump_second, std::move(pipe.handle0)));
-  workers.push_back(
-      new RecursiveClient(client_pump, true, std::move(pipe.handle1)));
+  workers.push_back(new RecursiveServer(false, server_pump_first,
+                                        server_pump_second, "RecursiveNoHang"));
+  workers.push_back(new RecursiveClient(client_pump, true, "RecursiveNoHang"));
   RunTest(workers);
 }
 
@@ -718,10 +672,9 @@ TEST_F(IPCSyncChannelTest, RecursiveNoHang) {
 
 class MultipleServer1 : public Worker {
  public:
-  MultipleServer1(bool pump_during_send,
-                  mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER),
-        pump_during_send_(pump_during_send) {}
+  explicit MultipleServer1(bool pump_during_send)
+    : Worker("test_channel1", Channel::MODE_SERVER),
+      pump_during_send_(pump_during_send) { }
 
   void Run() override {
     SendDouble(pump_during_send_, true);
@@ -734,11 +687,10 @@ class MultipleServer1 : public Worker {
 class MultipleClient1 : public Worker {
  public:
   MultipleClient1(WaitableEvent* client1_msg_received,
-                  WaitableEvent* client1_can_reply,
-                  mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_CLIENT),
-        client1_msg_received_(client1_msg_received),
-        client1_can_reply_(client1_can_reply) {}
+                  WaitableEvent* client1_can_reply) :
+      Worker("test_channel1", Channel::MODE_CLIENT),
+      client1_msg_received_(client1_msg_received),
+      client1_can_reply_(client1_can_reply) { }
 
   void OnDouble(int in, int* out) override {
     client1_msg_received_->Signal();
@@ -753,8 +705,7 @@ class MultipleClient1 : public Worker {
 
 class MultipleServer2 : public Worker {
  public:
-  explicit MultipleServer2(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER) {}
+  MultipleServer2() : Worker("test_channel2", Channel::MODE_SERVER) { }
 
   void OnAnswer(int* result) override {
     *result = 42;
@@ -764,14 +715,13 @@ class MultipleServer2 : public Worker {
 
 class MultipleClient2 : public Worker {
  public:
-  MultipleClient2(WaitableEvent* client1_msg_received,
-                  WaitableEvent* client1_can_reply,
-                  bool pump_during_send,
-                  mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_CLIENT),
-        client1_msg_received_(client1_msg_received),
-        client1_can_reply_(client1_can_reply),
-        pump_during_send_(pump_during_send) {}
+  MultipleClient2(
+    WaitableEvent* client1_msg_received, WaitableEvent* client1_can_reply,
+    bool pump_during_send)
+    : Worker("test_channel2", Channel::MODE_CLIENT),
+      client1_msg_received_(client1_msg_received),
+      client1_can_reply_(client1_can_reply),
+      pump_during_send_(pump_during_send) { }
 
   void Run() override {
     client1_msg_received_->Wait();
@@ -804,21 +754,20 @@ void Multiple(bool server_pump, bool client_pump) {
 
   Worker* worker;
 
-  mojo::MessagePipe pipe1, pipe2;
-  worker = new MultipleServer2(std::move(pipe2.handle0));
+  worker = new MultipleServer2();
   worker->OverrideThread(&worker_thread);
   workers.push_back(worker);
 
-  worker = new MultipleClient2(&client1_msg_received, &client1_can_reply,
-                               client_pump, std::move(pipe2.handle1));
+  worker = new MultipleClient2(
+      &client1_msg_received, &client1_can_reply, client_pump);
   workers.push_back(worker);
 
-  worker = new MultipleServer1(server_pump, std::move(pipe1.handle0));
+  worker = new MultipleServer1(server_pump);
   worker->OverrideThread(&worker_thread);
   workers.push_back(worker);
 
-  worker = new MultipleClient1(&client1_msg_received, &client1_can_reply,
-                               std::move(pipe1.handle1));
+  worker = new MultipleClient1(
+      &client1_msg_received, &client1_can_reply);
   workers.push_back(worker);
 
   RunTest(workers);
@@ -841,9 +790,9 @@ TEST_F(IPCSyncChannelTest, Multiple) {
 class QueuedReplyServer : public Worker {
  public:
   QueuedReplyServer(base::Thread* listener_thread,
-                    mojo::ScopedMessagePipeHandle channel_handle,
+                    const std::string& channel_name,
                     const std::string& reply_text)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER),
+      : Worker(channel_name, Channel::MODE_SERVER),
         reply_text_(reply_text) {
     Worker::OverrideThread(listener_thread);
   }
@@ -868,10 +817,10 @@ class QueuedReplyServer : public Worker {
 class QueuedReplyClient : public Worker {
  public:
   QueuedReplyClient(base::Thread* listener_thread,
-                    mojo::ScopedMessagePipeHandle channel_handle,
+                    const std::string& channel_name,
                     const std::string& expected_text,
                     bool pump_during_send)
-      : Worker(std::move(channel_handle), Channel::MODE_CLIENT),
+      : Worker(channel_name, Channel::MODE_CLIENT),
         pump_during_send_(pump_during_send),
         expected_text_(expected_text) {
     Worker::OverrideThread(listener_thread);
@@ -907,23 +856,26 @@ void QueuedReply(bool client_pump) {
 
   Worker* worker;
 
-  mojo::MessagePipe pipe1, pipe2;
   worker = new QueuedReplyServer(&server_worker_thread,
-                                 std::move(pipe1.handle0), "Got first message");
+                                 "QueuedReply_Server1",
+                                 "Got first message");
   workers.push_back(worker);
 
-  worker = new QueuedReplyServer(
-      &server_worker_thread, std::move(pipe2.handle0), "Got second message");
+  worker = new QueuedReplyServer(&server_worker_thread,
+                                 "QueuedReply_Server2",
+                                 "Got second message");
   workers.push_back(worker);
 
-  worker =
-      new QueuedReplyClient(&client_worker_thread, std::move(pipe1.handle1),
-                            "Got first message", client_pump);
+  worker = new QueuedReplyClient(&client_worker_thread,
+                                 "QueuedReply_Server1",
+                                 "Got first message",
+                                 client_pump);
   workers.push_back(worker);
 
-  worker =
-      new QueuedReplyClient(&client_worker_thread, std::move(pipe2.handle1),
-                            "Got second message", client_pump);
+  worker = new QueuedReplyClient(&client_worker_thread,
+                                 "QueuedReply_Server2",
+                                 "Got second message",
+                                 client_pump);
   workers.push_back(worker);
 
   RunTest(workers);
@@ -944,10 +896,8 @@ TEST_F(IPCSyncChannelTest, QueuedReply) {
 
 class ChattyClient : public Worker {
  public:
-  explicit ChattyClient(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "chatty_client",
-               std::move(channel_handle)) {}
+  explicit ChattyClient(const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "chatty_client", channel_name) {}
 
   void OnAnswer(int* answer) override {
     // The PostMessage limit is 10k.  Send 20% more than that.
@@ -964,10 +914,8 @@ class ChattyClient : public Worker {
 
 void ChattyServer(bool pump_during_send) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(
-      new UnblockServer(pump_during_send, false, std::move(pipe.handle0)));
-  workers.push_back(new ChattyClient(std::move(pipe.handle1)));
+  workers.push_back(new UnblockServer(pump_during_send, false, "ChattyServer"));
+  workers.push_back(new ChattyClient("ChattyServer"));
   RunTest(workers);
 }
 
@@ -1001,10 +949,8 @@ void TimeoutCallback() {
 
 class DoneEventRaceServer : public Worker {
  public:
-  explicit DoneEventRaceServer(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_SERVER,
-               "done_event_race_server",
-               std::move(channel_handle)) {}
+  explicit DoneEventRaceServer(const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "done_event_race_server", channel_name) {}
 
   void Run() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1032,9 +978,8 @@ class DoneEventRaceServer : public Worker {
 // reply comes back OnObjectSignaled will be called for the first message.
 TEST_F(IPCSyncChannelTest, MAYBE_DoneEventRace) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(new DoneEventRaceServer(std::move(pipe.handle0)));
-  workers.push_back(new SimpleClient(std::move(pipe.handle1)));
+  workers.push_back(new DoneEventRaceServer("DoneEventRace"));
+  workers.push_back(new SimpleClient("DoneEventRace"));
   RunTest(workers);
 }
 
@@ -1075,10 +1020,10 @@ class TestSyncMessageFilter : public SyncMessageFilter {
 
 class SyncMessageFilterServer : public Worker {
  public:
-  explicit SyncMessageFilterServer(mojo::ScopedMessagePipeHandle channel_handle)
+  explicit SyncMessageFilterServer(const std::string& channel_name)
       : Worker(Channel::MODE_SERVER,
                "sync_message_filter_server",
-               std::move(channel_handle)),
+               channel_name),
         thread_("helper_thread") {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
@@ -1099,10 +1044,8 @@ class SyncMessageFilterServer : public Worker {
 // channel does not crash after the channel has been closed.
 class ServerSendAfterClose : public Worker {
  public:
-  explicit ServerSendAfterClose(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_SERVER,
-               "simpler_server",
-               std::move(channel_handle)),
+  explicit ServerSendAfterClose(const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "simpler_server", channel_name),
         send_result_(true) {}
 
   bool SendDummy() {
@@ -1134,16 +1077,14 @@ class ServerSendAfterClose : public Worker {
 // Tests basic synchronous call
 TEST_F(IPCSyncChannelTest, SyncMessageFilter) {
   std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(new SyncMessageFilterServer(std::move(pipe.handle0)));
-  workers.push_back(new SimpleClient(std::move(pipe.handle1)));
+  workers.push_back(new SyncMessageFilterServer("SyncMessageFilter"));
+  workers.push_back(new SimpleClient("SyncMessageFilter"));
   RunTest(workers);
 }
 
 // Test the case when the channel is closed and a Send is attempted after that.
 TEST_F(IPCSyncChannelTest, SendAfterClose) {
-  mojo::MessagePipe pipe;
-  ServerSendAfterClose server(std::move(pipe.handle0));
+  ServerSendAfterClose server("SendAfterClose");
   server.Start();
 
   server.done_event()->Wait();
@@ -1162,11 +1103,10 @@ TEST_F(IPCSyncChannelTest, SendAfterClose) {
 class RestrictedDispatchServer : public Worker {
  public:
   RestrictedDispatchServer(WaitableEvent* sent_ping_event,
-                           WaitableEvent* wait_event,
-                           mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER),
+                           WaitableEvent* wait_event)
+      : Worker("restricted_channel", Channel::MODE_SERVER),
         sent_ping_event_(sent_ping_event),
-        wait_event_(wait_event) {}
+        wait_event_(wait_event) { }
 
   void OnDoPing(int ping) {
     // Send an asynchronous message that unblocks the caller.
@@ -1207,9 +1147,8 @@ class RestrictedDispatchServer : public Worker {
 
 class NonRestrictedDispatchServer : public Worker {
  public:
-  NonRestrictedDispatchServer(WaitableEvent* signal_event,
-                              mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER),
+  NonRestrictedDispatchServer(WaitableEvent* signal_event)
+      : Worker("non_restricted_channel", Channel::MODE_SERVER),
         signal_event_(signal_event) {}
 
   base::Thread* ListenerThread() { return Worker::ListenerThread(); }
@@ -1235,21 +1174,16 @@ class NonRestrictedDispatchServer : public Worker {
 
 class RestrictedDispatchClient : public Worker {
  public:
-  RestrictedDispatchClient(
-      WaitableEvent* sent_ping_event,
-      RestrictedDispatchServer* server,
-      NonRestrictedDispatchServer* server2,
-      int* success,
-      mojo::ScopedMessagePipeHandle restricted_channel_handle,
-      mojo::ScopedMessagePipeHandle non_restricted_channel_handle)
-      : Worker(std::move(restricted_channel_handle), Channel::MODE_CLIENT),
+  RestrictedDispatchClient(WaitableEvent* sent_ping_event,
+                           RestrictedDispatchServer* server,
+                           NonRestrictedDispatchServer* server2,
+                           int* success)
+      : Worker("restricted_channel", Channel::MODE_CLIENT),
         ping_(0),
         server_(server),
         server2_(server2),
         success_(success),
-        sent_ping_event_(sent_ping_event),
-        non_restricted_channel_handle_(
-            std::move(non_restricted_channel_handle)) {}
+        sent_ping_event_(sent_ping_event) {}
 
   void Run() override {
     // Incoming messages from our channel should only be dispatched when we
@@ -1266,8 +1200,8 @@ class RestrictedDispatchClient : public Worker {
       LOG(ERROR) << "Send failed to dispatch incoming message on same channel";
 
     non_restricted_channel_ = SyncChannel::Create(
-        non_restricted_channel_handle_.release(), IPC::Channel::MODE_CLIENT,
-        this, ipc_thread().task_runner(), true, shutdown_event());
+        "non_restricted_channel", IPC::Channel::MODE_CLIENT, this,
+        ipc_thread().task_runner().get(), true, shutdown_event());
 
     server_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 2));
@@ -1337,7 +1271,6 @@ class RestrictedDispatchClient : public Worker {
   int* success_;
   WaitableEvent* sent_ping_event_;
   std::unique_ptr<SyncChannel> non_restricted_channel_;
-  mojo::ScopedMessagePipeHandle non_restricted_channel_handle_;
 };
 
 TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
@@ -1346,20 +1279,17 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   WaitableEvent wait_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  mojo::MessagePipe restricted_pipe, non_restricted_pipe;
-  RestrictedDispatchServer* server = new RestrictedDispatchServer(
-      &sent_ping_event, &wait_event, std::move(restricted_pipe.handle0));
-  NonRestrictedDispatchServer* server2 = new NonRestrictedDispatchServer(
-      &wait_event, std::move(non_restricted_pipe.handle0));
+  RestrictedDispatchServer* server =
+      new RestrictedDispatchServer(&sent_ping_event, &wait_event);
+  NonRestrictedDispatchServer* server2 =
+      new NonRestrictedDispatchServer(&wait_event);
 
   int success = 0;
   std::vector<Worker*> workers;
   workers.push_back(server);
   workers.push_back(server2);
-  workers.push_back(
-      new RestrictedDispatchClient(&sent_ping_event, server, server2, &success,
-                                   std::move(restricted_pipe.handle1),
-                                   std::move(non_restricted_pipe.handle1)));
+  workers.push_back(new RestrictedDispatchClient(
+      &sent_ping_event, server, server2, &success));
   RunTest(workers);
   EXPECT_EQ(4, success);
 }
@@ -1398,13 +1328,12 @@ class RestrictedDispatchDeadlockServer : public Worker {
   RestrictedDispatchDeadlockServer(int server_num,
                                    WaitableEvent* server_ready_event,
                                    WaitableEvent** events,
-                                   RestrictedDispatchDeadlockServer* peer,
-                                   mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER),
+                                   RestrictedDispatchDeadlockServer* peer)
+      : Worker(server_num == 1 ? "channel1" : "channel2", Channel::MODE_SERVER),
         server_num_(server_num),
         server_ready_event_(server_ready_event),
         events_(events),
-        peer_(peer) {}
+        peer_(peer) { }
 
   void OnDoServerTask() {
     events_[3]->Signal();
@@ -1451,12 +1380,10 @@ class RestrictedDispatchDeadlockServer : public Worker {
 
 class RestrictedDispatchDeadlockClient2 : public Worker {
  public:
-  RestrictedDispatchDeadlockClient2(
-      RestrictedDispatchDeadlockServer* server,
-      WaitableEvent* server_ready_event,
-      WaitableEvent** events,
-      mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_CLIENT),
+  RestrictedDispatchDeadlockClient2(RestrictedDispatchDeadlockServer* server,
+                                    WaitableEvent* server_ready_event,
+                                    WaitableEvent** events)
+      : Worker("channel2", Channel::MODE_CLIENT),
         server_ready_event_(server_ready_event),
         events_(events),
         received_msg_(false),
@@ -1511,13 +1438,11 @@ class RestrictedDispatchDeadlockClient2 : public Worker {
 
 class RestrictedDispatchDeadlockClient1 : public Worker {
  public:
-  RestrictedDispatchDeadlockClient1(
-      RestrictedDispatchDeadlockServer* server,
-      RestrictedDispatchDeadlockClient2* peer,
-      WaitableEvent* server_ready_event,
-      WaitableEvent** events,
-      mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_CLIENT),
+  RestrictedDispatchDeadlockClient1(RestrictedDispatchDeadlockServer* server,
+                                    RestrictedDispatchDeadlockClient2* peer,
+                                    WaitableEvent* server_ready_event,
+                                    WaitableEvent** events)
+      : Worker("channel1", Channel::MODE_CLIENT),
         server_(server),
         peer_(peer),
         server_ready_event_(server_ready_event),
@@ -1603,23 +1528,22 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
   RestrictedDispatchDeadlockClient1* client1;
   RestrictedDispatchDeadlockClient2* client2;
 
-  mojo::MessagePipe pipe1, pipe2;
-  server2 = new RestrictedDispatchDeadlockServer(
-      2, &server2_ready, events, NULL, std::move(pipe2.handle0));
+  server2 = new RestrictedDispatchDeadlockServer(2, &server2_ready, events,
+                                                 NULL);
   server2->OverrideThread(&worker_thread);
   workers.push_back(server2);
 
-  client2 = new RestrictedDispatchDeadlockClient2(
-      server2, &server2_ready, events, std::move(pipe2.handle1));
+  client2 = new RestrictedDispatchDeadlockClient2(server2, &server2_ready,
+                                                  events);
   workers.push_back(client2);
 
-  server1 = new RestrictedDispatchDeadlockServer(
-      1, &server1_ready, events, server2, std::move(pipe1.handle0));
+  server1 = new RestrictedDispatchDeadlockServer(1, &server1_ready, events,
+                                                 server2);
   server1->OverrideThread(&worker_thread);
   workers.push_back(server1);
 
-  client1 = new RestrictedDispatchDeadlockClient1(
-      server1, client2, &server1_ready, events, std::move(pipe1.handle1));
+  client1 = new RestrictedDispatchDeadlockClient1(server1, client2,
+                                                  &server1_ready, events);
   workers.push_back(client1);
 
   RunTest(workers);
@@ -1635,18 +1559,20 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
 
 class RestrictedDispatchPipeWorker : public Worker {
  public:
-  RestrictedDispatchPipeWorker(mojo::ScopedMessagePipeHandle channel_handle1,
-                               WaitableEvent* event1,
-                               mojo::ScopedMessagePipeHandle channel_handle2,
-                               WaitableEvent* event2,
-                               int group,
-                               int* success)
-      : Worker(std::move(channel_handle1), Channel::MODE_SERVER),
+  RestrictedDispatchPipeWorker(
+      const std::string &channel1,
+      WaitableEvent* event1,
+      const std::string &channel2,
+      WaitableEvent* event2,
+      int group,
+      int* success)
+      : Worker(channel1, Channel::MODE_SERVER),
         event1_(event1),
         event2_(event2),
-        other_channel_handle_(std::move(channel_handle2)),
+        other_channel_name_(channel2),
         group_(group),
-        success_(success) {}
+        success_(success) {
+  }
 
   void OnPingTTL(int ping, int* ret) {
     *ret = 0;
@@ -1670,8 +1596,8 @@ class RestrictedDispatchPipeWorker : public Worker {
       event1_->Signal();
     event2_->Wait();
     other_channel_ = SyncChannel::Create(
-        other_channel_handle_.release(), IPC::Channel::MODE_CLIENT, this,
-        ipc_thread().task_runner(), true, shutdown_event());
+        other_channel_name_, IPC::Channel::MODE_CLIENT, this,
+        ipc_thread().task_runner().get(), true, shutdown_event());
     other_channel_->SetRestrictDispatchChannelGroup(group_);
     if (!is_first()) {
       event1_->Signal();
@@ -1704,7 +1630,7 @@ class RestrictedDispatchPipeWorker : public Worker {
   std::unique_ptr<SyncChannel> other_channel_;
   WaitableEvent* event1_;
   WaitableEvent* event2_;
-  mojo::ScopedMessagePipeHandle other_channel_handle_;
+  std::string other_channel_name_;
   int group_;
   int* success_;
 };
@@ -1726,19 +1652,14 @@ TEST_F(IPCSyncChannelTest, MAYBE_RestrictedDispatch4WayDeadlock) {
                        base::WaitableEvent::InitialState::NOT_SIGNALED);
   WaitableEvent event3(base::WaitableEvent::ResetPolicy::MANUAL,
                        base::WaitableEvent::InitialState::NOT_SIGNALED);
-  mojo::MessagePipe pipe0, pipe1, pipe2, pipe3;
   workers.push_back(new RestrictedDispatchPipeWorker(
-      std::move(pipe0.handle0), &event0, std::move(pipe1.handle1), &event1, 1,
-      &success));
+        "channel0", &event0, "channel1", &event1, 1, &success));
   workers.push_back(new RestrictedDispatchPipeWorker(
-      std::move(pipe1.handle0), &event1, std::move(pipe2.handle1), &event2, 2,
-      NULL));
+        "channel1", &event1, "channel2", &event2, 2, NULL));
   workers.push_back(new RestrictedDispatchPipeWorker(
-      std::move(pipe2.handle0), &event2, std::move(pipe3.handle1), &event3, 3,
-      NULL));
+        "channel2", &event2, "channel3", &event3, 3, NULL));
   workers.push_back(new RestrictedDispatchPipeWorker(
-      std::move(pipe3.handle0), &event3, std::move(pipe0.handle1), &event0, 4,
-      NULL));
+        "channel3", &event3, "channel0", &event0, 4, NULL));
   RunTest(workers);
   EXPECT_EQ(3, success);
 }
@@ -1755,17 +1676,14 @@ TEST_F(IPCSyncChannelTest, MAYBE_RestrictedDispatch4WayDeadlock) {
 
 class ReentrantReplyServer1 : public Worker {
  public:
-  ReentrantReplyServer1(WaitableEvent* server_ready,
-                        mojo::ScopedMessagePipeHandle channel_handle1,
-                        mojo::ScopedMessagePipeHandle channel_handle2)
-      : Worker(std::move(channel_handle1), Channel::MODE_SERVER),
-        server_ready_(server_ready),
-        other_channel_handle_(std::move(channel_handle2)) {}
+  ReentrantReplyServer1(WaitableEvent* server_ready)
+      : Worker("reentrant_reply1", Channel::MODE_SERVER),
+        server_ready_(server_ready) { }
 
   void Run() override {
     server2_channel_ = SyncChannel::Create(
-        other_channel_handle_.release(), IPC::Channel::MODE_CLIENT, this,
-        ipc_thread().task_runner(), true, shutdown_event());
+        "reentrant_reply2", IPC::Channel::MODE_CLIENT, this,
+        ipc_thread().task_runner().get(), true, shutdown_event());
     server_ready_->Signal();
     Message* msg = new SyncChannelTestMsg_Reentrant1();
     server2_channel_->Send(msg);
@@ -1795,13 +1713,13 @@ class ReentrantReplyServer1 : public Worker {
 
   WaitableEvent* server_ready_;
   std::unique_ptr<SyncChannel> server2_channel_;
-  mojo::ScopedMessagePipeHandle other_channel_handle_;
 };
 
 class ReentrantReplyServer2 : public Worker {
  public:
-  ReentrantReplyServer2(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER), reply_(NULL) {}
+  ReentrantReplyServer2()
+      : Worker("reentrant_reply2", Channel::MODE_SERVER),
+        reply_(NULL) { }
 
  private:
   bool OnMessageReceived(const Message& message) override {
@@ -1832,10 +1750,9 @@ class ReentrantReplyServer2 : public Worker {
 
 class ReentrantReplyClient : public Worker {
  public:
-  ReentrantReplyClient(WaitableEvent* server_ready,
-                       mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_CLIENT),
-        server_ready_(server_ready) {}
+  ReentrantReplyClient(WaitableEvent* server_ready)
+      : Worker("reentrant_reply1", Channel::MODE_CLIENT),
+        server_ready_(server_ready) { }
 
   void Run() override {
     server_ready_->Wait();
@@ -1851,13 +1768,102 @@ TEST_F(IPCSyncChannelTest, ReentrantReply) {
   std::vector<Worker*> workers;
   WaitableEvent server_ready(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  mojo::MessagePipe pipe1, pipe2;
-  workers.push_back(new ReentrantReplyServer2(std::move(pipe2.handle0)));
-  workers.push_back(new ReentrantReplyServer1(
-      &server_ready, std::move(pipe1.handle0), std::move(pipe2.handle1)));
-  workers.push_back(
-      new ReentrantReplyClient(&server_ready, std::move(pipe1.handle1)));
+  workers.push_back(new ReentrantReplyServer2());
+  workers.push_back(new ReentrantReplyServer1(&server_ready));
+  workers.push_back(new ReentrantReplyClient(&server_ready));
   RunTest(workers);
+}
+
+//------------------------------------------------------------------------------
+
+// Generate a validated channel ID using Channel::GenerateVerifiedChannelID().
+
+class VerifiedServer : public Worker {
+ public:
+  VerifiedServer(base::Thread* listener_thread,
+                 const std::string& channel_name,
+                 const std::string& reply_text)
+      : Worker(channel_name, Channel::MODE_SERVER),
+        reply_text_(reply_text) {
+    Worker::OverrideThread(listener_thread);
+  }
+
+  void OnNestedTestMsg(Message* reply_msg) override {
+    VLOG(1) << __FUNCTION__ << " Sending reply: " << reply_text_;
+    SyncChannelNestedTestMsg_String::WriteReplyParams(reply_msg, reply_text_);
+    Send(reply_msg);
+    ASSERT_EQ(channel()->GetPeerPID(), base::GetCurrentProcId());
+    Done();
+  }
+
+ private:
+  std::string reply_text_;
+};
+
+class VerifiedClient : public Worker {
+ public:
+  VerifiedClient(base::Thread* listener_thread,
+                 const std::string& channel_name,
+                 const std::string& expected_text)
+      : Worker(channel_name, Channel::MODE_CLIENT),
+        expected_text_(expected_text) {
+    Worker::OverrideThread(listener_thread);
+  }
+
+  void OnChannelConnected(int32_t peer_pid) override {
+    ListenerThread()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&VerifiedClient::RunTestOnConnected, this));
+  }
+
+  void RunTestOnConnected() {
+    std::string response;
+    SyncMessage* msg = new SyncChannelNestedTestMsg_String(&response);
+    bool result = Send(msg);
+    DCHECK(result);
+    DCHECK_EQ(response, expected_text_);
+    // expected_text_ is only used in the above DCHECK. This line suppresses the
+    // "unused private field" warning in release builds.
+    (void)expected_text_;
+
+    VLOG(1) << __FUNCTION__ << " Received reply: " << response;
+    ASSERT_EQ(channel()->GetPeerPID(), base::GetCurrentProcId());
+    Done();
+  }
+
+ private:
+  std::string expected_text_;
+};
+
+void Verified() {
+  std::vector<Worker*> workers;
+
+  // A shared worker thread for servers
+  base::Thread server_worker_thread("Verified_ServerListener");
+  ASSERT_TRUE(server_worker_thread.Start());
+
+  base::Thread client_worker_thread("Verified_ClientListener");
+  ASSERT_TRUE(client_worker_thread.Start());
+
+  std::string channel_id = Channel::GenerateVerifiedChannelID("Verified");
+  Worker* worker;
+
+  worker = new VerifiedServer(&server_worker_thread,
+                              channel_id,
+                              "Got first message");
+  workers.push_back(worker);
+
+  worker = new VerifiedClient(&client_worker_thread,
+                              channel_id,
+                              "Got first message");
+  workers.push_back(worker);
+
+  RunTest(workers);
+}
+
+// Windows needs to send an out-of-band secret to verify the client end of the
+// channel. Test that we still connect correctly in that case.
+TEST_F(IPCSyncChannelTest, Verified) {
+  Verified();
 }
 
 }  // namespace

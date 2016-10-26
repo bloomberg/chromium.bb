@@ -232,13 +232,13 @@ class MessageCountFilter : public IPC::MessageFilter {
   bool message_filtering_enabled_;
 };
 
-class IPCChannelProxyTest : public IPCChannelMojoTestBase {
+class IPCChannelProxyTest : public IPCTestBase {
  public:
   IPCChannelProxyTest() {}
   ~IPCChannelProxyTest() override {}
 
   void SetUp() override {
-    IPCChannelMojoTestBase::SetUp();
+    IPCTestBase::SetUp();
 
     Init("ChannelProxyClient");
 
@@ -248,16 +248,16 @@ class IPCChannelProxyTest : public IPCChannelMojoTestBase {
     thread_->StartWithOptions(options);
 
     listener_.reset(new QuitListener());
-    channel_proxy_ = IPC::ChannelProxy::Create(
-        TakeHandle().release(), IPC::Channel::MODE_SERVER, listener_.get(),
-        thread_->task_runner());
+    CreateChannelProxy(listener_.get(), thread_->task_runner().get());
+
+    ASSERT_TRUE(StartClient());
   }
 
   void TearDown() override {
-    channel_proxy_.reset();
+    DestroyChannelProxy();
     thread_.reset();
     listener_.reset();
-    IPCChannelMojoTestBase::TearDown();
+    IPCTestBase::TearDown();
   }
 
   void SendQuitMessageAndWaitForIdle() {
@@ -270,13 +270,9 @@ class IPCChannelProxyTest : public IPCChannelMojoTestBase {
     return listener_->bad_message_received_;
   }
 
-  IPC::ChannelProxy* channel_proxy() { return channel_proxy_.get(); }
-  IPC::Sender* sender() { return channel_proxy_.get(); }
-
  private:
   std::unique_ptr<base::Thread> thread_;
   std::unique_ptr<QuitListener> listener_;
-  std::unique_ptr<IPC::ChannelProxy> channel_proxy_;
 };
 
 TEST_F(IPCChannelProxyTest, MessageClassFilters) {
@@ -429,13 +425,17 @@ TEST_F(IPCChannelBadMessageTest, BadMessage) {
 
 #endif
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(ChannelProxyClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ChannelProxyClient) {
+  base::MessageLoopForIO main_message_loop;
   ChannelReflectorListener listener;
-  Connect(&listener);
-  listener.Init(channel());
+  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+      IPCTestBase::GetChannelName("ChannelProxyClient"), &listener,
+      main_message_loop.task_runner()));
+  CHECK(channel->Connect());
+  listener.Init(channel.get());
 
   base::RunLoop().Run();
-  Close();
+  return 0;
 }
 
 }  // namespace
