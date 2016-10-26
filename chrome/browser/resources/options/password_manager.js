@@ -109,7 +109,6 @@ cr.define('options', function() {
       options.passwordManager.PasswordsList.decorate(savedPasswordsList);
       this.savedPasswordsList_ = assertInstanceof(savedPasswordsList,
           options.DeletableItemList);
-      this.savedPasswordsList_.autoExpands = true;
     },
 
     /**
@@ -122,7 +121,6 @@ cr.define('options', function() {
           passwordExceptionsList);
       this.passwordExceptionsList_ = assertInstanceof(passwordExceptionsList,
           options.DeletableItemList);
-      this.passwordExceptionsList_.autoExpands = true;
     },
 
     /**
