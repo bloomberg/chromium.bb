@@ -372,7 +372,6 @@ class TestPort(Port):
         'mac10.11': ['test-mac-mac10.11'],
         'trusty': ['test-linux-trusty', 'test-win-win7'],
         'precise': ['test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
-        'linux32': ['test-linux-x86', 'test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
     }
 
     @classmethod
@@ -409,20 +408,18 @@ class TestPort(Port):
             'test-win-win10': 'win10',
             'test-mac-mac10.10': 'mac10.10',
             'test-mac-mac10.11': 'mac10.11',
-            'test-linux-x86': 'linux32',
             'test-linux-precise': 'precise',
             'test-linux-trusty': 'trusty',
         }
         self._version = version_map[self._name]
 
-        if self._operating_system == 'linux' and self._version != 'linux32':
+        if self._operating_system == 'linux':
             self._architecture = 'x86_64'
 
         self.all_systems = (('mac10.10', 'x86'),
                             ('mac10.11', 'x86'),
                             ('win7', 'x86'),
                             ('win10', 'x86'),
-                            ('linux32', 'x86'),
                             ('precise', 'x86_64'),
                             ('trusty', 'x86_64'))
 
@@ -433,7 +430,7 @@ class TestPort(Port):
         self.configuration_specifier_macros_dict = {
             'mac': ['mac10.10', 'mac10.11'],
             'win': ['win7', 'win10'],
-            'linux': ['linux32', 'precise', 'trusty']
+            'linux': ['precise', 'trusty']
         }
 
     def buildbot_archives_baselines(self):
