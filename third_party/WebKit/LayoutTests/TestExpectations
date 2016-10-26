@@ -939,6 +939,8 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 
+crbug.com/659391 [ Linux ] payments/promises-keep-request-alive.html [ Pass Timeout ]
+
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 imported/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
