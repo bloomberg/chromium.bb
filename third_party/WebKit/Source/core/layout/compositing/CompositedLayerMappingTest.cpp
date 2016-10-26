@@ -454,9 +454,6 @@ TEST_P(CompositedLayerMappingTest,
 }
 
 TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-    return;
-
   setBodyInnerHTML(
       "<style>"
       "  ::-webkit-scrollbar { width: 0; height: 0; }"
@@ -470,7 +467,8 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollOffset(ScrollOffset(0, 300), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 300), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   // Still use the previous interest rect because the recomputed rect hasn't
   // changed enough.
@@ -479,7 +477,8 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollOffset(ScrollOffset(0, 600), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 600), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   // Use recomputed interest rect because it changed enough.
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 5200),
@@ -487,14 +486,16 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 5200),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollOffset(ScrollOffset(0, 5400), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 5400), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600),
                  recomputeInterestRect(rootScrollingLayer));
   EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollOffset(ScrollOffset(0, 9000), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 9000), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   // Still use the previous interest rect because it contains the recomputed
   // interest rect.
@@ -503,7 +504,8 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollOffset(ScrollOffset(0, 2000), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 2000), ProgrammaticScroll);
   // Use recomputed interest rect because it changed enough.
   document().view()->updateAllLifecyclePhases();
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 6600),
