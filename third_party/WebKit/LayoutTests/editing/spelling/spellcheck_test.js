@@ -8,10 +8,12 @@
 // |spellcheck_test(sample, tester, expectedText, opt_title)| asynchronous test
 // to W3C test harness for easier writing of spellchecker test cases.
 //
-// |sample| is an HTML fragment text which is inserted as |innerHTML|. It should
-// have at least one focus boundary point marker "|" and at most one anchor
-// boundary point marker "^" indicating the initial selection.
-// TODO(editing-dev): Make initial selection work with TEXTAREA and INPUT.
+// |sample| is
+// - Either an HTML fragment text which is inserted as |innerHTML|, in which
+//   case It should have at least one focus boundary point marker "|" and at
+//   most one anchor boundary point marker "^" indicating the initial selection.
+//   TODO(editing-dev): Make initial selection work with TEXTAREA and INPUT.
+// - Or a |Sample| object created by some previous test.
 //
 // |tester| is either name with parameter of execCommand or function taking
 // one parameter |Document|.
@@ -20,7 +22,11 @@
 // with spelling marker is surrounded by '_', and text with grammar marker is
 // surrounded by '~'.
 //
-// |opt_title| is an optional string giving the title of the test case.
+// |opt_args| is an optional object with the following optional fields:
+// - title: the title of the test case.
+// - callback: a callback function to be run after the test passes, which takes
+//   one parameter -- the |Sample| at the end of the test
+// It is allowed to pass a string as |arg_args| to indicate the title only.
 //
 // See spellcheck_test.html for sample usage.
 
@@ -257,6 +263,13 @@ class MarkerSerializer {
   }
 }
 
+/** @type {string} */
+const kTitle = 'title';
+/** @type {string} */
+const kCallback = 'callback';
+/** @type {string} */
+const kIsSpellcheckTest = 'isSpellcheckTest';
+
 /**
  * @param {!Test} testObject
  * @param {!Sample} sample
@@ -278,7 +291,6 @@ function verifyMarkers(
   try {
     assert_equals(serializer.serialize(sample.document), expectedText);
     testObject.done();
-    sample.remove();
   } catch (error) {
     if (remainingRetry <= 0)
       throw error;
@@ -312,18 +324,20 @@ var spellcheckTestRunning = false;
 const testQueue = [];
 
 /**
- * @param {string} inputText
+ * @param {!Sample|string} input
  * @param {function(!Document)|string} tester
  * @param {string} expectedText
- * @param {string=} opt_title
+ * @param {Object} args
  */
-function invokeSpellcheckTest(inputText, tester, expectedText, opt_title) {
+function invokeSpellcheckTest(input, tester, expectedText, args) {
   spellcheckTestRunning = true;
 
   async_test(testObject => {
     // TODO(xiaochengh): Merge the following part with |assert_selection|.
     /** @type {!Sample} */
-    const sample = new Sample(inputText);
+    const sample = typeof(input) === 'string' ? new Sample(input) : input;
+    testObject.sample = sample;
+
     if (typeof(tester) === 'function') {
       tester.call(window, sample.document);
     } else if (typeof(tester) === 'string') {
@@ -346,39 +360,71 @@ function invokeSpellcheckTest(inputText, tester, expectedText, opt_title) {
         () => verifyMarkers(testObject, sample, expectedText,
                             kMaxRetry, kRetryInterval),
         kRetryInterval);
-  }, opt_title, {isSpellcheckTest: true});
+  }, args[kTitle], args);
 }
 
 add_result_callback(testObj => {
-    if (!testObj.properties.isSpellcheckTest)
+    if (!testObj.properties[kIsSpellcheckTest])
       return;
     spellcheckTestRunning = false;
+
+    if (testObj.status === testObj.PASS) {
+      if (testObj.properties[kCallback]) {
+        testObj.properties[kCallback](testObj.sample);
+      } else {
+        testObj.sample.remove();
+      }
+    }
+
     /** @type {Object} */
-    const args = testQueue.shift();
-    if (args === undefined)
+    const next = testQueue.shift();
+    if (next === undefined)
       return;
-    invokeSpellcheckTest(args.inputText, args.tester,
-                         args.expectedText, args.opt_title);
+    invokeSpellcheckTest(next.input, next.tester,
+                         next.expectedText, next.args);
 });
 
 /**
- * @param {string} inputText
+ * @param {Object=} passedArgs
+ * @return {!Object}
+ */
+function getTestArguments(passedArgs) {
+  const args = {};
+  args[kIsSpellcheckTest] = true;
+  [kTitle, kCallback].forEach(key => args[key] = undefined);
+  if (!passedArgs)
+    return args;
+
+  if (typeof(passedArgs) === 'string') {
+    args[kTitle] = passedArgs;
+    return args;
+  }
+
+  [kTitle, kCallback].forEach(key => args[key] = passedArgs[key]);
+  return args;
+}
+
+/**
+ * @param {!Sample|string} input
  * @param {function(!Document)|string} tester
  * @param {string} expectedText
- * @param {string=} opt_title
+ * @param {Object=} opt_args
  */
-function spellcheckTest(inputText, tester, expectedText, opt_title) {
+function spellcheckTest(input, tester, expectedText, opt_args) {
   if (window.testRunner)
     window.testRunner.setMockSpellCheckerEnabled(true);
 
+  /** @type {!Object} */
+  const args = getTestArguments(opt_args);
+
   if (spellcheckTestRunning) {
     testQueue.push({
-        inputText: inputText, tester: tester,
-        expectedText: expectedText, opt_title: opt_title});
+        input: input, tester: tester,
+        expectedText: expectedText, args: args});
     return;
   }
 
-  invokeSpellcheckTest(inputText, tester, expectedText, opt_title);
+  invokeSpellcheckTest(input, tester, expectedText, args);
 }
 
 // Export symbols
