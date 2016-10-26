@@ -30,7 +30,6 @@ class It2MeDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
-      bool supports_touch_events,
       bool enable_user_interface);
 
  private:

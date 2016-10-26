@@ -846,8 +846,6 @@ void HostProcess::StartOnUiThread() {
         context_->input_task_runner(), context_->ui_task_runner());
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
-  desktop_environment_factory->set_supports_touch_events(
-      InputInjector::SupportsTouchEvents());
 
   desktop_environment_factory_.reset(desktop_environment_factory);
 

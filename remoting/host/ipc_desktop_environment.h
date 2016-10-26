@@ -44,8 +44,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-      bool virtual_terminal,
-      bool supports_touch_events);
+      bool virtual_terminal);
   ~IpcDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.
@@ -99,11 +98,6 @@ class IpcDesktopEnvironmentFactory
       IPC::PlatformFileForTransit desktop_pipe) override;
   void OnTerminalDisconnected(int terminal_id) override;
 
-  // Enables or disables touch events capability.
-  void set_supports_touch_events(bool enable) {
-    supports_touch_events_ = enable;
-  }
-
  private:
   // Used to run the audio capturer.
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
@@ -129,10 +123,6 @@ class IpcDesktopEnvironmentFactory
   // This gives us more than 67 years of unique IDs assuming a new ID is
   // allocated every second.
   int next_id_ = 0;
-
-  // Defines whether desktop environments created by this factory will support
-  // touch events by default.
-  bool supports_touch_events_ = false;
 
   // Factory for weak pointers to DesktopSessionConnector interface.
   base::WeakPtrFactory<DesktopSessionConnector> connector_factory_;
