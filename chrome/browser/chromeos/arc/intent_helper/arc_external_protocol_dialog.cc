@@ -349,6 +349,13 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   // This function is for external protocols that Chrome cannot handle.
   DCHECK(!url.SchemeIsHTTPOrHTTPS()) << url;
 
+  // Handle client-side redirections. Forwarding such navigations to ARC is
+  // better than just showing the "can't open" dialog.
+  // TODO(djacobo): Check if doing this in arc::ShouldIgnoreNavigation is safe,
+  // and move it to the function if it is. (b/32442730#comment3)
+  page_transition = ui::PageTransitionFromInt(
+      page_transition & ~ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+
   // Try to forward <form> submissions to ARC when possible.
   constexpr bool kAllowFormSubmit = true;
   if (ShouldIgnoreNavigation(page_transition, kAllowFormSubmit))
