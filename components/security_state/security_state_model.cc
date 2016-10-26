@@ -64,7 +64,7 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
           switches::kMarkHttpAs);
   std::string group = base::FieldTrialList::FindFullName("MarkNonSecureAs");
 
-  const char kEnumeration[] = "MarkHttpAs";
+  const char kEnumeration[] = "SSL.MarkHttpAsStatus";
 
   SecurityStateModel::SecurityLevel level = SecurityStateModel::NONE;
   MarkHttpStatus status;

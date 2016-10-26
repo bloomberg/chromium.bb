@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/test/histogram_tester.h"
 #include "components/security_state/security_state_model_client.h"
 #include "components/security_state/switches.h"
 #include "net/cert/x509_certificate.h"
@@ -300,6 +301,24 @@ TEST(SecurityStateModelTest, PrivateUserDataNotSet) {
   model.GetSecurityInfo(&security_info);
   EXPECT_FALSE(security_info.displayed_private_user_data_input_on_http);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
+}
+
+// Tests that SSL.MarkHttpAsStatus histogram is updated when security state is
+// computed for a page containing a password field on HTTP.
+TEST(SecurityStateModelTest, MarkHttpAsStatusHistogram) {
+  const char* kHistogramName = "SSL.MarkHttpAsStatus";
+  base::HistogramTester histograms;
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kMarkHttpAs, switches::kMarkHttpWithPasswordsOrCcWithChip);
+  TestSecurityStateModelClient client;
+  client.UseHttpUrl();
+  SecurityStateModel model;
+  model.SetClient(&client);
+  client.set_displayed_password_field_on_http(true);
+  SecurityStateModel::SecurityInfo security_info;
+  histograms.ExpectTotalCount(kHistogramName, 0);
+  model.GetSecurityInfo(&security_info);
+  histograms.ExpectUniqueSample(kHistogramName, 2 /* HTTP_SHOW_WARNING */, 1);
 }
 
 }  // namespace
