@@ -65,6 +65,52 @@ TEST(OriginTest, UniqueOriginComparison) {
   }
 }
 
+TEST(OriginTest, ConstructFromTuple) {
+  struct TestCases {
+    const char* const scheme;
+    const char* const host;
+    const uint16_t port;
+    const char* const suborigin;
+  } cases[] = {
+      {"http", "example.com", 80, ""},
+      {"http", "example.com", 123, ""},
+      {"https", "example.com", 443, ""},
+      {"http-so", "foobar.example.com", 80, "foobar"},
+      {"http-so", "foobar.example.com", 123, "foobar"},
+      {"https-so", "foobar.example.com", 443, "foobar"},
+  };
+
+  for (const auto& test_case : cases) {
+    testing::Message scope_message;
+    if (test_case.suborigin != std::string()) {
+      scope_message << test_case.scheme << "-so://" << test_case.suborigin
+                    << "." << test_case.host << ":" << test_case.port;
+    } else {
+      scope_message << test_case.scheme << "://" << test_case.host << ":"
+                    << test_case.port;
+    }
+    SCOPED_TRACE(scope_message);
+
+    url::Origin origin_without_suborigin =
+        url::Origin::CreateFromNormalizedTuple(test_case.scheme, test_case.host,
+                                               test_case.port);
+
+    url::Origin origin_with_suborigin =
+        url::Origin::CreateFromNormalizedTupleWithSuborigin(
+            test_case.scheme, test_case.host, test_case.port,
+            test_case.suborigin);
+
+    EXPECT_EQ(test_case.scheme, origin_without_suborigin.scheme());
+    EXPECT_EQ(test_case.host, origin_without_suborigin.host());
+    EXPECT_EQ(test_case.port, origin_without_suborigin.port());
+
+    EXPECT_EQ(test_case.scheme, origin_with_suborigin.scheme());
+    EXPECT_EQ(test_case.host, origin_with_suborigin.host());
+    EXPECT_EQ(test_case.port, origin_with_suborigin.port());
+    EXPECT_EQ(test_case.suborigin, origin_with_suborigin.suborigin());
+  }
+}
+
 TEST(OriginTest, ConstructFromGURL) {
   url::Origin different_origin(GURL("https://not-in-the-list.test/"));
 

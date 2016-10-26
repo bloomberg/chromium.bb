@@ -83,9 +83,11 @@ Origin::Origin(const GURL& url) : unique_(true), suborigin_(std::string()) {
 Origin::Origin(base::StringPiece scheme,
                base::StringPiece host,
                uint16_t port,
+               base::StringPiece suborigin,
                SchemeHostPort::ConstructPolicy policy)
     : tuple_(scheme, host, port, policy) {
   unique_ = tuple_.IsInvalid();
+  suborigin_ = suborigin.as_string();
 }
 
 Origin::~Origin() {
@@ -96,13 +98,22 @@ Origin Origin::UnsafelyCreateOriginWithoutNormalization(
     base::StringPiece scheme,
     base::StringPiece host,
     uint16_t port) {
-  return Origin(scheme, host, port, SchemeHostPort::CHECK_CANONICALIZATION);
+  return Origin(scheme, host, port, "", SchemeHostPort::CHECK_CANONICALIZATION);
 }
 
 Origin Origin::CreateFromNormalizedTuple(base::StringPiece scheme,
                                          base::StringPiece host,
                                          uint16_t port) {
-  return Origin(scheme, host, port, SchemeHostPort::ALREADY_CANONICALIZED);
+  return CreateFromNormalizedTupleWithSuborigin(scheme, host, port, "");
+}
+
+Origin Origin::CreateFromNormalizedTupleWithSuborigin(
+    base::StringPiece scheme,
+    base::StringPiece host,
+    uint16_t port,
+    base::StringPiece suborigin) {
+  return Origin(scheme, host, port, suborigin,
+                SchemeHostPort::ALREADY_CANONICALIZED);
 }
 
 std::string Origin::Serialize() const {

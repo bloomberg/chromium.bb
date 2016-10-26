@@ -429,6 +429,36 @@ TEST_F(SecurityOriginTest, CreateFromTuple) {
   }
 }
 
+TEST_F(SecurityOriginTest, CreateFromTupleWithSuborigin) {
+  struct TestCase {
+    const char* scheme;
+    const char* host;
+    unsigned short port;
+    const char* suborigin;
+    const char* origin;
+  } cases[] = {
+      {"http", "example.com", 80, "", "http://example.com"},
+      {"http", "example.com", 81, "", "http://example.com:81"},
+      {"https", "example.com", 443, "", "https://example.com"},
+      {"https", "example.com", 444, "", "https://example.com:444"},
+      {"file", "", 0, "", "file://"},
+      {"file", "example.com", 0, "", "file://"},
+      {"http", "example.com", 80, "foobar", "http-so://foobar.example.com"},
+      {"http", "example.com", 81, "foobar", "http-so://foobar.example.com:81"},
+      {"https", "example.com", 443, "foobar", "https-so://foobar.example.com"},
+      {"https", "example.com", 444, "foobar",
+       "https-so://foobar.example.com:444"},
+      {"file", "", 0, "foobar", "file://"},
+      {"file", "example.com", 0, "foobar", "file://"},
+  };
+
+  for (const auto& test : cases) {
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(
+        test.scheme, test.host, test.port, test.suborigin);
+    EXPECT_EQ(test.origin, origin->toString()) << test.origin;
+  }
+}
+
 TEST_F(SecurityOriginTest, UniquenessPropagatesToBlobUrls) {
   struct TestCase {
     const char* url;

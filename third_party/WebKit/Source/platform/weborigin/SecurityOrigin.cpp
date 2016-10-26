@@ -129,8 +129,12 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
   // Suborigins are serialized into the host, so extract it if necessary.
   String suboriginName;
   if (deserializeSuboriginAndProtocolAndHost(m_protocol, m_host, suboriginName,
-                                             m_protocol, m_host))
+                                             m_protocol, m_host)) {
+    if (!url.port())
+      m_effectivePort = defaultPortForProtocol(m_protocol);
+
     m_suborigin.setName(suboriginName);
+  }
 
   // document.domain starts as m_host, but can be set by the DOM.
   m_domain = m_host;
@@ -462,9 +466,6 @@ bool SecurityOrigin::deserializeSuboriginAndProtocolAndHost(
     String& suboriginName,
     String& newProtocol,
     String& newHost) {
-  if (!RuntimeEnabledFeatures::suboriginsEnabled())
-    return false;
-
   String originalProtocol = oldProtocol;
   if (oldProtocol != "http-so" && oldProtocol != "https-so")
     return false;
@@ -528,6 +529,16 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol,
 
   String portPart = port ? ":" + String::number(port) : String();
   return create(KURL(KURL(), protocol + "://" + host + portPart + "/"));
+}
+
+PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol,
+                                                  const String& host,
+                                                  int port,
+                                                  const String& suborigin) {
+  RefPtr<SecurityOrigin> origin = create(protocol, host, port);
+  if (!suborigin.isEmpty())
+    origin->m_suborigin.setName(suborigin);
+  return origin.release();
 }
 
 bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const {

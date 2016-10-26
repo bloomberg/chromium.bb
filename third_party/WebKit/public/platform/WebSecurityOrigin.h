@@ -76,6 +76,8 @@ class WebSecurityOrigin {
   // (e.g. "http" => 80).
   BLINK_PLATFORM_EXPORT unsigned short effectivePort() const;
 
+  BLINK_PLATFORM_EXPORT WebString suborigin() const;
+
   // A unique WebSecurityOrigin is the least privileged WebSecurityOrigin.
   BLINK_PLATFORM_EXPORT bool isUnique() const;
 
@@ -120,8 +122,9 @@ class WebSecurityOrigin {
   // embedders, https://crbug.com/490074.
   operator url::Origin() const {
     return isUnique() ? url::Origin()
-                      : url::Origin::CreateFromNormalizedTuple(
-                            protocol().utf8(), host().utf8(), effectivePort());
+                      : url::Origin::CreateFromNormalizedTupleWithSuborigin(
+                            protocol().utf8(), host().utf8(), effectivePort(),
+                            suborigin().utf8());
   }
 
   WebSecurityOrigin(const url::Origin& origin) : m_private(0) {
@@ -131,17 +134,21 @@ class WebSecurityOrigin {
     }
 
     // TODO(mkwst): This might open up issues by double-canonicalizing the host.
-    assign(WebSecurityOrigin::createFromTuple(
+    assign(WebSecurityOrigin::createFromTupleWithSuborigin(
         WebString::fromUTF8(origin.scheme()),
-        WebString::fromUTF8(origin.host()), origin.port()));
+        WebString::fromUTF8(origin.host()), origin.port(),
+        WebString::fromUTF8(origin.suborigin())));
   }
 #endif
 
  private:
   // Present only to facilitate conversion from 'url::Origin'; this constructor
   // shouldn't be used anywhere else.
-  BLINK_PLATFORM_EXPORT static WebSecurityOrigin
-  createFromTuple(const WebString& protocol, const WebString& host, int port);
+  BLINK_PLATFORM_EXPORT static WebSecurityOrigin createFromTupleWithSuborigin(
+      const WebString& protocol,
+      const WebString& host,
+      int port,
+      const WebString& suborigin);
 
   void assign(WebSecurityOriginPrivate*);
   WebSecurityOriginPrivate* m_private;

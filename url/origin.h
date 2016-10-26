@@ -109,6 +109,14 @@ class URL_EXPORT Origin {
                                           base::StringPiece host,
                                           uint16_t port);
 
+  // Same as CreateFromNormalizedTuple() above, but adds a suborigin component
+  // as well.
+  static Origin CreateFromNormalizedTupleWithSuborigin(
+      base::StringPiece scheme,
+      base::StringPiece host,
+      uint16_t port,
+      base::StringPiece suborigin);
+
   ~Origin();
 
   // For unique origins, these return ("", "", 0).
@@ -163,6 +171,7 @@ class URL_EXPORT Origin {
   Origin(base::StringPiece scheme,
          base::StringPiece host,
          uint16_t port,
+         base::StringPiece suborigin,
          SchemeHostPort::ConstructPolicy policy);
 
   SchemeHostPort tuple_;

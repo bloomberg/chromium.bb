@@ -48,10 +48,13 @@ WebSecurityOrigin WebSecurityOrigin::create(const WebURL& url) {
   return WebSecurityOrigin(SecurityOrigin::create(url));
 }
 
-WebSecurityOrigin WebSecurityOrigin::createFromTuple(const WebString& protocol,
-                                                     const WebString& host,
-                                                     int port) {
-  return WebSecurityOrigin(SecurityOrigin::create(protocol, host, port));
+WebSecurityOrigin WebSecurityOrigin::createFromTupleWithSuborigin(
+    const WebString& protocol,
+    const WebString& host,
+    int port,
+    const WebString& suborigin) {
+  return WebSecurityOrigin(
+      SecurityOrigin::create(protocol, host, port, suborigin));
 }
 
 WebSecurityOrigin WebSecurityOrigin::createUnique() {
@@ -71,53 +74,58 @@ void WebSecurityOrigin::assign(const WebSecurityOrigin& other) {
 }
 
 WebString WebSecurityOrigin::protocol() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->protocol();
 }
 
 WebString WebSecurityOrigin::host() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->host();
 }
 
 unsigned short WebSecurityOrigin::port() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->port();
 }
 
 unsigned short WebSecurityOrigin::effectivePort() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->effectivePort();
 }
 
+WebString WebSecurityOrigin::suborigin() const {
+  DCHECK(m_private);
+  return m_private->hasSuborigin() ? m_private->suborigin()->name() : "";
+}
+
 bool WebSecurityOrigin::isUnique() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->isUnique();
 }
 
 bool WebSecurityOrigin::canAccess(const WebSecurityOrigin& other) const {
-  ASSERT(m_private);
-  ASSERT(other.m_private);
+  DCHECK(m_private);
+  DCHECK(other.m_private);
   return m_private->canAccess(other.m_private);
 }
 
 bool WebSecurityOrigin::canRequest(const WebURL& url) const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->canRequest(url);
 }
 
 bool WebSecurityOrigin::isPotentiallyTrustworthy() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->isPotentiallyTrustworthy();
 }
 
 WebString WebSecurityOrigin::toString() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->toString();
 }
 
 bool WebSecurityOrigin::canAccessPasswordManager() const {
-  ASSERT(m_private);
+  DCHECK(m_private);
   return m_private->canAccessPasswordManager();
 }
 

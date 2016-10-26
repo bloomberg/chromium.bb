@@ -53,6 +53,10 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   static PassRefPtr<SecurityOrigin> create(const String& protocol,
                                            const String& host,
                                            int port);
+  static PassRefPtr<SecurityOrigin> create(const String& protocol,
+                                           const String& host,
+                                           int port,
+                                           const String& suborigin);
 
   static void setMap(URLSecurityOriginMap*);
 
