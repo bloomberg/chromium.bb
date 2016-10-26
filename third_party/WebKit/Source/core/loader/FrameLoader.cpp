@@ -166,8 +166,9 @@ ResourceRequest FrameLoader::resourceRequestForReload(
   // was initiated by something in the current document and should therefore
   // show the current document's url as the referrer.
   if (clientRedirectPolicy == ClientRedirectPolicy::ClientRedirect) {
-    request.setHTTPReferrer(Referrer(m_frame->document()->outgoingReferrer(),
-                                     m_frame->document()->getReferrerPolicy()));
+    request.setHTTPReferrer(SecurityPolicy::generateReferrer(
+        m_frame->document()->getReferrerPolicy(), m_frame->document()->url(),
+        m_frame->document()->outgoingReferrer()));
   }
 
   if (!overrideURL.isEmpty()) {
