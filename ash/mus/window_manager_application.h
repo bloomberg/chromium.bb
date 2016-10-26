@@ -18,7 +18,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
 namespace base {
 class SequencedWorkerPool;
@@ -44,7 +43,6 @@ class WindowTreeClient;
 namespace ash {
 namespace mus {
 
-class AcceleratorRegistrarImpl;
 class NativeWidgetFactoryMus;
 class NetworkConnectDelegateMus;
 class WindowManager;
@@ -52,7 +50,6 @@ class WindowManager;
 // Hosts the window manager and the ash system user interface for mash.
 class WindowManagerApplication
     : public service_manager::Service,
-      public service_manager::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener {
  public:
   WindowManagerApplication();
@@ -66,8 +63,6 @@ class WindowManagerApplication
   friend class WmTestBase;
   friend class WmTestHelper;
 
-  void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
-
   void InitWindowManager(
       std::unique_ptr<ui::WindowTreeClient> window_tree_client,
       const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
@@ -80,10 +75,6 @@ class WindowManagerApplication
   void OnStart(const service_manager::ServiceInfo& info) override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
-
-  // service_manager::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
-  void Create(const service_manager::Identity& remote_identity,
-              ui::mojom::AcceleratorRegistrarRequest request) override;
 
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;
@@ -99,8 +90,6 @@ class WindowManagerApplication
 
   // A blocking pool used by the WindowManager's shell; not used in tests.
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
-
-  std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;
 
   mash::session::mojom::SessionPtr session_;
 

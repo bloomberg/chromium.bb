@@ -9,7 +9,6 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/mojo_interface_factory.h"
 #include "ash/common/wm_shell.h"
-#include "ash/mus/accelerators/accelerator_registrar_impl.h"
 #include "ash/mus/native_widget_factory_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
@@ -45,13 +44,6 @@ WindowManagerApplication::WindowManagerApplication()
     : screenlock_state_listener_binding_(this) {}
 
 WindowManagerApplication::~WindowManagerApplication() {
-  // AcceleratorRegistrarImpl removes an observer in its destructor. Destroy
-  // it early on.
-  std::set<AcceleratorRegistrarImpl*> accelerator_registrars(
-      accelerator_registrars_);
-  for (AcceleratorRegistrarImpl* registrar : accelerator_registrars)
-    registrar->Destroy();
-
   // Destroy the WindowManager while still valid. This way we ensure
   // OnWillDestroyRootWindowController() is called (if it hasn't been already).
   window_manager_.reset();
@@ -70,11 +62,6 @@ WindowManagerApplication::~WindowManagerApplication() {
   statistics_provider_.reset();
 #endif
   ShutdownComponents();
-}
-
-void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
-    AcceleratorRegistrarImpl* registrar) {
-  accelerator_registrars_.erase(registrar);
 }
 
 void WindowManagerApplication::InitWindowManager(
@@ -163,32 +150,12 @@ bool WindowManagerApplication::OnConnect(
   mojo_interface_factory::RegisterInterfaces(
       registry, base::ThreadTaskRunnerHandle::Get());
 
-  registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
   if (remote_info.identity.name() == "service:mash_session") {
     connector()->ConnectToInterface(remote_info.identity, &session_);
     session_->AddScreenlockStateListener(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
   }
   return true;
-}
-
-void WindowManagerApplication::Create(
-    const service_manager::Identity& remote_identity,
-    ui::mojom::AcceleratorRegistrarRequest request) {
-  if (!window_manager_->window_manager_client())
-    return;  // Can happen during shutdown.
-
-  uint16_t accelerator_namespace_id;
-  if (!window_manager_->GetNextAcceleratorNamespaceId(
-          &accelerator_namespace_id)) {
-    DVLOG(1) << "Max number of accelerators registered, ignoring request.";
-    // All ids are used. Normally shouldn't happen, so we close the connection.
-    return;
-  }
-  accelerator_registrars_.insert(new AcceleratorRegistrarImpl(
-      window_manager_.get(), accelerator_namespace_id, std::move(request),
-      base::Bind(&WindowManagerApplication::OnAcceleratorRegistrarDestroyed,
-                 base::Unretained(this))));
 }
 
 void WindowManagerApplication::ScreenlockStateChanged(bool locked) {
