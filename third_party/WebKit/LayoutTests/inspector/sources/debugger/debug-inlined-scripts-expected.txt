@@ -4,7 +4,7 @@ Script source was shown.
 Script execution paused.
 Call stack:
     0)  (debug-inlined-scripts.html:3)
-Call stack status: Paused on a JavaScript breakpoint.
+Call stack status: Paused on breakpoint
 ==Source frame contents start==
 <html>
 <head>
@@ -32,9 +32,8 @@ var test = function()
 
     function callstackStatus()
     {
-        var pane = self.runtime.sharedInstance(WebInspector.CallStackSidebarPane);
-        var statusElement = pane.contentElement;
-        return statusElement ? statusElement.textContent : "";
+        var statusElement = panel.element.querySelector(".paused-message");
+        return statusElement ? statusElement.deepTextContent() : "not found";
     }
 
     function step1()
@@ -134,9 +133,8 @@ var test = function()
 
     function callstackStatus()
     {
-        var pane = self.runtime.sharedInstance(WebInspector.CallStackSidebarPane);
-        var statusElement = pane.contentElement;
-        return statusElement ? statusElement.textContent : "";
+        var statusElement = panel.element.querySelector(".paused-message");
+        return statusElement ? statusElement.deepTextContent() : "not found";
     }
 
     function step1()

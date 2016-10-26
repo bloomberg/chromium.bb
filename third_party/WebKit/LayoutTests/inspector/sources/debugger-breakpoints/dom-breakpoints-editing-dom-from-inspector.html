@@ -17,7 +17,7 @@ function test()
 
             function step2(node)
             {
-                pane._setBreakpoint(node, pane._breakpointTypes.NodeRemoved, true);
+                pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.NodeRemoved, true);
                 InspectorTest.addResult("Set NodeRemoved DOM breakpoint.");
                 node.removeNode(next);
             }
@@ -30,7 +30,7 @@ function test()
 
             function step2(node)
             {
-                pane._setBreakpoint(node, pane._breakpointTypes.AttributeModified, true);
+                pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
                 InspectorTest.addResult("Set AttributeModified DOM breakpoint.");
                 node.setAttribute("title", "a title", next);
             }

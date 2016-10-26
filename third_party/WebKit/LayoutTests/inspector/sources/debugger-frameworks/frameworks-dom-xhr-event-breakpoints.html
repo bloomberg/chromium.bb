@@ -85,7 +85,7 @@ function test()
             function step1(node)
             {
                 var pane = WebInspector.domBreakpointsSidebarPane;
-                pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
+                pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
                 InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
                 InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }
@@ -95,7 +95,7 @@ function test()
         {
             var pane = self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane);
             pane._setBreakpoint("foo", true);
-            InspectorTest.evaluateInPageWithTimeout("sendXHR('/foo?a=b')");
+            InspectorTest.evaluateInPageWithTimeout("sendXHR('file:///foo?a=b')");
             InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
         },
 

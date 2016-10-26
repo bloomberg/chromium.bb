@@ -73,9 +73,9 @@ function test()
         testRunner.logToStderr("didResolveNode");
         var pane = WebInspector.domBreakpointsSidebarPane;
         InspectorTest.addResult("Set up DOM breakpoints.");
-        pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
-        pane._setBreakpoint(node, pane._breakpointTypes.AttributeModified, true);
-        pane._setBreakpoint(node, pane._breakpointTypes.NodeRemoved, true);
+        pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
+        pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
+        pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.NodeRemoved, true);
         setUpEventBreakpoints();
     }
 

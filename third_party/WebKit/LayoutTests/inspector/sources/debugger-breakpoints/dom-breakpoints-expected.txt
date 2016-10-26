@@ -9,7 +9,7 @@ Script execution paused.
 Call stack:
     0) appendElement (dom-breakpoints.html:12)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to that node.
+Paused on subtree modificationsdiv#rootElementChild div#rootElement added
 Script execution resumed.
 
 Running: testBreakpointToggle
@@ -23,7 +23,7 @@ Script execution paused.
 Call stack:
     0) modifyAttribute (dom-breakpoints.html:18)
     1)  (:1)
-Paused on a "Attribute Modified" breakpoint set on div#rootElement.
+Paused on attribute modificationsdiv#rootElement
 Script execution resumed.
 
 Running: testInsertGrandchild
@@ -33,7 +33,7 @@ Script execution paused.
 Call stack:
     0) appendElement (dom-breakpoints.html:12)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to its descendant div#childElement.
+Paused on subtree modificationsdiv#rootElementDescendant div#childElement added
 Script execution resumed.
 
 Running: testRemoveChild
@@ -43,7 +43,7 @@ Script execution paused.
 Call stack:
     0) removeElement (dom-breakpoints.html:44)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on div#rootElement, because its descendant div#grandchildElement was removed.
+Paused on subtree modificationsdiv#rootElementDescendant div#grandchildElement removed
 Script execution resumed.
 
 Running: testInnerHTML
@@ -53,7 +53,7 @@ Script execution paused.
 Call stack:
     0) setInnerHTML (dom-breakpoints.html:50)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to its descendant div#childElement.
+Paused on subtree modificationsdiv#rootElementDescendant div#childElement added
 Script execution resumed.
 Call breakDebugger, expect it to show up in next stack trace.
 Script execution paused.
@@ -70,7 +70,7 @@ Script execution paused.
 Call stack:
     0) modifyAttribute (dom-breakpoints.html:18)
     1)  (:1)
-Paused on a "Attribute Modified" breakpoint set on div#rootElement.
+Paused on attribute modificationsdiv#rootElement
 Script execution resumed.
 
 Running: testModifyAttrNode
@@ -81,7 +81,7 @@ Script execution paused.
 Call stack:
     0) modifyAttrNode (dom-breakpoints.html:24)
     1)  (:1)
-Paused on a "Attribute Modified" breakpoint set on div#rootElement.
+Paused on attribute modificationsdiv#rootElement
 Script execution resumed.
 
 Running: testSetAttrNode
@@ -92,7 +92,7 @@ Script execution paused.
 Call stack:
     0) setAttrNode (dom-breakpoints.html:32)
     1)  (:1)
-Paused on a "Attribute Modified" breakpoint set on div#rootElement.
+Paused on attribute modificationsdiv#rootElement
 Script execution resumed.
 
 Running: testModifyStyleAttribute
@@ -103,7 +103,7 @@ Script execution paused.
 Call stack:
     0) modifyStyleAttribute (dom-breakpoints.html:38)
     1)  (:1)
-Paused on a "Attribute Modified" breakpoint set on div#rootElement.
+Paused on attribute modificationsdiv#rootElement
 Script execution resumed.
 
 Running: testRemoveNode
@@ -114,7 +114,7 @@ Script execution paused.
 Call stack:
     0) removeElement (dom-breakpoints.html:44)
     1)  (:1)
-Paused on a "Node Removed" breakpoint set on div#elementToRemove.
+Paused on node removaldiv#elementToRemove
 Script execution resumed.
 
 Running: testReload
@@ -126,7 +126,7 @@ Script execution paused.
 Call stack:
     0) appendElement (dom-breakpoints.html:12)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to that node.
+Paused on subtree modificationsdiv#rootElementChild div#rootElement added
 Script execution resumed.
 
 Running: testInsertChildIntoAuthorShadowTree
@@ -137,7 +137,7 @@ Script execution paused.
 Call stack:
     0) appendElementToOpenShadowRoot (dom-breakpoints.html:79)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on #shadow-root (open), because a new child was added to that node.
+Paused on subtree modifications#shadow-root (open)Child #shadow-root (open) added
 Script execution resumed.
 
 Running: testReloadWithShadowElementBreakpoint
@@ -149,6 +149,6 @@ Script execution paused.
 Call stack:
     0) appendElementToAuthorShadowTree (dom-breakpoints.html:72)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on div#outerElement, because a new child was added to that node.
+Paused on subtree modificationsdiv#outerElementChild div#outerElement added
 Script execution resumed.
 

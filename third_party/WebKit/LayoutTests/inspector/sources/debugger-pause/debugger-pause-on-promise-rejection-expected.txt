@@ -6,14 +6,14 @@ Tests that pause on promise rejection works.
 Set timer for test function.
 Call stack:
     0) testFunction (debugger-pause-on-promise-rejection.html:35)
-Paused on promise rejection: 'Error: uncaught'.
+Paused on promise rejectionError: uncaught
 
 === Pausing on all exceptions ===
 Set timer for test function.
 Call stack:
     0) testFunction (debugger-pause-on-promise-rejection.html:34)
-Paused on promise rejection: 'Error: caught'.
+Paused on promise rejectionError: caught
 Call stack:
     0) testFunction (debugger-pause-on-promise-rejection.html:35)
-Paused on promise rejection: 'Error: uncaught'.
+Paused on promise rejectionError: uncaught
 

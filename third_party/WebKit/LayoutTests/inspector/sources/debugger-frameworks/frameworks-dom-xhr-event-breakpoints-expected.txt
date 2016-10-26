@@ -9,14 +9,14 @@ Call stack:
   * 0) Framework.appendChild (framework.js:72)
     1) appendElement (frameworks-dom-xhr-event-breakpoints.html:14)
     2)  (:1)
-Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to that node.
+Paused on subtree modificationsdiv#rootElementChild div#rootElement added
 
 Running: testXHRBreakpoint
 Call stack:
   * 0) Framework.sendXHR (framework.js:79)
     1) sendXHR (frameworks-dom-xhr-event-breakpoints.html:19)
     2)  (:1)
-Paused on a XMLHttpRequest.
+Paused on XMLHttpRequestfile:///foo?a=b
 
 Running: testEventListenerBreakpoint
 Call stack:

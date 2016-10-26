@@ -95,7 +95,7 @@ function test()
             function step2(node)
             {
                 rootElement = node;
-                pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
+                pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
                 InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on rootElement.");
                 InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
                 InspectorTest.addResult("Append childElement to rootElement.");
@@ -106,9 +106,9 @@ function test()
         function testBreakpointToggle(next)
         {
             InspectorTest.addResult("Test that DOM breakpoint toggles properly using checkbox.");
-            WebInspector.domBreakpointsSidebarPane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            WebInspector.domBreakpointsSidebarPane._setBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
             InspectorTest.addResult("Set DOM breakpoint.");
-            var elementId = pane._createBreakpointId(rootElement.id, pane._breakpointTypes.AttributeModified);
+            var elementId = pane._createBreakpointId(rootElement.id, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified);
             var element = pane._breakpointElements.get(elementId);
             element._checkboxElement.click();
             InspectorTest.addResult("Uncheck DOM breakpoint.");
@@ -158,7 +158,7 @@ function test()
             function step3(frames)
             {
                 InspectorTest.captureStackTrace(frames);
-                pane._removeBreakpoint(rootElement, pane._breakpointTypes.SubtreeModified);
+                pane._removeBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified);
                 InspectorTest.resumeExecution(next);
             }
         },
@@ -166,7 +166,7 @@ function test()
         function testModifyAttribute(next)
         {
             InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when modifying attribute.");
-            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            pane._setBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("modifyAttribute('rootElement', 'data-test', 'foo')");
             InspectorTest.addResult("Modify rootElement data-test attribute.");
@@ -174,7 +174,7 @@ function test()
 
             function step2(callFrames)
             {
-                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                pane._removeBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified);
                 next();
             }
         },
@@ -182,7 +182,7 @@ function test()
         function testModifyAttrNode(next)
         {
             InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when modifying Attr node.");
-            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            pane._setBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("modifyAttrNode('rootElement', 'data-test', 'bar')");
             InspectorTest.addResult("Modify rootElement data-test attribute.");
@@ -190,7 +190,7 @@ function test()
 
             function step2(callFrames)
             {
-                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                pane._removeBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified);
                 next();
             }
         },
@@ -198,7 +198,7 @@ function test()
         function testSetAttrNode(next)
         {
             InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when adding a new Attr node.");
-            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            pane._setBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("setAttrNode('rootElement', 'data-foo', 'bar')");
             InspectorTest.addResult("Modify rootElement data-foo attribute.");
@@ -206,7 +206,7 @@ function test()
 
             function step2(callFrames)
             {
-                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                pane._removeBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified);
                 next();
             }
         },
@@ -214,7 +214,7 @@ function test()
         function testModifyStyleAttribute(next)
         {
             InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when modifying style attribute.");
-            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            pane._setBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("modifyStyleAttribute('rootElement', 'color', 'green')");
             InspectorTest.addResult("Modify rootElement style.color attribute.");
@@ -222,7 +222,7 @@ function test()
 
             function step2(callFrames)
             {
-                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                pane._removeBreakpoint(rootElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified);
                 next();
             }
         },
@@ -234,7 +234,7 @@ function test()
 
             function step2(node)
             {
-                pane._setBreakpoint(node, pane._breakpointTypes.NodeRemoved, true);
+                pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.NodeRemoved, true);
                 InspectorTest.addResult("Set 'Node Removed' DOM breakpoint on elementToRemove.");
                 InspectorTest.evaluateInPageWithTimeout("removeElement('elementToRemove')");
                 InspectorTest.addResult("Remove elementToRemove.");
@@ -249,7 +249,7 @@ function test()
 
             function step2(node)
             {
-                pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
+                pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
                 pane._saveBreakpoints();
                 InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on rootElement.");
                 InspectorTest.reloadPage(step3);
@@ -276,7 +276,7 @@ function test()
             {
                 authorShadowRoot = node;
                 InspectorTest.addResult("Test that 'Subtree Modified' breakpoint on author shadow root is hit when appending a child.");
-                pane._setBreakpoint(authorShadowRoot, pane._breakpointTypes.SubtreeModified, true);
+                pane._setBreakpoint(authorShadowRoot, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
                 InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on author shadow root.");
                 InspectorTest.evaluateInPageWithTimeout("appendElementToOpenShadowRoot('childElement')");
                 InspectorTest.addResult("Append childElement to author shadow root.");
@@ -293,7 +293,7 @@ function test()
                 outerElement = node;
 
                 InspectorTest.addResult("Test that shadow DOM breakpoints are persisted between page reloads.");
-                pane._setBreakpoint(outerElement, pane._breakpointTypes.SubtreeModified, true);
+                pane._setBreakpoint(outerElement, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
                 pane._saveBreakpoints();
                 InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on outerElement.");
                 InspectorTest.reloadPage(step2);

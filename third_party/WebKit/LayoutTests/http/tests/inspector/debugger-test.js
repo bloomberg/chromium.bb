@@ -174,7 +174,7 @@ InspectorTest.resumeExecution = function(callback)
 InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
 {
     InspectorTest.waitUntilPaused(paused);
-    InspectorTest.addSniffer(WebInspector.CallStackSidebarPane.prototype, "_updateStatusMessage", setStatus);
+    InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "_updateDebuggerButtonsAndStatus", setStatus);
 
     var caption;
     var callFrames;
@@ -182,7 +182,8 @@ InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
 
     function setStatus()
     {
-        caption = this.contentElement.lastChild.deepTextContent();
+        var statusElement = this.element.querySelector(".paused-message");
+        caption = statusElement.deepTextContent();
         if (callFrames)
             step1();
     }
