@@ -121,8 +121,11 @@ void ServiceWorkerRegistration::SetActiveVersion(
   if (active_version_)
     active_version_->RemoveListener(this);
   active_version_ = version;
-  if (active_version_)
+  if (active_version_) {
     active_version_->AddListener(this);
+    active_version_->set_navigation_preload_enabled(
+        is_navigation_preload_enabled_);
+  }
   mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
 
   NotifyVersionAttributesChanged(mask);
@@ -396,8 +399,11 @@ void ServiceWorkerRegistration::SetTaskRunnerForTest(
 }
 
 void ServiceWorkerRegistration::EnableNavigationPreload(bool enable) {
-  // TODO(falken): Propagate to current versions and new versions.
+  if (is_navigation_preload_enabled_ == enable)
+    return;
   is_navigation_preload_enabled_ = enable;
+  if (active_version_)
+    active_version_->set_navigation_preload_enabled(enable);
 }
 
 void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(

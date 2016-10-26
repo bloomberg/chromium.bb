@@ -170,9 +170,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
     foreign_fetch_origins_ = origins;
   }
 
+  // Only meaningful if this version is active.
   bool navigation_preload_enabled() const {
+    DCHECK(status_ == ACTIVATING || status_ == ACTIVATED) << status_;
     return navigation_preload_enabled_;
   }
+  // Only intended for use by ServiceWorkerRegistration. Generally use
+  // ServiceWorkerRegistration::EnableNavigationPreload instead of this
+  // function.
   void set_navigation_preload_enabled(bool enabled) {
     navigation_preload_enabled_ = enabled;
   }
@@ -730,6 +735,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<GURL> foreign_fetch_scopes_;
   std::vector<url::Origin> foreign_fetch_origins_;
   FetchHandlerExistence fetch_handler_existence_;
+  // The source of truth for navigation preload state is the
+  // ServiceWorkerRegistration. |navigation_preload_enabled_| is essentially a
+  // cache for the state because it must be looked up quickly and a live
+  // registration doesn't necessarily exist whenever there is a live version.
   bool navigation_preload_enabled_ = false;
   ServiceWorkerMetrics::Site site_for_uma_;
 
