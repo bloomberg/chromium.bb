@@ -361,13 +361,17 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   if (visible_layer_rect.IsEmpty())
     return;
 
+  const PropertyTrees* property_trees =
+      owning_layer_->layer_tree_impl()->property_trees();
+  int sorting_context_id =
+      property_trees->transform_tree.Node(TransformTreeIndex())
+          ->sorting_context_id;
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(draw_transform, content_rect().size(),
-                            content_rect(), draw_properties_.clip_rect,
-                            draw_properties_.is_clipped,
-                            draw_properties_.draw_opacity, BlendMode(),
-                            owning_layer_->sorting_context_id());
+  shared_quad_state->SetAll(
+      draw_transform, content_rect().size(), content_rect(),
+      draw_properties_.clip_rect, draw_properties_.is_clipped,
+      draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
 
   if (owning_layer_->ShowDebugBorders()) {
     DebugBorderDrawQuad* debug_border_quad =
