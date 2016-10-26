@@ -240,12 +240,8 @@ int Rect::ManhattanInternalDistance(const Rect& rect) const {
   Rect c(*this);
   c.Union(rect);
 
-  static const int kEpsilon = std::numeric_limits<int>::is_integer
-                                  ? 1
-                                  : std::numeric_limits<int>::epsilon();
-
-  int x = std::max<int>(0, c.width() - width() - rect.width() + kEpsilon);
-  int y = std::max<int>(0, c.height() - height() - rect.height() + kEpsilon);
+  int x = std::max(0, c.width() - width() - rect.width() + 1);
+  int y = std::max(0, c.height() - height() - rect.height() + 1);
   return x + y;
 }
 
