@@ -7,55 +7,66 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+class Profile;
 class ProfileOAuth2TokenService;
 
 namespace arc {
 
-class ArcAndroidManagementCheckerDelegate;
-
 class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
  public:
-  ArcAndroidManagementChecker(ArcAndroidManagementCheckerDelegate* delegate,
+  ArcAndroidManagementChecker(Profile* profile,
                               ProfileOAuth2TokenService* token_service,
                               const std::string& account_id,
-                              bool background_mode);
+                              bool retry_on_error);
   ~ArcAndroidManagementChecker() override;
 
   static void StartClient();
+
+  // Starts the check. On completion |callback| will be invoked with the
+  // |result|. This must not be called if there is inflight check.
+  // If the instance is destructed while it has inflight check, then the
+  // check will be cancelled and |callback| will not be called.
+  using CheckCallback =
+      base::Callback<void(policy::AndroidManagementClient::Result result)>;
+  void StartCheck(const CheckCallback& callback);
+
+ private:
+  void StartCheckInternal();
+  void OnAndroidManagementChecked(
+      policy::AndroidManagementClient::Result result);
+  void ScheduleRetry();
+
+  // Ensures the refresh token is loaded in the |token_service|.
+  void EnsureRefreshTokenLoaded();
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
 
-  bool background_mode() const { return background_mode_; }
-
- private:
-  void StartCheck();
-  void ScheduleCheck();
-  void DispatchResult(policy::AndroidManagementClient::Result result);
-  void OnAndroidManagementChecked(
-      policy::AndroidManagementClient::Result result);
-
   // Unowned pointers.
-  ArcAndroidManagementCheckerDelegate* const delegate_;
+  Profile* profile_;
   ProfileOAuth2TokenService* const token_service_;
 
   const std::string account_id_;
 
-  // In background mode errors are ignored and retry is attempted. There is no
-  // retry in foreground mode and result is passed to delegate directly.
-  bool background_mode_;
+  // If true, on error, instead of reporting the error to the caller, schedule
+  // the retry with delay.
+  const bool retry_on_error_;
 
   // Keeps current retry delay.
   base::TimeDelta retry_delay_;
 
   policy::AndroidManagementClient android_management_client_;
+
+  // The callback for the inflight operation.
+  CheckCallback callback_;
 
   base::WeakPtrFactory<ArcAndroidManagementChecker> weak_ptr_factory_;
 

@@ -7,11 +7,14 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/arc/policy/arc_android_management_checker_delegate.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
@@ -31,27 +34,20 @@ policy::DeviceManagementService* GetDeviceManagementService() {
 }  // namespace
 
 ArcAndroidManagementChecker::ArcAndroidManagementChecker(
-    ArcAndroidManagementCheckerDelegate* delegate,
+    Profile* profile,
     ProfileOAuth2TokenService* token_service,
     const std::string& account_id,
-    bool background_mode)
-    : delegate_(delegate),
+    bool retry_on_error)
+    : profile_(profile),
       token_service_(token_service),
       account_id_(account_id),
-      background_mode_(background_mode),
+      retry_on_error_(retry_on_error),
       retry_delay_(kRetryDelayMin),
       android_management_client_(GetDeviceManagementService(),
                                  g_browser_process->system_request_context(),
                                  account_id,
                                  token_service),
-      weak_ptr_factory_(this) {
-  if (token_service_->RefreshTokenIsAvailable(account_id_)) {
-    StartCheck();
-  } else {
-    DCHECK(background_mode_);
-    token_service_->AddObserver(this);
-  }
-}
+      weak_ptr_factory_(this) {}
 
 ArcAndroidManagementChecker::~ArcAndroidManagementChecker() {
   token_service_->RemoveObserver(this);
@@ -60,6 +56,35 @@ ArcAndroidManagementChecker::~ArcAndroidManagementChecker() {
 // static
 void ArcAndroidManagementChecker::StartClient() {
   GetDeviceManagementService()->ScheduleInitialization(0);
+}
+
+void ArcAndroidManagementChecker::StartCheck(const CheckCallback& callback) {
+  DCHECK(callback_.is_null());
+
+  // Do not send requests for Chrome OS managed users, nor for well-known
+  // consumer domains.
+  if (policy_util::IsAccountManaged(profile_) ||
+      policy::BrowserPolicyConnector::IsNonEnterpriseUser(
+          profile_->GetProfileUserName())) {
+    callback.Run(policy::AndroidManagementClient::Result::RESULT_UNMANAGED);
+    return;
+  }
+
+  callback_ = callback;
+  EnsureRefreshTokenLoaded();
+}
+
+void ArcAndroidManagementChecker::EnsureRefreshTokenLoaded() {
+  if (token_service_->RefreshTokenIsAvailable(account_id_)) {
+    // If the refresh token is already available, just start the management
+    // check immediately.
+    StartCheckInternal();
+    return;
+  }
+
+  // Set the observer to the token service so the callback will be called
+  // when the token is loaded.
+  token_service_->AddObserver(this);
 }
 
 void ArcAndroidManagementChecker::OnRefreshTokenAvailable(
@@ -71,14 +96,16 @@ void ArcAndroidManagementChecker::OnRefreshTokenAvailable(
 
 void ArcAndroidManagementChecker::OnRefreshTokensLoaded() {
   token_service_->RemoveObserver(this);
-  StartCheck();
+  StartCheckInternal();
 }
 
-void ArcAndroidManagementChecker::StartCheck() {
+void ArcAndroidManagementChecker::StartCheckInternal() {
+  DCHECK(!callback_.is_null());
+
   if (!token_service_->RefreshTokenIsAvailable(account_id_)) {
     VLOG(2) << "No refresh token is available for android management check.";
-    OnAndroidManagementChecked(
-        policy::AndroidManagementClient::Result::RESULT_ERROR);
+    base::ResetAndReturn(&callback_)
+        .Run(policy::AndroidManagementClient::Result::RESULT_ERROR);
     return;
   }
 
@@ -88,35 +115,29 @@ void ArcAndroidManagementChecker::StartCheck() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcAndroidManagementChecker::ScheduleCheck() {
-  DCHECK(background_mode_);
-  VLOG(2) << "Schedule next android management check in " << retry_delay_;
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ArcAndroidManagementChecker::StartCheck,
-                            weak_ptr_factory_.GetWeakPtr()),
-      retry_delay_);
-  retry_delay_ = std::min(retry_delay_ * 2, kRetryDelayMax);
-}
-
-void ArcAndroidManagementChecker::DispatchResult(
-    policy::AndroidManagementClient::Result result) {
-  DCHECK(delegate_);
-  delegate_->OnAndroidManagementChecked(result);
-}
-
 void ArcAndroidManagementChecker::OnAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
+  DCHECK(!callback_.is_null());
   VLOG(2) << "Android management check done " << result << ".";
-  if (background_mode_ &&
+  if (retry_on_error_ &&
       result == policy::AndroidManagementClient::Result::RESULT_ERROR) {
-    ScheduleCheck();
+    ScheduleRetry();
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ArcAndroidManagementChecker::DispatchResult,
-                            weak_ptr_factory_.GetWeakPtr(), result));
+  base::ResetAndReturn(&callback_).Run(result);
+}
+
+void ArcAndroidManagementChecker::ScheduleRetry() {
+  DCHECK(retry_on_error_);
+  DCHECK(!callback_.is_null());
+  VLOG(2) << "Schedule next android management check in " << retry_delay_;
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ArcAndroidManagementChecker::StartCheckInternal,
+                            weak_ptr_factory_.GetWeakPtr()),
+      retry_delay_);
+  retry_delay_ = std::min(retry_delay_ * 2, kRetryDelayMax);
 }
 
 }  // namespace arc

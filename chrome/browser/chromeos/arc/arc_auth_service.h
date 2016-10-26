@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_auth_code_fetcher_delegate.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context_delegate.h"
-#include "chrome/browser/chromeos/arc/policy/arc_android_management_checker_delegate.h"
+#include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
@@ -51,7 +51,6 @@ class ArcAuthService : public ArcService,
                        public mojom::AuthHost,
                        public ArcBridgeService::Observer,
                        public InstanceHolder<mojom::AuthInstance>::Observer,
-                       public ArcAndroidManagementCheckerDelegate,
                        public ArcAuthContextDelegate,
                        public ArcAuthCodeFetcherDelegate,
                        public syncable_prefs::PrefServiceSyncableObserver,
@@ -181,10 +180,6 @@ class ArcAuthService : public ArcService,
   void OnAuthCodeSuccess(const std::string& auth_code) override;
   void OnAuthCodeFailed() override;
 
-  // ArcAndroidManagementCheckerDelegate:
-  void OnAndroidManagementChecked(
-      policy::AndroidManagementClient::Result result) override;
-
   // Stops ARC without changing ArcEnabled preference.
   void StopArc();
 
@@ -218,13 +213,22 @@ class ArcAuthService : public ArcService,
   void OnOptInPreferenceChanged();
   void StartUI();
   void StartAndroidManagementClient();
-  void CheckAndroidManagement(bool background_mode);
   void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
   bool IsAuthCodeRequest() const;
   void FetchAuthCode();
   void PrepareContextForAuthCodeRequest();
+
+  // Called when the Android management check is done in opt-in flow or
+  // re-auth flow.
+  void OnAndroidManagementChecked(
+      policy::AndroidManagementClient::Result result);
+
+  // Called when the background Android management check is done. It is
+  // triggered when the second or later ARC boot timing.
+  void OnBackgroundAndroidManagementChecked(
+      policy::AndroidManagementClient::Result result);
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;

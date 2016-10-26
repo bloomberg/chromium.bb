@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -54,11 +55,11 @@ void AndroidManagementClient::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(token_request_.get(), request);
+  DCHECK(!callback_.is_null());
   token_request_.reset();
   LOG(ERROR) << "Token request failed: " << error.ToString();
 
-  callback_.Run(RESULT_ERROR);
-  callback_.Reset();
+  base::ResetAndReturn(&callback_).Run(RESULT_ERROR);
 }
 
 void AndroidManagementClient::RequestAccessToken() {
@@ -90,6 +91,7 @@ void AndroidManagementClient::OnAndroidManagementChecked(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
+  DCHECK(!callback_.is_null());
   if (status == DM_STATUS_SUCCESS &&
       !response.has_check_android_management_response()) {
     LOG(WARNING) << "Invalid check android management response.";
@@ -109,8 +111,7 @@ void AndroidManagementClient::OnAndroidManagementChecked(
   }
 
   request_job_.reset();
-  callback_.Run(result);
-  callback_.Reset();
+  base::ResetAndReturn(&callback_).Run(result);
 }
 
 }  // namespace policy

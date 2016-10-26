@@ -39,7 +39,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
@@ -566,7 +565,15 @@ void ArcAuthService::OnContextReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DCHECK(!initial_opt_in_);
-  CheckAndroidManagement(false);
+
+  // TODO(hidehiko): The check is not necessary if this is a part of re-auth
+  // flow. Remove this.
+  android_management_checker_.reset(new ArcAndroidManagementChecker(
+      profile_, context_->token_service(), context_->account_id(),
+      false /* retry_on_error */));
+  android_management_checker_->StartCheck(
+      base::Bind(&ArcAuthService::OnAndroidManagementChecked,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
@@ -623,12 +630,20 @@ void ArcAuthService::OnOptInPreferenceChanged() {
     initial_opt_in_ = true;
     StartUI();
   } else {
-    // Ready to start Arc, but check Android management first.
+    // Ready to start Arc, but check Android management in parallel.
+    StartArc();
+    // Note: Because the callback may be called in synchronous way (i.e. called
+    // on the same stack), StartCheck() needs to be called *after* StartArc().
+    // Otherwise, DisableArc() which may be called in
+    // OnBackgroundAndroidManagementChecked() could be ignored.
     if (!g_disable_ui_for_testing ||
         g_enable_check_android_management_for_testing) {
-      CheckAndroidManagement(true);
-    } else {
-      StartArc();
+      android_management_checker_.reset(new ArcAndroidManagementChecker(
+          profile_, context_->token_service(), context_->account_id(),
+          true /* retry_on_error */));
+      android_management_checker_->StartCheck(
+          base::Bind(&ArcAuthService::OnBackgroundAndroidManagementChecked,
+                     weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
@@ -866,38 +881,14 @@ void ArcAuthService::OnAuthCodeFailed() {
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
-void ArcAuthService::CheckAndroidManagement(bool background_mode) {
-  // Do not send requests for Chrome OS managed users.
-  if (policy_util::IsAccountManaged(profile_)) {
-    OnAndroidManagementPassed();
-    return;
-  }
-
-  // Do not send requests for well-known consumer domains.
-  if (policy::BrowserPolicyConnector::IsNonEnterpriseUser(
-          profile_->GetProfileUserName())) {
-    OnAndroidManagementPassed();
-    return;
-  }
-
-  android_management_checker_.reset(
-      new ArcAndroidManagementChecker(this, context_->token_service(),
-                                      context_->account_id(), background_mode));
-  if (background_mode)
-    OnAndroidManagementPassed();
-}
-
 void ArcAuthService::OnAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   switch (result) {
     case policy::AndroidManagementClient::Result::RESULT_UNMANAGED:
       OnAndroidManagementPassed();
       break;
     case policy::AndroidManagementClient::Result::RESULT_MANAGED:
-      if (android_management_checker_->background_mode()) {
-        DisableArc();
-        return;
-      }
       ShutdownBridgeAndShowUI(
           UIPage::ERROR,
           l10n_util::GetStringUTF16(IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR));
@@ -910,6 +901,23 @@ void ArcAuthService::OnAndroidManagementChecked(
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
     default:
+      NOTREACHED();
+  }
+}
+
+void ArcAuthService::OnBackgroundAndroidManagementChecked(
+    policy::AndroidManagementClient::Result result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  switch (result) {
+    case policy::AndroidManagementClient::Result::RESULT_UNMANAGED:
+      // Do nothing. ARC should be started already.
+      break;
+    case policy::AndroidManagementClient::Result::RESULT_MANAGED:
+      DisableArc();
+      break;
+    case policy::AndroidManagementClient::Result::RESULT_ERROR:
+      // This code should not be reached. For background check,
+      // retry_on_error should be set.
       NOTREACHED();
   }
 }
