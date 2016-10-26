@@ -128,6 +128,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       should_animate_secure_verbose_(false),
       should_animate_nonsecure_verbose_(false),
       is_width_available_for_security_verbose_(false),
+      security_level_(security_state::SecurityStateModel::NONE),
       weak_ptr_factory_(this) {
   ScopedVector<ContentSettingImageModel> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
