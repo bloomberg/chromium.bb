@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.util;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.os.BadParcelableException;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -363,6 +364,22 @@ public class IntentUtils {
             Log.e(TAG, "Could not resolve Activity for intent " + intent.toString(), e);
         } else {
             throw e;
+        }
+    }
+
+    /**
+     * Sanitizes an intent. In case the intent cannot be unparcelled, all extras will be removed to
+     * make it safe to use.
+     * @return A safe to use version of this intent.
+     */
+    public static Intent sanitizeIntent(final Intent incomingIntent) {
+        if (incomingIntent == null) return null;
+        try {
+            incomingIntent.getBooleanExtra("TriggerUnparcel", false);
+            return incomingIntent;
+        } catch (BadParcelableException e) {
+            Log.e(TAG, "Invalid incoming intent.", e);
+            return incomingIntent.replaceExtras((Bundle) null);
         }
     }
 }

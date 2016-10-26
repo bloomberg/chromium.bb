@@ -112,13 +112,13 @@ public class ChromeLauncherActivity extends Activity
      * you add _absolutely has_ to be here.
      */
     @Override
-    @SuppressLint("MissingSuperCall") // Called in doOnCreate.
     public void onCreate(Bundle savedInstanceState) {
         // Third-party code adds disk access to Activity.onCreate. http://crbug.com/619824
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         TraceEvent.begin("ChromeLauncherActivity");
         TraceEvent.begin("ChromeLauncherActivity.onCreate");
         try {
+            super.onCreate(savedInstanceState);
             doOnCreate(savedInstanceState);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
@@ -127,13 +127,13 @@ public class ChromeLauncherActivity extends Activity
     }
 
     private final void doOnCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         // This Activity is only transient. It launches another activity and
         // terminates itself. However, some of the work is performed outside of
         // {@link Activity#onCreate()}. To capture this, the TraceEvent starts
         // in onCreate(), and ends in onPause().
         // Needs to be called as early as possible, to accurately capture the
         // time at which the intent was received.
+        setIntent(IntentUtils.sanitizeIntent(getIntent()));
         IntentHandler.addTimestampToIntent(getIntent());
         // Initialize the command line in case we've disabled document mode from there.
         CommandLineInitUtil.initCommandLine(this, ChromeApplication.COMMAND_LINE_FILE);
