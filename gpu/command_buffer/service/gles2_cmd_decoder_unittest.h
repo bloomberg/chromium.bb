@@ -65,7 +65,7 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
   GLES2DecoderManualInitTest() {}
 
   // Override default setup so nothing gets setup.
-  void SetUp() override;
+  void SetUp() override {}
 
   void DirtyStateMaskTest(GLuint color_bits,
                           bool depth_mask,
@@ -76,16 +76,31 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
 
 class GLES3DecoderTest : public GLES2DecoderTest {
  public:
-  GLES3DecoderTest() {}
+  GLES3DecoderTest() { shader_language_version_ = 300; }
 
   // Override default setup so ES3 capabilities are enabled by default.
   void SetUp() override;
 };
 
-class GLES3DecoderWithESSL3ShaderTest : public GLES2DecoderWithShaderTestBase {
+class GLES3DecoderWithShaderTest : public GLES2DecoderWithShaderTest {
  public:
-  GLES3DecoderWithESSL3ShaderTest() { shader_language_version_ = 300; }
+  GLES3DecoderWithShaderTest() { shader_language_version_ = 300; }
+
+  // Override default setup so ES3 capabilities are enabled by default.
   void SetUp() override;
+};
+
+class GLES3DecoderRGBBackbufferTest : public GLES2DecoderRGBBackbufferTest {
+ public:
+  GLES3DecoderRGBBackbufferTest() { shader_language_version_ = 300; }
+
+  // Override default setup so ES3 capabilities are enabled by default.
+  void SetUp() override;
+};
+
+class GLES3DecoderManualInitTest : public GLES2DecoderManualInitTest {
+ public:
+  GLES3DecoderManualInitTest() { shader_language_version_ = 300; }
 };
 
 }  // namespace gles2

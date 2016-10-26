@@ -509,35 +509,20 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   DoCreateProgram(client_program_id_, kServiceProgramId);
   DoCreateShader(GL_VERTEX_SHADER, client_shader_id_, kServiceShaderId);
 
-  // Unsafe commands.
-  bool reset_unsafe_es3_apis_enabled = false;
-  if (!decoder_->unsafe_es3_apis_enabled()) {
-    decoder_->set_unsafe_es3_apis_enabled(true);
-    reset_unsafe_es3_apis_enabled = true;
-  }
-
-  const gl::GLVersionInfo* version = context_->GetVersionInfo();
-  if (version->IsAtLeastGL(3, 3) || version->IsAtLeastGLES(3, 0)) {
+  if (init.context_type == CONTEXT_TYPE_WEBGL2 ||
+      init.context_type == CONTEXT_TYPE_OPENGLES3) {
     EXPECT_CALL(*gl_, GenSamplers(_, _))
         .WillOnce(SetArgPointee<1>(kServiceSamplerId))
         .RetiresOnSaturation();
     GenHelper<cmds::GenSamplersImmediate>(client_sampler_id_);
-  }
-  if (version->IsAtLeastGL(4, 0) || version->IsAtLeastGLES(3, 0)) {
+
     EXPECT_CALL(*gl_, GenTransformFeedbacks(_, _))
         .WillOnce(SetArgPointee<1>(kServiceTransformFeedbackId))
         .RetiresOnSaturation();
     GenHelper<cmds::GenTransformFeedbacksImmediate>(
         client_transformfeedback_id_);
-  }
 
-  if (init.extensions.find("GL_ARB_sync ") != std::string::npos ||
-      version->IsAtLeastGL(3, 2) || version->IsAtLeastGLES(3, 0)) {
     DoFenceSync(client_sync_id_, kServiceSyncId);
-  }
-
-  if (reset_unsafe_es3_apis_enabled) {
-    decoder_->set_unsafe_es3_apis_enabled(false);
   }
 
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -562,8 +547,7 @@ void GLES2DecoderTestBase::ResetDecoder() {
           .Times(1)
           .RetiresOnSaturation();
     }
-    if (group_->feature_info()->gl_version_info().IsAtLeastGL(4, 0) ||
-        group_->feature_info()->gl_version_info().IsAtLeastGLES(3, 0)) {
+    if (group_->feature_info()->IsWebGL2OrES3Context()) {
       // |client_transformfeedback_id_|
       EXPECT_CALL(*gl_, DeleteTransformFeedbacks(1, _))
           .Times(1)

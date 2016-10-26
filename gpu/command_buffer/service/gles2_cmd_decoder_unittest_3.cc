@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/command_line.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -36,7 +37,23 @@ class GLES2DecoderTest3 : public GLES2DecoderTestBase {
   GLES2DecoderTest3() { }
 };
 
+class GLES3DecoderTest3 : public GLES2DecoderTest3 {
+ public:
+  GLES3DecoderTest3() { shader_language_version_ = 300; }
+ protected:
+  void SetUp() override {
+    base::CommandLine command_line(0, nullptr);
+    command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
+    InitState init;
+    init.gl_version = "OpenGL ES 3.0";
+    init.bind_generates_resource = true;
+    init.context_type = CONTEXT_TYPE_OPENGLES3;
+    InitDecoderWithCommandLine(init, &command_line);
+  }
+};
+
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest3, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest3, ::testing::Bool());
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix3fvImmediate, 0>(

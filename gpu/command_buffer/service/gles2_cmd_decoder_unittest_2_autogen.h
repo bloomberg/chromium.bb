@@ -98,7 +98,7 @@ TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivInvalidArgs2_1) {
   EXPECT_EQ(0u, result->size);
 }
 
-TEST_P(GLES2DecoderTest2, GetSamplerParameterfvValidArgs) {
+TEST_P(GLES3DecoderTest2, GetSamplerParameterfvValidArgs) {
   EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetSamplerParameterfv, 0>(true);
   typedef cmds::GetSamplerParameterfv::Result Result;
@@ -110,17 +110,14 @@ TEST_P(GLES2DecoderTest2, GetSamplerParameterfvValidArgs) {
   cmds::GetSamplerParameterfv cmd;
   cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
            shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(
       decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_TEXTURE_MAG_FILTER),
       result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, GetSamplerParameterivValidArgs) {
+TEST_P(GLES3DecoderTest2, GetSamplerParameterivValidArgs) {
   EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetSamplerParameteriv, 0>(true);
   typedef cmds::GetSamplerParameteriv::Result Result;
@@ -132,14 +129,11 @@ TEST_P(GLES2DecoderTest2, GetSamplerParameterivValidArgs) {
   cmds::GetSamplerParameteriv cmd;
   cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
            shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(
       decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_TEXTURE_MAG_FILTER),
       result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest2, GetShaderivValidArgs) {
@@ -184,7 +178,7 @@ TEST_P(GLES2DecoderTest2, GetShaderivInvalidArgs2_1) {
   EXPECT_EQ(0u, result->size);
 }
 
-TEST_P(GLES2DecoderTest2, GetSyncivValidArgs) {
+TEST_P(GLES3DecoderTest2, GetSyncivValidArgs) {
   EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
   SpecializedSetup<cmds::GetSynciv, 0>(true);
   typedef cmds::GetSynciv::Result Result;
@@ -198,13 +192,10 @@ TEST_P(GLES2DecoderTest2, GetSyncivValidArgs) {
   cmds::GetSynciv cmd;
   cmd.Init(client_sync_id_, GL_SYNC_STATUS, shared_memory_id_,
            shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_SYNC_STATUS),
             result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest2, GetTexParameterfvValidArgs) {
@@ -429,7 +420,7 @@ TEST_P(GLES2DecoderTest2, GetVertexAttribivInvalidArgs2_1) {
   EXPECT_EQ(0u, result->size);
 }
 
-TEST_P(GLES2DecoderTest2, GetVertexAttribIivValidArgs) {
+TEST_P(GLES3DecoderTest2, GetVertexAttribIivValidArgs) {
   SpecializedSetup<cmds::GetVertexAttribIiv, 0>(true);
   typedef cmds::GetVertexAttribIiv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -437,17 +428,14 @@ TEST_P(GLES2DecoderTest2, GetVertexAttribIivValidArgs) {
   cmds::GetVertexAttribIiv cmd;
   cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
            shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
                 GL_VERTEX_ATTRIB_ARRAY_NORMALIZED),
             result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, GetVertexAttribIuivValidArgs) {
+TEST_P(GLES3DecoderTest2, GetVertexAttribIuivValidArgs) {
   SpecializedSetup<cmds::GetVertexAttribIuiv, 0>(true);
   typedef cmds::GetVertexAttribIuiv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -455,14 +443,11 @@ TEST_P(GLES2DecoderTest2, GetVertexAttribIuivValidArgs) {
   cmds::GetVertexAttribIuiv cmd;
   cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
            shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
                 GL_VERTEX_ATTRIB_ARRAY_NORMALIZED),
             result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest2, HintValidArgs) {
@@ -590,26 +575,21 @@ TEST_P(GLES2DecoderTest2, IsRenderbufferInvalidArgsBadSharedMemoryId) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, IsSamplerValidArgs) {
+TEST_P(GLES3DecoderTest2, IsSamplerValidArgs) {
   SpecializedSetup<cmds::IsSampler, 0>(true);
   cmds::IsSampler cmd;
   cmd.Init(client_sampler_id_, shared_memory_id_, shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, IsSamplerInvalidArgsBadSharedMemoryId) {
+TEST_P(GLES3DecoderTest2, IsSamplerInvalidArgsBadSharedMemoryId) {
   SpecializedSetup<cmds::IsSampler, 0>(false);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::IsSampler cmd;
   cmd.Init(client_sampler_id_, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   cmd.Init(client_sampler_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  decoder_->set_unsafe_es3_apis_enabled(true);
 }
 
 TEST_P(GLES2DecoderTest2, IsShaderValidArgs) {
@@ -629,26 +609,21 @@ TEST_P(GLES2DecoderTest2, IsShaderInvalidArgsBadSharedMemoryId) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, IsSyncValidArgs) {
+TEST_P(GLES3DecoderTest2, IsSyncValidArgs) {
   SpecializedSetup<cmds::IsSync, 0>(true);
   cmds::IsSync cmd;
   cmd.Init(client_sync_id_, shared_memory_id_, shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, IsSyncInvalidArgsBadSharedMemoryId) {
+TEST_P(GLES3DecoderTest2, IsSyncInvalidArgsBadSharedMemoryId) {
   SpecializedSetup<cmds::IsSync, 0>(false);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::IsSync cmd;
   cmd.Init(client_sync_id_, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   cmd.Init(client_sync_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  decoder_->set_unsafe_es3_apis_enabled(true);
 }
 
 TEST_P(GLES2DecoderTest2, IsTextureValidArgs) {
@@ -668,21 +643,17 @@ TEST_P(GLES2DecoderTest2, IsTextureInvalidArgsBadSharedMemoryId) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, IsTransformFeedbackValidArgs) {
+TEST_P(GLES3DecoderTest2, IsTransformFeedbackValidArgs) {
   SpecializedSetup<cmds::IsTransformFeedback, 0>(true);
   cmds::IsTransformFeedback cmd;
   cmd.Init(client_transformfeedback_id_, shared_memory_id_,
            shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, IsTransformFeedbackInvalidArgsBadSharedMemoryId) {
+TEST_P(GLES3DecoderTest2, IsTransformFeedbackInvalidArgsBadSharedMemoryId) {
   SpecializedSetup<cmds::IsTransformFeedback, 0>(false);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::IsTransformFeedback cmd;
   cmd.Init(client_transformfeedback_id_, kInvalidSharedMemoryId,
            shared_memory_offset_);
@@ -690,7 +661,6 @@ TEST_P(GLES2DecoderTest2, IsTransformFeedbackInvalidArgsBadSharedMemoryId) {
   cmd.Init(client_transformfeedback_id_, shared_memory_id_,
            kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  decoder_->set_unsafe_es3_apis_enabled(true);
 }
 
 TEST_P(GLES2DecoderTest2, LineWidthValidArgs) {
@@ -736,16 +706,13 @@ TEST_P(GLES2DecoderTest2, PolygonOffsetValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, ReadBufferValidArgs) {
+TEST_P(GLES3DecoderTest2, ReadBufferValidArgs) {
   EXPECT_CALL(*gl_, ReadBuffer(GL_NONE));
   SpecializedSetup<cmds::ReadBuffer, 0>(true);
   cmds::ReadBuffer cmd;
   cmd.Init(GL_NONE);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest2, RenderbufferStorageValidArgs) {
@@ -792,20 +759,17 @@ TEST_P(GLES2DecoderTest2, SampleCoverageValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, SamplerParameterfValidArgs) {
+TEST_P(GLES3DecoderTest2, SamplerParameterfValidArgs) {
   EXPECT_CALL(*gl_, SamplerParameterf(kServiceSamplerId, GL_TEXTURE_MAG_FILTER,
                                       GL_NEAREST));
   SpecializedSetup<cmds::SamplerParameterf, 0>(true);
   cmds::SamplerParameterf cmd;
   cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, SamplerParameterfvImmediateValidArgs) {
+TEST_P(GLES3DecoderTest2, SamplerParameterfvImmediateValidArgs) {
   cmds::SamplerParameterfvImmediate& cmd =
       *GetImmediateAs<cmds::SamplerParameterfvImmediate>();
   SpecializedSetup<cmds::SamplerParameterfvImmediate, 0>(true);
@@ -815,27 +779,21 @@ TEST_P(GLES2DecoderTest2, SamplerParameterfvImmediateValidArgs) {
   cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(*gl_, SamplerParameterf(kServiceSamplerId, GL_TEXTURE_MAG_FILTER,
                                       temp[0]));
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_P(GLES2DecoderTest2, SamplerParameteriValidArgs) {
+TEST_P(GLES3DecoderTest2, SamplerParameteriValidArgs) {
   EXPECT_CALL(*gl_, SamplerParameteri(kServiceSamplerId, GL_TEXTURE_MAG_FILTER,
                                       GL_NEAREST));
   SpecializedSetup<cmds::SamplerParameteri, 0>(true);
   cmds::SamplerParameteri cmd;
   cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, SamplerParameterivImmediateValidArgs) {
+TEST_P(GLES3DecoderTest2, SamplerParameterivImmediateValidArgs) {
   cmds::SamplerParameterivImmediate& cmd =
       *GetImmediateAs<cmds::SamplerParameterivImmediate>();
   SpecializedSetup<cmds::SamplerParameterivImmediate, 0>(true);
@@ -845,11 +803,8 @@ TEST_P(GLES2DecoderTest2, SamplerParameterivImmediateValidArgs) {
   cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(*gl_, SamplerParameteri(kServiceSamplerId, GL_TEXTURE_MAG_FILTER,
                                       temp[0]));
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
 TEST_P(GLES2DecoderTest2, ScissorValidArgs) {
@@ -887,7 +842,6 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketValidArgs) {
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
   cmds::ShaderSourceBucket cmd;
   cmd.Init(client_shader_id_, kBucketId);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -896,7 +850,6 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidArgs) {
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
-  decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::ShaderSourceBucket cmd;
   // Test no bucket.
   cmd.Init(client_shader_id_, kBucketId);
@@ -917,7 +870,6 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidHeader) {
   const GLsizei kTests[] = {
       kCount + 1, 0, std::numeric_limits<GLsizei>::max(), -1,
   };
-  decoder_->set_unsafe_es3_apis_enabled(true);
   for (size_t ii = 0; ii < arraysize(kTests); ++ii) {
     SetBucketAsCStrings(kBucketId, 1, kSource, kTests[ii], kValidStrEnd);
     cmds::ShaderSourceBucket cmd;
@@ -934,7 +886,6 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidStringEnding) {
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kInvalidStrEnd);
   cmds::ShaderSourceBucket cmd;
   cmd.Init(client_shader_id_, kBucketId);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
 
@@ -1182,7 +1133,7 @@ TEST_P(GLES2DecoderTest2, TexParameterivImmediateInvalidArgs1_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
+TEST_P(GLES3DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
   const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
@@ -1190,18 +1141,14 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
   cmds::TransformFeedbackVaryingsBucket cmd;
   cmd.Init(client_program_id_, kBucketId, GL_INTERLEAVED_ATTRIBS);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidArgs) {
+TEST_P(GLES3DecoderTest2, TransformFeedbackVaryingsBucketInvalidArgs) {
   const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
-  decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::TransformFeedbackVaryingsBucket cmd;
   // Test no bucket.
   cmd.Init(client_program_id_, kBucketId, GL_INTERLEAVED_ATTRIBS);
@@ -1213,7 +1160,7 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidHeader) {
+TEST_P(GLES3DecoderTest2, TransformFeedbackVaryingsBucketInvalidHeader) {
   const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
@@ -1222,7 +1169,6 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidHeader) {
   const GLsizei kTests[] = {
       kCount + 1, 0, std::numeric_limits<GLsizei>::max(), -1,
   };
-  decoder_->set_unsafe_es3_apis_enabled(true);
   for (size_t ii = 0; ii < arraysize(kTests); ++ii) {
     SetBucketAsCStrings(kBucketId, 1, kSource, kTests[ii], kValidStrEnd);
     cmds::TransformFeedbackVaryingsBucket cmd;
@@ -1231,7 +1177,7 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidHeader) {
   }
 }
 
-TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidStringEnding) {
+TEST_P(GLES3DecoderTest2, TransformFeedbackVaryingsBucketInvalidStringEnding) {
   const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
@@ -1239,7 +1185,6 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidStringEnding) {
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kInvalidStrEnd);
   cmds::TransformFeedbackVaryingsBucket cmd;
   cmd.Init(client_program_id_, kBucketId, GL_INTERLEAVED_ATTRIBS);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
 
@@ -1390,7 +1335,7 @@ TEST_P(GLES2DecoderTest2, Uniform4ivImmediateValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, UniformMatrix2x3fvImmediateValidArgs) {
+TEST_P(GLES3DecoderTest2, UniformMatrix2x3fvImmediateValidArgs) {
   cmds::UniformMatrix2x3fvImmediate& cmd =
       *GetImmediateAs<cmds::UniformMatrix2x3fvImmediate>();
   SpecializedSetup<cmds::UniformMatrix2x3fvImmediate, 0>(true);
@@ -1399,10 +1344,7 @@ TEST_P(GLES2DecoderTest2, UniformMatrix2x3fvImmediateValidArgs) {
   };
   EXPECT_CALL(*gl_, UniformMatrix2x3fv(1, 2, true, PointsToArray(temp, 6)));
   cmd.Init(1, 2, true, &temp[0]);
-  decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
