@@ -34,6 +34,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/RenderedPosition.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
@@ -516,6 +517,109 @@ void SelectionController::selectClosestWordOrLinkFromMouseEvent(
   updateSelectionForMouseDownDispatchingSelectStart(
       innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection),
       WordGranularity);
+}
+
+// TODO(xiaochengh): We should not use reference to return value.
+static void adjustEndpointsAtBidiBoundary(
+    VisiblePositionInFlatTree& visibleBase,
+    VisiblePositionInFlatTree& visibleExtent) {
+  DCHECK(visibleBase.isValid());
+  DCHECK(visibleExtent.isValid());
+
+  RenderedPosition base(visibleBase);
+  RenderedPosition extent(visibleExtent);
+
+  if (base.isNull() || extent.isNull() || base.isEquivalent(extent))
+    return;
+
+  if (base.atLeftBoundaryOfBidiRun()) {
+    if (!extent.atRightBoundaryOfBidiRun(base.bidiLevelOnRight()) &&
+        base.isEquivalent(
+            extent.leftBoundaryOfBidiRun(base.bidiLevelOnRight()))) {
+      visibleBase = createVisiblePosition(
+          toPositionInFlatTree(base.positionAtLeftBoundaryOfBiDiRun()));
+      return;
+    }
+    return;
+  }
+
+  if (base.atRightBoundaryOfBidiRun()) {
+    if (!extent.atLeftBoundaryOfBidiRun(base.bidiLevelOnLeft()) &&
+        base.isEquivalent(
+            extent.rightBoundaryOfBidiRun(base.bidiLevelOnLeft()))) {
+      visibleBase = createVisiblePosition(
+          toPositionInFlatTree(base.positionAtRightBoundaryOfBiDiRun()));
+      return;
+    }
+    return;
+  }
+
+  if (extent.atLeftBoundaryOfBidiRun() &&
+      extent.isEquivalent(
+          base.leftBoundaryOfBidiRun(extent.bidiLevelOnRight()))) {
+    visibleExtent = createVisiblePosition(
+        toPositionInFlatTree(extent.positionAtLeftBoundaryOfBiDiRun()));
+    return;
+  }
+
+  if (extent.atRightBoundaryOfBidiRun() &&
+      extent.isEquivalent(
+          base.rightBoundaryOfBidiRun(extent.bidiLevelOnLeft()))) {
+    visibleExtent = createVisiblePosition(
+        toPositionInFlatTree(extent.positionAtRightBoundaryOfBiDiRun()));
+    return;
+  }
+}
+
+void SelectionController::setNonDirectionalSelectionIfNeeded(
+    const VisibleSelectionInFlatTree& passedNewSelection,
+    TextGranularity granularity,
+    EndPointsAdjustmentMode endpointsAdjustmentMode) {
+  VisibleSelectionInFlatTree newSelection = passedNewSelection;
+  bool isDirectional =
+      m_frame->editor().behavior().shouldConsiderSelectionAsDirectional() ||
+      newSelection.isDirectional();
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  const PositionInFlatTree& basePosition =
+      m_originalBaseInFlatTree.deepEquivalent();
+  const VisiblePositionInFlatTree& originalBase =
+      basePosition.isConnected() ? createVisiblePosition(basePosition)
+                                 : VisiblePositionInFlatTree();
+  const VisiblePositionInFlatTree& base =
+      originalBase.isNotNull() ? originalBase
+                               : createVisiblePosition(newSelection.base());
+  VisiblePositionInFlatTree newBase = base;
+  const VisiblePositionInFlatTree& extent =
+      createVisiblePosition(newSelection.extent());
+  VisiblePositionInFlatTree newExtent = extent;
+  if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
+    adjustEndpointsAtBidiBoundary(newBase, newExtent);
+
+  if (newBase.deepEquivalent() != base.deepEquivalent() ||
+      newExtent.deepEquivalent() != extent.deepEquivalent()) {
+    m_originalBaseInFlatTree = base;
+    newSelection.setBase(newBase);
+    newSelection.setExtent(newExtent);
+  } else if (originalBase.isNotNull()) {
+    if (selection().visibleSelection<EditingInFlatTreeStrategy>().base() ==
+        newSelection.base())
+      newSelection.setBase(originalBase);
+    m_originalBaseInFlatTree = VisiblePositionInFlatTree();
+  }
+
+  // Adjusting base and extent will make newSelection always directional
+  newSelection.setIsDirectional(isDirectional);
+  if (selection().visibleSelection<EditingInFlatTreeStrategy>() == newSelection)
+    return;
+
+  const FrameSelection::SetSelectionOptions options =
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle;
+  selection().setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded,
+                           granularity);
 }
 
 bool SelectionController::handleMousePressEventDoubleClick(

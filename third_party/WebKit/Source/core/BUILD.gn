@@ -1087,6 +1087,7 @@ source_set("unit_tests") {
     "editing/PositionTest.cpp",
     "editing/RelocatablePositionTest.cpp",
     "editing/SelectionAdjusterTest.cpp",
+    "editing/SelectionControllerTest.cpp",
     "editing/SelectionTemplateTest.cpp",
     "editing/SurroundingTextTest.cpp",
     "editing/VisiblePositionTest.cpp",
