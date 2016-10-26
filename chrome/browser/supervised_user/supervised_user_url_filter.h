@@ -103,7 +103,7 @@ class SupervisedUserURLFilter
   // Asterisks in other parts of the pattern are not allowed.
   // |host| and |pattern| are assumed to be normalized to lower-case.
   // This method is public for testing.
-  static bool HostMatchesPattern(const std::string& canonical_host,
+  static bool HostMatchesPattern(const std::string& host,
                                  const std::string& pattern);
 
   // Returns the filtering behavior for a given URL, based on the default
