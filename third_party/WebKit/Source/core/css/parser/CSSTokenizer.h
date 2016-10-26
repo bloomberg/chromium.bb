@@ -35,6 +35,8 @@ class CORE_EXPORT CSSTokenizer {
     CSSParserTokenRange tokenRange();
     unsigned tokenCount();
 
+    Vector<String> takeEscapedStrings() { return std::move(m_stringPool); }
+
    private:
     void storeString(const String& string) { m_stringPool.append(string); }
     Vector<CSSParserToken, 32> m_tokens;

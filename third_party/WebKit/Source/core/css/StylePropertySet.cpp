@@ -606,4 +606,6 @@ MutableStylePropertySet* MutableStylePropertySet::create(
   return new MutableStylePropertySet(properties, count);
 }
 
+DEFINE_TRACE(CSSLazyPropertyParser) {}
+
 }  // namespace blink

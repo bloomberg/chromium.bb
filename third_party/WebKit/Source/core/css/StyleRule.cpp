@@ -208,25 +208,51 @@ unsigned StyleRule::averageSizeInBytes() {
 }
 
 StyleRule::StyleRule(CSSSelectorList selectorList, StylePropertySet* properties)
-    : StyleRuleBase(Style), m_properties(properties) {
-  m_selectorList = std::move(selectorList);
+    : StyleRuleBase(Style),
+      m_selectorList(std::move(selectorList)),
+      m_properties(properties) {}
+
+StyleRule::StyleRule(CSSSelectorList selectorList,
+                     CSSLazyPropertyParser* lazyPropertyParser)
+    : StyleRuleBase(Style),
+      m_selectorList(std::move(selectorList)),
+      m_lazyPropertyParser(lazyPropertyParser) {}
+
+const StylePropertySet& StyleRule::properties() const {
+  if (!m_properties) {
+    m_properties = m_lazyPropertyParser->parseProperties();
+    m_lazyPropertyParser.clear();
+  }
+  return *m_properties;
 }
 
-StyleRule::StyleRule(const StyleRule& rule)
-    : StyleRuleBase(rule),
-      m_properties(rule.m_properties->mutableCopy()),
-      m_selectorList(rule.m_selectorList.copy()) {}
+StyleRule::StyleRule(const StyleRule& o)
+    : StyleRuleBase(o),
+      m_selectorList(o.m_selectorList.copy()),
+      m_properties(o.properties().mutableCopy()) {}
 
 StyleRule::~StyleRule() {}
 
 MutableStylePropertySet& StyleRule::mutableProperties() {
-  if (!m_properties->isMutable())
+  // Ensure m_properties is initialized.
+  if (!properties().isMutable())
     m_properties = m_properties->mutableCopy();
   return *toMutableStylePropertySet(m_properties.get());
 }
 
+bool StyleRule::propertiesHaveFailedOrCanceledSubresources() const {
+  return m_properties && m_properties->hasFailedOrCanceledSubresources();
+}
+
+bool StyleRule::shouldConsiderForMatchingRules(bool includeEmptyRules) const {
+  // Consider all non-empty property sets if parsing has not been deferred.
+  // Otherwise, consider all StyleRules with non-null deferred closures.
+  return includeEmptyRules || !m_properties || !m_properties->isEmpty();
+}
+
 DEFINE_TRACE_AFTER_DISPATCH(StyleRule) {
   visitor->trace(m_properties);
+  visitor->trace(m_lazyPropertyParser);
   StyleRuleBase::traceAfterDispatch(visitor);
 }
 

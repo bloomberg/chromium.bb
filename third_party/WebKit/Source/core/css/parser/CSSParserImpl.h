@@ -17,6 +17,7 @@
 
 namespace blink {
 
+class CSSLazyParsingState;
 class CSSParserObserver;
 class CSSParserObserverWrapper;
 class StyleRule;
@@ -80,7 +81,8 @@ class CSSParserImpl {
                                   AllowedRulesType);
   static void parseStyleSheet(const String&,
                               const CSSParserContext&,
-                              StyleSheetContents*);
+                              StyleSheetContents*,
+                              bool deferPropertyParsing = false);
   static CSSSelectorList parsePageSelector(CSSParserTokenRange,
                                            StyleSheetContents*);
 
@@ -97,6 +99,10 @@ class CSSParserImpl {
                                           const CSSParserContext&,
                                           StyleSheetContents*,
                                           CSSParserObserver&);
+
+  static StylePropertySet* parseDeclarationListForLazyStyle(
+      CSSParserTokenRange block,
+      const CSSParserContext&);
 
  private:
   enum RuleListType { TopLevelRuleList, RegularRuleList, KeyframesRuleList };
@@ -156,6 +162,8 @@ class CSSParserImpl {
 
   // For the inspector
   CSSParserObserverWrapper* m_observerWrapper;
+
+  Member<CSSLazyParsingState> m_lazyState;
 };
 
 }  // namespace blink

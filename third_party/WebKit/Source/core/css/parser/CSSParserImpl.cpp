@@ -14,6 +14,8 @@
 #include "core/css/StyleRuleNamespace.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSAtRuleID.h"
+#include "core/css/parser/CSSLazyParsingState.h"
+#include "core/css/parser/CSSLazyPropertyParserImpl.h"
 #include "core/css/parser/CSSParserObserver.h"
 #include "core/css/parser/CSSParserObserverWrapper.h"
 #include "core/css/parser/CSSParserSelector.h"
@@ -192,7 +194,8 @@ StyleRuleBase* CSSParserImpl::parseRule(const String& string,
 
 void CSSParserImpl::parseStyleSheet(const String& string,
                                     const CSSParserContext& context,
-                                    StyleSheetContents* styleSheet) {
+                                    StyleSheetContents* styleSheet,
+                                    bool deferPropertyParsing) {
   TRACE_EVENT_BEGIN2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
                      "baseUrl", context.baseURL().getString().utf8(), "mode",
                      context.mode());
@@ -206,6 +209,10 @@ void CSSParserImpl::parseStyleSheet(const String& string,
   TRACE_EVENT_BEGIN0("blink,blink_style",
                      "CSSParserImpl::parseStyleSheet.parse");
   CSSParserImpl parser(context, styleSheet);
+  if (deferPropertyParsing) {
+    parser.m_lazyState =
+        new CSSLazyParsingState(context, scope.takeEscapedStrings(), string);
+  }
   bool firstRuleValid = parser.consumeRuleList(
       scope.tokenRange(), TopLevelRuleList, [&styleSheet](StyleRuleBase* rule) {
         if (rule->isCharsetRule())
@@ -329,6 +336,14 @@ void CSSParserImpl::parseStyleSheetForInspector(const String& string,
         styleSheet->parserAppendRule(rule);
       });
   styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
+}
+
+StylePropertySet* CSSParserImpl::parseDeclarationListForLazyStyle(
+    CSSParserTokenRange block,
+    const CSSParserContext& context) {
+  CSSParserImpl parser(context);
+  parser.consumeDeclarationList(std::move(block), StyleRule::Style);
+  return createStylePropertySet(parser.m_parsedProperties, context.mode());
 }
 
 static CSSParserImpl::AllowedRulesType computeNewAllowedRules(
@@ -768,9 +783,16 @@ StyleRule* CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude,
   if (!selectorList.isValid())
     return nullptr;  // Parse error, invalid selector list
 
-  if (m_observerWrapper)
+  // TODO(csharrison): How should we lazily parse css that needs the observer?
+  if (m_observerWrapper) {
     observeSelectors(*m_observerWrapper, prelude);
-
+  } else if (m_lazyState &&
+             m_lazyState->shouldLazilyParseProperties(selectorList)) {
+    DCHECK(m_styleSheet);
+    return StyleRule::createLazy(
+        std::move(selectorList),
+        new CSSLazyPropertyParserImpl(block, m_lazyState));
+  }
   consumeDeclarationList(block, StyleRule::Style);
 
   return StyleRule::create(

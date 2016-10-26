@@ -62,8 +62,10 @@ StyleRuleBase* CSSParser::parseRule(const CSSParserContext& context,
 
 void CSSParser::parseSheet(const CSSParserContext& context,
                            StyleSheetContents* styleSheet,
-                           const String& text) {
-  return CSSParserImpl::parseStyleSheet(text, context, styleSheet);
+                           const String& text,
+                           bool deferPropertyParsing) {
+  return CSSParserImpl::parseStyleSheet(text, context, styleSheet,
+                                        deferPropertyParsing);
 }
 
 void CSSParser::parseSheetForInspector(const CSSParserContext& context,

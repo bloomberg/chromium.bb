@@ -155,6 +155,18 @@ class CORE_EXPORT StylePropertySet
   friend class PropertySetCSSStyleDeclaration;
 };
 
+// Used for lazily parsing properties.
+class CSSLazyPropertyParser
+    : public GarbageCollectedFinalized<CSSLazyPropertyParser> {
+  WTF_MAKE_NONCOPYABLE(CSSLazyPropertyParser);
+
+ public:
+  CSSLazyPropertyParser() {}
+  virtual ~CSSLazyPropertyParser() {}
+  virtual StylePropertySet* parseProperties() = 0;
+  DECLARE_VIRTUAL_TRACE();
+};
+
 class CORE_EXPORT ImmutableStylePropertySet : public StylePropertySet {
  public:
   ~ImmutableStylePropertySet();

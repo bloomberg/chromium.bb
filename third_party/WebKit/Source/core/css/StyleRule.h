@@ -99,11 +99,15 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
                            StylePropertySet* properties) {
     return new StyleRule(std::move(selectorList), properties);
   }
+  static StyleRule* createLazy(CSSSelectorList selectorList,
+                               CSSLazyPropertyParser* lazyPropertyParser) {
+    return new StyleRule(std::move(selectorList), lazyPropertyParser);
+  }
 
   ~StyleRule();
 
   const CSSSelectorList& selectorList() const { return m_selectorList; }
-  const StylePropertySet& properties() const { return *m_properties; }
+  const StylePropertySet& properties() const;
   MutableStylePropertySet& mutableProperties();
 
   void wrapperAdoptSelectorList(CSSSelectorList selectors) {
@@ -114,14 +118,20 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
 
   static unsigned averageSizeInBytes();
 
+  // Helper methods to avoid parsing lazy properties when not needed.
+  bool propertiesHaveFailedOrCanceledSubresources() const;
+  bool shouldConsiderForMatchingRules(bool includeEmptyRules) const;
+
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   StyleRule(CSSSelectorList, StylePropertySet*);
+  StyleRule(CSSSelectorList, CSSLazyPropertyParser*);
   StyleRule(const StyleRule&);
 
-  Member<StylePropertySet> m_properties;  // Cannot be null.
   CSSSelectorList m_selectorList;
+  mutable Member<StylePropertySet> m_properties;
+  mutable Member<CSSLazyPropertyParser> m_lazyPropertyParser;
 };
 
 class StyleRuleFontFace : public StyleRuleBase {

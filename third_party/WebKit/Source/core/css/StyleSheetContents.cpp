@@ -92,6 +92,8 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
   // FIXME: Copy import rules.
   ASSERT(o.m_importRules.isEmpty());
 
+  // LazyParseCSS: Copying child rules is a strict point for lazy parsing, so
+  // there is no need to copy lazy parsing state here.
   for (unsigned i = 0; i < m_childRules.size(); ++i)
     m_childRules[i] = o.m_childRules[i]->copy();
 }
@@ -351,7 +353,8 @@ void StyleSheetContents::parseAuthorStyleSheet(
   }
 
   CSSParserContext context(parserContext(), UseCounter::getFrom(this));
-  CSSParser::parseSheet(context, this, sheetText);
+  CSSParser::parseSheet(context, this, sheetText,
+                        RuntimeEnabledFeatures::lazyParseCSSEnabled());
 }
 
 void StyleSheetContents::parseString(const String& sheetText) {
@@ -478,7 +481,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(
     const StyleRuleBase* rule = rules[i].get();
     switch (rule->type()) {
       case StyleRuleBase::Style:
-        if (toStyleRule(rule)->properties().hasFailedOrCanceledSubresources())
+        if (toStyleRule(rule)->propertiesHaveFailedOrCanceledSubresources())
           return true;
         break;
       case StyleRuleBase::FontFace:
