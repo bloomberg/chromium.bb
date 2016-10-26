@@ -459,7 +459,7 @@ InspectorTest.deprecatedRunAfterPendingDispatches = function(callback)
     var barrier = new CallbackBarrier();
     var targets = WebInspector.targetManager.targets();
     for (var i = 0; i < targets.length; ++i)
-        targets[i]._targetProto._deprecatedRunAfterPendingDispatches(barrier.createCallback());
+        targets[i]._deprecatedRunAfterPendingDispatches(barrier.createCallback());
     barrier.callWhenDone(InspectorTest.safeWrap(callback));
 }
 
@@ -918,7 +918,6 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.serviceWorkerManager = target.serviceWorkerManager;
         InspectorTest.tracingManager = target.tracingManager;
         InspectorTest.mainTarget = target;
-        InspectorTest.connection = target._targetProto;
     },
 
     targetRemoved: function(target) { }

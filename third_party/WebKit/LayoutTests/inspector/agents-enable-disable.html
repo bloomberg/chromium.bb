@@ -23,15 +23,15 @@ function test()
 
     var targets = WebInspector.targetManager.targets();
     targets.forEach(function(target) {
-        var agentNames = Object.keys(target._agentsMap).filter(function(agentName) {
-            var agent = target._agentsMap[agentName];
+        var agentNames = Object.keys(target._agents).filter(function(agentName) {
+            var agent = target._agents[agentName];
             return agent["enable"] && agent["disable"] && agentName !== "ServiceWorker" && agentName !== "Security" && agentName !== "Inspector" && agentName !== "Target";  // async wrt others.
         }).sort();
 
         function disableAgent(agentName)
         {
             ++requestsSent;
-            var agent = target._agentsMap[agentName];
+            var agent = target._agents[agentName];
             agent.disable(finishWhenDone.bind(null, agentName, "disable"))
                 .catch(finishWhenDone.bind(null, agentName, "disable"));
         }
@@ -39,7 +39,7 @@ function test()
         function enableAgent(agentName)
         {
             ++requestsSent;
-            var agent = target._agentsMap[agentName];
+            var agent = target._agents[agentName];
             agent.enable(finishWhenDone.bind(null, agentName, "enable"))
                 .catch(finishWhenDone.bind(null, agentName, "enable"));
         }

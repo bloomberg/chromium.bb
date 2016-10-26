@@ -11,7 +11,7 @@ function test()
     {
         messages.push(message);
     }
-    InspectorBackendClass.TargetPrototype.prototype._dumpProtocolMessage = collectMessages;
+    Protocol.Target.prototype._dumpProtocolMessage = collectMessages;
     InspectorBackendClass.Options.dumpInspectorProtocolMessages = 1;
     messages.push("--> WebInspector.targetManager.suspendAllTargets();");
     WebInspector.targetManager.suspendAllTargets();

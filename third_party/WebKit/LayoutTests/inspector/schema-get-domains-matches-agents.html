@@ -15,7 +15,7 @@ function test()
             return;
         }
         var domainNames = domains.map(domain => domain.name).sort();
-        var agentNames = Object.keys(target._agentsMap).sort();
+        var agentNames = Object.keys(target._agents).sort();
         for (var domain of domainNames) {
             if (agentNames.indexOf(domain) === -1)
                 InspectorTest.addResult("agent " + domain + " is missing from target");

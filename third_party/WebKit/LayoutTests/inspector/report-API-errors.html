@@ -18,8 +18,8 @@ function test()
     InspectorTest.RuntimeAgent.evaluate("true", "test");
     InspectorTest.RuntimeAgent.evaluate("true", "test", function(){});
     InspectorTest.RuntimeAgent.evaluate("true", "test", undefined, function(){});
-    InspectorTest.connection.dispatch('{"method": "wrongDomain.something-strange", "params": {}}');
-    InspectorTest.connection.dispatch('{"method": "Inspector.something-strange", "params": {}}');
+    InspectorTest.mainTarget._onMessage('{"method": "wrongDomain.something-strange", "params": {}}');
+    InspectorTest.mainTarget._onMessage('{"method": "Inspector.something-strange", "params": {}}');
 
     InspectorTest.completeTest();
 }
