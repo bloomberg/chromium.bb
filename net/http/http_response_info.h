@@ -11,7 +11,6 @@
 #include "net/base/net_export.h"
 #include "net/http/http_vary_data.h"
 #include "net/proxy/proxy_server.h"
-#include "net/socket/next_proto.h"
 #include "net/ssl/ssl_info.h"
 
 namespace base {
@@ -187,8 +186,6 @@ class NET_EXPORT HttpResponseInfo {
 
   // Any metadata asociated with this resource's cached data.
   scoped_refptr<IOBufferWithSize> metadata;
-
-  static ConnectionInfo ConnectionInfoFromNextProto(NextProto next_proto);
 
   static std::string ConnectionInfoToString(ConnectionInfo connection_info);
 };

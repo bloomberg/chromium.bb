@@ -156,7 +156,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
       const HttpResponseInfo* response = trans_->GetResponseInfo();
       ASSERT_TRUE(response);
       ASSERT_TRUE(response->headers);
-      EXPECT_EQ(HttpResponseInfo::ConnectionInfoFromNextProto(kProtoHTTP2),
+      EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
                 response->connection_info);
       EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
       EXPECT_TRUE(response->was_fetched_via_spdy);

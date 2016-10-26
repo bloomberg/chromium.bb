@@ -420,23 +420,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     pickle->WriteInt(ssl_info.key_exchange_group);
 }
 
-HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
-    NextProto next_proto) {
-  switch (next_proto) {
-    case kProtoHTTP2:
-      return CONNECTION_INFO_HTTP2;
-    case kProtoQUIC:
-      return CONNECTION_INFO_QUIC;
-
-    case kProtoUnknown:
-    case kProtoHTTP11:
-      break;
-  }
-
-  NOTREACHED();
-  return CONNECTION_INFO_UNKNOWN;
-}
-
 // static
 std::string HttpResponseInfo::ConnectionInfoToString(
     ConnectionInfo connection_info) {
