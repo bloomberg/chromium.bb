@@ -37,13 +37,10 @@ void ActionWait::Run(UpdateContext* update_context, Callback callback) {
     // completed with an error.
     while (!update_context->queue.empty()) {
       auto* item = FindUpdateItemById(update_context->queue.front());
-      if (!item) {
-        item->error_category = static_cast<int>(ErrorCategory::kServiceError);
-        item->error_code = static_cast<int>(ServiceError::ERROR_WAIT);
-        ChangeItemState(item, CrxUpdateItem::State::kNoUpdate);
-      } else {
-        NOTREACHED();
-      }
+      DCHECK(item);
+      item->error_category = static_cast<int>(ErrorCategory::kServiceError);
+      item->error_code = static_cast<int>(ServiceError::ERROR_WAIT);
+      ChangeItemState(item, CrxUpdateItem::State::kNoUpdate);
       update_context->queue.pop();
     }
     callback.Run(static_cast<int>(ServiceError::ERROR_WAIT));
