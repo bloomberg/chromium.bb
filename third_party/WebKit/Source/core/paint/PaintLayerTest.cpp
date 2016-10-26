@@ -40,4 +40,56 @@ TEST_F(PaintLayerTest, PaintingExtentReflectionWithTransform) {
       layer->paintingExtent(document().layoutView()->layer(), LayoutSize(), 0));
 }
 
+TEST_F(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='scroll' style='width: 100px; height: 100px; overflow: scroll;"
+      "    will-change: transform'>"
+      "  <div id='content' style='position: relative; background: blue;"
+      "      width: 2000px; height: 2000px'></div>"
+      "</div>");
+
+  PaintLayer* scrollLayer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("scroll"))->layer();
+  EXPECT_EQ(PaintsIntoOwnBacking, scrollLayer->compositingState());
+
+  PaintLayer* contentLayer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("content"))->layer();
+  EXPECT_EQ(NotComposited, contentLayer->compositingState());
+  EXPECT_EQ(LayoutPoint(), contentLayer->location());
+
+  scrollLayer->getScrollableArea()->setScrollOffset(ScrollOffset(1000, 1000),
+                                                    ProgrammaticScroll);
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+  EXPECT_EQ(LayoutPoint(-1000, -1000), contentLayer->location());
+  EXPECT_FALSE(contentLayer->needsRepaint());
+  EXPECT_FALSE(scrollLayer->needsRepaint());
+  document().view()->updateAllLifecyclePhases();
+}
+
+TEST_F(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
+  setBodyInnerHTML(
+      "<div id='scroll' style='width: 100px; height: 100px; overflow: scroll'>"
+      "  <div id='content' style='position: relative; background: blue;"
+      "      width: 2000px; height: 2000px'></div>"
+      "</div>");
+
+  PaintLayer* scrollLayer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("scroll"))->layer();
+  EXPECT_EQ(NotComposited, scrollLayer->compositingState());
+
+  PaintLayer* contentLayer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("content"))->layer();
+  EXPECT_EQ(NotComposited, scrollLayer->compositingState());
+  EXPECT_EQ(LayoutPoint(), contentLayer->location());
+
+  scrollLayer->getScrollableArea()->setScrollOffset(ScrollOffset(1000, 1000),
+                                                    ProgrammaticScroll);
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+  EXPECT_EQ(LayoutPoint(-1000, -1000), contentLayer->location());
+  EXPECT_TRUE(contentLayer->needsRepaint());
+  EXPECT_TRUE(scrollLayer->needsRepaint());
+  document().view()->updateAllLifecyclePhases();
+}
+
 }  // namespace blink

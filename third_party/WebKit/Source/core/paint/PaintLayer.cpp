@@ -861,9 +861,6 @@ void PaintLayer::updateLayerPosition() {
     m_rareData->offsetForInFlowPosition = LayoutSize();
   }
 
-  if (m_location != localPoint) {
-    setNeedsRepaint();
-  }
   m_location = localPoint;
 
 #if DCHECK_IS_ON()
