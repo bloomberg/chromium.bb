@@ -154,6 +154,10 @@ class ChromeBrowserProvider {
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
+
+  // TODO(rohitrao): This is a temporary method, used to prevent the tree from
+  // breaking due to duplicate prefs registration.
+  virtual bool ShouldEmbedderRegisterVoiceSearchPrefs() const;
 };
 
 }  // namespace ios
