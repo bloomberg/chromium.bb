@@ -1076,7 +1076,7 @@ static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> 
     // Prepare the value to be set.
     moveEventListenerToNewWrapper(info.GetIsolate(), holder, impl->implementsEventHandlerAttribute(), v8Value, V8TestInterface::eventListenerCacheIndex);
 
-    impl->setImplementsEventHandlerAttribute(V8EventListenerHelper::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
+    impl->setImplementsEventHandlerAttribute(V8EventListenerHelper::getEventListener(ScriptState::forReceiverObject(info), v8Value, true, ListenerFindOrCreate));
 }
 
 void implementsEventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

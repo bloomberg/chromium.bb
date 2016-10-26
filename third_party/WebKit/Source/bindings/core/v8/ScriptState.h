@@ -76,6 +76,11 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
     return from(info.Holder()->CreationContext());
   }
 
+  static ScriptState* forReceiverObject(
+      const v8::PropertyCallbackInfo<void>& info) {
+    return from(info.Holder()->CreationContext());
+  }
+
   // Debugger context doesn't have associated ScriptState and when current
   // context is debugger it should be treated as if context stack was empty.
   static bool hasCurrentScriptState(v8::Isolate* isolate) {

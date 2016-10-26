@@ -2247,7 +2247,7 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     // Prepare the value to be set.
     moveEventListenerToNewWrapper(info.GetIsolate(), holder, impl->eventHandlerAttribute(), v8Value, V8TestObject::eventListenerCacheIndex);
 
-    impl->setEventHandlerAttribute(V8EventListenerHelper::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
+    impl->setEventHandlerAttribute(V8EventListenerHelper::getEventListener(ScriptState::forReceiverObject(info), v8Value, true, ListenerFindOrCreate));
 }
 
 void eventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
