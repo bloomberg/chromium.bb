@@ -1489,7 +1489,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                                    Profile.getLastUsedProfile(), url,
                                    connection.mSpeculation.webContents);
             }
-        });
+        }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     private CustomTabsSession bindWithCallback(final CustomTabsCallback callback) {

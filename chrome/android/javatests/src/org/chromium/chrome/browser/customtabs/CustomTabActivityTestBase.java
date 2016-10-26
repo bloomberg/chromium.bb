@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
@@ -16,6 +18,7 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -23,6 +26,9 @@ import java.util.concurrent.TimeoutException;
  */
 public abstract class CustomTabActivityTestBase extends
         ChromeActivityTestCaseBase<CustomTabActivity> {
+
+    protected static final long STARTUP_TIMEOUT_MS = scaleTimeout(5) * 1000;
+    protected static final long LONG_TIMEOUT_MS = scaleTimeout(10) * 1000;
 
     public CustomTabActivityTestBase() {
         super(CustomTabActivity.class);
@@ -66,7 +72,10 @@ public abstract class CustomTabActivityTestBase extends
             }
         });
         try {
-            if (tab.isLoading()) pageLoadFinishedHelper.waitForCallback(0);
+            if (tab.isLoading()) {
+                pageLoadFinishedHelper.waitForCallback(0, 1, LONG_TIMEOUT_MS,
+                        TimeUnit.MILLISECONDS);
+            }
         } catch (TimeoutException e) {
             fail();
         }
@@ -75,7 +84,7 @@ public abstract class CustomTabActivityTestBase extends
             public boolean isSatisfied() {
                 return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
             }
-        }, 5000, 200);
+        }, STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         assertNotNull(tab);
         assertNotNull(tab.getView());
     }
