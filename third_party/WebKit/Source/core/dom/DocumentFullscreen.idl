@@ -23,7 +23,6 @@
 
 partial interface Document {
     [RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
-    [RuntimeEnabled=FullscreenUnprefixed] readonly attribute Element? fullscreenElement;
 
     [RuntimeEnabled=FullscreenUnprefixed] void exitFullscreen();
 

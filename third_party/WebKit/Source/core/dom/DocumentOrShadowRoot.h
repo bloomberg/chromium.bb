@@ -6,6 +6,7 @@
 #define DocumentOrShadowRoot_h
 
 #include "core/dom/Document.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
 
@@ -72,6 +73,10 @@ class DocumentOrShadowRoot {
     if (!target)
       return nullptr;
     return shadowRoot.adjustedElement(*target);
+  }
+
+  static Element* fullscreenElement(TreeScope& scope) {
+    return Fullscreen::fullscreenElementForBindingFrom(scope);
   }
 };
 

@@ -6187,6 +6187,7 @@ interface ShadowRoot : DocumentFragment
     attribute @@toStringTag
     getter activeElement
     getter delegatesFocus
+    getter fullscreenElement
     getter host
     getter innerHTML
     getter mode

@@ -212,10 +212,47 @@ Element* Fullscreen::fullscreenElementFrom(Document& document) {
   return nullptr;
 }
 
+Element* Fullscreen::fullscreenElementForBindingFrom(TreeScope& scope) {
+  Element* element = fullscreenElementFrom(scope.document());
+  if (!element || !RuntimeEnabledFeatures::fullscreenUnprefixedEnabled())
+    return element;
+
+  // TODO(kochi): Once V0 code is removed, we can use the same logic for
+  // Document and ShadowRoot.
+  if (!scope.rootNode().isShadowRoot()) {
+    // For Shadow DOM V0 compatibility: We allow returning an element in V0
+    // shadow tree, even though it leaks the Shadow DOM.
+    if (element->isInV0ShadowTree()) {
+      UseCounter::count(scope.document(),
+                        UseCounter::DocumentFullscreenElementInV0Shadow);
+      return element;
+    }
+  } else if (!toShadowRoot(scope.rootNode()).isV1()) {
+    return nullptr;
+  }
+  return scope.adjustedElement(*element);
+}
+
 Element* Fullscreen::currentFullScreenElementFrom(Document& document) {
   if (Fullscreen* found = fromIfExists(document))
     return found->currentFullScreenElement();
   return nullptr;
+}
+
+Element* Fullscreen::currentFullScreenElementForBindingFrom(
+    Document& document) {
+  Element* element = currentFullScreenElementFrom(document);
+  if (!element || !RuntimeEnabledFeatures::fullscreenUnprefixedEnabled())
+    return element;
+
+  // For Shadow DOM V0 compatibility: We allow returning an element in V0 shadow
+  // tree, even though it leaks the Shadow DOM.
+  if (element->isInV0ShadowTree()) {
+    UseCounter::count(document,
+                      UseCounter::DocumentFullscreenElementInV0Shadow);
+    return element;
+  }
+  return document.adjustedElement(*element);
 }
 
 Fullscreen::Fullscreen(Document& document)

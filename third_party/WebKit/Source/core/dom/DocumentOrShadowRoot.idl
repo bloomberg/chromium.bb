@@ -21,4 +21,7 @@
     // PointerLock API
     // https://w3c.github.io/pointerlock/
     readonly attribute Element? pointerLockElement;
+    // Fullscreen API
+    // https://fullscreen.spec.whatwg.org/
+    [RuntimeEnabled=FullscreenUnprefixed] readonly attribute Element? fullscreenElement;
 };

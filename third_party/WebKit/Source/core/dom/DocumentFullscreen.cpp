@@ -34,7 +34,7 @@ bool DocumentFullscreen::fullscreenEnabled(Document& document) {
 }
 
 Element* DocumentFullscreen::fullscreenElement(Document& document) {
-  return Fullscreen::fullscreenElementFrom(document);
+  return Fullscreen::fullscreenElementForBindingFrom(document);
 }
 
 void DocumentFullscreen::exitFullscreen(Document& document) {
@@ -42,7 +42,7 @@ void DocumentFullscreen::exitFullscreen(Document& document) {
 }
 
 Element* DocumentFullscreen::currentFullScreenElement(Document& document) {
-  return Fullscreen::currentFullScreenElementFrom(document);
+  return Fullscreen::currentFullScreenElementForBindingFrom(document);
 }
 
 }  // namespace blink
