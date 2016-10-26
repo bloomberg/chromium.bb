@@ -163,6 +163,11 @@ const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Experiment to use grouped permission infobars which could show and handle
+// multiple permission requests.
+const base::Feature kUseGroupedPermissionInfobars{
+    "UseGroupedPermissionInfobars", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables or disables the opt-in IME menu in the language settings page.
 const base::Feature kOptInImeMenu{"OptInImeMenu",

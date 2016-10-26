@@ -97,6 +97,8 @@ extern const base::Feature kSecurityChip;
 extern const base::Feature kSyzyasanDeferredFree;
 #endif
 
+extern const base::Feature kUseGroupedPermissionInfobars;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOptInImeMenu;
 

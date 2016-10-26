@@ -13,6 +13,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/android_theme_resources.h"
+#endif
+
 PermissionRequestImpl::PermissionRequestImpl(
     const GURL& request_origin,
     content::PermissionType permission_type,
@@ -38,6 +42,24 @@ PermissionRequestImpl::~PermissionRequestImpl() {
 }
 
 PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
+#if defined(OS_ANDROID)
+  switch (permission_type_) {
+    case content::PermissionType::GEOLOCATION:
+      return IDR_ANDROID_INFOBAR_GEOLOCATION;
+#if defined(ENABLE_NOTIFICATIONS)
+    case content::PermissionType::NOTIFICATIONS:
+    case content::PermissionType::PUSH_MESSAGING:
+      return IDR_ANDROID_INFOBAR_NOTIFICATIONS;
+#endif
+    case content::PermissionType::MIDI_SYSEX:
+      return IDR_ANDROID_INFOBAR_MIDI;
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
+    default:
+      NOTREACHED();
+      return IDR_ANDROID_INFOBAR_WARNING;
+  }
+#else
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
@@ -59,6 +81,7 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       NOTREACHED();
       return gfx::VectorIconId::VECTOR_ICON_NONE;
   }
+#endif
 }
 
 base::string16 PermissionRequestImpl::GetMessageTextFragment() const {

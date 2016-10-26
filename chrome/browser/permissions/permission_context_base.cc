@@ -9,12 +9,15 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_request_impl.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,9 +34,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/permissions/permission_queue_controller.h"
-#else
-#include "chrome/browser/permissions/permission_request_impl.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 // static
@@ -174,36 +174,42 @@ void PermissionContextBase::DecidePermission(
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-#if !defined(OS_ANDROID)
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
-  // TODO(felt): sometimes |permission_request_manager| is null. This check is
-  // meant to prevent crashes. See crbug.com/457091.
-  if (!permission_request_manager)
-    return;
-  std::unique_ptr<PermissionRequest> request_ptr(new PermissionRequestImpl(
-      requesting_origin, permission_type_, profile_, user_gesture,
-      base::Bind(&PermissionContextBase::PermissionDecided,
-                 weak_factory_.GetWeakPtr(), id, requesting_origin,
-                 embedding_origin, user_gesture, callback),
-      base::Bind(&PermissionContextBase::CleanUpRequest,
-                 weak_factory_.GetWeakPtr(), id)));
-  PermissionRequest* request = request_ptr.get();
+  if (PermissionRequestManager::IsEnabled()) {
+    PermissionRequestManager* permission_request_manager =
+        PermissionRequestManager::FromWebContents(web_contents);
+    // TODO(felt): sometimes |permission_request_manager| is null. This check is
+    // meant to prevent crashes. See crbug.com/457091.
+    if (!permission_request_manager)
+      return;
 
-  bool inserted =
-      pending_requests_.add(id.ToString(), std::move(request_ptr)).second;
-  DCHECK(inserted) << "Duplicate id " << id.ToString();
-  permission_request_manager->AddRequest(request);
+    std::unique_ptr<PermissionRequest> request_ptr =
+        base::MakeUnique<PermissionRequestImpl>(
+            requesting_origin, permission_type_, profile_, user_gesture,
+            base::Bind(&PermissionContextBase::PermissionDecided,
+                       weak_factory_.GetWeakPtr(), id, requesting_origin,
+                       embedding_origin, user_gesture, callback),
+            base::Bind(&PermissionContextBase::CleanUpRequest,
+                       weak_factory_.GetWeakPtr(), id));
+    PermissionRequest* request = request_ptr.get();
+
+    bool inserted =
+        pending_requests_.add(id.ToString(), std::move(request_ptr)).second;
+    DCHECK(inserted) << "Duplicate id " << id.ToString();
+    permission_request_manager->AddRequest(request);
+  } else {
+#if defined(OS_ANDROID)
+    GetQueueController()->CreateInfoBarRequest(
+        id, requesting_origin, embedding_origin, user_gesture,
+        base::Bind(&PermissionContextBase::PermissionDecided,
+                   weak_factory_.GetWeakPtr(), id, requesting_origin,
+                   embedding_origin, user_gesture, callback,
+                   // the queue controller takes care of persisting the
+                   // permission
+                   false));
 #else
-  GetQueueController()->CreateInfoBarRequest(
-      id, requesting_origin, embedding_origin, user_gesture,
-      base::Bind(&PermissionContextBase::PermissionDecided,
-                 weak_factory_.GetWeakPtr(), id, requesting_origin,
-                 embedding_origin, user_gesture, callback,
-                 // the queue controller takes care of persisting the
-                 // permission
-                 false));
+    NOTREACHED();
 #endif
+  }
 }
 
 void PermissionContextBase::PermissionDecided(

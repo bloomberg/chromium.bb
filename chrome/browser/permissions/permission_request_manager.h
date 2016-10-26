@@ -84,6 +84,10 @@ class PermissionRequestManager
   // TODO(hcarmona): Remove this as part of the bubble API work.
   bool IsBubbleVisible();
 
+  // Whether PermissionRequestManager is reused on Android, instead of
+  // PermissionQueueController.
+  static bool IsEnabled();
+
   // Get the native window of the bubble.
   // TODO(hcarmona): Remove this as part of the bubble API work.
   gfx::NativeWindow GetBubbleWindow();
