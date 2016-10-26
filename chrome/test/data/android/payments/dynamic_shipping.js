@@ -15,8 +15,17 @@ function buy() {  // eslint-disable-line no-unused-vars
   try {
     var details = {
       total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-      displayItems:
-          [{label: 'Subtotal', amount: {currency: 'USD', value: '5.00'}}]
+      displayItems: [
+        {
+          label: 'Pending shipping price',
+          amount: {currency: 'USD', value: '0.00'},
+          pending: true
+        },
+        {
+          label: 'Subtotal',
+          amount: {currency: 'USD', value: '5.00'}
+        }
+      ]
     };
 
     var request = new PaymentRequest(
@@ -76,11 +85,7 @@ function updateDetails(details, addr) {
       shippingOption.amount.value = '5.00';
       details.total.amount.value = '10.00';
     }
-    if (details.displayItems.length === 1) {
-      details.displayItems.splice(0, 0, shippingOption);
-    } else {
-      details.displayItems.splice(0, 1, shippingOption);
-    }
+    details.displayItems.splice(0, 1, shippingOption);
     details.shippingOptions = [shippingOption];
   } else {
     delete details.shippingOptions;

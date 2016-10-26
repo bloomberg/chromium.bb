@@ -83,6 +83,7 @@ interface PaymentRequestClient {
 struct PaymentItem {
   string label;
   PaymentCurrencyAmount amount;
+  bool pending;
 };
 
 struct PaymentShippingOption {

@@ -67,6 +67,7 @@ struct TypeConverter<PaymentItemPtr, blink::PaymentItem> {
     PaymentItemPtr output = PaymentItem::New();
     output->label = input.label();
     output->amount = PaymentCurrencyAmount::From(input.amount());
+    output->pending = input.pending();
     return output;
   }
 };

@@ -566,9 +566,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return false;
         }
 
+        // Total is never pending.
         LineItem uiTotal = new LineItem(
                 details.total.label, formatter.getFormattedCurrencyCode(),
-                formatter.format(details.total.amount.value));
+                formatter.format(details.total.amount.value), /* isPending */ false);
 
         List<LineItem> uiLineItems = getValidatedLineItems(details.displayItems, totalCurrency,
                 formatter);
@@ -633,7 +634,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // Value should be in correct format.
             if (!formatter.isValidAmountValue(item.amount.value)) return null;
 
-            result.add(new LineItem(item.label, "", formatter.format(item.amount.value)));
+            result.add(new LineItem(
+                    item.label, "", formatter.format(item.amount.value), item.pending));
         }
 
         return result;

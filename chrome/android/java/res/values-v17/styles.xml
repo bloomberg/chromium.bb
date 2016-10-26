@@ -521,6 +521,9 @@
     <style name="PaymentsUiSectionDescriptiveTextEndAligned" parent="PaymentsUiSectionDescriptiveText">
         <item name="android:textAlignment">viewEnd</item>
     </style>
+    <style name="PaymentsUiSectionPendingTextEndAligned" parent="PaymentsUiSectionDescriptiveTextEndAligned">
+        <item name="android:textColor">@color/explanation_text_color</item>
+    </style>
     <style name="PaymentsUiSectionAddButtonLabel">
         <item name="android:textColor">@color/light_active_color</item>
         <item name="android:textSize">14sp</item>

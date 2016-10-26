@@ -603,8 +603,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 LineItem item = cart.getContents().get(i);
 
                 TextView description = new TextView(context);
-                ApiCompatibilityUtils.setTextAppearance(
-                        description, R.style.PaymentsUiSectionDescriptiveTextEndAligned);
+                ApiCompatibilityUtils.setTextAppearance(description, item.getIsPending()
+                                ? R.style.PaymentsUiSectionPendingTextEndAligned
+                                : R.style.PaymentsUiSectionDescriptiveTextEndAligned);
                 description.setText(item.getLabel());
                 description.setEllipsize(TruncateAt.END);
                 description.setMaxLines(2);
@@ -613,8 +614,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 }
 
                 TextView amount = new TextView(context);
-                ApiCompatibilityUtils.setTextAppearance(
-                        amount, R.style.PaymentsUiSectionDescriptiveTextEndAligned);
+                ApiCompatibilityUtils.setTextAppearance(amount, item.getIsPending()
+                                ? R.style.PaymentsUiSectionPendingTextEndAligned
+                                : R.style.PaymentsUiSectionDescriptiveTextEndAligned);
                 amount.setText(createValueString(item.getCurrency(), item.getPrice(), false));
 
                 // Each item is represented by a row in the GridLayout.
