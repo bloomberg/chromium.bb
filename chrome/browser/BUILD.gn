@@ -1386,6 +1386,7 @@ split_static_library("browser") {
     "//components/sync_bookmarks",
     "//components/sync_sessions",
     "//components/syncable_prefs",
+    "//components/task_scheduler_util",
     "//components/tracing:startup_tracing",
     "//components/translate/content/browser",
     "//components/translate/core/browser",
