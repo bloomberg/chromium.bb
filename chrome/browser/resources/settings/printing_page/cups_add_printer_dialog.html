@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="/i18n_setup.html">
+<link rel="import" href="/md_select_css.html">
 <link rel="import" href="/printing_page/cups_add_printer_dialog_util.html">
 <link rel="import" href="/printing_page/cups_printers_browser_proxy.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -75,7 +75,7 @@
 
 <dom-module id="add-printer-maually-dialog">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared md-select">
       #discoverPrintersButton {
         -webkit-margin-end: 153px;
       }
@@ -158,29 +158,21 @@
           <div class="start">
             <div class="label">$i18n{printerProtocol}</div>
             <div class="secondary">
-              <paper-dropdown-menu-light no-label-float>
-                <paper-listbox class="dropdown-content"
-                    selected="{{newPrinter.printerProtocol}}"
-                    attr-for-selected="value">
-                  <paper-item value="ipp">
-                    $i18n{printerProtocolIpp}
-                  </paper-item>
-                  <paper-item value="ipps">
-                    $i18n{printerProtocolIpps}
-                  </paper-item>
-                  <paper-item value="http">
-                    $i18n{printerProtocolHttp}
-                  </paper-item>
-                  <paper-item value="https">
-                    $i18n{printerProtocolHttps}
-                  </paper-item>
-                  <paper-item value="socket">
-                    $i18n{printerProtocolAppSocket}
-                  </paper-item>
-                  <paper-item value="lpd">$i18n{printerProtocolLpd}</paper-item>
-                  <paper-item value="usb">$i18n{printerProtocolUsb}</paper-item>
-                </paper-listbox>
-              </paper-dropdown-menu-light>
+              <div class="md-select-wrapper">
+                <select class="md-select" 
+                    value="[[newPrinter.printerProtocol]]"
+                    on-change="onProtocolChange_">
+                  <option value="ipp">$i18n{printerProtocolIpp}</option>
+                  <option value="ipps">$i18n{printerProtocolIpps}</option>
+                  <option value="http">$i18n{printerProtocolHttp}</option>
+                  <option value="https">$i18n{printerProtocolHttps}</option>
+                  <option value="socket">$i18n{printerProtocolAppSocket}
+                  </option>
+                  <option value="lpd">$i18n{printerProtocolLpd}</option>
+                  <option value="usb">$i18n{printerProtocolUsb}</option>
+                </select>
+                <span class="md-select-underline"></span>
+              </div>
             </div>
           </div>
         </div>

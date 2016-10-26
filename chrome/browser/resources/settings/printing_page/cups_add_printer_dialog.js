@@ -165,6 +165,14 @@ Polymer({
     // corresponding message after the API is ready.
     // The format of address is: ip-address-or-hostname:port-number.
   },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onProtocolChange_: function(event) {
+    this.newPrinter.printerProtocol = event.target.value;
+  },
 });
 
 Polymer({
