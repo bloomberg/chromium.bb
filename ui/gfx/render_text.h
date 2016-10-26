@@ -209,6 +209,16 @@ void ApplyRenderParams(const FontRenderParams& params,
 // for rendering and translation between logical and visual data.
 class GFX_EXPORT RenderText {
  public:
+// The character used for displaying obscured text.
+// TODO(benrg): GTK uses the first of U+25CF, U+2022, U+2731, U+273A, '*'
+// that's available in the font (find_invisible_char() in gtkentry.c).
+// Use a bullet character on Mac.
+#if defined(OS_MACOSX)
+  static constexpr base::char16 kPasswordReplacementChar = 0x2022;
+#else
+  static constexpr base::char16 kPasswordReplacementChar = '*';
+#endif
+
   virtual ~RenderText();
 
   // Creates a platform-specific or cross-platform RenderText instance.

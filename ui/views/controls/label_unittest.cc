@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/render_text.h"
 #include "ui/views/border.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
@@ -197,12 +198,15 @@ TEST_F(LabelTest, ObscuredProperty) {
   label.SetObscured(true);
   label.SizeToPreferredSize();
   EXPECT_TRUE(label.obscured());
-  EXPECT_EQ(ASCIIToUTF16("*********"), label.GetDisplayTextForTesting());
+  EXPECT_EQ(base::string16(test_text.size(),
+                           gfx::RenderText::kPasswordReplacementChar),
+            label.GetDisplayTextForTesting());
   EXPECT_EQ(test_text, label.text());
 
   label.SetText(test_text + test_text);
   label.SizeToPreferredSize();
-  EXPECT_EQ(ASCIIToUTF16("******************"),
+  EXPECT_EQ(base::string16(test_text.size() * 2,
+                           gfx::RenderText::kPasswordReplacementChar),
             label.GetDisplayTextForTesting());
   EXPECT_EQ(test_text + test_text, label.text());
 
@@ -221,7 +225,8 @@ TEST_F(LabelTest, ObscuredSurrogatePair) {
   label.SetText(test_text);
   label.SetObscured(true);
   label.SizeToPreferredSize();
-  EXPECT_EQ(ASCIIToUTF16("*"), label.GetDisplayTextForTesting());
+  EXPECT_EQ(base::string16(1, gfx::RenderText::kPasswordReplacementChar),
+            label.GetDisplayTextForTesting());
   EXPECT_EQ(test_text, label.text());
 }
 

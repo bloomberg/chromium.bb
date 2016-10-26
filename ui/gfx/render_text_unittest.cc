@@ -283,6 +283,21 @@ void VerifyDecoratedWordsAreEqual(const DecoratedText& expected,
   }
 }
 
+// Helper method to return an obscured string of the given |length|, with the
+// |reveal_index| filled with |reveal_char|.
+base::string16 GetObscuredString(size_t length,
+                                 size_t reveal_index,
+                                 base::char16 reveal_char) {
+  std::vector<base::char16> arr(length, RenderText::kPasswordReplacementChar);
+  arr[reveal_index] = reveal_char;
+  return base::string16(arr.begin(), arr.end());
+}
+
+// Helper method to return an obscured string of the given |length|.
+base::string16 GetObscuredString(size_t length) {
+  return base::string16(length, RenderText::kPasswordReplacementChar);
+}
+
 // The class which records the drawing operations so that the test case can
 // verify where exactly the glyphs are drawn.
 class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
@@ -735,10 +750,11 @@ void TestVisualCursorMotionInObscuredField(
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 TEST_P(RenderTextHarfBuzzTest, ObscuredText) {
   const base::string16 seuss = ASCIIToUTF16("hop on pop");
-  const base::string16 no_seuss = ASCIIToUTF16("**********");
+  const base::string16 no_seuss = GetObscuredString(seuss.length());
   RenderText* render_text = GetRenderText();
 
-  // GetLayoutText() returns asterisks when the obscured bit is set.
+  // GetDisplayText() returns a string filled with
+  // RenderText::kPasswordReplacementChar when the obscured bit is set.
   render_text->SetText(seuss);
   render_text->SetObscured(true);
   EXPECT_EQ(seuss, render_text->text());
@@ -752,10 +768,10 @@ TEST_P(RenderTextHarfBuzzTest, ObscuredText) {
   // Surrogate pairs are counted as one code point.
   const base::char16 invalid_surrogates[] = {0xDC00, 0xD800, 0};
   render_text->SetText(invalid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("**"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(2), render_text->GetDisplayText());
   const base::char16 valid_surrogates[] = {0xD800, 0xDC00, 0};
   render_text->SetText(valid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("*"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(1), render_text->GetDisplayText());
   EXPECT_EQ(0U, render_text->cursor_position());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(2U, render_text->cursor_position());
@@ -798,7 +814,7 @@ TEST_P(RenderTextHarfBuzzTest, ObscuredText) {
 
 TEST_P(RenderTextTest, RevealObscuredText) {
   const base::string16 seuss = ASCIIToUTF16("hop on pop");
-  const base::string16 no_seuss = ASCIIToUTF16("**********");
+  const base::string16 no_seuss = GetObscuredString(seuss.length());
   RenderText* render_text = GetRenderText();
 
   render_text->SetText(seuss);
@@ -808,11 +824,14 @@ TEST_P(RenderTextTest, RevealObscuredText) {
 
   // Valid reveal index and new revealed index clears previous one.
   render_text->RenderText::SetObscuredRevealIndex(0);
-  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(seuss.length(), 0, 'h'),
+            render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(1);
-  EXPECT_EQ(ASCIIToUTF16("*o********"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(seuss.length(), 1, 'o'),
+            render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("**p*******"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(seuss.length(), 2, 'p'),
+            render_text->GetDisplayText());
 
   // Invalid reveal index.
   render_text->RenderText::SetObscuredRevealIndex(-1);
@@ -822,7 +841,8 @@ TEST_P(RenderTextTest, RevealObscuredText) {
 
   // SetObscured clears the revealed index.
   render_text->RenderText::SetObscuredRevealIndex(0);
-  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(seuss.length(), 0, 'h'),
+            render_text->GetDisplayText());
   render_text->SetObscured(false);
   EXPECT_EQ(seuss, render_text->GetDisplayText());
   render_text->SetObscured(true);
@@ -830,41 +850,51 @@ TEST_P(RenderTextTest, RevealObscuredText) {
 
   // SetText clears the revealed index.
   render_text->SetText(ASCIIToUTF16("new"));
-  EXPECT_EQ(ASCIIToUTF16("***"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(3), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("**w"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(3, 2, 'w'), render_text->GetDisplayText());
   render_text->SetText(ASCIIToUTF16("new longer"));
-  EXPECT_EQ(ASCIIToUTF16("**********"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(10), render_text->GetDisplayText());
 
   // Text with invalid surrogates.
   const base::char16 invalid_surrogates[] = {0xDC00, 0xD800, 'h', 'o', 'p', 0};
   render_text->SetText(invalid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(0);
-  const base::char16 invalid_expect_0[] = {0xDC00, '*', '*', '*', '*', 0};
-  EXPECT_EQ(invalid_expect_0, render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5, 0, 0xDC00), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(1);
-  const base::char16 invalid_expect_1[] = {'*', 0xD800, '*', '*', '*', 0};
-  EXPECT_EQ(invalid_expect_1, render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5, 1, 0xD800), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("**h**"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5, 2, 'h'), render_text->GetDisplayText());
 
   // Text with valid surrogates before and after the reveal index.
   const base::char16 valid_surrogates[] =
       {0xD800, 0xDC00, 'h', 'o', 'p', 0xD800, 0xDC00, 0};
   render_text->SetText(valid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(0);
-  const base::char16 valid_expect_0_and_1[] =
-      {0xD800, 0xDC00, '*', '*', '*', '*', 0};
+  const base::char16 valid_expect_0_and_1[] = {
+      0xD800,
+      0xDC00,
+      RenderText::kPasswordReplacementChar,
+      RenderText::kPasswordReplacementChar,
+      RenderText::kPasswordReplacementChar,
+      RenderText::kPasswordReplacementChar,
+      0};
   EXPECT_EQ(valid_expect_0_and_1, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(1);
   EXPECT_EQ(valid_expect_0_and_1, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("*h***"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5, 1, 'h'), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(5);
-  const base::char16 valid_expect_5_and_6[] =
-      {'*', '*', '*', '*', 0xD800, 0xDC00, 0};
+  const base::char16 valid_expect_5_and_6[] = {
+      RenderText::kPasswordReplacementChar,
+      RenderText::kPasswordReplacementChar,
+      RenderText::kPasswordReplacementChar,
+      RenderText::kPasswordReplacementChar,
+      0xD800,
+      0xDC00,
+      0};
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(6);
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetDisplayText());
@@ -1103,7 +1133,7 @@ TEST_P(RenderTextTest, TruncatedObscuredText) {
   render_text->SetObscured(true);
   render_text->SetText(WideToUTF16(L"abcdef"));
   EXPECT_EQ(WideToUTF16(L"abcdef"), render_text->text());
-  EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(3, 2, 0x2026), render_text->GetDisplayText());
 }
 
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618

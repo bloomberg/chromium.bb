@@ -45,11 +45,6 @@ namespace gfx {
 
 namespace {
 
-// All chars are replaced by this char when the password style is set.
-// TODO(benrg): GTK uses the first of U+25CF, U+2022, U+2731, U+273A, '*'
-// that's available in the font (find_invisible_char() in gtkentry.c).
-const base::char16 kPasswordReplacementChar = '*';
-
 // Default color used for the text and cursor.
 const SkColor kDefaultColor = SK_ColorBLACK;
 
@@ -425,6 +420,9 @@ void ApplyRenderParams(const FontRenderParams& params,
 }
 
 }  // namespace internal
+
+// static
+constexpr base::char16 RenderText::kPasswordReplacementChar;
 
 RenderText::~RenderText() {
 }
@@ -1406,7 +1404,8 @@ void RenderText::OnTextAttributeChanged() {
   if (obscured_) {
     size_t obscured_text_length =
         static_cast<size_t>(UTF16IndexToOffset(text_, 0, text_.length()));
-    layout_text_.assign(obscured_text_length, kPasswordReplacementChar);
+    layout_text_.assign(obscured_text_length,
+                        RenderText::kPasswordReplacementChar);
 
     if (obscured_reveal_index_ >= 0 &&
         obscured_reveal_index_ < static_cast<int>(text_.length())) {
