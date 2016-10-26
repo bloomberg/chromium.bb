@@ -2015,3 +2015,38 @@ fuzzer_test("net_auth_challenge_tokenizer_fuzzer") {
     "//net",
   ]
 }
+
+fuzzer_test("net_http_security_headers_hsts_fuzzer") {
+  sources = [
+    "http/http_security_headers_hsts_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
+}
+
+fuzzer_test("net_http_security_headers_hpkp_fuzzer") {
+  sources = [
+    "http/http_security_headers_hpkp_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//url",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
+}
+
+fuzzer_test("net_http_security_headers_hpkp_report_only_fuzzer") {
+  sources = [
+    "http/http_security_headers_hpkp_report_only_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//url",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
+}
