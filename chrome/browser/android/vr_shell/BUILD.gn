@@ -9,6 +9,8 @@ import("//testing/test.gni")
 assert(enable_vr_shell || enable_webvr)
 
 static_library("vr_common") {
+  defines = []
+
   sources = [
     "animation.cc",
     "animation.h",
@@ -38,6 +40,11 @@ static_library("vr_common") {
     "vr_shell_renderer.cc",
     "vr_shell_renderer.h",
   ]
+
+  if (enable_vr_shell_ui_dev) {
+    assert(enable_vr_shell)
+    defines += [ "ENABLE_VR_SHELL_UI_DEV" ]
+  }
 
   deps = [
     ":vr_shell_jni_headers",

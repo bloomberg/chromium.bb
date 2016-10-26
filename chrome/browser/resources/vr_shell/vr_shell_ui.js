@@ -124,14 +124,41 @@ var vrShellUi = (function() {
         update.setScale(2.2, 2.2, 1);
         scene.updateElement(element.uiElementId, update);
       }
+
+      this.reloadUiButton = new DomUiElement('#reload-ui-button');
+      this.reloadUiButton.domElement.addEventListener('click', function() {
+        scene.purge();
+        api.doAction(api.Action.RELOAD_UI);
+      });
+
+      let update = new api.UiElementUpdate();
+      update.setParentId(contentQuadId);
+      update.setVisible(false);
+      update.setScale(2.2, 2.2, 1);
+      update.setTranslation(0, -0.6, 0.3);
+      update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
+      scene.updateElement(this.reloadUiButton.uiElementId, update);
     }
 
     show(visible) {
+      this.enabled = visible;
+      this.configure();
+    }
+
+    setReloadUiEnabled(enabled) {
+      this.reloadUiEnabled = enabled;
+      this.configure();
+    }
+
+    configure() {
       for (let i = 0; i < this.buttons.length; i++) {
         let update = new api.UiElementUpdate();
-        update.setVisible(visible);
+        update.setVisible(this.enabled);
         scene.updateElement(this.buttons[i].uiElementId, update);
       }
+      let update = new api.UiElementUpdate();
+      update.setVisible(this.enabled && this.reloadUiEnabled);
+      scene.updateElement(this.reloadUiButton.uiElementId, update);
     }
   };
 
@@ -231,6 +258,11 @@ var vrShellUi = (function() {
     setSecureOrigin(secure) {
       this.secureOriginWarnings.setSecureOrigin(secure);
     }
+
+    setReloadUiEnabled(enabled) {
+      console.log('ENABLE');
+      this.controls.setReloadUiEnabled(enabled);
+    }
   };
 
   function initialize() {
@@ -252,6 +284,9 @@ var vrShellUi = (function() {
     }
     if ('secureOrigin' in dict) {
       sceneManager.setSecureOrigin(dict['secureOrigin']);
+    }
+    if ('enableReloadUi' in dict) {
+      sceneManager.setReloadUiEnabled(dict['enableReloadUi']);
     }
     scene.flush();
   }

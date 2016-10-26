@@ -674,7 +674,6 @@ void VrShell::OnDomContentsLoaded() {
   ui_contents_->GetRenderWidgetHostView()->SetBackgroundColor(
       SK_ColorTRANSPARENT);
   html_interface_->OnDomContentsLoaded();
-  dom_contents_loaded_ = true;
 }
 
 void VrShell::SetWebVrMode(JNIEnv* env,
@@ -770,6 +769,13 @@ void VrShell::DoUiAction(const UiAction action) {
     case RELOAD:
       controller.Reload(false);
       break;
+#if defined(ENABLE_VR_SHELL_UI_DEV)
+    case RELOAD_UI:
+      ui_contents_->GetController().Reload(false);
+      html_interface_.reset(new UiInterface);
+      html_interface_->SetMode(UiInterface::Mode::STANDARD);
+      break;
+#endif
     case ZOOM_OUT:  // Not handled yet.
     case ZOOM_IN:  // Not handled yet.
       break;

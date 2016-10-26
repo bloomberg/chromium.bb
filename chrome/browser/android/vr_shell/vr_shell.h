@@ -43,7 +43,8 @@ enum UiAction {
   HISTORY_FORWARD,
   RELOAD,
   ZOOM_OUT,
-  ZOOM_IN
+  ZOOM_IN,
+  RELOAD_UI
 };
 
 class VrShell : public device::GvrDelegate {
@@ -163,7 +164,6 @@ class VrShell : public device::GvrDelegate {
   VrInputManager* current_input_target_ = nullptr;
   int ui_tex_width_ = 0;
   int ui_tex_height_ = 0;
-  bool dom_contents_loaded_ = false;
 
   bool webvr_mode_ = false;
 

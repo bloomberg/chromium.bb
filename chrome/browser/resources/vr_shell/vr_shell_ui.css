@@ -143,3 +143,16 @@ html {
   background-image: url(../../../../ui/webui/resources/images/vr_back.svg);
   transform: scaleX(-1);
 }
+
+#reload-ui-button {
+  background-color: #555;
+  color: white;
+  font-size: 16;
+  height: 24px;
+  left: 610px;
+  opacity: 1;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 96px;
+}

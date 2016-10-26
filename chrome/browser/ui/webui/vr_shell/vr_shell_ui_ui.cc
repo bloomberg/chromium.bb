@@ -79,6 +79,8 @@ class RemoteDataSource : public content::URLDataSource,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const GotDataCallback& callback) override;
 
+  bool AllowCaching() const override { return false; }
+
  private:
   // content::URLDataSource overrides.
   std::string GetMimeType(const std::string& path) const override;
@@ -129,6 +131,9 @@ void RemoteDataSource::StartDataRequest(
   }
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
+
+  fetcher->AddExtraRequestHeader("Cache-Control: no-cache");
+
   pending_[fetcher] = callback;
   fetcher->SetRequestContext(request_context_.get());
   fetcher->Start();
