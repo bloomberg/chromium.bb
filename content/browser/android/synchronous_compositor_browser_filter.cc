@@ -19,14 +19,13 @@ namespace content {
 SynchronousCompositorBrowserFilter::SynchronousCompositorBrowserFilter(
     int process_id)
     : BrowserMessageFilter(SyncCompositorMsgStart),
-      render_process_host_(RenderProcessHost::FromID(process_id)),
-      window_android_in_vsync_(nullptr) {
+      render_process_host_(RenderProcessHost::FromID(process_id)) {
   DCHECK(render_process_host_);
 }
 
 SynchronousCompositorBrowserFilter::~SynchronousCompositorBrowserFilter() {
   DCHECK(compositor_host_pending_renderer_state_.empty());
-  // TODO(boliu): signal pending frames.
+  DCHECK(future_map_.empty());
 }
 
 void SynchronousCompositorBrowserFilter::SyncStateAfterVSync(
@@ -96,6 +95,11 @@ void SynchronousCompositorBrowserFilter::SetFrameFuture(
     scoped_refptr<SynchronousCompositor::FrameFuture> frame_future) {
   DCHECK(frame_future);
   base::AutoLock lock(future_map_lock_);
+  if (!filter_ready_) {
+    frame_future->setFrame(nullptr);
+    return;
+  }
+
   auto itr = future_map_.find(routing_id);
   if (itr == future_map_.end()) {
     auto emplace_result = future_map_.emplace(routing_id, FrameFutureQueue());
@@ -110,6 +114,30 @@ void SynchronousCompositorBrowserFilter::SetFrameFuture(
   // latency. But DCHECK Android blocking is working.
   DCHECK_LT(itr->second.size(), 2u);
   itr->second.emplace_back(std::move(frame_future));
+}
+
+void SynchronousCompositorBrowserFilter::OnFilterAdded(IPC::Channel* channel) {
+  base::AutoLock lock(future_map_lock_);
+  filter_ready_ = true;
+}
+
+void SynchronousCompositorBrowserFilter::OnFilterRemoved() {
+  SignalAllFutures();
+}
+
+void SynchronousCompositorBrowserFilter::OnChannelClosing() {
+  SignalAllFutures();
+}
+
+void SynchronousCompositorBrowserFilter::SignalAllFutures() {
+  base::AutoLock lock(future_map_lock_);
+  for (auto& pair : future_map_) {
+    for (auto& future_ptr : pair.second) {
+      future_ptr->setFrame(nullptr);
+    }
+  }
+  future_map_.clear();
+  filter_ready_ = false;
 }
 
 void SynchronousCompositorBrowserFilter::OnCompositingDidCommit() {

@@ -41,6 +41,9 @@ class SynchronousCompositorBrowserFilter : public ui::WindowAndroidObserver,
 
   // BrowserMessageFilter overrides.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
   void SyncStateAfterVSync(ui::WindowAndroid* window_android,
                            SynchronousCompositorHost* compositor_host);
@@ -52,15 +55,17 @@ class SynchronousCompositorBrowserFilter : public ui::WindowAndroidObserver,
   ~SynchronousCompositorBrowserFilter() override;
 
   bool ReceiveFrame(const IPC::Message& message);
+  void SignalAllFutures();
 
   RenderProcessHost* const render_process_host_;
 
   // For synchronizing renderer state after a vsync.
-  ui::WindowAndroid* window_android_in_vsync_;
+  ui::WindowAndroid* window_android_in_vsync_ = nullptr;
   std::vector<SynchronousCompositorHost*>
       compositor_host_pending_renderer_state_;
 
-  base::Lock future_map_lock_;  // Protects |future_map_|.
+  base::Lock future_map_lock_;  // Protects fields below.
+  bool filter_ready_ = false;
   using FrameFutureQueue =
       std::deque<scoped_refptr<SynchronousCompositor::FrameFuture>>;
   // This object is per renderer process, so routing_id is unique.
