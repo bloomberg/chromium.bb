@@ -584,7 +584,7 @@ class EBuild(object):
     The path is guaranteed to exist, be a directory, and be absolute.
     """
 
-    # pylint: disable-msg=unpacking-non-sequence
+    # pylint: disable=unpacking-non-sequence
     localnames, projects, srcpaths, subdirs, always_live, _, _ = (
         self.cros_workon_vars)
 
