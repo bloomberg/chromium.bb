@@ -4594,6 +4594,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _contextMenuRecognizer.reset([[UILongPressGestureRecognizer alloc]
         initWithTarget:self
                 action:@selector(showContextMenu:)]);
+    [_contextMenuRecognizer
+        requireGestureRecognizerToFail:self.webScrollView.panGestureRecognizer];
     [_contextMenuRecognizer setMinimumPressDuration:kLongPressDurationSeconds];
     [_contextMenuRecognizer setAllowableMovement:kLongPressMoveDeltaPixels];
     [_contextMenuRecognizer setDelegate:self];
