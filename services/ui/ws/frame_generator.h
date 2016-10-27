@@ -15,7 +15,7 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surface_sequence_generator.h"
 #include "services/ui/ws/ids.h"
-#include "services/ui/ws/server_window_observer.h"
+#include "services/ui/ws/server_window_tracker.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -47,7 +47,7 @@ class ServerWindowCompositorFrameSink;
 
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
-class FrameGenerator : public ServerWindowObserver {
+class FrameGenerator : public ServerWindowTracker {
  public:
   FrameGenerator(FrameGeneratorDelegate* delegate,
                  ServerWindow* root_window,

@@ -257,8 +257,7 @@ void FrameGenerator::AddOrUpdateSurfaceReference(
     dependencies_[surface_id.frame_sink_id()] = dependency;
     // Observe |window_surface|'s window so that we can release references when
     // the window is destroyed.
-    if (!window_surface->window()->HasObserver(this))
-      window_surface->window()->AddObserver(this);
+    Add(window_surface->window());
     return;
   }
 
@@ -303,7 +302,7 @@ void FrameGenerator::ReleaseAllSurfaceReferences() {
 }
 
 void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
-  window->RemoveObserver(this);
+  Remove(window);
   ServerWindowCompositorFrameSinkManager* surface_manager =
       window->compositor_frame_sink_manager();
   // If FrameGenerator was observing |window|, then that means it had a surface
