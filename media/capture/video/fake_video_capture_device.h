@@ -30,7 +30,8 @@ class CAPTURE_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   };
 
   FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
-                         float fake_capture_rate);
+                         float fake_capture_rate,
+                         VideoPixelFormat pixel_format = PIXEL_FORMAT_I420);
   ~FakeVideoCaptureDevice() override;
 
   // VideoCaptureDevice implementation.
@@ -56,6 +57,8 @@ class CAPTURE_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   const BufferOwnership buffer_ownership_;
   // Frame rate of the fake video device.
   const float fake_capture_rate_;
+  // Pixel format of all device streams.
+  const VideoPixelFormat pixel_format_;
 
   std::unique_ptr<VideoCaptureDevice::Client> client_;
   // |fake_frame_| is used for capturing on Own Buffers.

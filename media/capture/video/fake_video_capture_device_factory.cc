@@ -13,6 +13,16 @@
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
 
+namespace {
+
+// Factory has one device by default; I420. If there are more, the second device
+// is of Y16 format while the rest are I420.
+media::VideoPixelFormat GetPixelFormat(const std::string& device_id) {
+  return (device_id == "/dev/video1") ? media::PIXEL_FORMAT_Y16
+                                      : media::PIXEL_FORMAT_I420;
+}
+}
+
 namespace media {
 
 // Cap the frame rate command line input to reasonable values.
@@ -20,6 +30,9 @@ static const float kFakeCaptureMinFrameRate = 5.0f;
 static const float kFakeCaptureMaxFrameRate = 60.0f;
 // Default rate if none is specified as part of the command line.
 static const float kFakeCaptureDefaultFrameRate = 20.0f;
+// Cap the device count command line input to reasonable values.
+static const int kFakeCaptureMinDeviceCount = 1;
+static const int kFakeCaptureMaxDeviceCount = 10;
 
 FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
     : number_of_devices_(1),
@@ -30,13 +43,16 @@ std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  parse_command_line();
+  if (!command_line_parsed_) {
+    ParseCommandLine();
+    command_line_parsed_ = true;
+  }
 
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_descriptor.device_id.compare(possible_id) == 0) {
-      return std::unique_ptr<VideoCaptureDevice>(
-          new FakeVideoCaptureDevice(fake_vcd_ownership_, frame_rate_));
+      return std::unique_ptr<VideoCaptureDevice>(new FakeVideoCaptureDevice(
+          fake_vcd_ownership_, frame_rate_, GetPixelFormat(possible_id)));
     }
   }
   return std::unique_ptr<VideoCaptureDevice>();
@@ -46,6 +62,12 @@ void FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
     VideoCaptureDeviceDescriptors* device_descriptors) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(device_descriptors->empty());
+
+  if (!command_line_parsed_) {
+    ParseCommandLine();
+    command_line_parsed_ = true;
+  }
+
   for (int n = 0; n < number_of_devices_; ++n) {
     device_descriptors->emplace_back(base::StringPrintf("fake_device_%d", n),
                                      base::StringPrintf("/dev/video%d", n),
@@ -66,21 +88,20 @@ void FakeVideoCaptureDeviceFactory::GetSupportedFormats(
     const VideoCaptureDeviceDescriptor& device_descriptor,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const gfx::Size supported_sizes[] = {gfx::Size(320, 240),
-                                       gfx::Size(640, 480),
-                                       gfx::Size(1280, 720),
-                                       gfx::Size(1920, 1080)};
+  const gfx::Size supported_sizes[] = {
+      gfx::Size(96, 96), gfx::Size(320, 240), gfx::Size(640, 480),
+      gfx::Size(1280, 720), gfx::Size(1920, 1080)};
   supported_formats->clear();
   for (const auto& size : supported_sizes) {
-    supported_formats->push_back(
-        VideoCaptureFormat(size, frame_rate_, media::PIXEL_FORMAT_I420));
+    supported_formats->push_back(VideoCaptureFormat(
+        size, frame_rate_, GetPixelFormat(device_descriptor.device_id)));
   }
 }
 
 // Optional comma delimited parameters to the command line can specify buffer
-// ownership, buffer planarity, and the fake video device FPS.
-// Examples: "ownership=client, planarity=triplanar, fps=60" "fps=30"
-void FakeVideoCaptureDeviceFactory::parse_command_line() {
+// ownership, device count, and the fake video devices FPS.
+// Examples: "ownership=client, device-count=2, fps=60" "fps=30"
+void FakeVideoCaptureDeviceFactory::ParseCommandLine() {
   const std::string option =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseFakeDeviceForMediaStream);
@@ -108,6 +129,14 @@ void FakeVideoCaptureDeviceFactory::parse_command_line() {
         frame_rate_ =
             std::max(kFakeCaptureMinFrameRate, static_cast<float>(fps));
         frame_rate_ = std::min(kFakeCaptureMaxFrameRate, frame_rate_);
+      }
+    } else if (base::EqualsCaseInsensitiveASCII(param.front(),
+                                                "device-count")) {
+      unsigned int count = 0;
+      if (base::StringToUint(param.back(), &count)) {
+        number_of_devices_ = std::min(
+            kFakeCaptureMaxDeviceCount,
+            std::max(kFakeCaptureMinDeviceCount, static_cast<int>(count)));
       }
     }
   }

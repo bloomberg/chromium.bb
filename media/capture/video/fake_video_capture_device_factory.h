@@ -38,11 +38,12 @@ class CAPTURE_EXPORT FakeVideoCaptureDeviceFactory
   }
 
  private:
-  void parse_command_line();
+  void ParseCommandLine();
 
   int number_of_devices_;
   FakeVideoCaptureDevice::BufferOwnership fake_vcd_ownership_;
   float frame_rate_;
+  bool command_line_parsed_ = false;
 };
 
 }  // namespace media

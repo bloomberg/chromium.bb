@@ -177,14 +177,17 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
  protected:
   FakeVideoCaptureDeviceBase()
       : loop_(new base::MessageLoop()),
-        client_(new MockClient(
-            base::Bind(&FakeVideoCaptureDeviceBase::OnFrameCaptured,
-                       base::Unretained(this)))),
+        client_(CreateClient()),
         device_enumeration_listener_(new DeviceEnumerationListener()),
         image_capture_client_(new ImageCaptureClient()),
         video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
 
   void SetUp() override { EXPECT_CALL(*client_, OnError(_, _)).Times(0); }
+
+  std::unique_ptr<MockClient> CreateClient() {
+    return std::unique_ptr<MockClient>(new MockClient(base::Bind(
+        &FakeVideoCaptureDeviceBase::OnFrameCaptured, base::Unretained(this))));
+  }
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;
@@ -232,6 +235,7 @@ struct CommandLineTestData {
   std::string argument;
   // Expected values
   float fps;
+  size_t device_count;
 };
 
 class FakeVideoCaptureDeviceCommandLineTest
@@ -267,30 +271,40 @@ INSTANTIATE_TEST_CASE_P(
             Values(20, 29.97, 30, 50, 60)));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kUseFakeDeviceForMediaStream, "device-count=3");
   std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
       EnumerateDevices());
+  ASSERT_EQ(3u, descriptors->size());
 
   for (const auto& descriptors_iterator : *descriptors) {
     VideoCaptureFormats supported_formats;
     video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
                                                        &supported_formats);
-    ASSERT_EQ(supported_formats.size(), 4u);
-    EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
-    EXPECT_EQ(supported_formats[0].frame_size.height(), 240);
-    EXPECT_EQ(supported_formats[0].pixel_format, PIXEL_FORMAT_I420);
+    ASSERT_EQ(5u, supported_formats.size());
+    const std::string device_id = descriptors_iterator.device_id;
+    VideoPixelFormat expected_format =
+        (device_id == "/dev/video1") ? PIXEL_FORMAT_Y16 : PIXEL_FORMAT_I420;
+    EXPECT_EQ(96, supported_formats[0].frame_size.width());
+    EXPECT_EQ(96, supported_formats[0].frame_size.height());
+    EXPECT_EQ(expected_format, supported_formats[0].pixel_format);
     EXPECT_GE(supported_formats[0].frame_rate, 20.0);
-    EXPECT_EQ(supported_formats[1].frame_size.width(), 640);
-    EXPECT_EQ(supported_formats[1].frame_size.height(), 480);
-    EXPECT_EQ(supported_formats[1].pixel_format, PIXEL_FORMAT_I420);
+    EXPECT_EQ(320, supported_formats[1].frame_size.width());
+    EXPECT_EQ(240, supported_formats[1].frame_size.height());
+    EXPECT_EQ(expected_format, supported_formats[1].pixel_format);
     EXPECT_GE(supported_formats[1].frame_rate, 20.0);
-    EXPECT_EQ(supported_formats[2].frame_size.width(), 1280);
-    EXPECT_EQ(supported_formats[2].frame_size.height(), 720);
-    EXPECT_EQ(supported_formats[2].pixel_format, PIXEL_FORMAT_I420);
+    EXPECT_EQ(640, supported_formats[2].frame_size.width());
+    EXPECT_EQ(480, supported_formats[2].frame_size.height());
+    EXPECT_EQ(expected_format, supported_formats[2].pixel_format);
     EXPECT_GE(supported_formats[2].frame_rate, 20.0);
-    EXPECT_EQ(supported_formats[3].frame_size.width(), 1920);
-    EXPECT_EQ(supported_formats[3].frame_size.height(), 1080);
-    EXPECT_EQ(supported_formats[3].pixel_format, PIXEL_FORMAT_I420);
+    EXPECT_EQ(1280, supported_formats[3].frame_size.width());
+    EXPECT_EQ(720, supported_formats[3].frame_size.height());
+    EXPECT_EQ(expected_format, supported_formats[3].pixel_format);
     EXPECT_GE(supported_formats[3].frame_rate, 20.0);
+    EXPECT_EQ(1920, supported_formats[4].frame_size.width());
+    EXPECT_EQ(1080, supported_formats[4].frame_size.height());
+    EXPECT_EQ(expected_format, supported_formats[4].pixel_format);
+    EXPECT_GE(supported_formats[4].frame_rate, 20.0);
   }
 }
 
@@ -426,11 +440,12 @@ TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
   device->StopAndDeAllocate();
 }
 
-TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
+TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRateAndDeviceCount) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kUseFakeDeviceForMediaStream, GetParam().argument);
   const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
       EnumerateDevices());
+  EXPECT_EQ(descriptors->size(), GetParam().device_count);
   ASSERT_FALSE(descriptors->empty());
 
   for (const auto& descriptors_iterator : *descriptors) {
@@ -441,8 +456,7 @@ TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
     VideoCaptureParams capture_params;
     capture_params.requested_format.frame_size.SetSize(1280, 720);
     capture_params.requested_format.frame_rate = GetParam().fps;
-    device->AllocateAndStart(capture_params, std::move(client_));
-
+    device->AllocateAndStart(capture_params, CreateClient());
     WaitForCapturedFrame();
     EXPECT_EQ(last_format().frame_size.width(), 1280);
     EXPECT_EQ(last_format().frame_size.height(), 720);
@@ -451,10 +465,13 @@ TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        FakeVideoCaptureDeviceCommandLineTest,
-                        Values(CommandLineTestData{"fps=-1", 5},
-                               CommandLineTestData{"fps=29.97", 29.97f},
-                               CommandLineTestData{"fps=60", 60},
-                               CommandLineTestData{"fps=1000", 60}));
+INSTANTIATE_TEST_CASE_P(
+    ,
+    FakeVideoCaptureDeviceCommandLineTest,
+    Values(CommandLineTestData{"fps=-1", 5, 1u},
+           CommandLineTestData{"fps=29.97, device-count=1", 29.97f, 1u},
+           CommandLineTestData{"fps=60, device-count=2", 60, 2u},
+           CommandLineTestData{"fps=1000, device-count=-1", 60, 1u},
+           CommandLineTestData{"device-count=2", 20, 2u},
+           CommandLineTestData{"device-count=0", 20, 1u}));
 };  // namespace media

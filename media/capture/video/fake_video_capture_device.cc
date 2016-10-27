@@ -28,20 +28,70 @@ namespace media {
 static const float kPacmanAngularVelocity = 600;
 // Beep every 500 ms.
 static const int kBeepInterval = 500;
+// Gradient travels from bottom to top in 5 seconds.
+static const float kGradientFrequency = 1.f / 5;
 
 static const uint32_t kMinZoom = 100;
 static const uint32_t kMaxZoom = 400;
 static const uint32_t kZoomStep = 1;
 
-void DrawPacman(bool use_argb,
+// Starting from top left, -45 deg gradient.  Value at point (row, column) is
+// calculated as (top_left_value + (row + column) * step) % MAX_VALUE, where
+// step is MAX_VALUE / (width + height).  MAX_VALUE is 255 (for 8 bit per
+// component) or 65535 for Y16.
+// This is handy for pixel tests where we use the squares to verify rendering.
+void DrawGradientSquares(VideoPixelFormat frame_format,
+                         uint8_t* const pixels,
+                         base::TimeDelta elapsed_time,
+                         const gfx::Size& frame_size) {
+  const int width = frame_size.width();
+  const int height = frame_size.height();
+  const int side = width / 16;  // square side length.
+  DCHECK(side);
+  const gfx::Point squares[] = {{0, 0},
+                                {width - side, 0},
+                                {0, height - side},
+                                {width - side, height - side}};
+  const float start =
+      fmod(65536 * elapsed_time.InSecondsF() * kGradientFrequency, 65536);
+  const float color_step = 65535 / static_cast<float>(width + height);
+  for (const auto& corner : squares) {
+    for (int y = corner.y(); y < corner.y() + side; ++y) {
+      for (int x = corner.x(); x < corner.x() + side; ++x) {
+        const unsigned int value =
+            static_cast<unsigned int>(start + (x + y) * color_step) & 0xFFFF;
+        size_t offset = (y * width) + x;
+        switch (frame_format) {
+          case PIXEL_FORMAT_Y16:
+            pixels[offset * sizeof(uint16_t)] = value & 0xFF;
+            pixels[offset * sizeof(uint16_t) + 1] = value >> 8;
+            break;
+          case PIXEL_FORMAT_ARGB:
+            pixels[offset * sizeof(uint32_t) + 1] = value >> 8;
+            pixels[offset * sizeof(uint32_t) + 2] = value >> 8;
+            pixels[offset * sizeof(uint32_t) + 3] = value >> 8;
+            break;
+          default:
+            pixels[offset] = value >> 8;
+            break;
+        }
+      }
+    }
+  }
+}
+
+void DrawPacman(VideoPixelFormat frame_format,
                 uint8_t* const data,
                 base::TimeDelta elapsed_time,
                 float frame_rate,
                 const gfx::Size& frame_size,
                 uint32_t zoom) {
   // |kN32_SkColorType| stands for the appropriate RGBA/BGRA format.
-  const SkColorType colorspace =
-      use_argb ? kN32_SkColorType : kAlpha_8_SkColorType;
+  const SkColorType colorspace = (frame_format == PIXEL_FORMAT_ARGB)
+                                     ? kN32_SkColorType
+                                     : kAlpha_8_SkColorType;
+  // Skia doesn't support 16 bit alpha rendering, so we 8 bit alpha and then use
+  // this as high byte values in 16 bit pixels.
   const SkImageInfo info = SkImageInfo::Make(
       frame_size.width(), frame_size.height(), colorspace, kOpaque_SkAlphaType);
   SkBitmap bitmap;
@@ -58,7 +108,7 @@ void DrawPacman(bool use_argb,
   canvas.setMatrix(matrix);
 
   // Equalize Alpha_8 that has light green background while RGBA has white.
-  if (use_argb) {
+  if (frame_format == PIXEL_FORMAT_ARGB) {
     const SkRect full_frame =
         SkRect::MakeWH(frame_size.width(), frame_size.height());
     paint.setARGB(255, 0, 127, 0);
@@ -87,6 +137,14 @@ void DrawPacman(bool use_argb,
                          milliseconds, frame_count);
   canvas.scale(3, 3);
   canvas.drawText(time_string.data(), time_string.length(), 30, 20, paint);
+
+  if (frame_format == PIXEL_FORMAT_Y16) {
+    // Use 8 bit bitmap rendered to first half of the buffer as high byte values
+    // for the whole buffer. Low byte values are not important.
+    for (int i = frame_size.GetArea() - 1; i >= 0; --i)
+      data[i * 2 + 1] = data[i];
+  }
+  DrawGradientSquares(frame_format, data, elapsed_time, frame_size);
 }
 
 // Creates a PNG-encoded frame and sends it back to |callback|. The other
@@ -99,7 +157,7 @@ void DoTakeFakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
   std::unique_ptr<uint8_t[]> buffer(new uint8_t[VideoFrame::AllocationSize(
       PIXEL_FORMAT_ARGB, capture_format.frame_size)]);
 
-  DrawPacman(true /* use_argb */, buffer.get(), elapsed_time, fake_capture_rate,
+  DrawPacman(PIXEL_FORMAT_ARGB, buffer.get(), elapsed_time, fake_capture_rate,
              capture_format.frame_size, zoom);
 
   mojom::BlobPtr blob = mojom::Blob::New();
@@ -114,9 +172,11 @@ void DoTakeFakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
-                                               float fake_capture_rate)
+                                               float fake_capture_rate,
+                                               VideoPixelFormat pixel_format)
     : buffer_ownership_(buffer_ownership),
       fake_capture_rate_(fake_capture_rate),
+      pixel_format_(pixel_format),
       current_zoom_(kMinZoom),
       weak_factory_(this) {}
 
@@ -141,22 +201,25 @@ void FakeVideoCaptureDevice::AllocateAndStart(
     capture_format_.frame_size.SetSize(1280, 720);
   else if (params.requested_format.frame_size.width() > 320)
     capture_format_.frame_size.SetSize(640, 480);
-  else
+  else if (params.requested_format.frame_size.width() > 96)
     capture_format_.frame_size.SetSize(320, 240);
+  else
+    capture_format_.frame_size.SetSize(96, 96);
 
+  capture_format_.pixel_format = pixel_format_;
   if (buffer_ownership_ == BufferOwnership::CLIENT_BUFFERS) {
     capture_format_.pixel_storage = PIXEL_STORAGE_CPU;
     capture_format_.pixel_format = PIXEL_FORMAT_ARGB;
     DVLOG(1) << "starting with client argb buffers";
   } else if (buffer_ownership_ == BufferOwnership::OWN_BUFFERS) {
     capture_format_.pixel_storage = PIXEL_STORAGE_CPU;
-    capture_format_.pixel_format = PIXEL_FORMAT_I420;
-    DVLOG(1) << "starting with own I420 buffers";
+    DVLOG(1) << "starting with own " << VideoPixelFormatToString(pixel_format_)
+             << " buffers";
   }
 
-  if (capture_format_.pixel_format == PIXEL_FORMAT_I420) {
+  if (buffer_ownership_ == BufferOwnership::OWN_BUFFERS) {
     fake_frame_.reset(new uint8_t[VideoFrame::AllocationSize(
-        PIXEL_FORMAT_I420, capture_format_.frame_size)]);
+        pixel_format_, capture_format_.frame_size)]);
   }
 
   beep_time_ = base::TimeDelta();
@@ -235,11 +298,10 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
     base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const size_t frame_size = capture_format_.ImageAllocationSize();
+
   memset(fake_frame_.get(), 0, frame_size);
-
-  DrawPacman(false /* use_argb */, fake_frame_.get(), elapsed_time_,
+  DrawPacman(capture_format_.pixel_format, fake_frame_.get(), elapsed_time_,
              fake_capture_rate_, capture_format_.frame_size, current_zoom_);
-
   // Give the captured frame to the client.
   base::TimeTicks now = base::TimeTicks::Now();
   if (first_ref_time_.is_null())
@@ -265,11 +327,10 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
   DCHECK(capture_buffer->data()) << "Buffer has NO backing memory";
 
   DCHECK_EQ(PIXEL_STORAGE_CPU, capture_format_.pixel_storage);
-  DCHECK_EQ(PIXEL_FORMAT_ARGB, capture_format_.pixel_format);
   uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
   memset(data_ptr, 0, capture_buffer->mapped_size());
-  DrawPacman(true /* use_argb */, data_ptr, elapsed_time_, fake_capture_rate_,
-             capture_format_.frame_size, current_zoom_);
+  DrawPacman(capture_format_.pixel_format, data_ptr, elapsed_time_,
+             fake_capture_rate_, capture_format_.frame_size, current_zoom_);
 
   // Give the captured frame to the client.
   base::TimeTicks now = base::TimeTicks::Now();
