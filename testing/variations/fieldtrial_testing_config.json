@@ -217,6 +217,26 @@
             ]
         }
     ],
+    "CSSExternalScanner": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_ScanAndPreload",
+                    "params": {
+                        "cssExternalScannerNoPreload": "false",
+                        "cssExternalScannerPreload": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "CaptivePortalInterstitial": [
         {
             "platforms": [
