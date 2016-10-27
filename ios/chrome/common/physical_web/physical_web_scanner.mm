@@ -254,12 +254,12 @@ enum BeaconType {
   ];
   if (onLostDetectionEnabled_) {
     // Register a repeating timer to periodically check for lost URLs.
-    updateTimer_.reset([NSTimer
-        scheduledTimerWithTimeInterval:kUpdateIntervalSeconds
-                                target:self
-                              selector:@selector(onUpdateTimeElapsed:)
-                              userInfo:nil
-                               repeats:YES]);
+    updateTimer_.reset(
+        [[NSTimer scheduledTimerWithTimeInterval:kUpdateIntervalSeconds
+                                          target:self
+                                        selector:@selector(onUpdateTimeElapsed:)
+                                        userInfo:nil
+                                         repeats:YES] retain]);
   }
   [centralManager_ scanForPeripheralsWithServices:serviceUUIDs options:nil];
 }
