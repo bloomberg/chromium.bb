@@ -29,7 +29,7 @@ function test() {
         if (request.name() !== "empty.html?xhr")
             return;
         xhrRequestFinished = true;
-        WebInspector.panels.network._networkLogView.refresh();
+        WebInspector.panels.network._networkLogView._refresh();
         checkComplete();
     }
 

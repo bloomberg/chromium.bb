@@ -17,7 +17,7 @@ function test() {
         request.setIssueTime(startTime);
         request.endTime = endTime;
         target._appendRequest(request);
-        target.refresh();
+        target._refresh();
 
         var isFilteredOut = !!target._nodesByRequestId.get(request.requestId)[WebInspector.NetworkLogView._isFilteredOutSymbol];
         InspectorTest.addResult("");

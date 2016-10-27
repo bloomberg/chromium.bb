@@ -19,7 +19,7 @@ function test() {
     requestBar.setResourceType(types.Script);
     requestBar.requestId = "bar";
     target._appendRequest(requestBar);
-    target.refresh();
+    target._refresh();
 
     function isFilteredOut(request) {
         return !!target._nodesByRequestId.get(request.requestId)[WebInspector.NetworkLogView._isFilteredOutSymbol];
@@ -35,7 +35,7 @@ function test() {
     InspectorTest.addResult("Updated request [" + requestFoo.requestId + "] type.");
     target._refreshRequest(requestBar);
     InspectorTest.addResult("Updated request [" + requestBar.requestId + "].");
-    target.refresh();
+    target._refresh();
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Request [" + requestFoo.requestId + "] of type '" + requestFoo.resourceType().name() + "' is hidden: " + isFilteredOut(requestFoo));
