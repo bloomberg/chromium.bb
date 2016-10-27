@@ -32,6 +32,7 @@
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -203,20 +204,17 @@ class BluetoothDetailedView : public TrayDetailsView {
     CreateScrollableList();
     AppendSettingsEntries();
     CreateTitleRow(IDS_ASH_STATUS_TRAY_BLUETOOTH);
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      CreateProgressBar();
   }
 
   void BluetoothStartDiscovering() {
-    // TODO(tdanderson|fukino): The material design version of the detailed
-    // view should use an infinite loader bar instead of a throbber. See
-    // crbug.com/632128.
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     if (delegate->GetBluetoothDiscovering()) {
-      if (throbber_)
-        throbber_->Start();
+      ShowLoadingIndicator();
       return;
     }
-    if (throbber_)
-      throbber_->Stop();
+    HideLoadingIndicator();
     if (delegate->GetBluetoothEnabled())
       delegate->BluetoothStartDiscovering();
   }
@@ -225,8 +223,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     if (delegate && delegate->GetBluetoothDiscovering()) {
       delegate->BluetoothStopDiscovering();
-      if (throbber_)
-        throbber_->Stop();
+      HideLoadingIndicator();
     }
   }
 
@@ -514,6 +511,25 @@ class BluetoothDetailedView : public TrayDetailsView {
     if (CanOpenWebUISettings(login_)) {
       WmShell::Get()->system_tray_delegate()->ManageBluetoothDevices();
       owner()->system_tray()->CloseSystemBubble();
+    }
+  }
+
+  void ShowLoadingIndicator() {
+    if (throbber_) {
+      throbber_->Start();
+    } else if (progress_bar()) {
+      // Setting a value of -1 gives progress_bar an infinite-loading behavior.
+      progress_bar()->SetValue(-1);
+      progress_bar()->SetVisible(true);
+    }
+  }
+
+  void HideLoadingIndicator() {
+    if (throbber_) {
+      throbber_->Stop();
+    } else if (progress_bar()) {
+      progress_bar()->SetValue(0);
+      progress_bar()->SetVisible(false);
     }
   }
 

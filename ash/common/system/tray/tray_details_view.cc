@@ -12,10 +12,60 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
+namespace {
+
+// Constants for the title row in material design.
+const int kTitleRowVerticalPadding = 4;
+const int kTitleRowSeparatorBorderHeight = 1;
+const int kTitleRowProgressBarHeight = 2;
+// The separator's height should be same as kTitleRowProgressBarHeight, and
+// should not be larger than kTitleRowSeparatorBorderHeight.
+const int kTitleRowSeparatorHeight = kTitleRowProgressBarHeight;
+const int kTitleRowPaddingTop = kTitleRowVerticalPadding;
+const int kTitleRowPaddingBottom =
+    kTitleRowVerticalPadding - kTitleRowSeparatorHeight;
+const SkColor kTitleRowSeparatorBorderColor = SkColorSetRGB(0xe0, 0xe0, 0xe0);
+
+// Special layout to overlap the separator for title row and the progress bar
+// which is displayed on it.
+// Expected children are a views::Separator and, optionally, a
+// views::ProgressBar. If the progress bar is present and visible, it is drawn
+// over top of the separator so that only the progress bar is visible.
+class TitleRowSeparatorLayout : public views::LayoutManager {
+ public:
+  TitleRowSeparatorLayout() {}
+  ~TitleRowSeparatorLayout() override {}
+
+  void Layout(views::View* host) override {
+    int max_height = GetMaxHeight(host);
+    for (int i = 0; i < host->child_count(); ++i) {
+      views::View* child = host->child_at(i);
+      gfx::Size child_size = child->GetPreferredSize();
+      child->SetBounds(0, max_height - child_size.height(), host->width(),
+                       child_size.height());
+    }
+  }
+
+  gfx::Size GetPreferredSize(const views::View* host) const override {
+    return gfx::Size(host->width(), GetMaxHeight(host));
+  }
+
+ private:
+  int GetMaxHeight(const views::View* host) const {
+    int max_height = 0;
+    for (int i = 0; i < host->child_count(); ++i)
+      max_height = std::max(max_height, host->child_at(i)->height());
+    return max_height;
+  }
+};
+
+}  // namespace
 
 class ScrollSeparator : public views::View {
  public:
@@ -65,6 +115,8 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       title_row_(nullptr),
       scroller_(nullptr),
       scroll_content_(nullptr),
+      progress_bar_(nullptr),
+      title_row_separator_(nullptr),
       scroll_border_(nullptr),
       back_button_(nullptr) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
@@ -96,12 +148,28 @@ void TrayDetailsView::ButtonPressed(views::Button* sender,
 
 void TrayDetailsView::CreateTitleRow(int string_id) {
   DCHECK(!title_row_);
-  const int child_view_position =
-      MaterialDesignController::IsSystemTrayMenuMaterial() ? 0 : child_count();
   title_row_ = new SpecialPopupRow();
   title_row_->SetTextLabel(string_id, this);
-
-  AddChildViewAt(title_row_, child_view_position);
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    title_row_->SetBorder(views::Border::CreateEmptyBorder(
+        kTitleRowPaddingTop, 0, kTitleRowPaddingBottom, 0));
+    AddChildViewAt(title_row_, 0);
+    // In material design, we use a customized bottom border which is nomally a
+    // simple separator (views::Separator) but can be combined with an
+    // overlapping progress bar.
+    title_row_separator_ = new views::View;
+    title_row_separator_->SetLayoutManager(new TitleRowSeparatorLayout);
+    views::Separator* separator =
+        new views::Separator(views::Separator::HORIZONTAL);
+    separator->SetColor(ash::kTitleRowSeparatorBorderColor);
+    separator->SetPreferredSize(kTitleRowSeparatorBorderHeight);
+    separator->SetBorder(views::Border::CreateEmptyBorder(
+        kTitleRowSeparatorHeight - kTitleRowSeparatorBorderHeight, 0, 0, 0));
+    title_row_separator_->AddChildView(separator);
+    AddChildViewAt(title_row_separator_, 1);
+  } else {
+    AddChildViewAt(title_row_, child_count());
+  }
 
   CreateExtraTitleRowButtons();
 
@@ -126,6 +194,14 @@ void TrayDetailsView::CreateScrollableList() {
   AddChildView(scroller_);
 }
 
+void TrayDetailsView::CreateProgressBar() {
+  DCHECK(!progress_bar_);
+  DCHECK(title_row_separator_);
+  progress_bar_ = new views::ProgressBar(kTitleRowProgressBarHeight);
+  progress_bar_->SetVisible(false);
+  title_row_separator_->AddChildView(progress_bar_);
+}
+
 void TrayDetailsView::AddScrollSeparator() {
   DCHECK(scroll_content_);
   // Do not draw the separator if it is the very first item
@@ -139,6 +215,8 @@ void TrayDetailsView::Reset() {
   title_row_ = nullptr;
   scroller_ = nullptr;
   scroll_content_ = nullptr;
+  progress_bar_ = nullptr;
+  title_row_separator_ = nullptr;
   back_button_ = nullptr;
 }
 

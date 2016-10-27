@@ -14,6 +14,7 @@
 
 namespace views {
 class ScrollView;
+class ProgressBar;
 }  // namespace views
 
 namespace ash {
@@ -42,6 +43,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   SpecialPopupRow* title_row() { return title_row_; }
   FixedSizedScrollView* scroller() { return scroller_; }
   views::View* scroll_content() { return scroll_content_; }
+  views::ProgressBar* progress_bar() { return progress_bar_; }
 
  protected:
   // views::View:
@@ -56,6 +58,10 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Creates a scrollable list. The list has a border at the bottom if there is
   // any other view between the list and the footer row at the bottom.
   void CreateScrollableList();
+
+  // Creates a progress bar which overlaps with bottom edge of the |title_row_|.
+  // |title_row_| needs to be created before this method is called.
+  void CreateProgressBar();
 
   // Adds a separator in scrollable list.
   void AddScrollSeparator();
@@ -85,6 +91,12 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   SpecialPopupRow* title_row_;
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
+  views::ProgressBar* progress_bar_;
+
+  // |title_row_separator_| has a views::Separator as a child and, optionally,
+  // |progress_bar_| as a child.
+  views::View* title_row_separator_;
+
   ScrollBorder* scroll_border_;  // Weak reference
 
   // The back button that appears in the material design title row. Not owned.

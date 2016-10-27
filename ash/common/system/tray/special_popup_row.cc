@@ -37,6 +37,7 @@ namespace {
 const int kIconPaddingLeft = 5;
 const int kSeparatorInset = 10;
 const int kSpecialPopupRowHeight = 55;
+const int kSpecialPopupRowHeightMd = 48;
 const int kBorderHeight = 1;
 const SkColor kBorderColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 
@@ -157,12 +158,16 @@ void SpecialPopupRow::AddViewToRowNonMd(views::View* view, bool add_separator) {
 
 gfx::Size SpecialPopupRow::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
-  size.set_height(kSpecialPopupRowHeight);
+  size.set_height(MaterialDesignController::IsSystemTrayMenuMaterial()
+                      ? kSpecialPopupRowHeightMd + GetInsets().height()
+                      : kSpecialPopupRowHeight);
   return size;
 }
 
 int SpecialPopupRow::GetHeightForWidth(int width) const {
-  return kSpecialPopupRowHeight;
+  return MaterialDesignController::IsSystemTrayMenuMaterial()
+             ? kSpecialPopupRowHeightMd + GetInsets().height()
+             : kSpecialPopupRowHeight;
 }
 
 void SpecialPopupRow::Layout() {
