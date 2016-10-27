@@ -436,7 +436,7 @@ crbug.com/518992 [ Win Release ] imported/wpt/user-timing/test_user_timing_measu
 crbug.com/567965 [ Debug ] imported/wpt/user-timing/test_user_timing_mark.html [ Skip ]
 crbug.com/518993 imported/wpt/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
 
-crbug.com/636053 [ Mac Win ] printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
+crbug.com/636053 [ Mac Win7 ] printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
@@ -1160,12 +1160,6 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/standards-percentage-height
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
-crbug.com/591500 [ Win10 ] printing/absolute-position-headers-and-footers.html [ Missing ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-but-static-headers-and-footers.html [ Missing ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped.html [ Missing ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-inside-transform.html [ Missing ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Missing ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers.html [ Missing ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/absolute-position-headers-and-footers.html [ Missing ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ Missing ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-clipped.html [ Missing ]

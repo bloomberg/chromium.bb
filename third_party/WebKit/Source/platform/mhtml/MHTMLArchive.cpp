@@ -78,16 +78,34 @@ MHTMLArchive* MHTMLArchive::create(const KURL& url,
     return nullptr;  // Invalid MHTML file.
 
   MHTMLArchive* archive = new MHTMLArchive;
+
+  size_t resourcesCount = resources.size();
   // The first document suitable resource is the main resource of the top frame.
-  for (size_t i = 0; i < resources.size(); ++i) {
-    const AtomicString& mimeType = resources[i]->mimeType();
-    if (archive->mainResource() ||
-        !MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType) ||
-        MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) ||
-        mimeType == "text/css")
+  for (size_t i = 0; i < resourcesCount; ++i) {
+    if (archive->mainResource()) {
       archive->addSubresource(resources[i].get());
-    else
+      continue;
+    }
+
+    const AtomicString& mimeType = resources[i]->mimeType();
+    bool isMimeTypeSuitableForMainResource =
+        MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType);
+    // Want to allow image-only MHTML archives, but retain behavior for other
+    // documents that have already been created expecting the first HTML page to
+    // be considered the main resource.
+    if (resourcesCount == 1 &&
+        MIMETypeRegistry::isSupportedImageResourceMIMEType(mimeType)) {
+      isMimeTypeSuitableForMainResource = true;
+    }
+    // explicitly disallow JS and CSS as the main resource.
+    if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) ||
+        MIMETypeRegistry::isSupportedStyleSheetMIMEType(mimeType))
+      isMimeTypeSuitableForMainResource = false;
+
+    if (isMimeTypeSuitableForMainResource)
       archive->setMainResource(resources[i].get());
+    else
+      archive->addSubresource(resources[i].get());
   }
   return archive;
 }
