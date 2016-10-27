@@ -316,7 +316,7 @@ bool IsAboutUI(const GURL& url) {
 #if defined(OS_CHROMEOS)
           || url.host() == chrome::kChromeUIOSCreditsHost
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
           || url.host() == chrome::kChromeUIDiscardsHost
 #endif
           );  // NOLINT
