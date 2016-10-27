@@ -381,18 +381,15 @@ void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot) {
 
 void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot) {
   if (StyleResolver* styleResolver = resolver()) {
-    styleResolver->resetRuleFeatures();
-
     if (TreeScopeStyleSheetCollection* collection =
             styleSheetCollectionFor(*shadowRoot))
       styleResolver->removePendingAuthorStyleSheets(
           collection->activeAuthorStyleSheets());
   }
-  shadowRoot->clearScopedStyleResolver();
   m_styleSheetCollectionMap.remove(shadowRoot);
   m_activeTreeScopes.remove(shadowRoot);
   m_dirtyTreeScopes.remove(shadowRoot);
-  m_treeBoundaryCrossingScopes.remove(&shadowRoot->rootNode());
+  resetAuthorStyle(*shadowRoot);
 }
 
 void StyleEngine::addTreeBoundaryCrossingScope(const TreeScope& treeScope) {
