@@ -265,10 +265,10 @@ void DesktopProcessTest::RunDesktopProcess() {
   io_task_runner_ = AutoThread::CreateWithType(
       "IPC thread", ui_task_runner, base::MessageLoop::TYPE_IO);
 
-  std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
+  mojo::MessagePipe pipe;
   daemon_channel_ = IPC::ChannelProxy::Create(
-      IPC::ChannelHandle(channel_name), IPC::Channel::MODE_SERVER,
-      &daemon_listener_, io_task_runner_.get());
+      pipe.handle0.release(), IPC::Channel::MODE_SERVER, &daemon_listener_,
+      io_task_runner_.get());
 
   std::unique_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(
       new MockDesktopEnvironmentFactory());
@@ -280,7 +280,8 @@ void DesktopProcessTest::RunDesktopProcess() {
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
 
-  DesktopProcess desktop_process(ui_task_runner, io_task_runner_, channel_name);
+  DesktopProcess desktop_process(ui_task_runner, io_task_runner_,
+                                 io_task_runner_, std::move(pipe.handle1));
   EXPECT_TRUE(desktop_process.Start(std::move(desktop_environment_factory)));
 
   ui_task_runner = nullptr;

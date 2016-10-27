@@ -34,10 +34,12 @@ namespace remoting {
 DesktopProcess::DesktopProcess(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-    const std::string& daemon_channel_name)
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+    mojo::ScopedMessagePipeHandle daemon_channel_handle)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
-      daemon_channel_name_(daemon_channel_name) {
+      io_task_runner_(io_task_runner),
+      daemon_channel_handle_(std::move(daemon_channel_handle)) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(base::MessageLoopForUI::IsCurrent());
 }
@@ -113,6 +115,7 @@ void DesktopProcess::OnChannelError() {
 
   caller_task_runner_ = nullptr;
   input_task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   desktop_environment_factory_.reset();
 }
 
@@ -141,15 +144,10 @@ bool DesktopProcess::Start(
       "ChromotingAudioThread", caller_task_runner_, base::MessageLoop::TYPE_IO);
 #endif  // !defined(OS_WIN)
 
-  // Launch the I/O thread.
-  scoped_refptr<AutoThreadTaskRunner> io_task_runner =
-      AutoThread::CreateWithType(
-          "I/O thread", caller_task_runner_, base::MessageLoop::TYPE_IO);
-
   // Create a desktop agent.
   desktop_agent_ =
       new DesktopSessionAgent(audio_task_runner, caller_task_runner_,
-                              input_task_runner_, io_task_runner);
+                              input_task_runner_, io_task_runner_);
 
   // Start the agent and create an IPC channel to talk to it.
   IPC::PlatformFileForTransit desktop_pipe;
@@ -162,12 +160,13 @@ bool DesktopProcess::Start(
   }
 
   // Connect to the daemon.
-  daemon_channel_.reset(new IPC::ChannelProxy(this, io_task_runner.get()));
+  daemon_channel_.reset(new IPC::ChannelProxy(this, io_task_runner_));
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker()) {
     broker->RegisterBrokerCommunicationChannel(daemon_channel_.get());
   }
-  daemon_channel_->Init(daemon_channel_name_, IPC::Channel::MODE_CLIENT,
+  daemon_channel_->Init(daemon_channel_handle_.release(),
+                        IPC::Channel::MODE_CLIENT,
                         /*create_pipe_now=*/true);
 
   // Pass |desktop_pipe| to the daemon.

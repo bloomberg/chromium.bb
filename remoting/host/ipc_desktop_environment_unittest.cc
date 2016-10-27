@@ -215,9 +215,6 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // The daemons's end of the daemon-to-desktop channel.
   std::unique_ptr<IPC::ChannelProxy> desktop_channel_;
 
-  // Name of the daemon-to-desktop channel.
-  std::string desktop_channel_name_;
-
   // Delegate that is passed to |desktop_channel_|.
   MockDaemonListener desktop_listener_;
 
@@ -417,15 +414,14 @@ void IpcDesktopEnvironmentTest::CreateDesktopProcess() {
   EXPECT_TRUE(io_task_runner_.get());
 
   // Create the daemon end of the daemon-to-desktop channel.
-  desktop_channel_name_ = IPC::Channel::GenerateUniqueRandomChannelID();
+  mojo::MessagePipe pipe;
   desktop_channel_ = IPC::ChannelProxy::Create(
-      IPC::ChannelHandle(desktop_channel_name_), IPC::Channel::MODE_SERVER,
-      &desktop_listener_, io_task_runner_.get());
+      pipe.handle0.release(), IPC::Channel::MODE_SERVER, &desktop_listener_,
+      io_task_runner_.get());
 
   // Create and start the desktop process.
-  desktop_process_.reset(new DesktopProcess(task_runner_,
-                                            io_task_runner_,
-                                            desktop_channel_name_));
+  desktop_process_.reset(new DesktopProcess(
+      task_runner_, io_task_runner_, io_task_runner_, std::move(pipe.handle1)));
 
   std::unique_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(
       new MockDesktopEnvironmentFactory());

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/desktop_session_agent.h"
 
 namespace IPC {
@@ -33,10 +34,10 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
                        public IPC::Listener,
                        public base::SupportsWeakPtr<DesktopProcess> {
  public:
-  DesktopProcess(
-      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-      const std::string& daemon_channel_name);
+  DesktopProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+                 scoped_refptr<AutoThreadTaskRunner> input_task_runner,
+                 scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+                 mojo::ScopedMessagePipeHandle daemon_channel_handle);
   ~DesktopProcess() override;
 
   // DesktopSessionAgent::Delegate implementation.
@@ -73,12 +74,15 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
   // Used to run input-related tasks.
   scoped_refptr<AutoThreadTaskRunner> input_task_runner_;
 
+  // Used for IPC communication with Daemon process.
+  scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
+
   // Factory used to create integration components for use by |desktop_agent_|.
   std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
-  // Name of the IPC channel connecting the desktop process with the daemon
+  // Handle for the IPC channel connecting the desktop process with the daemon
   // process.
-  std::string daemon_channel_name_;
+  mojo::ScopedMessagePipeHandle daemon_channel_handle_;
 
   // IPC channel connecting the desktop process with the daemon process.
   std::unique_ptr<IPC::ChannelProxy> daemon_channel_;

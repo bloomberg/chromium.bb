@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,9 +25,13 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_channel_pair.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/platform_handle_utils.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
-#include "remoting/host/ipc_util.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/security_descriptor.h"
@@ -101,8 +106,12 @@ class WtsSessionProcessDelegate::Core
   // Called when the number of processes running in the job reaches zero.
   void OnActiveProcessZero();
 
+  // Called when a process is launched in |job_|.
+  void OnProcessLaunchDetected(base::ProcessId pid);
+
   void ReportFatalError();
-  void ReportProcessLaunched(base::win::ScopedHandle worker_process);
+  void ReportProcessLaunched(base::win::ScopedHandle worker_process,
+                             mojo::edk::ScopedPlatformHandle server_handle);
 
   // The task runner all public methods of this class should be called on.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -122,10 +131,6 @@ class WtsSessionProcessDelegate::Core
 
   WorkerProcessLauncher* event_handler_;
 
-  // Pointer to GetNamedPipeClientProcessId() API if it is available.
-  typedef BOOL (WINAPI * GetNamedPipeClientProcessIdFn)(HANDLE, DWORD*);
-  GetNamedPipeClientProcessIdFn get_named_pipe_client_pid_;
-
   // The job object used to control the lifetime of child processes.
   base::win::ScopedHandle job_;
 
@@ -135,9 +140,6 @@ class WtsSessionProcessDelegate::Core
   // True if a laucnh attemp is pending.
   bool launch_pending_;
 
-  // The named pipe used as the transport by |channel_|.
-  base::win::ScopedHandle pipe_;
-
   // The token to be used to launch a process in a different session.
   base::win::ScopedHandle session_token_;
 
@@ -146,6 +148,16 @@ class WtsSessionProcessDelegate::Core
 
   // The handle of the worker process, if launched.
   base::win::ScopedHandle worker_process_;
+
+  // If launching elevated, this holds the server handle after launch, until
+  // the final process launches.
+  mojo::edk::ScopedPlatformHandle elevated_server_handle_;
+
+  // If launching elevated, this is the pid of the launcher process.
+  base::ProcessId elevated_launcher_pid_ = base::kNullProcessId;
+
+  // The mojo child token for the process being launched.
+  std::string mojo_child_token_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -161,7 +173,6 @@ WtsSessionProcessDelegate::Core::Core(
       channel_security_(channel_security),
       new_process_security_(new_process_security),
       event_handler_(nullptr),
-      get_named_pipe_client_pid_(nullptr),
       launch_elevated_(launch_elevated),
       launch_pending_(false),
       target_command_(std::move(target_command)) {}
@@ -173,11 +184,6 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32_t session_id) {
     // GetNamedPipeClientProcessId() is available starting from Vista.
     HMODULE kernel32 = ::GetModuleHandle(L"kernel32.dll");
     CHECK(kernel32 != nullptr);
-
-    get_named_pipe_client_pid_ =
-        reinterpret_cast<GetNamedPipeClientProcessIdFn>(
-            GetProcAddress(kernel32, "GetNamedPipeClientProcessId"));
-    CHECK(get_named_pipe_client_pid_ != nullptr);
 
     ScopedHandle job;
     job.Set(CreateJobObject(nullptr, nullptr));
@@ -253,7 +259,12 @@ void WtsSessionProcessDelegate::Core::CloseChannel() {
   IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
       channel_.get());
   channel_.reset();
-  pipe_.Close();
+  elevated_server_handle_.reset();
+  elevated_launcher_pid_ = base::kNullProcessId;
+  if (!mojo_child_token_.empty()) {
+    mojo::edk::ChildProcessLaunchFailed(mojo_child_token_);
+    mojo_child_token_.clear();
+  }
 }
 
 void WtsSessionProcessDelegate::Core::KillProcess() {
@@ -278,7 +289,6 @@ void WtsSessionProcessDelegate::Core::KillProcess() {
 WtsSessionProcessDelegate::Core::~Core() {
   DCHECK(!channel_);
   DCHECK(!event_handler_);
-  DCHECK(!pipe_.IsValid());
   DCHECK(!worker_process_.IsValid());
 }
 
@@ -290,9 +300,18 @@ void WtsSessionProcessDelegate::Core::OnIOCompleted(
 
   // |bytes_transferred| is used in job object notifications to supply
   // the message ID; |context| carries process ID.
-  if (bytes_transferred == JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO) {
-    caller_task_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&Core::OnActiveProcessZero, this));
+  switch (bytes_transferred) {
+    case JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO: {
+      caller_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&Core::OnActiveProcessZero, this));
+      break;
+    }
+    case JOB_OBJECT_MSG_NEW_PROCESS: {
+      caller_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&Core::OnProcessLaunchDetected, this,
+                                reinterpret_cast<base::ProcessId>(context)));
+      break;
+    }
   }
 }
 
@@ -305,37 +324,6 @@ bool WtsSessionProcessDelegate::Core::OnMessageReceived(
 
 void WtsSessionProcessDelegate::Core::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  // Report the worker PID now if the worker process is launched indirectly.
-  // Note that in this case the pipe's security descriptor is the only
-  // protection against a malicious processed connecting to the pipe.
-  if (launch_elevated_) {
-    DWORD pid;
-    if (!get_named_pipe_client_pid_(pipe_.Get(), &pid)) {
-      PLOG(ERROR) << "Failed to retrive PID of the client";
-      ReportFatalError();
-      return;
-    }
-
-    if (pid != static_cast<DWORD>(peer_pid)) {
-      LOG(ERROR) << "The actual client PID " << pid
-                 << " does not match the one reported by the client: "
-                 << peer_pid;
-      ReportFatalError();
-      return;
-    }
-
-    DWORD desired_access =
-        SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
-    ScopedHandle worker_process(OpenProcess(desired_access, false, pid));
-    if (!worker_process.IsValid()) {
-      PLOG(ERROR) << "Failed to open process " << pid;
-      ReportFatalError();
-      return;
-    }
-
-    ReportProcessLaunched(std::move(worker_process));
-  }
 
   if (event_handler_)
     event_handler_->OnChannelConnected(peer_pid);
@@ -350,7 +338,6 @@ void WtsSessionProcessDelegate::Core::OnChannelError() {
 void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!channel_);
-  DCHECK(!pipe_.IsValid());
   DCHECK(!worker_process_.IsValid());
 
   base::CommandLine command_line(target_command_->argv());
@@ -375,25 +362,34 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
                                   target_command_->GetProgram());
   }
 
-  // Create the server end of the IPC channel.
-  std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
-  ScopedHandle pipe;
-  if (!CreateIpcChannel(channel_name, channel_security_, &pipe)) {
-    ReportFatalError();
-    return;
-  }
-
-  // Wrap the pipe into an IPC channel.
+  const std::string mojo_message_pipe_token = mojo::edk::GenerateRandomToken();
+  mojo_child_token_ = mojo::edk::GenerateRandomToken();
   std::unique_ptr<IPC::ChannelProxy> channel(
       new IPC::ChannelProxy(this, io_task_runner_));
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
       channel.get(), io_task_runner_);
-  channel->Init(IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER,
-                /*create_pipe_now=*/true);
+  channel->Init(mojo::edk::CreateParentMessagePipe(mojo_message_pipe_token,
+                                                   mojo_child_token_)
+                    .release(),
+                IPC::Channel::MODE_SERVER, /*create_pipe_now=*/true);
+  command_line.AppendSwitchASCII(kMojoPipeToken, mojo_message_pipe_token);
 
-  // Pass the name of the IPC channel to use.
-  command_line.AppendSwitchNative(kDaemonPipeSwitchName,
-                                  base::UTF8ToWide(channel_name));
+  std::unique_ptr<mojo::edk::PlatformChannelPair> normal_mojo_channel;
+  std::unique_ptr<mojo::edk::NamedPlatformChannelPair> elevated_mojo_channel;
+  base::HandlesToInheritVector handles_to_inherit;
+  if (launch_elevated_) {
+    // Pass the name of the IPC channel to use.
+    mojo::edk::NamedPlatformChannelPair::Options options;
+    options.security_descriptor = base::UTF8ToUTF16(channel_security_);
+    elevated_mojo_channel =
+        base::MakeUnique<mojo::edk::NamedPlatformChannelPair>(options);
+    elevated_mojo_channel->PrepareToPassClientHandleToChildProcess(
+        &command_line);
+  } else {
+    normal_mojo_channel = base::MakeUnique<mojo::edk::PlatformChannelPair>();
+    normal_mojo_channel->PrepareToPassClientHandleToChildProcess(
+        &command_line, &handles_to_inherit);
+  }
 
   ScopedSd security_descriptor;
   std::unique_ptr<SECURITY_ATTRIBUTES> security_attributes;
@@ -417,7 +413,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   if (!LaunchProcessWithToken(
           command_line.GetProgram(), command_line.GetCommandLineString(),
           session_token_.Get(), security_attributes.get(),
-          /* thread_attributes= */ nullptr, /* handles_to_inherit=*/{},
+          /* thread_attributes= */ nullptr, handles_to_inherit,
           /* creation_flags= */ CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
           base::UTF8ToUTF16(kDefaultDesktopName).c_str(), &worker_process,
           &worker_thread)) {
@@ -440,13 +436,19 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   }
 
   channel_ = std::move(channel);
-  pipe_ = std::move(pipe);
 
-  // Report success if the worker process is lauched directly. Otherwise, PID of
-  // the client connected to the pipe will be used later. See
-  // OnChannelConnected().
-  if (!launch_elevated_)
-    ReportProcessLaunched(std::move(worker_process));
+  if (launch_elevated_) {
+    // When launching an elevated worker process, an intermediate launcher
+    // process launches the worker process. Reporting the launch waits until the
+    // worker process launch is detected. Until then, store the values needed in
+    // fields. See OnProcessLaunchDetected for their use.
+    elevated_server_handle_ = elevated_mojo_channel->PassServerHandle();
+    elevated_launcher_pid_ = GetProcessId(worker_process.Get());
+    DCHECK(elevated_server_handle_.is_valid());
+  } else {
+    ReportProcessLaunched(std::move(worker_process),
+                          normal_mojo_channel->PassServerHandle());
+  }
 }
 
 void WtsSessionProcessDelegate::Core::DrainJobNotifications() {
@@ -506,6 +508,29 @@ void WtsSessionProcessDelegate::Core::OnActiveProcessZero() {
   }
 }
 
+void WtsSessionProcessDelegate::Core::OnProcessLaunchDetected(
+    base::ProcessId pid) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  if (!elevated_server_handle_.is_valid())
+    return;
+
+  if (pid == elevated_launcher_pid_)
+    return;
+
+  DWORD desired_access =
+      SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
+  base::win::ScopedHandle worker_process(
+      OpenProcess(desired_access, false, pid));
+  if (!worker_process.IsValid()) {
+    PLOG(ERROR) << "Failed to open process " << pid;
+    ReportFatalError();
+    return;
+  }
+  elevated_launcher_pid_ = base::kNullProcessId;
+  ReportProcessLaunched(std::move(worker_process),
+                        std::move(elevated_server_handle_));
+}
+
 void WtsSessionProcessDelegate::Core::ReportFatalError() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -517,10 +542,15 @@ void WtsSessionProcessDelegate::Core::ReportFatalError() {
 }
 
 void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
-    base::win::ScopedHandle worker_process) {
+    base::win::ScopedHandle worker_process,
+    mojo::edk::ScopedPlatformHandle server_handle) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!worker_process_.IsValid());
 
+  mojo::edk::ChildProcessLaunched(worker_process.Get(),
+                                  std::move(server_handle),
+                                  mojo_child_token_);
+  mojo_child_token_.clear();
   worker_process_ = std::move(worker_process);
 
   // Report a handle that can be used to wait for the worker process completion,

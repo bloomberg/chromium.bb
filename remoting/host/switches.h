@@ -7,9 +7,6 @@
 
 namespace remoting {
 
-// The command line switch specifying the daemon IPC endpoint.
-extern const char kDaemonPipeSwitchName[];
-
 extern const char kElevateSwitchName[];
 
 // "--help" prints the usage message.

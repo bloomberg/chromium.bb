@@ -6,7 +6,6 @@
 
 namespace remoting {
 
-const char kDaemonPipeSwitchName[] = "daemon-pipe";
 const char kElevateSwitchName[] = "elevate";
 const char kHelpSwitchName[] = "help";
 const char kProcessTypeSwitchName[] = "type";
