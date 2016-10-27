@@ -163,8 +163,8 @@ class Display : public PlatformDisplayDelegate,
   void CreateWindowManagerDisplayRootFromFactory(
       WindowManagerWindowTreeFactory* factory);
 
-  // Creates the root ServerWindow for this display. The root window will have
-  // |size| in DIP.
+  // Creates the root ServerWindow for this display, where |size| is in physical
+  // pixels.
   void CreateRootWindow(const gfx::Size& size);
 
   // PlatformDisplayDelegate:
