@@ -135,6 +135,7 @@ TEST_F(V4StoreTest, TestReadFromNoHashPrefixesFile) {
   V4Store store(task_runner_, store_path_);
   EXPECT_EQ(READ_SUCCESS, store.ReadFromDisk());
   EXPECT_TRUE(store.hash_prefix_map_.empty());
+  EXPECT_EQ(14, store.file_size_);
 }
 
 TEST_F(V4StoreTest, TestAddUnlumpedHashesWithInvalidAddition) {
@@ -562,6 +563,7 @@ TEST_F(V4StoreTest, TestReadFullResponseWithValidHashPrefixMap) {
   ASSERT_EQ(2u, read_store.hash_prefix_map_.size());
   EXPECT_EQ("00000abc", read_store.hash_prefix_map_[4]);
   EXPECT_EQ("00000abcde", read_store.hash_prefix_map_[5]);
+  EXPECT_EQ(71, read_store.file_size_);
 }
 
 // This tests fails to read the prefix map from the disk because the file on
@@ -580,6 +582,7 @@ TEST_F(V4StoreTest, TestReadFullResponseWithInvalidHashPrefixMap) {
   EXPECT_EQ(HASH_PREFIX_MAP_GENERATION_FAILURE, read_store.ReadFromDisk());
   EXPECT_TRUE(read_store.state_.empty());
   EXPECT_TRUE(read_store.hash_prefix_map_.empty());
+  EXPECT_EQ(0, read_store.file_size_);
 }
 
 TEST_F(V4StoreTest, TestHashPrefixExistsAtTheBeginning) {
@@ -783,6 +786,7 @@ TEST_F(V4StoreTest, TestChecksumErrorOnStartup) {
   EXPECT_TRUE(store.expected_checksum_.empty());
   EXPECT_EQ(READ_SUCCESS, store.ReadFromDisk());
   EXPECT_TRUE(!store.expected_checksum_.empty());
+  EXPECT_EQ(69, store.file_size_);
   EXPECT_EQ("test_client_state", store.state());
 
   EXPECT_FALSE(store.VerifyChecksum());
@@ -811,6 +815,7 @@ TEST_F(V4StoreTest, TestChecksumErrorOnStartup) {
   EXPECT_EQ(READ_SUCCESS, another_store.ReadFromDisk());
   EXPECT_TRUE(!another_store.expected_checksum_.empty());
   EXPECT_EQ("test_client_state", another_store.state());
+  EXPECT_EQ(69, store.file_size_);
 
   EXPECT_TRUE(another_store.VerifyChecksum());
 }

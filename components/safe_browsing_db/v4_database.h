@@ -136,6 +136,10 @@ class V4Database {
   void VerifyChecksum(
       DatabaseReadyForUpdatesCallback db_ready_for_updates_callback);
 
+  // Records the size of each of the stores managed by this database, along
+  // with the combined size of all the stores.
+  void RecordFileSizeHistograms();
+
  protected:
   V4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
              std::unique_ptr<StoreMap> store_map);

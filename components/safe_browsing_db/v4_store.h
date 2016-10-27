@@ -15,7 +15,7 @@ namespace safe_browsing {
 
 class V4Store;
 
-typedef base::Callback<void(std::unique_ptr<V4Store>)>
+typedef base::Callback<void(std::unique_ptr<V4Store> new_store)>
     UpdatedStoreReadyCallback;
 
 // The sorted list of hash prefixes.
@@ -158,8 +158,14 @@ class V4Store {
   // The |task_runner| is used to ensure that the operations in this file are
   // performed on the correct thread. |store_path| specifies the location on
   // disk for this file. The constructor doesn't read the store file from disk.
+  // If the store is being created to apply an update to the old store, then
+  // |old_file_size| is the size of the existing file on disk for this store;
+  // 0 otherwise. This is needed so that we can correctly report the size of
+  // store file on disk, even if writing the new file fails after successfully
+  // applying an update.
   V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-          const base::FilePath& store_path);
+          const base::FilePath& store_path,
+          const int64_t old_file_size = 0);
   virtual ~V4Store();
 
   const std::string& state() const { return state_; }
@@ -167,8 +173,12 @@ class V4Store {
   const base::FilePath& store_path() const { return store_path_; }
 
   void ApplyUpdate(std::unique_ptr<ListUpdateResponse> response,
-                   const scoped_refptr<base::SingleThreadTaskRunner>&,
-                   UpdatedStoreReadyCallback);
+                   const scoped_refptr<base::SingleThreadTaskRunner>& runner,
+                   UpdatedStoreReadyCallback callback);
+
+  // Records (in kilobytes) and returns the size of the file on disk for this
+  // store using |base_metric| as prefix and the filename as suffix.
+  int64_t RecordAndReturnFileSize(const std::string& base_metric);
 
   // If a hash prefix in this store matches |full_hash|, returns that hash
   // prefix; otherwise returns an empty hash prefix.
@@ -374,11 +384,14 @@ class V4Store {
 
   // Writes the hash_prefix_map_ to disk as a V4StoreFileFormat proto.
   // |checksum| is used to set the |checksum| field in the final proto.
-  StoreWriteResult WriteToDisk(const Checksum& checksum) const;
+  StoreWriteResult WriteToDisk(const Checksum& checksum);
 
   // The checksum value as read from the disk, until it is verified. Once
   // verified, it is cleared.
   std::string expected_checksum_;
+
+  // The size of the file on disk for this store.
+  int64_t file_size_;
 
   // The state of the store as returned by the PVer4 server in the last applied
   // update response.

@@ -181,7 +181,7 @@ std::ostream& operator<<(std::ostream& os, const V4Store& store) {
 V4Store* V4StoreFactory::CreateV4Store(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const base::FilePath& store_path) {
-  V4Store* new_store = new V4Store(task_runner, store_path);
+  V4Store* new_store = new V4Store(task_runner, store_path, 0);
   new_store->Initialize();
   return new_store;
 }
@@ -195,8 +195,11 @@ void V4Store::Initialize() {
 }
 
 V4Store::V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-                 const base::FilePath& store_path)
-    : store_path_(store_path), task_runner_(task_runner) {}
+                 const base::FilePath& store_path,
+                 const int64_t old_file_size)
+    : file_size_(old_file_size),
+      store_path_(store_path),
+      task_runner_(task_runner) {}
 
 V4Store::~V4Store() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
@@ -347,7 +350,8 @@ void V4Store::ApplyUpdate(
     std::unique_ptr<ListUpdateResponse> response,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     UpdatedStoreReadyCallback callback) {
-  std::unique_ptr<V4Store> new_store(new V4Store(task_runner_, store_path_));
+  std::unique_ptr<V4Store> new_store(
+      new V4Store(task_runner_, store_path_, file_size_));
   ApplyUpdateResult apply_update_result;
   std::string metric;
   TimeTicks before = TimeTicks::Now();
@@ -657,6 +661,7 @@ StoreReadResult V4Store::ReadFromDisk() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   V4StoreFileFormat file_format;
+  int64_t file_size;
   TimeTicks before = TimeTicks::Now();
   {
     // A temporary scope to make sure that |contents| get destroyed as soon as
@@ -674,6 +679,7 @@ StoreReadResult V4Store::ReadFromDisk() {
     if (!file_format.ParseFromString(contents)) {
       return PROTO_PARSING_FAILURE;
     }
+    file_size = static_cast<int64_t>(contents.size());
   }
 
   if (file_format.magic_number() != kFileMagic) {
@@ -701,10 +707,13 @@ StoreReadResult V4Store::ReadFromDisk() {
   }
   RecordApplyUpdateTime(kReadFromDisk, TimeTicks::Now() - before, store_path_);
 
+  // Update |file_size_| now because we parsed the file correctly.
+  file_size_ = file_size;
+
   return READ_SUCCESS;
 }
 
-StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) const {
+StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
   V4StoreFileFormat file_format;
   ListUpdateResponse* lur = file_format.mutable_list_update_response();
   *(lur->mutable_checksum()) = checksum;
@@ -734,6 +743,9 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) const {
   if (!base::Move(new_filename, store_path_)) {
     return UNABLE_TO_RENAME_FAILURE;
   }
+
+  // Update |file_size_| now because we wrote the file correctly.
+  file_size_ = static_cast<int64_t>(written);
 
   return WRITE_SUCCESS;
 }
@@ -830,6 +842,19 @@ bool V4Store::VerifyChecksum() {
     }
   }
   return true;
+}
+
+int64_t V4Store::RecordAndReturnFileSize(const std::string& base_metric) {
+  std::string suffix = GetUmaSuffixForStore(store_path_);
+  // Histogram properties as in UMA_HISTOGRAM_COUNTS macro.
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      base_metric + suffix, 1, 1000000, 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram) {
+    const int64_t file_size_kilobytes = file_size_ / 1024;
+    histogram->Add(file_size_kilobytes);
+  }
+  return file_size_;
 }
 
 }  // namespace safe_browsing

@@ -18,6 +18,12 @@ using base::TimeTicks;
 
 namespace safe_browsing {
 
+namespace {
+
+const char kV4DatabaseSizeMetric[] = "SafeBrowsing.V4Database.Size";
+
+}  // namespace
+
 // static
 V4StoreFactory* V4Database::factory_ = NULL;
 
@@ -218,6 +224,17 @@ void V4Database::VerifyChecksumOnTaskRunner(
 
   callback_task_runner->PostTask(
       FROM_HERE, base::Bind(db_ready_for_updates_callback, stores_to_reset));
+}
+
+void V4Database::RecordFileSizeHistograms() {
+  int64_t db_size = 0;
+  for (const auto& store_map_iter : *store_map_) {
+    const int64_t size =
+        store_map_iter.second->RecordAndReturnFileSize(kV4DatabaseSizeMetric);
+    db_size += size;
+  }
+  const int64_t db_size_kilobytes = static_cast<int64_t>(db_size / 1024);
+  UMA_HISTOGRAM_COUNTS(kV4DatabaseSizeMetric, db_size_kilobytes);
 }
 
 ListInfo::ListInfo(const bool fetch_updates,

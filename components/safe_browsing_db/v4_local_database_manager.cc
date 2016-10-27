@@ -289,6 +289,8 @@ void V4LocalDatabaseManager::DatabaseReadyForChecks(
   if (enabled_) {
     v4_database_ = std::move(v4_database);
 
+    v4_database_->RecordFileSizeHistograms();
+
     // The consistency of the stores read from the disk needs to verified. Post
     // that task on the task runner. It calls |DatabaseReadyForUpdates|
     // callback with the stores to reset, if any, and then we can schedule the
@@ -317,6 +319,7 @@ void V4LocalDatabaseManager::DatabaseReadyForUpdates(
 
 void V4LocalDatabaseManager::DatabaseUpdated() {
   if (enabled_) {
+    v4_database_->RecordFileSizeHistograms();
     v4_update_protocol_manager_->ScheduleNextUpdate(
         v4_database_->GetStoreStateMap());
   }
