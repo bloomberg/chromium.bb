@@ -1843,16 +1843,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // page, and should not be associated.
   if (_webUIManager)
     return;
-  // The WKWebViewConfiguration's |userScripts| are not injected when navigating
-  // via BFLI to a page created using window.history.pushState.  This means that
-  // calling window.history navigation functions will invoke WKWebView's
-  // non-overridden implementations, causing a mismatch between the
-  // WKBackForwardList and NavigationManager.
-  // TODO(crbug.com/649219): Investigate when the NavigationItem can be null.
-  web::NavigationItemImpl* currentItem =
-      [self currentSessionEntry].navigationItemImpl;
-  if (!currentItem || currentItem->IsCreatedFromPushState())
-    return;
 
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
@@ -5526,6 +5516,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                    transition:[self currentTransition]];
     [self loadRequest:request];
   };
+
+  // When navigating via WKBackForwardListItem to pages created or updated by
+  // calls to pushState() and replaceState(), sometimes core.js is not injected
+  // correctly.  This means that calling window.history navigation functions
+  // will invoke WKWebView's non-overridden implementations, causing a mismatch
+  // between the WKBackForwardList and NavigationManager.
+  // TODO(crbug.com/659816): Figure out how to prevent core.js injection flake.
+  if (currentItem->HasStateBeenReplaced() ||
+      currentItem->IsCreatedFromPushState()) {
+    defaultNavigationBlock();
+    return;
+  }
 
   // If there is no corresponding WKBackForwardListItem, or the item is not in
   // the current WKWebView's back-forward list, navigating using WKWebView API

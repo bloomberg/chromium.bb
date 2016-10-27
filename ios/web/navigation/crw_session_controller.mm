@@ -534,6 +534,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   web::NavigationItemImpl* currentItem = self.currentEntry.navigationItemImpl;
   currentItem->SetURL(url);
   currentItem->SetSerializedStateObject(stateObject);
+  currentItem->SetHasStateBeenReplaced(true);
   currentEntry.navigationItem->SetURL(url);
   // If the change is to a committed entry, notify interested parties.
   if (currentEntry != self.pendingEntry && _navigationManager)

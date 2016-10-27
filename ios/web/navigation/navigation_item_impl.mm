@@ -41,11 +41,11 @@ NavigationItemImpl::NavigationItemImpl()
       transition_type_(ui::PAGE_TRANSITION_LINK),
       is_overriding_user_agent_(false),
       is_created_from_push_state_(false),
+      has_state_been_replaced_(false),
       should_skip_resubmit_data_confirmation_(false),
       is_renderer_initiated_(false),
       is_unsafe_(false),
-      facade_delegate_(nullptr) {
-}
+      facade_delegate_(nullptr) {}
 
 NavigationItemImpl::~NavigationItemImpl() {
 }
@@ -65,14 +65,14 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       http_request_headers_([item.http_request_headers_ copy]),
       serialized_state_object_([item.serialized_state_object_ copy]),
       is_created_from_push_state_(item.is_created_from_push_state_),
+      has_state_been_replaced_(item.has_state_been_replaced_),
       should_skip_resubmit_data_confirmation_(
           item.should_skip_resubmit_data_confirmation_),
       post_data_([item.post_data_ copy]),
       is_renderer_initiated_(item.is_renderer_initiated_),
       is_unsafe_(item.is_unsafe_),
       cached_display_title_(item.cached_display_title_),
-      facade_delegate_(nullptr) {
-}
+      facade_delegate_(nullptr) {}
 
 void NavigationItemImpl::SetFacadeDelegate(
     std::unique_ptr<NavigationItemFacadeDelegate> facade_delegate) {
@@ -237,6 +237,14 @@ void NavigationItemImpl::SetIsCreatedFromPushState(bool push_state) {
 
 bool NavigationItemImpl::IsCreatedFromPushState() const {
   return is_created_from_push_state_;
+}
+
+void NavigationItemImpl::SetHasStateBeenReplaced(bool replace_state) {
+  has_state_been_replaced_ = replace_state;
+}
+
+bool NavigationItemImpl::HasStateBeenReplaced() const {
+  return has_state_been_replaced_;
 }
 
 void NavigationItemImpl::SetShouldSkipResubmitDataConfirmation(bool skip) {
