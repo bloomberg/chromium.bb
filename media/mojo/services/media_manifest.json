@@ -1,6 +1,5 @@
 {
   "name": "service:media",
-  "process-group": "browser",
   "display_name": "Media Service",
   "interface_provider_specs": {
     "service_manager:connector": {

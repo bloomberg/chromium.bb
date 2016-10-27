@@ -1,6 +1,5 @@
 {
   "name": "service:lifecycle_unittest_package",
-  "process-group": "package",
   "display_name": "Lifecycle Unittest Package",
   "interface_provider_specs": {
     "service_manager:connector": {

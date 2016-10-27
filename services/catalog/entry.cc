@@ -99,7 +99,6 @@ bool BuildInterfaceProviderSpec(
 Entry::Entry() {}
 Entry::Entry(const std::string& name)
     : name_(name),
-      qualifier_(service_manager::GetNamePath(name)),
       display_name_(name) {}
 Entry::~Entry() {}
 
@@ -107,7 +106,6 @@ std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
   auto value = base::MakeUnique<base::DictionaryValue>();
   value->SetString(Store::kNameKey, name_);
   value->SetString(Store::kDisplayNameKey, display_name_);
-  value->SetString(Store::kQualifierKey, qualifier_);
 
   auto specs = base::MakeUnique<base::DictionaryValue>();
   for (const auto& it : interface_provider_specs_) {
@@ -153,19 +151,6 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     return nullptr;
   }
   entry->set_name(name_string);
-
-  // Process group.
-  if (value.HasKey(Store::kQualifierKey)) {
-    std::string qualifier;
-    if (!value.GetString(Store::kQualifierKey, &qualifier)) {
-      LOG(ERROR) << "Entry::Deserialize: " << Store::kQualifierKey << " must "
-                 << "be a string.";
-      return nullptr;
-    }
-    entry->set_qualifier(qualifier);
-  } else {
-    entry->set_qualifier(service_manager::GetNamePath(name_string));
-  }
 
   // Human-readable name.
   std::string display_name;
@@ -233,7 +218,7 @@ bool Entry::ProvidesCapability(const std::string& capability) const {
 }
 
 bool Entry::operator==(const Entry& other) const {
-  return other.name_ == name_ && other.qualifier_ == qualifier_ &&
+  return other.name_ == name_ &&
          other.display_name_ == display_name_ &&
          other.interface_provider_specs_ == interface_provider_specs_;
 }
@@ -257,7 +242,6 @@ TypeConverter<service_manager::mojom::ResolveResultPtr,
   result->name = input.name();
   const catalog::Entry& package = input.package() ? *input.package() : input;
   result->resolved_name = package.name();
-  result->qualifier = input.qualifier();
   result->interface_provider_specs = input.interface_provider_specs();
   if (input.package()) {
     auto it = package.interface_provider_specs().find(

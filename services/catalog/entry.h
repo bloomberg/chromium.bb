@@ -42,8 +42,6 @@ class Entry {
   void set_name(const std::string& name) { name_ = name; }
   const base::FilePath& path() const { return path_; }
   void set_path(const base::FilePath& path) { path_ = path; }
-  const std::string& qualifier() const { return qualifier_; }
-  void set_qualifier(const std::string& qualifier) { qualifier_ = qualifier; }
   const std::string& display_name() const { return display_name_; }
   void set_display_name(const std::string& display_name) {
     display_name_ = display_name;
@@ -65,7 +63,6 @@ class Entry {
  private:
   std::string name_;
   base::FilePath path_;
-  std::string qualifier_;
   std::string display_name_;
   service_manager::InterfaceProviderSpecMap interface_provider_specs_;
   Entry* package_ = nullptr;

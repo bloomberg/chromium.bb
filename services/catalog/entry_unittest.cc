@@ -56,14 +56,12 @@ class EntryTest : public testing::Test {
 TEST_F(EntryTest, Simple) {
   std::unique_ptr<Entry> entry = ReadEntry("simple", nullptr);
   EXPECT_EQ("service:foo", entry->name());
-  EXPECT_EQ(service_manager::GetNamePath(entry->name()), entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
 TEST_F(EntryTest, Instance) {
   std::unique_ptr<Entry> entry = ReadEntry("instance", nullptr);
   EXPECT_EQ("service:foo", entry->name());
-  EXPECT_EQ("bar", entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
@@ -71,7 +69,6 @@ TEST_F(EntryTest, ConnectionSpec) {
   std::unique_ptr<Entry> entry = ReadEntry("connection_spec", nullptr);
 
   EXPECT_EQ("service:foo", entry->name());
-  EXPECT_EQ("bar", entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
   service_manager::InterfaceProviderSpec spec;
   service_manager::CapabilitySet capabilities;

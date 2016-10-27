@@ -1,6 +1,5 @@
 {
   "name": "service:file",
-  "process-group": "browser",
   "display_name": "File Service",
   "interface_provider_specs": {
     "service_manager:connector": {

@@ -1,6 +1,5 @@
 {
   "name": "service:foo",
   "display_name": "Foo",
-  "process-group": "bar",
   "interface_provider_specs": { }
 }

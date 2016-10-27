@@ -1,6 +1,5 @@
 {
   "name": "service:content_browser",
-  "process-group": "browser",
   "display_name": "Content (browser process)",
   "interface_provider_specs": {
     "service_manager:connector": {

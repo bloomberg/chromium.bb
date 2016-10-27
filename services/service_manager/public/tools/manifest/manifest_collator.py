@@ -16,7 +16,6 @@ import urlparse
 # Keys which are completely overridden by manifest overlays
 _MANIFEST_OVERLAY_OVERRIDE_KEYS = [
   "display_name",
-  "process-group",
 ]
 
 eater_relative = '../../../../../../tools/json_comment_eater'
