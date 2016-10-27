@@ -227,8 +227,12 @@ XMLHttpRequest::XMLHttpRequest(
     : ActiveScriptWrappable(this),
       ActiveDOMObject(context),
       m_timeoutMilliseconds(0),
+      m_responseBlob(this, nullptr),
+      m_responseLegacyStream(this, nullptr),
       m_state(kUnsent),
+      m_responseDocument(this, nullptr),
       m_lengthDownloadedToFile(0),
+      m_responseArrayBuffer(this, nullptr),
       m_receivedLength(0),
       m_exceptionCode(0),
       m_progressEventThrottle(

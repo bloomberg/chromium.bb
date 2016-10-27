@@ -26,6 +26,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptString.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -282,8 +283,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // using case insensitive comparison functions if needed.
   AtomicString m_mimeTypeOverride;
   unsigned long m_timeoutMilliseconds;
-  Member<Blob> m_responseBlob;
-  Member<Stream> m_responseLegacyStream;
+  TraceWrapperMember<Blob> m_responseBlob;
+  TraceWrapperMember<Stream> m_responseLegacyStream;
 
   Member<ThreadableLoader> m_loader;
   State m_state;
@@ -294,13 +295,13 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   std::unique_ptr<TextResourceDecoder> m_decoder;
 
   ScriptString m_responseText;
-  Member<Document> m_responseDocument;
+  TraceWrapperMember<Document> m_responseDocument;
   Member<DocumentParser> m_responseDocumentParser;
 
   RefPtr<SharedBuffer> m_binaryResponseBuilder;
   long long m_lengthDownloadedToFile;
 
-  Member<DOMArrayBuffer> m_responseArrayBuffer;
+  TraceWrapperMember<DOMArrayBuffer> m_responseArrayBuffer;
 
   // Used for onprogress tracking
   long long m_receivedLength;
