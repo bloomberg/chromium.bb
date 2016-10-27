@@ -1,21 +1,12 @@
--ActivityLogApiTest.TriggerEvent
 -ChromeServiceWorker*
--DevToolsSanityTest.TestNetworkRawHeadersText
 -ErrorPageTest.IFrameDNSError_JavaScript
 -ExecuteScriptApiTest.FrameWithHttp204
--ExtensionApiTest.Events
 -ExtensionApiTest.Incognito
 -ExtensionApiTest.JavaScriptURLPermissions
 -ExtensionApiTest.JavasScriptEncodedURL
--ExtensionApiTest.SandboxedPages
 -ExtensionBindingsApiTest.ModuleSystem
--ExtensionBrowserTest.WindowOpenExtension
-# ExtensionWebRequestApiTest.WebRequestDeclarative2 crashes on bots but passes locally
--ExtensionWebRequestApiTest.WebRequestDeclarative2
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
--ExternallyConnectableMessagingTest.FromPopup
 -FindInPageControllerTest.SearchWithinSpecialURL
--IsolatedAppTest.CookieIsolation
 -LogWebUIUrlTest.TestUberPage
 -MediaGalleriesPlatformAppBrowserTest.MediaGalleriesRead
 -MediaGalleriesPlatformAppBrowserTest.Scan
@@ -23,7 +14,6 @@
 -OptionsWebUIExtendedTest.OverlayBackToChild
 -PDFExtensionTest.PdfAccessibilityInOOPIF
 -PlatformAppBrowserTest.ActiveAppsAreRecorded
--PlatformAppBrowserTest.Restrictions
 -PlatformAppUrlRedirectorBrowserTest.PrerenderedClickInTabIntercepted
 -PredictorBrowserTest.RendererInitiatedNavigationPreconnect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
@@ -33,7 +23,6 @@
 -TabManagerTest.TabManagerBasics
 -TemplateURLScraperTest.ScrapeWithOnSubmit
 -ThreatDOMDetailsTest.Everything
--WebBluetoothTest.WebBluetoothAfterCrash
 -WebNavigationApiTest.Crash
 -WebNavigationApiTest.CrossProcess
 -WebNavigationApiTest.CrossProcessAbort
@@ -53,11 +42,6 @@
 
 # Fail in Debug.
 -BookmarkBubbleSignInDelegateTest.*
--PolicyTest.ExtensionInstallBlacklistSharedModules
-# See https://luci-logdog.appspot.com/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests__dbg__1_%2F58277%2F%2B%2Frecipes%2Fsteps%2Fbrowser_side_navigation_browser_tests_on_Ubuntu-12.04%2F0%2Flogs%2FGetAuthTokenFunctionTest.ComponentWithChromeClientId%2F0
-# and https://luci-logdog.appspot.com/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests__dbg__1_%2F58277%2F%2B%2Frecipes%2Fsteps%2Fbrowser_side_navigation_browser_tests_on_Ubuntu-12.04%2F0%2Flogs%2FGetAuthTokenFunctionTest.ComponentWithNormalClientId%2F0
--GetAuthTokenFunctionTest.ComponentWithNormalClientId
--GetAuthTokenFunctionTest.ComponentWithChromeClientId
 # See https://luci-logdog.appspot.com/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests__dbg__1_%2F58307%2F%2B%2Frecipes%2Fsteps%2Fbrowser_side_navigation_browser_tests_on_Ubuntu-12.04%2F0%2Flogs%2FWebNavigationApiTest.ServerRedirect%2F0
 -WebNavigationApiTest.ServerRedirect
 
