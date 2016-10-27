@@ -19,12 +19,6 @@ id<GREYMatcher> webViewInWebState(WebState* web_state);
 // Matcher for WKWebView containing |text|.
 id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state);
 
-// Matcher for WKWebView not containing |text|.  This should be used to verify
-// that a visible WKWebView does not contain |text|, rather than verifying that
-// a WKWebView containing |text| is not visible, as would be the case if
-// webViewContainingText() were asserted with grey_nil().
-id<GREYMatcher> webViewNotContainingText(std::string text, WebState* web_state);
-
 // Matcher for WKWebView containing a blocked |image_id|.  When blocked, the
 // image will be smaller than |expected_size|.
 id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,

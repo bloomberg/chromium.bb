@@ -25,38 +25,6 @@ char kGetDocumentBodyJavaScript[] =
 // Script that tests presence of css selector.
 char kTestCssSelectorJavaScriptTemplate[] = "!!document.querySelector(\"%s\");";
 
-// Helper function for matching web views containing or not containing |text|,
-// depending on the value of |should_contain_text|.
-id<GREYMatcher> webViewWithText(const std::string& text,
-                                web::WebState* web_state,
-                                bool should_contain_text) {
-  MatchesBlock matches = ^BOOL(WKWebView*) {
-    return testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForUIElementTimeout, ^{
-          std::unique_ptr<base::Value> value =
-              ExecuteJavaScript(web_state, kGetDocumentBodyJavaScript);
-          std::string body;
-          if (value && value->GetAsString(&body)) {
-            BOOL contains_text = body.find(text) != std::string::npos;
-            return contains_text == should_contain_text;
-          }
-          return false;
-        });
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:should_contain_text ? @"web view containing "
-                                                : @"web view not containing "];
-    [description appendText:base::SysUTF8ToNSString(text)];
-  };
-
-  return grey_allOf(webViewInWebState(web_state),
-                    [[[GREYElementMatcherBlock alloc]
-                        initWithMatchesBlock:matches
-                            descriptionBlock:describe] autorelease],
-                    nil);
-}
-
 }  // namespace
 
 namespace web {
@@ -77,12 +45,29 @@ id<GREYMatcher> webViewInWebState(WebState* web_state) {
 }
 
 id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state) {
-  return webViewWithText(text, web_state, true);
-}
+  MatchesBlock matches = ^BOOL(WKWebView*) {
+    return testing::WaitUntilConditionOrTimeout(
+        testing::kWaitForUIElementTimeout, ^{
+          std::unique_ptr<base::Value> value =
+              ExecuteJavaScript(web_state, kGetDocumentBodyJavaScript);
+          std::string body;
+          if (value && value->GetAsString(&body)) {
+            return body.find(text) != std::string::npos;
+          }
+          return false;
+        });
+  };
 
-id<GREYMatcher> webViewNotContainingText(std::string text,
-                                         WebState* web_state) {
-  return webViewWithText(text, web_state, false);
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"web view containing "];
+    [description appendText:base::SysUTF8ToNSString(text)];
+  };
+
+  return grey_allOf(webViewInWebState(web_state),
+                    [[[GREYElementMatcherBlock alloc]
+                        initWithMatchesBlock:matches
+                            descriptionBlock:describe] autorelease],
+                    nil);
 }
 
 id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
