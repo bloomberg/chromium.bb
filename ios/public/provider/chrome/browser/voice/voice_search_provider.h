@@ -6,11 +6,13 @@
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_VOICE_VOICE_SEARCH_PROVIDER_H_
 
 #include <Foundation/Foundation.h>
+#include <UIKit/UIKit.h>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 class AudioSessionController;
+@protocol VoiceSearchBar;
 class VoiceSearchController;
 
 namespace ios {
@@ -33,6 +35,10 @@ class VoiceSearchProvider {
   // Creates a new VoiceSearchController object.
   virtual scoped_refptr<VoiceSearchController> CreateVoiceSearchController(
       ios::ChromeBrowserState* browser_state) const;
+
+  // Creates a new VoiceSearchBar.  The caller assumes ownership.
+  virtual UIView<VoiceSearchBar>* CreateVoiceSearchBar(CGRect frame) const
+      NS_RETURNS_RETAINED;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchProvider);

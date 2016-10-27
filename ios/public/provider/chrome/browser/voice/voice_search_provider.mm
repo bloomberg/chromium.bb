@@ -19,3 +19,8 @@ VoiceSearchProvider::CreateVoiceSearchController(
     ios::ChromeBrowserState* browser_state) const {
   return scoped_refptr<VoiceSearchController>(nullptr);
 }
+
+UIView<VoiceSearchBar>* VoiceSearchProvider::CreateVoiceSearchBar(
+    CGRect frame) const {
+  return nil;
+}
