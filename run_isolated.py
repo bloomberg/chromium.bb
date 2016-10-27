@@ -458,7 +458,9 @@ def map_and_run(
     on_error.report(None)
   finally:
     try:
+      success = False
       if leak_temp_dir:
+        success = True
         logging.warning(
             'Deliberately leaking %s for later examination', run_dir)
       else:

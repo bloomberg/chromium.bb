@@ -344,6 +344,23 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [([u'/bin/echo', u'hello', u'world'], {'detached': True})],
         self.popen_calls)
 
+  def test_main_naked_leaking(self):
+    workdir = tempfile.mkdtemp()
+    try:
+      cmd = [
+        '--no-log',
+        '--cache', self.tempdir,
+        '--root-dir', workdir,
+        '--leak-temp-dir',
+        '/bin/echo',
+        'hello',
+        'world',
+      ]
+      ret = run_isolated.main(cmd)
+      self.assertEqual(0, ret)
+    finally:
+      fs.rmtree(unicode(workdir))
+
   def test_main_naked_with_packages(self):
     pin_idx_ref = [0]
     pins = [
