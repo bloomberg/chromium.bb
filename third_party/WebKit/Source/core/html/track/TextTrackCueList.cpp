@@ -70,7 +70,7 @@ bool TextTrackCueList::add(TextTrackCue* cue) {
   if (!m_list.isEmpty() && (index > 0) && (m_list[index - 1].get() == cue))
     return false;
 
-  m_list.insert(index, cue);
+  m_list.insert(index, TraceWrapperMember<TextTrackCue>(this, cue));
   invalidateCueIndex(index);
   return true;
 }

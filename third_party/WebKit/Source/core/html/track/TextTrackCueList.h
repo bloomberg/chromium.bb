@@ -27,6 +27,7 @@
 #define TextTrackCueList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/html/track/TextTrackCue.h"
 #include "wtf/Vector.h"
 
@@ -55,7 +56,6 @@ class TextTrackCueList final : public GarbageCollected<TextTrackCueList>,
   void validateCueIndexes();
 
   DECLARE_TRACE();
-
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
@@ -64,7 +64,7 @@ class TextTrackCueList final : public GarbageCollected<TextTrackCueList>,
   void invalidateCueIndex(size_t index);
   void clear();
 
-  HeapVector<Member<TextTrackCue>> m_list;
+  HeapVector<TraceWrapperMember<TextTrackCue>> m_list;
   size_t m_firstInvalidIndex;
 };
 
