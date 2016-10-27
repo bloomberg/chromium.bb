@@ -20,7 +20,11 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(memory::TabManager::WebContentsData);
 namespace memory {
 
 TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
-    : WebContentsObserver(web_contents), test_tick_clock_(nullptr) {}
+    : WebContentsObserver(web_contents),
+      test_tick_clock_(nullptr),
+      last_purge_and_suspend_modified_time_(
+          base::TimeTicks::FromInternalValue(0)),
+      purge_and_suspend_state_(RUNNING) {}
 
 TabManager::WebContentsData::~WebContentsData() {}
 
@@ -196,6 +200,22 @@ void TabManager::WebContentsData::SetAutoDiscardableState(bool state) {
 
 bool TabManager::WebContentsData::IsAutoDiscardable() {
   return tab_data_.is_auto_discardable;
+}
+
+void TabManager::WebContentsData::SetPurgeAndSuspendState(
+    PurgeAndSuspendState state) {
+  last_purge_and_suspend_modified_time_ = TimeTicks::Now();
+  purge_and_suspend_state_ = state;
+}
+
+base::TimeTicks TabManager::WebContentsData::LastPurgeAndSuspendModifiedTime()
+    const {
+  return last_purge_and_suspend_modified_time_;
+}
+
+TabManager::PurgeAndSuspendState
+TabManager::WebContentsData::GetPurgeAndSuspendState() const {
+  return purge_and_suspend_state_;
 }
 
 }  // namespace memory

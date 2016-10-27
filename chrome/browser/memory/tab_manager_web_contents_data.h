@@ -79,6 +79,22 @@ class TabManager::WebContentsData
   // Sets/clears the auto-discardable state of the tab.
   void SetAutoDiscardableState(bool state);
 
+  // Sets the current purge-and-suspend state, and update the timestamp,
+  // i.e. the last purge-and-suspend modified time.
+  // TODO(tasak): remove this after PurgeAndSuspend code is moved into
+  // MemoryCoordinator.
+  void SetPurgeAndSuspendState(TabManager::PurgeAndSuspendState state);
+
+  // Returns the last purge-and-suspend modified time.
+  // TODO(tasak): remove this after PurgeAndSuspend code is moved into
+  // MemoryCoordinator.
+  base::TimeTicks LastPurgeAndSuspendModifiedTime() const;
+
+  // Returns the current state of purge-and-suspend.
+  // TODO(tasak): remove this after PurgeAndSuspend code is moved into
+  // MemoryCoordinator.
+  TabManager::PurgeAndSuspendState GetPurgeAndSuspendState() const;
+
  private:
   // Needed to access tab_data_.
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
@@ -120,6 +136,12 @@ class TabManager::WebContentsData
   // Pointer to a test clock. If this is set, NowTicks() returns the value of
   // this test clock. Otherwise it returns the system clock's value.
   base::TickClock* test_tick_clock_;
+
+  // The last time purge-and-suspend state was modified.
+  base::TimeTicks last_purge_and_suspend_modified_time_;
+
+  // The current state of purge-and-suspend.
+  PurgeAndSuspendState purge_and_suspend_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };

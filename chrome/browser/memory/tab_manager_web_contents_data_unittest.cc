@@ -204,4 +204,22 @@ TEST_F(TabManagerWebContentsDataTest, HistogramsInactiveToReloadTime) {
   histograms.ExpectBucketCount(kHistogramName, 12000, 1);
 }
 
+TEST_F(TabManagerWebContentsDataTest, PurgeAndSuspendState) {
+  EXPECT_EQ(TabManager::RUNNING, tab_data()->GetPurgeAndSuspendState());
+  base::TimeTicks last_modified = tab_data()->LastPurgeAndSuspendModifiedTime();
+  tab_data()->SetPurgeAndSuspendState(TabManager::SUSPENDED);
+  EXPECT_EQ(TabManager::SUSPENDED, tab_data()->GetPurgeAndSuspendState());
+  EXPECT_GT(tab_data()->LastPurgeAndSuspendModifiedTime(), last_modified);
+
+  last_modified = tab_data()->LastPurgeAndSuspendModifiedTime();
+  tab_data()->SetPurgeAndSuspendState(TabManager::RESUMED);
+  EXPECT_EQ(TabManager::RESUMED, tab_data()->GetPurgeAndSuspendState());
+  EXPECT_GE(tab_data()->LastPurgeAndSuspendModifiedTime(), last_modified);
+
+  last_modified = tab_data()->LastPurgeAndSuspendModifiedTime();
+  tab_data()->SetPurgeAndSuspendState(TabManager::RUNNING);
+  EXPECT_EQ(TabManager::RUNNING, tab_data()->GetPurgeAndSuspendState());
+  EXPECT_GE(tab_data()->LastPurgeAndSuspendModifiedTime(), last_modified);
+}
+
 }  // namespace memory

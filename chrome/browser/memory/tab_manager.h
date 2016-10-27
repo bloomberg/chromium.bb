@@ -173,9 +173,11 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, PurgeAndSuspendState);
 
-  // This is needed so WebContentsData can call OnDiscardedStateChange.
-  friend class WebContensData;
+  // This is needed so WebContentsData can call OnDiscardedStateChange, and
+  // can use PurgeAndSuspendState.
+  friend class WebContentsData;
 
   // Called by WebContentsData whenever the discard state of a WebContents
   // changes, so that observers can be informed.
@@ -246,6 +248,28 @@ class TabManager : public TabStripModelObserver {
   // Callback for when |update_timer_| fires. Takes care of executing the tasks
   // that need to be run periodically (see comment in implementation).
   void UpdateTimerCallback();
+
+  // Initially PurgeAndSuspendState is RUNNING.
+  // RUNNING => SUSPENDED
+  // - A tab has been backgrounded for more than purge-and-suspend-time
+  //   seconds.
+  // SUSPENDED => RESUMED
+  // - A suspended tab is still suspended (i.e. last active time < last
+  //   purge-and-suspend modified time), and
+  // - kMaxTimeRendererAllowedToBeSuspendedBeforeResume time passes since
+  //   since the tab was suspended.
+  // RESUMED => SUSPENDED
+  // - A resumed tab is still backgrounded (i.e. last active time < last
+  //   purge-and-suspend modified time), and
+  // - kSuspendedRendererLengthOfResumption time passes since the tab was
+  //   resumed.
+  // SUSPENDED, RESUMED, RUNNING => RUNNING
+  // - When ActiveTabChaged, the newly activated tab's state will be RUNNING.
+  enum PurgeAndSuspendState {
+    RUNNING,
+    RESUMED,
+    SUSPENDED,
+  };
 
   // Purges and suspends renderers in backgrounded tabs.
   void PurgeAndSuspendBackgroundedTabs();
