@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -143,9 +144,10 @@ public class MediaPermissionsTest extends ChromeActivityTestCaseBase<ChromeActiv
      * switch appears and that permission is granted with it toggled off.
      * @throws Exception
      */
-    @MediumTest
-    @CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
-    @Feature({"MediaPermissions"})
+    //@MediumTest
+    //@CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
+    //@Feature({"MediaPermissions"})
+    @DisabledTest
     public void testMicrophonePersistenceOff() throws Exception {
         testMediaPermissionsPlumbing("Mic count:", "initiate_getMicrophone()", 1, true, true);
     }
