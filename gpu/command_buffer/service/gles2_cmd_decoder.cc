@@ -862,19 +862,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void MarkDrawBufferAsCleared(GLenum buffer, GLint drawbuffer_i);
 
-  // Wrapper for CompressedTexImage2D commands.
-  error::Error DoCompressedTexImage2D(
-      GLenum target,
-      GLint level,
-      GLenum internal_format,
-      GLsizei width,
-      GLsizei height,
-      GLint border,
-      GLsizei image_size,
-      const void* data);
-
-  // Wrapper for CompressedTexImage3D commands.
-  error::Error DoCompressedTexImage3D(
+  // Wrapper for CompressedTexImage{2|3}D commands.
+  error::Error DoCompressedTexImage(
       GLenum target,
       GLint level,
       GLenum internal_format,
@@ -883,22 +872,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei depth,
       GLint border,
       GLsizei image_size,
-      const void* data);
+      const void* data,
+      ContextState::Dimension dimension);
 
-  // Wrapper for CompressedTexSubImage2D.
-  void DoCompressedTexSubImage2D(
-      GLenum target,
-      GLint level,
-      GLint xoffset,
-      GLint yoffset,
-      GLsizei width,
-      GLsizei height,
-      GLenum format,
-      GLsizei imageSize,
-      const void* data);
-
-  // Wrapper for CompressedTexSubImage3D.
-  void DoCompressedTexSubImage3D(
+  // Wrapper for CompressedTexSubImage{2|3}D.
+  error::Error DoCompressedTexSubImage(
       GLenum target,
       GLint level,
       GLint xoffset,
@@ -908,8 +886,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei height,
       GLsizei depth,
       GLenum format,
-      GLsizei image_size,
-      const void* data);
+      GLsizei imageSize,
+      const void* data,
+      ContextState::Dimension dimension);
 
   // Validate if |format| is valid for CopyTex{Sub}Image functions.
   // If not, generate a GL error and return false.
@@ -13050,14 +13029,18 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2DBucket(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
   GLint border = static_cast<GLint>(c.border);
+
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    return error::kInvalidArguments;
+  }
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket)
     return error::kInvalidArguments;
   uint32_t image_size = bucket->size();
   const void* data = bucket->GetData(0, image_size);
   DCHECK(data || !image_size);
-  return DoCompressedTexImage2D(target, level, internal_format, width, height,
-                                border, image_size, data);
+  return DoCompressedTexImage(target, level, internal_format, width, height, 1,
+                              border, image_size, data, ContextState::k2D);
 }
 
 error::Error GLES2DecoderImpl::HandleCompressedTexImage2D(
@@ -13071,7 +13054,6 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2D(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLint border = static_cast<GLint>(c.border);
   GLsizei image_size = static_cast<GLsizei>(c.imageSize);
-  uint32_t data_size = image_size;
   uint32_t data_shm_id = c.data_shm_id;
   uint32_t data_shm_offset = c.data_shm_offset;
 
@@ -13086,26 +13068,172 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2D(
       return error::kInvalidArguments;
     }
     data = GetSharedMemoryAs<const void*>(
-        data_shm_id, data_shm_offset, data_size);
+        data_shm_id, data_shm_offset, image_size);
   }
-  return DoCompressedTexImage2D(target, level, internal_format, width, height,
-                                border, image_size, data);
+  return DoCompressedTexImage(target, level, internal_format, width, height, 1,
+                              border, image_size, data, ContextState::k2D);
 }
 
-error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
-    GLenum target, GLint level, GLenum internal_format, GLsizei width,
-    GLsizei height, GLint border, GLsizei image_size, const void* data) {
-  const char* func_name = "glCompressedTexImage2D";
-  if (!validators_->texture_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
-    return error::kNoError;
+error::Error GLES2DecoderImpl::HandleCompressedTexImage3DBucket(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::CompressedTexImage3DBucket& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexImage3DBucket*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  GLint border = static_cast<GLint>(c.border);
+
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    return error::kInvalidArguments;
   }
-  // TODO(ccameron): Add a separate texture from |texture_target| for
-  // [Compressed]Tex[Sub]Image2D and related functions.
-  // http://crbug.com/536854
-  if (target == GL_TEXTURE_RECTANGLE_ARB) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
-    return error::kNoError;
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  uint32_t image_size = bucket->size();
+  const void* data = bucket->GetData(0, image_size);
+  DCHECK(data || !image_size);
+  return DoCompressedTexImage(target, level, internal_format, width, height,
+                              depth, border, image_size, data,
+                              ContextState::k3D);
+}
+
+error::Error GLES2DecoderImpl::HandleCompressedTexImage3D(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::CompressedTexImage3D& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexImage3D*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLint border = static_cast<GLint>(c.border);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  uint32_t data_shm_id = c.data_shm_id;
+  uint32_t data_shm_offset = c.data_shm_offset;
+
+  const void* data;
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    if (data_shm_id) {
+      return error::kInvalidArguments;
+    }
+    data = reinterpret_cast<const void*>(data_shm_offset);
+  } else {
+    if (!data_shm_id && data_shm_offset) {
+      return error::kInvalidArguments;
+    }
+    data = GetSharedMemoryAs<const void*>(
+        data_shm_id, data_shm_offset, image_size);
+  }
+  return DoCompressedTexImage(target, level, internal_format, width, height,
+                              depth, border, image_size, data,
+                              ContextState::k3D);
+}
+
+error::Error GLES2DecoderImpl::HandleCompressedTexSubImage3DBucket(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::CompressedTexSubImage3DBucket& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage3DBucket*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLint zoffset = static_cast<GLint>(c.zoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    return error::kInvalidArguments;
+  }
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  uint32_t image_size = bucket->size();
+  const void* data = bucket->GetData(0, image_size);
+  DCHECK(data || !image_size);
+  return DoCompressedTexSubImage(target, level, xoffset, yoffset, zoffset,
+                                 width, height, depth, format, image_size,
+                                 data, ContextState::k3D);
+}
+
+error::Error GLES2DecoderImpl::HandleCompressedTexSubImage3D(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::CompressedTexSubImage3D& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage3D*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLint zoffset = static_cast<GLint>(c.zoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  uint32_t data_shm_id = c.data_shm_id;
+  uint32_t data_shm_offset = c.data_shm_offset;
+
+  const void* data;
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    if (data_shm_id) {
+      return error::kInvalidArguments;
+    }
+    data = reinterpret_cast<const void*>(data_shm_offset);
+  } else {
+    if (!data_shm_id && data_shm_offset) {
+      return error::kInvalidArguments;
+    }
+    data = GetSharedMemoryAs<const void*>(
+        data_shm_id, data_shm_offset, image_size);
+  }
+  return DoCompressedTexSubImage(target, level, xoffset, yoffset, zoffset,
+                                 width, height, depth, format, image_size,
+                                 data, ContextState::k3D);
+}
+
+error::Error GLES2DecoderImpl::DoCompressedTexImage(
+    GLenum target, GLint level, GLenum internal_format, GLsizei width,
+    GLsizei height, GLsizei depth, GLint border, GLsizei image_size,
+    const void* data, ContextState::Dimension dimension) {
+  const char* func_name;
+  if (dimension == ContextState::k2D) {
+    func_name = "glCompressedTexImage2D";
+    if (!validators_->texture_target.IsValid(target)) {
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
+      return error::kNoError;
+    }
+    // TODO(ccameron): Add a separate texture from |texture_target| for
+    // [Compressed]Tex[Sub]Image2D and related functions.
+    // http://crbug.com/536854
+    if (target == GL_TEXTURE_RECTANGLE_ARB) {
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
+      return error::kNoError;
+    }
+  } else {
+    DCHECK_EQ(ContextState::k3D, dimension);
+    func_name = "glCompressedTexImage3D";
+    if (!validators_->texture_3_d_target.IsValid(target)) {
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
+      return error::kNoError;
+    }
   }
   if (!validators_->compressed_texture_format.IsValid(internal_format)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(
@@ -13116,7 +13244,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "imageSize < 0");
     return error::kNoError;
   }
-  if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
+  if (!texture_manager()->ValidForTarget(target, level, width, height, depth) ||
       border != 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions out of range");
     return error::kNoError;
@@ -13133,9 +13261,10 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "texture is immutable");
     return error::kNoError;
   }
+
   if (!ValidateCompressedTexDimensions(func_name, target, level,
-                                       width, height, 1, internal_format) ||
-      !ValidateCompressedTexFuncData(func_name, width, height, 1,
+                                       width, height, depth, internal_format) ||
+      !ValidateCompressedTexFuncData(func_name, width, height, depth,
                                      internal_format, image_size, data)) {
     return error::kNoError;
   }
@@ -13156,97 +13285,6 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     data = zero.get();
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(func_name);
-
-  const CompressedFormatInfo* format_info =
-      GetCompressedFormatInfo(internal_format);
-  if (format_info != nullptr && !format_info->support_check(*feature_info_)) {
-    std::unique_ptr<uint8_t[]> decompressed_data = DecompressTextureData(
-        state_, *format_info, width, height, 1, image_size, data);
-    if (!decompressed_data) {
-      MarkContextLost(error::kGuilty);
-      group_->LoseContexts(error::kInnocent);
-      return error::kLostContext;
-    }
-    state_.PushTextureDecompressionUnpackState();
-    glTexImage2D(target, level, format_info->decompressed_internal_format,
-                 width, height, border, format_info->decompressed_format,
-                 format_info->decompressed_type, decompressed_data.get());
-    state_.RestoreUnpackState();
-  } else {
-    glCompressedTexImage2D(target, level, internal_format, width, height,
-                           border, image_size, data);
-  }
-  GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
-  if (error == GL_NO_ERROR) {
-    texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
-                                    width, height, 1, border, 0, 0,
-                                    gfx::Rect(width, height));
-  }
-
-  // This may be a slow command.  Exit command processing to allow for
-  // context preemption and GPU watchdog checks.
-  ExitCommandProcessingEarly();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::DoCompressedTexImage3D(
-  GLenum target,
-  GLint level,
-  GLenum internal_format,
-  GLsizei width,
-  GLsizei height,
-  GLsizei depth,
-  GLint border,
-  GLsizei image_size,
-  const void* data) {
-  if (!texture_manager()->ValidForTarget(target, level, width, height, depth) ||
-      border != 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCompressedTexImage3D", "dimensions out of range");
-    return error::kNoError;
-  }
-  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
-      &state_, target);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCompressedTexImage3D", "unknown texture target");
-    return error::kNoError;
-  }
-  Texture* texture = texture_ref->texture();
-  if (texture->IsImmutable()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCompressedTexImage3D", "texture is immutable");
-    return error::kNoError;
-  }
-
-  if (!ValidateCompressedTexDimensions("glCompressedTexImage3D", target, level,
-                                       width, height, depth, internal_format) ||
-      !ValidateCompressedTexFuncData("glCompressedTexImage3D", width, height,
-                                     depth, internal_format, image_size,
-                                     data)) {
-    return error::kNoError;
-  }
-
-  if (!EnsureGPUMemoryAvailable(image_size)) {
-    LOCAL_SET_GL_ERROR(
-        GL_OUT_OF_MEMORY, "glCompressedTexImage3D", "out of memory");
-    return error::kNoError;
-  }
-
-  if (texture->IsAttachedToFramebuffer()) {
-    framebuffer_state_.clear_state_dirty = true;
-  }
-
-  std::unique_ptr<int8_t[]> zero;
-  if (!state_.bound_pixel_unpack_buffer && !data) {
-    zero.reset(new int8_t[image_size]);
-    memset(zero.get(), 0, image_size);
-    data = zero.get();
-  }
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCompressedTexImage3D");
   const CompressedFormatInfo* format_info =
       GetCompressedFormatInfo(internal_format);
   if (format_info != nullptr && !format_info->support_check(*feature_info_)) {
@@ -13258,15 +13296,27 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage3D(
       return error::kLostContext;
     }
     state_.PushTextureDecompressionUnpackState();
-    glTexImage3D(target, level, format_info->decompressed_internal_format,
-                 width, height, depth, border, format_info->decompressed_format,
-                 format_info->decompressed_type, decompressed_data.get());
+    if (dimension == ContextState::k2D) {
+      glTexImage2D(target, level, format_info->decompressed_internal_format,
+                   width, height, border, format_info->decompressed_format,
+                   format_info->decompressed_type, decompressed_data.get());
+    } else {
+      glTexImage3D(
+          target, level, format_info->decompressed_internal_format,
+          width, height, depth, border, format_info->decompressed_format,
+          format_info->decompressed_type, decompressed_data.get());
+    }
     state_.RestoreUnpackState();
   } else {
-    glCompressedTexImage3D(target, level, internal_format, width, height, depth,
-                           border, image_size, data);
+    if (dimension == ContextState::k2D) {
+      glCompressedTexImage2D(target, level, internal_format, width, height,
+                             border, image_size, data);
+    } else {
+      glCompressedTexImage3D(target, level, internal_format, width, height,
+                             depth, border, image_size, data);
+    }
   }
-  GLenum error = LOCAL_PEEK_GL_ERROR("glCompressedTexImage3D");
+  GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
                                     width, height, depth, border, 0, 0,
@@ -13277,81 +13327,6 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage3D(
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
   return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoCompressedTexSubImage3D(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-    GLsizei width, GLsizei height, GLsizei depth, GLenum format,
-    GLsizei image_size, const void* data) {
-  if (!texture_manager()->ValidForTarget(target, level, width, height, depth)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCompressedTexSubImage3D", "dimensions out of range");
-    return;
-  }
-  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
-      &state_, target);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCompressedTexSubImage3D",
-        "unknown texture for target");
-    return;
-  }
-  Texture* texture = texture_ref->texture();
-  GLenum type = 0, internal_format = 0;
-  if (!texture->GetLevelType(target, level, &type, &internal_format)) {
-    std::string msg = base::StringPrintf(
-        "level %d does not exist", level);
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCompressedTexSubImage3D",
-                       msg.c_str());
-    return;
-  }
-  if (internal_format != format) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCompressedTexSubImage3D",
-        "format does not match internal format");
-    return;
-  }
-  if (!texture->ValidForTexture(target, level, xoffset, yoffset, zoffset,
-                                width, height, depth)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedTexSubImage3D",
-        "bad dimensions");
-    return;
-  }
-  if (!ValidateCompressedTexFuncData("glCompressedTexSubImage3D", width, height,
-                                     depth, format, image_size, data) ||
-      !ValidateCompressedTexSubDimensions(
-          "glCompressedTexSubImage3D", target, level, xoffset, yoffset, zoffset,
-          width, height, depth, format, texture)) {
-    return;
-  }
-
-  // Note: There is no need to deal with texture cleared tracking here
-  // because the validation above means you can only get here if the level
-  // is already a matching compressed format and in that case
-  // CompressedTexImage3D already cleared the texture.
-
-  const CompressedFormatInfo* format_info =
-      GetCompressedFormatInfo(internal_format);
-  if (format_info != nullptr && !format_info->support_check(*feature_info_)) {
-    std::unique_ptr<uint8_t[]> decompressed_data = DecompressTextureData(
-        state_, *format_info, width, height, depth, image_size, data);
-    if (!decompressed_data) {
-      MarkContextLost(error::kGuilty);
-      group_->LoseContexts(error::kInnocent);
-      return;
-    }
-    state_.PushTextureDecompressionUnpackState();
-    glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
-                    depth, format_info->decompressed_format,
-                    format_info->decompressed_type, decompressed_data.get());
-    state_.RestoreUnpackState();
-  } else {
-    glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
-                              height, depth, format, image_size, data);
-  }
-
-  // This may be a slow command.  Exit command processing to allow for
-  // context preemption and GPU watchdog checks.
-  ExitCommandProcessingEarly();
 }
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
@@ -13540,95 +13515,175 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoCompressedTexSubImage2D(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLsizei image_size, const void * data) {
+error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexSubImage2DBucket& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage2DBucket*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    return error::kInvalidArguments;
+  }
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  uint32_t image_size = bucket->size();
+  const void* data = bucket->GetData(0, image_size);
+  DCHECK(data || !image_size);
+  return DoCompressedTexSubImage(target, level, xoffset, yoffset, 0,
+                                 width, height, 1, format, image_size, data,
+                                 ContextState::k2D);
+}
+
+error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexSubImage2D& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage2D*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  uint32_t data_shm_id = c.data_shm_id;
+  uint32_t data_shm_offset = c.data_shm_offset;
+
+  const void* data;
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    if (data_shm_id) {
+      return error::kInvalidArguments;
+    }
+    data = reinterpret_cast<const void*>(data_shm_offset);
+  } else {
+    if (!data_shm_id && data_shm_offset) {
+      return error::kInvalidArguments;
+    }
+    data = GetSharedMemoryAs<const void*>(
+        data_shm_id, data_shm_offset, image_size);
+  }
+  return DoCompressedTexSubImage(target, level, xoffset, yoffset, 0,
+                                 width, height, 1, format, image_size, data,
+                                 ContextState::k2D);
+}
+
+error::Error GLES2DecoderImpl::DoCompressedTexSubImage(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLsizei width, GLsizei height, GLsizei depth, GLenum format,
+    GLsizei image_size, const void * data, ContextState::Dimension dimension) {
+  const char* func_name;
+  if (dimension == ContextState::k2D) {
+    func_name = "glCompressedTexSubImage2D";
+    if (!validators_->texture_target.IsValid(target)) {
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
+      return error::kNoError;
+    }
+  } else {
+    DCHECK_EQ(ContextState::k3D, dimension);
+    func_name = "glCompressedTexSubImage3D";
+    if (!validators_->texture_3_d_target.IsValid(target)) {
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
+      return error::kNoError;
+    }
+  }
+  if (!validators_->compressed_texture_format.IsValid(format)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, format, "format");
+    return error::kNoError;
+  }
+  if (image_size < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "imageSize < 0");
+    return error::kNoError;
+  }
+  if (!texture_manager()->ValidForTarget(target, level, width, height, depth)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions out of range");
+    return error::kNoError;
+  }
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
       &state_, target);
   if (!texture_ref) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCompressedTexSubImage2D", "unknown texture for target");
-    return;
-  }
-  if (!texture_manager()->ValidForTarget(target, level, width, height, 1)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCompressedTexSubImage2D", "dimensions out of range");
-    return;
+        GL_INVALID_OPERATION, func_name, "no texture bound at target");
+    return error::kNoError;
   }
   Texture* texture = texture_ref->texture();
   GLenum type = 0;
   GLenum internal_format = 0;
   if (!texture->GetLevelType(target, level, &type, &internal_format)) {
-    std::string msg = base::StringPrintf(
-        "level %d does not exist", level);
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, "glCompressedTexSubImage2D", msg.c_str());
-    return;
+    std::string msg = base::StringPrintf("level %d does not exist", level);
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, msg.c_str());
+    return error::kNoError;
   }
   if (internal_format != format) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCompressedTexSubImage2D", "format does not match internal format.");
-    return;
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                       "format does not match internalformat.");
+    return error::kNoError;
   }
-  if (!texture->ValidForTexture(target, level, xoffset, yoffset, 0, width,
-                                height, 1)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCompressedTexSubImage2D", "bad dimensions.");
-    return;
+  if (!texture->ValidForTexture(target, level, xoffset, yoffset, zoffset,
+                                width, height, depth)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "bad dimensions.");
+    return error::kNoError;
   }
 
-  if (!ValidateCompressedTexFuncData("glCompressedTexSubImage2D", width, height,
-                                     1, format, image_size, data) ||
-      !ValidateCompressedTexSubDimensions("glCompressedTexSubImage2D", target,
-                                          level, xoffset, yoffset, 0, width,
-                                          height, 1, format, texture)) {
-    return;
+  if (!ValidateCompressedTexFuncData(
+          func_name, width, height, depth, format, image_size, data) ||
+      !ValidateCompressedTexSubDimensions(
+          func_name, target, level, xoffset, yoffset, zoffset,
+          width, height, depth, format, texture)) {
+    return error::kNoError;
   }
 
-  if (!texture->IsLevelCleared(target, level)) {
-    // This can only happen if the compressed texture was allocated
-    // using TexStorage2D.
-    DCHECK(texture->IsImmutable());
-    GLsizei level_width = 0, level_height = 0;
-    bool success = texture->GetLevelSize(
-        target, level, &level_width, &level_height, nullptr);
-    DCHECK(success);
-    // We can skip the clear if we're uploading the entire level.
-    if (xoffset == 0 && yoffset == 0 &&
-        width == level_width && height == level_height) {
-      texture_manager()->SetLevelCleared(texture_ref, target, level, true);
-    } else {
-      texture_manager()->ClearTextureLevel(this, texture_ref, target, level);
-    }
-    DCHECK(texture->IsLevelCleared(target, level));
-  }
+  // Note: There is no need to deal with texture cleared tracking here
+  // because the validation above means you can only get here if the level
+  // is already a matching compressed format and in that case
+  // CompressedTexImage{2|3}D already cleared the texture.
+  DCHECK(texture->IsLevelCleared(target, level));
 
   const CompressedFormatInfo* format_info =
       GetCompressedFormatInfo(internal_format);
   if (format_info != nullptr && !format_info->support_check(*feature_info_)) {
     std::unique_ptr<uint8_t[]> decompressed_data = DecompressTextureData(
-        state_, *format_info, width, height, 1, image_size, data);
+        state_, *format_info, width, height, depth, image_size, data);
     if (!decompressed_data) {
       MarkContextLost(error::kGuilty);
       group_->LoseContexts(error::kInnocent);
-      return;
+      return error::kLostContext;
     }
     state_.PushTextureDecompressionUnpackState();
-    glTexSubImage2D(target, level, xoffset, yoffset, width, height,
-                    format_info->decompressed_format,
-                    format_info->decompressed_type, decompressed_data.get());
+    if (dimension == ContextState::k2D) {
+      glTexSubImage2D(target, level, xoffset, yoffset, width, height,
+                      format_info->decompressed_format,
+                      format_info->decompressed_type, decompressed_data.get());
+    } else {
+      glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
+                      depth, format_info->decompressed_format,
+                      format_info->decompressed_type, decompressed_data.get());
+    }
     state_.RestoreUnpackState();
   } else {
-    glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height,
-                              format, image_size, data);
+    if (dimension == ContextState::k2D) {
+      glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height,
+                                format, image_size, data);
+    } else {
+      glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
+                                height, depth, format, image_size, data);
+    }
   }
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+  return error::kNoError;
 }
 
 bool GLES2DecoderImpl::ValidateCopyTexFormat(

@@ -2607,9 +2607,8 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'CompressedTexSubImage2D': {
-    'type': 'Data',
+    'type': 'Custom',
     'data_transfer_methods': ['bucket', 'shm'],
-    'decoder_func': 'DoCompressedTexSubImage2D',
     'trace_level': 1,
   },
   'CopyTexImage2D': {
@@ -2624,16 +2623,14 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'CompressedTexImage3D': {
-    'type': 'Data',
+    'type': 'Custom',
     'data_transfer_methods': ['bucket', 'shm'],
-    'decoder_func': 'DoCompressedTexImage3D',
     'es3': True,
     'trace_level': 1,
   },
   'CompressedTexSubImage3D': {
-    'type': 'Data',
+    'type': 'Custom',
     'data_transfer_methods': ['bucket', 'shm'],
-    'decoder_func': 'DoCompressedTexSubImage3D',
     'es3': True,
     'trace_level': 1,
   },

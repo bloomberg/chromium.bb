@@ -2380,13 +2380,20 @@ void GLES2Implementation::CompressedTexSubImage2D(
     }
     return;
   }
-  SetBucketContents(kResultBucketId, data, image_size);
-  helper_->CompressedTexSubImage2DBucket(
-      target, level, xoffset, yoffset, width, height, format, kResultBucketId);
-  // Free the bucket. This is not required but it does free up the memory.
-  // and we don't have to wait for the result so from the client's perspective
-  // it's cheap.
-  helper_->SetBucketSize(kResultBucketId, 0);
+  if (bound_pixel_unpack_buffer_) {
+    helper_->CompressedTexSubImage2D(
+        target, level, xoffset, yoffset, width, height, format, image_size,
+        0, ToGLuint(data));
+  } else {
+    SetBucketContents(kResultBucketId, data, image_size);
+    helper_->CompressedTexSubImage2DBucket(
+        target, level, xoffset, yoffset, width, height, format,
+        kResultBucketId);
+    // Free the bucket. This is not required but it does free up the memory.
+    // and we don't have to wait for the result so from the client's perspective
+    // it's cheap.
+    helper_->SetBucketSize(kResultBucketId, 0);
+  }
   CheckGLError();
 }
 
@@ -2423,7 +2430,11 @@ void GLES2Implementation::CompressedTexImage3D(
     }
     return;
   }
-  if (data) {
+  if (bound_pixel_unpack_buffer_) {
+    helper_->CompressedTexImage3D(
+        target, level, internalformat, width, height, depth, image_size,
+        0, ToGLuint(data));
+  } else if (data) {
     SetBucketContents(kResultBucketId, data, image_size);
     helper_->CompressedTexImage3DBucket(target, level, internalformat, width,
                                         height, depth, kResultBucketId);
@@ -2472,14 +2483,20 @@ void GLES2Implementation::CompressedTexSubImage3D(
     }
     return;
   }
-  SetBucketContents(kResultBucketId, data, image_size);
-  helper_->CompressedTexSubImage3DBucket(
-      target, level, xoffset, yoffset, zoffset, width, height, depth, format,
-      kResultBucketId);
-  // Free the bucket. This is not required but it does free up the memory.
-  // and we don't have to wait for the result so from the client's perspective
-  // it's cheap.
-  helper_->SetBucketSize(kResultBucketId, 0);
+  if (bound_pixel_unpack_buffer_) {
+    helper_->CompressedTexSubImage3D(
+        target, level, xoffset, yoffset, zoffset, width, height, depth, format,
+        image_size, 0, ToGLuint(data));
+  } else {
+    SetBucketContents(kResultBucketId, data, image_size);
+    helper_->CompressedTexSubImage3DBucket(
+        target, level, xoffset, yoffset, zoffset, width, height, depth, format,
+        kResultBucketId);
+    // Free the bucket. This is not required but it does free up the memory.
+    // and we don't have to wait for the result so from the client's perspective
+    // it's cheap.
+    helper_->SetBucketSize(kResultBucketId, 0);
+  }
   CheckGLError();
 }
 

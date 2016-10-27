@@ -2437,7 +2437,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage2DBucket(
           cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
-  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
@@ -2445,18 +2445,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage2DBucket(
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket)
     return error::kInvalidArguments;
-  uint32_t data_size = bucket->size();
-  GLsizei imageSize = data_size;
-  const void* data = bucket->GetData(0, data_size);
-  if (imageSize && !data) {
-    return error::kInvalidArguments;
-  }
-  error::Error error = DoCompressedTexImage2D(
-      target, level, internalformat, width, height, border, imageSize, data);
-  if (error != error::kNoError) {
-    return error;
-  }
-  return error::kNoError;
+  uint32_t image_size = bucket->size();
+  const void* data = bucket->GetData(0, image_size);
+  DCHECK(data || !image_size);
+  return DoCompressedTexImage2D(
+      target, level, internal_format, width, height, border, image_size, data);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage2D(
@@ -2465,21 +2458,150 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage2D(
       *static_cast<const volatile gles2::cmds::CompressedTexImage2D*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
-  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLint border = static_cast<GLint>(c.border);
-  GLsizei imageSize = static_cast<GLsizei>(c.imageSize);
-  uint32_t data_size = imageSize;
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
   // TODO(geofflang): Handle PIXEL_UNPACK_BUFFER case.
   const void* data = GetSharedMemoryAs<const void*>(
-      c.data_shm_id, c.data_shm_offset, data_size);
-  error::Error error = DoCompressedTexImage2D(
-      target, level, internalformat, width, height, border, imageSize, data);
-  if (error != error::kNoError) {
-    return error;
-  }
-  return error::kNoError;
+      c.data_shm_id, c.data_shm_offset, image_size);
+  return DoCompressedTexImage2D(
+      target, level, internal_format, width, height, border, image_size, data);
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexSubImage2DBucket(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexSubImage2DBucket& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage2DBucket*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  uint32_t image_size = bucket->size();
+  const void* data = bucket->GetData(0, image_size);
+  DCHECK(data || !image_size);
+  return DoCompressedTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, image_size, data);
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexSubImage2D(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexSubImage2D& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage2D*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  // TODO(geofflang): Handle PIXEL_UNPACK_BUFFER case.
+  const void* data = GetSharedMemoryAs<const void*>(
+      c.data_shm_id, c.data_shm_offset, image_size);
+  return DoCompressedTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, image_size, data);
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage3DBucket(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexImage3DBucket& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexImage3DBucket*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  GLint border = static_cast<GLint>(c.border);
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  GLsizei image_size = bucket->size();
+  const void* data = bucket->GetData(0, image_size);
+  DCHECK(data || !image_size);
+  return DoCompressedTexImage3D(target, level, internal_format, width, height,
+                                depth, border, image_size, data);
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage3D(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexImage3D& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexImage3D*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLint border = static_cast<GLint>(c.border);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  // TODO(geofflang): Handle PIXEL_UNPACK_BUFFER case.
+  const void* data = GetSharedMemoryAs<const void*>(
+      c.data_shm_id, c.data_shm_offset, image_size);
+  return DoCompressedTexImage3D(target, level, internal_format, width, height,
+                                depth, border, image_size, data);
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexSubImage3DBucket(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexSubImage3DBucket& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage3DBucket*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLint zoffset = static_cast<GLint>(c.zoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket)
+    return error::kInvalidArguments;
+  uint32_t image_size = bucket->size();
+  const void* data = bucket->GetData(0, image_size);
+  DCHECK(data || !image_size);
+  return DoCompressedTexSubImage3D(
+      target, level, xoffset, yoffset, zoffset, width, height, depth,
+      format, image_size, data);
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexSubImage3D(
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const volatile gles2::cmds::CompressedTexSubImage3D& c =
+      *static_cast<const volatile gles2::cmds::CompressedTexSubImage3D*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLint zoffset = static_cast<GLint>(c.zoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  // TODO(geofflang): Handle PIXEL_UNPACK_BUFFER case.
+  const void* data = GetSharedMemoryAs<const void*>(
+      c.data_shm_id, c.data_shm_offset, image_size);
+  return DoCompressedTexSubImage3D(
+      target, level, xoffset, yoffset, zoffset, width, height, depth,
+      format, image_size, data);
 }
 
 }  // namespace gles2
