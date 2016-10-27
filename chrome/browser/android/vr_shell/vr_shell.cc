@@ -315,8 +315,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   target_element_ = nullptr;
   VrInputManager* input_target = nullptr;
 
-  for (std::size_t i = 0; i < scene_->GetUiElements().size(); ++i) {
-    const ContentRectangle* plane = scene_->GetUiElements()[i].get();
+  for (const auto& plane : scene_->GetUiElements()) {
     if (!plane->visible || !plane->hit_testable) {
       continue;
     }
@@ -330,18 +329,24 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
       float x = rect_2d_point.x + 0.5f;
       float y = 0.5f - rect_2d_point.y;
       bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
-      if (is_inside) {
-        closest_element_distance = distance_to_plane;
-        pixel_x =
-            static_cast<int>(plane->copy_rect.width * x + plane->copy_rect.x);
-        pixel_y =
-            static_cast<int>(plane->copy_rect.height * y + plane->copy_rect.y);
+      if (!is_inside)
+        continue;
 
-        target_point_ = plane_intersection_point;
-        target_element_ = plane;
-        input_target = plane->content_quad ? content_input_manager_.get() :
-            ui_input_manager_.get();
+      closest_element_distance = distance_to_plane;
+      Rectf pixel_rect;
+      if (plane->content_quad) {
+        pixel_rect = {0, 0, content_tex_width_, content_tex_height_};
+      } else {
+        pixel_rect = {plane->copy_rect.x, plane->copy_rect.y,
+                      plane->copy_rect.width, plane->copy_rect.height};
       }
+      pixel_x = pixel_rect.width * x + pixel_rect.x;
+      pixel_y = pixel_rect.height * y + pixel_rect.y;
+
+      target_point_ = plane_intersection_point;
+      target_element_ = plane.get();
+      input_target = plane->content_quad ? content_input_manager_.get()
+                                         : ui_input_manager_.get();
     }
   }
   bool new_target = input_target != current_input_target_;
@@ -710,6 +715,11 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
   content_compositor_->SurfaceChanged((int)width, (int)height, surface);
+  content::ScreenInfo result;
+  main_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()
+      ->GetScreenInfo(&result);
+  content_tex_width_ = width / result.device_scale_factor;
+  content_tex_height_ = height / result.device_scale_factor;
 }
 
 void VrShell::UiSurfaceChanged(JNIEnv* env,

@@ -164,6 +164,8 @@ class VrShell : public device::GvrDelegate {
   VrInputManager* current_input_target_ = nullptr;
   int ui_tex_width_ = 0;
   int ui_tex_height_ = 0;
+  int content_tex_width_ = 0;
+  int content_tex_height_ = 0;
 
   bool webvr_mode_ = false;
 
