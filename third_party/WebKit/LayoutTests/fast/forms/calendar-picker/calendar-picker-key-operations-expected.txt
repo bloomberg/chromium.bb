@@ -113,8 +113,6 @@ PASS selectedValue() is "2000-01-02"
 PASS selectedDayCells() is ""
 PASS highlightedValue() is "1999-12-26"
 PASS highlightedDayCells() is "1999-12-26"
-press enter
-PASS document.getElementById("date").value is "1999-12-26"
 Check if tabbing works.
 PASS focusedElement() is ".list-view calendar-table-view"
 PASS focusedElement() is ".calendar-navigation-button"
@@ -152,7 +150,7 @@ PASS highlightedMonthButton() is "2000-04"
 select month in the month popup
 PASS popupWindow.global.picker.monthPopupView.isVisible is false
 PASS currentMonth() is "2000-04"
-PASS selectedValue() is "1999-12-26"
+PASS selectedValue() is "2000-01-02"
 PASS selectedDayCells() is ""
 PASS highlightedValue() is "1999-12-26"
 PASS highlightedDayCells() is ""

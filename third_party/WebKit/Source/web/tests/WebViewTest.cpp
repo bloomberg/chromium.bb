@@ -2428,6 +2428,100 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput) {
   EXPECT_EQ(static_cast<int>(testWord.length()), range.length());
 }
 
+TEST_F(WebViewTest, KeyDownScrollsHandled) {
+  URLTestHelpers::registerMockedURLFromBaseURL(
+      WebString::fromUTF8(m_baseURL.c_str()),
+      WebString::fromUTF8("content-width-1000.html"));
+
+  WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
+      m_baseURL + "content-width-1000.html", true);
+  webView->resize(WebSize(100, 100));
+  webView->updateAllLifecyclePhases();
+  runPendingTasks();
+
+  WebKeyboardEvent keyEvent;
+
+  // RawKeyDown pagedown should be handled.
+  keyEvent.windowsKeyCode = VKEY_NEXT;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::HandledSystem,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  // Coalesced KeyDown arrow-down should be handled.
+  keyEvent.windowsKeyCode = VKEY_DOWN;
+  keyEvent.type = WebInputEvent::KeyDown;
+  EXPECT_EQ(WebInputEventResult::HandledSystem,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  // Ctrl-Home should be handled...
+  keyEvent.windowsKeyCode = VKEY_HOME;
+  keyEvent.modifiers = WebInputEvent::ControlKey;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  // But Ctrl-Down should not.
+  keyEvent.windowsKeyCode = VKEY_DOWN;
+  keyEvent.modifiers = WebInputEvent::ControlKey;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  // Shift, meta, and alt should not be handled.
+  keyEvent.windowsKeyCode = VKEY_NEXT;
+  keyEvent.modifiers = WebInputEvent::ShiftKey;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  keyEvent.windowsKeyCode = VKEY_NEXT;
+  keyEvent.modifiers = WebInputEvent::MetaKey;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  keyEvent.windowsKeyCode = VKEY_NEXT;
+  keyEvent.modifiers = WebInputEvent::AltKey;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  // System-key labeled Alt-Down (as in Windows) should do nothing,
+  // but non-system-key labeled Alt-Down (as in Mac) should be handled
+  // as a page-down.
+  keyEvent.windowsKeyCode = VKEY_DOWN;
+  keyEvent.modifiers = WebInputEvent::AltKey;
+  keyEvent.isSystemKey = true;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+
+  keyEvent.windowsKeyCode = VKEY_DOWN;
+  keyEvent.modifiers = WebInputEvent::AltKey;
+  keyEvent.isSystemKey = false;
+  keyEvent.type = WebInputEvent::RawKeyDown;
+  EXPECT_EQ(WebInputEventResult::HandledSystem,
+            webView->handleInputEvent(keyEvent));
+  keyEvent.type = WebInputEvent::KeyUp;
+  webView->handleInputEvent(keyEvent);
+}
+
 static void configueCompositingWebView(WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(true);
   settings->setPreferCompositingToLCDTextEnabled(true);

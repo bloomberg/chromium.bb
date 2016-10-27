@@ -1190,8 +1190,6 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
   }
 #endif  // !OS(MACOSX)
 
-  if (keyEventDefault(event))
-    return WebInputEventResult::HandledSystem;
   return WebInputEventResult::NotHandled;
 }
 
@@ -1241,8 +1239,6 @@ WebInputEventResult WebViewImpl::handleCharEvent(
   WebInputEventResult result = handler.keyEvent(event);
   if (result != WebInputEventResult::NotHandled)
     return result;
-  if (keyEventDefault(event))
-    return WebInputEventResult::HandledSystem;
 
   return WebInputEventResult::NotHandled;
 }
@@ -1662,117 +1658,6 @@ void WebViewImpl::showContextMenuForElement(WebElement element) {
       focusedFrame->eventHandler().sendContextMenuEventForKey(
           element.unwrap<Element>());
   }
-}
-
-bool WebViewImpl::keyEventDefault(const WebKeyboardEvent& event) {
-  LocalFrame* frame = toLocalFrame(focusedCoreFrame());
-  if (!frame)
-    return false;
-
-  switch (event.type) {
-    case WebInputEvent::Char:
-      if (event.windowsKeyCode == VKEY_SPACE) {
-        int keyCode = ((event.modifiers & WebInputEvent::ShiftKey) ? VKEY_PRIOR
-                                                                   : VKEY_NEXT);
-        return scrollViewWithKeyboard(keyCode, event.modifiers);
-      }
-      break;
-    case WebInputEvent::KeyDown:
-    case WebInputEvent::RawKeyDown:
-      if (event.modifiers == WebInputEvent::ControlKey) {
-        switch (event.windowsKeyCode) {
-#if !OS(MACOSX)
-          case 'A':
-            focusedFrame()->executeCommand(WebString::fromUTF8("SelectAll"));
-            return true;
-          case VKEY_INSERT:
-          case 'C':
-            focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
-            return true;
-#endif
-          // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
-          // key combinations which affect scrolling. Safari is buggy in the
-          // sense that it scrolls the page for all Ctrl+scrolling key
-          // combinations. For e.g. Ctrl+pgup/pgdn/up/down, etc.
-          case VKEY_HOME:
-          case VKEY_END:
-            break;
-          default:
-            return false;
-        }
-      }
-      if (!event.isSystemKey && !(event.modifiers & WebInputEvent::ShiftKey))
-        return scrollViewWithKeyboard(event.windowsKeyCode, event.modifiers);
-      break;
-    default:
-      break;
-  }
-  return false;
-}
-
-bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers) {
-  ScrollDirectionPhysical scrollDirectionPhysical;
-  ScrollGranularity scrollGranularity;
-#if OS(MACOSX)
-  // Alt-Up/Down should be PageUp/Down on Mac.
-  if (modifiers & WebMouseEvent::AltKey) {
-    if (keyCode == VKEY_UP)
-      keyCode = VKEY_PRIOR;
-    else if (keyCode == VKEY_DOWN)
-      keyCode = VKEY_NEXT;
-  }
-#endif
-  if (!mapKeyCodeForScroll(keyCode, &scrollDirectionPhysical,
-                           &scrollGranularity))
-    return false;
-
-  if (LocalFrame* frame = toLocalFrame(focusedCoreFrame()))
-    return frame->eventHandler().bubblingScroll(
-        toScrollDirection(scrollDirectionPhysical), scrollGranularity);
-  return false;
-}
-
-bool WebViewImpl::mapKeyCodeForScroll(int keyCode,
-                                      ScrollDirectionPhysical* scrollDirection,
-                                      ScrollGranularity* scrollGranularity) {
-  switch (keyCode) {
-    case VKEY_LEFT:
-      *scrollDirection = ScrollLeft;
-      *scrollGranularity = ScrollByLine;
-      break;
-    case VKEY_RIGHT:
-      *scrollDirection = ScrollRight;
-      *scrollGranularity = ScrollByLine;
-      break;
-    case VKEY_UP:
-      *scrollDirection = ScrollUp;
-      *scrollGranularity = ScrollByLine;
-      break;
-    case VKEY_DOWN:
-      *scrollDirection = ScrollDown;
-      *scrollGranularity = ScrollByLine;
-      break;
-    case VKEY_HOME:
-      *scrollDirection = ScrollUp;
-      *scrollGranularity = ScrollByDocument;
-      break;
-    case VKEY_END:
-      *scrollDirection = ScrollDown;
-      *scrollGranularity = ScrollByDocument;
-      break;
-    case VKEY_PRIOR:  // page up
-      *scrollDirection = ScrollUp;
-      *scrollGranularity = ScrollByPage;
-      break;
-    case VKEY_NEXT:  // page down
-      *scrollDirection = ScrollDown;
-      *scrollGranularity = ScrollByPage;
-      break;
-    default:
-      return false;
-  }
-
-  return true;
 }
 
 PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client) {

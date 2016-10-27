@@ -419,11 +419,6 @@ class WEB_EXPORT WebViewImpl final
 
   bool hasOpenedPopup() const { return m_pagePopup.get(); }
 
-  // Returns true if the event leads to scrolling.
-  static bool mapKeyCodeForScroll(int keyCode,
-                                  ScrollDirectionPhysical*,
-                                  ScrollGranularity*);
-
   // Called by a full frame plugin inside this view to inform it that its
   // zoom level has been updated.  The plugin should only call this function
   // if the zoom change was triggered by the browser, it's only needed in case
@@ -552,12 +547,6 @@ class WEB_EXPORT WebViewImpl final
 
   explicit WebViewImpl(WebViewClient*, WebPageVisibilityState);
   ~WebViewImpl() override;
-
-  // Returns true if the event was actually processed.
-  bool keyEventDefault(const WebKeyboardEvent&);
-
-  // Returns true if the view was scrolled.
-  bool scrollViewWithKeyboard(int keyCode, int modifiers);
 
   void hideSelectPopup();
 

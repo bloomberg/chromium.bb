@@ -160,16 +160,6 @@ function test1() {
     shouldBeEqualToString('highlightedValue()', '1999-12-26');
     shouldBeEqualToString('highlightedDayCells()', '1999-12-26');
 
-    debug("press enter");
-    removeCommitDelay();
-    eventSender.keyDown('Enter');
-    shouldBeEqualToString('document.getElementById("date").value', '1999-12-26');
-    waitUntilClosing(function() {
-        openPicker(document.getElementById("date"), test2);
-    });
-}
-
-function test2() {
     debug('Check if tabbing works.');
     shouldBeEqualToString('focusedElement()', '.list-view calendar-table-view');
     eventSender.keyDown('Tab', ['shiftKey']);
@@ -239,7 +229,7 @@ function test2() {
     eventSender.keyDown('Enter');
     shouldBeFalse('popupWindow.global.picker.monthPopupView.isVisible');
     shouldBeEqualToString('currentMonth()', '2000-04');
-    shouldBeEqualToString('selectedValue()', '1999-12-26');
+    shouldBeEqualToString('selectedValue()', '2000-01-02');
     shouldBeEqualToString('selectedDayCells()', '');
     shouldBeEqualToString('highlightedValue()', '1999-12-26');
     shouldBeEqualToString('highlightedDayCells()', '');

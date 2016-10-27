@@ -162,11 +162,6 @@ class WebFrameWidgetImpl final
 
   WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
 
-  // Returns true if the event leads to scrolling.
-  static bool mapKeyCodeForScroll(int keyCode,
-                                  ScrollDirection*,
-                                  ScrollGranularity*);
-
   Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
   DECLARE_TRACE();
@@ -178,12 +173,6 @@ class WebFrameWidgetImpl final
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult hitTestResultForRootFramePos(const IntPoint& posInRootFrame);
-
-  // Returns true if the event was actually processed.
-  WebInputEventResult keyEventDefault(const WebKeyboardEvent&);
-
-  // Returns true if the view was scrolled.
-  WebInputEventResult scrollViewWithKeyboard(int keyCode, int modifiers);
 
   void initializeLayerTreeView();
 

@@ -9,6 +9,7 @@
 #include "core/editing/Editor.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLDialogElement.h"
+#include "core/input/EventHandler.h"
 #include "core/input/EventHandlingUtil.h"
 #include "core/input/ScrollManager.h"
 #include "core/layout/LayoutObject.h"
@@ -18,6 +19,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
+#include "platform/KeyboardCodes.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/WindowsKeyboardCodes.h"
 #include "public/platform/WebInputEvent.h"
@@ -38,17 +40,85 @@ static const unsigned short HIGHBITMASKSHORT = 0x8000;
 
 const int kVKeyProcessKey = 229;
 
-WebFocusType focusDirectionForKey(const String& key) {
+WebFocusType focusDirectionForKey(KeyboardEvent* event) {
+  if (event->ctrlKey() || event->metaKey() || event->shiftKey())
+    return WebFocusTypeNone;
+
   WebFocusType retVal = WebFocusTypeNone;
-  if (key == "ArrowDown")
+  if (event->key() == "ArrowDown")
     retVal = WebFocusTypeDown;
-  else if (key == "ArrowUp")
+  else if (event->key() == "ArrowUp")
     retVal = WebFocusTypeUp;
-  else if (key == "ArrowLeft")
+  else if (event->key() == "ArrowLeft")
     retVal = WebFocusTypeLeft;
-  else if (key == "ArrowRight")
+  else if (event->key() == "ArrowRight")
     retVal = WebFocusTypeRight;
   return retVal;
+}
+
+bool mapKeyCodeForScroll(int keyCode,
+                         PlatformEvent::Modifiers modifiers,
+                         ScrollDirection* scrollDirection,
+                         ScrollGranularity* scrollGranularity) {
+  if (modifiers & PlatformEvent::ShiftKey || modifiers & PlatformEvent::MetaKey)
+    return false;
+
+  if (modifiers & PlatformEvent::AltKey) {
+    // Alt-Up/Down should behave like PageUp/Down on Mac.  (Note that Alt-keys
+    // on other platforms are suppressed due to isSystemKey being set.)
+    if (keyCode == VKEY_UP)
+      keyCode = VKEY_PRIOR;
+    else if (keyCode == VKEY_DOWN)
+      keyCode = VKEY_NEXT;
+    else
+      return false;
+  }
+
+  if (modifiers & PlatformEvent::CtrlKey) {
+    // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
+    // key combinations which affect scrolling.
+    if (keyCode != VKEY_HOME && keyCode != VKEY_END)
+      return false;
+  }
+
+  switch (keyCode) {
+    case VKEY_LEFT:
+      *scrollDirection = ScrollLeftIgnoringWritingMode;
+      *scrollGranularity = ScrollByLine;
+      break;
+    case VKEY_RIGHT:
+      *scrollDirection = ScrollRightIgnoringWritingMode;
+      *scrollGranularity = ScrollByLine;
+      break;
+    case VKEY_UP:
+      *scrollDirection = ScrollUpIgnoringWritingMode;
+      *scrollGranularity = ScrollByLine;
+      break;
+    case VKEY_DOWN:
+      *scrollDirection = ScrollDownIgnoringWritingMode;
+      *scrollGranularity = ScrollByLine;
+      break;
+    case VKEY_HOME:
+      *scrollDirection = ScrollUpIgnoringWritingMode;
+      *scrollGranularity = ScrollByDocument;
+      break;
+    case VKEY_END:
+      *scrollDirection = ScrollDownIgnoringWritingMode;
+      *scrollGranularity = ScrollByDocument;
+      break;
+    case VKEY_PRIOR:  // page up
+      *scrollDirection = ScrollUpIgnoringWritingMode;
+      *scrollGranularity = ScrollByPage;
+      break;
+    case VKEY_NEXT:  // page down
+      *scrollDirection = ScrollDownIgnoringWritingMode;
+      *scrollGranularity = ScrollByPage;
+      break;
+    default:
+      return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -212,9 +282,7 @@ void KeyboardEventManager::defaultKeyboardEventHandler(
     } else if (event->key() == "Escape") {
       defaultEscapeEventHandler(event);
     } else {
-      WebFocusType type = focusDirectionForKey(event->key());
-      if (type != WebFocusTypeNone)
-        defaultArrowEventHandler(type, event);
+      defaultArrowEventHandler(event, possibleFocusedNode);
     }
   }
   if (event->type() == EventTypeNames::keypress) {
@@ -265,27 +333,37 @@ void KeyboardEventManager::defaultBackspaceEventHandler(KeyboardEvent* event) {
     event->setDefaultHandled();
 }
 
-void KeyboardEventManager::defaultArrowEventHandler(WebFocusType focusType,
-                                                    KeyboardEvent* event) {
+void KeyboardEventManager::defaultArrowEventHandler(KeyboardEvent* event,
+                                                    Node* possibleFocusedNode) {
   DCHECK_EQ(event->type(), EventTypeNames::keydown);
-
-  if (event->ctrlKey() || event->metaKey() || event->shiftKey())
-    return;
 
   Page* page = m_frame->page();
   if (!page)
     return;
 
-  if (!isSpatialNavigationEnabled(m_frame))
+  WebFocusType type = focusDirectionForKey(event);
+  if (type != WebFocusTypeNone && isSpatialNavigationEnabled(m_frame) &&
+      !m_frame->document()->inDesignMode()) {
+    if (page->focusController().advanceFocus(type)) {
+      event->setDefaultHandled();
+      return;
+    }
+  }
+
+  if (event->keyEvent() && event->keyEvent()->isSystemKey)
     return;
 
-  // Arrows and other possible directional navigation keys can be used in design
-  // mode editing.
-  if (m_frame->document()->inDesignMode())
+  ScrollDirection scrollDirection;
+  ScrollGranularity scrollGranularity;
+  if (!mapKeyCodeForScroll(event->keyCode(), event->modifiers(),
+                           &scrollDirection, &scrollGranularity))
     return;
 
-  if (page->focusController().advanceFocus(focusType))
+  if (m_scrollManager->bubblingScroll(scrollDirection, scrollGranularity,
+                                      nullptr, possibleFocusedNode)) {
     event->setDefaultHandled();
+    return;
+  }
 }
 
 void KeyboardEventManager::defaultTabEventHandler(KeyboardEvent* event) {
