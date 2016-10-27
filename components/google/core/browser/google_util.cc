@@ -32,7 +32,6 @@
 #define LINKDOCTOR_SERVER_REQUEST_URL ""
 #endif
 
-namespace google_util {
 
 // Helpers --------------------------------------------------------------------
 
@@ -44,16 +43,16 @@ bool IsPathHomePageBase(base::StringPiece path) {
   return (path == "/") || (path == "/webhp");
 }
 
-// True if the given canonical |host| is "[www.]<domain_in_lower_case>.<TLD>"
-// with a valid TLD. If |subdomain_permission| is ALLOW_SUBDOMAIN, we check
-// against host "*.<domain_in_lower_case>.<TLD>" instead.
+// True if |host| is "[www.]<domain_in_lower_case>.<TLD>" with a valid TLD. If
+// |subdomain_permission| is ALLOW_SUBDOMAIN, we check against host
+// "*.<domain_in_lower_case>.<TLD>" instead.
 bool IsValidHostName(base::StringPiece host,
                      base::StringPiece domain_in_lower_case,
-                     SubdomainPermission subdomain_permission) {
-  size_t tld_length =
-      net::registry_controlled_domains::GetCanonicalHostRegistryLength(
-          host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+                     google_util::SubdomainPermission subdomain_permission) {
+  size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
+      host,
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if ((tld_length == 0) || (tld_length == std::string::npos))
     return false;
 
@@ -63,7 +62,7 @@ bool IsValidHostName(base::StringPiece host,
   if (base::LowerCaseEqualsASCII(host_minus_tld, domain_in_lower_case))
     return true;
 
-  if (subdomain_permission == ALLOW_SUBDOMAIN) {
+  if (subdomain_permission == google_util::ALLOW_SUBDOMAIN) {
     std::string dot_domain(".");
     domain_in_lower_case.AppendToString(&dot_domain);
     return base::EndsWith(host_minus_tld, dot_domain,
@@ -78,21 +77,16 @@ bool IsValidHostName(base::StringPiece host,
 // True if |url| is a valid URL with HTTP or HTTPS scheme. If |port_permission|
 // is DISALLOW_NON_STANDARD_PORTS, this also requires |url| to use the standard
 // port for its scheme (80 for HTTP, 443 for HTTPS).
-bool IsValidURL(const GURL& url, PortPermission port_permission) {
+bool IsValidURL(const GURL& url, google_util::PortPermission port_permission) {
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
-         (url.port().empty() || (port_permission == ALLOW_NON_STANDARD_PORTS));
-}
-
-bool IsCanonicalHostGoogleHostname(base::StringPiece canonical_host,
-                                   SubdomainPermission subdomain_permission) {
-  const GURL& base_url(CommandLineGoogleBaseURL());
-  if (base_url.is_valid() && (canonical_host == base_url.host_piece()))
-    return true;
-
-  return IsValidHostName(canonical_host, "google", subdomain_permission);
+      (url.port().empty() ||
+       (port_permission == google_util::ALLOW_NON_STANDARD_PORTS));
 }
 
 }  // namespace
+
+
+namespace google_util {
 
 // Global functions -----------------------------------------------------------
 
@@ -186,16 +180,18 @@ bool StartsWithCommandLineGoogleBaseURL(const GURL& url) {
 
 bool IsGoogleHostname(base::StringPiece host,
                       SubdomainPermission subdomain_permission) {
-  url::CanonHostInfo host_info;
-  return IsCanonicalHostGoogleHostname(net::CanonicalizeHost(host, &host_info),
-                                       subdomain_permission);
+  const GURL& base_url(CommandLineGoogleBaseURL());
+  if (base_url.is_valid() && (host == base_url.host_piece()))
+    return true;
+
+  return IsValidHostName(host, "google", subdomain_permission);
 }
 
 bool IsGoogleDomainUrl(const GURL& url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission) {
   return IsValidURL(url, port_permission) &&
-         IsCanonicalHostGoogleHostname(url.host_piece(), subdomain_permission);
+      IsGoogleHostname(url.host(), subdomain_permission);
 }
 
 bool IsGoogleHomePageUrl(const GURL& url) {

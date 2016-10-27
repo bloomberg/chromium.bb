@@ -265,7 +265,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   // Check if the canonicalized host has a known TLD, which we'll want to know
   // below.
   const size_t registry_length =
-      net::registry_controlled_domains::GetCanonicalHostRegistryLength(
+      net::registry_controlled_domains::GetRegistryLength(
           canonicalized_url->host(),
           net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);

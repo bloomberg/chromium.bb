@@ -37,7 +37,7 @@ namespace blink {
 
 class WebPublicSuffixList {
  public:
-  virtual size_t getPublicSuffixLength(const WebString& canonicalHost) = 0;
+  virtual size_t getPublicSuffixLength(const WebString&) = 0;
 
  protected:
   virtual ~WebPublicSuffixList() {}

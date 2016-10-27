@@ -153,8 +153,9 @@ void LogDuplicatesHistogram(
 // Returns the length of the registry portion of a hostname.  For example,
 // www.google.co.uk will return 5 (the length of co.uk).
 size_t GetRegistryLength(const base::string16& host) {
-  return net::registry_controlled_domains::PermissiveGetHostRegistryLength(
-      host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+  return net::registry_controlled_domains::GetRegistryLength(
+      base::UTF16ToUTF8(host),
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
       net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
