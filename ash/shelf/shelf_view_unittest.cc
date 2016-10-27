@@ -1956,7 +1956,14 @@ TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
 }
 
 INSTANTIATE_TEST_CASE_P(LtrRtl, ShelfViewTextDirectionTest, testing::Bool());
-INSTANTIATE_TEST_CASE_P(VisibleBounds,
+
+// This test seems to be flaky with material design shelf (see
+// https://crbug.com/625671) and even in non-material mode (see
+// https://crbug.com/619344 which is fixed using a hack). Disabling for now.
+// TODO(mohsen): Hopefully, the fix for https://crbug.com/634128 that fixes
+// issues with shelf spacing, will fix this flake, too. Re-enable when that
+// issue is fixed.
+INSTANTIATE_TEST_CASE_P(DISABLED_VisibleBounds,
                         ShelfViewVisibleBoundsTest,
                         testing::Bool());
 
