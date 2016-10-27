@@ -541,35 +541,33 @@ bool V4GetHashProtocolManager::ParseHashResponse(
     }
     FullHashInfo full_hash_info(match.threat().hash(), list_id,
                                 positive_expiry);
-    if (!ParseMetadata(match, &full_hash_info.metadata)) {
-      return false;
-    }
-
+    ParseMetadata(match, &full_hash_info.metadata);
     full_hash_infos->push_back(full_hash_info);
   }
   return true;
 }
 
-bool V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
+// static
+void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
                                              ThreatMetadata* metadata) {
   // Different threat types will handle the metadata differently.
   if (match.threat_type() == API_ABUSE) {
     if (!match.has_platform_type() ||
         match.platform_type() != CHROME_PLATFORM) {
       RecordParseGetHashResult(UNEXPECTED_PLATFORM_TYPE_ERROR);
-      return false;
+      return;
     }
 
     if (!match.has_threat_entry_metadata()) {
       RecordParseGetHashResult(NO_METADATA_ERROR);
-      return false;
+      return;
     }
     // For API Abuse, store a list of the returned permissions.
     for (const ThreatEntryMetadata::MetadataEntry& m :
          match.threat_entry_metadata().entries()) {
       if (m.key() != kPermission) {
         RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
-        return false;
+        return;
       }
       metadata->api_permissions.insert(m.value());
     }
@@ -588,7 +586,7 @@ bool V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
           break;
         } else {
           RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
-          return false;
+          return;
         }
       }
     }
@@ -609,16 +607,14 @@ bool V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
           break;
         } else {
           RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
-          return false;
+          return;
         }
       }
     }
-  } else {
+  } else if (match.has_threat_entry_metadata() &&
+             match.threat_entry_metadata().entries_size() > 1) {
     RecordParseGetHashResult(UNEXPECTED_THREAT_TYPE_ERROR);
-    return false;
   }
-
-  return true;
 }
 
 void V4GetHashProtocolManager::ResetGetHashErrors() {

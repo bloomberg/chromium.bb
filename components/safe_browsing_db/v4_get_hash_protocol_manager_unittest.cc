@@ -408,6 +408,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
         pm->ParseHashResponse(se_data, &full_hash_infos, &cache_expire));
     EXPECT_EQ(now + base::TimeDelta::FromSeconds(600), cache_expire);
 
+    // Ensure that the threat remains valid since we found a full hash match,
+    // even though the metadata information could not be parsed correctly.
     ASSERT_EQ(1ul, full_hash_infos.size());
     const FullHashInfo& fhi = full_hash_infos[0];
     EXPECT_EQ(full_hash, fhi.full_hash);
@@ -470,9 +472,18 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
     invalid_res.SerializeToString(&invalid_data);
     std::vector<FullHashInfo> full_hash_infos;
     base::Time cache_expire;
-    EXPECT_FALSE(
+    EXPECT_TRUE(
         pm->ParseHashResponse(invalid_data, &full_hash_infos, &cache_expire));
-    EXPECT_EQ(0ul, full_hash_infos.size());
+
+    // Ensure that the threat remains valid since we found a full hash match,
+    // even though the metadata information could not be parsed correctly.
+    ASSERT_EQ(1ul, full_hash_infos.size());
+    const auto& fhi = full_hash_infos[0];
+    EXPECT_EQ(full_hash, fhi.full_hash);
+    EXPECT_EQ(
+        ListIdentifier(CHROME_PLATFORM, URL, POTENTIALLY_HARMFUL_APPLICATION),
+        fhi.list_id);
+    EXPECT_EQ(ThreatPatternType::NONE, fhi.metadata.threat_pattern_type);
   }
 }
 
@@ -484,13 +495,14 @@ TEST_F(V4GetHashProtocolManagerTest,
   base::Time now = base::Time::UnixEpoch();
   SetTestClock(now, pm.get());
 
+  FullHash full_hash("Not to fret.");
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
   ThreatMatch* m = res.add_matches();
   m->set_threat_type(API_ABUSE);
   m->set_platform_type(CHROME_PLATFORM);
   m->set_threat_entry_type(URL);
-  m->mutable_threat()->set_hash(FullHash("Not to fret."));
+  m->mutable_threat()->set_hash(full_hash);
   ThreatEntryMetadata::MetadataEntry* e =
       m->mutable_threat_entry_metadata()->add_entries();
   e->set_key("notpermission");
@@ -502,11 +514,14 @@ TEST_F(V4GetHashProtocolManagerTest,
 
   std::vector<FullHashInfo> full_hash_infos;
   base::Time cache_expire;
-  EXPECT_FALSE(
-      pm->ParseHashResponse(res_data, &full_hash_infos, &cache_expire));
+  EXPECT_TRUE(pm->ParseHashResponse(res_data, &full_hash_infos, &cache_expire));
 
   EXPECT_EQ(now + base::TimeDelta::FromSeconds(600), cache_expire);
-  EXPECT_EQ(0ul, full_hash_infos.size());
+  ASSERT_EQ(1ul, full_hash_infos.size());
+  const auto& fhi = full_hash_infos[0];
+  EXPECT_EQ(full_hash, fhi.full_hash);
+  EXPECT_EQ(GetChromeUrlApiId(), fhi.list_id);
+  EXPECT_TRUE(fhi.metadata.api_permissions.empty());
 }
 
 TEST_F(V4GetHashProtocolManagerTest,

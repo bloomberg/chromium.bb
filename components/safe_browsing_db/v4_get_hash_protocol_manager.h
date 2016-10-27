@@ -271,10 +271,10 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
                          std::vector<FullHashInfo>* full_hash_infos,
                          base::Time* negative_cache_expire);
 
-  // Parses the store specific |metadata| information from |match|. Returns
-  // true if the metadata information was parsed correctly and was consistent
-  // with what's expected from that corresponding store; false otherwise.
-  bool ParseMetadata(const ThreatMatch& match, ThreatMetadata* metadata);
+  // Parses the store specific |metadata| information from |match|. Logs errors
+  // to UMA if the metadata information was not parsed correctly or was
+  // inconsistent with what's expected from that corresponding store.
+  static void ParseMetadata(const ThreatMatch& match, ThreatMetadata* metadata);
 
   // Resets the gethash error counter and multiplier.
   void ResetGetHashErrors();
