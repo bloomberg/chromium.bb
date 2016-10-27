@@ -406,7 +406,7 @@ bool MimeSniffingResourceHandler::MaybeStartInterception(bool* defer) {
       return true;
   }
 
-  // This is request is a download,
+  // This request is a download.
 
   if (!CheckResponseIsNotProvisional())
     return false;
