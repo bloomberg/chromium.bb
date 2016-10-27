@@ -30,8 +30,7 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      bool supports_touch_events);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Initializes security features of the desktop environment (the curtain mode
   // and in-session UI).

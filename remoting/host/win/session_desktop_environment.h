@@ -30,8 +30,7 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const base::Closure& inject_sas,
-      const base::Closure& lock_workstation,
-      bool supports_touch_events);
+      const base::Closure& lock_workstation);
 
   // Used to ask the daemon to inject Secure Attention Sequence.
   base::Closure inject_sas_;

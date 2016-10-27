@@ -31,14 +31,12 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    bool virtual_terminal,
-    bool supports_touch_events) {
+    bool virtual_terminal) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   desktop_session_proxy_ = new DesktopSessionProxy(
       audio_task_runner, caller_task_runner, io_task_runner,
-      client_session_control, desktop_session_connector, virtual_terminal,
-      supports_touch_events);
+      client_session_control, desktop_session_connector, virtual_terminal);
 }
 
 IpcDesktopEnvironment::~IpcDesktopEnvironment() {}
@@ -96,8 +94,8 @@ std::unique_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
 
   return base::MakeUnique<IpcDesktopEnvironment>(
       audio_task_runner_, caller_task_runner_, io_task_runner_,
-      client_session_control, connector_factory_.GetWeakPtr(), curtain_enabled_,
-      supports_touch_events_);
+      client_session_control, connector_factory_.GetWeakPtr(),
+      curtain_enabled_);
 }
 
 void IpcDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {

@@ -32,13 +32,11 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
-    bool supports_touch_events,
     bool enable_user_interface)
     : BasicDesktopEnvironment(caller_task_runner,
                               video_capture_task_runner,
                               input_task_runner,
-                              ui_task_runner,
-                              supports_touch_events) {
+                              ui_task_runner) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   // Create the local input monitor.
@@ -91,8 +89,7 @@ std::unique_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
 
   return base::WrapUnique(new It2MeDesktopEnvironment(
       caller_task_runner(), video_capture_task_runner(), input_task_runner(),
-      ui_task_runner(), client_session_control, supports_touch_events(),
-      enable_user_interface_));
+      ui_task_runner(), client_session_control, enable_user_interface_));
 }
 
 }  // namespace remoting

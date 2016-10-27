@@ -17,6 +17,7 @@
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window_proxy.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_controls.h"
@@ -49,11 +50,12 @@ Me2MeDesktopEnvironment::CreateScreenControls() {
 }
 
 std::string Me2MeDesktopEnvironment::GetCapabilities() const {
-  std::string capabilities = BasicDesktopEnvironment::GetCapabilities();
-  if (!capabilities.empty())
-    capabilities.append(" ");
-  capabilities.append(protocol::kRateLimitResizeRequests);
-
+  std::string capabilities;
+  capabilities += protocol::kRateLimitResizeRequests;
+  if (InputInjector::SupportsTouchEvents()) {
+    capabilities += " ";
+    capabilities += protocol::kTouchEventsCapability;
+  }
   return capabilities;
 }
 
@@ -61,13 +63,11 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    bool supports_touch_events)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : BasicDesktopEnvironment(caller_task_runner,
                               video_capture_task_runner,
                               input_task_runner,
-                              ui_task_runner,
-                              supports_touch_events) {
+                              ui_task_runner) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   // X DAMAGE is not enabled by default, since it is broken on many systems -
@@ -147,9 +147,9 @@ std::unique_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   std::unique_ptr<Me2MeDesktopEnvironment> desktop_environment(
-      new Me2MeDesktopEnvironment(
-          caller_task_runner(), video_capture_task_runner(),
-          input_task_runner(), ui_task_runner(), supports_touch_events()));
+      new Me2MeDesktopEnvironment(caller_task_runner(),
+                                  video_capture_task_runner(),
+                                  input_task_runner(), ui_task_runner()));
   if (!desktop_environment->InitializeSecurity(client_session_control,
                                                curtain_enabled_)) {
     return nullptr;
