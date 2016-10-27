@@ -49,17 +49,23 @@ class AbstractRebaseliningCommand(Command):
     """Base class for rebaseline-related commands."""
     # Not overriding execute() - pylint: disable=abstract-method
 
-    no_optimize_option = optparse.make_option('--no-optimize', dest='optimize', action='store_false', default=True,
-                                              help=('Do not optimize (de-duplicate) the expectations after rebaselining '
-                                                    '(default is to de-dup automatically). '
-                                                    'You can use "webkit-patch optimize-baselines" to optimize separately.'))
-
+    no_optimize_option = optparse.make_option(
+        '--no-optimize', dest='optimize', action='store_false', default=True,
+        help=('Do not optimize (de-duplicate) the expectations after rebaselining '
+              '(default is to de-dupe automatically). You can use "webkit-patch '
+              'optimize-baselines" to optimize separately.'))
     platform_options = factory.platform_options(use_globs=True)
-
-    results_directory_option = optparse.make_option("--results-directory", help="Local results directory to use.")
-
-    suffixes_option = optparse.make_option("--suffixes", default=','.join(BASELINE_SUFFIX_LIST), action="store",
-                                           help="Comma-separated-list of file types to rebaseline.")
+    results_directory_option = optparse.make_option(
+        '--results-directory', help='Local results directory to use.')
+    suffixes_option = optparse.make_option(
+        '--suffixes', default=','.join(BASELINE_SUFFIX_LIST), action='store',
+        help='Comma-separated-list of file types to rebaseline.')
+    builder_option = optparse.make_option(
+        '--builder', help='Builder to pull new baselines from.')
+    test_option = optparse.make_option('--test', help='Test to rebaseline.')
+    build_number_option = optparse.make_option(
+        '--build-number', default=None, type='int',
+        help='Optional build number; if not given, the latest build is used.')
 
     def __init__(self, options=None):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
@@ -126,25 +132,18 @@ class ChangeSet(object):
             self.lines_to_remove[test].extend(other.lines_to_remove[test])
 
 
-class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
-    """Base class for rebaseline-related commands that are intended to be used by other commands."""
-    # Not overriding execute() - pylint: disable=abstract-method
-
-    def __init__(self):
-        super(BaseInternalRebaselineCommand, self).__init__(options=[
-            self.results_directory_option,
-            self.suffixes_option,
-            optparse.make_option("--builder", help="Builder to pull new baselines from."),
-            optparse.make_option("--test", help="Test to rebaseline."),
-            optparse.make_option("--build-number", default=None, type="int",
-                                 help="Optional build number; if not given, the latest build is used."),
-        ])
-
-
-class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
+class CopyExistingBaselinesInternal(AbstractRebaseliningCommand):
     name = "copy-existing-baselines-internal"
     help_text = ("Copy existing baselines down one level in the baseline order to ensure "
                  "new baselines don't break existing passing platforms.")
+
+    def __init__(self):
+        super(CopyExistingBaselinesInternal, self).__init__(options=[
+            self.results_directory_option,
+            self.suffixes_option,
+            self.builder_option,
+            self.test_option,
+        ])
 
     @memoized
     def _immediate_predecessors_in_fallback(self, path_to_rebaseline):
@@ -217,9 +216,18 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
             self._copy_existing_baseline(options.builder, options.test, suffix)
 
 
-class RebaselineTest(BaseInternalRebaselineCommand):
+class RebaselineTest(AbstractRebaseliningCommand):
     name = "rebaseline-test-internal"
     help_text = "Rebaseline a single test from a buildbot. Only intended for use by other webkit-patch commands."
+
+    def __init__(self):
+        super(RebaselineTest, self).__init__(options=[
+            self.results_directory_option,
+            self.suffixes_option,
+            self.builder_option,
+            self.test_option,
+            self.build_number_option,
+        ])
 
     def _save_baseline(self, data, target_baseline):
         if not data:
