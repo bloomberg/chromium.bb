@@ -2032,6 +2032,7 @@ fuzzer_test("net_http_security_headers_hpkp_fuzzer") {
     "http/http_security_headers_hpkp_fuzzer.cc",
   ]
   deps = [
+    ":net_fuzzer_test_support",
     "//base",
     "//net",
     "//url",
@@ -2044,6 +2045,7 @@ fuzzer_test("net_http_security_headers_hpkp_report_only_fuzzer") {
     "http/http_security_headers_hpkp_report_only_fuzzer.cc",
   ]
   deps = [
+    ":net_fuzzer_test_support",
     "//base",
     "//net",
     "//url",
