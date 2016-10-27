@@ -22,6 +22,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "components/user_manager/user.h"
 #include "mojo/public/cpp/bindings/string.h"
 
@@ -292,6 +293,30 @@ void ArcPolicyBridge::GetPolicies(const GetPoliciesCallback& callback) {
       policy_service_->GetPolicies(policy_namespace);
   const std::string json_policies = GetFilteredJSONPolicies(policy_map);
   callback.Run(mojo::String(json_policies));
+}
+
+void OnReportComplianceParseSuccess(
+    const ArcPolicyBridge::ReportComplianceCallback& callback,
+    std::unique_ptr<base::Value> parsed_json) {
+  // TODO(poromov@): Track the report and start ARC++ kiosk app when the report
+  // is empty, that means that CloudDpc applied all policies.
+  // Currently do nothing with the report, return 'true' if JSON is parsed.
+  callback.Run(mojo::String("{ \"policyCompliant\": true }"));
+}
+
+void OnReportComplianceParseFailure(
+    const ArcPolicyBridge::ReportComplianceCallback& callback,
+    const std::string& error) {
+  callback.Run(mojo::String("{ \"policyCompliant\": false }"));
+}
+
+void ArcPolicyBridge::ReportCompliance(
+    const mojo::String& request,
+    const ReportComplianceCallback& callback) {
+  VLOG(1) << "ArcPolicyBridge::ReportCompliance";
+  safe_json::SafeJsonParser::Parse(
+      request, base::Bind(&OnReportComplianceParseSuccess, callback),
+      base::Bind(&OnReportComplianceParseFailure, callback));
 }
 
 void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,

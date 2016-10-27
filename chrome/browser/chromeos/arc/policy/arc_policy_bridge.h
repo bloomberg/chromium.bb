@@ -47,6 +47,8 @@ class ArcPolicyBridge : public ArcService,
 
   // PolicyHost overrides.
   void GetPolicies(const GetPoliciesCallback& callback) override;
+  void ReportCompliance(const mojo::String& request,
+                        const ReportComplianceCallback& callback) override;
 
   // PolicyService::Observer overrides.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
