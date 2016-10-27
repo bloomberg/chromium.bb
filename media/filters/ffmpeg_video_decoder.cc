@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
@@ -28,9 +29,9 @@
 
 namespace media {
 
-// Always try to use three threads for video decoding.  There is little reason
-// not to since current day CPUs tend to be multi-core and we measured
-// performance benefits on older machines such as P4s with hyperthreading.
+// Always use 2 or more threads for video decoding. Most machines today will
+// have 2-8 execution contexts. Using more cores generally doesn't seem to
+// increase power usage and allows us to decode video faster.
 //
 // Handling decoding on separate threads also frees up the pipeline thread to
 // continue processing. Although it'd be nice to have the option of a single
@@ -42,14 +43,29 @@ static const int kMaxDecodeThreads = 16;
 
 // Returns the number of threads given the FFmpeg CodecID. Also inspects the
 // command line for a valid --video-threads flag.
-static int GetThreadCount(AVCodecID codec_id) {
+static int GetThreadCount(const VideoDecoderConfig& config) {
   // Refer to http://crbug.com/93932 for tsan suppressions on decoding.
   int decode_threads = kDecodeThreads;
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
-  if (threads.empty() || !base::StringToInt(threads, &decode_threads))
-    return decode_threads;
+  if (threads.empty() || !base::StringToInt(threads, &decode_threads)) {
+    // Normalize to three threads for 1080p content, then scale linearly
+    // with number of pixels.
+    // Examples:
+    // 4k: 12 threads
+    // 1440p: 5 threads
+    // 1080p: 3 threads
+    // anything lower than 1080p: 2 threads
+    decode_threads = config.coded_size().width() *
+                     config.coded_size().height() * 3 / 1920 / 1080;
+
+    int cores = base::SysInfo::NumberOfProcessors();
+    // Leave two execution contexts for other things to run.
+    decode_threads = std::min(decode_threads, cores - 2);
+    // Use at least two threads, or ffmpeg will decode on the calling thread.
+    decode_threads = std::max(decode_threads, kDecodeThreads);
+  }
 
   decode_threads = std::max(decode_threads, 0);
   decode_threads = std::min(decode_threads, kMaxDecodeThreads);
@@ -375,8 +391,9 @@ bool FFmpegVideoDecoder::ConfigureDecoder(bool low_delay) {
   codec_context_.reset(avcodec_alloc_context3(NULL));
   VideoDecoderConfigToAVCodecContext(config_, codec_context_.get());
 
-  codec_context_->thread_count = GetThreadCount(codec_context_->codec_id);
-  codec_context_->thread_type = low_delay ? FF_THREAD_SLICE : FF_THREAD_FRAME;
+  codec_context_->thread_count = GetThreadCount(config_);
+  codec_context_->thread_type =
+      FF_THREAD_SLICE | (low_delay ? 0 : FF_THREAD_FRAME);
   codec_context_->opaque = this;
   codec_context_->flags |= CODEC_FLAG_EMU_EDGE;
   codec_context_->get_buffer2 = GetVideoBufferImpl;
