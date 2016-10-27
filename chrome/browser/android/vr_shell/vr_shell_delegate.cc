@@ -55,12 +55,11 @@ VrShellDelegate* VrShellDelegate::getNativeDelegate(
   return reinterpret_cast<VrShellDelegate*>(native_delegate);
 }
 
-bool VrShellDelegate::ExitWebVRIfNecessary(JNIEnv* env, jobject obj) {
+void VrShellDelegate::ExitWebVRIfNecessary(JNIEnv* env, jobject obj) {
   if (!device_provider_)
-    return false;
+    return;
 
   device_provider_->OnGvrDelegateRemoved();
-  return true;
 }
 
 bool VrShellDelegate::RequestWebVRPresent(

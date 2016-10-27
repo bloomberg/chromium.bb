@@ -24,7 +24,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   // Called by the Java VrShellDelegate. Returns true if the GvrDeviceProvider
   // needs to handle shutdown first.
-  bool ExitWebVRIfNecessary(JNIEnv* env, jobject obj);
+  void ExitWebVRIfNecessary(JNIEnv* env, jobject obj);
 
   // device::vrDelegateProvider implementation
   bool RequestWebVRPresent(device::GvrDeviceProvider* device_provider) override;

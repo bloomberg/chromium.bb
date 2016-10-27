@@ -342,7 +342,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
 
     @Override
     public FrameLayout getContainer() {
-        return (FrameLayout) this;
+        return this;
     }
 
     /**

@@ -42,7 +42,12 @@ void VrShellUIMessageHandler::HandleDomLoaded(const base::ListValue* args) {
 }
 
 void VrShellUIMessageHandler::OnJavascriptAllowed() {
-  CHECK(vr_shell_);
+  // If we don't have a VR Shell here, it means either the user manually loaded
+  // this webui page and we want to silently fail to connect to native vr shell,
+  // or VR Shell was deleted, and this webui content is also about to be
+  // deleted.
+  if (!vr_shell_)
+    return;
   vr_shell_->GetUiInterface()->SetUiCommandHandler(this);
   vr_shell_->OnDomContentsLoaded();
 }

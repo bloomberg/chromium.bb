@@ -21,6 +21,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.common.BrowserControlsState;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -44,6 +45,7 @@ public class VrShellDelegate {
     private VrDaydreamApi mVrDaydreamApi;
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
+    private int mRestoreOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     private String mVrExtra;
     private long mNativeVrShellDelegate;
 
@@ -112,10 +114,11 @@ public class VrShellDelegate {
             return false;
         }
         if (mInVr) return true;
+        mRestoreOrientation = mActivity.getRequestedOrientation();
         // VrShell must be initialized in Landscape mode due to a bug in the GVR library.
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         if (!createVrShell()) {
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            mActivity.setRequestedOrientation(mRestoreOrientation);
             return false;
         }
         addVrViews();
@@ -185,9 +188,11 @@ public class VrShellDelegate {
         if (mNonPresentingGvrContext != null) {
             mNonPresentingGvrContext.pause();
         }
-        if (mInVr) {
-            mVrShell.pause();
-        }
+
+        // TODO(mthiesse): When VR Shell lives in its own activity, and integrates with Daydream
+        // home, pause instead of exiting VR here. For now, because VR Apps shouldn't show up in the
+        // non-VR recents, and we don't want ChromeTabbedActivity disappearing, exit VR.
+        exitVRIfNecessary();
     }
 
     /**
@@ -196,13 +201,9 @@ public class VrShellDelegate {
      */
     public boolean exitVRIfNecessary() {
         if (!mInVr) return false;
-        // If WebVR is presenting instruct it to exit. VR mode should not
-        // exit in this scenario, in case we want to return to the VrShell.
-        if (!nativeExitWebVRIfNecessary(mNativeVrShellDelegate)) {
-            // If WebVR was not presenting, shutdown VR mode entirely.
-            shutdownVR();
-        }
-
+        // If WebVR is presenting instruct it to exit.
+        nativeExitWebVRIfNecessary(mNativeVrShellDelegate);
+        shutdownVR();
         return true;
     }
 
@@ -269,7 +270,7 @@ public class VrShellDelegate {
      */
     private void shutdownVR() {
         if (!mInVr) return;
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        mActivity.setRequestedOrientation(mRestoreOrientation);
         mVrShell.setVrModeEnabled(false);
         mVrShell.pause();
         removeVrViews();
@@ -277,7 +278,10 @@ public class VrShellDelegate {
         destroyVrShell();
         mInVr = false;
         Tab tab = mActivity.getActivityTab();
-        if (tab != null) tab.updateFullscreenEnabledState();
+        if (tab != null) {
+            tab.updateFullscreenEnabledState();
+            tab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+        }
     }
 
     private boolean createVrDaydreamApi() {
@@ -389,5 +393,5 @@ public class VrShellDelegate {
     }
 
     private native long nativeInit();
-    private native boolean nativeExitWebVRIfNecessary(long nativeVrShellDelegate);
+    private native void nativeExitWebVRIfNecessary(long nativeVrShellDelegate);
 }
