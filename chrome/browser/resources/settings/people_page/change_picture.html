@@ -21,6 +21,10 @@
         padding-top: 16px;
       }
 
+      #availableIcons {
+        margin: -8px;
+      }
+
       #availableIcons img,
       #availableIcons iron-icon {
         border-radius: 4px;
@@ -35,6 +39,9 @@
       }
 
       #availableIcons iron-icon {
+        --iron-icon-fill-color: var(--google-grey-500);
+        --iron-icon-height: 32px;
+        --iron-icon-width: 32px;
         border: 1px solid var(--google-grey-500);
         padding: 17px;
       }
@@ -92,21 +99,21 @@
             selected-item="{{selectedItem_}}">
           <iron-icon id="cameraImage"
               data-type$="[[selectionTypesEnum_.CAMERA]]"
-              icon="settings:camera-alt" alt="$i18n{takePhoto}"
+              icon="settings:camera-alt" title="$i18n{takePhoto}"
               hidden="[[!cameraPresent_]]">
           </iron-icon>
           <iron-icon data-type$="[[selectionTypesEnum_.FILE]]"
-              icon="settings:folder" alt="$i18n{chooseFile}">
+              icon="settings:folder" title="$i18n{chooseFile}">
           </iron-icon>
           <img id="profileImage"
               data-type$="[[selectionTypesEnum_.PROFILE]]"
-              src="[[profileImageUrl_]]" alt="$i18n{profilePhotoLoading}">
+              src="[[profileImageUrl_]]" title="$i18n{profilePhotoLoading}">
           <img id="oldImage" data-type$="[[selectionTypesEnum_.OLD]]"
               src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
           <template is="dom-repeat" items="[[defaultImages_]]">
             <img data-type$="[[selectionTypesEnum_.DEFAULT]]"
                 data-default-image-index$="[[index]]" src="[[item.url]]"
-                alt="[[item.title]]">
+                title="[[item.title]]">
           </template>
         </iron-selector>
         <template is="dom-if" if="[[isAuthorCreditShown_(selectedItem_)]]">
