@@ -8,8 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "media/base/cdm_promise.h"
-#include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise_helper.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -32,7 +30,7 @@ class CdmResultPromise : public CdmPromiseTemplate<T...> {
 
   // CdmPromiseTemplate<T> implementation.
   void resolve(const T&... result) override;
-  void reject(MediaKeys::Exception exception_code,
+  void reject(CdmPromise::Exception exception_code,
               uint32_t system_code,
               const std::string& error_message) override;
 
@@ -72,7 +70,7 @@ inline void CdmResultPromise<>::resolve() {
 }
 
 template <typename... T>
-void CdmResultPromise<T...>::reject(MediaKeys::Exception exception_code,
+void CdmResultPromise<T...>::reject(CdmPromise::Exception exception_code,
                                     uint32_t system_code,
                                     const std::string& error_message) {
   MarkPromiseSettled();

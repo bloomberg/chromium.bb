@@ -47,7 +47,7 @@ void CdmPromiseAdapter::ResolvePromise(uint32_t promise_id,
 }
 
 void CdmPromiseAdapter::RejectPromise(uint32_t promise_id,
-                                      MediaKeys::Exception exception_code,
+                                      CdmPromise::Exception exception_code,
                                       uint32_t system_code,
                                       const std::string& error_message) {
   std::unique_ptr<CdmPromise> promise = TakePromise(promise_id);
@@ -63,7 +63,7 @@ void CdmPromiseAdapter::Clear() {
   // Reject all outstanding promises.
   DCHECK(thread_checker_.CalledOnValidThread());
   for (auto& promise : promises_)
-    promise.second->reject(MediaKeys::UNKNOWN_ERROR, 0, "Operation aborted.");
+    promise.second->reject(CdmPromise::UNKNOWN_ERROR, 0, "Operation aborted.");
   promises_.clear();
 }
 

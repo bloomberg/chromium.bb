@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/cdm_promise.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 
@@ -106,7 +107,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnSessionLoaded(uint32_t promise_id, const std::string& session_id);
   void OnPromiseResolved(uint32_t promise_id);
   void OnPromiseFailed(uint32_t promise_id,
-                       MediaKeys::Exception exception_code,
+                       CdmPromise::Exception exception_code,
                        uint32_t system_code,
                        const std::string& error_message);
 

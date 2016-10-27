@@ -32,6 +32,19 @@ namespace media {
 // the pepper interface.
 class MEDIA_EXPORT CdmPromise {
  public:
+  // TODO(jrummell): Remove deprecated errors. See
+  // http://crbug.com/570216
+  enum Exception {
+    NOT_SUPPORTED_ERROR,
+    INVALID_STATE_ERROR,
+    INVALID_ACCESS_ERROR,
+    QUOTA_EXCEEDED_ERROR,
+    UNKNOWN_ERROR,
+    CLIENT_ERROR,
+    OUTPUT_ERROR,
+    EXCEPTION_MAX = OUTPUT_ERROR
+  };
+
   enum ResolveParameterType {
     VOID_TYPE,
     INT_TYPE,
@@ -46,7 +59,7 @@ class MEDIA_EXPORT CdmPromise {
   // specified. |system_code| is a Key System-specific value for the error
   // that occurred, or 0 if there is no associated status code or such status
   // codes are not supported by the Key System. |error_message| is optional.
-  virtual void reject(MediaKeys::Exception exception_code,
+  virtual void reject(Exception exception_code,
                       uint32_t system_code,
                       const std::string& error_message) = 0;
 
@@ -90,7 +103,7 @@ class MEDIA_EXPORT CdmPromiseTemplate : public CdmPromise {
   virtual void resolve(const T&... result) = 0;
 
   // CdmPromise implementation.
-  virtual void reject(MediaKeys::Exception exception_code,
+  virtual void reject(Exception exception_code,
                       uint32_t system_code,
                       const std::string& error_message) = 0;
 
@@ -116,7 +129,7 @@ class MEDIA_EXPORT CdmPromiseTemplate : public CdmPromise {
     std::string message =
         "Unfulfilled promise rejected automatically during destruction.";
     DVLOG(1) << message;
-    reject(MediaKeys::INVALID_STATE_ERROR, 0, message);
+    reject(INVALID_STATE_ERROR, 0, message);
     DCHECK(is_settled_);
   }
 

@@ -257,7 +257,7 @@ message CdmKeyInformation {
   optional uint32 system_code = 3;
 }
 
-// Should align with ::media::MediaKeys::Exception
+// Should align with ::media::CdmPromise::Exception
 enum MediaKeysException {
   NOT_SUPPORTED_ERROR = 0;
   INVALID_STATE_ERROR = 1;

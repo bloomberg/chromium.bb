@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/encryption_scheme.h"
@@ -74,10 +75,10 @@ ToMediaCdmKeyInformationKeyStatus(pb::CdmKeyInformation::KeyStatus value);
 base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
     ::media::CdmKeyInformation::KeyStatus value);
 
-base::Optional<::media::MediaKeys::Exception> ToMediaMediaKeysException(
+base::Optional<::media::CdmPromise::Exception> ToCdmPromiseException(
     pb::MediaKeysException value);
 base::Optional<pb::MediaKeysException> ToProtoMediaKeysException(
-    ::media::MediaKeys::Exception value);
+    ::media::CdmPromise::Exception value);
 
 base::Optional<::media::MediaKeys::MessageType> ToMediaMediaKeysMessageType(
     pb::MediaKeysMessageType value);

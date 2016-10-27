@@ -106,7 +106,8 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   // If connection error has happened, fail immediately.
   if (remote_cdm_.encountered_error()) {
     LOG(ERROR) << "Remote CDM encountered error.";
-    promise->reject(NOT_SUPPORTED_ERROR, 0, "Mojo CDM creation failed.");
+    promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                    "Mojo CDM creation failed.");
     return;
   }
 
@@ -129,7 +130,7 @@ void MojoCdm::OnConnectionError() {
   if (!pending_init_promise_)
     return;
 
-  pending_init_promise_->reject(NOT_SUPPORTED_ERROR, 0,
+  pending_init_promise_->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
                                 "Mojo CDM creation failed.");
   pending_init_promise_.reset();
 }

@@ -251,8 +251,8 @@ AesDecryptor::~AesDecryptor() {
 void AesDecryptor::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<SimpleCdmPromise> promise) {
-  promise->reject(
-      NOT_SUPPORTED_ERROR, 0, "SetServerCertificate() is not supported.");
+  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                  "SetServerCertificate() is not supported.");
 }
 
 void AesDecryptor::CreateSessionAndGenerateRequest(
@@ -273,7 +273,7 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
       // |init_data| is simply the key needed.
       if (init_data.size() < limits::kMinKeyIdLength ||
           init_data.size() > limits::kMaxKeyIdLength) {
-        promise->reject(NOT_SUPPORTED_ERROR, 0, "Incorrect length");
+        promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0, "Incorrect length");
         return;
       }
       keys.push_back(init_data);
@@ -282,12 +282,13 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
 #if defined(USE_PROPRIETARY_CODECS)
       // |init_data| is a set of 0 or more concatenated 'pssh' boxes.
       if (!GetKeyIdsForCommonSystemId(init_data, &keys)) {
-        promise->reject(NOT_SUPPORTED_ERROR, 0, "No supported PSSH box found.");
+        promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                        "No supported PSSH box found.");
         return;
       }
       break;
 #else
-      promise->reject(NOT_SUPPORTED_ERROR, 0,
+      promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
                       "Initialization data type CENC is not supported.");
       return;
 #endif
@@ -296,14 +297,15 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
       std::string error_message;
       if (!ExtractKeyIdsFromKeyIdsInitData(init_data_string, &keys,
                                            &error_message)) {
-        promise->reject(NOT_SUPPORTED_ERROR, 0, error_message);
+        promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0, error_message);
         return;
       }
       break;
     }
     default:
       NOTREACHED();
-      promise->reject(NOT_SUPPORTED_ERROR, 0, "init_data_type not supported.");
+      promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                      "init_data_type not supported.");
       return;
   }
   CreateLicenseRequest(keys, session_type, &message);
@@ -318,7 +320,8 @@ void AesDecryptor::LoadSession(SessionType session_type,
                                std::unique_ptr<NewSessionCdmPromise> promise) {
   // TODO(xhwang): Change this to NOTREACHED() when blink checks for key systems
   // that do not support loadSession. See http://crbug.com/342481
-  promise->reject(NOT_SUPPORTED_ERROR, 0, "LoadSession() is not supported.");
+  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                  "LoadSession() is not supported.");
 }
 
 void AesDecryptor::UpdateSession(const std::string& session_id,
@@ -328,7 +331,8 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
 
   // TODO(jrummell): Convert back to a DCHECK once prefixed EME is removed.
   if (valid_sessions_.find(session_id) == valid_sessions_.end()) {
-    promise->reject(INVALID_ACCESS_ERROR, 0, "Session does not exist.");
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                    "Session does not exist.");
     return;
   }
 
@@ -337,15 +341,15 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
   KeyIdAndKeyPairs keys;
   SessionType session_type = MediaKeys::TEMPORARY_SESSION;
   if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type)) {
-    promise->reject(
-        INVALID_ACCESS_ERROR, 0, "Response is not a valid JSON Web Key Set.");
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                    "Response is not a valid JSON Web Key Set.");
     return;
   }
 
   // Make sure that at least one key was extracted.
   if (keys.empty()) {
-    promise->reject(
-        INVALID_ACCESS_ERROR, 0, "Response does not contain any keys.");
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                    "Response does not contain any keys.");
     return;
   }
 
@@ -354,7 +358,8 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << it->second.length();
-      promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid key length.");
+      promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                      "Invalid key length.");
       return;
     }
 
@@ -364,7 +369,8 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
       key_added = true;
 
     if (!AddDecryptionKey(session_id, it->first, it->second)) {
-      promise->reject(INVALID_ACCESS_ERROR, 0, "Unable to add key.");
+      promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                      "Unable to add key.");
       return;
     }
   }
@@ -419,7 +425,8 @@ void AesDecryptor::CloseSession(const std::string& session_id,
 void AesDecryptor::RemoveSession(const std::string& session_id,
                                  std::unique_ptr<SimpleCdmPromise> promise) {
   NOTIMPLEMENTED() << "Need to address https://crbug.com/616166.";
-  promise->reject(INVALID_ACCESS_ERROR, 0, "Session does not exist.");
+  promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                  "Session does not exist.");
 }
 
 CdmContext* AesDecryptor::GetCdmContext() {

@@ -39,7 +39,7 @@ class CdmPromiseInternal : public ::media::CdmPromiseTemplate<T...> {
   // CdmPromiseTemplate<> implementation.
   void resolve(const T&... result) final;
 
-  void reject(::media::MediaKeys::Exception exception,
+  void reject(::media::CdmPromise::Exception exception,
               uint32_t system_code,
               const std::string& error_message) final {
     MarkPromiseSettled();

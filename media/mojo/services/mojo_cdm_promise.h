@@ -26,7 +26,7 @@ class MojoCdmPromise : public CdmPromiseTemplate<T...> {
 
   // CdmPromiseTemplate<> implementation.
   void resolve(const T&... result) final;
-  void reject(MediaKeys::Exception exception,
+  void reject(CdmPromise::Exception exception,
               uint32_t system_code,
               const std::string& error_message) final;
 

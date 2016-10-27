@@ -17,7 +17,7 @@
 
 namespace media {
 
-typedef base::Callback<void(MediaKeys::Exception exception_code,
+typedef base::Callback<void(CdmPromise::Exception exception_code,
                             uint32_t system_code,
                             const std::string& error_message)>
     PromiseRejectedCB;
@@ -31,7 +31,7 @@ class MEDIA_EXPORT CdmCallbackPromise : public CdmPromiseTemplate<T...> {
 
   // CdmPromiseTemplate<T> implementation.
   virtual void resolve(const T&... result) override;
-  virtual void reject(MediaKeys::Exception exception_code,
+  virtual void reject(CdmPromise::Exception exception_code,
                       uint32_t system_code,
                       const std::string& error_message) override;
 

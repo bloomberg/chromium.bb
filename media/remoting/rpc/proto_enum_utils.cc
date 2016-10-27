@@ -429,10 +429,10 @@ base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<::media::MediaKeys::Exception> ToMediaMediaKeysException(
+base::Optional<::media::CdmPromise::Exception> ToCdmPromiseException(
     pb::MediaKeysException value) {
   using OriginType = pb::MediaKeysException;
-  using OtherType = ::media::MediaKeys;
+  using OtherType = ::media::CdmPromise;
   switch (value) {
     CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);
     CASE_RETURN_OTHER(INVALID_STATE_ERROR);
@@ -446,8 +446,8 @@ base::Optional<::media::MediaKeys::Exception> ToMediaMediaKeysException(
 }
 
 base::Optional<pb::MediaKeysException> ToProtoMediaKeysException(
-    ::media::MediaKeys::Exception value) {
-  using OriginType = ::media::MediaKeys;
+    ::media::CdmPromise::Exception value) {
+  using OriginType = ::media::CdmPromise;
   using OtherType = pb::MediaKeysException;
   switch (value) {
     CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);

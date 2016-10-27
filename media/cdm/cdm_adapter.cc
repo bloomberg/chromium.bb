@@ -65,26 +65,26 @@ cdm::InitDataType ToCdmInitDataType(EmeInitDataType init_data_type) {
   return cdm::kKeyIds;
 }
 
-MediaKeys::Exception ToMediaExceptionType(cdm::Error error) {
+CdmPromise::Exception ToMediaExceptionType(cdm::Error error) {
   switch (error) {
     case cdm::kNotSupportedError:
-      return MediaKeys::NOT_SUPPORTED_ERROR;
+      return CdmPromise::NOT_SUPPORTED_ERROR;
     case cdm::kInvalidStateError:
-      return MediaKeys::INVALID_STATE_ERROR;
+      return CdmPromise::INVALID_STATE_ERROR;
     case cdm::kInvalidAccessError:
-      return MediaKeys::INVALID_ACCESS_ERROR;
+      return CdmPromise::INVALID_ACCESS_ERROR;
     case cdm::kQuotaExceededError:
-      return MediaKeys::QUOTA_EXCEEDED_ERROR;
+      return CdmPromise::QUOTA_EXCEEDED_ERROR;
     case cdm::kUnknownError:
-      return MediaKeys::UNKNOWN_ERROR;
+      return CdmPromise::UNKNOWN_ERROR;
     case cdm::kClientError:
-      return MediaKeys::CLIENT_ERROR;
+      return CdmPromise::CLIENT_ERROR;
     case cdm::kOutputError:
-      return MediaKeys::OUTPUT_ERROR;
+      return CdmPromise::OUTPUT_ERROR;
   }
 
   NOTREACHED() << "Unexpected cdm::Error " << error;
-  return MediaKeys::UNKNOWN_ERROR;
+  return CdmPromise::UNKNOWN_ERROR;
 }
 
 MediaKeys::MessageType ToMediaMessageType(cdm::MessageType message_type) {
@@ -420,7 +420,7 @@ void CdmAdapter::Initialize(const base::FilePath& cdm_path,
                             std::unique_ptr<media::SimpleCdmPromise> promise) {
   cdm_.reset(CreateCdmInstance(key_system_, cdm_path));
   if (!cdm_) {
-    promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0,
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
                     "Unable to create CDM.");
     return;
   }
@@ -437,7 +437,7 @@ void CdmAdapter::SetServerCertificate(
 
   if (certificate.size() < limits::kMinCertificateLength ||
       certificate.size() > limits::kMaxCertificateLength) {
-    promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0,
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
                     "Incorrect certificate.");
     return;
   }

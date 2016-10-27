@@ -114,7 +114,8 @@ void PpapiDecryptor::SetServerCertificate(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM has failed.");
     return;
   }
 
@@ -130,7 +131,8 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM has failed.");
     return;
   }
 
@@ -146,7 +148,8 @@ void PpapiDecryptor::LoadSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM has failed.");
     return;
   }
   CdmDelegate()->LoadSession(session_type, session_id, std::move(promise));
@@ -160,7 +163,8 @@ void PpapiDecryptor::UpdateSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM has failed.");
     return;
   }
   CdmDelegate()->UpdateSession(session_id, response, std::move(promise));
@@ -173,7 +177,8 @@ void PpapiDecryptor::CloseSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM has failed.");
     return;
   }
 
@@ -187,7 +192,8 @@ void PpapiDecryptor::RemoveSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM has failed.");
     return;
   }
 

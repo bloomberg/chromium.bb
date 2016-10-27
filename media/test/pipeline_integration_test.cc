@@ -293,7 +293,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   void OnResolve(PromiseResult expected) { EXPECT_EQ(expected, RESOLVED); }
 
   void OnReject(PromiseResult expected,
-                media::MediaKeys::Exception exception_code,
+                media::CdmPromise::Exception exception_code,
                 uint32_t system_code,
                 const std::string& error_message) {
     EXPECT_EQ(expected, REJECTED) << error_message;

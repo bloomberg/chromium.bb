@@ -354,7 +354,8 @@ void MediaDrmBridge::SetServerCertificate(
                                                j_certificate)) {
     promise->resolve();
   } else {
-    promise->reject(INVALID_ACCESS_ERROR, 0, "Set server certificate failed.");
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                    "Set server certificate failed.");
   }
 }
 
@@ -368,7 +369,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
 
   if (session_type != media::MediaKeys::TEMPORARY_SESSION) {
     NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
-    promise->reject(NOT_SUPPORTED_ERROR, 0,
+    promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
                     "Only the temporary session type is supported.");
     return;
   }
@@ -387,7 +388,8 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
       if (!delegate->OnCreateSession(init_data_type, init_data,
                                      &init_data_from_delegate,
                                      &optional_parameters_from_delegate)) {
-        promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid init data.");
+        promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                        "Invalid init data.");
         return;
       }
       if (!init_data_from_delegate.empty()) {
@@ -423,7 +425,8 @@ void MediaDrmBridge::LoadSession(
   DVLOG(2) << __FUNCTION__;
 
   NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
-  promise->reject(NOT_SUPPORTED_ERROR, 0, "LoadSession() is not supported.");
+  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                  "LoadSession() is not supported.");
 }
 
 void MediaDrmBridge::UpdateSession(
@@ -465,7 +468,8 @@ void MediaDrmBridge::RemoveSession(
   DVLOG(2) << __FUNCTION__;
 
   NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
-  promise->reject(NOT_SUPPORTED_ERROR, 0, "RemoveSession() is not supported.");
+  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                  "RemoveSession() is not supported.");
 }
 
 CdmContext* MediaDrmBridge::GetCdmContext() {
@@ -529,7 +533,7 @@ void MediaDrmBridge::ResolvePromiseWithSession(uint32_t promise_id,
 void MediaDrmBridge::RejectPromise(uint32_t promise_id,
                                    const std::string& error_message) {
   DVLOG(2) << __FUNCTION__;
-  cdm_promise_adapter_.RejectPromise(promise_id, MediaKeys::UNKNOWN_ERROR, 0,
+  cdm_promise_adapter_.RejectPromise(promise_id, CdmPromise::UNKNOWN_ERROR, 0,
                                      error_message);
 }
 

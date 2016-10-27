@@ -416,11 +416,11 @@ bool ConvertProtoToCdmPromise(const pb::CdmPromise& promise_message,
     return true;
   }
 
-  ::media::MediaKeys::Exception exception = ::media::MediaKeys::UNKNOWN_ERROR;
+  ::media::CdmPromise::Exception exception = ::media::CdmPromise::UNKNOWN_ERROR;
   uint32_t system_code = 0;
   std::string error_message;
 
-  exception = ToMediaMediaKeysException(promise_message.exception()).value();
+  exception = ToCdmPromiseException(promise_message.exception()).value();
   system_code = promise_message.system_code();
   error_message = promise_message.error_message();
   *result = CdmPromiseResult(exception, system_code, error_message);
@@ -448,9 +448,9 @@ bool ConvertProtoToCdmPromiseWithCdmIdSessionId(const pb::RpcMessage& message,
 
 //==============================================================================
 CdmPromiseResult::CdmPromiseResult()
-    : CdmPromiseResult(::media::MediaKeys::UNKNOWN_ERROR, 0, "") {}
+    : CdmPromiseResult(::media::CdmPromise::UNKNOWN_ERROR, 0, "") {}
 
-CdmPromiseResult::CdmPromiseResult(::media::MediaKeys::Exception exception,
+CdmPromiseResult::CdmPromiseResult(::media::CdmPromise::Exception exception,
                                    uint32_t system_code,
                                    std::string error_message)
     : success_(false),
@@ -463,7 +463,8 @@ CdmPromiseResult::CdmPromiseResult(const CdmPromiseResult& other) = default;
 CdmPromiseResult::~CdmPromiseResult() = default;
 
 CdmPromiseResult CdmPromiseResult::SuccessResult() {
-  CdmPromiseResult result(static_cast<::media::MediaKeys::Exception>(0), 0, "");
+  CdmPromiseResult result(static_cast<::media::CdmPromise::Exception>(0), 0,
+                          "");
   result.success_ = true;
   return result;
 }

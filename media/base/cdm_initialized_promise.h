@@ -11,9 +11,10 @@
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
 
 namespace media {
+
+class MediaKeys;
 
 // Promise to be resolved when the CDM is initialized. It owns the MediaKeys
 // object until the initialization completes, which it then passes to
@@ -26,7 +27,7 @@ class MEDIA_EXPORT CdmInitializedPromise : public SimpleCdmPromise {
 
   // SimpleCdmPromise implementation.
   void resolve() override;
-  void reject(MediaKeys::Exception exception_code,
+  void reject(CdmPromise::Exception exception_code,
               uint32_t system_code,
               const std::string& error_message) override;
 

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "media/base/media_keys.h"
+#include "media/base/cdm_promise.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 
@@ -29,10 +29,10 @@ enum CdmResultForUMA {
 };
 
 MEDIA_BLINK_EXPORT CdmResultForUMA
-ConvertCdmExceptionToResultForUMA(MediaKeys::Exception exception_code);
+ConvertCdmExceptionToResultForUMA(CdmPromise::Exception exception_code);
 
 MEDIA_BLINK_EXPORT blink::WebContentDecryptionModuleException
-ConvertCdmException(MediaKeys::Exception exception_code);
+ConvertCdmException(CdmPromise::Exception exception_code);
 
 MEDIA_BLINK_EXPORT void ReportCdmResultUMA(const std::string& uma_name,
                                            CdmResultForUMA result);

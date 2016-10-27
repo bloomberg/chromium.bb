@@ -10,6 +10,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decode_status.h"
 #include "media/base/decryptor.h"
@@ -62,8 +63,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::EmeInitDataType, media::EmeInitDataType::MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
                           media::EncryptionScheme::CipherMode::CIPHER_MODE_MAX)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::Exception,
-                          media::MediaKeys::EXCEPTION_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
+                          media::CdmPromise::EXCEPTION_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::MessageType,
                           media::MediaKeys::MESSAGE_TYPE_MAX)

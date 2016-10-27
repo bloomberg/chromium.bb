@@ -11,12 +11,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/decryptor.h"
-#include "media/base/media_keys.h"
 
 namespace media {
 
 static mojom::CdmPromiseResultPtr GetRejectResult(
-    MediaKeys::Exception exception,
+    CdmPromise::Exception exception,
     uint32_t system_code,
     const std::string& error_message) {
   mojom::CdmPromiseResultPtr cdm_promise_result(mojom::CdmPromiseResult::New());
@@ -52,7 +51,7 @@ void MojoCdmPromise<T...>::resolve(const T&... result) {
 }
 
 template <typename... T>
-void MojoCdmPromise<T...>::reject(MediaKeys::Exception exception,
+void MojoCdmPromise<T...>::reject(CdmPromise::Exception exception,
                                   uint32_t system_code,
                                   const std::string& error_message) {
   MarkPromiseSettled();

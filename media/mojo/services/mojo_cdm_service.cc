@@ -181,7 +181,7 @@ void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
   // populated. See http://crbug.com/469366
   if (!cdm || !context_) {
     cdm_promise_result->success = false;
-    cdm_promise_result->exception = MediaKeys::Exception::NOT_SUPPORTED_ERROR;
+    cdm_promise_result->exception = CdmPromise::Exception::NOT_SUPPORTED_ERROR;
     cdm_promise_result->system_code = 0;
     cdm_promise_result->error_message = error_message;
     callback.Run(std::move(cdm_promise_result), 0, nullptr);

@@ -9,9 +9,9 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "media/base/cdm_promise.h"
-#include "media/base/media_keys.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 
@@ -50,7 +50,7 @@ class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
 
   // CdmPromiseTemplate<T> implementation.
   void resolve(const std::string& session_id) override;
-  void reject(MediaKeys::Exception exception_code,
+  void reject(CdmPromise::Exception exception_code,
               uint32_t system_code,
               const std::string& error_message) override;
 

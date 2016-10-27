@@ -10,21 +10,21 @@
 namespace media {
 
 CdmResultForUMA ConvertCdmExceptionToResultForUMA(
-    MediaKeys::Exception exception_code) {
+    CdmPromise::Exception exception_code) {
   switch (exception_code) {
-    case MediaKeys::NOT_SUPPORTED_ERROR:
+    case CdmPromise::NOT_SUPPORTED_ERROR:
       return NOT_SUPPORTED_ERROR;
-    case MediaKeys::INVALID_STATE_ERROR:
+    case CdmPromise::INVALID_STATE_ERROR:
       return INVALID_STATE_ERROR;
-    case MediaKeys::INVALID_ACCESS_ERROR:
+    case CdmPromise::INVALID_ACCESS_ERROR:
       return INVALID_ACCESS_ERROR;
-    case MediaKeys::QUOTA_EXCEEDED_ERROR:
+    case CdmPromise::QUOTA_EXCEEDED_ERROR:
       return QUOTA_EXCEEDED_ERROR;
-    case MediaKeys::UNKNOWN_ERROR:
+    case CdmPromise::UNKNOWN_ERROR:
       return UNKNOWN_ERROR;
-    case MediaKeys::CLIENT_ERROR:
+    case CdmPromise::CLIENT_ERROR:
       return CLIENT_ERROR;
-    case MediaKeys::OUTPUT_ERROR:
+    case CdmPromise::OUTPUT_ERROR:
       return OUTPUT_ERROR;
   }
   NOTREACHED();
@@ -32,26 +32,26 @@ CdmResultForUMA ConvertCdmExceptionToResultForUMA(
 }
 
 blink::WebContentDecryptionModuleException ConvertCdmException(
-    MediaKeys::Exception exception_code) {
+    CdmPromise::Exception exception_code) {
   switch (exception_code) {
-    case MediaKeys::NOT_SUPPORTED_ERROR:
+    case CdmPromise::NOT_SUPPORTED_ERROR:
       return blink::WebContentDecryptionModuleExceptionNotSupportedError;
-    case MediaKeys::INVALID_STATE_ERROR:
+    case CdmPromise::INVALID_STATE_ERROR:
       return blink::WebContentDecryptionModuleExceptionInvalidStateError;
 
     // TODO(jrummell): Since InvalidAccess is not returned, thus should be
     // renamed to TYPE_ERROR. http://crbug.com/570216#c11.
-    case MediaKeys::INVALID_ACCESS_ERROR:
+    case CdmPromise::INVALID_ACCESS_ERROR:
       return blink::WebContentDecryptionModuleExceptionTypeError;
-    case MediaKeys::QUOTA_EXCEEDED_ERROR:
+    case CdmPromise::QUOTA_EXCEEDED_ERROR:
       return blink::WebContentDecryptionModuleExceptionQuotaExceededError;
-    case MediaKeys::UNKNOWN_ERROR:
+    case CdmPromise::UNKNOWN_ERROR:
       return blink::WebContentDecryptionModuleExceptionUnknownError;
 
     // These are deprecated, and should be removed.
     // http://crbug.com/570216#c11.
-    case MediaKeys::CLIENT_ERROR:
-    case MediaKeys::OUTPUT_ERROR:
+    case CdmPromise::CLIENT_ERROR:
+    case CdmPromise::OUTPUT_ERROR:
       break;
   }
   NOTREACHED();

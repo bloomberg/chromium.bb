@@ -129,21 +129,22 @@ static std::string GetUnitTestResultMessage(bool success) {
   return message;
 }
 
-static cdm::Error ConvertException(media::MediaKeys::Exception exception_code) {
+static cdm::Error ConvertException(
+    media::CdmPromise::Exception exception_code) {
   switch (exception_code) {
-    case media::MediaKeys::NOT_SUPPORTED_ERROR:
+    case media::CdmPromise::NOT_SUPPORTED_ERROR:
       return cdm::kNotSupportedError;
-    case media::MediaKeys::INVALID_STATE_ERROR:
+    case media::CdmPromise::INVALID_STATE_ERROR:
       return cdm::kInvalidStateError;
-    case media::MediaKeys::INVALID_ACCESS_ERROR:
+    case media::CdmPromise::INVALID_ACCESS_ERROR:
       return cdm::kInvalidAccessError;
-    case media::MediaKeys::QUOTA_EXCEEDED_ERROR:
+    case media::CdmPromise::QUOTA_EXCEEDED_ERROR:
       return cdm::kQuotaExceededError;
-    case media::MediaKeys::UNKNOWN_ERROR:
+    case media::CdmPromise::UNKNOWN_ERROR:
       return cdm::kUnknownError;
-    case media::MediaKeys::CLIENT_ERROR:
+    case media::CdmPromise::CLIENT_ERROR:
       return cdm::kClientError;
-    case media::MediaKeys::OUTPUT_ERROR:
+    case media::CdmPromise::OUTPUT_ERROR:
       return cdm::kOutputError;
   }
   NOTREACHED();
@@ -859,7 +860,7 @@ void ClearKeyCdm::OnPromiseResolved(uint32_t promise_id) {
 }
 
 void ClearKeyCdm::OnPromiseFailed(uint32_t promise_id,
-                                  MediaKeys::Exception exception_code,
+                                  CdmPromise::Exception exception_code,
                                   uint32_t system_code,
                                   const std::string& error_message) {
   host_->OnRejectPromise(promise_id,

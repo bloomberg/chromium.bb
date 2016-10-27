@@ -213,7 +213,7 @@ class CdmAdapterTest : public testing::Test {
   MOCK_METHOD0(OnResolve, void());
   MOCK_METHOD1(OnResolveWithSession, void(const std::string& session_id));
   MOCK_METHOD3(OnReject,
-               void(MediaKeys::Exception exception_code,
+               void(CdmPromise::Exception exception_code,
                     uint32_t system_code,
                     const std::string& error_message));
 

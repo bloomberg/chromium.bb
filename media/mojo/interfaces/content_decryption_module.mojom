@@ -24,7 +24,7 @@ struct CdmConfig {
 // - When |success| is false, the promise is rejected with |exception|,
 //   |system_code| and |error_message|.
 struct CdmPromiseResult {
-  // See media::MediaKeys::Exception
+  // See media::CdmPromise::Exception
   [Native]
   enum Exception;
 

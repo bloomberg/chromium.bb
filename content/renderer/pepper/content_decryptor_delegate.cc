@@ -36,6 +36,7 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "ui/gfx/geometry/rect.h"
 
+using media::CdmPromise;
 using media::Decryptor;
 using media::MediaKeys;
 using media::NewSessionCdmPromise;
@@ -289,26 +290,26 @@ PP_InitDataType MediaInitDataTypeToPpInitDataType(
   return PP_INITDATATYPE_KEYIDS;
 }
 
-MediaKeys::Exception PpExceptionTypeToMediaException(
+CdmPromise::Exception PpExceptionTypeToCdmPromiseException(
     PP_CdmExceptionCode exception_code) {
   switch (exception_code) {
     case PP_CDMEXCEPTIONCODE_NOTSUPPORTEDERROR:
-      return MediaKeys::NOT_SUPPORTED_ERROR;
+      return CdmPromise::NOT_SUPPORTED_ERROR;
     case PP_CDMEXCEPTIONCODE_INVALIDSTATEERROR:
-      return MediaKeys::INVALID_STATE_ERROR;
+      return CdmPromise::INVALID_STATE_ERROR;
     case PP_CDMEXCEPTIONCODE_INVALIDACCESSERROR:
-      return MediaKeys::INVALID_ACCESS_ERROR;
+      return CdmPromise::INVALID_ACCESS_ERROR;
     case PP_CDMEXCEPTIONCODE_QUOTAEXCEEDEDERROR:
-      return MediaKeys::QUOTA_EXCEEDED_ERROR;
+      return CdmPromise::QUOTA_EXCEEDED_ERROR;
     case PP_CDMEXCEPTIONCODE_UNKNOWNERROR:
-      return MediaKeys::UNKNOWN_ERROR;
+      return CdmPromise::UNKNOWN_ERROR;
     case PP_CDMEXCEPTIONCODE_CLIENTERROR:
-      return MediaKeys::CLIENT_ERROR;
+      return CdmPromise::CLIENT_ERROR;
     case PP_CDMEXCEPTIONCODE_OUTPUTERROR:
-      return MediaKeys::OUTPUT_ERROR;
+      return CdmPromise::OUTPUT_ERROR;
     default:
       NOTREACHED();
-      return MediaKeys::UNKNOWN_ERROR;
+      return CdmPromise::UNKNOWN_ERROR;
   }
 }
 
@@ -416,8 +417,8 @@ void ContentDecryptorDelegate::SetServerCertificate(
     std::unique_ptr<media::SimpleCdmPromise> promise) {
   if (certificate.size() < media::limits::kMinCertificateLength ||
       certificate.size() > media::limits::kMaxCertificateLength) {
-    promise->reject(
-        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect certificate.");
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+                    "Incorrect certificate.");
     return;
   }
 
@@ -470,8 +471,7 @@ void ContentDecryptorDelegate::CloseSession(
     const std::string& session_id,
     std::unique_ptr<SimpleCdmPromise> promise) {
   if (session_id.length() > media::limits::kMaxSessionIdLength) {
-    promise->reject(
-        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
     return;
   }
 
@@ -484,8 +484,7 @@ void ContentDecryptorDelegate::RemoveSession(
     const std::string& session_id,
     std::unique_ptr<SimpleCdmPromise> promise) {
   if (session_id.length() > media::limits::kMaxSessionIdLength) {
-    promise->reject(
-        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
     return;
   }
 
@@ -756,8 +755,8 @@ void ContentDecryptorDelegate::OnPromiseRejected(
   StringVar* error_description_string = StringVar::FromPPVar(error_description);
   DCHECK(error_description_string);
   cdm_promise_adapter_.RejectPromise(
-      promise_id, PpExceptionTypeToMediaException(exception_code), system_code,
-      error_description_string->value());
+      promise_id, PpExceptionTypeToCdmPromiseException(exception_code),
+      system_code, error_description_string->value());
 }
 
 void ContentDecryptorDelegate::OnSessionMessage(PP_Var session_id,

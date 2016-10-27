@@ -47,8 +47,7 @@ void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
   new_session_created_cb_.Run(session_id, &status);
 
   if (status == SessionInitStatus::UNKNOWN_STATUS) {
-    reject(MediaKeys::INVALID_STATE_ERROR, 0,
-           "Cannot finish session initialization");
+    reject(INVALID_STATE_ERROR, 0, "Cannot finish session initialization");
     return;
   }
 
@@ -57,7 +56,7 @@ void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
   web_cdm_result_.completeWithSession(ConvertStatus(status));
 }
 
-void NewSessionCdmResultPromise::reject(MediaKeys::Exception exception_code,
+void NewSessionCdmResultPromise::reject(CdmPromise::Exception exception_code,
                                         uint32_t system_code,
                                         const std::string& error_message) {
   MarkPromiseSettled();

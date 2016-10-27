@@ -34,7 +34,7 @@ void CdmCallbackPromise<T...>::resolve(const T&... result) {
 }
 
 template <typename... T>
-void CdmCallbackPromise<T...>::reject(MediaKeys::Exception exception_code,
+void CdmCallbackPromise<T...>::reject(CdmPromise::Exception exception_code,
                                       uint32_t system_code,
                                       const std::string& error_message) {
   MarkPromiseSettled();

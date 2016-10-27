@@ -292,7 +292,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   }
 
   void OnReject(ExpectedResult expected_result,
-                MediaKeys::Exception exception_code,
+                CdmPromise::Exception exception_code,
                 uint32_t system_code,
                 const std::string& error_message) {
     EXPECT_EQ(expected_result, REJECTED)

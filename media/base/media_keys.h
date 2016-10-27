@@ -66,20 +66,6 @@ typedef ScopedVector<CdmKeyInformation> CdmKeysInfo;
 class MEDIA_EXPORT MediaKeys
     : public base::RefCountedThreadSafe<MediaKeys, MediaKeysTraits> {
  public:
-  // TODO(xhwang): Remove after prefixed EME support is removed. See
-  // http://crbug.com/249976
-  // Must be a superset of cdm::MediaKeyException.
-  enum Exception {
-    NOT_SUPPORTED_ERROR,
-    INVALID_STATE_ERROR,
-    INVALID_ACCESS_ERROR,
-    QUOTA_EXCEEDED_ERROR,
-    UNKNOWN_ERROR,
-    CLIENT_ERROR,
-    OUTPUT_ERROR,
-    EXCEPTION_MAX = OUTPUT_ERROR
-  };
-
   // Type of license required when creating/loading a session.
   // Must be consistent with the values specified in the spec:
   // https://w3c.github.io/encrypted-media/#idl-def-MediaKeySessionType
