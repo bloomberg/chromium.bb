@@ -111,13 +111,18 @@ void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
 }
 
 base::MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
-  return current_state_;
+  // SUSPENDED state may not make sense to the browser process. Use THROTTLED
+  // instead when the global state is SUSPENDED.
+  // TODO(bashi): Maybe worth considering another state for the browser.
+  return current_state_ == MemoryState::SUSPENDED ? MemoryState::THROTTLED
+                                                  : current_state_;
 }
 
 void MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting(
     base::MemoryState memory_state) {
   // This changes the current state temporariy for testing. The state will be
   // updated later by the task posted at ScheduleUpdateState.
+  DCHECK(memory_state != MemoryState::UNKNOWN);
   base::MemoryState prev_state = current_state_;
   current_state_ = memory_state;
   if (prev_state != current_state_) {
@@ -200,11 +205,7 @@ void MemoryCoordinatorImpl::UpdateState() {
 }
 
 void MemoryCoordinatorImpl::NotifyStateToClients() {
-  // SUSPENDED state may not make sense to the browser process. Use THROTTLED
-  // instead when the global state is SUSPENDED.
-  // TODO(bashi): Maybe worth considering another state for the browser.
-  auto state = current_state_ == MemoryState::SUSPENDED ? MemoryState::THROTTLED
-                                                        : current_state_;
+  auto state = GetCurrentMemoryState();
   base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(state);
 }
 

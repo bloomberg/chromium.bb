@@ -120,9 +120,11 @@ TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {
 
   // Transitions from SUSPENDED
   coordinator_->current_state_ = base::MemoryState::SUSPENDED;
-  EXPECT_EQ(base::MemoryState::SUSPENDED,
+  // GetCurrentMemoryState() returns THROTTLED state for the browser process
+  // when the global state is SUSPENDED.
+  EXPECT_EQ(base::MemoryState::THROTTLED,
             coordinator_->GetCurrentMemoryState());
-  EXPECT_EQ(base::MemoryState::SUSPENDED,
+  EXPECT_EQ(base::MemoryState::THROTTLED,
             base::MemoryCoordinatorProxy::GetInstance()->
                 GetCurrentMemoryState());
 
@@ -186,6 +188,16 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
             base::MemoryCoordinatorProxy::GetInstance()->
                 GetCurrentMemoryState());
   EXPECT_EQ(base::MemoryState::NORMAL, client.state());
+
+  base::MemoryCoordinatorProxy::GetInstance()->SetCurrentMemoryStateForTesting(
+      base::MemoryState::SUSPENDED);
+  // GetCurrentMemoryState() returns THROTTLED state for the browser process
+  // when the global state is SUSPENDED.
+  EXPECT_EQ(base::MemoryState::THROTTLED,
+            coordinator_->GetCurrentMemoryState());
+  EXPECT_EQ(base::MemoryState::THROTTLED,
+            base::MemoryCoordinatorProxy::GetInstance()->
+                GetCurrentMemoryState());
 
   base::MemoryCoordinatorProxy::GetInstance()->SetCurrentMemoryStateForTesting(
       base::MemoryState::THROTTLED);
