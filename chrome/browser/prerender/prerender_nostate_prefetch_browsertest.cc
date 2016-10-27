@@ -403,9 +403,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, RendererCrash) {
 }
 
 // Checks that the prefetch of png correctly loads the png.
-// TODO(pasko): Add support for prefetching non-HTML documents and re-enable the
-// test.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, DISABLED_Png) {
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Png) {
   RequestCounter counter;
   CountRequestFor(kPrefetchPng, &counter);
   PrefetchFromFile(kPrefetchPng, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
@@ -413,9 +411,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, DISABLED_Png) {
 }
 
 // Checks that the prefetch of png correctly loads the jpeg.
-// TODO(pasko): Add support for prefetching non-HTML documents and re-enable the
-// test.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, DISABLED_Jpeg) {
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Jpeg) {
   RequestCounter counter;
   CountRequestFor(kPrefetchJpeg, &counter);
   PrefetchFromFile(kPrefetchJpeg, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
