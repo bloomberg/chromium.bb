@@ -43,6 +43,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -507,14 +508,10 @@ class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
       : content::WebContentsObserver(contents) {}
   ~TestFailProvisionalLoadObserver() override {}
 
-  // This method is invoked when the provisional load failed.
-  void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) override {
-    fail_url_ = validated_url;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->IsErrorPage())
+      fail_url_ = navigation_handle->GetURL();
   }
 
   const GURL& fail_url() const { return fail_url_; }
