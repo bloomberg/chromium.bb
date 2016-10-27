@@ -291,6 +291,25 @@ def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
   }
 
 
+def link_outputs_to_outdir(run_dir, out_dir, outputs):
+  """Links any named outputs to out_dir so they can be uploaded.
+
+  Raises an error if the file already exists in that directory.
+  """
+  if not outputs:
+    return
+  isolateserver.create_directories(out_dir, outputs)
+  for o in outputs:
+    try:
+      file_path.link_file(
+          os.path.join(out_dir, o),
+          os.path.join(run_dir, o),
+          file_path.HARDLINK_WITH_FALLBACK)
+    except OSError as e:
+      # TODO(aludwin): surface this error
+      sys.stderr.write('<Could not return file %s: %s>' % (o, e))
+
+
 def delete_and_upload(storage, out_dir, leak_temp_dir):
   """Deletes the temporary run directory and uploads results back.
 
@@ -303,7 +322,6 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
           behind.
     - stats: uploading stats.
   """
-
   # Upload out_dir and generate a .isolated file out of this directory. It is
   # only done if files were written in the directory.
   outputs_ref = None
@@ -353,7 +371,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 
 def map_and_run(
-    command, isolated_hash, storage, isolate_cache, init_name_caches,
+    command, isolated_hash, storage, isolate_cache, outputs, init_name_caches,
     leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
     install_packages_fn, use_symlinks):
   """Runs a command with optional isolated input/output.
@@ -441,6 +459,11 @@ def map_and_run(
       cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
       command = bundle.command + extra_args
 
+    # If we have an explicit list of files to return, make sure their
+    # directories exist now.
+    if storage and outputs:
+      isolateserver.create_directories(run_dir, outputs)
+
     command = tools.fix_python_path(command)
     command = process_command(command, out_dir, bot_file)
     file_path.ensure_command_has_abs_path(command, cwd)
@@ -460,8 +483,14 @@ def map_and_run(
     logging.exception('internal failure: %s', e)
     result['internal_failure'] = str(e)
     on_error.report(None)
+
+  # Clean up
   finally:
     try:
+      # Try to link files to the output directory, if specified.
+      if out_dir:
+        link_outputs_to_outdir(run_dir, out_dir, outputs)
+
       success = False
       if leak_temp_dir:
         success = True
@@ -518,7 +547,7 @@ def map_and_run(
 
 
 def run_tha_test(
-    command, isolated_hash, storage, isolate_cache, init_name_caches,
+    command, isolated_hash, storage, isolate_cache, outputs, init_name_caches,
     leak_temp_dir, result_json, root_dir, hard_timeout, grace_period, bot_file,
     extra_args, install_packages_fn, use_symlinks):
   """Runs an executable and records execution metadata.
@@ -585,7 +614,7 @@ def run_tha_test(
 
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
-      command, isolated_hash, storage, isolate_cache, init_name_caches,
+      command, isolated_hash, storage, isolate_cache, outputs, init_name_caches,
       leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
       install_packages_fn, use_symlinks)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
@@ -764,6 +793,14 @@ def create_option_parser():
       help='Path to a file describing the state of the host. The content is '
            'defined by on_before_task() in bot_config.')
   parser.add_option(
+      '--output', action='append',
+      help='Specifies an output to return. If no outputs are specified, all '
+           'files located in $(ISOLATED_OUTDIR) will be returned; '
+           'otherwise, outputs in both $(ISOLATED_OUTDIR) and those '
+           'specified by --output option (there can be multiple) will be '
+           'returned. Note that if a file in OUT_DIR has the same path '
+           'as an --output option, the --output version will be returned.')
+  parser.add_option(
       '-a', '--argsfile',
       # This is actually handled in parse_args; it's included here purely so it
       # can make it into the help text.
@@ -892,6 +929,7 @@ def main(args):
             options.isolated,
             storage,
             isolate_cache,
+            options.output,
             init_named_caches,
             options.leak_temp_dir,
             options.json, options.root_dir,
@@ -905,6 +943,7 @@ def main(args):
         options.isolated,
         None,
         isolate_cache,
+        options.output,
         init_named_caches,
         options.leak_temp_dir,
         options.json,

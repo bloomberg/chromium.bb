@@ -212,6 +212,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         isolated_hash,
         StorageFake(files),
         isolateserver.MemoryCache(),
+        None,
         lambda run_dir: None,
         False,
         None,
@@ -541,6 +542,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           isolated_hash,
           store,
           isolateserver.MemoryCache(),
+          None,
           lambda run_dir: None,
           False,
           None,
@@ -571,6 +573,101 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       }
       if sys.platform == 'win32':
         isolated['files']['foo'].pop('m')
+      uploaded = json_dumps(isolated)
+      uploaded_hash = isolateserver_mock.hash_content(uploaded)
+      hashes.add(uploaded_hash)
+      self.assertEqual(hashes, set(server.contents['default-store']))
+
+      expected = ''.join([
+        '[run_isolated_out_hack]',
+        '{"hash":"%s","namespace":"default-store","storage":%s}' % (
+            uploaded_hash, json.dumps(server.url)),
+        '[/run_isolated_out_hack]'
+      ]) + '\n'
+      self.assertEqual(expected, sys.stdout.getvalue())
+    finally:
+      server.close()
+
+
+# Like RunIsolatedTestRun, but ensures that specific output files
+# (as opposed to anything in $(ISOLATED_OUTDIR)) are returned.
+class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
+  def test_output(self):
+    # Starts a full isolate server mock and have run_tha_test() uploads results
+    # back after the task completed.
+    server = isolateserver_mock.MockIsolateServer()
+    try:
+      script = (
+        'import sys\n'
+        'open(sys.argv[1], "w").write("bar")\n'
+        'open(sys.argv[2], "w").write("baz")\n')
+      script_hash = isolateserver_mock.hash_content(script)
+      isolated = {
+        'algo': 'sha-1',
+        'command': ['cmd.py', 'foo', 'foodir/foo2'],
+        'files': {
+          'cmd.py': {
+            'h': script_hash,
+            'm': 0700,
+            's': len(script),
+          },
+        },
+        'version': isolated_format.ISOLATED_FILE_VERSION,
+      }
+      if sys.platform == 'win32':
+        isolated['files']['cmd.py'].pop('m')
+      isolated_data = json_dumps(isolated)
+      isolated_hash = isolateserver_mock.hash_content(isolated_data)
+      server.add_content('default-store', script)
+      server.add_content('default-store', isolated_data)
+      store = isolateserver.get_storage(server.url, 'default-store')
+
+      self.mock(sys, 'stdout', StringIO.StringIO())
+      ret = run_isolated.run_tha_test(
+          None,
+          isolated_hash,
+          store,
+          isolateserver.MemoryCache(),
+          ['foo', 'foodir/foo2'],
+          lambda run_dir: None,
+          False,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          lambda run_dir: None,
+          False)
+      self.assertEqual(0, ret)
+
+      # It uploaded back. Assert the store has a new item containing foo.
+      hashes = {isolated_hash, script_hash}
+      foo_output_hash = isolateserver_mock.hash_content('bar')
+      foo2_output_hash = isolateserver_mock.hash_content('baz')
+      hashes.add(foo_output_hash)
+      hashes.add(foo2_output_hash)
+      isolated =  {
+        'algo': 'sha-1',
+        'files': {
+          'foo': {
+            'h': foo_output_hash,
+            # TODO(maruel): Handle umask.
+            'm': 0640,
+            's': 3,
+          },
+          'foodir/foo2': {
+            'h': foo2_output_hash,
+            # TODO(maruel): Handle umask.
+            'm': 0640,
+            's': 3,
+          },
+        },
+        'version': isolated_format.ISOLATED_FILE_VERSION,
+      }
+      if sys.platform == 'win32':
+        isolated['files']['foo'].pop('m')
+        isolated['files']['foodir/foo2'].pop('m')
       uploaded = json_dumps(isolated)
       uploaded_hash = isolateserver_mock.hash_content(uploaded)
       hashes.add(uploaded_hash)
