@@ -85,14 +85,11 @@ void DomTreeExtractor::ExtractLayoutTreeNodes() {
   dom_tree_.layout_tree_nodes_.reserve(
       dom_tree_.layout_tree_and_styles_result_->GetLayoutTreeNodes()->size());
 
-  // Only extract layout tree nodes that map to a DOM node.
   for (const std::unique_ptr<css::LayoutTreeNode>& layout_node :
        *dom_tree_.layout_tree_and_styles_result_->GetLayoutTreeNodes()) {
     std::unordered_map<NodeId, size_t>::const_iterator it =
-        dom_tree_.node_id_to_index_.find(layout_node->GetBackendNodeId());
-    if (it == dom_tree_.node_id_to_index_.end())
-      continue;
-
+        dom_tree_.node_id_to_index_.find(layout_node->GetNodeId());
+    DCHECK(it != dom_tree_.node_id_to_index_.end());
     dom_tree_.layout_tree_nodes_.push_back(layout_node.get());
   }
 }

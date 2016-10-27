@@ -12,8 +12,12 @@
 function test()
 {
     InspectorTest.sendCommand("DOM.enable", {});
-    var whitelist = ["transform", "transform-origin", "height", "width", "display", "outline-color"];
-    InspectorTest.sendCommandOrDie("CSS.getLayoutTreeAndStyles", {"computedStyleWhitelist": whitelist}, onLayoutTreeNodes);
+    InspectorTest.sendCommandOrDie("DOM.getDocument", {"depth": -1}, onDocument);
+
+    function onDocument(response) {
+        var whitelist = ["transform", "transform-origin", "height", "width", "display", "outline-color"];
+        InspectorTest.sendCommandOrDie("CSS.getLayoutTreeAndStyles", {"computedStyleWhitelist": whitelist}, onLayoutTreeNodes);
+    }
 
     function onLayoutTreeNodes(response)
     {

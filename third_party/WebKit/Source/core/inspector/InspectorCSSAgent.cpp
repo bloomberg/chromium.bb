@@ -354,8 +354,8 @@ class InspectorCSSAgent::StyleSheetAction : public InspectorHistory::Action {
 struct InspectorCSSAgent::VectorStringHashTraits
     : public WTF::GenericHashTraits<Vector<String>> {
   static unsigned hash(const Vector<String>& vec) {
-    unsigned h = DefaultHash<String>::Hash::hash(vec[0]);
-    for (size_t i = 1; i < vec.size(); i++) {
+    unsigned h = DefaultHash<size_t>::Hash::hash(vec.size());
+    for (size_t i = 0; i < vec.size(); i++) {
       h = WTF::hashInts(h, DefaultHash<String>::Hash::hash(vec[i]));
     }
     return h;
@@ -2374,9 +2374,17 @@ int InspectorCSSAgent::getStyleIndexForNode(
       CSSComputedStyleDeclaration::create(node, true);
 
   Vector<String> style;
+  bool allPropertiesEmpty = true;
   for (const auto& pair : cssPropertyWhitelist) {
-    style.append(computedStyleInfo->getPropertyValue(pair.second));
+    String value = computedStyleInfo->getPropertyValue(pair.second);
+    if (!value.isEmpty())
+      allPropertiesEmpty = false;
+    style.append(value);
   }
+
+  // -1 means an empty style.
+  if (allPropertiesEmpty)
+    return -1;
 
   ComputedStylesMap::iterator it = styleToIndexMap.find(style);
   if (it != styleToIndexMap.end())
@@ -2386,7 +2394,10 @@ int InspectorCSSAgent::getStyleIndexForNode(
   std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>
       styleProperties =
           protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
+
   for (size_t i = 0; i < style.size(); i++) {
+    if (style[i].isEmpty())
+      continue;
     styleProperties->addItem(protocol::CSS::CSSComputedStyleProperty::create()
                                  .setName(cssPropertyWhitelist[i].first)
                                  .setValue(style[i])
@@ -2433,17 +2444,22 @@ void InspectorCSSAgent::visitLayoutTreeNodes(
     if (!layoutObject)
       continue;
 
-    int backendNodeId = DOMNodeIds::idForNode(node);
+    int nodeId = m_domAgent->boundNodeId(node);
+    if (!nodeId)
+      continue;
+
     std::unique_ptr<protocol::CSS::LayoutTreeNode> layoutTreeNode =
         protocol::CSS::LayoutTreeNode::create()
-            .setBackendNodeId(backendNodeId)
-            .setStyleIndex(getStyleIndexForNode(
-                node, cssPropertyWhitelist, styleToIndexMap, computedStyles))
+            .setNodeId(nodeId)
             .setBoundingBox(buildRectForFloatRect(
                 node->isElementNode()
                     ? FloatRect(toElement(node)->boundsInViewport())
                     : layoutObject->absoluteBoundingBoxRect()))
             .build();
+    int styleIndex = getStyleIndexForNode(node, cssPropertyWhitelist,
+                                          styleToIndexMap, computedStyles);
+    if (styleIndex != -1)
+      layoutTreeNode->setStyleIndex(styleIndex);
 
     if (layoutObject->isText()) {
       LayoutText* layoutText = toLayoutText(layoutObject);

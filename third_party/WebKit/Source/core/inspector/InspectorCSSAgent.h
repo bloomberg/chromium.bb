@@ -332,6 +332,8 @@ class CORE_EXPORT InspectorCSSAgent final
       ComputedStylesMap& styleToIndexMap,
       protocol::Array<protocol::CSS::ComputedStyle>& computedStyles);
 
+  // A non-zero index corresponds to a style in |computedStyles|, -1 means an
+  // empty style.
   int getStyleIndexForNode(
       Node*,
       const Vector<std::pair<String, CSSPropertyID>>& cssPropertyWhitelist,

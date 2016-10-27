@@ -10,57 +10,56 @@ LayoutTreeNodes result:
 {
   "layoutTreeNodes": [
     {
-      "backendNodeId": 1,
+      "nodeId": 1,
       "boundingBox": {
         "x": 0,
         "y": 0,
         "width": 785,
         "height": 600
-      },
-      "styleIndex": 0
+      }
     },
     {
-      "backendNodeId": 2,
+      "nodeId": 2,
       "boundingBox": {
         "x": 0,
         "y": 0,
         "width": 785,
         "height": 911
       },
+      "styleIndex": 0
+    },
+    {
+      "nodeId": 9,
+      "boundingBox": {
+        "x": 8,
+        "y": 8,
+        "width": 769,
+        "height": 882
+      },
       "styleIndex": 1
     },
     {
-      "backendNodeId": 3,
+      "nodeId": 10,
       "boundingBox": {
         "x": 8,
         "y": 8,
         "width": 769,
         "height": 882
       },
-      "styleIndex": 2
+      "styleIndex": 1
     },
     {
-      "backendNodeId": 4,
-      "boundingBox": {
-        "x": 8,
-        "y": 8,
-        "width": 769,
-        "height": 882
-      },
-      "styleIndex": 2
-    },
-    {
-      "backendNodeId": 5,
+      "nodeId": 11,
       "boundingBox": {
         "x": 8,
         "y": 8,
         "width": 769,
         "height": 16
       },
-      "styleIndex": 3
+      "styleIndex": 2
     },
     {
-      "backendNodeId": 6,
+      "nodeId": 12,
       "boundingBox": {
         "x": 8,
         "y": 8,
@@ -80,10 +79,10 @@ LayoutTreeNodes result:
           "numCharacters": 9
         }
       ],
-      "styleIndex": 4
+      "styleIndex": 3
     },
     {
-      "backendNodeId": 7,
+      "nodeId": 13,
       "boundingBox": {
         "x": 8,
         "y": 568,
@@ -103,30 +102,30 @@ LayoutTreeNodes result:
           "numCharacters": 14
         }
       ],
-      "styleIndex": 4
+      "styleIndex": 3
     },
     {
-      "backendNodeId": 8,
+      "nodeId": 14,
       "boundingBox": {
         "x": 232,
         "y": 24,
         "width": 200,
         "height": 576
       },
-      "styleIndex": 5
+      "styleIndex": 4
     },
     {
-      "backendNodeId": 9,
+      "nodeId": 15,
       "boundingBox": {
         "x": 232,
         "y": 40,
         "width": 200,
         "height": 480
       },
-      "styleIndex": 6
+      "styleIndex": 5
     },
     {
-      "backendNodeId": 10,
+      "nodeId": 16,
       "boundingBox": {
         "x": 232,
         "y": 40,
@@ -446,40 +445,40 @@ LayoutTreeNodes result:
           "numCharacters": 8
         }
       ],
-      "styleIndex": 4
+      "styleIndex": 3
     },
     {
-      "backendNodeId": 11,
+      "nodeId": 17,
       "boundingBox": {
         "x": 232,
         "y": 536,
         "width": 200,
         "height": 48
       },
-      "styleIndex": 7
+      "styleIndex": 6
     },
     {
-      "backendNodeId": 12,
+      "nodeId": 18,
       "boundingBox": {
         "x": 272,
         "y": 536,
         "width": 160,
         "height": 16
       },
-      "styleIndex": 8
+      "styleIndex": 7
     },
     {
-      "backendNodeId": 13,
+      "nodeId": 19,
       "boundingBox": {
         "x": 272,
         "y": 552,
         "width": 144,
         "height": 32
       },
-      "styleIndex": 9
+      "styleIndex": 8
     },
     {
-      "backendNodeId": 14,
+      "nodeId": 20,
       "boundingBox": {
         "x": 272,
         "y": 552,
@@ -509,42 +508,20 @@ LayoutTreeNodes result:
           "numCharacters": 6
         }
       ],
-      "styleIndex": 9
+      "styleIndex": 8
     },
     {
-      "backendNodeId": 15,
-      "boundingBox": {
-        "x": 0,
-        "y": 0,
-        "width": 0,
-        "height": 0
-      },
-      "layoutText": "\n        ",
-      "styleIndex": 4
-    },
-    {
-      "backendNodeId": 16,
-      "boundingBox": {
-        "x": 0,
-        "y": 0,
-        "width": 0,
-        "height": 0
-      },
-      "layoutText": "\n    ",
-      "styleIndex": 4
-    },
-    {
-      "backendNodeId": 17,
+      "nodeId": 21,
       "boundingBox": {
         "x": 92,
         "y": 516,
         "width": 32,
         "height": 200
       },
-      "styleIndex": 10
+      "styleIndex": 9
     },
     {
-      "backendNodeId": 18,
+      "nodeId": 22,
       "boundingBox": {
         "x": 92,
         "y": 516,
@@ -574,165 +551,30 @@ LayoutTreeNodes result:
           "numCharacters": 5
         }
       ],
-      "styleIndex": 11
+      "styleIndex": 10
     },
     {
-      "backendNodeId": 19,
-      "boundingBox": {
-        "x": 10,
-        "y": 634,
-        "width": 400,
-        "height": 200
-      },
-      "styleIndex": 12
-    },
-    {
-      "backendNodeId": 20,
-      "boundingBox": {
-        "x": 18,
-        "y": 642,
-        "width": 384,
-        "height": 184
-      },
-      "styleIndex": 13
-    },
-    {
-      "backendNodeId": 21,
-      "boundingBox": {
-        "x": 18,
-        "y": 642,
-        "width": 384,
-        "height": 16
-      },
-      "styleIndex": 14
-    },
-    {
-      "backendNodeId": 22,
-      "boundingBox": {
-        "x": 8,
-        "y": 8,
-        "width": 352,
-        "height": 16
-      },
-      "layoutText": "\nHello from the iframe.\n",
-      "inlineTextNodes": [
-        {
-          "boundingBox": {
-            "x": 8,
-            "y": 8,
-            "width": 352,
-            "height": 16
-          },
-          "startCharacterIndex": 1,
-          "numCharacters": 22
-        }
-      ],
-      "styleIndex": 4
-    },
-    {
-      "backendNodeId": 23,
+      "nodeId": 23,
       "boundingBox": {
         "x": 8,
         "y": 632,
         "width": 404,
         "height": 204
       },
-      "styleIndex": 15
+      "styleIndex": 11
     },
     {
-      "backendNodeId": 24,
-      "boundingBox": {
-        "x": 0,
-        "y": 0,
-        "width": 0,
-        "height": 0
-      },
-      "layoutText": "\n    ",
-      "styleIndex": 4
-    },
-    {
-      "backendNodeId": 25,
+      "nodeId": 25,
       "boundingBox": {
         "x": 8,
         "y": 857,
         "width": 769,
         "height": 33
       },
-      "styleIndex": 16
-    },
-    {
-      "backendNodeId": 26,
-      "boundingBox": {
-        "x": 8,
-        "y": 857,
-        "width": 769,
-        "height": 33
-      },
-      "styleIndex": 16
-    },
-    {
-      "backendNodeId": 27,
-      "boundingBox": {
-        "x": 8,
-        "y": 857,
-        "width": 96,
-        "height": 33
-      },
-      "layoutText": "Hi!",
-      "inlineTextNodes": [
-        {
-          "boundingBox": {
-            "x": 8,
-            "y": 857.4375,
-            "width": 96,
-            "height": 32
-          },
-          "startCharacterIndex": 0,
-          "numCharacters": 3
-        }
-      ],
-      "styleIndex": 17
-    },
-    {
-      "backendNodeId": 28,
-      "boundingBox": {
-        "x": 8,
-        "y": 857,
-        "width": 769,
-        "height": 33
-      },
-      "styleIndex": 16
+      "styleIndex": 12
     }
   ],
   "computedStyles": [
-    {
-      "properties": [
-        {
-          "name": "transform",
-          "value": ""
-        },
-        {
-          "name": "transform-origin",
-          "value": ""
-        },
-        {
-          "name": "height",
-          "value": ""
-        },
-        {
-          "name": "width",
-          "value": ""
-        },
-        {
-          "name": "display",
-          "value": ""
-        },
-        {
-          "name": "outline-color",
-          "value": ""
-        }
-      ]
-    },
     {
       "properties": [
         {
@@ -1049,90 +891,6 @@ LayoutTreeNodes result:
         },
         {
           "name": "transform-origin",
-          "value": "200px 100px"
-        },
-        {
-          "name": "height",
-          "value": "200px"
-        },
-        {
-          "name": "width",
-          "value": "400px"
-        },
-        {
-          "name": "display",
-          "value": "block"
-        },
-        {
-          "name": "outline-color",
-          "value": "rgb(0, 0, 0)"
-        }
-      ]
-    },
-    {
-      "properties": [
-        {
-          "name": "transform",
-          "value": "none"
-        },
-        {
-          "name": "transform-origin",
-          "value": "192px 92px"
-        },
-        {
-          "name": "height",
-          "value": "184px"
-        },
-        {
-          "name": "width",
-          "value": "384px"
-        },
-        {
-          "name": "display",
-          "value": "block"
-        },
-        {
-          "name": "outline-color",
-          "value": "rgb(0, 0, 0)"
-        }
-      ]
-    },
-    {
-      "properties": [
-        {
-          "name": "transform",
-          "value": "none"
-        },
-        {
-          "name": "transform-origin",
-          "value": "192px 8px"
-        },
-        {
-          "name": "height",
-          "value": "16px"
-        },
-        {
-          "name": "width",
-          "value": "384px"
-        },
-        {
-          "name": "display",
-          "value": "block"
-        },
-        {
-          "name": "outline-color",
-          "value": "rgb(0, 0, 0)"
-        }
-      ]
-    },
-    {
-      "properties": [
-        {
-          "name": "transform",
-          "value": "none"
-        },
-        {
-          "name": "transform-origin",
           "value": "202px 102px"
         },
         {
@@ -1170,34 +928,6 @@ LayoutTreeNodes result:
         {
           "name": "width",
           "value": "769px"
-        },
-        {
-          "name": "display",
-          "value": "block"
-        },
-        {
-          "name": "outline-color",
-          "value": "rgb(255, 0, 0)"
-        }
-      ]
-    },
-    {
-      "properties": [
-        {
-          "name": "transform",
-          "value": "none"
-        },
-        {
-          "name": "transform-origin",
-          "value": "0px 0px"
-        },
-        {
-          "name": "height",
-          "value": "auto"
-        },
-        {
-          "name": "width",
-          "value": "auto"
         },
         {
           "name": "display",
