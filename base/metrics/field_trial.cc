@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -54,7 +55,6 @@ const size_t kFieldTrialAllocationSize = 4 << 10;  // 4 KiB = one page
 // ---------------------------------
 // | fte | trial_name | group_name |
 // ---------------------------------
-// TODO(lawrencewu): Actually update the activated flag.
 struct FieldTrialEntry {
   bool activated;
   uint32_t group_name_offset;
@@ -705,6 +705,8 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
                                      std::to_string(field_trial_length);
 
     cmd_line->AppendSwitchASCII(field_trial_handle_switch, field_trial_handle);
+    UMA_HISTOGRAM_COUNTS_10000("UMA.FieldTrialAllocator.Size",
+                               field_trial_length);
     return;
   }
 #endif
@@ -829,8 +831,6 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
   if (!shm->CreateAndMapAnonymous(kFieldTrialAllocationSize))
     TerminateBecauseOutOfMemory(kFieldTrialAllocationSize);
 
-  // TODO(lawrencewu): call UpdateTrackingHistograms() when all field trials
-  // have been registered (perhaps in the destructor?)
   global_->field_trial_allocator_.reset(new SharedPersistentMemoryAllocator(
       std::move(shm), 0, kAllocatorName, false));
   global_->field_trial_allocator_->CreateTrackingHistograms(kAllocatorName);
