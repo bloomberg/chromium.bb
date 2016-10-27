@@ -839,4 +839,75 @@ TEST_F(SQLRecoveryTest, AttachFailure) {
   tester.ExpectBucketCount(kErrorHistogramName, SQLITE_NOTADB, 1);
 }
 
+// Helper for SQLRecoveryTest.PageSize.  Creates a fresh db based on db_prefix,
+// with the given initial page size, and verifies it against the expected size.
+// Then changes to the final page size and recovers, verifying that the
+// recovered database ends up with the expected final page size.
+void TestPageSize(const base::FilePath& db_prefix,
+                  int initial_page_size,
+                  const std::string& expected_initial_page_size,
+                  int final_page_size,
+                  const std::string& expected_final_page_size) {
+  const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
+  const char kInsertSql1[] = "INSERT INTO x VALUES ('This is a test')";
+  const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
+  const char kSelectSql[] = "SELECT * FROM x ORDER BY t";
+
+  const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
+      base::IntToString(initial_page_size));
+  sql::Connection::Delete(db_path);
+  sql::Connection db;
+  db.set_page_size(initial_page_size);
+  ASSERT_TRUE(db.Open(db_path));
+  ASSERT_TRUE(db.Execute(kCreateSql));
+  ASSERT_TRUE(db.Execute(kInsertSql1));
+  ASSERT_TRUE(db.Execute(kInsertSql2));
+  ASSERT_EQ(expected_initial_page_size,
+            ExecuteWithResult(&db, "PRAGMA page_size"));
+
+  // Recovery will use the page size set in the connection object, which may not
+  // match the file's page size.
+  db.set_page_size(final_page_size);
+  sql::Recovery::RecoverDatabase(&db, db_path);
+
+  // Recovery poisoned the handle, must re-open.
+  db.Close();
+
+  // Make sure the page size is read from the file.
+  db.set_page_size(0);
+  ASSERT_TRUE(db.Open(db_path));
+  ASSERT_EQ(expected_final_page_size,
+            ExecuteWithResult(&db, "PRAGMA page_size"));
+  EXPECT_EQ("That was a test\nThis is a test",
+            ExecuteWithResults(&db, kSelectSql, "|", "\n"));
+}
+
+// Verify that sql::Recovery maintains the page size, and the virtual table
+// works with page sizes other than SQLite's default.  Also verify the case
+// where the default page size has changed.
+TEST_F(SQLRecoveryTest, PageSize) {
+  const std::string default_page_size =
+      ExecuteWithResult(&db(), "PRAGMA page_size");
+
+  // The database should have the default page size after recovery.
+  EXPECT_NO_FATAL_FAILURE(
+      TestPageSize(db_path(), 0, default_page_size, 0, default_page_size));
+
+  // Sync user 32k pages.
+  EXPECT_NO_FATAL_FAILURE(
+      TestPageSize(db_path(), 32768, "32768", 32768, "32768"));
+
+  // Many clients use 4k pages.  This is the SQLite default after 3.12.0.
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 4096, "4096", 4096, "4096"));
+
+  // 1k is the default page size before 3.12.0.
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 1024, "1024", 1024, "1024"));
+
+  // Databases with no page size specified should recover with the new default
+  // page size.  2k has never been the default page size.
+  ASSERT_NE("2048", default_page_size);
+  EXPECT_NO_FATAL_FAILURE(
+      TestPageSize(db_path(), 2048, "2048", 0, default_page_size));
+}
+
 }  // namespace
