@@ -89,17 +89,20 @@ void SyncControlVSyncProvider::GetVSyncParameters(
       if (relative_change < kRelativeIntervalDifferenceThreshold) {
         if (new_interval.InMicroseconds() < kMinVsyncIntervalUs ||
             new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
-#if defined(USE_ASH)
+#if defined(OS_WIN) || defined(USE_ASH)
           // On ash platforms (ChromeOS essentially), the real refresh interval
           // is queried from XRandR, regardless of the value calculated here,
           // and this value is overriden by ui::CompositorVSyncManager.  The log
           // should not be fatal in this case. Reconsider all this when XRandR
           // support is added to non-ash platforms.
           // http://crbug.com/340851
+          // On Windows |system_time| is based on QPC and it seems it may
+          // produce invalid value after a suspend/resume cycle.
+          // http://crbug.com/656469
           LOG(ERROR)
 #else
           LOG(FATAL)
-#endif  // USE_ASH
+#endif  // OS_WIN || USE_ASH
               << "Calculated bogus refresh interval="
               << new_interval.InMicroseconds()
               << " us, old_interval=" << old_interval.InMicroseconds()
