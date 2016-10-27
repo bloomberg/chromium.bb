@@ -28,7 +28,8 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
  * Shows a card prompting the user to sign in. This item is also a {@link TreeNode}, and calling
  * {@link #hide()} or {@link #maybeShow()} will control its visibility.
  */
-public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataSource {
+public class SignInPromo
+        extends ChildNode implements StatusCardViewHolder.DataSource, ImpressionTracker.Listener {
     /**
      * Whether the promo should be visible, according to the parent object.
      *
@@ -42,6 +43,8 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
      * the promo will never be shown.
      */
     private boolean mDismissed;
+
+    private final ImpressionTracker mImpressionTracker = new ImpressionTracker(null, this);
 
     @Nullable
     private final SigninObserver mObserver;
@@ -84,6 +87,7 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
         checkIndex(position);
         assert holder instanceof StatusCardViewHolder;
         ((StatusCardViewHolder) holder).onBindViewHolder(this);
+        mImpressionTracker.reset(mImpressionTracker.wasTriggered() ? null : holder.itemView);
     }
 
     @Override
@@ -121,6 +125,12 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
         AccountSigninActivity.startIfAllowed(context, SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
     }
 
+    @Override
+    public void onImpression() {
+        RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
+        mImpressionTracker.reset(null);
+    }
+
     public boolean isShown() {
         return !mDismissed && mVisible;
     }
@@ -132,7 +142,6 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
 
         if (mDismissed) return;
 
-        RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
         notifyItemInserted(0);
     }
 
