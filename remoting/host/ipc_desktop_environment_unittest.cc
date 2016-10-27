@@ -514,6 +514,7 @@ TEST_F(IpcDesktopEnvironmentTest, CapabilitiesNoTouch) {
 // inject touch events.
 TEST_F(IpcDesktopEnvironmentTest, TouchEventsCapabilities) {
   // Create an environment with multi touch enabled.
+  desktop_environment_factory_->set_supports_touch_events(true);
   desktop_environment_ = desktop_environment_factory_->Create(
       client_session_control_factory_.GetWeakPtr());
 
@@ -522,11 +523,8 @@ TEST_F(IpcDesktopEnvironmentTest, TouchEventsCapabilities) {
   EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
       .Times(0);
 
-  std::string expected_capabilities = "rateLimitResizeRequests";
-  if (InputInjector::SupportsTouchEvents())
-    expected_capabilities += " touchEvents";
-
-  EXPECT_EQ(expected_capabilities, desktop_environment_->GetCapabilities());
+  EXPECT_EQ("rateLimitResizeRequests touchEvents",
+            desktop_environment_->GetCapabilities());
 
   // Start the input injector and screen capturer.
   input_injector_->Start(std::move(clipboard_stub));

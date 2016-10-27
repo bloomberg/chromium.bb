@@ -33,7 +33,8 @@ class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      webrtc::WindowId window_id);
+      webrtc::WindowId window_id,
+      bool supports_touch_events);
 
  private:
   webrtc::WindowId window_id_;
@@ -73,11 +74,13 @@ SingleWindowDesktopEnvironment::SingleWindowDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    webrtc::WindowId window_id)
+    webrtc::WindowId window_id,
+    bool supports_touch_events)
     : BasicDesktopEnvironment(caller_task_runner,
                               video_capture_task_runner,
                               input_task_runner,
-                              ui_task_runner),
+                              ui_task_runner,
+                              supports_touch_events),
       window_id_(window_id) {}
 
 SingleWindowDesktopEnvironmentFactory::SingleWindowDesktopEnvironmentFactory(
@@ -103,7 +106,7 @@ SingleWindowDesktopEnvironmentFactory::Create(
 
   return base::WrapUnique(new SingleWindowDesktopEnvironment(
       caller_task_runner(), video_capture_task_runner(), input_task_runner(),
-      ui_task_runner(), window_id_));
+      ui_task_runner(), window_id_, supports_touch_events()));
 }
 
 }  // namespace remoting

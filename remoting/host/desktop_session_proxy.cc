@@ -93,7 +93,8 @@ DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    bool virtual_terminal)
+    bool virtual_terminal,
+    bool supports_touch_events)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
@@ -101,7 +102,8 @@ DesktopSessionProxy::DesktopSessionProxy(
       desktop_session_connector_(desktop_session_connector),
       pending_capture_frame_requests_(0),
       is_desktop_session_connected_(false),
-      virtual_terminal_(virtual_terminal) {
+      virtual_terminal_(virtual_terminal),
+      supports_touch_events_(supports_touch_events) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
@@ -138,15 +140,11 @@ DesktopSessionProxy::CreateMouseCursorMonitor() {
 std::string DesktopSessionProxy::GetCapabilities() const {
   std::string result = protocol::kRateLimitResizeRequests;
   // Ask the client to send its resolution unconditionally.
-  if (virtual_terminal_) {
-    result += " ";
-    result += protocol::kSendInitialResolution;
-  }
+  if (virtual_terminal_)
+    result = result + " " + protocol::kSendInitialResolution;
 
-  if (InputInjector::SupportsTouchEvents()) {
-    result += " ";
-    result += protocol::kTouchEventsCapability;
-  }
+  if (supports_touch_events_)
+    result = result + " "  + protocol::kTouchEventsCapability;
 
   return result;
 }
