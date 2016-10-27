@@ -244,7 +244,6 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       content_window_(new aura::Window(this)),
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
-      restore_focus_on_activate_(false),
       cursor_(gfx::kNullCursor),
       widget_type_(Widget::InitParams::TYPE_WINDOW),
       close_widget_factory_(this) {
@@ -1081,12 +1080,7 @@ void DesktopNativeWidgetAura::OnWindowActivated(
     aura::Window* gained_active,
     aura::Window* lost_active) {
   DCHECK(content_window_ == gained_active || content_window_ == lost_active);
-  if (gained_active == content_window_ && restore_focus_on_activate_) {
-    restore_focus_on_activate_ = false;
-    GetWidget()->GetFocusManager()->RestoreFocusedView();
-  } else if (lost_active == content_window_ && GetWidget()->HasFocusManager()) {
-    DCHECK(!restore_focus_on_activate_);
-    restore_focus_on_activate_ = true;
+  if (lost_active == content_window_ && GetWidget()->HasFocusManager()) {
     // Pass in false so that ClearNativeFocus() isn't invoked.
     GetWidget()->GetFocusManager()->StoreFocusedView(false);
   }

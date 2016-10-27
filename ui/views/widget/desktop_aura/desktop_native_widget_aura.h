@@ -280,8 +280,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   std::unique_ptr<wm::WindowModalityController> window_modality_controller_;
 
-  bool restore_focus_on_activate_;
-
   gfx::NativeCursor cursor_;
   // We must manually reference count the number of users of |cursor_manager_|
   // because the cursors created by |cursor_manager_| are shared among the
