@@ -811,6 +811,8 @@ component("base") {
     "task_scheduler/task_scheduler_impl.h",
     "task_scheduler/task_tracker.cc",
     "task_scheduler/task_tracker.h",
+    "task_scheduler/task_tracker_posix.cc",
+    "task_scheduler/task_tracker_posix.h",
     "task_scheduler/task_traits.cc",
     "task_scheduler/task_traits.h",
     "template_util.h",
@@ -1174,6 +1176,8 @@ component("base") {
         "process/launch.h",
         "process/launch_posix.cc",
         "rand_util_posix.cc",
+        "task_scheduler/task_tracker_posix.cc",
+        "task_scheduler/task_tracker_posix.h",
       ]
     }
   } else {
@@ -1930,6 +1934,7 @@ test("base_unittests") {
     "task_scheduler/sequence_sort_key_unittest.cc",
     "task_scheduler/sequence_unittest.cc",
     "task_scheduler/task_scheduler_impl_unittest.cc",
+    "task_scheduler/task_tracker_posix_unittest.cc",
     "task_scheduler/task_tracker_unittest.cc",
     "task_scheduler/task_unittest.cc",
     "task_scheduler/test_task_factory.cc",

@@ -9,11 +9,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_base.h"
+#include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
+#include "base/task_scheduler/task_tracker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+#include "base/task_scheduler/task_tracker_posix.h"
+#endif
 
 namespace base {
 namespace internal {
@@ -62,11 +68,13 @@ std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
 
 void TaskSchedulerImpl::Shutdown() {
   // TODO(fdoray): Increase the priority of BACKGROUND tasks blocking shutdown.
-  task_tracker_.Shutdown();
+  DCHECK(task_tracker_);
+  task_tracker_->Shutdown();
 }
 
 void TaskSchedulerImpl::FlushForTesting() {
-  task_tracker_.Flush();
+  DCHECK(task_tracker_);
+  task_tracker_->Flush();
 }
 
 void TaskSchedulerImpl::JoinForTesting() {
@@ -93,10 +101,11 @@ void TaskSchedulerImpl::Initialize(
     const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector) {
   DCHECK(!worker_pool_params_vector.empty());
 
-  // Start the service thread. On POSIX, the service thread runs a
-  // MessageLoopForIO to support FileDescriptorWatcher.
+  // Start the service thread. On platforms that support it (POSIX except NaCL
+  // SFI), the service thread runs a MessageLoopForIO which is used to support
+  // FileDescriptorWatcher in the scope in which tasks run.
   constexpr MessageLoop::Type kServiceThreadMessageLoopType =
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
       MessageLoop::TYPE_IO;
 #else
       MessageLoop::TYPE_DEFAULT;
@@ -105,11 +114,23 @@ void TaskSchedulerImpl::Initialize(
   CHECK(service_thread_.StartWithOptions(
       Thread::Options(kServiceThreadMessageLoopType, kDefaultStackSize)));
 
-  // Instantiate the DelayedTaskManager. The service thread must be started
-  // before its TaskRunner is available.
+  // Instantiate TaskTracker. Needs to happen after starting the service thread
+  // to get its message_loop().
+  task_tracker_ =
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+      base::MakeUnique<TaskTrackerPosix>(
+          static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
+#else
+      base::MakeUnique<TaskTracker>();
+#endif
+
+  // Instantiate DelayedTaskManager. Needs to happen after starting the service
+  // thread to get its task_runner().
   delayed_task_manager_ =
       base::MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
 
+  // Callback invoked by workers to re-enqueue a sequence in the appropriate
+  // PriorityQueue.
   const SchedulerWorkerPoolImpl::ReEnqueueSequenceCallback
       re_enqueue_sequence_callback =
           Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
@@ -120,7 +141,7 @@ void TaskSchedulerImpl::Initialize(
     // SchedulerWorkerPoolImpl::Create() is safe because a TaskSchedulerImpl
     // can't be deleted before all its worker pools have been joined.
     worker_pools_.push_back(SchedulerWorkerPoolImpl::Create(
-        worker_pool_params, re_enqueue_sequence_callback, &task_tracker_,
+        worker_pool_params, re_enqueue_sequence_callback, task_tracker_.get(),
         delayed_task_manager_.get()));
     CHECK(worker_pools_.back());
   }
