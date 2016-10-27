@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/StringOrDictionary.h"
 #include "bindings/core/v8/V0CustomElementBinding.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Document.h"
@@ -351,7 +352,8 @@ static void constructCustomElement(
                                 info.GetIsolate());
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
   Element* element = document->createElementNS(
-      namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type,
+      namespaceURI, tagName,
+      StringOrDictionary::fromString(maybeType->IsNull() ? nullAtom : type),
       exceptionState);
   v8SetReturnValueFast(info, element, document);
 }

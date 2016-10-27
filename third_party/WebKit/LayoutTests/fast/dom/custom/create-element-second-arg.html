@@ -1,0 +1,16 @@
+<!doctype html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+test(() => {
+    var XButton = document.registerElement('x-button', {extends: 'button'});
+    var elem = document.createElement('button', 'x-button');
+    assert_equals(elem.constructor, XButton);
+
+    elem = document.createElement('button', {is: 'x-button'});
+    assert_equals(elem.constructor, XButton);
+
+    elem = document.createElement('button', {toString: () => 'x-button'});
+    assert_equals(elem.constructor, XButton);
+}, "Test for Issue 637353: 2nd arg of document.createElement should be an object");
+</script>

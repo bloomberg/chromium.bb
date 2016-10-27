@@ -176,8 +176,8 @@ interface Document : Node {
     [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString type, optional ElementRegistrationOptions options);
     // http://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-instantiate
     // FIXME: The typeExtension arguments should not be nullable.
-    [CustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, DOMString? typeExtension);
-    [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, DOMString? typeExtension);
+    [CustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, (DOMString or Dictionary)? options);
+    [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, (DOMString or Dictionary)? options);
 
     // Page Visibility
     // http://www.w3.org/TR/page-visibility/#sec-document-interface

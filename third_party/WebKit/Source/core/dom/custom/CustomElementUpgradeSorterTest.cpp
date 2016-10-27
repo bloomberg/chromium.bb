@@ -5,6 +5,7 @@
 #include "core/dom/custom/CustomElementUpgradeSorter.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/StringOrDictionary.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -27,8 +28,8 @@ class CustomElementUpgradeSorterTest : public ::testing::Test {
 
   Element* createElementWithId(const char* localName, const char* id) {
     NonThrowableExceptionState noExceptions;
-    Element* element =
-        document()->createElement(localName, AtomicString(), noExceptions);
+    Element* element = document()->createElement(
+        localName, StringOrDictionary(), noExceptions);
     element->setAttribute(HTMLNames::idAttr, id);
     return element;
   }
@@ -52,7 +53,7 @@ class CustomElementUpgradeSorterTest : public ::testing::Test {
 TEST_F(CustomElementUpgradeSorterTest, inOtherDocument_notInSet) {
   NonThrowableExceptionState noExceptions;
   Element* element =
-      document()->createElement("a-a", AtomicString(), noExceptions);
+      document()->createElement("a-a", StringOrDictionary(), noExceptions);
 
   Document* otherDocument = HTMLDocument::create();
   otherDocument->appendChild(element);
@@ -71,7 +72,7 @@ TEST_F(CustomElementUpgradeSorterTest, inOtherDocument_notInSet) {
 TEST_F(CustomElementUpgradeSorterTest, oneCandidate) {
   NonThrowableExceptionState noExceptions;
   Element* element =
-      document()->createElement("a-a", AtomicString(), noExceptions);
+      document()->createElement("a-a", StringOrDictionary(), noExceptions);
   document()->documentElement()->appendChild(element);
 
   CustomElementUpgradeSorter sorter;

@@ -37,8 +37,10 @@
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SourceLocation.h"
+#include "bindings/core/v8/StringOrDictionary.h"
 #include "bindings/core/v8/V0CustomElementConstructorBuilder.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8ElementCreationOptions.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/HTMLElementFactory.h"
@@ -75,6 +77,7 @@
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementCreationOptions.h"
 #include "core/dom/ElementDataCache.h"
 #include "core/dom/ElementRegistrationOptions.h"
 #include "core/dom/ElementTraversal.h"
@@ -679,8 +682,34 @@ Element* Document::createElement(const AtomicString& name,
   return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
 }
 
+String getTypeExtension(Document* document,
+                        const StringOrDictionary& stringOrOptions,
+                        ExceptionState& exceptionState) {
+  if (stringOrOptions.isNull())
+    return emptyString();
+
+  if (stringOrOptions.isString()) {
+    UseCounter::count(document,
+                      UseCounter::DocumentCreateElement2ndArgStringHandling);
+    return stringOrOptions.getAsString();
+  }
+
+  if (stringOrOptions.isDictionary()) {
+    Dictionary dict = stringOrOptions.getAsDictionary();
+    ElementCreationOptions impl;
+    V8ElementCreationOptions::toImpl(dict.isolate(), dict.v8Value(), impl,
+                                     exceptionState);
+    if (impl.hasIs())
+      return impl.is();
+
+    return toCoreString(dict.v8Value()->ToString());
+  }
+
+  return emptyString();
+}
+
 Element* Document::createElement(const AtomicString& localName,
-                                 const AtomicString& typeExtension,
+                                 const StringOrDictionary& stringOrOptions,
                                  ExceptionState& exceptionState) {
   if (!isValidName(localName)) {
     exceptionState.throwDOMException(
@@ -704,9 +733,12 @@ Element* Document::createElement(const AtomicString& localName,
       return nullptr;
   }
 
-  if (!typeExtension.isEmpty())
+  String typeExtention =
+      getTypeExtension(this, stringOrOptions, exceptionState);
+  if (!typeExtention.isEmpty()) {
     V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(
-        element, typeExtension);
+        element, AtomicString(typeExtention));
+  }
 
   return element;
 }
@@ -748,7 +780,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI,
 
 Element* Document::createElementNS(const AtomicString& namespaceURI,
                                    const AtomicString& qualifiedName,
-                                   const AtomicString& typeExtension,
+                                   const StringOrDictionary& stringOrOptions,
                                    ExceptionState& exceptionState) {
   QualifiedName qName(
       createQualifiedName(namespaceURI, qualifiedName, exceptionState));
@@ -764,9 +796,12 @@ Element* Document::createElementNS(const AtomicString& namespaceURI,
   else
     element = createElement(qName, CreatedByCreateElement);
 
-  if (!typeExtension.isEmpty())
+  String typeExtention =
+      getTypeExtension(this, stringOrOptions, exceptionState);
+  if (!typeExtention.isEmpty()) {
     V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(
-        element, typeExtension);
+        element, AtomicString(typeExtention));
+  }
 
   return element;
 }

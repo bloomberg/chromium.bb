@@ -1388,6 +1388,7 @@ class CORE_EXPORT UseCounter {
     DocumentFullscreenElementInV0Shadow = 1665,
     ScriptWithCSPBypassingSchemeParserInserted = 1666,
     ScriptWithCSPBypassingSchemeNotParserInserted = 1667,
+    DocumentCreateElement2ndArgStringHandling = 1668,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

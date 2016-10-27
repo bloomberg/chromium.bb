@@ -162,6 +162,7 @@ class SelectorQueryCache;
 class SerializedScriptValue;
 class Settings;
 class SnapCoordinator;
+class StringOrDictionary;
 class StyleEngine;
 class StyleResolver;
 class StyleSheet;
@@ -1144,11 +1145,11 @@ class CORE_EXPORT Document : public ContainerNode,
   TextAutosizer* textAutosizer();
 
   Element* createElement(const AtomicString& localName,
-                         const AtomicString& typeExtension,
+                         const StringOrDictionary&,
                          ExceptionState&);
   Element* createElementNS(const AtomicString& namespaceURI,
                            const AtomicString& qualifiedName,
-                           const AtomicString& typeExtension,
+                           const StringOrDictionary&,
                            ExceptionState&);
   ScriptValue registerElement(
       ScriptState*,

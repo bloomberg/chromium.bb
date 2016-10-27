@@ -514,6 +514,7 @@ core_dictionary_idl_files =
                     "css/cssom/CSSCalcDictionary.idl",
                     "dom/DOMPointInit.idl",
                     "dom/DOMMatrixInit.idl",
+                    "dom/ElementCreationOptions.idl",
                     "dom/ElementDefinitionOptions.idl",
                     "dom/ElementRegistrationOptions.idl",
                     "dom/GetRootNodeOptions.idl",
