@@ -106,9 +106,6 @@ class WebContents;
 // The min Y of the bubble point in the coordinate space of the toolbar.
 - (NSInteger)pageInfoBubblePointY;
 
-// Configures the fullscreenToolbarController_ right after it is constructed.
-- (void)configureFullscreenToolbarController;
-
 // Allows the omnibox to slide. Also prepares UI for several fullscreen modes.
 // This method gets called when entering AppKit fullscren, or when entering
 // Immersive fullscreen. Expects fullscreenStyle_ to be set.

@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
 @class BrowserWindowController;
-@class CrTrackingArea;
 @class FullscreenMenubarTracker;
 class FullscreenToolbarAnimationController;
+@class FullscreenToolbarMouseTracker;
 
 enum class FullscreenSlidingStyle {
   OMNIBOX_TABS_PRESENT,  // Tab strip and omnibox both visible.
@@ -39,24 +39,16 @@ enum class FullscreenSlidingStyle {
   // Whether or not we are in fullscreen mode.
   BOOL inFullscreenMode_;
 
-  // The content view for the window.  This is nil when not in fullscreen mode.
-  NSView* contentView_;  // weak
-
-  // The frame for the tracking area. The value is the toolbar overlay's frame
-  // with additional height added at the bottom.
-  NSRect trackingAreaFrame_;
-
-  // The tracking area associated with the toolbar overlay bar. This tracking
-  // area is used to keep the toolbar active if the menubar had animated out
-  // but the mouse is still on the toolbar.
-  base::scoped_nsobject<CrTrackingArea> trackingArea_;
-
   // Updates the fullscreen toolbar layout for changes in the menubar. This
   // object is only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenMenubarTracker> menubarTracker_;
 
   // Manages the toolbar animations for the OMNIBOX_TABS_HIDDEN style.
   std::unique_ptr<FullscreenToolbarAnimationController> animationController_;
+
+  // Mouse tracker to track the user's interactions with the toolbar. This
+  // object is only set when the browser is in fullscreen mode.
+  base::scoped_nsobject<FullscreenToolbarMouseTracker> mouseTracker_;
 
   // Tracks the currently requested system fullscreen mode, used to show or
   // hide the menubar.  This should be |kFullScreenModeNormal| when the window
@@ -86,7 +78,7 @@ enum class FullscreenSlidingStyle {
 // window.  If |-setupFullscreenToolbarForContentView:showDropdown:| is called,
 // it must be balanced with a call to |-exitFullscreenMode| before the
 // controller is released.
-- (void)setupFullscreenToolbarForContentView:(NSView*)contentView;
+- (void)enterFullscreenMode;
 - (void)exitFullscreenMode;
 
 // Informs the controller that the overlay should be shown/hidden, possibly
@@ -119,8 +111,8 @@ enum class FullscreenSlidingStyle {
 // only be revealed if the mouse is there.
 - (BOOL)isMouseOnScreen;
 
-// Sets |trackingAreaFrame_| from the given overlay frame.
-- (void)setTrackingAreaFromOverlayFrame:(NSRect)frame;
+// Called by the BrowserWindowController to update toolbar frame.
+- (void)updateToolbarFrame:(NSRect)frame;
 
 // Returns YES if the browser is in the process of entering/exiting
 // fullscreen.
