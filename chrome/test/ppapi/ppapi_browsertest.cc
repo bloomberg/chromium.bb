@@ -78,7 +78,7 @@ using content::RenderViewHost;
 #else
 
 #define MAYBE_PPAPI_NACL(test_name) test_name
-#if defined (OS_WIN)
+#if defined (OS_WIN) || defined(ADDRESS_SANITIZER)
 // http://crbug.com/633067
 #define MAYBE_PPAPI_PNACL(test_name) DISABLED_##test_name
 #else
