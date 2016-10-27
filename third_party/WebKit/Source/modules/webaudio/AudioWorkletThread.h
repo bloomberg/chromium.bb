@@ -7,6 +7,7 @@
 
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "core/workers/WorkletThreadHolder.h"
 #include "modules/ModulesExport.h"
 #include <memory>
 
@@ -36,9 +37,9 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
   static void collectAllGarbage();
 
   static void ensureSharedBackingThread();
-  static void createSharedBackingThreadForTest();
-
   static void clearSharedBackingThread();
+
+  static void createSharedBackingThreadForTest();
 
  protected:
   WorkerOrWorkletGlobalScope* createWorkerGlobalScope(
@@ -47,8 +48,7 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
   bool isOwningBackingThread() const override { return false; }
 
  private:
-  explicit AudioWorkletThread(PassRefPtr<WorkerLoaderProxy>,
-                              WorkerReportingProxy&);
+  AudioWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 };
 
 }  // namespace blink

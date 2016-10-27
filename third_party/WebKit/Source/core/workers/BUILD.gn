@@ -73,12 +73,11 @@ blink_core_sources("workers") {
     "WorkerThreadStartupData.h",
     "Worklet.cpp",
     "Worklet.h",
-    "WorkletBackingThreadHolder.cpp",
-    "WorkletBackingThreadHolder.h",
     "WorkletGlobalScope.cpp",
     "WorkletGlobalScope.h",
     "WorkletScriptLoader.cpp",
     "WorkletScriptLoader.h",
+    "WorkletThreadHolder.h",
   ]
 
   configs += [

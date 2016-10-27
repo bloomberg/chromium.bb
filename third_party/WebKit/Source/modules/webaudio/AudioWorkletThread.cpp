@@ -6,7 +6,6 @@
 
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "core/workers/WorkletBackingThreadHolder.h"
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
@@ -20,66 +19,7 @@
 
 namespace blink {
 
-namespace {
-
-// TODO(hongchan): consider refactoring static methods in this class into
-// a template class.
-class AudioWorkletThreadHolder final : public WorkletBackingThreadHolder {
- public:
-  static AudioWorkletThreadHolder* instance() {
-    MutexLocker locker(holderInstanceMutex());
-    return s_instance;
-  }
-
-  static void ensureInstance() {
-    if (!s_instance)
-      s_instance = new AudioWorkletThreadHolder;
-  }
-
-  static void clear() {
-    MutexLocker locker(holderInstanceMutex());
-    if (s_instance) {
-      s_instance->shutdownAndWait();
-      delete s_instance;
-      s_instance = nullptr;
-    }
-  }
-
-  static void createForTest() {
-    MutexLocker locker(holderInstanceMutex());
-    DCHECK_EQ(nullptr, s_instance);
-    s_instance =
-        new AudioWorkletThreadHolder(WorkerBackingThread::createForTest(
-            "AudioWorkletThread", BlinkGC::PerThreadHeapMode));
-  }
-
- private:
-  AudioWorkletThreadHolder(
-      std::unique_ptr<WorkerBackingThread> backingThread = nullptr)
-      : WorkletBackingThreadHolder(
-            backingThread
-                ? std::move(backingThread)
-                : WorkerBackingThread::create("AudioWorkletThread",
-                                              BlinkGC::PerThreadHeapMode)) {}
-
-  static Mutex& holderInstanceMutex() {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holderMutex, new Mutex);
-    return holderMutex;
-  }
-
-  void initializeOnThread() {
-    MutexLocker locker(holderInstanceMutex());
-    DCHECK(!m_initialized);
-    m_thread->initialize();
-    m_initialized = true;
-  }
-
-  static AudioWorkletThreadHolder* s_instance;
-};
-
-AudioWorkletThreadHolder* AudioWorkletThreadHolder::s_instance = nullptr;
-
-}  // namespace
+template class WorkletThreadHolder<AudioWorkletThread>;
 
 std::unique_ptr<AudioWorkletThread> AudioWorkletThread::create(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
@@ -99,7 +39,8 @@ AudioWorkletThread::AudioWorkletThread(
 AudioWorkletThread::~AudioWorkletThread() {}
 
 WorkerBackingThread& AudioWorkletThread::workerBackingThread() {
-  return *AudioWorkletThreadHolder::instance()->thread();
+  return *WorkletThreadHolder<AudioWorkletThread>::threadHolderInstance()
+              ->thread();
 }
 
 void collectAllGarbageOnAudioWorkletThread(WaitableEvent* doneEvent) {
@@ -110,10 +51,11 @@ void collectAllGarbageOnAudioWorkletThread(WaitableEvent* doneEvent) {
 void AudioWorkletThread::collectAllGarbage() {
   DCHECK(isMainThread());
   WaitableEvent doneEvent;
-  AudioWorkletThreadHolder* instance = AudioWorkletThreadHolder::instance();
-  if (!instance)
+  WorkletThreadHolder<AudioWorkletThread>* threadHolderInstance =
+      WorkletThreadHolder<AudioWorkletThread>::threadHolderInstance();
+  if (!threadHolderInstance)
     return;
-  instance->thread()->backingThread().postTask(
+  threadHolderInstance->thread()->backingThread().postTask(
       BLINK_FROM_HERE, crossThreadBind(&collectAllGarbageOnAudioWorkletThread,
                                        crossThreadUnretained(&doneEvent)));
   doneEvent.wait();
@@ -121,16 +63,18 @@ void AudioWorkletThread::collectAllGarbage() {
 
 void AudioWorkletThread::ensureSharedBackingThread() {
   DCHECK(isMainThread());
-  AudioWorkletThreadHolder::ensureInstance();
+  WorkletThreadHolder<AudioWorkletThread>::ensureInstance(
+      "AudioWorkletThread", BlinkGC::PerThreadHeapMode);
 }
 
 void AudioWorkletThread::clearSharedBackingThread() {
   DCHECK(isMainThread());
-  AudioWorkletThreadHolder::clear();
+  WorkletThreadHolder<AudioWorkletThread>::clearInstance();
 }
 
 void AudioWorkletThread::createSharedBackingThreadForTest() {
-  AudioWorkletThreadHolder::createForTest();
+  WorkletThreadHolder<AudioWorkletThread>::createForTest(
+      "AudioWorkletThread", BlinkGC::PerThreadHeapMode);
 }
 
 WorkerOrWorkletGlobalScope* AudioWorkletThread::createWorkerGlobalScope(
