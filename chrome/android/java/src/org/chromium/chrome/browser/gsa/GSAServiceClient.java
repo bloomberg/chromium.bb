@@ -80,7 +80,7 @@ public class GSAServiceClient {
      * @param onMessageReceived optional callback when a message is received.
      */
     GSAServiceClient(Context context, Callback<Bundle> onMessageReceived) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         mOnMessageReceived = onMessageReceived;
         mHandler = new IncomingHandler();
         mMessenger = new Messenger(mHandler);
@@ -108,9 +108,7 @@ public class GSAServiceClient {
      */
     void disconnect() {
         if (mService == null) return;
-
         mContext.unbindService(mConnection);
-        mContext = null;
         mService = null;
 
         // Remove pending handler actions to prevent memory leaks.
