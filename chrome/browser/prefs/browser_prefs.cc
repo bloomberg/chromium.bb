@@ -110,7 +110,6 @@
 
 #if BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #endif
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
@@ -568,7 +567,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DevToolsWindow::RegisterProfilePrefs(registry);
 #if BUILDFLAG(ENABLE_APP_LIST)
   DriveAppMapping::RegisterProfilePrefs(registry);
-  app_list::AppListSyncableService::RegisterProfilePrefs(registry);
 #endif
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);

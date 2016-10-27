@@ -763,7 +763,6 @@ extern const char kAppListAppLaunchCount[];
 extern const char kAppLauncherHasBeenEnabled[];
 extern const char kAppListEnableMethod[];
 extern const char kAppListEnableTime[];
-extern const char kAppListLocalState[];
 #if defined(OS_MACOSX)
 extern const char kAppLauncherShortcutVersion[];
 #endif
