@@ -29,7 +29,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/PaintArtifactToSkCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/tracing/TraceEvent.h"
 #include "platform/tracing/TracedValue.h"
@@ -44,24 +43,6 @@ ContentLayerDelegate::ContentLayerDelegate(GraphicsLayer* graphicsLayer)
     : m_graphicsLayer(graphicsLayer) {}
 
 ContentLayerDelegate::~ContentLayerDelegate() {}
-
-static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list,
-                                              const PaintArtifact& artifact,
-                                              const gfx::Rect& bounds) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    // This is a temporary path to paint the artifact using the paint chunk
-    // properties. Ultimately, we should instead split the artifact into
-    // separate layers and send those to the compositor, instead of sending
-    // one big flat SkPicture.
-    SkRect skBounds = SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(),
-                                       bounds.height());
-    list->appendDrawingItem(
-        WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
-        paintArtifactToSkPicture(artifact, skBounds));
-    return;
-  }
-  artifact.appendToWebDisplayItemList(list);
-}
 
 gfx::Rect ContentLayerDelegate::paintableRegion() {
   IntRect interestRect = m_graphicsLayer->interestRect();
@@ -104,8 +85,8 @@ void ContentLayerDelegate::paintContents(
   if (paintingControl != PaintDefaultBehavior)
     m_graphicsLayer->paint(nullptr, disabledMode);
 
-  paintArtifactToWebDisplayItemList(
-      webDisplayItemList, paintController.paintArtifact(), paintableRegion());
+  paintController.paintArtifact().appendToWebDisplayItemList(
+      webDisplayItemList);
 
   paintController.setDisplayItemConstructionIsDisabled(false);
   paintController.setSubsequenceCachingIsDisabled(false);
