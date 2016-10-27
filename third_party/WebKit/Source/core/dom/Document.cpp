@@ -428,8 +428,10 @@ Document::Document(const DocumentInit& initializer,
           this,
           &Document::executeScriptsWaitingForResources)),
       m_hasAutofocused(false),
-      m_clearFocusedElementTimer(this,
-                                 &Document::clearFocusedElementTimerFired),
+      m_clearFocusedElementTimer(
+          TaskRunnerHelper::get(TaskType::Internal, this),
+          this,
+          &Document::clearFocusedElementTimerFired),
       m_domTreeVersion(++s_globalTreeVersion),
       m_styleVersion(0),
       m_listenerTypes(0),
@@ -447,8 +449,10 @@ Document::Document(const DocumentInit& initializer,
       m_ignoreDestructiveWriteCount(0),
       m_throwOnDynamicMarkupInsertionCount(0),
       m_markers(new DocumentMarkerController(*this)),
-      m_updateFocusAppearanceTimer(this,
-                                   &Document::updateFocusAppearanceTimerFired),
+      m_updateFocusAppearanceTimer(
+          TaskRunnerHelper::get(TaskType::Internal, this),
+          this,
+          &Document::updateFocusAppearanceTimerFired),
       m_cssTarget(nullptr),
       m_loadEventProgress(LoadEventNotRun),
       m_startTime(currentTime()),
@@ -482,12 +486,15 @@ Document::Document(const DocumentInit& initializer,
       m_writeRecursionDepth(0),
       m_taskRunner(MainThreadTaskRunner::create(this)),
       m_registrationContext(initializer.registrationContext(this)),
-      m_elementDataCacheClearTimer(this,
-                                   &Document::elementDataCacheClearTimerFired),
+      m_elementDataCacheClearTimer(
+          TaskRunnerHelper::get(TaskType::Internal, this),
+          this,
+          &Document::elementDataCacheClearTimerFired),
       m_timeline(DocumentTimeline::create(this)),
       m_compositorPendingAnimations(new CompositorPendingAnimations()),
       m_templateDocumentHost(nullptr),
       m_didAssociateFormControlsTimer(
+          TaskRunnerHelper::get(TaskType::Internal, this),
           this,
           &Document::didAssociateFormControlsTimerFired),
       m_timers(TaskRunnerHelper::get(TaskType::Timer, this)->clone()),
@@ -2067,7 +2074,6 @@ void Document::clearFocusedElementSoon() {
 
 void Document::clearFocusedElementTimerFired(TimerBase*) {
   updateStyleAndLayoutTree();
-  m_clearFocusedElementTimer.stop();
 
   if (m_focusedElement && !m_focusedElement->isFocusable())
     m_focusedElement->blur();

@@ -1483,7 +1483,7 @@ class CORE_EXPORT Document : public ContainerNode,
       m_executeScriptsWaitingForResourcesTask;
 
   bool m_hasAutofocused;
-  Timer<Document> m_clearFocusedElementTimer;
+  TaskRunnerTimer<Document> m_clearFocusedElementTimer;
   Member<Element> m_autofocusElement;
   Member<Element> m_focusedElement;
   Member<Range> m_sequentialFocusNavigationStartingPoint;
@@ -1537,7 +1537,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<AXObjectCache> m_axObjectCache;
   Member<DocumentMarkerController> m_markers;
 
-  Timer<Document> m_updateFocusAppearanceTimer;
+  TaskRunnerTimer<Document> m_updateFocusAppearanceTimer;
 
   Member<Element> m_cssTarget;
 
@@ -1629,7 +1629,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<V0CustomElementMicrotaskRunQueue> m_customElementMicrotaskRunQueue;
 
   void elementDataCacheClearTimerFired(TimerBase*);
-  Timer<Document> m_elementDataCacheClearTimer;
+  TaskRunnerTimer<Document> m_elementDataCacheClearTimer;
 
   Member<ElementDataCache> m_elementDataCache;
 
@@ -1643,7 +1643,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<Document> m_templateDocument;
   Member<Document> m_templateDocumentHost;
 
-  Timer<Document> m_didAssociateFormControlsTimer;
+  TaskRunnerTimer<Document> m_didAssociateFormControlsTimer;
 
   HeapHashSet<Member<SVGUseElement>> m_useElementsNeedingUpdate;
   HeapHashSet<Member<Element>> m_layerUpdateSVGFilterElements;
