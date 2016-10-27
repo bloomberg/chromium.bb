@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "ipc/ipc_message_utils.h"
+#include "media/base/ipc/media_param_traits.h"
 #include "media/base/limits.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"

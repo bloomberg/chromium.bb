@@ -4,8 +4,8 @@
 
 module video_capture.mojom;
 
+import "media/capture/mojo/video_capture_types.mojom";
 import "services/video_capture/public/interfaces/video_capture_device_proxy.mojom";
-import "services/video_capture/public/interfaces/video_capture_format.mojom";
 
 enum VideoCaptureApi {
   LINUX_V4L2_SINGLE_PLANE,
@@ -55,7 +55,7 @@ interface VideoCaptureDeviceFactory {
       => (array<VideoCaptureDeviceDescriptor> descriptors);
 
   GetSupportedFormats(VideoCaptureDeviceDescriptor device_descriptor)
-      => (array<VideoCaptureFormat> supported_formats);
+      => (array<media.mojom.VideoCaptureFormat> supported_formats);
 
   // Provides exclusive access to the device identified by |device_descriptor|.
   // The access is valid until either the message pipe associated with

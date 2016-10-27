@@ -6,9 +6,8 @@ module content.mojom;
 
 import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/interfaces/media_types.mojom";
+import "media/capture/mojo/video_capture_types.mojom";
 import "mojo/common/common_custom_types.mojom";
-import "services/video_capture/public/interfaces/video_capture_device_proxy.mojom";
-import "services/video_capture/public/interfaces/video_capture_format.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // This file decribes the communication between a given Renderer Host interface
@@ -52,17 +51,11 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 //      | ---> StopCapture                                      |
 //      |                        OnStateChanged(STOPPED) <---   |
 
-struct VideoCaptureParams {
-  video_capture.mojom.VideoCaptureFormat requested_format;
-  video_capture.mojom.ResolutionChangePolicy resolution_change_policy;
-  video_capture.mojom.PowerLineFrequency power_line_frequency;
-};
-
 struct VideoFrameInfo{
   mojo.common.mojom.TimeDelta timestamp;
   mojo.common.mojom.DictionaryValue metadata;
   media.mojom.VideoPixelFormat pixel_format;
-  video_capture.mojom.VideoPixelStorage storage_type;
+  media.mojom.VideoPixelStorage storage_type;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
 };
@@ -97,7 +90,7 @@ interface VideoCaptureHost {
   // Start the |session_id| session with |params|. The video capture will be
   // identified as |device_id|, a new id picked by the renderer process.
   // |observer| will be used for notifications.
-  Start(int32 device_id, int32 session_id, VideoCaptureParams params,
+  Start(int32 device_id, int32 session_id, media.mojom.VideoCaptureParams params,
         VideoCaptureObserver observer);
 
   // Closes the video capture specified by |device_id|.
@@ -107,7 +100,7 @@ interface VideoCaptureHost {
   Pause(int32 device_id);
 
   // Resume |device_id| video capture, in |session_id| and with |params|.
-  Resume(int32 device_id, int32 session_id, VideoCaptureParams params);
+  Resume(int32 device_id, int32 session_id, media.mojom.VideoCaptureParams params);
 
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).
@@ -120,9 +113,9 @@ interface VideoCaptureHost {
 
   // Get the formats supported by a device referenced by |session_id|.
   GetDeviceSupportedFormats(int32 device_id, int32 session_id)
-    => (array<video_capture.mojom.VideoCaptureFormat> formats_supported);
+    => (array<media.mojom.VideoCaptureFormat> formats_supported);
 
   // Get the format(s) in use by a device referenced by |session_id|.
   GetDeviceFormatsInUse(int32 device_id, int32 session_id)
-    => (array<video_capture.mojom.VideoCaptureFormat> formats_in_use);
+    => (array<media.mojom.VideoCaptureFormat> formats_in_use);
 };

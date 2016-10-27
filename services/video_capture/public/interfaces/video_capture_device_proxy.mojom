@@ -4,27 +4,15 @@
 
 module video_capture.mojom;
 
-import "services/video_capture/public/interfaces/video_capture_format.mojom";
+import "media/capture/mojo/video_capture_types.mojom";
 import "services/video_capture/public/interfaces/video_frame_receiver.mojom";
-
-enum ResolutionChangePolicy {
-  FIXED_RESOLUTION,
-  FIXED_ASPECT_RATIO,
-  ANY_WITHIN_LIMIT,
-};
-
-enum PowerLineFrequency {
-  DEFAULT,
-  HZ_50,
-  HZ_60
-};
 
 // Represents access to a video capture device available on the machine.
 // Note: Instead of offering an explicit Stop() method, the device
 // is stopped automatically when the corresponding message pipe is closed.
 interface VideoCaptureDeviceProxy {
-  Start(VideoCaptureFormat requested_format,
-        ResolutionChangePolicy resolution_change_policy,
-        PowerLineFrequency power_line_frequency,
+  Start(media.mojom.VideoCaptureFormat requested_format,
+        media.mojom.ResolutionChangePolicy resolution_change_policy,
+        media.mojom.PowerLineFrequency power_line_frequency,
         VideoFrameReceiver receiver);
 };

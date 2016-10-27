@@ -4,17 +4,12 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("capture_types") {
   sources = [
-    "mock_video_capture_device.mojom",
-    "video_capture_device_factory.mojom",
-    "video_capture_device_proxy.mojom",
-    "video_capture_service.mojom",
-    "video_frame_receiver.mojom",
+    "video_capture_types.mojom",
   ]
 
-  deps = [
-    "//media/capture/mojo:capture_types",
+  public_deps = [
     "//media/mojo/interfaces",
     "//ui/gfx/geometry/mojo",
   ]

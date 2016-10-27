@@ -240,6 +240,7 @@ static_library("content_shell_lib") {
     "//gpu",
     "//ipc",
     "//media",
+    "//media/capture",
     "//mojo/edk/js",
     "//net",
     "//net:net_resources",

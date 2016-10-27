@@ -89,6 +89,8 @@ test("video_capture_unittests") {
     ":video_capture",
     "//base",
     "//base/test:test_support",
+    "//media/capture:capture",
+    "//media/capture/mojo:capture_types",
     "//media/mojo/common:common",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",

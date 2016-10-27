@@ -378,6 +378,7 @@ source_set("common") {
     "//media:shared_memory_support",
     "//media/base/ipc",
     "//media/capture",
+    "//media/capture/ipc",
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",
     "//media/midi",
@@ -591,6 +592,7 @@ mojom("mojo_bindings") {
     # TODO(mcasas): remove the following dep after https://crbug.com/653994
     "//gpu/ipc/common:interfaces",
     "//ipc:mojom",
+    "//media/capture/mojo:capture_types",
     "//media/mojo/interfaces",
     "//mojo/common:common_custom_types",
     "//services/service_manager/public/interfaces",

@@ -120,6 +120,7 @@ static_library("renderer") {
     "//content/public/common",
     "//content/public/renderer",
     "//media",
+    "//media/capture",
     "//net",
     "//ppapi/features",
     "//skia",
