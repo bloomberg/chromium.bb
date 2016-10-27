@@ -33,6 +33,9 @@ message LayerNode {
     HEADS_UP_DISPLAY_LAYER = 3;
     SOLID_COLOR_SCROLLBAR_LAYER = 4;
 
+    // Layer Types for testing only.
+    FAKE_PICTURE_LAYER = 5;
+
     // TODO(nyquist): Add the rest of the necessary LayerTypes.
   };
 

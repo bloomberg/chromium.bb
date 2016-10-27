@@ -99,6 +99,7 @@ scoped_refptr<Layer> LayerProtoConverter::FindOrAllocateAndConstruct(
     case proto::LayerNode::LAYER:
       return Layer::Create().get();
     case proto::LayerNode::PICTURE_LAYER:
+    case proto::LayerNode::FAKE_PICTURE_LAYER:
       return PictureLayer::Create(EmptyContentLayerClient::GetInstance());
     case proto::LayerNode::HEADS_UP_DISPLAY_LAYER:
       return HeadsUpDisplayLayer::Create();

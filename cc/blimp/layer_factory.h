@@ -27,6 +27,10 @@ class LayerFactory {
       int engine_layer_id,
       ContentLayerClient* content_layer_client) = 0;
 
+  virtual scoped_refptr<PictureLayer> CreateFakePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) = 0;
+
   virtual scoped_refptr<SolidColorScrollbarLayer>
   CreateSolidColorScrollbarLayer(int engine_layer_id,
                                  ScrollbarOrientation orientation,

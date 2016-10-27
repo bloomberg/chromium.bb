@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_picture_layer.h"
 
+#include "cc/proto/layer.pb.h"
 #include "cc/test/fake_picture_layer_impl.h"
 
 namespace cc {
@@ -11,7 +12,6 @@ namespace cc {
 FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
     : PictureLayer(client),
       update_count_(0),
-      push_properties_count_(0),
       always_update_resources_(false),
       force_unsuitable_for_gpu_rasterization_(false) {
   SetBounds(gfx::Size(1, 1));
@@ -22,7 +22,6 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
                                    std::unique_ptr<RecordingSource> source)
     : PictureLayer(client, std::move(source)),
       update_count_(0),
-      push_properties_count_(0),
       always_update_resources_(false),
       force_unsuitable_for_gpu_rasterization_(false) {
   SetBounds(gfx::Size(1, 1));
@@ -44,15 +43,15 @@ bool FakePictureLayer::Update() {
   return updated || always_update_resources_;
 }
 
-void FakePictureLayer::PushPropertiesTo(LayerImpl* layer) {
-  PictureLayer::PushPropertiesTo(layer);
-  push_properties_count_++;
-}
-
 bool FakePictureLayer::IsSuitableForGpuRasterization() const {
   if (force_unsuitable_for_gpu_rasterization_)
     return false;
   return PictureLayer::IsSuitableForGpuRasterization();
+}
+
+void FakePictureLayer::SetTypeForProtoSerialization(
+    proto::LayerNode* proto) const {
+  proto->set_type(proto::LayerNode::FAKE_PICTURE_LAYER);
 }
 
 }  // namespace cc

@@ -26,35 +26,22 @@ class FakePictureLayer : public PictureLayer {
     return make_scoped_refptr(new FakePictureLayer(client, std::move(source)));
   }
 
+  // Layer implementation.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  bool Update() override;
+  bool IsSuitableForGpuRasterization() const override;
+  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
 
   int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
-
-  size_t push_properties_count() const { return push_properties_count_; }
-  void reset_push_properties_count() { push_properties_count_ = 0; }
 
   void set_always_update_resources(bool always_update_resources) {
     always_update_resources_ = always_update_resources;
   }
 
-  bool Update() override;
-
-  void PushPropertiesTo(LayerImpl* layer) override;
-
-  void set_recorded_viewport(const gfx::Rect& recorded_viewport) {
-    picture_layer_inputs_.recorded_viewport = recorded_viewport;
-  }
-
-  DisplayItemList* display_list() const {
-    return picture_layer_inputs_.display_list.get();
-  }
-
   void set_force_unsuitable_for_gpu_rasterization(bool flag) {
     force_unsuitable_for_gpu_rasterization_ = flag;
   }
-
-  bool IsSuitableForGpuRasterization() const override;
 
  private:
   explicit FakePictureLayer(ContentLayerClient* client);
@@ -63,7 +50,6 @@ class FakePictureLayer : public PictureLayer {
   ~FakePictureLayer() override;
 
   int update_count_;
-  size_t push_properties_count_;
   bool always_update_resources_;
 
   bool force_unsuitable_for_gpu_rasterization_;

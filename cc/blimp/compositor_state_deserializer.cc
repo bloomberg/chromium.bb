@@ -38,6 +38,15 @@ class DefaultLayerFactory : public LayerFactory {
       ContentLayerClient* content_layer_client) override {
     return PictureLayer::Create(content_layer_client);
   }
+
+  scoped_refptr<PictureLayer> CreateFakePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) override {
+    // We should never create fake layers in production code.
+    NOTREACHED();
+    return PictureLayer::Create(content_layer_client);
+  }
+
   scoped_refptr<SolidColorScrollbarLayer> CreateSolidColorScrollbarLayer(
       int engine_layer_id,
       ScrollbarOrientation orientation,
@@ -359,6 +368,12 @@ scoped_refptr<Layer> CompositorStateDeserializer::GetLayerAndAddToNewMap(
       layer_data.content_layer_client =
           base::MakeUnique<DeserializedContentLayerClient>();
       layer_data.layer = layer_factory_->CreatePictureLayer(
+          layer_node.id(), layer_data.content_layer_client.get());
+      break;
+    case proto::LayerNode::FAKE_PICTURE_LAYER:
+      layer_data.content_layer_client =
+          base::MakeUnique<DeserializedContentLayerClient>();
+      layer_data.layer = layer_factory_->CreateFakePictureLayer(
           layer_node.id(), layer_data.content_layer_client.get());
       break;
     case proto::LayerNode::SOLID_COLOR_SCROLLBAR_LAYER: {

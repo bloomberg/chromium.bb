@@ -23,6 +23,9 @@ class RemoteClientLayerFactory : public LayerFactory {
   scoped_refptr<PictureLayer> CreatePictureLayer(
       int engine_layer_id,
       ContentLayerClient* content_layer_client) override;
+  scoped_refptr<PictureLayer> CreateFakePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) override;
   scoped_refptr<SolidColorScrollbarLayer> CreateSolidColorScrollbarLayer(
       int engine_layer_id,
       ScrollbarOrientation orientation,
