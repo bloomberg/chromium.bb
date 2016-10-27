@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_MESSAGE_FILTER_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
@@ -31,7 +29,6 @@ class Message;
 namespace prerender {
 
 class PrerenderLinkManager;
-class PrerenderManager;
 
 class PrerenderMessageFilter : public content::BrowserMessageFilter {
  public:
@@ -60,13 +57,10 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
                       int render_view_route_id);
   void OnCancelPrerender(int prerender_id);
   void OnAbandonPrerender(int prerender_id);
-  void OnPrefetchFinished();
 
   void ShutdownOnUIThread();
 
   void OnChannelClosingInUIThread();
-
-  PrerenderManager* prerender_manager_;
 
   const int render_process_id_;
 

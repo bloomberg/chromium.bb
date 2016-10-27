@@ -171,7 +171,7 @@ void PrerenderDispatcher::cancel(const WebPrerender& prerender) {
   // been canceled before it was started), so release it to avoid a
   // leak. Moreover, if it did, the PrerenderClient in Blink will have been
   // detached already.
-  prerenders_.erase(extra_data.prerender_id());
+   prerenders_.erase(extra_data.prerender_id());
 }
 
 void PrerenderDispatcher::abandon(const WebPrerender& prerender) {
@@ -184,10 +184,6 @@ void PrerenderDispatcher::abandon(const WebPrerender& prerender) {
   // leak. Moreover, if it did, the PrerenderClient in Blink will have been
   // detached already.
   prerenders_.erase(extra_data.prerender_id());
-}
-
-void PrerenderDispatcher::prefetchFinished() {
-  content::RenderThread::Get()->Send(new PrerenderHostMsg_PrefetchFinished());
 }
 
 }  // namespace prerender

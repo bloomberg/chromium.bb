@@ -149,8 +149,6 @@ class TestPrerenderingSupport : public WebPrerenderingSupport {
     m_abandonedPrerenders.append(prerender);
   }
 
-  void prefetchFinished() override {}
-
   Vector<WebPrerender> m_addedPrerenders;
   Vector<WebPrerender> m_canceledPrerenders;
   Vector<WebPrerender> m_abandonedPrerenders;

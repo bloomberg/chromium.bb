@@ -268,11 +268,6 @@ class PrerenderManager : public content::NotificationObserver,
   virtual PrerenderContents* GetPrerenderContentsForRoute(
       int child_id, int route_id) const;
 
-  // Returns the PrerenderContents object that is found in active prerenders to
-  // match the |render_process_id|. Otherwise returns a nullptr.
-  PrerenderContents* GetPrerenderContentsForProcess(
-      int render_process_id) const;
-
   // Returns a list of all WebContents being prerendered.
   std::vector<content::WebContents*> GetAllPrerenderingContents() const;
 

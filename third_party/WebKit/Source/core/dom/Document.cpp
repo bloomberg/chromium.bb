@@ -242,7 +242,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebFrameScheduler.h"
-#include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
@@ -5139,9 +5138,6 @@ void Document::finishedParsing() {
 
   // Parser should have picked up all preloads by now
   m_fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
-
-  if (isPrefetchOnly())
-    WebPrerenderingSupport::current()->prefetchFinished();
 }
 
 void Document::elementDataCacheClearTimerFired(TimerBase*) {
