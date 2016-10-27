@@ -40,8 +40,8 @@ class SVGPathElement final : public SVGGeometryElement {
   Path asPath() const override;
   Path attributePath() const;
 
-  float getTotalLength();
-  SVGPointTearOff* getPointAtLength(float distance);
+  float getTotalLength() override;
+  SVGPointTearOff* getPointAtLength(float distance) override;
   unsigned getPathSegAtLength(float distance);
 
   SVGAnimatedPath* path() const { return m_path.get(); }

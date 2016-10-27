@@ -87,6 +87,24 @@ void SVGGeometryElement::toClipPath(Path& path) const {
   path.setWindRule(layoutObject()->style()->svgStyle().clipRule());
 }
 
+float SVGGeometryElement::getTotalLength() {
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (!layoutObject())
+    return 0;
+  return asPath().length();
+}
+
+SVGPointTearOff* SVGGeometryElement::getPointAtLength(float length) {
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  FloatPoint point;
+  if (layoutObject())
+    point = asPath().pointAtLength(length);
+  return SVGPointTearOff::create(SVGPoint::create(point), 0,
+                                 PropertyIsNotAnimVal);
+}
+
 LayoutObject* SVGGeometryElement::createLayoutObject(const ComputedStyle&) {
   // By default, any subclass is expected to do path-based drawing.
   return new LayoutSVGPath(this);

@@ -34,4 +34,6 @@ interface SVGGeometryElement : SVGGraphicsElement {
     // TODO(foolip): SVGPoint should be DOMPoint.
     boolean isPointInFill(SVGPoint point);
     boolean isPointInStroke(SVGPoint point);
+    float getTotalLength();
+    SVGPoint getPointAtLength(float distance);
 };

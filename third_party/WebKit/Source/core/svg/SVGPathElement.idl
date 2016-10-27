@@ -29,8 +29,5 @@
 interface SVGPathElement : SVGGeometryElement {
     [Measure] readonly attribute SVGAnimatedNumber pathLength;
 
-    float getTotalLength();
-    // TODO(foolip): SVGPoint should be DOMPoint.
-    SVGPoint getPointAtLength(float distance);
     unsigned long getPathSegAtLength(float distance);
 };

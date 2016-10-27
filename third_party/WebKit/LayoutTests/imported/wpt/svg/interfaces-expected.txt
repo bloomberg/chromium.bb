@@ -1401,8 +1401,8 @@ PASS SVGPathElement interface object name
 FAIL SVGPathElement interface: existence and properties of interface prototype object assert_equals: class string of SVGPathElement.prototype expected "[object SVGPathElementPrototype]" but got "[object SVGPathElement]"
 PASS SVGPathElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPathElement interface: attribute pathLength 
-PASS SVGPathElement interface: operation getTotalLength() 
-PASS SVGPathElement interface: operation getPointAtLength(float) 
+FAIL SVGPathElement interface: operation getTotalLength() assert_own_property: interface prototype object missing non-static operation expected property "getTotalLength" missing
+FAIL SVGPathElement interface: operation getPointAtLength(float) assert_own_property: interface prototype object missing non-static operation expected property "getPointAtLength" missing
 PASS SVGPathElement must be primary interface of path 
 PASS Stringification of path 
 PASS SVGPathElement interface: path must inherit property "pathLength" with the proper type (0) 

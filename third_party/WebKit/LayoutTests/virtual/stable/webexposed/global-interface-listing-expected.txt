@@ -4684,6 +4684,8 @@ interface SVGGElement : SVGGraphicsElement
 interface SVGGeometryElement : SVGGraphicsElement
     attribute @@toStringTag
     method constructor
+    method getPointAtLength
+    method getTotalLength
     method isPointInFill
     method isPointInStroke
 interface SVGGradientElement : SVGElement
@@ -4856,8 +4858,6 @@ interface SVGPathElement : SVGGeometryElement
     getter pathLength
     method constructor
     method getPathSegAtLength
-    method getPointAtLength
-    method getTotalLength
 interface SVGPatternElement : SVGElement
     attribute @@toStringTag
     getter height
