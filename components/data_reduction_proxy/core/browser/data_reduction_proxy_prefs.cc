@@ -12,22 +12,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
-namespace {
-
-void TransferPrefList(const char* pref_path,
-                      PrefService* src,
-                      PrefService* dest) {
-  DCHECK(src->FindPreference(pref_path)->GetType() == base::Value::TYPE_LIST);
-  ListPrefUpdate update_dest(dest, pref_path);
-  std::unique_ptr<base::ListValue> src_list(
-      src->GetList(pref_path)->DeepCopy());
-  update_dest->Swap(src_list.get());
-  ListPrefUpdate update_src(src, pref_path);
-  src->ClearPref(pref_path);
-}
-
-}  // namespace
-
 namespace data_reduction_proxy {
 
 // Make sure any changes here that have the potential to impact android_webview
@@ -43,7 +27,6 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
 
-  registry->RegisterBooleanPref(prefs::kStatisticsPrefsMigrated, false);
   registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
   registry->RegisterInt64Pref(prefs::kDailyHttpOriginalContentLengthApplication,
                               0L);
@@ -116,9 +99,6 @@ void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kDataReductionProxyWasEnabledBefore, false);
 
   registry->RegisterBooleanPref(prefs::kDataUsageReportingEnabled, false);
-
-  registry->RegisterBooleanPref(
-      prefs::kStatisticsPrefsMigrated, false);
   RegisterPrefs(registry);
 }
 
@@ -195,66 +175,6 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kLoFiWasUsedThisSession, false);
   registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
-}
-
-void MigrateStatisticsPrefs(PrefService* local_state_prefs,
-                            PrefService* profile_prefs) {
-  if (profile_prefs->GetBoolean(prefs::kStatisticsPrefsMigrated))
-    return;
-  if (local_state_prefs == profile_prefs) {
-    profile_prefs->SetBoolean(prefs::kStatisticsPrefsMigrated, true);
-    return;
-  }
-  profile_prefs->SetInt64(
-      prefs::kHttpReceivedContentLength,
-      local_state_prefs->GetInt64(prefs::kHttpReceivedContentLength));
-  local_state_prefs->ClearPref(prefs::kHttpReceivedContentLength);
-  profile_prefs->SetInt64(
-      prefs::kHttpOriginalContentLength,
-      local_state_prefs->GetInt64(prefs::kHttpOriginalContentLength));
-  local_state_prefs->ClearPref(prefs::kHttpOriginalContentLength);
-  TransferPrefList(
-      prefs::kDailyHttpOriginalContentLength, local_state_prefs, profile_prefs);
-  TransferPrefList(
-      prefs::kDailyHttpReceivedContentLength, local_state_prefs, profile_prefs);
-  TransferPrefList(
-      prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled,
-      local_state_prefs,
-      profile_prefs);
-  TransferPrefList(
-      prefs::kDailyContentLengthWithDataReductionProxyEnabled,
-      local_state_prefs,
-      profile_prefs);
-  TransferPrefList(
-      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled,
-      local_state_prefs,
-      profile_prefs);
-  TransferPrefList(
-      prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled,
-      local_state_prefs,
-      profile_prefs);
-  TransferPrefList(
-      prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled,
-      local_state_prefs,
-      profile_prefs);
-  TransferPrefList(
-      prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled,
-      local_state_prefs,
-      profile_prefs);
-  TransferPrefList(
-      prefs::kDailyOriginalContentLengthViaDataReductionProxy,
-      local_state_prefs,
-      profile_prefs);
-  TransferPrefList(
-      prefs::kDailyContentLengthViaDataReductionProxy,
-      local_state_prefs,
-      profile_prefs);
-  profile_prefs->SetInt64(
-      prefs::kDailyHttpContentLengthLastUpdateDate,
-      local_state_prefs->GetInt64(
-          prefs::kDailyHttpContentLengthLastUpdateDate));
-  local_state_prefs->ClearPref(prefs::kDailyHttpContentLengthLastUpdateDate);
-  profile_prefs->SetBoolean(prefs::kStatisticsPrefsMigrated, true);
 }
 
 }  // namespace data_reduction_proxy

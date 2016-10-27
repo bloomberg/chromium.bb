@@ -233,10 +233,5 @@ const char kLoFiWasUsedThisSession[] =
 const char kSimulatedConfigRetrieveTime[] =
     "data_reduction.simulated_config_retrieve_time";
 
-// A boolean specifying whether the data reduction proxy statistics preferences
-// have migrated from local state to the profile.
-const char kStatisticsPrefsMigrated[] =
-    "data_reduction.statistics_prefs_migrated";
-
 }  // namespace prefs
 }  // namespace data_reduction_proxy

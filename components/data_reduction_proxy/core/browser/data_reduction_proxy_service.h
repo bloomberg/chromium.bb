@@ -78,14 +78,6 @@ class DataReductionProxyService
   // final step in initialization.
   bool Initialized() const;
 
-  // Constructs compression stats with a noop |DataReductionProxyStore|; load
-  // and store calls do nothing. This should not be called
-  // if a valid compression stats is passed into the constructor.
-  void EnableCompressionStatisticsLogging(
-      PrefService* prefs,
-      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-      const base::TimeDelta& commit_delay);
-
   // Records daily data savings statistics in |compression_stats_|.
   void UpdateContentLengths(int64_t data_used,
                             int64_t original_size,

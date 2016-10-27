@@ -90,18 +90,6 @@ void DataReductionProxyService::Shutdown() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void DataReductionProxyService::EnableCompressionStatisticsLogging(
-    PrefService* prefs,
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-    const base::TimeDelta& commit_delay) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!compression_stats_);
-  DCHECK(!prefs_);
-  prefs_ = prefs;
-  compression_stats_.reset(
-      new DataReductionProxyCompressionStats(this, prefs_, commit_delay));
-}
-
 void DataReductionProxyService::UpdateContentLengths(
     int64_t data_used,
     int64_t original_size,

@@ -29,11 +29,6 @@ void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry);
 // reduction proxy.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
-// Migrates the prefs that are used to record compression statistics from |src|
-// to |dest|.
-// TODO(bengr): Remove this in M-43.
-void MigrateStatisticsPrefs(PrefService* src, PrefService* dest);
-
 }  // namespace data_reduction_proxy
 
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PREFS_H_
