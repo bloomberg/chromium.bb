@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -18,11 +17,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/manifest_util.h"
@@ -35,8 +35,11 @@
 namespace {
 
 // The default WebAPK server URL.
-const char kDefaultWebApkServerUrl[] =
+const char kDefaultServerUrl[] =
     "https://webapk.googleapis.com/v1alpha/webApks/?alt=proto";
+
+// Flag for setting the WebAPK server URL.
+const char kServerUrlVariationsParamKey[] = "ServerUrl";
 
 // The MIME type of the POST data sent to the server.
 const char kProtoMimeType[] = "application/x-protobuf";
@@ -52,6 +55,14 @@ const int kDownloadTimeoutMs = 60000;
 const int kWorldReadableFilePermission = base::FILE_PERMISSION_READ_BY_USER |
                                          base::FILE_PERMISSION_READ_BY_GROUP |
                                          base::FILE_PERMISSION_READ_BY_OTHERS;
+
+// Returns the WebAPK server URL based on the command line flags and the
+// currently active field trials.
+GURL GetServerUrl() {
+  GURL server_url(variations::GetVariationParamValueByFeature(
+      chrome::android::kWebApks, kServerUrlVariationsParamKey));
+  return server_url.is_valid() ? server_url : GURL(kDefaultServerUrl);
+}
 
 // Returns the scope from |info| if it is specified. Otherwise, returns the
 // default scope.
@@ -160,15 +171,11 @@ WebApkInstaller::WebApkInstaller(const ShortcutInfo& shortcut_info,
                                  const SkBitmap& shortcut_icon)
     : shortcut_info_(shortcut_info),
       shortcut_icon_(shortcut_icon),
+      server_url_(GetServerUrl()),
       webapk_download_url_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
       download_timeout_ms_(kDownloadTimeoutMs),
       task_type_(UNDEFINED),
       weak_ptr_factory_(this) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  server_url_ =
-      GURL(command_line->HasSwitch(switches::kWebApkServerUrl)
-               ? command_line->GetSwitchValueASCII(switches::kWebApkServerUrl)
-               : kDefaultWebApkServerUrl);
   CreateJavaRef();
 }
 
