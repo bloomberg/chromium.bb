@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK2_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK2_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/libgtkui/gtk2_signal.h"
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
+#include "chrome/browser/ui/libgtkui/gtk_signal.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
 
 namespace libgtkui {
@@ -17,8 +17,7 @@ namespace libgtkui {
 class SelectFileDialogImplGTK : public SelectFileDialogImpl,
                                 public aura::WindowObserver {
  public:
-  SelectFileDialogImplGTK(Listener* listener,
-                          ui::SelectFilePolicy* policy);
+  SelectFileDialogImplGTK(Listener* listener, ui::SelectFilePolicy* policy);
 
  protected:
   ~SelectFileDialogImplGTK() override;
@@ -59,20 +58,22 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   // us when we were told to show the dialog.
   void FileNotSelected(GtkWidget* dialog);
 
-  GtkWidget* CreateSelectFolderDialog(
-      Type type,
-      const std::string& title,
-      const base::FilePath& default_path,
-      gfx::NativeWindow parent);
+  GtkWidget* CreateSelectFolderDialog(Type type,
+                                      const std::string& title,
+                                      const base::FilePath& default_path,
+                                      gfx::NativeWindow parent);
 
   GtkWidget* CreateFileOpenDialog(const std::string& title,
-      const base::FilePath& default_path, gfx::NativeWindow parent);
+                                  const base::FilePath& default_path,
+                                  gfx::NativeWindow parent);
 
   GtkWidget* CreateMultiFileOpenDialog(const std::string& title,
-      const base::FilePath& default_path, gfx::NativeWindow parent);
+                                       const base::FilePath& default_path,
+                                       gfx::NativeWindow parent);
 
   GtkWidget* CreateSaveAsDialog(const std::string& title,
-      const base::FilePath& default_path, gfx::NativeWindow parent);
+                                const base::FilePath& default_path,
+                                gfx::NativeWindow parent);
 
   // Removes and returns the |params| associated with |dialog| from
   // |params_map_|.
@@ -94,16 +95,22 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
                                   gfx::NativeWindow parent);
 
   // Callback for when the user responds to a Save As or Open File dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK, void,
-                       OnSelectSingleFileDialogResponse, int);
+  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
+                       void,
+                       OnSelectSingleFileDialogResponse,
+                       int);
 
   // Callback for when the user responds to a Select Folder dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK, void,
-                       OnSelectSingleFolderDialogResponse, int);
+  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
+                       void,
+                       OnSelectSingleFolderDialogResponse,
+                       int);
 
   // Callback for when the user responds to a Open Multiple Files dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK, void,
-                       OnSelectMultiFileDialogResponse, int);
+  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
+                       void,
+                       OnSelectMultiFileDialogResponse,
+                       int);
 
   // Callback for when the file chooser gets destroyed.
   CHROMEGTK_CALLBACK_0(SelectFileDialogImplGTK, void, OnFileChooserDestroy);
@@ -128,4 +135,4 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK2_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK_H_

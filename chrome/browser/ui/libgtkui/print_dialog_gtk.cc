@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/print_dialog_gtk2.h"
+#include "chrome/browser/ui/libgtkui/print_dialog_gtk.h"
 
 #include <gtk/gtkunixprint.h>
 
@@ -19,8 +19,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
-#include "chrome/browser/ui/libgtkui/printing_gtk2_util.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
+#include "chrome/browser/ui/libgtkui/printing_gtk_util.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -56,9 +56,11 @@ bool PaperSizeMatch(GtkPaperSize* gtk_paper_size,
   }
   gfx::Size paper_size_microns(
       static_cast<int>(gtk_paper_size_get_width(gtk_paper_size, GTK_UNIT_MM) *
-                       kMicronsInMm + 0.5),
+                           kMicronsInMm +
+                       0.5),
       static_cast<int>(gtk_paper_size_get_height(gtk_paper_size, GTK_UNIT_MM) *
-                       kMicronsInMm + 0.5));
+                           kMicronsInMm +
+                       0.5));
   int diff = std::max(
       std::abs(paper_size_microns.width() - media.size_microns.width()),
       std::abs(paper_size_microns.height() - media.size_microns.height()));
@@ -90,15 +92,12 @@ GtkPaperSize* FindPaperSizeMatch(GList* gtk_paper_sizes,
 
 class StickyPrintSettingGtk {
  public:
-  StickyPrintSettingGtk() : last_used_settings_(gtk_print_settings_new()) {
-  }
+  StickyPrintSettingGtk() : last_used_settings_(gtk_print_settings_new()) {}
   ~StickyPrintSettingGtk() {
     NOTREACHED();  // Intended to be used with a Leaky LazyInstance.
   }
 
-  GtkPrintSettings* settings() {
-    return last_used_settings_;
-  }
+  GtkPrintSettings* settings() { return last_used_settings_; }
 
   void SetLastUsedSettings(GtkPrintSettings* settings) {
     DCHECK(last_used_settings_);
@@ -131,9 +130,7 @@ class GtkPrinterList {
 
   // Can return NULL if there's no default printer. E.g. Printer on a laptop
   // is "home_printer", but the laptop is at work.
-  GtkPrinter* default_printer() {
-    return default_printer_;
-  }
+  GtkPrinter* default_printer() { return default_printer_; }
 
   // Can return NULL if the printer cannot be found due to:
   // - Printer list out of sync with printer dialog UI.
@@ -183,8 +180,7 @@ PrintDialogGtk2::PrintDialogGtk2(PrintingContextLinux* context)
       dialog_(NULL),
       gtk_settings_(NULL),
       page_setup_(NULL),
-      printer_(NULL) {
-}
+      printer_(NULL) {}
 
 PrintDialogGtk2::~PrintDialogGtk2() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -302,7 +298,7 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
           gtk_page_setup_set_paper_size(page_setup_, custom_size);
           gtk_paper_size_free(custom_size);
         }
-#if GTK_CHECK_VERSION(2,28,0)
+#if GTK_CHECK_VERSION(2, 28, 0)
         g_list_free_full(gtk_paper_sizes,
                          reinterpret_cast<GDestroyNotify>(gtk_paper_size_free));
 #else
@@ -317,9 +313,8 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
   }
 
   gtk_print_settings_set_orientation(
-      gtk_settings_,
-      settings->landscape() ? GTK_PAGE_ORIENTATION_LANDSCAPE :
-                              GTK_PAGE_ORIENTATION_PORTRAIT);
+      gtk_settings_, settings->landscape() ? GTK_PAGE_ORIENTATION_LANDSCAPE
+                                           : GTK_PAGE_ORIENTATION_PORTRAIT);
 
   InitPrintSettings(settings);
   return true;
@@ -407,8 +402,7 @@ void PrintDialogGtk2::PrintDocument(const printing::MetafilePlayer& metafile,
 
   // No errors, continue printing.
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&PrintDialogGtk2::SendDocumentToPrinter, this, document_name));
 }
 
@@ -431,8 +425,8 @@ void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
     case GTK_RESPONSE_OK: {
       if (gtk_settings_)
         g_object_unref(gtk_settings_);
-      gtk_settings_ = gtk_print_unix_dialog_get_settings(
-          GTK_PRINT_UNIX_DIALOG(dialog_));
+      gtk_settings_ =
+          gtk_print_unix_dialog_get_settings(GTK_PRINT_UNIX_DIALOG(dialog_));
 
       if (printer_)
         g_object_unref(printer_);
@@ -442,8 +436,8 @@ void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
 
       if (page_setup_)
         g_object_unref(page_setup_);
-      page_setup_ = gtk_print_unix_dialog_get_page_setup(
-          GTK_PRINT_UNIX_DIALOG(dialog_));
+      page_setup_ =
+          gtk_print_unix_dialog_get_page_setup(GTK_PRINT_UNIX_DIALOG(dialog_));
       g_object_ref(page_setup_);
 
       // Handle page ranges.
@@ -493,13 +487,9 @@ void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
       return;
     }
     case GTK_RESPONSE_APPLY:
-    default: {
-      NOTREACHED();
-    }
+    default: { NOTREACHED(); }
   }
 }
-
-
 
 static void OnJobCompletedThunk(GtkPrintJob* print_job,
                                 gpointer user_data,
@@ -526,11 +516,9 @@ void PrintDialogGtk2::SendDocumentToPrinter(
   // Save the settings for next time.
   g_last_used_settings.Get().SetLastUsedSettings(gtk_settings_);
 
-  GtkPrintJob* print_job = gtk_print_job_new(
-      base::UTF16ToUTF8(document_name).c_str(),
-      printer_,
-      gtk_settings_,
-      page_setup_);
+  GtkPrintJob* print_job =
+      gtk_print_job_new(base::UTF16ToUTF8(document_name).c_str(), printer_,
+                        gtk_settings_, page_setup_);
   gtk_print_job_set_source_file(print_job, path_to_pdf_.value().c_str(), NULL);
   gtk_print_job_send(print_job, OnJobCompletedThunk, this, NULL);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK2_UI_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_GTK2_UI_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK_UI_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_GTK_UI_H_
 
 #include <map>
 #include <memory>
@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/libgtkui/gtk2_signal.h"
+#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "chrome/browser/ui/libgtkui/libgtkui_export.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -214,4 +214,4 @@ class Gtk2UI : public views::LinuxUI {
 // QT or whatever.
 LIBGTKUI_EXPORT views::LinuxUI* BuildGtk2UI();
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK2_UI_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_UI_H_

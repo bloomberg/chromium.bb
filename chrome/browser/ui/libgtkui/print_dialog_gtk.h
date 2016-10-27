@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_PRINT_DIALOG_GTK2_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_PRINT_DIALOG_GTK2_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_PRINT_DIALOG_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_PRINT_DIALOG_GTK_H_
 
 #include <gtk/gtk.h>
 #include <gtk/gtkunixprint.h>
@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/ui/libgtkui/gtk2_signal.h"
+#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_linux.h"
@@ -27,11 +27,11 @@ class PrintSettings;
 using printing::PrintingContextLinux;
 
 // Needs to be freed on the UI thread to clean up its GTK members variables.
-class PrintDialogGtk2
-    : public printing::PrintDialogGtkInterface,
-      public base::RefCountedThreadSafe<
-          PrintDialogGtk2, content::BrowserThread::DeleteOnUIThread>,
-      public aura::WindowObserver {
+class PrintDialogGtk2 : public printing::PrintDialogGtkInterface,
+                        public base::RefCountedThreadSafe<
+                            PrintDialogGtk2,
+                            content::BrowserThread::DeleteOnUIThread>,
+                        public aura::WindowObserver {
  public:
   // Creates and returns a print dialog.
   static printing::PrintDialogGtkInterface* CreatePrintDialog(
@@ -89,4 +89,4 @@ class PrintDialogGtk2
   DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk2);
 };
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_PRINT_DIALOG_GTK2_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_PRINT_DIALOG_GTK_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gtk2_status_icon.h"
+#include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
 
 #include <gtk/gtk.h>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon_menu.h"
-#include "chrome/browser/ui/libgtkui/skia_utils_gtk2.h"
+#include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -23,9 +23,9 @@ Gtk2StatusIcon::Gtk2StatusIcon(const gfx::ImageSkia& image,
   g_object_unref(pixbuf);
 
   g_signal_connect(gtk_status_icon_, "activate", G_CALLBACK(OnClickThunk),
-      this);
+                   this);
   g_signal_connect(gtk_status_icon_, "popup_menu",
-      G_CALLBACK(OnContextMenuRequestedThunk), this);
+                   G_CALLBACK(OnContextMenuRequestedThunk), this);
   SetToolTip(tool_tip);
 }
 
@@ -65,12 +65,8 @@ void Gtk2StatusIcon::OnContextMenuRequested(GtkStatusIcon* status_icon,
                                             guint button,
                                             guint32 activate_time) {
   if (menu_.get()) {
-    gtk_menu_popup(menu_->GetGtkMenu(),
-                   NULL,
-                   NULL,
-                   gtk_status_icon_position_menu,
-                   gtk_status_icon_,
-                   button,
+    gtk_menu_popup(menu_->GetGtkMenu(), NULL, NULL,
+                   gtk_status_icon_position_menu, gtk_status_icon_, button,
                    activate_time);
   }
 }

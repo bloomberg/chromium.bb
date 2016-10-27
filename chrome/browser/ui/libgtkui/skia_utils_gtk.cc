@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/skia_utils_gtk2.h"
+#include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 
 #include <gdk/gdk.h>
 
@@ -23,11 +23,9 @@ SkColor GdkColorToSkColor(GdkColor color) {
 
 GdkColor SkColorToGdkColor(SkColor color) {
   GdkColor gdk_color = {
-      0,
-      static_cast<guint16>(SkColorGetR(color) * kSkiaToGDKMultiplier),
+      0, static_cast<guint16>(SkColorGetR(color) * kSkiaToGDKMultiplier),
       static_cast<guint16>(SkColorGetG(color) * kSkiaToGDKMultiplier),
-      static_cast<guint16>(SkColorGetB(color) * kSkiaToGDKMultiplier)
-  };
+      static_cast<guint16>(SkColorGetB(color) * kSkiaToGDKMultiplier)};
   return gdk_color;
 }
 
@@ -98,9 +96,7 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap& bitmap) {
   GdkPixbuf* pixbuf =
       gdk_pixbuf_new(GDK_COLORSPACE_RGB,  // The only colorspace gtk supports.
                      TRUE,                // There is an alpha channel.
-                     8,
-                     width,
-                     height);
+                     8, width, height);
 
   // SkBitmaps are premultiplied, we need to unpremultiply them.
   const int kBytesPerPixel = 4;

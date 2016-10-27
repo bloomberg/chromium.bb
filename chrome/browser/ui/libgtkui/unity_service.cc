@@ -12,7 +12,7 @@
 
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
 
 // Unity data typedefs.
 typedef struct _UnityInspector UnityInspector;

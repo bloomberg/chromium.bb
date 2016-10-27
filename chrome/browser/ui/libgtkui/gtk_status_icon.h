@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK2_STATUS_ICON_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_GTK2_STATUS_ICON_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK_STATUS_ICON_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_GTK_STATUS_ICON_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/libgtkui/gtk2_signal.h"
+#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
@@ -59,4 +59,4 @@ class Gtk2StatusIcon : public views::StatusIconLinux {
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK2_STATUS_ICON_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_STATUS_ICON_H_

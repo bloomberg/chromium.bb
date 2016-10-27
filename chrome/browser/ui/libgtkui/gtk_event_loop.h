@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK2_EVENT_LOOP_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_GTK2_EVENT_LOOP_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK_EVENT_LOOP_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_GTK_EVENT_LOOP_H_
 
 #include "base/macros.h"
 #include "ui/base/glib/glib_integers.h"
@@ -12,7 +12,8 @@ typedef union _GdkEvent GdkEvent;
 typedef struct _GdkEventKey GdkEventKey;
 
 namespace base {
-template<typename Type> struct DefaultSingletonTraits;
+template <typename Type>
+struct DefaultSingletonTraits;
 }
 
 namespace libgtkui {
@@ -35,4 +36,4 @@ class Gtk2EventLoop {
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK2_EVENT_LOOP_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_EVENT_LOOP_H_

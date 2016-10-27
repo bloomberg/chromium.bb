@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK2_KEY_BINDINGS_HANDLER_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_GTK2_KEY_BINDINGS_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK_KEY_BINDINGS_HANDLER_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_GTK_KEY_BINDINGS_HANDLER_H_
 
 #include <gtk/gtk.h>
 
@@ -58,7 +58,7 @@ class Gtk2KeyBindingsHandler {
   // Object structure of Handler class, which is derived from GtkTextView.
   struct Handler {
     GtkTextView parent_object;
-    Gtk2KeyBindingsHandler *owner;
+    Gtk2KeyBindingsHandler* owner;
   };
 
   // Class structure of Handler class.
@@ -78,10 +78,10 @@ class Gtk2KeyBindingsHandler {
                                   GdkEventKey* gdk_event);
 
   // Initializes Handler structure.
-  static void HandlerInit(Handler *self);
+  static void HandlerInit(Handler* self);
 
   // Initializes HandlerClass structure.
-  static void HandlerClassInit(HandlerClass *klass);
+  static void HandlerClassInit(HandlerClass* klass);
 
   // Registeres Handler class to GObject type system and return its type id.
   static GType HandlerGetType();
@@ -99,18 +99,22 @@ class Gtk2KeyBindingsHandler {
   static void CutClipboard(GtkTextView* text_view);
 
   // Handler of "delete-from-cursor" signal.
-  static void DeleteFromCursor(GtkTextView* text_view, GtkDeleteType type,
+  static void DeleteFromCursor(GtkTextView* text_view,
+                               GtkDeleteType type,
                                gint count);
 
   // Handler of "insert-at-cursor" signal.
   static void InsertAtCursor(GtkTextView* text_view, const gchar* str);
 
   // Handler of "move-cursor" signal.
-  static void MoveCursor(GtkTextView* text_view, GtkMovementStep step,
-                         gint count, gboolean extend_selection);
+  static void MoveCursor(GtkTextView* text_view,
+                         GtkMovementStep step,
+                         gint count,
+                         gboolean extend_selection);
 
   // Handler of "move-viewport" signal.
-  static void MoveViewport(GtkTextView* text_view, GtkScrollStep step,
+  static void MoveViewport(GtkTextView* text_view,
+                           GtkScrollStep step,
                            gint count);
 
   // Handler of "paste-clipboard" signal.
@@ -146,4 +150,4 @@ class Gtk2KeyBindingsHandler {
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK2_KEY_BINDINGS_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_KEY_BINDINGS_HANDLER_H_

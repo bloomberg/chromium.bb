@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gtk2_ui.h"
+#include "chrome/browser/ui/libgtkui/gtk_ui.h"
 
 #include <math.h>
 #include <pango/pango.h>
@@ -23,17 +23,17 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon.h"
-#include "chrome/browser/ui/libgtkui/gtk2_event_loop.h"
-#include "chrome/browser/ui/libgtkui/gtk2_key_bindings_handler.h"
-#include "chrome/browser/ui/libgtkui/gtk2_status_icon.h"
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
-#include "chrome/browser/ui/libgtkui/native_theme_gtk2.h"
-#include "chrome/browser/ui/libgtkui/print_dialog_gtk2.h"
-#include "chrome/browser/ui/libgtkui/printing_gtk2_util.h"
+#include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
+#include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
+#include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
+#include "chrome/browser/ui/libgtkui/native_theme_gtk.h"
+#include "chrome/browser/ui/libgtkui/print_dialog_gtk.h"
+#include "chrome/browser/ui/libgtkui/printing_gtk_util.h"
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
-#include "chrome/browser/ui/libgtkui/skia_utils_gtk2.h"
+#include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "chrome/browser/ui/libgtkui/unity_service.h"
-#include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk2.h"
+#include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -130,8 +130,8 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
     gtk_widget_show_all(window);
 
     cairo_surface_t* surface = cairo_image_surface_create_for_data(
-        static_cast<unsigned char*>(border.getAddr(0, 0)),
-        CAIRO_FORMAT_ARGB32, width, height, width * 4);
+        static_cast<unsigned char*>(border.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
+        width, height, width * 4);
     cairo_t* cr = cairo_create(surface);
 
 #if GTK_MAJOR_VERSION == 2
@@ -162,8 +162,8 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
 
     // There's probably a better way to do this
     if (focus_)
-      gtk_render_focus(gtk_widget_get_style_context(button), cr, 0, 0,
-                       width, height);
+      gtk_render_focus(gtk_widget_get_style_context(button), cr, 0, 0, width,
+                       height);
 #endif
 
     cairo_destroy(cr);
@@ -203,9 +203,7 @@ class GtkButtonPainter : public views::Painter {
 };
 
 struct GObjectDeleter {
-  void operator()(void* ptr) {
-    g_object_unref(ptr);
-  }
+  void operator()(void* ptr) { g_object_unref(ptr); }
 };
 struct GtkIconInfoDeleter {
   void operator()(GtkIconInfo* ptr) {
@@ -232,11 +230,11 @@ const char* kUnknownContentType = "application/octet-stream";
 // copy the constants themselves here.
 //
 // Default tints.
-const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
-const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
+const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2f, 0.35f};
+const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3f, 0.6f};
 
 #if GTK_MAJOR_VERSION == 3
-const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75f };
+const color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75f};
 #endif  // GTK_MAJOR_VERSION == 3
 
 // Picks a button tint from a set of background colors. While
@@ -426,14 +424,10 @@ void OnThemeChanged(GObject* obj, GParamSpec* param, Gtk2UI* gtkui) {
 
 void Gtk2UI::Initialize() {
   GtkSettings* settings = gtk_settings_get_default();
-  g_signal_connect_after(settings,
-                         "notify::gtk-theme-name",
-                         G_CALLBACK(OnThemeChanged),
-                         this);
-  g_signal_connect_after(settings,
-                         "notify::gtk-icon-theme-name",
-                         G_CALLBACK(OnThemeChanged),
-                         this);
+  g_signal_connect_after(settings, "notify::gtk-theme-name",
+                         G_CALLBACK(OnThemeChanged), this);
+  g_signal_connect_after(settings, "notify::gtk-icon-theme-name",
+                         G_CALLBACK(OnThemeChanged), this);
 
   LoadGtkValues();
 
@@ -599,22 +593,18 @@ std::unique_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
   }
 }
 
-gfx::Image Gtk2UI::GetIconForContentType(
-    const std::string& content_type,
-    int size) const {
+gfx::Image Gtk2UI::GetIconForContentType(const std::string& content_type,
+                                         int size) const {
   // This call doesn't take a reference.
   GtkIconTheme* theme = gtk_icon_theme_get_default();
 
-  std::string content_types[] = {
-    content_type, kUnknownContentType
-  };
+  std::string content_types[] = {content_type, kUnknownContentType};
 
   for (size_t i = 0; i < arraysize(content_types); ++i) {
     ScopedGIcon icon(g_content_type_get_icon(content_types[i].c_str()));
-    ScopedGtkIconInfo icon_info(
-        gtk_icon_theme_lookup_by_gicon(
-            theme, icon.get(), size,
-            static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE)));
+    ScopedGtkIconInfo icon_info(gtk_icon_theme_lookup_by_gicon(
+        theme, icon.get(), size,
+        static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE)));
     if (!icon_info)
       continue;
     ScopedGdkPixbuf pixbuf(gtk_icon_info_load_icon(icon_info.get(), NULL));
@@ -648,31 +638,39 @@ std::unique_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     bool focus;
     views::Button::ButtonState state;
   } const paintstate[] = {
-    { "IDR_BUTTON_NORMAL",
-      "IDR_BLUE_BUTTON_NORMAL",
-      false, views::Button::STATE_NORMAL, },
-    { "IDR_BUTTON_HOVER",
-      "IDR_BLUE_BUTTON_HOVER",
-      false, views::Button::STATE_HOVERED, },
-    { "IDR_BUTTON_PRESSED",
-      "IDR_BLUE_BUTTON_PRESSED",
-      false, views::Button::STATE_PRESSED, },
-    { "IDR_BUTTON_DISABLED",
-      "IDR_BLUE_BUTTON_DISABLED",
-      false, views::Button::STATE_DISABLED, },
+      {
+          "IDR_BUTTON_NORMAL", "IDR_BLUE_BUTTON_NORMAL", false,
+          views::Button::STATE_NORMAL,
+      },
+      {
+          "IDR_BUTTON_HOVER", "IDR_BLUE_BUTTON_HOVER", false,
+          views::Button::STATE_HOVERED,
+      },
+      {
+          "IDR_BUTTON_PRESSED", "IDR_BLUE_BUTTON_PRESSED", false,
+          views::Button::STATE_PRESSED,
+      },
+      {
+          "IDR_BUTTON_DISABLED", "IDR_BLUE_BUTTON_DISABLED", false,
+          views::Button::STATE_DISABLED,
+      },
 
-    { "IDR_BUTTON_FOCUSED_NORMAL",
-      "IDR_BLUE_BUTTON_FOCUSED_NORMAL",
-      true, views::Button::STATE_NORMAL, },
-    { "IDR_BUTTON_FOCUSED_HOVER",
-      "IDR_BLUE_BUTTON_FOCUSED_HOVER",
-      true, views::Button::STATE_HOVERED, },
-    { "IDR_BUTTON_FOCUSED_PRESSED",
-      "IDR_BLUE_BUTTON_FOCUSED_PRESSED",
-      true, views::Button::STATE_PRESSED, },
-    { "IDR_BUTTON_DISABLED",
-      "IDR_BLUE_BUTTON_DISABLED",
-      true, views::Button::STATE_DISABLED, },
+      {
+          "IDR_BUTTON_FOCUSED_NORMAL", "IDR_BLUE_BUTTON_FOCUSED_NORMAL", true,
+          views::Button::STATE_NORMAL,
+      },
+      {
+          "IDR_BUTTON_FOCUSED_HOVER", "IDR_BLUE_BUTTON_FOCUSED_HOVER", true,
+          views::Button::STATE_HOVERED,
+      },
+      {
+          "IDR_BUTTON_FOCUSED_PRESSED", "IDR_BLUE_BUTTON_FOCUSED_PRESSED", true,
+          views::Button::STATE_PRESSED,
+      },
+      {
+          "IDR_BUTTON_DISABLED", "IDR_BLUE_BUTTON_DISABLED", true,
+          views::Button::STATE_DISABLED,
+      },
   };
 
   bool is_blue =
@@ -695,8 +693,7 @@ std::unique_ptr<views::Border> Gtk2UI::CreateNativeBorder(
 void Gtk2UI::AddWindowButtonOrderObserver(
     views::WindowButtonOrderObserver* observer) {
   if (!leading_buttons_.empty() || !trailing_buttons_.empty()) {
-    observer->OnWindowButtonOrderingChange(leading_buttons_,
-                                           trailing_buttons_);
+    observer->OnWindowButtonOrderingChange(leading_buttons_, trailing_buttons_);
   }
 
   observer_list_.AddObserver(observer);
@@ -826,12 +823,10 @@ void Gtk2UI::LoadGtkValues() {
   // provides sufficient contrast to |toolbar_color|. Try this out with
   // Darklooks, HighContrastInverse or ThinIce.
 
-  SkColor ntp_background =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+  SkColor ntp_background = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
   SkColor ntp_foreground =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldDefaultColor);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
 
   colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = ntp_background;
   colors_[ThemeProperties::COLOR_NTP_TEXT] = ntp_foreground;
@@ -862,18 +857,14 @@ void Gtk2UI::LoadGtkValues() {
 
   // Some GTK themes only define the text selection colors on the GtkEntry
   // class, so we need to use that for getting selection colors.
-  active_selection_bg_color_ =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
+  active_selection_bg_color_ = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
   active_selection_fg_color_ =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionColor);
-  inactive_selection_bg_color_ =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldReadOnlyBackground);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldSelectionColor);
+  inactive_selection_bg_color_ = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldReadOnlyBackground);
   inactive_selection_fg_color_ =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
 
   colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ThrobberSpinningColor);
@@ -902,7 +893,7 @@ void Gtk2UI::LoadCursorTheme() {
 void Gtk2UI::BuildFrameColors() {
 #if GTK_MAJOR_VERSION == 2
   NativeThemeGtk2* theme = NativeThemeGtk2::instance();
-  color_utils::HSL kDefaultFrameShift = { -1, -1, 0.4 };
+  color_utils::HSL kDefaultFrameShift = {-1, -1, 0.4};
   SkColor frame_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
   frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
@@ -911,20 +902,16 @@ void Gtk2UI::BuildFrameColors() {
 
   GtkStyle* style = gtk_rc_get_style(theme->GetWindow());
   SkColor temp_color = color_utils::HSLShift(
-      GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]),
-      kDefaultFrameShift);
+      GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]), kDefaultFrameShift);
   theme->GetChromeStyleColor("inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
 
-  temp_color = color_utils::HSLShift(
-      frame_color,
-      kDefaultTintFrameIncognito);
+  temp_color = color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
   theme->GetChromeStyleColor("incognito-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
 
-  temp_color = color_utils::HSLShift(
-      frame_color,
-      kDefaultTintFrameIncognitoInactive);
+  temp_color =
+      color_utils::HSLShift(frame_color, kDefaultTintFrameIncognitoInactive);
   theme->GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
@@ -989,8 +976,7 @@ void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
   SkColor accent_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
   SkColor text_color =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelEnabledColor);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
   SkColor base_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
 
@@ -1003,11 +989,9 @@ void Gtk2UI::GetNormalEntryForegroundHSL(color_utils::HSL* tint) const {
   SkColor accent_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
   SkColor text_color =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  SkColor base_color =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  SkColor base_color = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 
   PickButtonTintFromColors(accent_color, text_color, base_color, tint);
 }
@@ -1016,24 +1000,23 @@ void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
   // The simplest of all the tints. We just use the selected text in the entry
   // since the icons tinted this way will only be displayed against
   // base[GTK_STATE_SELECTED].
-  SkColor color =
-      NativeThemeGtk2::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionColor);
+  SkColor color = NativeThemeGtk2::instance()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionColor);
 
   color_utils::SkColorToHSL(color, tint);
 }
 
 void Gtk2UI::UpdateDefaultFont() {
-  PangoContext* pc = gtk_widget_get_pango_context(
-    NativeThemeGtk2::instance()->GetLabel());
+  PangoContext* pc =
+      gtk_widget_get_pango_context(NativeThemeGtk2::instance()->GetLabel());
   const PangoFontDescription* desc = pango_context_get_font_description(pc);
 
   // Use gfx::FontRenderParams to select a family and determine the rendering
   // settings.
   gfx::FontRenderParamsQuery query;
-  query.families = base::SplitString(pango_font_description_get_family(desc),
-                                     ",", base::TRIM_WHITESPACE,
-                                     base::SPLIT_WANT_ALL);
+  query.families =
+      base::SplitString(pango_font_description_get_family(desc), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (pango_font_description_get_size_is_absolute(desc)) {
     // If the size is absolute, it's specified in Pango units. There are
@@ -1045,7 +1028,7 @@ void Gtk2UI::UpdateDefaultFont() {
     // Non-absolute sizes are in points (again scaled by PANGO_SIZE).
     // Round the value when converting to pixels to match GTK's logic.
     const double size_points = pango_font_description_get_size(desc) /
-        static_cast<double>(PANGO_SCALE);
+                               static_cast<double>(PANGO_SCALE);
     default_font_size_pixels_ = static_cast<int>(
         GetPixelsInPoint(device_scale_factor_) * size_points + 0.5);
     query.point_size = static_cast<int>(size_points);

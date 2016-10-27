@@ -13,7 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/libgtkui/gtk2_signal.h"
+#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 
 namespace libgtkui {
 class Gtk2UI;

@@ -6,8 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
-#include "chrome/browser/ui/libgtkui/skia_utils_gtk2.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
+#include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/models/menu_model.h"

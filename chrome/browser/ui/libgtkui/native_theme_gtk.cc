@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/native_theme_gtk2.h"
+#include "chrome/browser/ui/libgtkui/native_theme_gtk.h"
 
 #include <gtk/gtk.h>
 
 #include "chrome/browser/ui/libgtkui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtkui/chrome_gtk_menu_subclasses.h"
-#include "chrome/browser/ui/libgtkui/gtk2_ui.h"
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
-#include "chrome/browser/ui/libgtkui/skia_utils_gtk2.h"
+#include "chrome/browser/ui/libgtkui/gtk_ui.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
+#include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -51,7 +51,7 @@ SkColor NormalURLColor(SkColor foreground) {
   else
     l = (fg_hsl.l + hue_hsl.l) / 2;
 
-  color_utils::HSL output = { hue_hsl.h, s, l };
+  color_utils::HSL output = {hue_hsl.h, s, l};
   return color_utils::HSLToSkColor(output, 255);
 }
 
@@ -77,7 +77,7 @@ SkColor SelectedURLColor(SkColor foreground, SkColor background) {
   double opposite_l = fg_hsl.l;
   double l = std::max(0.1, std::min(0.9, opposite_l));
 
-  color_utils::HSL output = { hue_hsl.h, s, l };
+  color_utils::HSL output = {hue_hsl.h, s, l};
   return color_utils::HSLToSkColor(output, 255);
 }
 
@@ -119,25 +119,23 @@ SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
 #else
 // Same order as enum WidgetState above
 const GtkStateFlags stateMap[] = {
-  GTK_STATE_FLAG_NORMAL,
-  GTK_STATE_FLAG_ACTIVE,
-  GTK_STATE_FLAG_PRELIGHT,
-  GTK_STATE_FLAG_SELECTED,
-  GTK_STATE_FLAG_INSENSITIVE,
+    GTK_STATE_FLAG_NORMAL,      GTK_STATE_FLAG_ACTIVE,
+    GTK_STATE_FLAG_PRELIGHT,    GTK_STATE_FLAG_SELECTED,
+    GTK_STATE_FLAG_INSENSITIVE,
 };
 
 SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
   GdkRGBA color;
-  gtk_style_context_get_color(
-      gtk_widget_get_style_context(widget), stateMap[state], &color);
+  gtk_style_context_get_color(gtk_widget_get_style_context(widget),
+                              stateMap[state], &color);
   return SkColorSetRGB(color.red * 255, color.green * 255, color.blue * 255);
 }
 SkColor GetBGColor(GtkWidget* widget, WidgetState state) {
   GdkRGBA color;
 
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  gtk_style_context_get_background_color(
-      gtk_widget_get_style_context(widget), stateMap[state], &color);
+  gtk_style_context_get_background_color(gtk_widget_get_style_context(widget),
+                                         stateMap[state], &color);
   G_GNUC_END_IGNORE_DEPRECATIONS
 
   // Hack for default color
@@ -211,8 +209,8 @@ void NativeThemeGtk2::PaintMenuItemBackground(
       paint.setColor(color);
       break;
     case NativeTheme::kHovered:
-      color = GetSystemColor(
-          NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+      color =
+          GetSystemColor(NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
       paint.setColor(color);
       break;
     default:
@@ -339,7 +337,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetBaseColor(GetLabel(), SELECTED);
 #endif
 
-
     // Tooltips
     case kColorId_TooltipBackground:
       return GetBGColor(GetTooltip(), NORMAL);
@@ -368,14 +365,13 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_TableGroupingIndicatorColor:
       return GetTextAAColor(GetTree(), NORMAL);
 
-      // Results Table
+    // Results Table
     case kColorId_ResultsTableNormalBackground:
       return GetSystemColor(kColorId_TextfieldDefaultBackground);
     case kColorId_ResultsTableHoveredBackground:
       return color_utils::AlphaBlend(
           GetSystemColor(kColorId_TextfieldDefaultBackground),
-          GetSystemColor(kColorId_TextfieldSelectionBackgroundFocused),
-          0x80);
+          GetSystemColor(kColorId_TextfieldSelectionBackgroundFocused), 0x80);
     case kColorId_ResultsTableSelectedBackground:
       return GetSystemColor(kColorId_TextfieldSelectionBackgroundFocused);
     case kColorId_ResultsTableNormalText:
@@ -387,13 +383,11 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableHoveredDimmedText:
       return color_utils::AlphaBlend(
           GetSystemColor(kColorId_TextfieldDefaultColor),
-          GetSystemColor(kColorId_TextfieldDefaultBackground),
-          0x80);
+          GetSystemColor(kColorId_TextfieldDefaultBackground), 0x80);
     case kColorId_ResultsTableSelectedDimmedText:
       return color_utils::AlphaBlend(
           GetSystemColor(kColorId_TextfieldSelectionColor),
-          GetSystemColor(kColorId_TextfieldDefaultBackground),
-          0x80);
+          GetSystemColor(kColorId_TextfieldDefaultBackground), 0x80);
     case kColorId_ResultsTableNormalUrl:
     case kColorId_ResultsTableHoveredUrl:
       return NormalURLColor(GetSystemColor(kColorId_TextfieldDefaultColor));
@@ -436,8 +430,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_ThrobberWaitingColor:
       return color_utils::AlphaBlend(
           GetSystemColor(kColorId_TextfieldSelectionBackgroundFocused),
-          GetBGColor(GetWindow(), NORMAL),
-          0x80);
+          GetBGColor(GetWindow(), NORMAL), 0x80);
 
     // Alert icons
     // Just fall back to the same colors as Aura.

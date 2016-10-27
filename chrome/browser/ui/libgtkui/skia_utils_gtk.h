@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK2_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK2_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK_H_
 
 #include <stdint.h>
 
@@ -17,9 +17,13 @@ class SkBitmap;
 // Define a macro for creating GdkColors from RGB values.  This is a macro to
 // allow static construction of literals, etc.  Use this like:
 //   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
-#define GDK_COLOR_RGB(r, g, b) {0, r * ::libgtkui::kSkiaToGDKMultiplier,  \
-        g * ::libgtkui::kSkiaToGDKMultiplier,                          \
-        b * ::libgtkui::kSkiaToGDKMultiplier}
+#define GDK_COLOR_RGB(r, g, b)               \
+  {                                          \
+    0,                                       \
+    r * ::libgtkui::kSkiaToGDKMultiplier,    \
+    g * ::libgtkui::kSkiaToGDKMultiplier,    \
+    b * ::libgtkui::kSkiaToGDKMultiplier,    \
+  }
 
 namespace libgtkui {
 
@@ -41,4 +45,4 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap& bitmap);
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK2_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/printing_gtk2_util.h"
+#include "chrome/browser/ui/libgtkui/printing_gtk_util.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkunixprint.h>
@@ -36,9 +36,8 @@ gfx::Size GetPdfPaperSizeDeviceUnitsGtk(
 
   const printing::PrintSettings& settings = context->settings();
 
-  return gfx::Size(
-      paper_size.width() * settings.device_units_per_inch(),
-      paper_size.height() * settings.device_units_per_inch());
+  return gfx::Size(paper_size.width() * settings.device_units_per_inch(),
+                   paper_size.height() * settings.device_units_per_inch());
 }
 
 void InitPrintSettingsGtk(GtkPrintSettings* settings,
@@ -48,8 +47,8 @@ void InitPrintSettingsGtk(GtkPrintSettings* settings,
   DCHECK(page_setup);
   DCHECK(print_settings);
 
-  base::string16 name(base::UTF8ToUTF16(static_cast<const char*>(
-      gtk_print_settings_get_printer(settings))));
+  base::string16 name(base::UTF8ToUTF16(
+      static_cast<const char*>(gtk_print_settings_get_printer(settings))));
   print_settings->set_device_name(name);
 
   gfx::Size physical_size_device_units;
@@ -70,9 +69,8 @@ void InitPrintSettingsGtk(GtkPrintSettings* settings,
     dpi = printing::kPixelsPerInch;
     double page_width_in_pixel = printing::kLetterWidthInch * dpi;
     double page_height_in_pixel = printing::kLetterHeightInch * dpi;
-    physical_size_device_units.SetSize(
-        static_cast<int>(page_width_in_pixel),
-        static_cast<int>(page_height_in_pixel));
+    physical_size_device_units.SetSize(static_cast<int>(page_width_in_pixel),
+                                       static_cast<int>(page_height_in_pixel));
     printable_area_device_units.SetRect(
         static_cast<int>(kLeftMarginInInch * dpi),
         static_cast<int>(kTopMarginInInch * dpi),
@@ -94,6 +92,5 @@ void InitPrintSettingsGtk(GtkPrintSettings* settings,
   print_settings->SetOrientation(orientation == GTK_PAGE_ORIENTATION_LANDSCAPE);
   DCHECK_EQ(print_settings->device_units_per_inch(), dpi);
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
-                                          printable_area_device_units,
-                                          true);
+                                          printable_area_device_units, true);
 }

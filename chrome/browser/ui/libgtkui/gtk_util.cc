@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
@@ -36,7 +36,7 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line,
     argv[i] = strdup(args[i].c_str());
   }
   argv[argc] = NULL;
-  char **argv_pointer = argv.get();
+  char** argv_pointer = argv.get();
 
   {
     // http://crbug.com/423873

@@ -14,7 +14,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
-#include "chrome/browser/ui/libgtkui/gtk2_ui.h"
+#include "chrome/browser/ui/libgtkui/gtk_ui.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/window/frame_buttons.h"
 

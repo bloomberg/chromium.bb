@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/libgtkui/gtk2_signal.h"
+#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 
 typedef struct _GtkMenu GtkMenu;
 typedef struct _GtkWidget GtkWidget;

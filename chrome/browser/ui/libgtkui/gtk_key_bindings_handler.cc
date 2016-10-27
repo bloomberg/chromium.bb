@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gtk2_key_bindings_handler.h"
+#include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <X11/Xlib.h>
@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/ui/libgtkui/gtk2_util.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/x/x11_util.h"
@@ -105,11 +105,11 @@ void Gtk2KeyBindingsHandler::EditCommandMatched(TextEditCommand command,
 void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
     const base::NativeEvent& xevent,
     GdkEventKey* gdk_event) {
-  GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
+  GdkKeymap* keymap = gdk_keymap_get_for_display(gdk_display_get_default());
   GdkModifierType consumed, state;
 
-  gdk_event->type = xevent->xany.type == KeyPress ?
-                    GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  gdk_event->type =
+      xevent->xany.type == KeyPress ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
   gdk_event->time = xevent->xkey.time;
   gdk_event->state = static_cast<GdkModifierType>(xevent->xkey.state);
   gdk_event->hardware_keycode = xevent->xkey.keycode;
@@ -131,23 +131,20 @@ void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
 
   gdk_event->keyval = GDK_KEY_VoidSymbol;
   gdk_keymap_translate_keyboard_state(
-      keymap,
-      gdk_event->hardware_keycode,
-      static_cast<GdkModifierType>(gdk_event->state),
-      gdk_event->group,
-      &gdk_event->keyval,
-      NULL, NULL, &consumed);
+      keymap, gdk_event->hardware_keycode,
+      static_cast<GdkModifierType>(gdk_event->state), gdk_event->group,
+      &gdk_event->keyval, NULL, NULL, &consumed);
 
   state = static_cast<GdkModifierType>(gdk_event->state & ~consumed);
   gdk_keymap_add_virtual_modifiers(keymap, &state);
   gdk_event->state |= state;
 }
 
-void Gtk2KeyBindingsHandler::HandlerInit(Handler *self) {
+void Gtk2KeyBindingsHandler::HandlerInit(Handler* self) {
   self->owner = NULL;
 }
 
-void Gtk2KeyBindingsHandler::HandlerClassInit(HandlerClass *klass) {
+void Gtk2KeyBindingsHandler::HandlerClassInit(HandlerClass* klass) {
   GtkTextViewClass* text_view_class = GTK_TEXT_VIEW_CLASS(klass);
   GtkWidgetClass* widget_class = GTK_WIDGET_CLASS(klass);
 
@@ -167,16 +164,13 @@ void Gtk2KeyBindingsHandler::HandlerClassInit(HandlerClass *klass) {
   // have no corresponding virtual methods. Since glib 2.18 (gtk 2.14),
   // g_signal_override_class_handler() is introduced to override a signal
   // handler.
-  g_signal_override_class_handler("move-focus",
-                                  G_TYPE_FROM_CLASS(klass),
+  g_signal_override_class_handler("move-focus", G_TYPE_FROM_CLASS(klass),
                                   G_CALLBACK(MoveFocus));
 
-  g_signal_override_class_handler("move-viewport",
-                                  G_TYPE_FROM_CLASS(klass),
+  g_signal_override_class_handler("move-viewport", G_TYPE_FROM_CLASS(klass),
                                   G_CALLBACK(MoveViewport));
 
-  g_signal_override_class_handler("select-all",
-                                  G_TYPE_FROM_CLASS(klass),
+  g_signal_override_class_handler("select-all", G_TYPE_FROM_CLASS(klass),
                                   G_CALLBACK(SelectAll));
 
   g_signal_override_class_handler("toggle-cursor-visible",
@@ -188,11 +182,9 @@ GType Gtk2KeyBindingsHandler::HandlerGetType() {
   static volatile gsize type_id_volatile = 0;
   if (g_once_init_enter(&type_id_volatile)) {
     GType type_id = g_type_register_static_simple(
-        GTK_TYPE_TEXT_VIEW,
-        g_intern_static_string("Gtk2KeyBindingsHandler"),
+        GTK_TYPE_TEXT_VIEW, g_intern_static_string("Gtk2KeyBindingsHandler"),
         sizeof(HandlerClass),
-        reinterpret_cast<GClassInitFunc>(HandlerClassInit),
-        sizeof(Handler),
+        reinterpret_cast<GClassInitFunc>(HandlerClassInit), sizeof(Handler),
         reinterpret_cast<GInstanceInitFunc>(HandlerInit),
         static_cast<GTypeFlags>(0));
     g_once_init_leave(&type_id_volatile, type_id);
@@ -202,8 +194,8 @@ GType Gtk2KeyBindingsHandler::HandlerGetType() {
 
 Gtk2KeyBindingsHandler* Gtk2KeyBindingsHandler::GetHandlerOwner(
     GtkTextView* text_view) {
-  Handler* handler = G_TYPE_CHECK_INSTANCE_CAST(
-      text_view, HandlerGetType(), Handler);
+  Handler* handler =
+      G_TYPE_CHECK_INSTANCE_CAST(text_view, HandlerGetType(), Handler);
   DCHECK(handler);
   return handler->owner;
 }
@@ -223,8 +215,9 @@ void Gtk2KeyBindingsHandler::CutClipboard(GtkTextView* text_view) {
                                                  std::string());
 }
 
-void Gtk2KeyBindingsHandler::DeleteFromCursor(
-    GtkTextView* text_view, GtkDeleteType type, gint count) {
+void Gtk2KeyBindingsHandler::DeleteFromCursor(GtkTextView* text_view,
+                                              GtkDeleteType type,
+                                              gint count) {
   if (!count)
     return;
 
@@ -289,9 +282,10 @@ void Gtk2KeyBindingsHandler::InsertAtCursor(GtkTextView* text_view,
   }
 }
 
-void Gtk2KeyBindingsHandler::MoveCursor(
-    GtkTextView* text_view, GtkMovementStep step, gint count,
-    gboolean extend_selection) {
+void Gtk2KeyBindingsHandler::MoveCursor(GtkTextView* text_view,
+                                        GtkMovementStep step,
+                                        gint count,
+                                        gboolean extend_selection) {
   if (!count)
     return;
 
@@ -395,8 +389,9 @@ void Gtk2KeyBindingsHandler::MoveCursor(
     owner->EditCommandMatched(command, std::string());
 }
 
-void Gtk2KeyBindingsHandler::MoveViewport(
-    GtkTextView* text_view, GtkScrollStep step, gint count) {
+void Gtk2KeyBindingsHandler::MoveViewport(GtkTextView* text_view,
+                                          GtkScrollStep step,
+                                          gint count) {
   // Not supported by webkit.
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK2_SIGNAL_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_GTK2_SIGNAL_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK_SIGNAL_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_GTK_SIGNAL_H_
 
 #include "ui/base/glib/glib_signal.h"
 
@@ -24,8 +24,7 @@ typedef struct _GtkWidget GtkWidget;
   CHROMEG_CALLBACK_3(CLASS, RETURN, METHOD, GtkWidget*, ARG1, ARG2, ARG3);
 
 #define CHROMEGTK_CALLBACK_4(CLASS, RETURN, METHOD, ARG1, ARG2, ARG3, ARG4) \
-  CHROMEG_CALLBACK_4(CLASS, RETURN, METHOD, GtkWidget*, ARG1, ARG2, ARG3,   \
-                     ARG4);
+  CHROMEG_CALLBACK_4(CLASS, RETURN, METHOD, GtkWidget*, ARG1, ARG2, ARG3, ARG4);
 
 #define CHROMEGTK_CALLBACK_5(CLASS, RETURN, METHOD, ARG1, ARG2, ARG3, ARG4, \
                              ARG5)                                          \
@@ -51,7 +50,7 @@ typedef struct _GtkWidget GtkWidget;
                              ARG3);
 
 #define CHROMEGTK_VIRTUAL_CALLBACK_4(CLASS, RETURN, METHOD, ARG1, ARG2, ARG3, \
-                                     ARG4) \
+                                     ARG4)                                    \
   CHROMEG_VIRTUAL_CALLBACK_4(CLASS, RETURN, METHOD, GtkWidget*, ARG1, ARG2,   \
                              ARG3, ARG4);
 
@@ -65,4 +64,4 @@ typedef struct _GtkWidget GtkWidget;
   CHROMEG_VIRTUAL_CALLBACK_6(CLASS, RETURN, METHOD, GtkWidget*, ARG1, ARG2,   \
                              ARG3, ARG4, ARG5, ARG6);
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK2_SIGNAL_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_SIGNAL_H_

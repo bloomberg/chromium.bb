@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK2_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK2_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK_H_
 
 #include <vector>
 
@@ -58,13 +58,22 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
 
   // GtkIMContext event handlers.  They are shared among |gtk_context_simple_|
   // and |gtk_multicontext_|.
-  CHROMEG_CALLBACK_1(X11InputMethodContextImplGtk2, void, OnCommit,
-                     GtkIMContext*, gchar*);
-  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2, void, OnPreeditChanged,
+  CHROMEG_CALLBACK_1(X11InputMethodContextImplGtk2,
+                     void,
+                     OnCommit,
+                     GtkIMContext*,
+                     gchar*);
+  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2,
+                     void,
+                     OnPreeditChanged,
                      GtkIMContext*);
-  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2, void, OnPreeditEnd,
+  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2,
+                     void,
+                     OnPreeditEnd,
                      GtkIMContext*);
-  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2, void, OnPreeditStart,
+  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2,
+                     void,
+                     OnPreeditStart,
                      GtkIMContext*);
 
   // A set of callback functions.  Must not be NULL.
@@ -91,4 +100,4 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK2_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK_H_

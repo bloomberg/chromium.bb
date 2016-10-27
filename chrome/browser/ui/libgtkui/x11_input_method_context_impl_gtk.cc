@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk2.h"
+#include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -81,10 +81,8 @@ bool X11InputMethodContextImplGtk2::DispatchKeyEvent(
   gint x = 0;
   gint y = 0;
   gdk_window_get_origin(event->key.window, &x, &y);
-  GdkRectangle rect = {last_caret_bounds_.x() - x,
-                       last_caret_bounds_.y() - y,
-                       last_caret_bounds_.width(),
-                       last_caret_bounds_.height()};
+  GdkRectangle rect = {last_caret_bounds_.x() - x, last_caret_bounds_.y() - y,
+                       last_caret_bounds_.width(), last_caret_bounds_.height()};
   gtk_im_context_set_cursor_location(gtk_context_, &rect);
 
   const bool handled =
@@ -191,9 +189,8 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   GdkKeymapKey* keys = NULL;
   guint* keyvals = NULL;
   gint n_entries = 0;
-  if (keymap &&
-      gdk_keymap_get_entries_for_keycode(keymap, xkey.keycode,
-                                         &keys, &keyvals, &n_entries)) {
+  if (keymap && gdk_keymap_get_entries_for_keycode(keymap, xkey.keycode, &keys,
+                                                   &keyvals, &n_entries)) {
     for (gint i = 0; i < n_entries; ++i) {
       if (keyvals[i] == keysym) {
         keyboard_group = keys[i].group;
@@ -205,8 +202,8 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   keys = NULL;
   g_free(keyvals);
   keyvals = NULL;
-  // Get a GdkWindow.
-#if GTK_CHECK_VERSION(2,24,0)
+// Get a GdkWindow.
+#if GTK_CHECK_VERSION(2, 24, 0)
   GdkWindow* window = gdk_x11_window_lookup_for_display(display, xkey.window);
 #else
   GdkWindow* window = gdk_window_lookup_for_display(display, xkey.window);
@@ -214,7 +211,7 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   if (window)
     g_object_ref(window);
   else
-#if GTK_CHECK_VERSION(2,24,0)
+#if GTK_CHECK_VERSION(2, 24, 0)
     window = gdk_x11_window_foreign_new_for_display(display, xkey.window);
 #else
     window = gdk_window_foreign_new_for_display(display, xkey.window);
@@ -225,8 +222,8 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   }
 
   // Create a GdkEvent.
-  GdkEventType event_type = xkey.type == KeyPress ?
-                            GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  GdkEventType event_type =
+      xkey.type == KeyPress ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
   GdkEvent* event = gdk_event_new(event_type);
   event->key.type = event_type;
   event->key.window = window;

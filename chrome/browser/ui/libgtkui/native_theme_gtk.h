@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK2_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK2_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK_H_
 
 #include <gtk/gtk.h>
 
 #include "base/macros.h"
 #include "ui/native_theme/native_theme_base.h"
-
 
 namespace libgtkui {
 
@@ -57,4 +56,4 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK2_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK_H_

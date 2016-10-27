@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gtk2_event_loop.h"
+#include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
@@ -25,8 +25,8 @@ Gtk2EventLoop::Gtk2EventLoop() {
 }
 
 Gtk2EventLoop::~Gtk2EventLoop() {
-  gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
-                        NULL, NULL);
+  gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event), NULL,
+                        NULL);
 }
 
 // static
