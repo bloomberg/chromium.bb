@@ -49,8 +49,21 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnStart(
   return CONTINUE_OBSERVING;
 }
 
+PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnRedirect(
+    content::NavigationHandle* navigation_handle) {
+  return CONTINUE_OBSERVING;
+}
+
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
+  return CONTINUE_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnHidden() {
+  return CONTINUE_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnShown() {
   return CONTINUE_OBSERVING;
 }
 

@@ -30,16 +30,20 @@ HttpsEngagementPageLoadMetricsObserver::OnStart(
   return CONTINUE_OBSERVING;
 }
 
-void HttpsEngagementPageLoadMetricsObserver::OnHidden() {
-  if (!currently_in_foreground_)
-    return;
-  foreground_time_ += base::TimeTicks::Now() - last_time_shown_;
-  currently_in_foreground_ = false;
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+HttpsEngagementPageLoadMetricsObserver::OnHidden() {
+  if (currently_in_foreground_) {
+    foreground_time_ += base::TimeTicks::Now() - last_time_shown_;
+    currently_in_foreground_ = false;
+  }
+  return CONTINUE_OBSERVING;
 }
 
-void HttpsEngagementPageLoadMetricsObserver::OnShown() {
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+HttpsEngagementPageLoadMetricsObserver::OnShown() {
   last_time_shown_ = base::TimeTicks::Now();
   currently_in_foreground_ = true;
+  return CONTINUE_OBSERVING;
 }
 
 void HttpsEngagementPageLoadMetricsObserver::OnComplete(

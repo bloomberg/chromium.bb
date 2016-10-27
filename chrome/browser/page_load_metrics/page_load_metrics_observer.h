@@ -158,7 +158,8 @@ class PageLoadMetricsObserver {
   // The navigation handle holds relevant data for the navigation, but will
   // be destroyed soon after this call. Don't hold a reference to it. This can
   // be called multiple times.
-  virtual void OnRedirect(content::NavigationHandle* navigation_handle) {}
+  virtual ObservePolicy OnRedirect(
+      content::NavigationHandle* navigation_handle);
 
   // OnCommit is triggered when a page load commits, i.e. when we receive the
   // first data for the request. The navigation handle holds relevant data for
@@ -172,11 +173,11 @@ class PageLoadMetricsObserver {
   // OnHidden is triggered when a page leaves the foreground. It does not fire
   // when a foreground page is permanently closed; for that, listen to
   // OnComplete instead.
-  virtual void OnHidden() {}
+  virtual ObservePolicy OnHidden();
 
   // OnShown is triggered when a page is brought to the foreground. It does not
   // fire when the page first loads; for that, listen for OnStart instead.
-  virtual void OnShown() {}
+  virtual ObservePolicy OnShown();
 
   // The callbacks below are only invoked after a navigation commits, for
   // tracked page loads. Page loads that don't meet the criteria for being

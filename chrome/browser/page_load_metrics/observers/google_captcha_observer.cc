@@ -42,7 +42,7 @@ bool IsGoogleCaptcha(const GURL& url) {
                           base::CompareCase::SENSITIVE);
 }
 
-GoogleCaptchaObserver::GoogleCaptchaObserver() : saw_solution_(false) {}
+GoogleCaptchaObserver::GoogleCaptchaObserver() {}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 GoogleCaptchaObserver::OnCommit(content::NavigationHandle* navigation_handle) {
@@ -53,12 +53,14 @@ GoogleCaptchaObserver::OnCommit(content::NavigationHandle* navigation_handle) {
   return CONTINUE_OBSERVING;
 }
 
-void GoogleCaptchaObserver::OnRedirect(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+GoogleCaptchaObserver::OnRedirect(
     content::NavigationHandle* navigation_handle) {
-  if (IsGoogleCaptcha(navigation_handle->GetReferrer().url) && !saw_solution_) {
+  if (IsGoogleCaptcha(navigation_handle->GetReferrer().url)) {
     RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SOLVED);
-    saw_solution_ = true;
+    return STOP_OBSERVING;
   }
+  return CONTINUE_OBSERVING;
 }
 
 }  // namespace google_captcha_observer

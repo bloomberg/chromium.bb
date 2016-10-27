@@ -414,8 +414,7 @@ void PageLoadTracker::WebContentsHidden() {
                 true);
   }
 
-  for (const auto& observer : observers_)
-    observer->OnHidden();
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden);
 }
 
 void PageLoadTracker::WebContentsShown() {
@@ -429,8 +428,7 @@ void PageLoadTracker::WebContentsShown() {
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&foreground_time_);
   }
 
-  for (const auto& observer : observers_)
-    observer->OnShown();
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnShown);
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
@@ -452,9 +450,7 @@ void PageLoadTracker::FailedProvisionalLoad(
 }
 
 void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
-  for (const auto& observer : observers_) {
-    observer->OnRedirect(navigation_handle);
-  }
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnRedirect, navigation_handle);
 }
 
 void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
