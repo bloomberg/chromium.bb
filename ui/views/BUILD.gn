@@ -688,8 +688,6 @@ static_library("test_support_internal") {
     "test/scoped_views_test_helper.h",
     "test/slider_test_api.cc",
     "test/slider_test_api.h",
-    "test/test_layout_manager.cc",
-    "test/test_layout_manager.h",
     "test/test_slider.cc",
     "test/test_slider.h",
     "test/test_views.cc",

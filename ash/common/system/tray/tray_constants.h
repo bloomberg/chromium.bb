@@ -115,18 +115,6 @@ enum TrayConstant {
   // The height of the rows in the system tray menu.
   TRAY_POPUP_ITEM_HEIGHT,
 
-  // The left inset for all tray system menu rows.
-  TRAY_POPUP_ITEM_LEFT_INSET,
-
-  // The right inset for all tray system menu rows.
-  TRAY_POPUP_ITEM_RIGHT_INSET,
-
-  // The minimum default width for the left container of the system menu rows.
-  TRAY_POPUP_ITEM_MIN_START_WIDTH,
-
-  // The minimum default width for the right container of the system menu rows.
-  TRAY_POPUP_ITEM_MIN_END_WIDTH,
-
   // The width and height of the virtual keyboard button in the status tray
   // area. For non-MD, adjustments are made to the button dimensions based on
   // the shelf orientation, so this constant does not specify the true
