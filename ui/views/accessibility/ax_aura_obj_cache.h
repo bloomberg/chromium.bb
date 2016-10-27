@@ -82,6 +82,9 @@ class VIEWS_EXPORT AXAuraObjCache
   // Get the object that has focus.
   AXAuraObjWrapper* GetFocus();
 
+  // Send a notification that the focused view may have changed.
+  void OnFocusedViewChanged();
+
   // Indicates if this object's currently being destroyed.
   bool is_destroying() { return is_destroying_; }
 

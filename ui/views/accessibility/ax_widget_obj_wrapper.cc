@@ -62,6 +62,12 @@ void AXWidgetObjWrapper::OnWidgetClosing(Widget* widget) {
   AXAuraObjCache::GetInstance()->Remove(widget);
 }
 
+void AXWidgetObjWrapper::OnWidgetVisibilityChanged(Widget*, bool) {
+  // If a widget changes visibility it may affect what's focused, in particular
+  // when a widget that contains the focused view gets hidden.
+  AXAuraObjCache::GetInstance()->OnFocusedViewChanged();
+}
+
 void AXWidgetObjWrapper::OnWillRemoveView(Widget* widget, View* view) {
   AXAuraObjCache::GetInstance()->RemoveViewSubtree(view);
 }

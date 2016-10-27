@@ -116,6 +116,12 @@ AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
   return nullptr;
 }
 
+void AXAuraObjCache::OnFocusedViewChanged() {
+  View* view = GetFocusedView();
+  if (view)
+    view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+}
+
 AXAuraObjCache::AXAuraObjCache()
     : current_id_(1),
       focus_client_(nullptr),
@@ -160,9 +166,7 @@ View* AXAuraObjCache::GetFocusedView() {
 
 void AXAuraObjCache::OnWindowFocused(aura::Window* gained_focus,
                                      aura::Window* lost_focus) {
-  View* view = GetFocusedView();
-  if (view)
-    view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+  OnFocusedViewChanged();
 }
 
 void AXAuraObjCache::OnWindowDestroying(aura::Window* window) {
