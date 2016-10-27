@@ -26,8 +26,6 @@ component("mus") {
     "mus_export.h",
     "native_widget_mus.cc",
     "native_widget_mus.h",
-    "os_exchange_data_provider_mus.cc",
-    "os_exchange_data_provider_mus.h",
     "pointer_watcher_event_router.cc",
     "pointer_watcher_event_router.h",
     "screen_mus.cc",
@@ -154,7 +152,6 @@ test("views_mus_unittests") {
   sources = [
     "input_method_mus_unittest.cc",
     "native_widget_mus_unittest.cc",
-    "os_exchange_data_provider_mus_unittest.cc",
     "pointer_watcher_event_router_unittest.cc",
     "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",

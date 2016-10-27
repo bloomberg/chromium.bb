@@ -75,6 +75,8 @@ component("aura") {
     "mus/mus_types.h",
     "mus/mus_util.cc",
     "mus/mus_util.h",
+    "mus/os_exchange_data_provider_mus.cc",
+    "mus/os_exchange_data_provider_mus.h",
     "mus/property_converter.h",
     "mus/surface_id_handler.h",
     "mus/text_input_client_impl.cc",
@@ -126,6 +128,7 @@ component("aura") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc/surfaces:surface_id",
+    "//net",
     "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",
@@ -301,6 +304,7 @@ executable("demo") {
 test("aura_unittests") {
   sources = [
     "gestures/gesture_recognizer_unittest.cc",
+    "mus/os_exchange_data_provider_mus_unittest.cc",
     "mus/window_tree_client_unittest.cc",
     "test/run_all_unittests.cc",
     "window_event_dispatcher_unittest.cc",
@@ -313,6 +317,7 @@ test("aura_unittests") {
     ":test_support",
     "//base/test:test_support",
     "//mojo/common",
+    "//net",
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",

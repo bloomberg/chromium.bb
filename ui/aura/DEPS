@@ -3,6 +3,7 @@ include_rules = [
   "+cc/surfaces/surface_sequence.h",
   "+mojo/common",
   "+mojo/public/cpp/bindings",
+  "+net/base/filename_util.h",
   "+services/service_manager/public/cpp",
   "+services/service_manager/public/interfaces",
   "+services/ui/public/interfaces",

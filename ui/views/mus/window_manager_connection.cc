@@ -21,9 +21,9 @@
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/native_widget_mus.h"
-#include "ui/views/mus/os_exchange_data_provider_mus.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
@@ -213,7 +213,7 @@ ui::Window* WindowManagerConnection::GetWindowAtScreenPoint(
 
 std::unique_ptr<OSExchangeData::Provider>
 WindowManagerConnection::BuildProvider() {
-  return base::MakeUnique<OSExchangeDataProviderMus>();
+  return base::MakeUnique<aura::OSExchangeDataProviderMus>();
 }
 
 }  // namespace views

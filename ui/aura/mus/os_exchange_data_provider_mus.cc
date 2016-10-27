@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/os_exchange_data_provider_mus.h"
+#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@
 #include "ui/base/dragdrop/file_info.h"
 #include "url/gurl.h"
 
-namespace views {
+namespace aura {
 
 namespace {
 
@@ -33,23 +33,20 @@ std::string ToString(const std::vector<uint8_t>& v) {
 
 base::string16 ToString16(const std::vector<uint8_t>& v) {
   DCHECK_EQ(0u, v.size() % 2);
-  return base::string16(
-      reinterpret_cast<const base::char16*>(v.data()),
-      v.size() / 2);
+  return base::string16(reinterpret_cast<const base::char16*>(v.data()),
+                        v.size() / 2);
 }
 
 std::vector<base::StringPiece> ParseURIList(const std::vector<uint8_t>& data) {
   return base::SplitStringPiece(
-      base::StringPiece(
-          reinterpret_cast<const char*>(&data.front()), data.size()),
-      "\n",
-      base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      base::StringPiece(reinterpret_cast<const char*>(&data.front()),
+                        data.size()),
+      "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
 void AddString16ToVector(const base::string16& str,
                          std::vector<uint8_t>* bytes) {
-  const unsigned char* front =
-      reinterpret_cast<const uint8_t*>(str.data());
+  const unsigned char* front = reinterpret_cast<const uint8_t*>(str.data());
   bytes->insert(bytes->end(), front, front + (str.size() * 2));
 }
 
@@ -66,8 +63,8 @@ OSExchangeDataProviderMus::Data OSExchangeDataProviderMus::GetData() const {
   return mime_data_;
 }
 
-std::unique_ptr<ui::OSExchangeData::Provider>
-OSExchangeDataProviderMus::Clone() const {
+std::unique_ptr<ui::OSExchangeData::Provider> OSExchangeDataProviderMus::Clone()
+    const {
   std::unique_ptr<OSExchangeDataProviderMus> r =
       base::MakeUnique<OSExchangeDataProviderMus>();
   r->drag_image_ = drag_image_;
@@ -116,8 +113,7 @@ void OSExchangeDataProviderMus::SetFilenames(
     const std::vector<ui::FileInfo>& file_names) {
   std::vector<std::string> paths;
   for (std::vector<ui::FileInfo>::const_iterator it = file_names.begin();
-       it != file_names.end();
-       ++it) {
+       it != file_names.end(); ++it) {
     std::string url_spec = net::FilePathToFileURL(it->path).spec();
     if (!url_spec.empty())
       paths.push_back(url_spec);
@@ -133,8 +129,8 @@ void OSExchangeDataProviderMus::SetPickledData(
   const unsigned char* bytes =
       reinterpret_cast<const unsigned char*>(pickle.data());
 
-  mime_data_[format.Serialize()] = mojo::Array<uint8_t>(
-      std::vector<uint8_t>(bytes, bytes + pickle.size()));
+  mime_data_[format.Serialize()] =
+      mojo::Array<uint8_t>(std::vector<uint8_t>(bytes, bytes + pickle.size()));
 }
 
 bool OSExchangeDataProviderMus::GetString(base::string16* data) const {
@@ -258,8 +254,7 @@ bool OSExchangeDataProviderMus::HasCustomFormat(
 #if (!defined(OS_CHROMEOS) && defined(USE_X11)) || defined(OS_WIN)
 void OSExchangeDataProviderMus::SetFileContents(
     const base::FilePath& filename,
-    const std::string& file_contents) {
-}
+    const std::string& file_contents) {}
 #endif
 
 #if defined(OS_WIN)
@@ -274,8 +269,7 @@ bool OSExchangeDataProviderMus::HasFileContents() const {
 }
 
 void OSExchangeDataProviderMus::SetDownloadFileInfo(
-    const ui::OSExchangeData::DownloadFileInfo& download) {
-}
+    const ui::OSExchangeData::DownloadFileInfo& download) {}
 #endif
 
 #if defined(USE_AURA)
@@ -302,8 +296,7 @@ bool OSExchangeDataProviderMus::GetHtml(base::string16* html,
 
   // If the data starts with 0xFEFF, i.e., Byte Order Mark, assume it is
   // UTF-16, otherwise assume UTF-8.
-  if (size >= 2 &&
-      reinterpret_cast<const uint16_t*>(data)[0] == 0xFEFF) {
+  if (size >= 2 && reinterpret_cast<const uint16_t*>(data)[0] == 0xFEFF) {
     markup.assign(reinterpret_cast<const base::char16*>(data) + 1,
                   (size / 2) - 1);
   } else {
@@ -369,4 +362,4 @@ bool OSExchangeDataProviderMus::GetPlainTextURL(GURL* url) const {
   return true;
 }
 
-}  // namespace views
+}  // namespace aura

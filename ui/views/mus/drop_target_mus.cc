@@ -11,11 +11,11 @@
 
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
-#include "ui/views/mus/os_exchange_data_provider_mus.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
 namespace views {
@@ -87,7 +87,7 @@ void DropTargetMus::OnDragDropStart(
   // We store the mime data here because we need to access it during each phase
   // of the drag, but we also don't move the data cross-process multiple times.
   os_exchange_data_ = base::MakeUnique<ui::OSExchangeData>(
-      base::MakeUnique<OSExchangeDataProviderMus>(std::move(mime_data)));
+      base::MakeUnique<aura::OSExchangeDataProviderMus>(std::move(mime_data)));
 }
 
 uint32_t DropTargetMus::OnDragEnter(uint32_t key_state,

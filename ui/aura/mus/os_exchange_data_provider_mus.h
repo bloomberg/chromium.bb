@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_MUS_OS_EXCHANGE_DATA_PROVIDER_MUS_H_
-#define UI_VIEWS_MUS_OS_EXCHANGE_DATA_PROVIDER_MUS_H_
-
-#include "ui/base/dragdrop/os_exchange_data.h"
+#ifndef UI_AURA_MUS_OS_EXCHANGE_DATA_PROVIDER_MUS_H_
+#define UI_AURA_MUS_OS_EXCHANGE_DATA_PROVIDER_MUS_H_
 
 #include <map>
 #include <memory>
@@ -14,11 +12,12 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/map.h"
+#include "ui/aura/aura_export.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/mus/mus_export.h"
 
-namespace views {
+namespace aura {
 
 // Translates chrome's requests for various data types to a platform specific
 // type. In the case of mus, this is a mapping of MIME types to byte arrays.
@@ -26,7 +25,7 @@ namespace views {
 // TODO(erg): In the long run, there's a lot of optimizations that we can do
 // once everything targets mus. The entire model of OSExchangeDataProvider
 // shoves all data across the wire at once whether it is needed or not.
-class VIEWS_MUS_EXPORT OSExchangeDataProviderMus
+class AURA_EXPORT OSExchangeDataProviderMus
     : public ui::OSExchangeData::Provider {
  public:
   using Data = std::map<std::string, std::vector<uint8_t>>;
@@ -65,11 +64,11 @@ class VIEWS_MUS_EXPORT OSExchangeDataProviderMus
   bool HasFile() const override;
   bool HasCustomFormat(const ui::Clipboard::FormatType& format) const override;
 
-  // Provider doesn't have a consistent interface between operating systems;
-  // this wasn't seen as a problem when there was a single Provider subclass
-  // per operating system. Now we have to have at least two providers per OS,
-  // leading to the following warts, which will remain until we clean all the
-  // callsites up.
+// Provider doesn't have a consistent interface between operating systems;
+// this wasn't seen as a problem when there was a single Provider subclass
+// per operating system. Now we have to have at least two providers per OS,
+// leading to the following warts, which will remain until we clean all the
+// callsites up.
 #if (!defined(OS_CHROMEOS) && defined(USE_X11)) || defined(OS_WIN)
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
@@ -113,6 +112,6 @@ class VIEWS_MUS_EXPORT OSExchangeDataProviderMus
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderMus);
 };
 
-}  // namespace views
+}  // namespace aura
 
-#endif  // UI_VIEWS_MUS_OS_EXCHANGE_DATA_PROVIDER_MUS_H_
+#endif  // UI_AURA_MUS_OS_EXCHANGE_DATA_PROVIDER_MUS_H_

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/aura/mus/os_exchange_data_provider_mus.h"
+
 #include <memory>
 
 #include "base/files/file_util.h"
@@ -16,13 +18,12 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/views/mus/os_exchange_data_provider_mus.h"
 #include "url/gurl.h"
 
 using ui::Clipboard;
 using ui::OSExchangeData;
 
-namespace views {
+namespace aura {
 
 // This file is a copy/paste of the unit tests in os_exchange_data_unittest.cc,
 // with additional SetUp() to force the mus override. I thought about changeing
@@ -71,8 +72,8 @@ TEST_F(OSExchangeDataProviderMusTest, StringDataGetAndSet) {
   std::string url_spec = "http://www.goats.com/";
   GURL url(url_spec);
   base::string16 title;
-  EXPECT_FALSE(data2.GetURLAndTitle(
-      OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &title));
+  EXPECT_FALSE(data2.GetURLAndTitle(OSExchangeData::DO_NOT_CONVERT_FILENAMES,
+                                    &url, &title));
   // No URLs in |data|, so url should be untouched.
   EXPECT_EQ(url_spec, url.spec());
 }
@@ -93,8 +94,8 @@ TEST_F(OSExchangeDataProviderMusTest, TestURLExchangeFormats) {
   GURL output_url;
   base::string16 output_title;
   EXPECT_TRUE(data2.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::DO_NOT_CONVERT_FILENAMES, &output_url, &output_title));
+  EXPECT_TRUE(data2.GetURLAndTitle(OSExchangeData::DO_NOT_CONVERT_FILENAMES,
+                                   &output_url, &output_title));
   EXPECT_EQ(url_spec, output_url.spec());
   EXPECT_EQ(url_title, output_title);
   base::string16 output_string;
@@ -120,8 +121,8 @@ TEST_F(OSExchangeDataProviderMusTest, URLAndString) {
 
   GURL output_url;
   base::string16 output_title;
-  EXPECT_TRUE(data.GetURLAndTitle(
-      OSExchangeData::DO_NOT_CONVERT_FILENAMES, &output_url, &output_title));
+  EXPECT_TRUE(data.GetURLAndTitle(OSExchangeData::DO_NOT_CONVERT_FILENAMES,
+                                  &output_url, &output_title));
   EXPECT_EQ(url_spec, output_url.spec());
   EXPECT_EQ(url_title, output_title);
 }
@@ -141,8 +142,8 @@ TEST_F(OSExchangeDataProviderMusTest, TestFileToURLConversion) {
     EXPECT_FALSE(data.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
     GURL actual_url;
     base::string16 actual_title;
-    EXPECT_FALSE(data.GetURLAndTitle(
-        OSExchangeData::DO_NOT_CONVERT_FILENAMES, &actual_url, &actual_title));
+    EXPECT_FALSE(data.GetURLAndTitle(OSExchangeData::DO_NOT_CONVERT_FILENAMES,
+                                     &actual_url, &actual_title));
     EXPECT_EQ(GURL(), actual_url);
     EXPECT_EQ(base::string16(), actual_title);
   }
@@ -207,5 +208,4 @@ TEST_F(OSExchangeDataProviderMusTest, TestHTML) {
 }
 #endif
 
-}  // namespace views
-
+}  // namespace aura
