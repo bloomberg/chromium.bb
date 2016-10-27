@@ -1888,11 +1888,12 @@ split_static_library("ui") {
     deps += [ "//build/linux/libgio" ]
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
-    deps += [
-      # gtk2 is the only component that can interact with gtk2 in our new
-      # world.
-      "//chrome/browser/ui/libgtk2ui",
-    ]
+    # These are the only components that can interact with gtk.
+    if (use_gtk3) {
+      deps += [ "//chrome/browser/ui/libgtkui:libgtk3ui" ]
+    } else {
+      deps += [ "//chrome/browser/ui/libgtkui:libgtk2ui" ]
+    }
   }
   if (is_win || is_mac || is_desktop_linux) {
     sources += [
@@ -2070,6 +2071,7 @@ split_static_library("ui") {
       "webui/theme_source.cc",
       "webui/theme_source.h",
     ]
+    deps += [ "//chrome/browser:theme_properties" ]
   }
   if (enable_print_preview) {
     sources += [

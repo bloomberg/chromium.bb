@@ -2237,8 +2237,11 @@ split_static_library("browser") {
     ]
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
-    deps += [ "//chrome/browser/ui/libgtk2ui" ]
-    allow_circular_includes_from += [ "//chrome/browser/ui/libgtk2ui" ]
+    if (use_gtk3) {
+      deps += [ "//chrome/browser/ui/libgtkui:libgtk3ui" ]
+    } else {
+      deps += [ "//chrome/browser/ui/libgtkui:libgtk2ui" ]
+    }
   }
   if (is_posix && !is_mac) {
     sources += [
@@ -2364,7 +2367,6 @@ split_static_library("browser") {
       "themes/custom_theme_supplier.cc",
       "themes/custom_theme_supplier.h",
       "themes/theme_properties.cc",
-      "themes/theme_properties.h",
       "themes/theme_service.cc",
       "themes/theme_service.h",
       "themes/theme_service_factory.cc",
@@ -2373,6 +2375,7 @@ split_static_library("browser") {
       "themes/theme_syncable_service.cc",
       "themes/theme_syncable_service.h",
     ]
+    deps += [ ":theme_properties" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
@@ -3973,6 +3976,12 @@ if (is_win) {
       deps += [ "//chrome/browser/policy:path_parser" ]
     }
   }
+}
+
+source_set("theme_properties") {
+  sources = [
+    "themes/theme_properties.h",
+  ]
 }
 
 proto_library("resource_prefetch_predictor_proto") {
