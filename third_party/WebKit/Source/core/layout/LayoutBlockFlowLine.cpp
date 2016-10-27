@@ -490,10 +490,11 @@ void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run,
   setMarginEndForChild(*layoutRubyRun, LayoutUnit(-endOverhang));
 }
 
-static inline size_t findWordMeasurement(LineLayoutText layoutText,
-                                         int offset,
-                                         WordMeasurements& wordMeasurements,
-                                         size_t lastIndex) {
+static inline size_t findWordMeasurement(
+    LineLayoutText layoutText,
+    int offset,
+    const WordMeasurements& wordMeasurements,
+    size_t lastIndex) {
   // In LTR, lastIndex should match since the order of BidiRun (visual) and
   // WordMeasurement (logical) are the same.
   size_t size = wordMeasurements.size();
@@ -530,7 +531,7 @@ static inline void setLogicalWidthForTextRun(
     const LineInfo& lineInfo,
     GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
     VerticalPositionCache& verticalPositionCache,
-    WordMeasurements& wordMeasurements,
+    const WordMeasurements& wordMeasurements,
     size_t& wordMeasurementsIndex) {
   HashSet<const SimpleFontData*> fallbackFonts;
   GlyphOverflow glyphOverflow;
@@ -751,7 +752,7 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(
     bool reachedEnd,
     GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
     VerticalPositionCache& verticalPositionCache,
-    WordMeasurements& wordMeasurements) {
+    const WordMeasurements& wordMeasurements) {
   ETextAlign textAlign =
       textAlignmentForLine(!reachedEnd && !lineBox->endsWithBreak());
 
@@ -803,7 +804,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(
     BidiRun* trailingSpaceRun,
     GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
     VerticalPositionCache& verticalPositionCache,
-    WordMeasurements& wordMeasurements) {
+    const WordMeasurements& wordMeasurements) {
   bool needsWordSpacing = true;
   LayoutUnit totalLogicalWidth = lineBox->getFlowSpacingLogicalWidth();
   bool isAfterExpansion = true;
@@ -920,7 +921,7 @@ RootInlineBox* LayoutBlockFlow::createLineBoxesFromBidiRuns(
     LineInfo& lineInfo,
     VerticalPositionCache& verticalPositionCache,
     BidiRun* trailingSpaceRun,
-    WordMeasurements& wordMeasurements) {
+    const WordMeasurements& wordMeasurements) {
   if (!bidiRuns.runCount())
     return nullptr;
 

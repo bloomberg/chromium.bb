@@ -861,7 +861,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                               bool reachedEnd,
                                               GlyphOverflowAndFallbackFontsMap&,
                                               VerticalPositionCache&,
-                                              WordMeasurements&);
+                                              const WordMeasurements&);
   BidiRun* computeInlineDirectionPositionsForSegment(
       RootInlineBox*,
       const LineInfo&,
@@ -872,7 +872,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
       BidiRun* trailingSpaceRun,
       GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
       VerticalPositionCache&,
-      WordMeasurements&);
+      const WordMeasurements&);
   void computeBlockDirectionPositionsForLine(RootInlineBox*,
                                              BidiRun*,
                                              GlyphOverflowAndFallbackFontsMap&,
@@ -889,7 +889,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                              LineInfo&,
                                              VerticalPositionCache&,
                                              BidiRun* trailingSpaceRun,
-                                             WordMeasurements&);
+                                             const WordMeasurements&);
   void layoutRunsAndFloats(LineLayoutState&);
   const InlineIterator& restartLayoutRunsAndFloatsInRange(
       LayoutUnit oldLogicalHeight,
