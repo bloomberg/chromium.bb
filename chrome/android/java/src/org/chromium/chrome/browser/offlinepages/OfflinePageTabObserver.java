@@ -219,10 +219,9 @@ public class OfflinePageTabObserver
     }
 
     void maybeShowReloadSnackbar(Tab tab, boolean isNetworkEvent) {
-        // Exclude Offline Previews, as there is a seperate UI for previews.
         if (tab == null || tab.isFrozen() || tab.isHidden() || !tab.isOfflinePage()
-                || OfflinePageUtils.isShowingOfflinePreview(tab) || !isConnected()
-                || !isLoadedTab(tab) || (wasSnackbarSeen(tab) && !isNetworkEvent)) {
+                || !isConnected() || !isLoadedTab(tab)
+                || (wasSnackbarSeen(tab) && !isNetworkEvent)) {
             // Conditions to show a snackbar are not met.
             return;
         }

@@ -109,14 +109,6 @@ const OfflinePageHeader* OfflinePageUtils::GetOfflineHeaderFromWebContents(
 }
 
 // static
-bool OfflinePageUtils::IsShowingOfflinePreview(
-    content::WebContents* web_contents) {
-  OfflinePageTabHelper* tab_helper =
-      OfflinePageTabHelper::FromWebContents(web_contents);
-  return tab_helper && tab_helper->IsShowingOfflinePreview();
-}
-
-// static
 bool OfflinePageUtils::GetTabId(content::WebContents* web_contents,
                                 int* tab_id) {
   TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
