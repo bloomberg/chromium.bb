@@ -7,7 +7,7 @@ import posixpath
 from api_models import GetNodeCategories
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility, ChannelInfo
-from compiled_file_system import CompiledFileSystem, SingleFile, Unicode
+from compiled_file_system import Cache, CompiledFileSystem, SingleFile, Unicode
 from extensions_paths import API_PATHS, JSON_TEMPLATES
 from features_bundle import FeaturesBundle
 from file_system import FileNotFoundError
@@ -157,10 +157,11 @@ class AvailabilityFinder(object):
     '''
     def process_schema(path, data):
       return self._schema_processor.Process(path, data)
-    return self._compiled_fs_factory.Create(file_system,
-                                            SingleFile(Unicode(process_schema)),
-                                            CompiledFileSystem,
-                                            category='api-schema')
+    return self._compiled_fs_factory.Create(
+        file_system,
+        Cache(SingleFile(Unicode(process_schema))),
+        CompiledFileSystem,
+        category='api-schema')
 
   def _GetAPISchema(self, api_name, file_system, version):
     '''Searches |file_system| for |api_name|'s API schema data, and processes
