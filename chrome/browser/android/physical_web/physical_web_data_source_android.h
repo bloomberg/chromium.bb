@@ -60,6 +60,17 @@ class PhysicalWebDataSourceAndroid : public PhysicalWebDataSourceImpl {
   std::unique_ptr<base::ListValue> GetMetadata() override;
   bool HasUnresolvedDiscoveries() override;
 
+  void OnFound(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               const base::android::JavaParamRef<jstring>& j_url);
+  void OnLost(JNIEnv* env,
+              const base::android::JavaParamRef<jobject>& obj,
+              const base::android::JavaParamRef<jstring>& j_url);
+  void OnDistanceChanged(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         const base::android::JavaParamRef<jstring>& j_url,
+                         jdouble distance_estimate);
+
  private:
   // A reference to the Java UrlManager singleton.
   base::android::ScopedJavaGlobalRef<jobject> url_manager_;

@@ -173,33 +173,55 @@ class UrlManager {
         putCachedUrlInfoMap();
 
         recordUpdate();
-        if (mNearbyUrls.contains(urlInfo.getUrl())
-                // In the rare event that our entry is immediately garbage collected from the cache,
-                // we should stop here.
-                || !mUrlInfoMap.containsKey(urlInfo.getUrl())) {
+
+        // In the rare event that our entry is immediately garbage collected from the cache, we
+        // should stop here.
+        if (!mUrlInfoMap.containsKey(urlInfo.getUrl())) {
             return;
         }
+
+        if (mNearbyUrls.contains(urlInfo.getUrl())) {
+            // The URL has been seen before. Notify listeners with the new distance estimate.
+            if (urlInfo.getDistance() >= 0.0 && mPwsResultMap.containsKey(urlInfo.getUrl())) {
+                safeNotifyNativeListenersOnDistanceChanged(urlInfo.getUrl(), urlInfo.getDistance());
+            }
+            return;
+        }
+
+        // This is a new URL. Add it to the nearby set.
         mNearbyUrls.add(urlInfo.getUrl());
         putCachedNearbyUrls();
 
-        if (!PhysicalWeb.isOnboarding() && !mPwsResultMap.keySet().contains(urlInfo.getUrl())) {
+        if (!PhysicalWeb.isOnboarding() && !mPwsResultMap.containsKey(urlInfo.getUrl())) {
             // We need to resolve the URL.
             resolveUrl(urlInfo);
             return;
         }
+
         registerNewDisplayableUrl(urlInfo);
     }
 
     /**
-     * Remove a URL to the store of URLs.
+     * Remove a URL from the store of URLs.
      * This method additionally updates the Physical Web notification.
      * @param urlInfo The URL to remove.
      */
     public void removeUrl(UrlInfo urlInfo) {
         Log.d(TAG, "URL lost: %s", urlInfo);
         recordUpdate();
+
+        if (!mNearbyUrls.contains(urlInfo.getUrl())) {
+            return;
+        }
+
         mNearbyUrls.remove(urlInfo.getUrl());
         putCachedNearbyUrls();
+
+        // If the URL was previously displayable (both nearby and resolved) and is now no longer
+        // nearby, notify listeners that the URL is lost.
+        if (mPwsResultMap.containsKey(urlInfo.getUrl())) {
+            safeNotifyNativeListenersOnLost(urlInfo.getUrl());
+        }
 
         // If there are no URLs nearby to display, clear the notification.
         if (getUrls(PhysicalWeb.isOnboarding()).isEmpty()) {
@@ -295,8 +317,18 @@ class UrlManager {
      * Forget all nearby URLs and clear the notification.
      */
     public void clearNearbyUrls() {
+        HashSet<String> intersection = new HashSet<>(mNearbyUrls);
+        intersection.retainAll(mPwsResultMap.keySet());
+
         mNearbyUrls.clear();
         putCachedNearbyUrls();
+
+        // Only notify listeners for URLs that were previously displayable (both nearby and
+        // resolved).
+        for (String url : intersection) {
+            safeNotifyNativeListenersOnLost(url);
+        }
+
         clearNotification();
         cancelClearNotificationAlarm();
     }
@@ -612,6 +644,11 @@ class UrlManager {
             observer.onDisplayableUrlsAdded(wrappedUrlInfos);
         }
 
+        safeNotifyNativeListenersOnFound(urlInfo.getUrl());
+        if (urlInfo.getDistance() >= 0.0) {
+            safeNotifyNativeListenersOnDistanceChanged(urlInfo.getUrl(), urlInfo.getDistance());
+        }
+
         // Only trigger the notification if we know we didn't have a notification up already
         // (i.e., we have exactly 1 displayble URL) or this URL doesn't exist in the cache
         // (and hence the user hasn't swiped away a notification for this URL recently).
@@ -675,6 +712,69 @@ class UrlManager {
         return mNativePhysicalWebDataSourceAndroid != 0;
     }
 
+    /**
+     * Notify native listeners that a new Physical Web URL was discovered.
+     * No notification will be sent if the feature is in the Onboarding state.
+     * @param url The Physical Web URL.
+     */
+    private void safeNotifyNativeListenersOnFound(final String url) {
+        if (!isNativeInitialized() || PhysicalWeb.isOnboarding()) {
+            return;
+        }
+
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (isNativeInitialized()) {
+                    nativeOnFound(mNativePhysicalWebDataSourceAndroid, url);
+                }
+            }
+        });
+    }
+
+    /**
+     * Notify native listeners that a previously-discovered Physical Web URL is no longer nearby.
+     * No notification will be sent if the feature is in the Onboarding state.
+     * @param url The Physical Web URL.
+     */
+    private void safeNotifyNativeListenersOnLost(final String url) {
+        if (!isNativeInitialized() || PhysicalWeb.isOnboarding()) {
+            return;
+        }
+
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (isNativeInitialized()) {
+                    nativeOnLost(mNativePhysicalWebDataSourceAndroid, url);
+                }
+            }
+        });
+    }
+
+    /**
+     * Notify native listeners with an updated estimate of the distance to the broadcasting device.
+     * No notification will be sent if the feature is in the Onboarding state.
+     * @param url The Physical Web URL.
+     * @param distanceEstimate The updated distance estimate.
+     */
+    private void safeNotifyNativeListenersOnDistanceChanged(
+            final String url, final double distanceEstimate) {
+        if (!isNativeInitialized() || PhysicalWeb.isOnboarding()) {
+            return;
+        }
+
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (isNativeInitialized()) {
+                    nativeOnDistanceChanged(mNativePhysicalWebDataSourceAndroid, url,
+                            distanceEstimate);
+                }
+            }
+        });
+    }
+
     @VisibleForTesting
     void overridePwsClientForTesting(PwsClient pwsClient) {
         mPwsClient = pwsClient;
@@ -723,4 +823,8 @@ class UrlManager {
     private native void nativeAppendMetadataItem(long nativePhysicalWebCollection,
             String requestUrl, double distanceEstimate, int scanTimestamp, String siteUrl,
             String iconUrl, String title, String description, String groupId);
+    private native void nativeOnFound(long nativePhysicalWebDataSourceAndroid, String url);
+    private native void nativeOnLost(long nativePhysicalWebDataSourceAndroid, String url);
+    private native void nativeOnDistanceChanged(
+            long nativePhysicalWebDataSourceAndroid, String url, double distanceChanged);
 }

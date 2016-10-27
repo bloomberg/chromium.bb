@@ -99,6 +99,31 @@ bool PhysicalWebDataSourceAndroid::HasUnresolvedDiscoveries() {
   return false;
 }
 
+void PhysicalWebDataSourceAndroid::OnFound(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_url) {
+  std::string url = ConvertJavaStringToUTF8(env, j_url);
+  NotifyOnFound(url);
+}
+
+void PhysicalWebDataSourceAndroid::OnLost(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_url) {
+  std::string url = ConvertJavaStringToUTF8(env, j_url);
+  NotifyOnLost(url);
+}
+
+void PhysicalWebDataSourceAndroid::OnDistanceChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_url,
+    jdouble distance_estimate) {
+  std::string url = ConvertJavaStringToUTF8(env, j_url);
+  NotifyOnDistanceChanged(url, distance_estimate);
+}
+
 // static
 bool PhysicalWebDataSourceAndroid::RegisterPhysicalWebDataSource(JNIEnv* env) {
   return RegisterNativesImpl(env);
