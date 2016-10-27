@@ -89,13 +89,15 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
                     bool isInterventionTriggered);
     void longLimitExceeded(bool isInterventionTriggered);
     void recordFallbackTime(const FontResource*);
-    void recordRemoteFont(const FontResource*);
+    void recordRemoteFont(const FontResource*, bool isInterventionTriggered);
     bool hadBlankText() { return m_blankPaintTime; }
     DataSource dataSource() { return m_dataSource; }
     void maySetDataSource(DataSource);
 
    private:
-    void recordLoadTimeHistogram(const FontResource*, int duration);
+    void recordLoadTimeHistogram(const FontResource*,
+                                 int duration,
+                                 bool isInterventionTriggered);
     void recordInterventionResult(bool isTriggered);
     CacheHitMetrics dataSourceMetricsValue();
     double m_loadStartTime;

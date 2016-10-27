@@ -112,7 +112,7 @@ void RemoteFontFaceSource::notifyFinished(Resource*) {
   m_histograms.maySetDataSource(m_font->response().wasCached()
                                     ? FontLoadHistograms::FromDiskCache
                                     : FontLoadHistograms::FromNetwork);
-  m_histograms.recordRemoteFont(m_font.get());
+  m_histograms.recordRemoteFont(m_font.get(), m_isInterventionTriggered);
   m_histograms.fontLoaded(m_font->isCORSFailed(),
                           m_font->getStatus() == Resource::LoadError,
                           m_isInterventionTriggered);
@@ -295,7 +295,8 @@ void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(
-    const FontResource* font) {
+    const FontResource* font,
+    bool isInterventionTriggered) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram,
                       ("WebFont.CacheHit", CacheHitEnumMax));
   cacheHitHistogram.count(dataSourceMetricsValue());
@@ -303,7 +304,7 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(
   if (m_dataSource == FromDiskCache || m_dataSource == FromNetwork) {
     DCHECK_NE(m_loadStartTime, 0);
     int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
-    recordLoadTimeHistogram(font, duration);
+    recordLoadTimeHistogram(font, duration, isInterventionTriggered);
 
     enum { CORSFail, CORSSuccess, CORSEnumMax };
     int corsValue = font->isCORSFailed() ? CORSFail : CORSSuccess;
@@ -328,7 +329,8 @@ void RemoteFontFaceSource::FontLoadHistograms::maySetDataSource(
 
 void RemoteFontFaceSource::FontLoadHistograms::recordLoadTimeHistogram(
     const FontResource* font,
-    int duration) {
+    int duration,
+    bool isInterventionTriggered) {
   CHECK_NE(FromUnknown, m_dataSource);
 
   if (font->errorOccurred()) {
@@ -361,9 +363,27 @@ void RemoteFontFaceSource::FontLoadHistograms::recordLoadTimeHistogram(
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, missedCacheUnder50kHistogram,
         ("WebFont.MissedCache.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
+    // Breakdowns metrics to understand WebFonts intervention.
+    // Now we only cover this 10KBto50KB range because 70% of requests are
+    // covered in this range, and having metrics for all size cases cost.
+    DEFINE_STATIC_LOCAL(CustomCountHistogram,
+                        missedCacheAndInterventionTriggeredUnder50kHistogram,
+                        ("WebFont.MissedCacheAndInterventionTriggered."
+                         "DownloadTime.1.10KBTo50KB",
+                         0, 10000, 50));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram,
+                        missedCacheAndInterventionNotTriggeredUnder50kHistogram,
+                        ("WebFont.MissedCacheAndInterventionNotTriggered."
+                         "DownloadTime.1.10KBTo50KB",
+                         0, 10000, 50));
     under50kHistogram.count(duration);
-    if (m_dataSource == FromNetwork)
+    if (m_dataSource == FromNetwork) {
       missedCacheUnder50kHistogram.count(duration);
+      if (isInterventionTriggered)
+        missedCacheAndInterventionTriggeredUnder50kHistogram.count(duration);
+      else
+        missedCacheAndInterventionNotTriggeredUnder50kHistogram.count(duration);
+    }
     return;
   }
   if (size < 100 * 1024) {
