@@ -21,7 +21,6 @@ mojom_generator_sources = [
   "$mojom_generator_root/pylib/mojom/parse/ast.py",
   "$mojom_generator_root/pylib/mojom/parse/lexer.py",
   "$mojom_generator_root/pylib/mojom/parse/parser.py",
-  "$mojom_generator_root/pylib/mojom/parse/translate.py",
   "$mojom_generator_script",
 ]
 
