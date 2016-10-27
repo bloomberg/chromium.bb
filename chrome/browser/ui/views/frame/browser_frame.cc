@@ -46,7 +46,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "ui/native_theme/native_theme_dark_win.h"
 #endif
 
@@ -144,16 +143,6 @@ BrowserNonClientFrameView* BrowserFrame::GetFrameView() const {
 
 bool BrowserFrame::UseCustomFrame() const {
   return native_browser_frame_->UseCustomFrame();
-}
-
-bool BrowserFrame::CustomDrawSystemTitlebar() const {
-#if defined(OS_WIN)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kWindows10CustomTitlebar) &&
-         base::win::GetVersion() >= base::win::VERSION_WIN10;
-#else
-  return false;
-#endif
 }
 
 bool BrowserFrame::ShouldSaveWindowPlacement() const {

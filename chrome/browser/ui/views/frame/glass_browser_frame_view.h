@@ -58,6 +58,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // the area above the top of the screen).
   int TitlebarMaximizedVisualHeight() const;
 
+  SkColor GetTitlebarColor() const;
+
  protected:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;

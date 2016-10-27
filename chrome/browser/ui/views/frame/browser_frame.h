@@ -85,10 +85,6 @@ class BrowserFrame
   // Returns |true| if we should use the custom frame.
   bool UseCustomFrame() const;
 
-  // Returns whether we should custom draw the titlebar even if we're using the
-  // native frame. Only applicable to Windows.
-  bool CustomDrawSystemTitlebar() const;
-
   // Returns true when the window placement should be saved.
   bool ShouldSaveWindowPlacement() const;
 

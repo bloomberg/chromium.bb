@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
 
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 
@@ -35,24 +38,60 @@ gfx::Size Windows10CaptionButton::GetPreferredSize() const {
   return gfx::Size(kButtonWidth, h);
 }
 
+namespace {
+SkAlpha ButtonBackgroundAlpha(SkAlpha theme_alpha) {
+  return theme_alpha == SK_AlphaOPAQUE ? 0xCC : theme_alpha;
+}
+}
+
+SkColor Windows10CaptionButton::GetBaseColor() const {
+  const SkColor titlebar_color = frame_view_->GetTitlebarColor();
+  const SkColor bg_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND);
+  const SkAlpha theme_alpha = SkColorGetA(bg_color);
+  const SkColor blend_color =
+      theme_alpha > 0
+          ? color_utils::AlphaBlend(bg_color, titlebar_color,
+                                    ButtonBackgroundAlpha(theme_alpha))
+          : titlebar_color;
+  return color_utils::IsDark(blend_color) ? SK_ColorWHITE : SK_ColorBLACK;
+}
+
 void Windows10CaptionButton::OnPaint(gfx::Canvas* canvas) {
   PaintBackground(canvas);
   PaintSymbol(canvas);
 }
 
 void Windows10CaptionButton::PaintBackground(gfx::Canvas* canvas) {
+  const SkColor bg_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND);
+  const SkAlpha theme_alpha = SkColorGetA(bg_color);
+  if (theme_alpha > 0) {
+    canvas->FillRect(GetContentsBounds(),
+                     SkColorSetA(bg_color, ButtonBackgroundAlpha(theme_alpha)));
+  }
+
   SkColor base_color;
   SkAlpha hovered_alpha, pressed_alpha;
   if (button_type_ == VIEW_ID_CLOSE_BUTTON) {
     base_color = SkColorSetRGB(0xE8, 0x11, 0x23);
     hovered_alpha = SK_AlphaOPAQUE;
-    pressed_alpha = 0x99;
+    pressed_alpha = 0x98;
   } else {
-    // TODO(bsep): These values are only correct for light themes.
-    base_color = SK_ColorBLACK;
-    hovered_alpha = 0x1B;
-    pressed_alpha = 0x34;
+    // Match the native buttons.
+    base_color = GetBaseColor();
+    hovered_alpha = 0x1A;
+    pressed_alpha = 0x33;
+
+    if (theme_alpha > 0) {
+      // Theme buttons have slightly increased opacity to make them stand out
+      // against a visually-busy frame image.
+      constexpr float kAlphaScale = 1.3f;
+      hovered_alpha = gfx::ToRoundedInt(hovered_alpha * kAlphaScale);
+      pressed_alpha = gfx::ToRoundedInt(pressed_alpha * kAlphaScale);
+    }
   }
+
   SkAlpha alpha;
   if (state() == STATE_PRESSED)
     alpha = pressed_alpha;
@@ -78,21 +117,17 @@ void DrawRect(gfx::Canvas* canvas,
 }  // namespace
 
 void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
-  // TODO(bsep): This block is only correct for light themes.
-  SkColor symbol_color;
+  SkColor symbol_color = GetBaseColor();
   if (!frame_view_->ShouldPaintAsActive() && state() != STATE_HOVERED &&
       state() != STATE_PRESSED) {
-    symbol_color = SkColorSetA(SK_ColorBLACK, 0x66);
+    symbol_color = SkColorSetA(symbol_color, 0x65);
   } else if (button_type_ == VIEW_ID_CLOSE_BUTTON &&
              hover_animation().is_animating()) {
-    const int gray_value = gfx::Tween::IntValueBetween(
-        hover_animation().GetCurrentValue(), 0x00, 0xFF);
-    symbol_color = SkColorSetRGB(gray_value, gray_value, gray_value);
+    symbol_color = gfx::Tween::ColorValueBetween(
+        hover_animation().GetCurrentValue(), symbol_color, SK_ColorWHITE);
   } else if (button_type_ == VIEW_ID_CLOSE_BUTTON &&
              (state() == STATE_HOVERED || state() == STATE_PRESSED)) {
     symbol_color = SK_ColorWHITE;
-  } else {
-    symbol_color = SK_ColorBLACK;
   }
 
   gfx::ScopedCanvas scoped_canvas(canvas);

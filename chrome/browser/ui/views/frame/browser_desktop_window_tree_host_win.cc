@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/frame/browser_window_property_manager_win.h"
 #include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/win/titlebar_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
@@ -89,7 +90,7 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
 
   // Use default insets for popups and apps, unless we are custom drawing the
   // titlebar.
-  if (!browser_frame_->CustomDrawSystemTitlebar() &&
+  if (!ShouldCustomDrawSystemTitlebar() &&
       !browser_view_->IsBrowserTypeNormal())
     return false;
 
@@ -212,7 +213,7 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
 
 views::FrameMode BrowserDesktopWindowTreeHostWin::GetFrameMode() const {
   const views::FrameMode system_frame_mode =
-      browser_frame_->CustomDrawSystemTitlebar()
+      ShouldCustomDrawSystemTitlebar()
           ? views::FrameMode::SYSTEM_DRAWN_NO_CONTROLS
           : views::FrameMode::SYSTEM_DRAWN;
 
@@ -247,6 +248,12 @@ bool BrowserDesktopWindowTreeHostWin::ShouldUseNativeFrame() const {
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
   return GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
+}
+
+bool BrowserDesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent()
+    const {
+  return !ShouldCustomDrawSystemTitlebar() &&
+         views::DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent();
 }
 
 void BrowserDesktopWindowTreeHostWin::FrameTypeChanged() {
@@ -295,7 +302,7 @@ BrowserDesktopWindowTreeHostWin::GetClientEdgeThicknesses() const {
 MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
   // Don't extend the glass in at all if it won't be visible.
   if (!ShouldUseNativeFrame() || GetWidget()->IsFullscreen() ||
-      browser_frame_->CustomDrawSystemTitlebar())
+      ShouldCustomDrawSystemTitlebar())
     return MARGINS{0};
 
   // The glass should extend to the bottom of the tabstrip.

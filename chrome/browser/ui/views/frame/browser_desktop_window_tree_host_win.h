@@ -53,6 +53,7 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   void PostHandleMSG(UINT message, WPARAM w_param, LPARAM l_param) override;
   views::FrameMode GetFrameMode() const override;
   bool ShouldUseNativeFrame() const override;
+  bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
 
   void UpdateDWMFrame();

@@ -1245,6 +1245,8 @@ split_static_library("browser") {
     "win/jumplist_updater.h",
     "win/settings_app_monitor.cc",
     "win/settings_app_monitor.h",
+    "win/titlebar_config.cc",
+    "win/titlebar_config.h",
   ]
 
   configs += [

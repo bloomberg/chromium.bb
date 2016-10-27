@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/win/titlebar_config.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
@@ -119,7 +120,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  if (frame->CustomDrawSystemTitlebar()) {
+  if (ShouldCustomDrawSystemTitlebar()) {
     minimize_button_ = CreateCaptionButton(VIEW_ID_MINIMIZE_BUTTON);
     maximize_button_ = CreateCaptionButton(VIEW_ID_MAXIMIZE_BUTTON);
     restore_button_ = CreateCaptionButton(VIEW_ID_RESTORE_BUTTON);
@@ -255,7 +256,7 @@ bool HitTestCaptionButton(Windows10CaptionButton* button,
 int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // For app windows and popups without a custom titlebar we haven't customized
   // the frame at all so Windows can figure it out.
-  if (!frame()->CustomDrawSystemTitlebar() &&
+  if (!ShouldCustomDrawSystemTitlebar() &&
       !browser_view()->IsBrowserTypeNormal())
     return HTNOWHERE;
 
@@ -380,7 +381,7 @@ bool GlassBrowserFrameView::IsMaximized() const {
 // GlassBrowserFrameView, views::View overrides:
 
 void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (frame()->CustomDrawSystemTitlebar())
+  if (ShouldCustomDrawSystemTitlebar())
     PaintTitlebar(canvas);
   if (!browser_view()->IsTabStripVisible())
     return;
@@ -391,7 +392,7 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::Layout() {
-  if (frame()->CustomDrawSystemTitlebar()) {
+  if (ShouldCustomDrawSystemTitlebar()) {
     // The profile switcher button depends on the caption button layout, so this
     // must be called prior to LayoutProfileSwitcher().
     LayoutCaptionButtons();
@@ -420,7 +421,7 @@ void GlassBrowserFrameView::UpdateProfileIcons() {
 // views::NonClientFrameView:
 bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
                                               const gfx::Rect& rect) const {
-  if (frame()->CustomDrawSystemTitlebar())
+  if (ShouldCustomDrawSystemTitlebar())
     return BrowserNonClientFrameView::DoesIntersectRect(target, rect);
 
   // TODO(bsep): This override has "dead zones" where you can't click on the
@@ -520,9 +521,8 @@ int GlassBrowserFrameView::MinimizeButtonX() const {
   // need to ask Windows where the minimize button is.
   // TODO(bsep): Ideally these would always be the same. When we're always
   // custom drawing the caption buttons, remove GetMinimizeButtonOffset().
-  return frame()->CustomDrawSystemTitlebar()
-             ? minimize_button_->x()
-             : frame()->GetMinimizeButtonOffset();
+  return ShouldCustomDrawSystemTitlebar() ? minimize_button_->x()
+                                          : frame()->GetMinimizeButtonOffset();
 }
 
 bool GlassBrowserFrameView::IsToolbarVisible() const {
@@ -534,22 +534,26 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
   // Because we don't set WS_EX_LAYOUTRTL (which would conflict with Chrome's
   // own RTL layout logic), Windows always draws the caption buttons on the
   // right, even when we want to be RTL. See crbug.com/560619.
-  return !frame()->CustomDrawSystemTitlebar() && base::i18n::IsRTL();
+  return !ShouldCustomDrawSystemTitlebar() && base::i18n::IsRTL();
 }
 
 bool GlassBrowserFrameView::ShowCustomIcon() const {
-  return frame()->CustomDrawSystemTitlebar() &&
+  return ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
 }
 
 bool GlassBrowserFrameView::ShowCustomTitle() const {
-  return frame()->CustomDrawSystemTitlebar() &&
+  return ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowTitle();
 }
 
 bool GlassBrowserFrameView::ShowSystemIcon() const {
-  return !frame()->CustomDrawSystemTitlebar() &&
+  return !ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
+}
+
+SkColor GlassBrowserFrameView::GetTitlebarColor() const {
+  return GetThemeProvider()->GetColor(ThemeProperties::COLOR_FRAME);
 }
 
 Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
@@ -561,17 +565,14 @@ Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
 }
 
 void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
-  SkColor frame_color = 0xFFCCCCCC;
   gfx::Rect tabstrip_bounds = GetBoundsForTabStrip(browser_view()->tabstrip());
 
+  SkPaint paint;
   gfx::ScopedCanvas scoped_canvas(canvas);
   float scale = canvas->UndoDeviceScaleFactor();
   // This is the pixel-accurate version of WindowTopY(). Scaling the DIP values
-  // here compounds precision error, which exposes the native Windows caption
-  // buttons we need to draw over. (see the comment in
-  // BrowserDesktopWindowTreeHostWin::UpdateDWMFrame()).
+  // here compounds precision error, which exposes unpainted client area.
   const int y = IsMaximized() ? FrameTopBorderThicknessPx(false) : 1;
-  SkPaint paint;
 
   // Draw the top of the accent border.
   //
@@ -598,10 +599,18 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
           : inactive_border_color);
   canvas->DrawRect(gfx::RectF(0, 0, width() * scale, y), paint);
 
-  paint.setColor(frame_color);
-  canvas->DrawRect(
-      gfx::RectF(0, y, width() * scale, tabstrip_bounds.bottom() * scale - y),
-      paint);
+  const gfx::Rect titlebar_rect = gfx::ToEnclosingRect(
+      gfx::RectF(0, y, width() * scale, tabstrip_bounds.bottom() * scale - y));
+  // Paint the titlebar first so we have a background if an area isn't covered
+  // by the theme image.
+  paint.setColor(GetTitlebarColor());
+  canvas->DrawRect(titlebar_rect, paint);
+  const gfx::ImageSkia frame_image = GetFrameImage();
+  if (!frame_image.isNull()) {
+    canvas->TileImageInt(frame_image, 0, 0, scale, scale, titlebar_rect.x(),
+                         titlebar_rect.y(), titlebar_rect.width(),
+                         titlebar_rect.height());
+  }
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
@@ -801,7 +810,7 @@ void GlassBrowserFrameView::LayoutClientView() {
 gfx::Insets GlassBrowserFrameView::GetClientAreaInsets(bool restored) const {
   if (!browser_view()->IsTabStripVisible()) {
     const int top =
-        frame()->CustomDrawSystemTitlebar() ? TitlebarHeight(restored) : 0;
+        ShouldCustomDrawSystemTitlebar() ? TitlebarHeight(restored) : 0;
     return gfx::Insets(top, 0, 0, 0);
   }
 

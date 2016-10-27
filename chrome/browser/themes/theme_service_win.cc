@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/win/titlebar_config.h"
 #include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/win/shell.h"
@@ -32,7 +33,9 @@ ThemeServiceWin::~ThemeServiceWin() {
 }
 
 bool ThemeServiceWin::ShouldUseNativeFrame() const {
-  return !HasCustomImage(IDR_THEME_FRAME) && ui::win::IsAeroGlassEnabled();
+  const bool use_native_frame_if_enabled =
+      ShouldCustomDrawSystemTitlebar() || !HasCustomImage(IDR_THEME_FRAME);
+  return use_native_frame_if_enabled && ui::win::IsAeroGlassEnabled();
 }
 
 SkColor ThemeServiceWin::GetDefaultColor(int id, bool incognito) const {
