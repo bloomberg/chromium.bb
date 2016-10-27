@@ -4,15 +4,14 @@
 
 body {
   font-family: Sans-Serif;
-  font-size: 12px;
+  font-size: 14px;
 }
 .physicalWebTemplate {
   display: flex;
-  width: 290px;
+  width: 100%;
   margin-bottom: 15px;
   text-decoration: none;
 }
-
 .physicalWebIcon {
   width: 32px;
 }
@@ -33,12 +32,12 @@ body {
 }
 .physicalWebTemplate .resolvedUrl {
   display: block;
+  width: 100%;
   font-size: 80%;
   color: #888;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   margin-bottom: 4px;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 .physicalWebTemplate .description {
   display: block;
