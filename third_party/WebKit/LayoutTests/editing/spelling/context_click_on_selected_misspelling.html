@@ -1,0 +1,62 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+
+<script>
+test(() => assert_not_equals(window.internals, undefined),
+     'This test requires internals to set editing behavior.');
+
+test(() => assert_not_equals(window.eventSender, undefined),
+     'This test requires event sender to simulate keyboard and mouse actions.');
+
+// There seems to be some bug with testharness.js that the whole testharness is
+// considered as ran to complete even before there are still tests to be
+// created. As a workaround, we manually hold an dummy async_test that finishes
+// after all test cases finish.
+const testHolder = async_test(() => assert_true(true), 'Dummy test holder');
+testHolder.finishedCount = 0;
+
+function contextClickOnSelection(selection) {
+  const range = selection.getRangeAt(0);
+  const document = range.startContainer.ownerDocument;
+  const rect = range.getClientRects()[0];
+  const x = document.offsetLeft + rect.left + rect.width / 2;
+  const y = document.offsetTop + rect.top + rect.height / 2;
+  eventSender.mouseMoveTo(x, y);
+  const contextMenuElements = eventSender.contextClick();
+  // Esc key to hide the context menu.
+  eventSender.keyDown('Escape', null);
+  return contextMenuElements;
+}
+
+function assertContextMenuSuggestion(sample, expected) {
+  test(() => {
+    const suggestions = contextClickOnSelection(sample.selection);
+    assert_equals(suggestions[suggestions.length - 1], expected);
+  }, `Context clicking on exactly-selected "${sample.selection.toString()}" gives suggestions "${expected}".`);
+  sample.remove();
+
+  if (++testHolder.finishedCount == 2)
+    testHolder.done();
+}
+
+spellcheck_test(
+    '<div contenteditable>^wellcome| home.</div>',
+    '',
+    '<div contenteditable>_wellcome_ home.</div>',
+    {
+      title: 'Has marker on initial misspelling.',
+      callback: sample => assertContextMenuSuggestion(sample, 'welcome')
+    });
+
+spellcheck_test(
+    '<div contenteditable>It should be ^upper case|.</div>',
+    '',
+    '<div contenteditable>It should be _upper case_.</div>',
+    {
+      title: 'Has marker on initial multi-word misspelling.',
+      callback: sample => assertContextMenuSuggestion(sample, 'uppercase')
+    });
+</script>
