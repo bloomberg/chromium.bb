@@ -738,6 +738,9 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
 #if defined(OS_CHROMEOS)
     content::kExternalFileScheme,
 #endif  // defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+    url::kContentScheme,
+#endif  // defined(OS_ANDROID)
     url::kAboutScheme,
 #if !defined(DISABLE_FTP_SUPPORT)
     url::kFtpScheme,

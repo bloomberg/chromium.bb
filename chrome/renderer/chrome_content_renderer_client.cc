@@ -398,6 +398,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #if defined(OS_ANDROID)
   WebSecurityPolicy::registerURLSchemeAsAllowedForReferrer(
       WebString::fromUTF8(chrome::kAndroidAppScheme));
+  WebSecurityPolicy::registerURLSchemeAsLocal(
+      WebString::fromUTF8(url::kContentScheme));
 #endif
 
   // chrome-search: pages should not be accessible by bookmarklets
