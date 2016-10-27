@@ -57,23 +57,10 @@ struct CONTENT_EXPORT PepperPluginInfo {
   std::string version;
   std::vector<WebPluginMimeType> mime_types;
 
-  // True when the plugin has been detected as the debug version.
-  // Defaults to false.
-  bool is_debug;
-
-  // True when the plugin is on a local drive. The sandbox will not successfully
-  // load a plugin on a remote drive.
-  // Defaults to true.
-  bool is_on_local_drive;
-
   // True when the plugin is an external plugin i.e. not bundled with Chrome or
   // via the component updater.
   // Defaults to false.
   bool is_external;
-
-  // True when the plugin is bundled with Chrome.
-  // Defaults to false.
-  bool is_bundled;
 
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.

@@ -231,28 +231,18 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 // Creates a PepperPluginInfo for the specified plugin.
 // |path| is the full path to the plugin.
 // |version| is a string representation of the plugin version.
-// |is_debug| is whether the plugin is the debug version or not.
 // |is_external| is whether the plugin is supplied external to Chrome e.g. a
 //     system installation of Adobe Flash.
-// |is_bundled| distinguishes between component updated plugin and a bundled
-//     plugin.
 content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
                                                 const std::string& version,
-                                                bool is_debug,
-                                                bool is_external,
-                                                bool is_bundled) {
+                                                bool is_external) {
   content::PepperPluginInfo plugin;
 
   plugin.is_out_of_process = true;
   plugin.name = content::kFlashPluginName;
   plugin.path = path;
-#if defined(OS_WIN)
-  plugin.is_on_local_drive = !base::IsOnNetworkDrive(path);
-#endif
   plugin.permissions = chrome::kPepperFlashPermissions;
-  plugin.is_debug = is_debug;
   plugin.is_external = is_external;
-  plugin.is_bundled = is_bundled;
 
   std::vector<std::string> flash_version_numbers = base::SplitString(
       version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -293,8 +283,8 @@ bool GetCommandLinePepperFlash(content::PepperPluginInfo* plugin) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPpapiFlashVersion);
 
-  *plugin = CreatePepperFlashInfo(base::FilePath(flash_path),
-                                  flash_version, false, true, false);
+  *plugin = CreatePepperFlashInfo(base::FilePath(flash_path), flash_version,
+                                  true);
   return true;
 }
 
@@ -324,10 +314,7 @@ bool TryCreatePepperFlashInfo(const base::FilePath& flash_filename,
     return false;
   }
 
-  *plugin = CreatePepperFlashInfo(flash_filename, version.GetString(),
-                                  chrome::IsSystemFlashScriptDebuggerPresent(),
-                                  /*is_external=*/true,
-                                  /*is_bundled=*/false);
+  *plugin = CreatePepperFlashInfo(flash_filename, version.GetString(), true);
   return true;
 }
 
@@ -370,7 +357,7 @@ bool GetComponentUpdatedPepperFlash(content::PepperPluginInfo* plugin) {
                         "bundled or system plugin.";
         return false;
       }
-      *plugin = CreatePepperFlashInfo(flash_path, version, false, false, false);
+      *plugin = CreatePepperFlashInfo(flash_path, version, false);
       return true;
     }
     LOG(ERROR)
@@ -481,16 +468,14 @@ content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
   if (plugins.empty())
     return nullptr;
 
-  using PluginSortKey = std::tuple<base::Version, bool, bool, bool, bool>;
+  using PluginSortKey = std::tuple<base::Version, bool>;
 
   std::map<PluginSortKey, content::PepperPluginInfo*> plugin_map;
 
   for (auto& plugin : plugins) {
     base::Version version(plugin->version);
     DCHECK(version.IsValid());
-    plugin_map[PluginSortKey(version, plugin->is_debug, plugin->is_bundled,
-                             plugin->is_on_local_drive, !plugin->is_external)] =
-        plugin.get();
+    plugin_map[PluginSortKey(version, plugin->is_external)] = plugin.get();
   }
 
   return plugin_map.rbegin()->second;
@@ -539,7 +524,7 @@ void ChromeContentClient::AddPepperPlugins(
     // better than any other hardcoded alternative.
     plugins->push_back(CreatePepperFlashInfo(
         base::FilePath::FromUTF8Unsafe(ChromeContentClient::kNotPresent),
-        FLAPPER_VERSION_STRING, false, false, true));
+        FLAPPER_VERSION_STRING, false));
 #endif  // defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
   }
 #endif  // defined(ENABLE_PLUGINS)
