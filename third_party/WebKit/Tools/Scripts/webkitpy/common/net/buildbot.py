@@ -86,7 +86,8 @@ class BuildBot(object):
         both with and without ("ignored").
         """
         url_base = "%s/%s" % (self.builder_results_url_base(build.builder_name), build.build_number)
-        return self._fetch_file(url_base, 'retry_summary.json')
+        return NetworkTransaction(convert_404_to_None=True).run(
+            lambda: self._fetch_file(url_base, "retry_summary.json"))
 
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + "/results/layout-test-results"
