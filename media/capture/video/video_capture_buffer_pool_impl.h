@@ -75,8 +75,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
   int last_relinquished_buffer_id_;
 
   // The buffers, indexed by the first parameter, a buffer id.
-  using TrackerMap = std::map<int, VideoCaptureBufferTracker*>;
-  TrackerMap trackers_;
+  std::map<int, std::unique_ptr<VideoCaptureBufferTracker>> trackers_;
 
   const std::unique_ptr<VideoCaptureBufferTrackerFactory>
       buffer_tracker_factory_;
