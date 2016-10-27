@@ -337,11 +337,14 @@ extern const char kManageProfileSubPage[];
 extern const char kPasswordManagerSubPage[];
 extern const char kResetProfileSettingsSubPage[];
 extern const char kSearchEnginesSubPage[];
-extern const char kSearchSubPage[];
 extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
 #if defined(OS_CHROMEOS)
+extern const char kAccessibilitySubPage[];
+extern const char kBluetoothSubPage[];
+extern const char kDateTimeSubPage[];
+extern const char kDeprecatedOptionsSearchSubPage[];
 extern const char kInternetOptionsSubPage[];
 extern const char kPowerOptionsSubPage[];
 #endif

@@ -28,8 +28,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -51,11 +49,8 @@ void LaunchDateAndTimeSettingsOnFile() {
   chrome::android::OpenDateAndTimeSettings();
 
 #elif defined(OS_CHROMEOS)
-  std::string sub_page =
-      std::string(chrome::kSearchSubPage) + "#" +
-      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        sub_page);
+                                        chrome::kDateTimeSubPage);
 
 #elif defined(OS_LINUX)
   struct ClockCommand {

@@ -44,8 +44,12 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
+#include "ui/base/l10n/l10n_util.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -137,6 +141,13 @@ std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
   return kContentSettingsExceptionsSubPage + std::string(kHashMark) +
          site_settings::ContentSettingsTypeToGroupName(type);
 }
+
+#if defined(OS_CHROMEOS)
+std::string GenerateContentSettingsSearchQueryPath(int query_message_id) {
+  return std::string(chrome::kDeprecatedOptionsSearchSubPage) + kHashMark +
+         l10n_util::GetStringUTF8(query_message_id);
+}
+#endif
 
 }  // namespace
 
@@ -268,17 +279,34 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
 
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
+  std::string sub_page_path = sub_page;
+
+#if defined(OS_CHROMEOS)
+  if (!base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
+    if (sub_page == chrome::kAccessibilitySubPage) {
+      sub_page_path = GenerateContentSettingsSearchQueryPath(
+          IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
+    } else if (sub_page == chrome::kBluetoothSubPage) {
+      sub_page_path = GenerateContentSettingsSearchQueryPath(
+          IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
+    } else if (sub_page == chrome::kDateTimeSubPage) {
+      sub_page_path = GenerateContentSettingsSearchQueryPath(
+          IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
+    }
+  }
+#endif
+
   if (::switches::SettingsWindowEnabled()) {
     content::RecordAction(base::UserMetricsAction("ShowOptions"));
     SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        profile, GetSettingsUrl(sub_page));
+        profile, GetSettingsUrl(sub_page_path));
     return;
   }
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser) {
     browser = new Browser(Browser::CreateParams(profile));
   }
-  ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
+  ShowSettingsSubPageInTabbedBrowser(browser, sub_page_path);
 }
 
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,

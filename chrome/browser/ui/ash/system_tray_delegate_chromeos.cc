@@ -145,11 +145,6 @@ std::unique_ptr<ash::CastConfigDelegate> CreateCastConfigDelegate() {
   return base::MakeUnique<CastConfigDelegateChromeos>();
 }
 
-void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
-  chrome::ShowSettingsSubPageForProfile(
-      ProfileManager::GetActiveUserProfile(), sub_page);
-}
-
 void OnAcceptMultiprofilesIntro(bool no_show_again) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, no_show_again);
@@ -547,10 +542,8 @@ void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
 
 void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {
   content::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
-  std::string sub_page =
-      std::string(chrome::kSearchSubPage) + "#" +
-      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
-  ShowSettingsSubPageForActiveUser(sub_page);
+  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
+                                        chrome::kBluetoothSubPage);
 }
 
 void SystemTrayDelegateChromeOS::ToggleBluetooth() {

@@ -358,12 +358,15 @@ const char kManageProfileSubPage[] = "manageProfile";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kResetProfileSettingsSubPage[] = "resetProfileSettings";
 const char kSearchEnginesSubPage[] = "searchEngines";
-const char kSearchSubPage[] = "search";
 const char kSignOutSubPage[] = "signOut";
 const char kSyncSetupSubPage[] = "syncSetup";
 const char kTriggeredResetProfileSettingsSubPage[] =
     "triggeredResetProfileSettings";
 #if defined(OS_CHROMEOS)
+const char kAccessibilitySubPage[] = "accessibility";
+const char kBluetoothSubPage[] = "bluetooth";
+const char kDateTimeSubPage[] = "dateTime";
+const char kDeprecatedOptionsSearchSubPage[] = "search";
 const char kInternetOptionsSubPage[] = "internet";
 const char kPowerOptionsSubPage[] = "power-overlay";
 #endif

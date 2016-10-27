@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
@@ -34,7 +33,6 @@
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::LoginState;
@@ -140,12 +138,9 @@ void SystemTrayClient::ShowSettings() {
 
 void SystemTrayClient::ShowDateSettings() {
   content::RecordAction(base::UserMetricsAction("ShowDateOptions"));
-  std::string sub_page =
-      std::string(chrome::kSearchSubPage) + "#" +
-      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
   // Everybody can change the time zone (even though it is a device setting).
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        sub_page);
+                                        chrome::kDateTimeSubPage);
 }
 
 void SystemTrayClient::ShowSetTimeDialog() {
@@ -186,10 +181,7 @@ void SystemTrayClient::ShowAccessibilityHelp() {
 
 void SystemTrayClient::ShowAccessibilitySettings() {
   content::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
-  std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-                         l10n_util::GetStringUTF8(
-                             IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
-  ShowSettingsSubPageForActiveUser(sub_page);
+  ShowSettingsSubPageForActiveUser(chrome::kAccessibilitySubPage);
 }
 
 void SystemTrayClient::ShowPaletteHelp() {
