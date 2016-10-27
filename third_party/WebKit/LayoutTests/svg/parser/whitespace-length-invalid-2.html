@@ -59,7 +59,7 @@ testTypeLocal("<length>",
 		 0, // expected default value
 		 whitespace,
 		 [], // valid
-		 [ "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
+		 [ "E", "e", "e+", "E-" ], // invalid
 		 validunits,
 		 [], // garbage
 		 function(elm, value) { assert_approx_equals(elm.x.baseVal.valueInSpecifiedUnits, parseFloat(value), EPSILON); },

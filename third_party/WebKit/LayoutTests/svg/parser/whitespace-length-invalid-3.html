@@ -59,7 +59,7 @@ testTypeLocal("<length>",
 		 0, // expected default value
 		 whitespace,
 		 [], // valid
-		 [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord" ], // invalid
+		 [ "-", "+", "-.", ".-" ], // invalid
 		 validunits,
 		 [], // garbage
 		 function(elm, value) { assert_approx_equals(elm.x.baseVal.valueInSpecifiedUnits, parseFloat(value), EPSILON); },

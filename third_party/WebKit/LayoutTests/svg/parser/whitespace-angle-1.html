@@ -16,14 +16,15 @@ var svg = document.querySelector("svg");
 var EPSILON = Math.pow(2, -24); // float epsilon
 var whitespace = [ "", " ", "   ", "\r\n\t ", "\f" ];
 var garbage = [ "a", "e", "foo", ")90" ];
-var validunits = [ "", "em", "ex", "px", "in", "cm", "mm", "pt", "pc", "%" ];
 
+// Identical to whitespace-angle-2 apart from valid entries. Split to
+// reduce test timeouts on Linux Debug.
 testType("<angle>",
 		 document.querySelector("marker"),
 		 "orient",
 		 0, // expected default value
 		 whitespace,
-		 [ "-47", ".1", "0.35", "1e-10", "+32", "+17E-1", "17e+2" ], // valid
+		 [ "-47", ".1", "0.35", "1e-10" ], // valid
 		 [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
 		 [ "", "deg", "rad", "grad" ], // valid units
 		 garbage,

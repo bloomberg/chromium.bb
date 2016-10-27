@@ -318,31 +318,15 @@ CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "e1\f"
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "e1deg\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "e1rad\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "e1grad\f".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "-47a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, ".1a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "0.35a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "1e-10a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+32a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+17E-1a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "17e+2a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "-47e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, ".1e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "0.35e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "1e-10e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+32e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+17E-1e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "17e+2e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "-47foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, ".1foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "0.35foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "1e-10foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+32foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+17E-1foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "17e+2foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "-47)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, ".1)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "0.35)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "1e-10)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+32)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "+17E-1)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "17e+2)90".
@@ -666,52 +650,24 @@ CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, " e1\f
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, " e1deg\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, " e1rad\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, " e1grad\f".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47 deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1 deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35 deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10 deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32 deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1 deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2 deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47 rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1 rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35 rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10 rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32 rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1 rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2 rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47 grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1 grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35 grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10 grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32 grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1 grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2 grad".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " -47a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " .1a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 0.35a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 1e-10a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +32a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +17E-1a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 17e+2a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " -47e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " .1e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 0.35e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 1e-10e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +32e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +17E-1e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 17e+2e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " -47foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " .1foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 0.35foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 1e-10foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +32foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +17E-1foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 17e+2foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " -47)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " .1)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 0.35)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 1e-10)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +32)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " +17E-1)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, " 17e+2)90".
@@ -1035,52 +991,24 @@ CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "   e1
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "   e1deg\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "   e1rad\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "   e1grad\f".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47   deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1   deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35   deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10   deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32   deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1   deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2   deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47   rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1   rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35   rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10   rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32   rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1   rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2   rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47   grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1   grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35   grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10   grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32   grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1   grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2   grad".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   -47a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   .1a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   0.35a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   1e-10a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +32a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +17E-1a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   17e+2a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   -47e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   .1e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   0.35e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   1e-10e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +32e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +17E-1e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   17e+2e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   -47foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   .1foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   0.35foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   1e-10foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +32foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +17E-1foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   17e+2foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   -47)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   .1)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   0.35)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   1e-10)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +32)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   +17E-1)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "   17e+2)90".
@@ -1404,52 +1332,24 @@ CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\r\n\
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\r\n\t e1deg\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\r\n\t e1rad\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\r\n\t e1grad\f".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47\r\n\t deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1\r\n\t deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35\r\n\t deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10\r\n\t deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32\r\n\t deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1\r\n\t deg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2\r\n\t deg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47\r\n\t rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1\r\n\t rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35\r\n\t rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10\r\n\t rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32\r\n\t rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1\r\n\t rad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2\r\n\t rad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47\r\n\t grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1\r\n\t grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35\r\n\t grad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10\r\n\t grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32\r\n\t grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1\r\n\t grad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2\r\n\t grad".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t -47a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t .1a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 0.35a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 1e-10a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +32a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +17E-1a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 17e+2a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t -47e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t .1e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 0.35e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 1e-10e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +32e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +17E-1e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 17e+2e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t -47foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t .1foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 0.35foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 1e-10foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +32foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +17E-1foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 17e+2foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t -47)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t .1)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 0.35)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 1e-10)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +32)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t +17E-1)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\r\n\t 17e+2)90".
@@ -1773,72 +1673,28 @@ CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\fe1\
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\fe1deg\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\fe1rad\f".
 CONSOLE ERROR: line 42: Error: <marker> attribute orient: Expected angle, "\fe1grad\f".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47\fdeg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1\fdeg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35\fdeg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10\fdeg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32\fdeg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1\fdeg".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2\fdeg".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47\frad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1\frad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35\frad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10\frad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32\frad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1\frad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2\frad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "-47\fgrad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, ".1\fgrad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "0.35\fgrad".
-CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "1e-10\fgrad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+32\fgrad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "+17E-1\fgrad".
 CONSOLE ERROR: line 63: Error: <marker> attribute orient: Expected angle, "17e+2\fgrad".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f-47a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f.1a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f0.35a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f1e-10a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+32a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+17E-1a".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f17e+2a".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f-47e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f.1e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f0.35e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f1e-10e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+32e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+17E-1e".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f17e+2e".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f-47foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f.1foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f0.35foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f1e-10foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+32foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+17E-1foo".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f17e+2foo".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f-47)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f.1)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f0.35)90".
-CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f1e-10)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+32)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f+17E-1)90".
 CONSOLE ERROR: line 81: Error: <marker> attribute orient: Expected angle, "\f17e+2)90".
 This is a testharness.js-based test.
-PASS Test <angle> valid value: -47 
-PASS Test <angle> valid value: -47deg 
-PASS Test <angle> valid value: -47rad 
-PASS Test <angle> valid value: -47grad 
-PASS Test <angle> valid value: .1 
-PASS Test <angle> valid value: .1deg 
-PASS Test <angle> valid value: .1rad 
-PASS Test <angle> valid value: .1grad 
-PASS Test <angle> valid value: 0.35 
-PASS Test <angle> valid value: 0.35deg 
-PASS Test <angle> valid value: 0.35rad 
-PASS Test <angle> valid value: 0.35grad 
-PASS Test <angle> valid value: 1e-10 
-PASS Test <angle> valid value: 1e-10deg 
-PASS Test <angle> valid value: 1e-10rad 
-PASS Test <angle> valid value: 1e-10grad 
 PASS Test <angle> valid value: +32 
 PASS Test <angle> valid value: +32deg 
 PASS Test <angle> valid value: +32rad 
@@ -1915,22 +1771,6 @@ PASS Test <angle> invalid value: e1
 PASS Test <angle> invalid value: e1deg 
 PASS Test <angle> invalid value: e1rad 
 PASS Test <angle> invalid value: e1grad 
-PASS Test <angle> valid value: -47  
-PASS Test <angle> valid value: -47deg  
-PASS Test <angle> valid value: -47rad  
-PASS Test <angle> valid value: -47grad  
-PASS Test <angle> valid value: .1  
-PASS Test <angle> valid value: .1deg  
-PASS Test <angle> valid value: .1rad  
-PASS Test <angle> valid value: .1grad  
-PASS Test <angle> valid value: 0.35  
-PASS Test <angle> valid value: 0.35deg  
-PASS Test <angle> valid value: 0.35rad  
-PASS Test <angle> valid value: 0.35grad  
-PASS Test <angle> valid value: 1e-10  
-PASS Test <angle> valid value: 1e-10deg  
-PASS Test <angle> valid value: 1e-10rad  
-PASS Test <angle> valid value: 1e-10grad  
 PASS Test <angle> valid value: +32  
 PASS Test <angle> valid value: +32deg  
 PASS Test <angle> valid value: +32rad  
@@ -2007,22 +1847,6 @@ PASS Test <angle> invalid value: e1
 PASS Test <angle> invalid value: e1deg  
 PASS Test <angle> invalid value: e1rad  
 PASS Test <angle> invalid value: e1grad  
-PASS Test <angle> valid value: -47    
-PASS Test <angle> valid value: -47deg    
-PASS Test <angle> valid value: -47rad    
-PASS Test <angle> valid value: -47grad    
-PASS Test <angle> valid value: .1    
-PASS Test <angle> valid value: .1deg    
-PASS Test <angle> valid value: .1rad    
-PASS Test <angle> valid value: .1grad    
-PASS Test <angle> valid value: 0.35    
-PASS Test <angle> valid value: 0.35deg    
-PASS Test <angle> valid value: 0.35rad    
-PASS Test <angle> valid value: 0.35grad    
-PASS Test <angle> valid value: 1e-10    
-PASS Test <angle> valid value: 1e-10deg    
-PASS Test <angle> valid value: 1e-10rad    
-PASS Test <angle> valid value: 1e-10grad    
 PASS Test <angle> valid value: +32    
 PASS Test <angle> valid value: +32deg    
 PASS Test <angle> valid value: +32rad    
@@ -2099,22 +1923,6 @@ PASS Test <angle> invalid value: e1
 PASS Test <angle> invalid value: e1deg    
 PASS Test <angle> invalid value: e1rad    
 PASS Test <angle> invalid value: e1grad    
-PASS Test <angle> valid value: -47\r\n\t  
-PASS Test <angle> valid value: -47deg\r\n\t  
-PASS Test <angle> valid value: -47rad\r\n\t  
-PASS Test <angle> valid value: -47grad\r\n\t  
-PASS Test <angle> valid value: .1\r\n\t  
-PASS Test <angle> valid value: .1deg\r\n\t  
-PASS Test <angle> valid value: .1rad\r\n\t  
-PASS Test <angle> valid value: .1grad\r\n\t  
-PASS Test <angle> valid value: 0.35\r\n\t  
-PASS Test <angle> valid value: 0.35deg\r\n\t  
-PASS Test <angle> valid value: 0.35rad\r\n\t  
-PASS Test <angle> valid value: 0.35grad\r\n\t  
-PASS Test <angle> valid value: 1e-10\r\n\t  
-PASS Test <angle> valid value: 1e-10deg\r\n\t  
-PASS Test <angle> valid value: 1e-10rad\r\n\t  
-PASS Test <angle> valid value: 1e-10grad\r\n\t  
 PASS Test <angle> valid value: +32\r\n\t  
 PASS Test <angle> valid value: +32deg\r\n\t  
 PASS Test <angle> valid value: +32rad\r\n\t  
@@ -2191,22 +1999,6 @@ PASS Test <angle> invalid value: e1\r\n\t
 PASS Test <angle> invalid value: e1deg\r\n\t  
 PASS Test <angle> invalid value: e1rad\r\n\t  
 PASS Test <angle> invalid value: e1grad\r\n\t  
-PASS Test <angle> valid value: -47\f 
-PASS Test <angle> valid value: -47deg\f 
-PASS Test <angle> valid value: -47rad\f 
-PASS Test <angle> valid value: -47grad\f 
-PASS Test <angle> valid value: .1\f 
-PASS Test <angle> valid value: .1deg\f 
-PASS Test <angle> valid value: .1rad\f 
-PASS Test <angle> valid value: .1grad\f 
-PASS Test <angle> valid value: 0.35\f 
-PASS Test <angle> valid value: 0.35deg\f 
-PASS Test <angle> valid value: 0.35rad\f 
-PASS Test <angle> valid value: 0.35grad\f 
-PASS Test <angle> valid value: 1e-10\f 
-PASS Test <angle> valid value: 1e-10deg\f 
-PASS Test <angle> valid value: 1e-10rad\f 
-PASS Test <angle> valid value: 1e-10grad\f 
 PASS Test <angle> valid value: +32\f 
 PASS Test <angle> valid value: +32deg\f 
 PASS Test <angle> valid value: +32rad\f 
@@ -2283,50 +2075,18 @@ PASS Test <angle> invalid value: e1\f
 PASS Test <angle> invalid value: e1deg\f 
 PASS Test <angle> invalid value: e1rad\f 
 PASS Test <angle> invalid value: e1grad\f 
-PASS Test <angle> trailing garbage, value: -47a 
-PASS Test <angle> trailing garbage, value: .1a 
-PASS Test <angle> trailing garbage, value: 0.35a 
-PASS Test <angle> trailing garbage, value: 1e-10a 
 PASS Test <angle> trailing garbage, value: +32a 
 PASS Test <angle> trailing garbage, value: +17E-1a 
 PASS Test <angle> trailing garbage, value: 17e+2a 
-PASS Test <angle> trailing garbage, value: -47e 
-PASS Test <angle> trailing garbage, value: .1e 
-PASS Test <angle> trailing garbage, value: 0.35e 
-PASS Test <angle> trailing garbage, value: 1e-10e 
 PASS Test <angle> trailing garbage, value: +32e 
 PASS Test <angle> trailing garbage, value: +17E-1e 
 PASS Test <angle> trailing garbage, value: 17e+2e 
-PASS Test <angle> trailing garbage, value: -47foo 
-PASS Test <angle> trailing garbage, value: .1foo 
-PASS Test <angle> trailing garbage, value: 0.35foo 
-PASS Test <angle> trailing garbage, value: 1e-10foo 
 PASS Test <angle> trailing garbage, value: +32foo 
 PASS Test <angle> trailing garbage, value: +17E-1foo 
 PASS Test <angle> trailing garbage, value: 17e+2foo 
-PASS Test <angle> trailing garbage, value: -47)90 
-PASS Test <angle> trailing garbage, value: .1)90 
-PASS Test <angle> trailing garbage, value: 0.35)90 
-PASS Test <angle> trailing garbage, value: 1e-10)90 
 PASS Test <angle> trailing garbage, value: +32)90 
 PASS Test <angle> trailing garbage, value: +17E-1)90 
 PASS Test <angle> trailing garbage, value: 17e+2)90 
-PASS Test <angle> valid value:  -47 
-PASS Test <angle> valid value:  -47deg 
-PASS Test <angle> valid value:  -47rad 
-PASS Test <angle> valid value:  -47grad 
-PASS Test <angle> valid value:  .1 
-PASS Test <angle> valid value:  .1deg 
-PASS Test <angle> valid value:  .1rad 
-PASS Test <angle> valid value:  .1grad 
-PASS Test <angle> valid value:  0.35 
-PASS Test <angle> valid value:  0.35deg 
-PASS Test <angle> valid value:  0.35rad 
-PASS Test <angle> valid value:  0.35grad 
-PASS Test <angle> valid value:  1e-10 
-PASS Test <angle> valid value:  1e-10deg 
-PASS Test <angle> valid value:  1e-10rad 
-PASS Test <angle> valid value:  1e-10grad 
 PASS Test <angle> valid value:  +32 
 PASS Test <angle> valid value:  +32deg 
 PASS Test <angle> valid value:  +32rad 
@@ -2403,22 +2163,6 @@ PASS Test <angle> invalid value:  e1
 PASS Test <angle> invalid value:  e1deg 
 PASS Test <angle> invalid value:  e1rad 
 PASS Test <angle> invalid value:  e1grad 
-PASS Test <angle> valid value:  -47  
-PASS Test <angle> valid value:  -47deg  
-PASS Test <angle> valid value:  -47rad  
-PASS Test <angle> valid value:  -47grad  
-PASS Test <angle> valid value:  .1  
-PASS Test <angle> valid value:  .1deg  
-PASS Test <angle> valid value:  .1rad  
-PASS Test <angle> valid value:  .1grad  
-PASS Test <angle> valid value:  0.35  
-PASS Test <angle> valid value:  0.35deg  
-PASS Test <angle> valid value:  0.35rad  
-PASS Test <angle> valid value:  0.35grad  
-PASS Test <angle> valid value:  1e-10  
-PASS Test <angle> valid value:  1e-10deg  
-PASS Test <angle> valid value:  1e-10rad  
-PASS Test <angle> valid value:  1e-10grad  
 PASS Test <angle> valid value:  +32  
 PASS Test <angle> valid value:  +32deg  
 PASS Test <angle> valid value:  +32rad  
@@ -2495,22 +2239,6 @@ PASS Test <angle> invalid value:  e1
 PASS Test <angle> invalid value:  e1deg  
 PASS Test <angle> invalid value:  e1rad  
 PASS Test <angle> invalid value:  e1grad  
-PASS Test <angle> valid value:  -47    
-PASS Test <angle> valid value:  -47deg    
-PASS Test <angle> valid value:  -47rad    
-PASS Test <angle> valid value:  -47grad    
-PASS Test <angle> valid value:  .1    
-PASS Test <angle> valid value:  .1deg    
-PASS Test <angle> valid value:  .1rad    
-PASS Test <angle> valid value:  .1grad    
-PASS Test <angle> valid value:  0.35    
-PASS Test <angle> valid value:  0.35deg    
-PASS Test <angle> valid value:  0.35rad    
-PASS Test <angle> valid value:  0.35grad    
-PASS Test <angle> valid value:  1e-10    
-PASS Test <angle> valid value:  1e-10deg    
-PASS Test <angle> valid value:  1e-10rad    
-PASS Test <angle> valid value:  1e-10grad    
 PASS Test <angle> valid value:  +32    
 PASS Test <angle> valid value:  +32deg    
 PASS Test <angle> valid value:  +32rad    
@@ -2587,22 +2315,6 @@ PASS Test <angle> invalid value:  e1
 PASS Test <angle> invalid value:  e1deg    
 PASS Test <angle> invalid value:  e1rad    
 PASS Test <angle> invalid value:  e1grad    
-PASS Test <angle> valid value:  -47\r\n\t  
-PASS Test <angle> valid value:  -47deg\r\n\t  
-PASS Test <angle> valid value:  -47rad\r\n\t  
-PASS Test <angle> valid value:  -47grad\r\n\t  
-PASS Test <angle> valid value:  .1\r\n\t  
-PASS Test <angle> valid value:  .1deg\r\n\t  
-PASS Test <angle> valid value:  .1rad\r\n\t  
-PASS Test <angle> valid value:  .1grad\r\n\t  
-PASS Test <angle> valid value:  0.35\r\n\t  
-PASS Test <angle> valid value:  0.35deg\r\n\t  
-PASS Test <angle> valid value:  0.35rad\r\n\t  
-PASS Test <angle> valid value:  0.35grad\r\n\t  
-PASS Test <angle> valid value:  1e-10\r\n\t  
-PASS Test <angle> valid value:  1e-10deg\r\n\t  
-PASS Test <angle> valid value:  1e-10rad\r\n\t  
-PASS Test <angle> valid value:  1e-10grad\r\n\t  
 PASS Test <angle> valid value:  +32\r\n\t  
 PASS Test <angle> valid value:  +32deg\r\n\t  
 PASS Test <angle> valid value:  +32rad\r\n\t  
@@ -2679,22 +2391,6 @@ PASS Test <angle> invalid value:  e1\r\n\t
 PASS Test <angle> invalid value:  e1deg\r\n\t  
 PASS Test <angle> invalid value:  e1rad\r\n\t  
 PASS Test <angle> invalid value:  e1grad\r\n\t  
-PASS Test <angle> valid value:  -47\f 
-PASS Test <angle> valid value:  -47deg\f 
-PASS Test <angle> valid value:  -47rad\f 
-PASS Test <angle> valid value:  -47grad\f 
-PASS Test <angle> valid value:  .1\f 
-PASS Test <angle> valid value:  .1deg\f 
-PASS Test <angle> valid value:  .1rad\f 
-PASS Test <angle> valid value:  .1grad\f 
-PASS Test <angle> valid value:  0.35\f 
-PASS Test <angle> valid value:  0.35deg\f 
-PASS Test <angle> valid value:  0.35rad\f 
-PASS Test <angle> valid value:  0.35grad\f 
-PASS Test <angle> valid value:  1e-10\f 
-PASS Test <angle> valid value:  1e-10deg\f 
-PASS Test <angle> valid value:  1e-10rad\f 
-PASS Test <angle> valid value:  1e-10grad\f 
 PASS Test <angle> valid value:  +32\f 
 PASS Test <angle> valid value:  +32deg\f 
 PASS Test <angle> valid value:  +32rad\f 
@@ -2771,71 +2467,27 @@ PASS Test <angle> invalid value:  e1\f
 PASS Test <angle> invalid value:  e1deg\f 
 PASS Test <angle> invalid value:  e1rad\f 
 PASS Test <angle> invalid value:  e1grad\f 
-PASS Test <angle> WS invalid value: -47 deg 
-PASS Test <angle> WS invalid value: .1 deg 
-PASS Test <angle> WS invalid value: 0.35 deg 
-PASS Test <angle> WS invalid value: 1e-10 deg 
 PASS Test <angle> WS invalid value: +32 deg 
 PASS Test <angle> WS invalid value: +17E-1 deg 
 PASS Test <angle> WS invalid value: 17e+2 deg 
-PASS Test <angle> WS invalid value: -47 rad 
-PASS Test <angle> WS invalid value: .1 rad 
-PASS Test <angle> WS invalid value: 0.35 rad 
-PASS Test <angle> WS invalid value: 1e-10 rad 
 PASS Test <angle> WS invalid value: +32 rad 
 PASS Test <angle> WS invalid value: +17E-1 rad 
 PASS Test <angle> WS invalid value: 17e+2 rad 
-PASS Test <angle> WS invalid value: -47 grad 
-PASS Test <angle> WS invalid value: .1 grad 
-PASS Test <angle> WS invalid value: 0.35 grad 
-PASS Test <angle> WS invalid value: 1e-10 grad 
 PASS Test <angle> WS invalid value: +32 grad 
 PASS Test <angle> WS invalid value: +17E-1 grad 
 PASS Test <angle> WS invalid value: 17e+2 grad 
-PASS Test <angle> trailing garbage, value:  -47a 
-PASS Test <angle> trailing garbage, value:  .1a 
-PASS Test <angle> trailing garbage, value:  0.35a 
-PASS Test <angle> trailing garbage, value:  1e-10a 
 PASS Test <angle> trailing garbage, value:  +32a 
 PASS Test <angle> trailing garbage, value:  +17E-1a 
 PASS Test <angle> trailing garbage, value:  17e+2a 
-PASS Test <angle> trailing garbage, value:  -47e 
-PASS Test <angle> trailing garbage, value:  .1e 
-PASS Test <angle> trailing garbage, value:  0.35e 
-PASS Test <angle> trailing garbage, value:  1e-10e 
 PASS Test <angle> trailing garbage, value:  +32e 
 PASS Test <angle> trailing garbage, value:  +17E-1e 
 PASS Test <angle> trailing garbage, value:  17e+2e 
-PASS Test <angle> trailing garbage, value:  -47foo 
-PASS Test <angle> trailing garbage, value:  .1foo 
-PASS Test <angle> trailing garbage, value:  0.35foo 
-PASS Test <angle> trailing garbage, value:  1e-10foo 
 PASS Test <angle> trailing garbage, value:  +32foo 
 PASS Test <angle> trailing garbage, value:  +17E-1foo 
 PASS Test <angle> trailing garbage, value:  17e+2foo 
-PASS Test <angle> trailing garbage, value:  -47)90 
-PASS Test <angle> trailing garbage, value:  .1)90 
-PASS Test <angle> trailing garbage, value:  0.35)90 
-PASS Test <angle> trailing garbage, value:  1e-10)90 
 PASS Test <angle> trailing garbage, value:  +32)90 
 PASS Test <angle> trailing garbage, value:  +17E-1)90 
 PASS Test <angle> trailing garbage, value:  17e+2)90 
-PASS Test <angle> valid value:    -47 
-PASS Test <angle> valid value:    -47deg 
-PASS Test <angle> valid value:    -47rad 
-PASS Test <angle> valid value:    -47grad 
-PASS Test <angle> valid value:    .1 
-PASS Test <angle> valid value:    .1deg 
-PASS Test <angle> valid value:    .1rad 
-PASS Test <angle> valid value:    .1grad 
-PASS Test <angle> valid value:    0.35 
-PASS Test <angle> valid value:    0.35deg 
-PASS Test <angle> valid value:    0.35rad 
-PASS Test <angle> valid value:    0.35grad 
-PASS Test <angle> valid value:    1e-10 
-PASS Test <angle> valid value:    1e-10deg 
-PASS Test <angle> valid value:    1e-10rad 
-PASS Test <angle> valid value:    1e-10grad 
 PASS Test <angle> valid value:    +32 
 PASS Test <angle> valid value:    +32deg 
 PASS Test <angle> valid value:    +32rad 
@@ -2912,22 +2564,6 @@ PASS Test <angle> invalid value:    e1
 PASS Test <angle> invalid value:    e1deg 
 PASS Test <angle> invalid value:    e1rad 
 PASS Test <angle> invalid value:    e1grad 
-PASS Test <angle> valid value:    -47  
-PASS Test <angle> valid value:    -47deg  
-PASS Test <angle> valid value:    -47rad  
-PASS Test <angle> valid value:    -47grad  
-PASS Test <angle> valid value:    .1  
-PASS Test <angle> valid value:    .1deg  
-PASS Test <angle> valid value:    .1rad  
-PASS Test <angle> valid value:    .1grad  
-PASS Test <angle> valid value:    0.35  
-PASS Test <angle> valid value:    0.35deg  
-PASS Test <angle> valid value:    0.35rad  
-PASS Test <angle> valid value:    0.35grad  
-PASS Test <angle> valid value:    1e-10  
-PASS Test <angle> valid value:    1e-10deg  
-PASS Test <angle> valid value:    1e-10rad  
-PASS Test <angle> valid value:    1e-10grad  
 PASS Test <angle> valid value:    +32  
 PASS Test <angle> valid value:    +32deg  
 PASS Test <angle> valid value:    +32rad  
@@ -3004,22 +2640,6 @@ PASS Test <angle> invalid value:    e1
 PASS Test <angle> invalid value:    e1deg  
 PASS Test <angle> invalid value:    e1rad  
 PASS Test <angle> invalid value:    e1grad  
-PASS Test <angle> valid value:    -47    
-PASS Test <angle> valid value:    -47deg    
-PASS Test <angle> valid value:    -47rad    
-PASS Test <angle> valid value:    -47grad    
-PASS Test <angle> valid value:    .1    
-PASS Test <angle> valid value:    .1deg    
-PASS Test <angle> valid value:    .1rad    
-PASS Test <angle> valid value:    .1grad    
-PASS Test <angle> valid value:    0.35    
-PASS Test <angle> valid value:    0.35deg    
-PASS Test <angle> valid value:    0.35rad    
-PASS Test <angle> valid value:    0.35grad    
-PASS Test <angle> valid value:    1e-10    
-PASS Test <angle> valid value:    1e-10deg    
-PASS Test <angle> valid value:    1e-10rad    
-PASS Test <angle> valid value:    1e-10grad    
 PASS Test <angle> valid value:    +32    
 PASS Test <angle> valid value:    +32deg    
 PASS Test <angle> valid value:    +32rad    
@@ -3096,22 +2716,6 @@ PASS Test <angle> invalid value:    e1
 PASS Test <angle> invalid value:    e1deg    
 PASS Test <angle> invalid value:    e1rad    
 PASS Test <angle> invalid value:    e1grad    
-PASS Test <angle> valid value:    -47\r\n\t  
-PASS Test <angle> valid value:    -47deg\r\n\t  
-PASS Test <angle> valid value:    -47rad\r\n\t  
-PASS Test <angle> valid value:    -47grad\r\n\t  
-PASS Test <angle> valid value:    .1\r\n\t  
-PASS Test <angle> valid value:    .1deg\r\n\t  
-PASS Test <angle> valid value:    .1rad\r\n\t  
-PASS Test <angle> valid value:    .1grad\r\n\t  
-PASS Test <angle> valid value:    0.35\r\n\t  
-PASS Test <angle> valid value:    0.35deg\r\n\t  
-PASS Test <angle> valid value:    0.35rad\r\n\t  
-PASS Test <angle> valid value:    0.35grad\r\n\t  
-PASS Test <angle> valid value:    1e-10\r\n\t  
-PASS Test <angle> valid value:    1e-10deg\r\n\t  
-PASS Test <angle> valid value:    1e-10rad\r\n\t  
-PASS Test <angle> valid value:    1e-10grad\r\n\t  
 PASS Test <angle> valid value:    +32\r\n\t  
 PASS Test <angle> valid value:    +32deg\r\n\t  
 PASS Test <angle> valid value:    +32rad\r\n\t  
@@ -3188,22 +2792,6 @@ PASS Test <angle> invalid value:    e1\r\n\t
 PASS Test <angle> invalid value:    e1deg\r\n\t  
 PASS Test <angle> invalid value:    e1rad\r\n\t  
 PASS Test <angle> invalid value:    e1grad\r\n\t  
-PASS Test <angle> valid value:    -47\f 
-PASS Test <angle> valid value:    -47deg\f 
-PASS Test <angle> valid value:    -47rad\f 
-PASS Test <angle> valid value:    -47grad\f 
-PASS Test <angle> valid value:    .1\f 
-PASS Test <angle> valid value:    .1deg\f 
-PASS Test <angle> valid value:    .1rad\f 
-PASS Test <angle> valid value:    .1grad\f 
-PASS Test <angle> valid value:    0.35\f 
-PASS Test <angle> valid value:    0.35deg\f 
-PASS Test <angle> valid value:    0.35rad\f 
-PASS Test <angle> valid value:    0.35grad\f 
-PASS Test <angle> valid value:    1e-10\f 
-PASS Test <angle> valid value:    1e-10deg\f 
-PASS Test <angle> valid value:    1e-10rad\f 
-PASS Test <angle> valid value:    1e-10grad\f 
 PASS Test <angle> valid value:    +32\f 
 PASS Test <angle> valid value:    +32deg\f 
 PASS Test <angle> valid value:    +32rad\f 
@@ -3280,71 +2868,27 @@ PASS Test <angle> invalid value:    e1\f
 PASS Test <angle> invalid value:    e1deg\f 
 PASS Test <angle> invalid value:    e1rad\f 
 PASS Test <angle> invalid value:    e1grad\f 
-PASS Test <angle> WS invalid value: -47   deg 
-PASS Test <angle> WS invalid value: .1   deg 
-PASS Test <angle> WS invalid value: 0.35   deg 
-PASS Test <angle> WS invalid value: 1e-10   deg 
 PASS Test <angle> WS invalid value: +32   deg 
 PASS Test <angle> WS invalid value: +17E-1   deg 
 PASS Test <angle> WS invalid value: 17e+2   deg 
-PASS Test <angle> WS invalid value: -47   rad 
-PASS Test <angle> WS invalid value: .1   rad 
-PASS Test <angle> WS invalid value: 0.35   rad 
-PASS Test <angle> WS invalid value: 1e-10   rad 
 PASS Test <angle> WS invalid value: +32   rad 
 PASS Test <angle> WS invalid value: +17E-1   rad 
 PASS Test <angle> WS invalid value: 17e+2   rad 
-PASS Test <angle> WS invalid value: -47   grad 
-PASS Test <angle> WS invalid value: .1   grad 
-PASS Test <angle> WS invalid value: 0.35   grad 
-PASS Test <angle> WS invalid value: 1e-10   grad 
 PASS Test <angle> WS invalid value: +32   grad 
 PASS Test <angle> WS invalid value: +17E-1   grad 
 PASS Test <angle> WS invalid value: 17e+2   grad 
-PASS Test <angle> trailing garbage, value:    -47a 
-PASS Test <angle> trailing garbage, value:    .1a 
-PASS Test <angle> trailing garbage, value:    0.35a 
-PASS Test <angle> trailing garbage, value:    1e-10a 
 PASS Test <angle> trailing garbage, value:    +32a 
 PASS Test <angle> trailing garbage, value:    +17E-1a 
 PASS Test <angle> trailing garbage, value:    17e+2a 
-PASS Test <angle> trailing garbage, value:    -47e 
-PASS Test <angle> trailing garbage, value:    .1e 
-PASS Test <angle> trailing garbage, value:    0.35e 
-PASS Test <angle> trailing garbage, value:    1e-10e 
 PASS Test <angle> trailing garbage, value:    +32e 
 PASS Test <angle> trailing garbage, value:    +17E-1e 
 PASS Test <angle> trailing garbage, value:    17e+2e 
-PASS Test <angle> trailing garbage, value:    -47foo 
-PASS Test <angle> trailing garbage, value:    .1foo 
-PASS Test <angle> trailing garbage, value:    0.35foo 
-PASS Test <angle> trailing garbage, value:    1e-10foo 
 PASS Test <angle> trailing garbage, value:    +32foo 
 PASS Test <angle> trailing garbage, value:    +17E-1foo 
 PASS Test <angle> trailing garbage, value:    17e+2foo 
-PASS Test <angle> trailing garbage, value:    -47)90 
-PASS Test <angle> trailing garbage, value:    .1)90 
-PASS Test <angle> trailing garbage, value:    0.35)90 
-PASS Test <angle> trailing garbage, value:    1e-10)90 
 PASS Test <angle> trailing garbage, value:    +32)90 
 PASS Test <angle> trailing garbage, value:    +17E-1)90 
 PASS Test <angle> trailing garbage, value:    17e+2)90 
-PASS Test <angle> valid value: \r\n\t -47 
-PASS Test <angle> valid value: \r\n\t -47deg 
-PASS Test <angle> valid value: \r\n\t -47rad 
-PASS Test <angle> valid value: \r\n\t -47grad 
-PASS Test <angle> valid value: \r\n\t .1 
-PASS Test <angle> valid value: \r\n\t .1deg 
-PASS Test <angle> valid value: \r\n\t .1rad 
-PASS Test <angle> valid value: \r\n\t .1grad 
-PASS Test <angle> valid value: \r\n\t 0.35 
-PASS Test <angle> valid value: \r\n\t 0.35deg 
-PASS Test <angle> valid value: \r\n\t 0.35rad 
-PASS Test <angle> valid value: \r\n\t 0.35grad 
-PASS Test <angle> valid value: \r\n\t 1e-10 
-PASS Test <angle> valid value: \r\n\t 1e-10deg 
-PASS Test <angle> valid value: \r\n\t 1e-10rad 
-PASS Test <angle> valid value: \r\n\t 1e-10grad 
 PASS Test <angle> valid value: \r\n\t +32 
 PASS Test <angle> valid value: \r\n\t +32deg 
 PASS Test <angle> valid value: \r\n\t +32rad 
@@ -3421,22 +2965,6 @@ PASS Test <angle> invalid value: \r\n\t e1
 PASS Test <angle> invalid value: \r\n\t e1deg 
 PASS Test <angle> invalid value: \r\n\t e1rad 
 PASS Test <angle> invalid value: \r\n\t e1grad 
-PASS Test <angle> valid value: \r\n\t -47  
-PASS Test <angle> valid value: \r\n\t -47deg  
-PASS Test <angle> valid value: \r\n\t -47rad  
-PASS Test <angle> valid value: \r\n\t -47grad  
-PASS Test <angle> valid value: \r\n\t .1  
-PASS Test <angle> valid value: \r\n\t .1deg  
-PASS Test <angle> valid value: \r\n\t .1rad  
-PASS Test <angle> valid value: \r\n\t .1grad  
-PASS Test <angle> valid value: \r\n\t 0.35  
-PASS Test <angle> valid value: \r\n\t 0.35deg  
-PASS Test <angle> valid value: \r\n\t 0.35rad  
-PASS Test <angle> valid value: \r\n\t 0.35grad  
-PASS Test <angle> valid value: \r\n\t 1e-10  
-PASS Test <angle> valid value: \r\n\t 1e-10deg  
-PASS Test <angle> valid value: \r\n\t 1e-10rad  
-PASS Test <angle> valid value: \r\n\t 1e-10grad  
 PASS Test <angle> valid value: \r\n\t +32  
 PASS Test <angle> valid value: \r\n\t +32deg  
 PASS Test <angle> valid value: \r\n\t +32rad  
@@ -3513,22 +3041,6 @@ PASS Test <angle> invalid value: \r\n\t e1
 PASS Test <angle> invalid value: \r\n\t e1deg  
 PASS Test <angle> invalid value: \r\n\t e1rad  
 PASS Test <angle> invalid value: \r\n\t e1grad  
-PASS Test <angle> valid value: \r\n\t -47    
-PASS Test <angle> valid value: \r\n\t -47deg    
-PASS Test <angle> valid value: \r\n\t -47rad    
-PASS Test <angle> valid value: \r\n\t -47grad    
-PASS Test <angle> valid value: \r\n\t .1    
-PASS Test <angle> valid value: \r\n\t .1deg    
-PASS Test <angle> valid value: \r\n\t .1rad    
-PASS Test <angle> valid value: \r\n\t .1grad    
-PASS Test <angle> valid value: \r\n\t 0.35    
-PASS Test <angle> valid value: \r\n\t 0.35deg    
-PASS Test <angle> valid value: \r\n\t 0.35rad    
-PASS Test <angle> valid value: \r\n\t 0.35grad    
-PASS Test <angle> valid value: \r\n\t 1e-10    
-PASS Test <angle> valid value: \r\n\t 1e-10deg    
-PASS Test <angle> valid value: \r\n\t 1e-10rad    
-PASS Test <angle> valid value: \r\n\t 1e-10grad    
 PASS Test <angle> valid value: \r\n\t +32    
 PASS Test <angle> valid value: \r\n\t +32deg    
 PASS Test <angle> valid value: \r\n\t +32rad    
@@ -3605,22 +3117,6 @@ PASS Test <angle> invalid value: \r\n\t e1
 PASS Test <angle> invalid value: \r\n\t e1deg    
 PASS Test <angle> invalid value: \r\n\t e1rad    
 PASS Test <angle> invalid value: \r\n\t e1grad    
-PASS Test <angle> valid value: \r\n\t -47\r\n\t  
-PASS Test <angle> valid value: \r\n\t -47deg\r\n\t  
-PASS Test <angle> valid value: \r\n\t -47rad\r\n\t  
-PASS Test <angle> valid value: \r\n\t -47grad\r\n\t  
-PASS Test <angle> valid value: \r\n\t .1\r\n\t  
-PASS Test <angle> valid value: \r\n\t .1deg\r\n\t  
-PASS Test <angle> valid value: \r\n\t .1rad\r\n\t  
-PASS Test <angle> valid value: \r\n\t .1grad\r\n\t  
-PASS Test <angle> valid value: \r\n\t 0.35\r\n\t  
-PASS Test <angle> valid value: \r\n\t 0.35deg\r\n\t  
-PASS Test <angle> valid value: \r\n\t 0.35rad\r\n\t  
-PASS Test <angle> valid value: \r\n\t 0.35grad\r\n\t  
-PASS Test <angle> valid value: \r\n\t 1e-10\r\n\t  
-PASS Test <angle> valid value: \r\n\t 1e-10deg\r\n\t  
-PASS Test <angle> valid value: \r\n\t 1e-10rad\r\n\t  
-PASS Test <angle> valid value: \r\n\t 1e-10grad\r\n\t  
 PASS Test <angle> valid value: \r\n\t +32\r\n\t  
 PASS Test <angle> valid value: \r\n\t +32deg\r\n\t  
 PASS Test <angle> valid value: \r\n\t +32rad\r\n\t  
@@ -3697,22 +3193,6 @@ PASS Test <angle> invalid value: \r\n\t e1\r\n\t
 PASS Test <angle> invalid value: \r\n\t e1deg\r\n\t  
 PASS Test <angle> invalid value: \r\n\t e1rad\r\n\t  
 PASS Test <angle> invalid value: \r\n\t e1grad\r\n\t  
-PASS Test <angle> valid value: \r\n\t -47\f 
-PASS Test <angle> valid value: \r\n\t -47deg\f 
-PASS Test <angle> valid value: \r\n\t -47rad\f 
-PASS Test <angle> valid value: \r\n\t -47grad\f 
-PASS Test <angle> valid value: \r\n\t .1\f 
-PASS Test <angle> valid value: \r\n\t .1deg\f 
-PASS Test <angle> valid value: \r\n\t .1rad\f 
-PASS Test <angle> valid value: \r\n\t .1grad\f 
-PASS Test <angle> valid value: \r\n\t 0.35\f 
-PASS Test <angle> valid value: \r\n\t 0.35deg\f 
-PASS Test <angle> valid value: \r\n\t 0.35rad\f 
-PASS Test <angle> valid value: \r\n\t 0.35grad\f 
-PASS Test <angle> valid value: \r\n\t 1e-10\f 
-PASS Test <angle> valid value: \r\n\t 1e-10deg\f 
-PASS Test <angle> valid value: \r\n\t 1e-10rad\f 
-PASS Test <angle> valid value: \r\n\t 1e-10grad\f 
 PASS Test <angle> valid value: \r\n\t +32\f 
 PASS Test <angle> valid value: \r\n\t +32deg\f 
 PASS Test <angle> valid value: \r\n\t +32rad\f 
@@ -3789,71 +3269,27 @@ PASS Test <angle> invalid value: \r\n\t e1\f
 PASS Test <angle> invalid value: \r\n\t e1deg\f 
 PASS Test <angle> invalid value: \r\n\t e1rad\f 
 PASS Test <angle> invalid value: \r\n\t e1grad\f 
-PASS Test <angle> WS invalid value: -47\r\n\t deg 
-PASS Test <angle> WS invalid value: .1\r\n\t deg 
-PASS Test <angle> WS invalid value: 0.35\r\n\t deg 
-PASS Test <angle> WS invalid value: 1e-10\r\n\t deg 
 PASS Test <angle> WS invalid value: +32\r\n\t deg 
 PASS Test <angle> WS invalid value: +17E-1\r\n\t deg 
 PASS Test <angle> WS invalid value: 17e+2\r\n\t deg 
-PASS Test <angle> WS invalid value: -47\r\n\t rad 
-PASS Test <angle> WS invalid value: .1\r\n\t rad 
-PASS Test <angle> WS invalid value: 0.35\r\n\t rad 
-PASS Test <angle> WS invalid value: 1e-10\r\n\t rad 
 PASS Test <angle> WS invalid value: +32\r\n\t rad 
 PASS Test <angle> WS invalid value: +17E-1\r\n\t rad 
 PASS Test <angle> WS invalid value: 17e+2\r\n\t rad 
-PASS Test <angle> WS invalid value: -47\r\n\t grad 
-PASS Test <angle> WS invalid value: .1\r\n\t grad 
-PASS Test <angle> WS invalid value: 0.35\r\n\t grad 
-PASS Test <angle> WS invalid value: 1e-10\r\n\t grad 
 PASS Test <angle> WS invalid value: +32\r\n\t grad 
 PASS Test <angle> WS invalid value: +17E-1\r\n\t grad 
 PASS Test <angle> WS invalid value: 17e+2\r\n\t grad 
-PASS Test <angle> trailing garbage, value: \r\n\t -47a 
-PASS Test <angle> trailing garbage, value: \r\n\t .1a 
-PASS Test <angle> trailing garbage, value: \r\n\t 0.35a 
-PASS Test <angle> trailing garbage, value: \r\n\t 1e-10a 
 PASS Test <angle> trailing garbage, value: \r\n\t +32a 
 PASS Test <angle> trailing garbage, value: \r\n\t +17E-1a 
 PASS Test <angle> trailing garbage, value: \r\n\t 17e+2a 
-PASS Test <angle> trailing garbage, value: \r\n\t -47e 
-PASS Test <angle> trailing garbage, value: \r\n\t .1e 
-PASS Test <angle> trailing garbage, value: \r\n\t 0.35e 
-PASS Test <angle> trailing garbage, value: \r\n\t 1e-10e 
 PASS Test <angle> trailing garbage, value: \r\n\t +32e 
 PASS Test <angle> trailing garbage, value: \r\n\t +17E-1e 
 PASS Test <angle> trailing garbage, value: \r\n\t 17e+2e 
-PASS Test <angle> trailing garbage, value: \r\n\t -47foo 
-PASS Test <angle> trailing garbage, value: \r\n\t .1foo 
-PASS Test <angle> trailing garbage, value: \r\n\t 0.35foo 
-PASS Test <angle> trailing garbage, value: \r\n\t 1e-10foo 
 PASS Test <angle> trailing garbage, value: \r\n\t +32foo 
 PASS Test <angle> trailing garbage, value: \r\n\t +17E-1foo 
 PASS Test <angle> trailing garbage, value: \r\n\t 17e+2foo 
-PASS Test <angle> trailing garbage, value: \r\n\t -47)90 
-PASS Test <angle> trailing garbage, value: \r\n\t .1)90 
-PASS Test <angle> trailing garbage, value: \r\n\t 0.35)90 
-PASS Test <angle> trailing garbage, value: \r\n\t 1e-10)90 
 PASS Test <angle> trailing garbage, value: \r\n\t +32)90 
 PASS Test <angle> trailing garbage, value: \r\n\t +17E-1)90 
 PASS Test <angle> trailing garbage, value: \r\n\t 17e+2)90 
-PASS Test <angle> valid value: \f-47 
-PASS Test <angle> valid value: \f-47deg 
-PASS Test <angle> valid value: \f-47rad 
-PASS Test <angle> valid value: \f-47grad 
-PASS Test <angle> valid value: \f.1 
-PASS Test <angle> valid value: \f.1deg 
-PASS Test <angle> valid value: \f.1rad 
-PASS Test <angle> valid value: \f.1grad 
-PASS Test <angle> valid value: \f0.35 
-PASS Test <angle> valid value: \f0.35deg 
-PASS Test <angle> valid value: \f0.35rad 
-PASS Test <angle> valid value: \f0.35grad 
-PASS Test <angle> valid value: \f1e-10 
-PASS Test <angle> valid value: \f1e-10deg 
-PASS Test <angle> valid value: \f1e-10rad 
-PASS Test <angle> valid value: \f1e-10grad 
 PASS Test <angle> valid value: \f+32 
 PASS Test <angle> valid value: \f+32deg 
 PASS Test <angle> valid value: \f+32rad 
@@ -3930,22 +3366,6 @@ PASS Test <angle> invalid value: \fe1
 PASS Test <angle> invalid value: \fe1deg 
 PASS Test <angle> invalid value: \fe1rad 
 PASS Test <angle> invalid value: \fe1grad 
-PASS Test <angle> valid value: \f-47  
-PASS Test <angle> valid value: \f-47deg  
-PASS Test <angle> valid value: \f-47rad  
-PASS Test <angle> valid value: \f-47grad  
-PASS Test <angle> valid value: \f.1  
-PASS Test <angle> valid value: \f.1deg  
-PASS Test <angle> valid value: \f.1rad  
-PASS Test <angle> valid value: \f.1grad  
-PASS Test <angle> valid value: \f0.35  
-PASS Test <angle> valid value: \f0.35deg  
-PASS Test <angle> valid value: \f0.35rad  
-PASS Test <angle> valid value: \f0.35grad  
-PASS Test <angle> valid value: \f1e-10  
-PASS Test <angle> valid value: \f1e-10deg  
-PASS Test <angle> valid value: \f1e-10rad  
-PASS Test <angle> valid value: \f1e-10grad  
 PASS Test <angle> valid value: \f+32  
 PASS Test <angle> valid value: \f+32deg  
 PASS Test <angle> valid value: \f+32rad  
@@ -4022,22 +3442,6 @@ PASS Test <angle> invalid value: \fe1
 PASS Test <angle> invalid value: \fe1deg  
 PASS Test <angle> invalid value: \fe1rad  
 PASS Test <angle> invalid value: \fe1grad  
-PASS Test <angle> valid value: \f-47    
-PASS Test <angle> valid value: \f-47deg    
-PASS Test <angle> valid value: \f-47rad    
-PASS Test <angle> valid value: \f-47grad    
-PASS Test <angle> valid value: \f.1    
-PASS Test <angle> valid value: \f.1deg    
-PASS Test <angle> valid value: \f.1rad    
-PASS Test <angle> valid value: \f.1grad    
-PASS Test <angle> valid value: \f0.35    
-PASS Test <angle> valid value: \f0.35deg    
-PASS Test <angle> valid value: \f0.35rad    
-PASS Test <angle> valid value: \f0.35grad    
-PASS Test <angle> valid value: \f1e-10    
-PASS Test <angle> valid value: \f1e-10deg    
-PASS Test <angle> valid value: \f1e-10rad    
-PASS Test <angle> valid value: \f1e-10grad    
 PASS Test <angle> valid value: \f+32    
 PASS Test <angle> valid value: \f+32deg    
 PASS Test <angle> valid value: \f+32rad    
@@ -4114,22 +3518,6 @@ PASS Test <angle> invalid value: \fe1
 PASS Test <angle> invalid value: \fe1deg    
 PASS Test <angle> invalid value: \fe1rad    
 PASS Test <angle> invalid value: \fe1grad    
-PASS Test <angle> valid value: \f-47\r\n\t  
-PASS Test <angle> valid value: \f-47deg\r\n\t  
-PASS Test <angle> valid value: \f-47rad\r\n\t  
-PASS Test <angle> valid value: \f-47grad\r\n\t  
-PASS Test <angle> valid value: \f.1\r\n\t  
-PASS Test <angle> valid value: \f.1deg\r\n\t  
-PASS Test <angle> valid value: \f.1rad\r\n\t  
-PASS Test <angle> valid value: \f.1grad\r\n\t  
-PASS Test <angle> valid value: \f0.35\r\n\t  
-PASS Test <angle> valid value: \f0.35deg\r\n\t  
-PASS Test <angle> valid value: \f0.35rad\r\n\t  
-PASS Test <angle> valid value: \f0.35grad\r\n\t  
-PASS Test <angle> valid value: \f1e-10\r\n\t  
-PASS Test <angle> valid value: \f1e-10deg\r\n\t  
-PASS Test <angle> valid value: \f1e-10rad\r\n\t  
-PASS Test <angle> valid value: \f1e-10grad\r\n\t  
 PASS Test <angle> valid value: \f+32\r\n\t  
 PASS Test <angle> valid value: \f+32deg\r\n\t  
 PASS Test <angle> valid value: \f+32rad\r\n\t  
@@ -4206,22 +3594,6 @@ PASS Test <angle> invalid value: \fe1\r\n\t
 PASS Test <angle> invalid value: \fe1deg\r\n\t  
 PASS Test <angle> invalid value: \fe1rad\r\n\t  
 PASS Test <angle> invalid value: \fe1grad\r\n\t  
-PASS Test <angle> valid value: \f-47\f 
-PASS Test <angle> valid value: \f-47deg\f 
-PASS Test <angle> valid value: \f-47rad\f 
-PASS Test <angle> valid value: \f-47grad\f 
-PASS Test <angle> valid value: \f.1\f 
-PASS Test <angle> valid value: \f.1deg\f 
-PASS Test <angle> valid value: \f.1rad\f 
-PASS Test <angle> valid value: \f.1grad\f 
-PASS Test <angle> valid value: \f0.35\f 
-PASS Test <angle> valid value: \f0.35deg\f 
-PASS Test <angle> valid value: \f0.35rad\f 
-PASS Test <angle> valid value: \f0.35grad\f 
-PASS Test <angle> valid value: \f1e-10\f 
-PASS Test <angle> valid value: \f1e-10deg\f 
-PASS Test <angle> valid value: \f1e-10rad\f 
-PASS Test <angle> valid value: \f1e-10grad\f 
 PASS Test <angle> valid value: \f+32\f 
 PASS Test <angle> valid value: \f+32deg\f 
 PASS Test <angle> valid value: \f+32rad\f 
@@ -4298,52 +3670,24 @@ PASS Test <angle> invalid value: \fe1\f
 PASS Test <angle> invalid value: \fe1deg\f 
 PASS Test <angle> invalid value: \fe1rad\f 
 PASS Test <angle> invalid value: \fe1grad\f 
-PASS Test <angle> WS invalid value: -47\fdeg 
-PASS Test <angle> WS invalid value: .1\fdeg 
-PASS Test <angle> WS invalid value: 0.35\fdeg 
-PASS Test <angle> WS invalid value: 1e-10\fdeg 
 PASS Test <angle> WS invalid value: +32\fdeg 
 PASS Test <angle> WS invalid value: +17E-1\fdeg 
 PASS Test <angle> WS invalid value: 17e+2\fdeg 
-PASS Test <angle> WS invalid value: -47\frad 
-PASS Test <angle> WS invalid value: .1\frad 
-PASS Test <angle> WS invalid value: 0.35\frad 
-PASS Test <angle> WS invalid value: 1e-10\frad 
 PASS Test <angle> WS invalid value: +32\frad 
 PASS Test <angle> WS invalid value: +17E-1\frad 
 PASS Test <angle> WS invalid value: 17e+2\frad 
-PASS Test <angle> WS invalid value: -47\fgrad 
-PASS Test <angle> WS invalid value: .1\fgrad 
-PASS Test <angle> WS invalid value: 0.35\fgrad 
-PASS Test <angle> WS invalid value: 1e-10\fgrad 
 PASS Test <angle> WS invalid value: +32\fgrad 
 PASS Test <angle> WS invalid value: +17E-1\fgrad 
 PASS Test <angle> WS invalid value: 17e+2\fgrad 
-PASS Test <angle> trailing garbage, value: \f-47a 
-PASS Test <angle> trailing garbage, value: \f.1a 
-PASS Test <angle> trailing garbage, value: \f0.35a 
-PASS Test <angle> trailing garbage, value: \f1e-10a 
 PASS Test <angle> trailing garbage, value: \f+32a 
 PASS Test <angle> trailing garbage, value: \f+17E-1a 
 PASS Test <angle> trailing garbage, value: \f17e+2a 
-PASS Test <angle> trailing garbage, value: \f-47e 
-PASS Test <angle> trailing garbage, value: \f.1e 
-PASS Test <angle> trailing garbage, value: \f0.35e 
-PASS Test <angle> trailing garbage, value: \f1e-10e 
 PASS Test <angle> trailing garbage, value: \f+32e 
 PASS Test <angle> trailing garbage, value: \f+17E-1e 
 PASS Test <angle> trailing garbage, value: \f17e+2e 
-PASS Test <angle> trailing garbage, value: \f-47foo 
-PASS Test <angle> trailing garbage, value: \f.1foo 
-PASS Test <angle> trailing garbage, value: \f0.35foo 
-PASS Test <angle> trailing garbage, value: \f1e-10foo 
 PASS Test <angle> trailing garbage, value: \f+32foo 
 PASS Test <angle> trailing garbage, value: \f+17E-1foo 
 PASS Test <angle> trailing garbage, value: \f17e+2foo 
-PASS Test <angle> trailing garbage, value: \f-47)90 
-PASS Test <angle> trailing garbage, value: \f.1)90 
-PASS Test <angle> trailing garbage, value: \f0.35)90 
-PASS Test <angle> trailing garbage, value: \f1e-10)90 
 PASS Test <angle> trailing garbage, value: \f+32)90 
 PASS Test <angle> trailing garbage, value: \f+17E-1)90 
 PASS Test <angle> trailing garbage, value: \f17e+2)90 
