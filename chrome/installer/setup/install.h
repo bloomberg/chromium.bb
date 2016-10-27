@@ -50,18 +50,6 @@ enum InstallShortcutLevel {
   ALL_USERS,
 };
 
-// Sets |new_target_path| as the new target path of all shortcuts in the
-// location specified by |shortcut_location| and |dist| which either:
-// - Point to a file rooted at |old_target_dir| whose name ends in
-//   |old_target_name_suffix|, or,
-// - Have an icon rooted at |old_target_dir|.
-void UpdatePerUserShortcutsInLocation(
-    const ShellUtil::ShortcutLocation shortcut_location,
-    BrowserDistribution* dist,
-    const base::FilePath& old_target_dir,
-    const base::FilePath& old_target_name_suffix,
-    const base::FilePath& new_target_path);
-
 // Escape |att_value| as per the XML AttValue production
 // (http://www.w3.org/TR/2008/REC-xml-20081126/#NT-AttValue) for a value in
 // single quotes.

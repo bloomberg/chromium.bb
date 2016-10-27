@@ -369,44 +369,6 @@ TEST_F(InstallUtilTest, ProgramCompare) {
       L"\"" + short_expect + L"\""));
 }
 
-TEST_F(InstallUtilTest, ProgramCompareWithDirectories) {
-  base::ScopedTempDir test_dir;
-  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  const base::FilePath some_long_dir(
-      test_dir.GetPath().Append(L"Some Long Directory Name"));
-  const base::FilePath expect(some_long_dir.Append(L"directory"));
-  const base::FilePath expect_upcase(some_long_dir.Append(L"DIRECTORY"));
-  const base::FilePath other(some_long_dir.Append(L"other_directory"));
-
-  ASSERT_TRUE(base::CreateDirectory(some_long_dir));
-  ASSERT_TRUE(base::CreateDirectory(expect));
-  ASSERT_TRUE(base::CreateDirectory(other));
-
-  InstallUtil::ProgramCompare program_compare(
-      expect, InstallUtil::ProgramCompare::ComparisonType::FILE_OR_DIRECTORY);
-
-  // Paths match exactly.
-  EXPECT_TRUE(program_compare.EvaluatePath(expect));
-  // Paths differ by case.
-  EXPECT_TRUE(program_compare.EvaluatePath(expect_upcase));
-  // Paths don't match.
-  EXPECT_FALSE(program_compare.EvaluatePath(other));
-
-  // Test where strings don't match, but the same directory is indicated.
-  std::wstring short_expect;
-  DWORD short_len =
-      GetShortPathName(expect.value().c_str(),
-                       base::WriteInto(&short_expect, MAX_PATH), MAX_PATH);
-  ASSERT_NE(static_cast<DWORD>(0), short_len);
-  ASSERT_GT(static_cast<DWORD>(MAX_PATH), short_len);
-  short_expect.resize(short_len);
-  ASSERT_FALSE(
-      base::FilePath::CompareEqualIgnoreCase(expect.value(), short_expect));
-  EXPECT_TRUE(program_compare.EvaluatePath(expect));
-  EXPECT_TRUE(program_compare.EvaluatePath(expect_upcase));
-  EXPECT_FALSE(program_compare.EvaluatePath(other));
-}
-
 // Win64 Chrome is always installed in the 32-bit Program Files directory. Test
 // that IsPerUserInstall returns false for an arbitrary path with
 // DIR_PROGRAM_FILESX86 as a suffix but not DIR_PROGRAM_FILES when the two are

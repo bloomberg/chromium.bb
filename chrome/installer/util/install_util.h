@@ -201,35 +201,19 @@ class InstallUtil {
   // the same file.
   class ProgramCompare : public RegistryValuePredicate {
    public:
-    enum class ComparisonType {
-      // Evaluation compares existing files.
-      FILE,
-      // Evaluation compares existing files or directories.
-      FILE_OR_DIRECTORY,
-    };
-
-    // Constructs a ProgramCompare with FILE as ComparisonType.
     explicit ProgramCompare(const base::FilePath& path_to_match);
-
-    // Constructs a ProgramCompare with |comparison_type| as ComparisonType.
-    ProgramCompare(const base::FilePath& path_to_match,
-                   ComparisonType comparison_type);
-
     ~ProgramCompare() override;
     bool Evaluate(const base::string16& value) const override;
     bool EvaluatePath(const base::FilePath& path) const;
 
    protected:
-    static bool OpenForInfo(const base::FilePath& path,
-                            base::File* file,
-                            ComparisonType comparison_type);
+    static bool OpenForInfo(const base::FilePath& path, base::File* file);
     static bool GetInfo(const base::File& file,
                         BY_HANDLE_FILE_INFORMATION* info);
 
     base::FilePath path_to_match_;
     base::File file_;
     BY_HANDLE_FILE_INFORMATION file_info_;
-    ComparisonType comparison_type_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ProgramCompare);

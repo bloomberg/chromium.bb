@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -41,7 +40,6 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
-#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -267,98 +265,9 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
-// Returns the number of components in |file_path|.
-size_t GetNumPathComponents(const base::FilePath& file_path) {
-  std::vector<base::FilePath::StringType> components;
-  file_path.GetComponents(&components);
-  return components.size();
-}
-
-// Returns a path made with the |num_components| first components of
-// |file_path|. |file_path| is returned as-is if it contains less than
-// |num_components| components.
-base::FilePath TruncatePath(const base::FilePath& file_path,
-                            size_t num_components) {
-  std::vector<base::FilePath::StringType> components;
-  file_path.GetComponents(&components);
-  if (components.size() <= num_components)
-    return file_path;
-  base::FilePath truncated_file_path;
-  for (size_t i = 0; i < num_components; ++i)
-    truncated_file_path = truncated_file_path.Append(components[i]);
-  return truncated_file_path;
-}
-
-}  // namespace
+}  // end namespace
 
 namespace installer {
-
-void UpdatePerUserShortcutsInLocation(
-    const ShellUtil::ShortcutLocation shortcut_location,
-    BrowserDistribution* dist,
-    const base::FilePath& old_target_dir,
-    const base::FilePath& old_target_name_suffix,
-    const base::FilePath& new_target_path) {
-  base::FilePath shortcut_path;
-  const bool get_shortcut_path_return = ShellUtil::GetShortcutPath(
-      shortcut_location, dist, ShellUtil::CURRENT_USER, &shortcut_path);
-  DCHECK(get_shortcut_path_return);
-
-  bool recursive = false;
-
-  // TODO(fdoray): Modify GetShortcutPath such that it returns
-  // ...\Quick Launch\User Pinned instead of
-  // ...\Quick Launch\User Pinned\TaskBar for SHORTCUT_LOCATION_TASKBAR_PINS.
-  if (shortcut_location == ShellUtil::SHORTCUT_LOCATION_TASKBAR_PINS) {
-    shortcut_path = shortcut_path.DirName();
-    recursive = true;
-  }
-
-  const size_t num_old_target_dir_components =
-      GetNumPathComponents(old_target_dir);
-  InstallUtil::ProgramCompare old_target_dir_comparator(
-      old_target_dir,
-      InstallUtil::ProgramCompare::ComparisonType::FILE_OR_DIRECTORY);
-
-  base::FileEnumerator shortcuts_enum(shortcut_path, recursive,
-                                      base::FileEnumerator::FILES);
-  for (base::FilePath shortcut = shortcuts_enum.Next(); !shortcut.empty();
-       shortcut = shortcuts_enum.Next()) {
-    base::win::ShortcutProperties shortcut_properties;
-    if (!base::win::ResolveShortcutProperties(
-            shortcut, (base::win::ShortcutProperties::PROPERTIES_TARGET |
-                       base::win::ShortcutProperties::PROPERTIES_ICON),
-            &shortcut_properties)) {
-      continue;
-    }
-
-    if (shortcut_properties.target.ReferencesParent() ||
-        shortcut_properties.icon.ReferencesParent()) {
-      continue;
-    }
-
-    // Skip shortcuts whose target isn't a file rooted at |old_target_dir| with
-    // a name ending in |old_target_name_suffix|. Except for shortcuts whose
-    // icon is rooted at |old_target_dir|. Note that there can be a false
-    // negative if the target path or the icon path is a symlink.
-    // TODO(fdoray): The second condition is only intended to fix Canary
-    // shortcuts broken by crbug.com/595374, remove it in May 2016.
-    if (!(old_target_dir_comparator.EvaluatePath(TruncatePath(
-              shortcut_properties.target, num_old_target_dir_components)) &&
-          base::EndsWith(shortcut_properties.target.BaseName().value(),
-                         old_target_name_suffix.value(),
-                         base::CompareCase::INSENSITIVE_ASCII)) &&
-        !old_target_dir_comparator.EvaluatePath(TruncatePath(
-            shortcut_properties.icon, num_old_target_dir_components))) {
-      continue;
-    }
-
-    base::win::ShortcutProperties updated_properties;
-    updated_properties.set_target(new_target_path);
-    base::win::CreateOrUpdateShortcutLink(shortcut, updated_properties,
-                                          base::win::SHORTCUT_UPDATE_EXISTING);
-  }
-}
 
 void EscapeXmlAttributeValueInSingleQuotes(base::string16* att_value) {
   base::ReplaceChars(*att_value, base::ASCIIToUTF16("&"),
@@ -527,24 +436,6 @@ void CreateOrUpdateShortcuts(
   ExecuteAndLogShortcutOperation(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
       start_menu_properties, shortcut_operation);
-
-  // Update the target path of existing per-user shortcuts. TODO(fdoray): This
-  // is only intended to fix Canary shortcuts broken by crbug.com/595374 and
-  // crbug.com/592040, remove it in May 2016.
-  if (InstallUtil::IsChromeSxSProcess() &&
-      install_operation == INSTALL_SHORTCUT_REPLACE_EXISTING) {
-    const base::FilePath updated_prefix = target.DirName().DirName();
-    const base::FilePath updated_suffix = target.BaseName();
-
-    UpdatePerUserShortcutsInLocation(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist,
-                                     updated_prefix, updated_suffix, target);
-    UpdatePerUserShortcutsInLocation(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
-                                     dist, updated_prefix, updated_suffix,
-                                     target);
-    UpdatePerUserShortcutsInLocation(ShellUtil::SHORTCUT_LOCATION_TASKBAR_PINS,
-                                     dist, updated_prefix, updated_suffix,
-                                     target);
-  }
 }
 
 void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
