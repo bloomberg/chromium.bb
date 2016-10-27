@@ -56,6 +56,7 @@ list .label {
 list .label-img-wrapper {
   display: inline-block; /* Makes the image start-align in RTL. */
   width: 20px;
+  z-index: -1;
 }
 
 <if expr="not is_macosx and not is_ios">
@@ -135,7 +136,7 @@ html[dir=rtl] list > * > button {
 
 /* Edit mode */
 
-list [editing] .label input,
+list [editing] .label-text input,
 list [editing] .url input {
   -webkit-margin-end: 4px;
   -webkit-margin-start: -4px;
@@ -162,7 +163,7 @@ list [editing] .url input {
 }
 
 <if expr="is_macosx">
-list .label input,
+list .label-text input,
 list .url input {
   outline: none;
 }
@@ -172,7 +173,7 @@ list > [editing] {
   overflow: visible;
 }
 
-list [editing] .label,
+list [editing] .label-text,
 list [editing] .url,
 list [editing] > * {
   overflow: visible;

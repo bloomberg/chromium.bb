@@ -479,8 +479,6 @@ cr.define('bmm', function() {
       var title = this.bookmarkNode.title;
       var isFolder = bmm.isFolder(this.bookmarkNode);
       var listItem = this;
-      var labelEl = this.firstChild;
-      var urlEl = labelEl.nextSibling;
       var labelInput, urlInput;
 
       // Handles enter and escape which trigger reset and commit respectively.
@@ -546,6 +544,8 @@ cr.define('bmm', function() {
       }
 
       var doc = this.ownerDocument;
+      var labelTextEl = queryRequiredElement('.label-text', this);
+      var urlEl = queryRequiredElement('.url', this);
       if (editing) {
         this.setAttribute('editing', '');
         this.draggable = false;
@@ -553,7 +553,7 @@ cr.define('bmm', function() {
         labelInput = /** @type {HTMLElement} */(doc.createElement('input'));
         labelInput.placeholder =
             loadTimeData.getString('name_input_placeholder');
-        replaceAllChildren(labelEl, labelInput);
+        replaceAllChildren(labelTextEl, labelInput);
         labelInput.value = title;
 
         if (!isFolder) {
@@ -629,7 +629,7 @@ cr.define('bmm', function() {
 
         labelInput = this.querySelector('.label input');
         var newLabel = labelInput.value;
-        labelEl.textContent = this.bookmarkNode.title = newLabel;
+        labelTextEl.textContent = this.bookmarkNode.title = newLabel;
 
         if (isFolder) {
           if (newLabel != title) {
