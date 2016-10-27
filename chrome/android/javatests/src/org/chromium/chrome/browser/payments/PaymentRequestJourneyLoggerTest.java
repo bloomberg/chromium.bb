@@ -300,4 +300,56 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
         assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
                                 "PaymentRequest.NumberOfSelectionEdits.ContactInfo.Completed", 0));
     }
+
+    /**
+     * Expect that that the journey metrics are logged correctly on a second consecutive payment
+     * request.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testTwoTimes() throws InterruptedException, ExecutionException, TimeoutException {
+        // Complete a Payment Request with a credit card.
+        triggerUIAndWait("ccBuy", mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+
+        // Make sure the right number of suggestions were logged.
+        assertEquals(
+                1, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSuggestionsShown.ShippingAddress.Completed", 2));
+
+        // Make sure no adds, edits or changes were logged.
+        assertEquals(
+                1, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSelectionAdds.ShippingAddress.Completed", 0));
+        assertEquals(
+                1, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSelectionChanges.ShippingAddress.Completed", 0));
+        assertEquals(
+                1, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSelectionEdits.ShippingAddress.Completed", 0));
+
+        // Complete a second Payment Request with a credit card.
+        reTriggerUIAndWait("ccBuy", mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+
+        // Make sure the right number of suggestions were logged.
+        assertEquals(
+                2, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSuggestionsShown.ShippingAddress.Completed", 2));
+
+        // Make sure no adds, edits or changes were logged.
+        assertEquals(
+                2, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSelectionAdds.ShippingAddress.Completed", 0));
+        assertEquals(
+                2, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSelectionChanges.ShippingAddress.Completed", 0));
+        assertEquals(
+                2, RecordHistogram.getHistogramValueCountForTesting(
+                           "PaymentRequest.NumberOfSelectionEdits.ShippingAddress.Completed", 0));
+    }
 }

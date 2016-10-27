@@ -15,7 +15,9 @@ public class PaymentRequestJourneyLogger {
     public static final int SECTION_SHIPPING_ADDRESS = 2;
     public static final int SECTION_MAX = 3;
 
-    private static final int MIN_EXPECTED_SAMPLE = 0;
+    // The minimum expected value of CustomCountHistograms is always set to 1. It is still possible
+    // to log the value 0 to that type of histogram.
+    private static final int MIN_EXPECTED_SAMPLE = 1;
     private static final int MAX_EXPECTED_SAMPLE = 49;
     private static final int NUMBER_BUCKETS = 50;
 

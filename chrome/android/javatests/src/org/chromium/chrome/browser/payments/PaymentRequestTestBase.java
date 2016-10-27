@@ -148,6 +148,13 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         clickNodeAndWait(nodeId, helper);
     }
 
+    protected void reTriggerUIAndWait(
+            String nodeId, PaymentsCallbackHelper<PaymentRequestUI> helper)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        clickNodeAndWait(nodeId, helper);
+        mUI = helper.getTarget();
+    }
+
     /** Clicks on an HTML node. */
     protected void clickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
