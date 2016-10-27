@@ -37,7 +37,6 @@ import errno
 import itertools
 import json
 import logging
-import os
 import operator
 import optparse
 import re
@@ -280,11 +279,6 @@ class Port(object):
         if not max_locked_shards:
             return 1
         return max_locked_shards
-
-    def baseline_path(self):
-        """Return the absolute path to the directory to store new baselines in for this port."""
-        # FIXME: remove once all callers are calling either baseline_version_dir() or baseline_platform_dir()
-        return self.baseline_version_dir()
 
     def baseline_platform_dir(self):
         """Return the absolute path to the default (version-independent) platform-specific results."""

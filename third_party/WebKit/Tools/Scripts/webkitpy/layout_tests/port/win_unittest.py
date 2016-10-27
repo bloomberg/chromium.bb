@@ -101,7 +101,9 @@ class WinPortTest(port_testcase.PortTestCase):
 
     def assert_baseline_paths(self, port_name, *expected_paths):
         port = self.make_port(port_name=port_name)
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path(expected_paths[0]))
+        self.assertEqual(
+            port.baseline_version_dir(),
+            port._webkit_baseline_path(expected_paths[0]))  # pylint: disable=protected-access
         self.assertEqual(len(port.baseline_search_path()), len(expected_paths))
         for i, path in enumerate(expected_paths):
             self.assertTrue(port.baseline_search_path()[i].endswith(path))

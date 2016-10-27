@@ -186,7 +186,9 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
                 _log.debug("No existing baseline for %s.", test_name)
                 continue
 
-            new_baseline = self._tool.filesystem.join(port.baseline_path(), self._file_name_for_expected_result(test_name, suffix))
+            new_baseline = self._tool.filesystem.join(
+                port.baseline_version_dir(),
+                self._file_name_for_expected_result(test_name, suffix))
             if self._tool.filesystem.exists(new_baseline):
                 _log.debug("Existing baseline at %s, not copying over it.", new_baseline)
                 continue
