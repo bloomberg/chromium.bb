@@ -37,7 +37,6 @@
 #include "content/common/message_port_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/platform_notification_messages.h"
-#include "content/common/power_monitor_messages.h"
 #include "content/common/push_messaging_messages.h"
 #include "content/common/quota_messages.h"
 #include "content/common/render_process_messages.h"

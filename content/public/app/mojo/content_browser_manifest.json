@@ -6,8 +6,12 @@
     "service_manager:connector": {
       // Remove this once http://crbug.com/632818 is fixed.
       "provides": {
-        "gpu": [ ],
-        "plugin": [ ],
+        "gpu": [
+          "device::mojom::PowerMonitor"
+        ],
+        "plugin": [
+          "device::mojom::PowerMonitor"
+        ],
         "renderer": [
           "blink::mojom::BackgroundSyncService",
           "blink::mojom::BroadcastChannelProvider",
@@ -29,6 +33,7 @@
           "device::mojom::LightSensor",
           "device::mojom::MotionSensor",
           "device::mojom::OrientationSensor",
+          "device::mojom::PowerMonitor",
           "device::mojom::TimeZoneMonitor",
           "media::mojom::ImageCapture",
           "memory_coordinator::mojom::MemoryCoordinatorHandle"

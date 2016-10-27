@@ -513,8 +513,6 @@ void ChildThreadImpl::Init(const Options& options) {
   if (!base::PowerMonitor::Get()) {
     std::unique_ptr<PowerMonitorBroadcastSource> power_monitor_source(
         new PowerMonitorBroadcastSource());
-    channel_->AddFilter(power_monitor_source->GetMessageFilter());
-
     power_monitor_.reset(
         new base::PowerMonitor(std::move(power_monitor_source)));
   }

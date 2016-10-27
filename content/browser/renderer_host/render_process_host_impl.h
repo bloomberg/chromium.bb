@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
-#include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
@@ -544,9 +543,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Indicates whether RenderProcessHostImpl is currently iterating and calling
   // through RenderProcessHostObserver::RenderProcessExited.
   bool within_process_died_observer_;
-
-  // Forwards power state messages to the renderer process.
-  PowerMonitorMessageBroadcaster power_monitor_broadcaster_;
 
   scoped_refptr<AudioRendererHost> audio_renderer_host_;
 

@@ -5,14 +5,11 @@
 #include "content/browser/power_monitor_message_broadcaster.h"
 
 #include "base/power_monitor/power_monitor.h"
-#include "content/common/power_monitor_messages.h"
-#include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
-PowerMonitorMessageBroadcaster::PowerMonitorMessageBroadcaster(
-    IPC::Sender* sender)
-    : sender_(sender) {
+PowerMonitorMessageBroadcaster::PowerMonitorMessageBroadcaster() {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor)
     power_monitor->AddObserver(this);
@@ -24,7 +21,16 @@ PowerMonitorMessageBroadcaster::~PowerMonitorMessageBroadcaster() {
     power_monitor->RemoveObserver(this);
 }
 
-void PowerMonitorMessageBroadcaster::Init() {
+// static
+void PowerMonitorMessageBroadcaster::Create(
+    device::mojom::PowerMonitorRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<PowerMonitorMessageBroadcaster>(),
+                          std::move(request));
+}
+
+void PowerMonitorMessageBroadcaster::SetClient(
+    device::mojom::PowerMonitorClientPtr power_monitor_client) {
+  power_monitor_client_ = std::move(power_monitor_client);
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   // Unit tests does not initialize the PowerMonitor.
   if (power_monitor)
@@ -32,15 +38,21 @@ void PowerMonitorMessageBroadcaster::Init() {
 }
 
 void PowerMonitorMessageBroadcaster::OnPowerStateChange(bool on_battery_power) {
-  sender_->Send(new PowerMonitorMsg_PowerStateChange(on_battery_power));
+  if (power_monitor_client_) {
+    power_monitor_client_->PowerStateChange(on_battery_power);
+  }
 }
 
 void PowerMonitorMessageBroadcaster::OnSuspend() {
-  sender_->Send(new PowerMonitorMsg_Suspend());
+  if (power_monitor_client_) {
+    power_monitor_client_->Suspend();
+  }
 }
 
 void PowerMonitorMessageBroadcaster::OnResume() {
-  sender_->Send(new PowerMonitorMsg_Resume());
+  if (power_monitor_client_) {
+    power_monitor_client_->Resume();
+  }
 }
 
 }  // namespace content

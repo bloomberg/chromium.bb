@@ -245,7 +245,6 @@ source_set("common") {
     "platform_notification_messages.h",
     "plugin_list.cc",
     "plugin_list.h",
-    "power_monitor_messages.h",
     "process_type.cc",
     "push_messaging_messages.h",
     "quota_messages.h",
@@ -585,6 +584,7 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/leveldb/public/interfaces",
     "//content/public/common:interfaces",
+    "//device/power_monitor/public/interfaces",
     "//device/sensors/public/interfaces",
 
     # TODO(mcasas): remove the following dep after https://crbug.com/653994

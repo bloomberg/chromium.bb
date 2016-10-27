@@ -8,30 +8,32 @@
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 #include "content/common/content_export.h"
-
-namespace IPC {
-class Sender;
-}
+#include "device/power_monitor/public/interfaces/power_monitor.mojom.h"
 
 namespace content {
 
 // A class used to monitor the power state change and communicate it to child
 // processes via IPC.
 class CONTENT_EXPORT PowerMonitorMessageBroadcaster
-    : public base::PowerObserver {
+    : public base::PowerObserver,
+      NON_EXPORTED_BASE(public device::mojom::PowerMonitor) {
  public:
-  explicit PowerMonitorMessageBroadcaster(IPC::Sender* sender);
+  explicit PowerMonitorMessageBroadcaster();
   ~PowerMonitorMessageBroadcaster() override;
 
-  // Implement PowerObserver.
+  static void Create(device::mojom::PowerMonitorRequest request);
+
+  // Implement device::mojom::PowerMonitor:
+  void SetClient(
+      device::mojom::PowerMonitorClientPtr power_monitor_client) override;
+
+  // Implement PowerObserver:
   void OnPowerStateChange(bool on_battery_power) override;
   void OnSuspend() override;
   void OnResume() override;
 
-  void Init();
-
  private:
-  IPC::Sender* sender_;
+  device::mojom::PowerMonitorClientPtr power_monitor_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorMessageBroadcaster);
 };

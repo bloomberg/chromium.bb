@@ -27,6 +27,7 @@
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/memory/memory_message_filter.h"
+#include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -38,12 +39,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
@@ -82,6 +86,22 @@ void NotifyProcessKilled(const ChildProcessData& data, int exit_code) {
   for (auto& observer : g_observers.Get())
     observer.BrowserChildProcessKilled(data, exit_code);
 }
+
+class ConnectionFilterImpl : public ConnectionFilter {
+ public:
+  ConnectionFilterImpl() {}
+
+ private:
+  // ConnectionFilter:
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry,
+                 service_manager::Connector* connector) override {
+    registry->AddInterface(base::Bind(&PowerMonitorMessageBroadcaster::Create));
+    return true;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
+};
 
 }  // namespace
 
@@ -142,7 +162,6 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     : data_(process_type),
       delegate_(delegate),
       child_token_(mojo::edk::GenerateRandomToken()),
-      power_monitor_message_broadcaster_(this),
       is_channel_connected_(false),
       notify_child_disconnected_(false),
       weak_factory_(this) {
@@ -157,14 +176,18 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   g_child_process_list.Get().push_back(this);
   GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
 
-  power_monitor_message_broadcaster_.Init();
-
   if (!service_name.empty()) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     child_connection_.reset(new ChildConnection(
         service_name, base::StringPrintf("%d", data_.id), child_token_,
         ServiceManagerContext::GetConnectorForIOThread(),
         base::ThreadTaskRunnerHandle::Get()));
+  }
+
+  // May be null during test execution.
+  if (ServiceManagerConnection::GetForProcess()) {
+    ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
+        base::MakeUnique<ConnectionFilterImpl>());
   }
 
   // Create a persistent memory segment for subprocess histograms.

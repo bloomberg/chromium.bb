@@ -8,37 +8,28 @@
 #include "base/macros.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel.h"
-
-namespace IPC {
-class MessageFilter;
-}
+#include "device/power_monitor/public/interfaces/power_monitor.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 
-class PowerMessageFilter;
-
 // Receives Power Monitor IPC messages sent from the browser process and relays
 // them to the PowerMonitor of the current process.
-class CONTENT_EXPORT PowerMonitorBroadcastSource :
-    public base::PowerMonitorSource {
+class CONTENT_EXPORT PowerMonitorBroadcastSource
+    : public base::PowerMonitorSource,
+      NON_EXPORTED_BASE(public device::mojom::PowerMonitorClient) {
  public:
   explicit PowerMonitorBroadcastSource();
   ~PowerMonitorBroadcastSource() override;
 
-  IPC::MessageFilter* GetMessageFilter();
+  void PowerStateChange(bool on_battery_power) override;
+  void Suspend() override;
+  void Resume() override;
 
  private:
-  friend class PowerMessageFilter;
-
   bool IsOnBatteryPowerImpl() override;
-
-  void OnPowerStateChange(bool on_battery_power);
-  void OnSuspend();
-  void OnResume();
-
   bool last_reported_battery_power_state_;
-  scoped_refptr<PowerMessageFilter> message_filter_;
+  mojo::Binding<device::mojom::PowerMonitorClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorBroadcastSource);
 };

@@ -1373,6 +1373,7 @@ test("content_unittests") {
     "//device/bluetooth:mocks",
     "//device/gamepad",
     "//device/gamepad:test_helpers",
+    "//device/power_monitor/public/interfaces",
     "//device/sensors/public/cpp",
     "//device/sensors/public/interfaces",
     "//gin",

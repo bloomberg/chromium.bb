@@ -90,6 +90,7 @@
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
+#include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging/push_messaging_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
@@ -682,7 +683,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       gpu_observer_registered_(false),
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
-      power_monitor_broadcaster_(this),
 #if defined(ENABLE_WEBRTC)
       webrtc_eventlog_host_(id_),
 #endif
@@ -903,8 +903,6 @@ bool RenderProcessHostImpl::Init() {
     gpu_observer_registered_ = true;
     ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
   }
-
-  power_monitor_broadcaster_.Init();
 
   is_initialized_ = true;
   init_time_ = base::TimeTicks::Now();
@@ -1254,6 +1252,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&device::TimeZoneMonitor::Bind,
                  base::Unretained(
                      BrowserMainLoop::GetInstance()->time_zone_monitor())));
+
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&PowerMonitorMessageBroadcaster::Create));
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);

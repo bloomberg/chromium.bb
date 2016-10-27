@@ -158,8 +158,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   std::unique_ptr<ChildProcessLauncher> child_process_;
 
-  PowerMonitorMessageBroadcaster power_monitor_message_broadcaster_;
-
 #if defined(OS_WIN)
   // Watches to see if the child process exits before the IPC channel has
   // been connected. Thereafter, its exit is determined by an error on the
