@@ -1635,8 +1635,9 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   // Add more buttons until OverflowBubble is scrollable and it has 3 invisible
   // items.
   while (bubble_view_api.GetContentsSize().width() <
-         (bubble_view->GetContentsBounds().width() + 3 * item_width))
+         (bubble_view->GetContentsBounds().width() + 3 * item_width)) {
     AddAppShortcut();
+  }
 
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
@@ -1654,8 +1655,9 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   EXPECT_TRUE(drag_reinsert_bounds.Contains(first_point));
   EXPECT_FALSE(drag_reinsert_bounds.Contains(last_point));
 
-  // Scrolls sufficiently to show last item.
-  bubble_view_api.ScrollByXOffset(3 * item_width);
+  // Scroll sufficiently to completely show last item.
+  bubble_view_api.ScrollByXOffset(bubble_view_api.GetContentsSize().width() -
+                                  bubble_view->GetContentsBounds().width());
   drag_reinsert_bounds =
       test_for_overflow_view.GetBoundsForDragInsertInScreen();
   first_point = first_button->GetBoundsInScreen().CenterPoint();
