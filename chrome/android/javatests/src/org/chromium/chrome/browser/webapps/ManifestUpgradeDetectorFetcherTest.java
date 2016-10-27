@@ -22,16 +22,23 @@ import org.chromium.net.test.EmbeddedTestServer;
  */
 public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTestBase {
 
-    // Data for {@link PAGE_URL1}'s Web Manifest.
     private static final String WEB_MANIFEST_URL1 = "/chrome/test/data/banners/manifest.json";
+    // Name for Web Manifest at {@link WEB_MANIFEST_URL1}.
     private static final String WEB_MANIFEST_NAME1 = "Manifest test app";
 
-    // Data for {@link PAGE_URL2}'s Web Manifest.
     private static final String WEB_MANIFEST_URL2 =
             "/chrome/test/data/banners/manifest_short_name_only.json";
+    // Name for Web Manifest at {@link WEB_MANIFEST_URL2}.
     private static final String WEB_MANIFEST_NAME2 = "Manifest";
 
-    // Scope for {@link PAGE_URL1} and {@link PAGE_URL2}.
+    // Web Manifest with Murmur2 icon hash with value > {@link Long#MAX_VALUE}
+    private static final String WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH =
+            "/chrome/test/data/banners/manifest_long_icon_murmur2_hash.json";
+    // Murmur2 hash of icon at {@link WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH}.
+    private static final String LONG_ICON_MURMUR2_HASH = "17165487231247065090";
+
+    // Scope for {@link WEB_MANIFEST_URL1}, {@link WEB_MANIFEST_URL2} and
+    // {@link WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH}.
     private static final String WEB_MANIFEST_SCOPE = "/chrome/test/data";
 
     private EmbeddedTestServer mTestServer;
@@ -42,6 +49,7 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
     private static class CallbackWaiter
             extends CallbackHelper implements ManifestUpgradeDetectorFetcher.Callback {
         private String mName;
+        private String mIconMurmur2Hash;
 
         @Override
         public void onGotManifestData(String startUrl, String scopeUrl, String name,
@@ -49,11 +57,16 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
                 int displayMode, int orientation, long themeColor, long backgroundColor) {
             assertNull(mName);
             mName = name;
+            mIconMurmur2Hash = iconMurmur2Hash;
             notifyCalled();
         }
 
         public String name() {
             return mName;
+        }
+
+        public String iconMurmur2Hash() {
+            return mIconMurmur2Hash;
         }
     }
 
@@ -129,5 +142,22 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
         waiter.waitForCallback(0);
 
         assertEquals(WEB_MANIFEST_NAME2, waiter.name());
+    }
+
+    /**
+     * Test that large icon murmur2 hashes are correctly plumbed to Java. The hash can take on
+     * values up to 2^64 - 1 which is greater than {@link Long#MAX_VALUE}.
+     */
+    @MediumTest
+    @Feature({"Webapps"})
+    public void testLargeIconMurmur2Hash() throws Exception {
+        CallbackWaiter waiter = new CallbackWaiter();
+        startManifestUpgradeDetectorFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
+                mTestServer.getURL(WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH), waiter);
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH);
+        waiter.waitForCallback(0);
+
+        assertEquals(LONG_ICON_MURMUR2_HASH, waiter.iconMurmur2Hash());
     }
 }

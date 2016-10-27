@@ -90,4 +90,18 @@ public class WebApkMetaDataUtilsTest {
                 WebApkTestHelper.WEBAPK_PACKAGE_NAME, passedInStartUrl, 0);
         Assert.assertEquals(passedInStartUrl, webappInfo.uri().toString());
     }
+
+    /**
+     * WebApkIconHasher generates hashes with values [0, 2^64-1]. 2^64-1 is greater than
+     * {@link Long#MAX_VALUE}. Test that {@link #getIconMurmur2HashFromMetaData()} can read a hash
+     * with value 2^64 - 1.
+     */
+    @Test
+    public void testGetIconMurmur2HashFromMetaData() {
+        String hash = "18446744073709551615"; // 2^64 - 1
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.ICON_MURMUR2_HASH, hash + "L");
+        String extractedHash = WebApkMetaDataUtils.getIconMurmur2HashFromMetaData(bundle);
+        Assert.assertEquals(hash, extractedHash);
+    }
 }

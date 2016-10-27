@@ -96,6 +96,22 @@ public class WebApkMetaDataUtils {
     }
 
     /**
+     * Extracts icon murmur2 hash from the WebAPK's meta data. Return value is a string because the
+     * hash can take values up to 2^64-1 which is greater than {@link Long#MAX_VALUE}.
+     * @param metaData WebAPK meta data to extract the hash from.
+     * @return The hash. An empty string if the hash could not be extracted.
+     */
+    public static String getIconMurmur2HashFromMetaData(Bundle metaData) {
+        String value = metaData.getString(WebApkMetaDataKeys.ICON_MURMUR2_HASH);
+
+        // The value should be terminated with 'L' to force the value to be a string.
+        if (value == null || !value.endsWith("L")) {
+            return "";
+        }
+        return value.substring(0, value.length() - 1);
+    }
+
+    /**
      * Returns the WebDisplayMode which matches {@link displayMode}.
      * @param displayMode One of https://www.w3.org/TR/appmanifest/#dfn-display-modes-values
      * @return The matching WebDisplayMode. {@link WebDisplayMode#Undefined} if there is no match.

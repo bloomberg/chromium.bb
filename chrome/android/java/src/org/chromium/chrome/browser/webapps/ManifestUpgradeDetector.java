@@ -115,8 +115,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         mManifestUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.WEB_MANIFEST_URL);
         mStartUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.START_URL);
         mIconUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.ICON_URL);
-        mIconMurmur2Hash = Long.toString(WebApkMetaDataUtils.getLongFromMetaData(
-                metadata, WebApkMetaDataKeys.ICON_MURMUR2_HASH, 0));
+        mIconMurmur2Hash = WebApkMetaDataUtils.getIconMurmur2HashFromMetaData(metadata);
     }
 
     /**
