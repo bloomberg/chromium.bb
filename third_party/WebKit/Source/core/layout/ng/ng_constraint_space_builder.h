@@ -16,10 +16,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   NGConstraintSpaceBuilder(NGWritingMode writing_mode);
 
   NGConstraintSpaceBuilder& SetContainerSize(NGLogicalSize container_size);
-  NGConstraintSpaceBuilder& SetFixedSize(bool fixed_inline, bool fixed_block);
-  NGConstraintSpaceBuilder& SetOverflowTriggersScrollbar(
-      bool inline_direction_triggers_scrollbar,
-      bool block_direction_triggers_scrollbar);
+
+  NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool is_fixed_size_inline);
+  NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool is_fixed_size_block);
+
+  NGConstraintSpaceBuilder& SetIsInlineDirectionTriggersScrollbar(
+      bool is_inline_direction_triggers_scrollbar);
+  NGConstraintSpaceBuilder& SetIsBlockDirectionTriggersScrollbar(
+      bool is_block_direction_triggers_scrollbar);
+
   NGConstraintSpaceBuilder& SetFragmentationType(NGFragmentationType);
   NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool is_new_fc);
 
@@ -40,10 +45,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   const unsigned writing_mode_ : 2;
 
   // mutable bit fields.
-  unsigned fixed_inline_ : 1;
-  unsigned fixed_block_ : 1;
-  unsigned inline_direction_triggers_scrollbar_ : 1;
-  unsigned block_direction_triggers_scrollbar_ : 1;
+  unsigned is_fixed_size_inline_ : 1;
+  unsigned is_fixed_size_block_ : 1;
+  unsigned is_inline_direction_triggers_scrollbar_ : 1;
+  unsigned is_block_direction_triggers_scrollbar_ : 1;
   unsigned fragmentation_type_ : 2;
   unsigned is_new_fc_ : 1;
 };
