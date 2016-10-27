@@ -1,4 +1,11 @@
 include_rules = [
+  "+cc/surfaces/surface_id.h",
+  "+cc/surfaces/surface_sequence.h",
+  "+mojo/common",
+  "+mojo/public/cpp/bindings",
+  "+services/service_manager/public/cpp",
+  "+services/service_manager/public/interfaces",
+  "+services/ui/public/interfaces",
   "+skia/ext",
   "+third_party/skia",
   "+ui/base",

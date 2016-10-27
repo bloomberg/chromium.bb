@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -29,11 +31,13 @@ bool IsRotationPortrait(display::Display::Rotation rotation) {
 }  // namespace
 
 // static
-TestScreen* TestScreen::Create(const gfx::Size& size) {
+TestScreen* TestScreen::Create(const gfx::Size& size,
+                               WindowTreeClient* window_tree_client) {
   const gfx::Size kDefaultSize(800, 600);
   // Use (0,0) because the desktop aura tests are executed in
   // native environment where the display's origin is (0,0).
-  return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size));
+  return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size),
+                        window_tree_client);
 }
 
 TestScreen::~TestScreen() {
@@ -41,7 +45,12 @@ TestScreen::~TestScreen() {
 
 WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
   DCHECK(!host_);
-  host_ = WindowTreeHost::Create(gfx::Rect(display_.GetSizeInPixel()));
+  if (window_tree_client_) {
+    host_ = WindowTreeClientPrivate(window_tree_client_)
+                .CallWmNewDisplayAdded(display_);
+  } else {
+    host_ = WindowTreeHost::Create(gfx::Rect(display_.GetSizeInPixel()));
+  }
   // Some tests don't correctly manage window focus/activation states.
   // Makes sure InputMethod is default focused so that IME basics can work.
   host_->GetInputMethod()->OnFocus();
@@ -167,9 +176,9 @@ void TestScreen::AddObserver(display::DisplayObserver* observer) {}
 
 void TestScreen::RemoveObserver(display::DisplayObserver* observer) {}
 
-TestScreen::TestScreen(const gfx::Rect& screen_bounds)
-    : host_(NULL),
-      ui_scale_(1.0f) {
+TestScreen::TestScreen(const gfx::Rect& screen_bounds,
+                       WindowTreeClient* window_tree_client)
+    : host_(nullptr), ui_scale_(1.0f), window_tree_client_(window_tree_client) {
   static int64_t synthesized_display_id = 2000;
   display_.set_id(synthesized_display_id++);
   display_.SetScaleAndBounds(1.0f, screen_bounds);

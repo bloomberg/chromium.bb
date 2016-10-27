@@ -2,31 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
-#define UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
+#ifndef UI_AURA_MUS_INPUT_METHOD_MUS_H_
+#define UI_AURA_MUS_INPUT_METHOD_MUS_H_
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
+#include "ui/aura/aura_export.h"
 #include "ui/base/ime/input_method_base.h"
-#include "ui/views/mus/mus_export.h"
 
 namespace ui {
-class Window;
 namespace mojom {
 enum class EventResult;
-}  // namespace mojom
-}  // namespace ui
+}
+}
 
-namespace views {
+namespace aura {
 
 class TextInputClientImpl;
+class Window;
 
-class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
+class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
  public:
-  InputMethodMus(ui::internal::InputMethodDelegate* delegate,
-                 ui::Window* window);
+  InputMethodMus(ui::internal::InputMethodDelegate* delegate, Window* window);
   ~InputMethodMus() override;
 
   void Init(service_manager::Connector* connector);
@@ -63,7 +62,7 @@ class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
 
   // The toplevel window which is not owned by this class. This may be null
   // for tests.
-  ui::Window* window_;
+  Window* window_;
 
   ui::mojom::IMEServerPtr ime_server_;
   ui::mojom::InputMethodPtr input_method_;
@@ -72,6 +71,6 @@ class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
   DISALLOW_COPY_AND_ASSIGN(InputMethodMus);
 };
 
-}  // namespace views
+}  // namespace aura
 
-#endif  // UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
+#endif  // UI_AURA_MUS_INPUT_METHOD_MUS_H_

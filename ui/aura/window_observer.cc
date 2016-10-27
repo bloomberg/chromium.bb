@@ -26,4 +26,6 @@ void WindowObserver::OnUnobservingWindow(aura::Window* window) {
     observing_--;
 }
 
+void WindowObserver::OnEmbeddedAppDisconnected(Window* window) {}
+
 }  // namespace aura

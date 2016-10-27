@@ -29,6 +29,10 @@ class EnvTestHelper {
     env_->is_touch_down_ = false;
   }
 
+  void SetWindowPortFactory(const Env::WindowPortFactory& factory) {
+    env_->window_port_factory_ = factory;
+  }
+
  private:
   Env* env_;
 

@@ -126,6 +126,10 @@ class AURA_EXPORT WindowObserver {
   // Called when the window title has changed.
   virtual void OnWindowTitleChanged(Window* window) {}
 
+  // Called when the app embedded in |window| disconnects (is no longer
+  // embedded).
+  virtual void OnEmbeddedAppDisconnected(Window* window);
+
  protected:
   virtual ~WindowObserver();
 

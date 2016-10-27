@@ -9,16 +9,29 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/mus/window_manager_delegate.h"
+#include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/test/aura_test_helper.h"
+
+namespace ui {
+namespace mojom {
+class WindowTreeClient;
+}
+}
 
 namespace aura {
 class Window;
 class WindowDelegate;
+class WindowManagerDelegate;
+class WindowTreeClientDelegate;
+
 namespace test {
 
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
-class AuraTestBase : public testing::Test {
+class AuraTestBase : public testing::Test,
+                     public WindowTreeClientDelegate,
+                     public WindowManagerDelegate {
  public:
   AuraTestBase();
   ~AuraTestBase() override;
@@ -32,6 +45,19 @@ class AuraTestBase : public testing::Test {
                                    aura::WindowDelegate* delegate);
 
  protected:
+  void set_window_manager_delegate(
+      WindowManagerDelegate* window_manager_delegate) {
+    window_manager_delegate_ = window_manager_delegate;
+  }
+
+  void set_window_tree_client_delegate(
+      WindowTreeClientDelegate* window_tree_client_delegate) {
+    window_tree_client_delegate_ = window_tree_client_delegate;
+  }
+
+  // Turns on mus. Must be called before SetUp().
+  void EnableMus();
+
   void RunAllPendingInMessageLoop();
 
   void ParentWindow(Window* window);
@@ -45,10 +71,58 @@ class AuraTestBase : public testing::Test {
   ui::EventProcessor* event_processor() { return helper_->event_processor(); }
   TestScreen* test_screen() { return helper_->test_screen(); }
 
+  TestWindowTree* window_tree() { return helper_->window_tree(); }
+  WindowTreeClient* window_tree_client_impl() {
+    return helper_->window_tree_client();
+  }
+  ui::mojom::WindowTreeClient* window_tree_client();
+
+  // Resets the PropertyConverter.
+  void SetPropertyConverter(std::unique_ptr<PropertyConverter> helper);
+
+  // WindowTreeClientDelegate:
+  void OnEmbed(Window* root) override;
+  void OnUnembed(Window* root) override;
+  void OnEmbedRootDestroyed(Window* root) override;
+  void OnLostConnection(WindowTreeClient* client) override;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              Window* target) override;
+
+  // WindowManagerDelegate:
+  void SetWindowManagerClient(WindowManagerClient* client) override;
+  bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override;
+  bool OnWmSetProperty(
+      Window* window,
+      const std::string& name,
+      std::unique_ptr<std::vector<uint8_t>>* new_data) override;
+  Window* OnWmCreateTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties) override;
+  void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
+                                  bool janky) override;
+  void OnWmNewDisplay(Window* window, const display::Display& display) override;
+  void OnWmDisplayRemoved(Window* window) override;
+  void OnWmDisplayModified(const display::Display& display) override;
+  ui::mojom::EventResult OnAccelerator(uint32_t id,
+                                       const ui::Event& event) override;
+  void OnWmPerformMoveLoop(Window* window,
+                           ui::mojom::MoveLoopSource source,
+                           const gfx::Point& cursor_location,
+                           const base::Callback<void(bool)>& on_done) override;
+  void OnWmCancelMoveLoop(Window* window) override;
+  client::FocusClient* GetFocusClient() override;
+  client::CaptureClient* GetCaptureClient() override;
+  PropertyConverter* GetPropertyConverter() override;
+
  private:
-  bool setup_called_;
-  bool teardown_called_;
+  // Only used for mus. Both are are initialized to this, but may be reset.
+  WindowManagerDelegate* window_manager_delegate_;
+  WindowTreeClientDelegate* window_tree_client_delegate_;
+
+  bool use_mus_ = false;
+  bool setup_called_ = false;
+  bool teardown_called_ = false;
   base::MessageLoopForUI message_loop_;
+  std::unique_ptr<PropertyConverter> property_converter_;
   std::unique_ptr<AuraTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);

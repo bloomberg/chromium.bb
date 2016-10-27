@@ -4,14 +4,20 @@
 
 #include "ui/aura/test/aura_test_helper.h"
 
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
+#include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/test/mus/test_window_tree.h"
+#include "ui/aura/test/mus/test_window_tree_client_setup.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_parenting_client.h"
@@ -53,11 +59,27 @@ AuraTestHelper::~AuraTestHelper() {
       << "AuraTestHelper::TearDown() never called.";
 }
 
+void AuraTestHelper::EnableMus(WindowTreeClientDelegate* window_tree_delegate,
+                               WindowManagerDelegate* window_manager_delegate) {
+  DCHECK(!setup_called_);
+  use_mus_ = true;
+  window_tree_delegate_ = window_tree_delegate;
+  window_manager_delegate_ = window_manager_delegate;
+}
+
 void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   setup_called_ = true;
 
+  // Needs to be before creating WindowTreeClient.
+  focus_client_ = base::MakeUnique<TestFocusClient>();
+  capture_client_ = base::MakeUnique<client::DefaultCaptureClient>();
+  Env::WindowPortFactory window_impl_factory;
+  if (use_mus_)
+    window_impl_factory = InitMus();
   if (!Env::GetInstanceDontCreate())
-    env_ = aura::Env::CreateInstance();
+    env_ = aura::Env::CreateInstance(window_impl_factory);
+  else if (use_mus_)
+    EnvTestHelper(Env::GetInstance()).SetWindowPortFactory(window_impl_factory);
   Env::GetInstance()->set_context_factory(context_factory);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
@@ -70,29 +92,29 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
                              : gfx::Size(800, 600));
+  // TODO(sky): creating the screen and host should not happen for mus.
   test_screen_.reset(TestScreen::Create(host_size));
   if (!screen)
     display::Screen::SetScreenInstance(test_screen_.get());
   host_.reset(test_screen_->CreateHostForPrimaryDisplay());
 
-  focus_client_.reset(new TestFocusClient);
   client::SetFocusClient(root_window(), focus_client_.get());
+  client::SetCaptureClient(root_window(), capture_client());
   parenting_client_.reset(new TestWindowParentingClient(root_window()));
-  capture_client_ = base::MakeUnique<client::DefaultCaptureClient>();
-  client::SetCaptureClient(host_->window(), capture_client_.get());
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.
   host()->SetBounds(gfx::Rect(host_size));
+
+  if (use_mus_)
+    window_tree()->AckAllChanges();
 }
 
 void AuraTestHelper::TearDown() {
   teardown_called_ = true;
   parenting_client_.reset();
-  client::SetCaptureClient(host_->window(), nullptr);
-  capture_client_.reset();
-  focus_client_.reset();
   client::SetFocusClient(root_window(), nullptr);
+  client::SetCaptureClient(root_window(), nullptr);
   host_.reset();
   ui::GestureRecognizer::Reset();
   if (display::Screen::GetScreen() == test_screen_.get())
@@ -103,9 +125,18 @@ void AuraTestHelper::TearDown() {
   ui::test::ResetXCursorCache();
 #endif
 
+  window_tree_client_setup_.reset();
+  focus_client_.reset();
+  capture_client_.reset();
+
   ui::ShutdownInputMethodForTesting();
 
-  env_.reset();
+  if (env_) {
+    env_.reset();
+  } else if (use_mus_) {
+    EnvTestHelper(Env::GetInstance())
+        .SetWindowPortFactory(Env::WindowPortFactory());
+  }
 }
 
 void AuraTestHelper::RunAllPendingInMessageLoop() {
@@ -113,6 +144,31 @@ void AuraTestHelper::RunAllPendingInMessageLoop() {
   //              use run_loop.QuitClosure().
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
+}
+
+TestWindowTree* AuraTestHelper::window_tree() {
+  return window_tree_client_setup_->window_tree();
+}
+
+WindowTreeClient* AuraTestHelper::window_tree_client() {
+  return window_tree_client_setup_->window_tree_client();
+}
+
+client::CaptureClient* AuraTestHelper::capture_client() {
+  return capture_client_.get();
+}
+
+Env::WindowPortFactory AuraTestHelper::InitMus() {
+  window_tree_client_setup_ = base::MakeUnique<TestWindowTreeClientSetup>();
+  window_tree_client_setup_->InitForWindowManager(window_tree_delegate_,
+                                                  window_manager_delegate_);
+  return base::Bind(&AuraTestHelper::CreateWindowPortMus,
+                    base::Unretained(this));
+}
+
+std::unique_ptr<WindowPort> AuraTestHelper::CreateWindowPortMus(
+    Window* window) {
+  return base::MakeUnique<WindowPortMus>(window_tree_client());
 }
 
 }  // namespace test
