@@ -5,6 +5,7 @@
 #include "google_apis/gaia/account_tracker.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -28,7 +29,7 @@ AccountTracker::~AccountTracker() {
 
 void AccountTracker::Shutdown() {
   shutdown_called_ = true;
-  base::STLDeleteValues(&user_info_requests_);
+  user_info_requests_.clear();
   identity_provider_->GetTokenService()->RemoveObserver(this);
   identity_provider_->RemoveObserver(this);
 }
@@ -226,7 +227,7 @@ void AccountTracker::StopTrackingAccount(const std::string account_key) {
   }
 
   if (base::ContainsKey(user_info_requests_, account_key))
-    DeleteFetcher(user_info_requests_[account_key]);
+    DeleteFetcher(user_info_requests_[account_key].get());
 }
 
 void AccountTracker::StopTrackingAllAccounts() {
@@ -248,7 +249,7 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 AccountTracker::StartFetchingUserInfo 1"));
 
-    DeleteFetcher(user_info_requests_[account_key]);
+    DeleteFetcher(user_info_requests_[account_key].get());
   }
 
   DVLOG(1) << "StartFetching " << account_key;
@@ -263,7 +264,7 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
                            request_context_getter_.get(),
                            this,
                            account_key);
-  user_info_requests_[account_key] = fetcher;
+  user_info_requests_[account_key] = base::WrapUnique(fetcher);
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -300,9 +301,8 @@ void AccountTracker::DeleteFetcher(AccountIdFetcher* fetcher) {
   DVLOG(1) << "DeleteFetcher " << fetcher->account_key();
   const std::string& account_key = fetcher->account_key();
   DCHECK(base::ContainsKey(user_info_requests_, account_key));
-  DCHECK_EQ(fetcher, user_info_requests_[account_key]);
+  DCHECK_EQ(fetcher, user_info_requests_[account_key].get());
   user_info_requests_.erase(account_key);
-  delete fetcher;
 }
 
 AccountIdFetcher::AccountIdFetcher(
