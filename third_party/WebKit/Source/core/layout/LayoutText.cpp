@@ -166,7 +166,6 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
   if (node && node->isDocumentNode())
     setDocumentForAnonymous(toDocument(node));
 
-  m_canUseSimpleFontCodePath = computeCanUseSimpleFontCodePath();
   setIsText();
 
   view()->frameView()->incrementVisuallyNonEmptyCharacterCount(m_text.length());
@@ -1622,8 +1621,6 @@ void LayoutText::setTextInternal(PassRefPtr<StringImpl> text) {
 
   ASSERT(m_text);
   ASSERT(!isBR() || (textLength() == 1 && m_text[0] == newlineCharacter));
-
-  m_canUseSimpleFontCodePath = computeCanUseSimpleFontCodePath();
 }
 
 void LayoutText::secureText(UChar mask) {
@@ -1917,10 +1914,6 @@ unsigned LayoutText::resolvedTextLength() const {
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
     len += box->len();
   return len;
-}
-
-bool LayoutText::computeCanUseSimpleFontCodePath() const {
-  return m_text.is8Bit();
 }
 
 #if ENABLE(ASSERT)

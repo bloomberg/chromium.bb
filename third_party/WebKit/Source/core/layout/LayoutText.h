@@ -206,10 +206,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool isAllCollapsibleWhitespace() const;
   bool isRenderedCharacter(int offsetInNode) const;
 
-  // TODO(eae): Rename and change to only handle the word measurements use
-  // case once the simple code path has been removed. crbug.com/404597
-  bool canUseSimpleFontCodePath() const { return m_canUseSimpleFontCodePath; }
-
   void removeAndDestroyTextBoxes();
 
   PassRefPtr<AbstractInlineTextBox> firstAbstractInlineTextBox();
@@ -244,8 +240,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
       float leadWidth,
       HashSet<const SimpleFontData*>& fallbackFonts,
       FloatRect& glyphBounds);
-
-  bool computeCanUseSimpleFontCodePath() const;
 
   // Make length() private so that callers that have a LayoutText*
   // will use the more efficient textLength() instead, while
@@ -303,7 +297,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // inserted or removed).
   bool m_linesDirty : 1;
   bool m_containsReversedText : 1;
-  bool m_canUseSimpleFontCodePath : 1;
   mutable bool m_knownToHaveNoOverflowAndNoFallbackFonts : 1;
 
   float m_minWidth;

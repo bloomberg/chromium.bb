@@ -76,17 +76,10 @@ void LayoutAnalyzer::push(const LayoutObject& o) {
     increment(LayoutInlineObjectsThatAlwaysCreateLineBoxes);
   if (o.isText()) {
     const LayoutText& t = *toLayoutText(&o);
-    if (t.canUseSimpleFontCodePath()) {
-      increment(LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath);
-      increment(
-          CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
-          t.textLength());
-    } else {
-      increment(LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath);
-      increment(
-          CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
-          t.textLength());
-    }
+    increment(LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath);
+    increment(
+        CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
+        t.textLength());
   }
 
   ++m_depth;
