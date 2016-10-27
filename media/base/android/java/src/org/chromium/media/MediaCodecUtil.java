@@ -23,6 +23,7 @@ import java.util.Locale;
  * A collection of MediaCodec utility functions.
  */
 @JNINamespace("media")
+@MainDex
 class MediaCodecUtil {
     private static final String TAG = "cr_MediaCodecUtil";
 
@@ -33,14 +34,12 @@ class MediaCodecUtil {
     /**
      * Class to pass parameters from createDecoder()
      */
-    @MainDex
     public static class CodecCreationInfo {
         public MediaCodec mediaCodec = null;
         public boolean supportsAdaptivePlayback = false;
         public BitrateAdjustmentTypes bitrateAdjustmentType = BitrateAdjustmentTypes.NO_ADJUSTMENT;
     }
 
-    @MainDex
     public static final class MimeTypes {
         public static final String VIDEO_MP4 = "video/mp4";
         public static final String VIDEO_WEBM = "video/webm";
@@ -51,7 +50,6 @@ class MediaCodecUtil {
     }
 
     // Type of bitrate adjustment for video encoder.
-    @MainDex
     public enum BitrateAdjustmentTypes {
         // No adjustment - video encoder has no known bitrate problem.
         NO_ADJUSTMENT,
@@ -65,7 +63,6 @@ class MediaCodecUtil {
      * Class to abstract platform version API differences for interacting with
      * the MediaCodecList.
      */
-    @MainDex
     private static class MediaCodecListHelper {
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         public MediaCodecListHelper() {
