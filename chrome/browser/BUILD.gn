@@ -1931,6 +1931,8 @@ split_static_library("browser") {
       "renderer_host/pepper/pepper_isolated_file_system_message_filter.h",
       "renderer_host/pepper/pepper_output_protection_message_filter.cc",
       "renderer_host/pepper/pepper_output_protection_message_filter.h",
+      "renderer_host/pepper/pepper_platform_verification_message_filter.cc",
+      "renderer_host/pepper/pepper_platform_verification_message_filter.h",
     ]
     deps += [
       "//components/pdf/browser",
@@ -2150,11 +2152,6 @@ split_static_library("browser") {
       "metrics/perf/windowed_incognito_observer.h",
       "policy/default_geolocation_policy_handler.cc",
       "policy/default_geolocation_policy_handler.h",
-
-      # This is technically also dependent on enable_plugins but we don"t
-      # support ChromeOS with enable_plugins==0.
-      "renderer_host/pepper/pepper_platform_verification_message_filter.cc",
-      "renderer_host/pepper/pepper_platform_verification_message_filter.h",
     ]
     deps += [ "//chrome/browser/chromeos" ]
     public_deps += [

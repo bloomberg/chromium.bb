@@ -41,6 +41,8 @@ var EXTERNAL_CLEARKEY_RENEWAL = 'org.chromium.externalclearkey.renewal';
 var FILE_IO_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.fileiotest';
 var OUTPUT_PROTECTION_TEST_KEYSYSTEM =
     'org.chromium.externalclearkey.outputprotectiontest';
+var PLATFORM_VERIFICATION_TEST_KEYSYSTEM =
+    'org.chromium.externalclearkey.platformverificationtest';
 
 // Key system name:value map to show on the document page.
 var KEY_SYSTEMS = {

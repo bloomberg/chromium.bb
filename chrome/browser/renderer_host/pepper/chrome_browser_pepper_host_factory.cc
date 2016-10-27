@@ -51,7 +51,6 @@ ChromeBrowserPepperHostFactory::CreateResourceHost(
         return std::unique_ptr<ResourceHost>(new MessageFilterHost(
             host_->GetPpapiHost(), instance, resource, broker_filter));
       }
-#if defined(OS_CHROMEOS)
       case PpapiHostMsg_PlatformVerification_Create::ID: {
         scoped_refptr<ResourceMessageFilter> pv_filter(
             new chrome::PepperPlatformVerificationMessageFilter(host_,
@@ -59,7 +58,6 @@ ChromeBrowserPepperHostFactory::CreateResourceHost(
         return std::unique_ptr<ResourceHost>(new MessageFilterHost(
             host_->GetPpapiHost(), instance, resource, pv_filter));
       }
-#endif
       case PpapiHostMsg_OutputProtection_Create::ID: {
         scoped_refptr<ResourceMessageFilter> output_protection_filter(
             new chrome::PepperOutputProtectionMessageFilter(host_, instance));

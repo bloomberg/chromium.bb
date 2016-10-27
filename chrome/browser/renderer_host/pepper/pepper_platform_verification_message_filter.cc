@@ -15,14 +15,13 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-using chromeos::attestation::PlatformVerificationFlow;
-
 namespace chrome {
 
 PepperPlatformVerificationMessageFilter::
     PepperPlatformVerificationMessageFilter(content::BrowserPpapiHost* host,
                                             PP_Instance instance)
     : render_process_id_(0), render_frame_id_(0) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   host->GetRenderFrameIDsForInstance(
       instance, &render_process_id_, &render_frame_id_);
 }
@@ -57,35 +56,35 @@ int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
     const std::vector<uint8_t>& challenge) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Ensure the RenderFrameHost is still alive.
+#if defined(OS_CHROMEOS)
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  if (!rfh) {
-    ppapi::host::ReplyMessageContext reply_context =
-        context->MakeReplyMessageContext();
-    reply_context.params.set_result(PP_ERROR_FAILED);
-    SendReply(
-        reply_context,
-        PpapiHostMsg_PlatformVerification_ChallengePlatformReply(
-            std::vector<uint8_t>(), std::vector<uint8_t>(), std::string()));
+  if (rfh) {
+    if (!pv_)
+      pv_ = new chromeos::attestation::PlatformVerificationFlow();
+
+    pv_->ChallengePlatformKey(
+        content::WebContents::FromRenderFrameHost(rfh), service_id,
+        std::string(challenge.begin(), challenge.end()),
+        base::Bind(
+            &PepperPlatformVerificationMessageFilter::ChallengePlatformCallback,
+            this, context->MakeReplyMessageContext()));
     return PP_OK_COMPLETIONPENDING;
   }
+#else
+  NOTREACHED() << "Challenging platform is only supported on ChromeOS.";
+#endif
 
-  if (!pv_.get())
-    pv_ = new PlatformVerificationFlow();
-
-  pv_->ChallengePlatformKey(
-      content::WebContents::FromRenderFrameHost(rfh),
-      service_id,
-      std::string(challenge.begin(), challenge.end()),
-      base::Bind(
-          &PepperPlatformVerificationMessageFilter::ChallengePlatformCallback,
-          this,
-          context->MakeReplyMessageContext()));
-
+  ppapi::host::ReplyMessageContext reply_context =
+      context->MakeReplyMessageContext();
+  reply_context.params.set_result(PP_ERROR_FAILED);
+  SendReply(reply_context,
+            PpapiHostMsg_PlatformVerification_ChallengePlatformReply(
+                std::vector<uint8_t>(), std::vector<uint8_t>(), std::string()));
   return PP_OK_COMPLETIONPENDING;
 }
 
+#if defined(OS_CHROMEOS)
 void PepperPlatformVerificationMessageFilter::ChallengePlatformCallback(
     ppapi::host::ReplyMessageContext reply_context,
     chromeos::attestation::PlatformVerificationFlow::Result challenge_result,
@@ -94,7 +93,8 @@ void PepperPlatformVerificationMessageFilter::ChallengePlatformCallback(
     const std::string& platform_key_certificate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (challenge_result == PlatformVerificationFlow::SUCCESS) {
+  if (challenge_result ==
+      chromeos::attestation::PlatformVerificationFlow::SUCCESS) {
     reply_context.params.set_result(PP_OK);
   } else {
     reply_context.params.set_result(PP_ERROR_FAILED);
@@ -109,5 +109,6 @@ void PepperPlatformVerificationMessageFilter::ChallengePlatformCallback(
                 std::vector<uint8_t>(signature.begin(), signature.end()),
                 platform_key_certificate));
 }
+#endif
 
 }  // namespace chrome

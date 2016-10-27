@@ -21,13 +21,10 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/private/content_decryptor_private.h"
 #include "ppapi/cpp/private/output_protection_private.h"
+#include "ppapi/cpp/private/platform_verification.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
-
-#if defined(OS_CHROMEOS)
-#include "ppapi/cpp/private/platform_verification.h"
-#endif
 
 namespace media {
 
@@ -263,9 +260,8 @@ class PpapiCdmAdapter : public pp::Instance,
   bool uma_for_output_protection_query_reported_;
   bool uma_for_output_protection_positive_result_reported_;
 
-#if defined(OS_CHROMEOS)
+  // TODO(jrummell): Use this to implement host challenging.
   pp::PlatformVerification platform_verification_;
-#endif
 
   PpbBufferAllocator allocator_;
   pp::CompletionCallbackFactory<PpapiCdmAdapter> callback_factory_;

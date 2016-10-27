@@ -326,9 +326,7 @@ PpapiCdmAdapter::PpapiCdmAdapter(PP_Instance instance, pp::Module* module)
       query_output_protection_in_progress_(false),
       uma_for_output_protection_query_reported_(false),
       uma_for_output_protection_positive_result_reported_(false),
-#if defined(OS_CHROMEOS)
       platform_verification_(this),
-#endif
       allocator_(this),
       cdm_(NULL),
       allow_distinctive_identifier_(false),

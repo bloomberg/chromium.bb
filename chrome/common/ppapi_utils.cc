@@ -92,6 +92,7 @@
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppb_platform_verification_private.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
@@ -107,10 +108,6 @@
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/thunk/thunk.h"
-
-#if defined(OS_CHROMEOS)
-#include "ppapi/c/private/ppb_platform_verification_private.h"
-#endif
 
 bool IsSupportedPepperInterface(const char* name) {
 // TODO(brettw) put these in a hash map for better performance.
