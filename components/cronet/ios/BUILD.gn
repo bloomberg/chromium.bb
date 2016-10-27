@@ -8,7 +8,6 @@ import("//build/config/mac/symbols.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
-import("//components/grpc_support/include/headers.gni")
 import("//testing/test.gni")
 import("//url/features.gni")
 
@@ -34,7 +33,6 @@ source_set("cronet_sources") {
   deps = [
     ":cronet_version_header",
     "//base:base",
-    "//components/grpc_support",
     "//components/metrics:metrics",
     "//components/metrics/proto:proto",
     "//components/prefs:prefs",
@@ -53,11 +51,13 @@ source_set("cronet_sources") {
     "../url_request_context_config.h",
     "Cronet.h",
     "Cronet.mm",
+    "cronet_bidirectional_stream.cc",
+    "cronet_bidirectional_stream.h",
+    "cronet_c_for_grpc.cc",
+    "cronet_c_for_grpc.h",
     "cronet_environment.cc",
     "cronet_environment.h",
   ]
-
-  include_dirs = [ "//components/grpc_support/include" ]
 
   if (!use_platform_icu_alternatives) {
     deps += [ "//base:i18n" ]
@@ -148,17 +148,14 @@ ios_framework_bundle("cronet_framework") {
 
   libs = [ "UIKit.Framework" ]
 
-  include_dirs = [ "//components/grpc_support/include" ]
-
-  public_deps = [
-    "//components/grpc_support",
+  public_headers = [
+    "Cronet.h",
+    "cronet_c_for_grpc.h",
   ]
-
-  public_headers = [ "Cronet.h" ]
-  public_headers += grpc_public_headers
 
   sources = [
     "Cronet.h",
+    "cronet_c_for_grpc.h",
   ]
 
   configs -= [ "//build/config/compiler:default_symbols" ]

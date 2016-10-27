@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_GRPC_SUPPORT_BIDIRECTIONAL_STREAM_H_
-#define COMPONENTS_GRPC_SUPPORT_BIDIRECTIONAL_STREAM_H_
+#ifndef COMPONENTS_CRONET_IOS_CRONET_BIDIRECTIONAL_STREAM_H_
+#define COMPONENTS_CRONET_IOS_CRONET_BIDIRECTIONAL_STREAM_H_
 
 #include <memory>
 #include <vector>
@@ -13,14 +13,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "net/http/bidirectional_stream.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace net {
 class HttpRequestHeaders;
 class WrappedIOBuffer;
 }  // namespace net
 
-namespace grpc_support {
+namespace cronet {
+
+class CronetEnvironment;
 
 // An adapter to net::BidirectionalStream.
 // Created and configured from any thread. Start, ReadData, WriteData and
@@ -30,7 +31,7 @@ namespace grpc_support {
 // callbacks into the Delegate are done on the network thread.
 // The app is expected to initiate the next step like ReadData or Destroy.
 // Public methods can be called on any thread.
-class BidirectionalStream : public net::BidirectionalStream::Delegate {
+class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
  public:
   class Delegate {
    public:
@@ -52,9 +53,8 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
     virtual void OnCanceled() = 0;
   };
 
-  BidirectionalStream(net::URLRequestContextGetter* request_context_getter,
-                      Delegate* delegate);
-  ~BidirectionalStream() override;
+  CronetBidirectionalStream(CronetEnvironment* environment, Delegate* delegate);
+  ~CronetBidirectionalStream() override;
 
   // Disables automatic flushing of each buffer passed to WriteData().
   void disable_auto_flush(bool disable_auto_flush) {
@@ -119,7 +119,7 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
     // Stream is canceled.
     CANCELED,
     // Error has occured, stream is closed.
-    ERR,
+    ERROR,
     // Reading and writing are done, and the stream is closed successfully.
     SUCCESS,
     // Waiting for Flush() to be called.
@@ -187,21 +187,17 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
   void CancelOnNetworkThread();
   void DestroyOnNetworkThread();
 
-  bool IsOnNetworkThread();
-  void PostToNetworkThread(const tracked_objects::Location& from_here,
-                           const base::Closure& task);
-
   // Read state is tracking reading flow. Only accessed on network thread.
-  //                         | <--- READING <--- |
+  //                         / <--- READING <--- \
   //                         |                   |
-  //                         |                   |
+  //                         \                   /
   // NOT_STARTED -> STARTED --> WAITING_FOR_READ -> READING_DONE -> SUCCESS
   State read_state_;
 
   // Write state is tracking writing flow.  Only accessed on network thread.
-  //                         | <--- WRITING <---  |
+  //                         / <--- WRITING <---  \
   //                         |                    |
-  //                         |                    |
+  //                         \                    /
   // NOT_STARTED -> STARTED --> WAITING_FOR_FLUSH -> WRITING_DONE -> SUCCESS
   State write_state_;
 
@@ -211,7 +207,7 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
   bool disable_auto_flush_;
   bool delay_headers_until_flush_;
 
-  net::URLRequestContextGetter* const request_context_getter_;
+  CronetEnvironment* const environment_;
 
   scoped_refptr<net::WrappedIOBuffer> read_buffer_;
 
@@ -225,12 +221,12 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
   std::unique_ptr<net::BidirectionalStream> bidi_stream_;
   Delegate* delegate_;
 
-  base::WeakPtr<BidirectionalStream> weak_this_;
-  base::WeakPtrFactory<BidirectionalStream> weak_factory_;
+  base::WeakPtr<CronetBidirectionalStream> weak_this_;
+  base::WeakPtrFactory<CronetBidirectionalStream> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BidirectionalStream);
+  DISALLOW_COPY_AND_ASSIGN(CronetBidirectionalStream);
 };
 
-}  // namespace grpc_support
+}  // namespace cronet
 
-#endif  // COMPONENTS_GRPC_SUPPORT_BIDIRECTIONAL_STREAM_H_
+#endif  // COMPONENTS_CRONET_IOS_CRONET_BIDIRECTIONAL_STREAM_H_

@@ -96,6 +96,10 @@ class CronetURLRequestContextGetter : public net::URLRequestContextGetter {
 
 namespace cronet {
 
+bool CronetEnvironment::IsOnNetworkThread() {
+  return network_io_thread_->task_runner()->BelongsToCurrentThread();
+}
+
 void CronetEnvironment::PostToNetworkThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
