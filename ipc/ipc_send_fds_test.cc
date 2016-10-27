@@ -113,15 +113,13 @@ class MyChannelDescriptorListener : public MyChannelDescriptorListenerBase {
   unsigned num_fds_received_;
 };
 
-
-class IPCSendFdsTest : public IPCTestBase {
+class IPCSendFdsTest : public IPCChannelMojoTestBase {
  protected:
   void RunServer() {
     // Set up IPC channel and start client.
     MyChannelDescriptorListener listener(-1);
     CreateChannel(&listener);
     ASSERT_TRUE(ConnectChannel());
-    ASSERT_TRUE(StartClient());
 
     for (unsigned i = 0; i < kNumMessages; ++i) {
       IPC::Message* message =
@@ -151,33 +149,34 @@ TEST_F(IPCSendFdsTest, DescriptorTest) {
   RunServer();
 }
 
-int SendFdsClientCommon(const std::string& test_client_name,
-                        ino_t expected_inode_num) {
-  base::MessageLoopForIO main_message_loop;
-  MyChannelDescriptorListener listener(expected_inode_num);
+class SendFdsTestClientFixture : public IpcChannelMojoTestClient {
+ protected:
+  void SendFdsClientCommon(const std::string& test_client_name,
+                           ino_t expected_inode_num) {
+    MyChannelDescriptorListener listener(expected_inode_num);
 
-  // Set up IPC channel.
-  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName(test_client_name), &listener,
-      main_message_loop.task_runner()));
-  CHECK(channel->Connect());
+    // Set up IPC channel.
+    Connect(&listener);
 
-  // Run message loop.
-  base::RunLoop().Run();
+    // Run message loop.
+    base::RunLoop().Run();
 
-  // Verify that the message loop was exited due to getting the correct number
-  // of descriptors, and not because of the channel closing unexpectedly.
-  CHECK(listener.GotExpectedNumberOfDescriptors());
+    // Verify that the message loop was exited due to getting the correct number
+    // of descriptors, and not because of the channel closing unexpectedly.
+    EXPECT_TRUE(listener.GotExpectedNumberOfDescriptors());
 
-  return 0;
-}
+    Close();
+  }
+};
 
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendFdsClient) {
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
+    SendFdsClient,
+    SendFdsTestClientFixture) {
   struct stat st;
   int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);
   EXPECT_GE(IGNORE_EINTR(close(fd)), 0);
-  return SendFdsClientCommon("SendFdsClient", st.st_ino);
+  SendFdsClientCommon("SendFdsClient", st.st_ino);
 }
 
 #if defined(OS_MACOSX)
@@ -188,31 +187,29 @@ TEST_F(IPCSendFdsTest, DescriptorTestSandboxed) {
   RunServer();
 }
 
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendFdsSandboxedClient) {
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
+    SendFdsSandboxedClient,
+    SendFdsTestClientFixture) {
   struct stat st;
   const int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);
-  if (IGNORE_EINTR(close(fd)) < 0)
-    return -1;
+  ASSERT_LE(0, IGNORE_EINTR(close(fd)));
 
   // Enable the sandbox.
   char* error_buff = NULL;
   int error = sandbox::Seatbelt::Init(
       sandbox::Seatbelt::kProfilePureComputation, SANDBOX_NAMED, &error_buff);
-  bool success = (error == 0 && error_buff == NULL);
-  if (!success)
-    return -1;
+  ASSERT_EQ(0, error);
+  ASSERT_FALSE(error_buff);
 
   sandbox::Seatbelt::FreeError(error_buff);
 
   // Make sure sandbox is really enabled.
-  if (open(kDevZeroPath, O_RDONLY) != -1) {
-    LOG(ERROR) << "Sandbox wasn't properly enabled";
-    return -1;
-  }
+  ASSERT_EQ(-1, open(kDevZeroPath, O_RDONLY))
+      << "Sandbox wasn't properly enabled";
 
   // See if we can receive a file descriptor.
-  return SendFdsClientCommon("SendFdsSandboxedClient", st.st_ino);
+  SendFdsClientCommon("SendFdsSandboxedClient", st.st_ino);
 }
 #endif  // defined(OS_MACOSX)
 

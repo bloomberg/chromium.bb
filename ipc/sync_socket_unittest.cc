@@ -109,16 +109,12 @@ class SyncSocketServerListener : public IPC::Listener {
 
 // Runs the fuzzing server child mode. Returns when the preset number of
 // messages have been received.
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SyncSocketServerClient) {
-  base::MessageLoopForIO main_message_loop;
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(SyncSocketServerClient) {
   SyncSocketServerListener listener;
-  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("SyncSocketServerClient"), &listener,
-      main_message_loop.task_runner()));
-  EXPECT_TRUE(channel->Connect());
-  listener.Init(channel.get());
+  Connect(&listener);
+  listener.Init(channel());
   base::RunLoop().Run();
-  return 0;
+  Close();
 }
 
 // The SyncSocket client listener only processes one sort of message,
@@ -166,15 +162,13 @@ class SyncSocketClientListener : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(SyncSocketClientListener);
 };
 
-class SyncSocketTest : public IPCTestBase {
-};
+using SyncSocketTest = IPCChannelMojoTestBase;
 
 TEST_F(SyncSocketTest, SanityTest) {
   Init("SyncSocketServerClient");
 
   SyncSocketClientListener listener;
   CreateChannel(&listener);
-  ASSERT_TRUE(StartClient());
   // Create a pair of SyncSockets.
   base::SyncSocket pair[2];
   base::SyncSocket::CreatePair(&pair[0], &pair[1]);
