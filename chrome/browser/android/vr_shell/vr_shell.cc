@@ -383,7 +383,12 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   current_input_target_->ProcessUpdatedGesture(mouse_event);
 
   if (original_type == WebInputEvent::GestureTapDown || touch_pending_) {
-    touch_pending_ = false;
+    if (touch_pending_) {
+      touch_pending_ = false;
+      gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
+      gesture->timeStampSeconds =
+          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+    }
     gesture->type = WebInputEvent::GestureTapDown;
     gesture->data.tapDown.width = pixel_x;
     gesture->data.tapDown.height = pixel_y;
