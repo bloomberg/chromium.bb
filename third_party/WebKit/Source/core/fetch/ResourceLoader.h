@@ -54,7 +54,13 @@ class CORE_EXPORT ResourceLoader final
   void start(const ResourceRequest&,
              WebTaskRunner* loadingTaskRunner,
              bool defersLoading);
-  void restartForServiceWorkerFallback(const ResourceRequest&);
+
+  // This method is currently only used for service worker fallback request,
+  // other users should be careful not to break ResourceLoader state.
+  void restart(const ResourceRequest&,
+               WebTaskRunner* loadingTaskRunner,
+               bool defersLoading);
+
   void cancel();
 
   void setDefersLoading(bool);

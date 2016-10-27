@@ -1209,7 +1209,8 @@ void ResourceFetcher::didReceiveResponse(Resource* resource,
       // handled a request.
       request.setSkipServiceWorker(
           WebURLRequest::SkipServiceWorker::Controlling);
-      resource->loader()->restartForServiceWorkerFallback(request);
+      resource->loader()->restart(request, context().loadingTaskRunner(),
+                                  context().defersLoading());
       return;
     }
 
