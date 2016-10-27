@@ -814,12 +814,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
-     * Called when the user has sent the payment information to the website, which is now processing
-     * the payment.
+     * Called when the user has clicked on pay. The message is shown while the payment information
+     * is processed right until a confimation from the merchant is received.
      */
     public void showProcessingMessage() {
         assert mIsProcessingPayClicked;
         mIsProcessingPayClicked = false;
+
+        // The payment cannot be cancelled at that point, do not show a close button.
+        mCloseButton.setClickable(false);
+        mCloseButton.setVisibility(View.INVISIBLE);
+
         changeSpinnerVisibility(true);
         mDialog.show();
     }
