@@ -83,19 +83,21 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // unsafe from the following perspectives: Malware, Phishing, UwS.
     CHECK_BROWSE_URL = 0,
 
-    // This should always be the last value.
-    CHECK_MAX
+    // This represents the case when we're trying to determine if any of the
+    // URLs in a vector of URLs is unsafe for downloading binaries.
+    CHECK_DOWNLOAD_URLS = 1,
   };
 
   // The information we need to process a URL safety reputation request and
   // respond to the SafeBrowsing client that asked for it.
   // TODO(vakh): In its current form, it only includes information for
-  // |CheckBrowseUrl| method. Extend it to serve other methods on |client|.
+  // |CheckBrowseUrl| and |CheckDownloadUrl| methods. Extend it to serve other
+  // methods on |client|.
   struct PendingCheck {
     PendingCheck(Client* client,
                  ClientCallbackType client_callback_type,
                  const StoresToCheck& stores_to_check,
-                 const GURL& url);
+                 const std::vector<GURL>& urls);
 
     ~PendingCheck();
 
@@ -104,7 +106,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
     // Determines which funtion from the |client| needs to be called once we
     // know whether the URL in |url| is safe or unsafe.
-    ClientCallbackType client_callback_type;
+    const ClientCallbackType client_callback_type;
 
     // The threat verdict for the URL being checked.
     SBThreatType result_threat_type;
@@ -115,10 +117,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     base::TimeTicks full_hash_check_start;
 
     // The SafeBrowsing lists to check hash prefixes in.
-    StoresToCheck stores_to_check;
+    const StoresToCheck stores_to_check;
 
-    // The URL that is being checked for being unsafe.
-    GURL url;
+    // The URLs that are being checked for being unsafe.
+    const std::vector<GURL> urls;
 
     // The metadata associated with the full hash of the severest match found
     // for that URL.
@@ -138,7 +140,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // The set of clients awaiting a full hash response. It is used for tracking
   // which clients have cancelled their outstanding request.
-  typedef std::unordered_set<Client*> PendingClients;
+  typedef std::unordered_set<const Client*> PendingClients;
 
   // Called when all the stores managed by the database have been read from
   // disk after startup and the database is ready for checking resource
@@ -169,6 +171,12 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Returns the SBThreatType for a given ListIdentifier.
   SBThreatType GetSBThreatTypeForList(const ListIdentifier& list_id);
+
+  // Queues the check for async response if the database isn't ready yet.
+  // If the database is ready, checks the database for prefix matches and
+  // returns true immediately if there's no match. If a match is found, it
+  // schedules a task to perform full hash check and returns false.
+  bool HandleCheck(std::unique_ptr<PendingCheck> check);
 
   // Called when the |v4_get_hash_protocol_manager_| has the full hash response
   // available for the URL that we requested. It determines the severest

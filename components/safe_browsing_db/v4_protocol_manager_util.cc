@@ -93,6 +93,10 @@ const ListIdentifier GetUrlMalwareId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }
 
+const ListIdentifier GetUrlMalBinId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, MALICIOUS_BINARY);
+}
+
 const ListIdentifier GetUrlSocEngId() {
   return ListIdentifier(GetCurrentPlatformType(), URL,
                         SOCIAL_ENGINEERING_PUBLIC);
