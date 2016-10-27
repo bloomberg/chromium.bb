@@ -170,8 +170,26 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
                                          const gfx::Point& center_point,
                                          SkColor color,
                                          float visible_opacity)
+    : SquareInkDropRipple(large_size,
+                          large_corner_radius,
+                          small_size,
+                          small_corner_radius,
+                          center_point,
+                          center_point,
+                          color,
+                          visible_opacity) {}
+
+SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
+                                         int large_corner_radius,
+                                         const gfx::Size& small_size,
+                                         int small_corner_radius,
+                                         const gfx::Point& initial_center_point,
+                                         const gfx::Point& target_center_point,
+                                         SkColor color,
+                                         float visible_opacity)
     : activated_shape_(ROUNDED_RECT),
       visible_opacity_(visible_opacity),
+      target_center_point_(target_center_point),
       large_size_(large_size),
       large_corner_radius_(large_corner_radius),
       small_size_(small_size),
@@ -190,7 +208,7 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
   root_layer_.SetBounds(gfx::Rect(large_size_));
 
   gfx::Transform transform;
-  transform.Translate(center_point.x(), center_point.y());
+  transform.Translate(initial_center_point.x(), initial_center_point.y());
   root_layer_.SetTransform(transform);
 
   SetStateToHidden();
@@ -280,6 +298,10 @@ void SquareInkDropRipple::AnimateStateChange(
                           GetAnimationDuration(ACTION_PENDING_TRANSFORM),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateCenterPoint(target_center_point_,
+                         GetAnimationDuration(ACTION_PENDING_TRANSFORM),
+                         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                         gfx::Tween::EASE_IN, animation_observer);
       break;
     case InkDropState::ACTION_TRIGGERED: {
       DCHECK(old_ink_drop_state == InkDropState::HIDDEN ||
@@ -298,6 +320,10 @@ void SquareInkDropRipple::AnimateStateChange(
                           GetAnimationDuration(ACTION_TRIGGERED_TRANSFORM),
                           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateCenterPoint(target_center_point_,
+                         GetAnimationDuration(ACTION_TRIGGERED_TRANSFORM),
+                         ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
+                         gfx::Tween::EASE_IN, animation_observer);
       break;
     }
     case InkDropState::ALTERNATE_ACTION_PENDING:
@@ -311,6 +337,10 @@ void SquareInkDropRipple::AnimateStateChange(
                           GetAnimationDuration(ALTERNATE_ACTION_PENDING),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateCenterPoint(target_center_point_,
+                         GetAnimationDuration(ALTERNATE_ACTION_PENDING),
+                         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                         gfx::Tween::EASE_IN, animation_observer);
       break;
     case InkDropState::ALTERNATE_ACTION_TRIGGERED: {
       DCHECK(old_ink_drop_state == InkDropState::ALTERNATE_ACTION_PENDING);
@@ -329,6 +359,11 @@ void SquareInkDropRipple::AnimateStateChange(
                                           ALTERNATE_ACTION_TRIGGERED_TRANSFORM),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateCenterPoint(
+          target_center_point_,
+          GetAnimationDuration(ALTERNATE_ACTION_TRIGGERED_TRANSFORM),
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+          gfx::Tween::EASE_IN, animation_observer);
       break;
     }
     case InkDropState::ACTIVATED: {
@@ -348,6 +383,10 @@ void SquareInkDropRipple::AnimateStateChange(
             transforms, GetAnimationDuration(ACTIVATED_CIRCLE_TRANSFORM),
             ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
             gfx::Tween::EASE_IN_OUT, animation_observer);
+        AnimateCenterPoint(target_center_point_,
+                           GetAnimationDuration(ACTIVATED_CIRCLE_TRANSFORM),
+                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                           gfx::Tween::EASE_IN, animation_observer);
       } else if (old_ink_drop_state == InkDropState::ACTION_PENDING) {
         rect_transform_preemption_strategy =
             ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
@@ -358,6 +397,10 @@ void SquareInkDropRipple::AnimateStateChange(
                           GetAnimationDuration(ACTIVATED_RECT_TRANSFORM),
                           rect_transform_preemption_strategy,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateCenterPoint(target_center_point_,
+                         GetAnimationDuration(ACTIVATED_RECT_TRANSFORM),
+                         rect_transform_preemption_strategy,
+                         gfx::Tween::EASE_IN, animation_observer);
       break;
     }
     case InkDropState::DEACTIVATED: {
@@ -376,6 +419,10 @@ void SquareInkDropRipple::AnimateStateChange(
                           GetAnimationDuration(DEACTIVATED_TRANSFORM),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateCenterPoint(target_center_point_,
+                         GetAnimationDuration(DEACTIVATED_TRANSFORM),
+                         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                         gfx::Tween::EASE_IN, animation_observer);
       break;
     }
   }
@@ -394,6 +441,29 @@ void SquareInkDropRipple::AbortAllAnimations() {
   root_layer_.GetAnimator()->AbortAllAnimations();
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     painted_layers_[i]->GetAnimator()->AbortAllAnimations();
+}
+
+void SquareInkDropRipple::AnimateCenterPoint(
+    const gfx::Point& center_point,
+    base::TimeDelta duration,
+    ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+    gfx::Tween::Type tween,
+    ui::LayerAnimationObserver* observer) {
+  ui::LayerAnimator* animator = root_layer_.GetAnimator();
+  ui::ScopedLayerAnimationSettings animation(animator);
+  animation.SetPreemptionStrategy(preemption_strategy);
+  animation.SetTweenType(tween);
+  gfx::Transform transform;
+  transform.Translate(target_center_point_.x(), target_center_point_.y());
+  ui::LayerAnimationElement* element =
+      ui::LayerAnimationElement::CreateTransformElement(transform, duration);
+  ui::LayerAnimationSequence* sequence =
+      new ui::LayerAnimationSequence(element);
+
+  if (observer)
+    sequence->AddObserver(observer);
+
+  animator->StartAnimation(sequence);
 }
 
 void SquareInkDropRipple::AnimateToTransforms(

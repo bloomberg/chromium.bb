@@ -327,9 +327,15 @@ TEST_P(InkDropRippleTest, AnimateToVisibleFromHidden) {
 // that an animation has started within the AnimateToState() function call.
 TEST_P(InkDropRippleTest, TargetInkDropStateOnAnimationStarted) {
   ink_drop_ripple_->AnimateToState(views::InkDropState::ACTION_PENDING);
+
+  EXPECT_TRUE(observer_.AnimationHasStarted());
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            observer_.target_state_at_last_animation_started());
+  EXPECT_FALSE(observer_.AnimationHasEnded());
+
   ink_drop_ripple_->AnimateToState(views::InkDropState::HIDDEN);
 
-  EXPECT_EQ(3, observer_.last_animation_started_ordinal());
+  EXPECT_TRUE(observer_.AnimationHasStarted());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             observer_.target_state_at_last_animation_started());
 }
@@ -339,9 +345,14 @@ TEST_P(InkDropRippleTest, TargetInkDropStateOnAnimationStarted) {
 // that an animation has ended within the AnimateToState() function call.
 TEST_P(InkDropRippleTest, TargetInkDropStateOnAnimationEnded) {
   ink_drop_ripple_->AnimateToState(views::InkDropState::ACTION_PENDING);
+
+  EXPECT_FALSE(observer_.AnimationHasEnded());
+
   ink_drop_ripple_->AnimateToState(views::InkDropState::HIDDEN);
 
-  EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
+  test_api_->CompleteAnimations();
+
+  EXPECT_TRUE(observer_.AnimationHasEnded());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             observer_.target_state_at_last_animation_ended());
 }
