@@ -147,6 +147,15 @@ _BANNED_OBJC_FUNCTIONS = (
       ),
       True,
     ),
+    (
+      r"/\s+UTF8String\s*]",
+      (
+       'The use of -[NSString UTF8String] is dangerous as it can return null',
+       'even if |canBeConvertedToEncoding:NSUTF8StringEncoding| returns YES.',
+       'Please use |SysNSStringToUTF8| instead.',
+      ),
+      True,
+    ),
 )
 
 
