@@ -244,7 +244,6 @@ class ArcAuthService : public ArcService,
   GetAuthCodeCallback auth_callback_;
   GetAuthCodeAndAccountTypeCallback auth_account_callback_;
   bool initial_opt_in_ = false;
-  bool disable_arc_from_ui_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;

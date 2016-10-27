@@ -8,7 +8,6 @@
 
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -587,7 +586,7 @@ void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
     UpdateOptInActionUMA(arc_enabled ? OptInActionType::OPTED_IN
                                      : OptInActionType::OPTED_OUT);
 
-    if (!disable_arc_from_ui_ && !arc_enabled && !IsArcManaged()) {
+    if (!arc_enabled && !IsArcManaged()) {
       ash::ShelfDelegate* shelf_delegate = GetShelfDelegate();
       if (shelf_delegate)
         shelf_delegate->UnpinAppWithID(ArcSupportHost::kHostAppId);
@@ -800,7 +799,6 @@ void ArcAuthService::CancelAuthCode() {
   if (IsArcManaged())
     return;
 
-  base::AutoReset<bool> auto_reset(&disable_arc_from_ui_, true);
   DisableArc();
 }
 
