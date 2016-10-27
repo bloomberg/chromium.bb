@@ -81,13 +81,6 @@ syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
   return syncer::ModelTypeSet();
 }
 
-// Used to gate syncing preferences, see crbug.com/374865 for more information.
-// Has always been on for desktop/ChromeOS, so default to on. This feature is
-// mainly to give us a kill switch should something go wrong with starting to
-// sync prefs on mobile.
-const base::Feature kSyncPreferencesFeature{"SyncPreferences",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
@@ -256,8 +249,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             sync_client_->GetPasswordStateChangedCallback(), password_store_));
   }
 
-  if (!disabled_types.Has(syncer::PREFERENCES) &&
-      base::FeatureList::IsEnabled(kSyncPreferencesFeature)) {
+  if (!disabled_types.Has(syncer::PREFERENCES)) {
     if (!override_prefs_controller_to_uss_for_test_) {
       sync_service->RegisterDataTypeController(
           base::MakeUnique<UIDataTypeController>(syncer::PREFERENCES,
