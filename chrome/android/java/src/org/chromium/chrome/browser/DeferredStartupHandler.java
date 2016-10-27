@@ -29,6 +29,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
+import org.chromium.chrome.browser.crash.ChromeMinidumpUploadDelegate;
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
@@ -252,13 +253,14 @@ public class DeferredStartupHandler {
                                 asyncTaskStartTime - UmaUtils.getForegroundStartTime(),
                                 TimeUnit.MILLISECONDS);
                         PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
+                        MinidumpUploadService.setUploadDelegate(new ChromeMinidumpUploadDelegate());
                         MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
                     }
                     CrashFileManager crashFileManager =
                             new CrashFileManager(mAppContext.getCacheDir());
                     crashFileManager.cleanOutAllNonFreshMinidumpFiles();
 
-                    MinidumpUploadService.storeBreakpadUploadStatsInUma(
+                    ChromeMinidumpUploadDelegate.storeBreakpadUploadStatsInUma(
                             ChromePreferenceManager.getInstance(mAppContext));
 
                     // Force a widget refresh in order to wake up any possible zombie widgets.

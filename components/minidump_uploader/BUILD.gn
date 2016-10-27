@@ -14,5 +14,6 @@ android_library("minidump_uploader_java") {
     "android/java/src/org/chromium/components/minidump_uploader/util/CrashReportingPermissionManager.java",
     "android/java/src/org/chromium/components/minidump_uploader/util/HttpURLConnectionFactory.java",
     "android/java/src/org/chromium/components/minidump_uploader/util/HttpURLConnectionFactoryImpl.java",
+    "android/java/src/org/chromium/components/minidump_uploader/util/MinidumpUploadDelegate.java",
   ]
 }

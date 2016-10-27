@@ -111,8 +111,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         }
     }
 
-    private static class MockCrashReportingPermissionManager
-            implements CrashReportingPermissionManager {
+    static class MockCrashReportingPermissionManager implements CrashReportingPermissionManager {
         protected boolean mIsInSample;
         protected boolean mIsPermitted;
         protected boolean mIsUserPermitted;

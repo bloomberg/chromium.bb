@@ -252,6 +252,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextualsearch/TapSuppressionHeuristics.java",
   "java/src/org/chromium/chrome/browser/cookies/CanonicalCookie.java",
   "java/src/org/chromium/chrome/browser/cookies/CookiesFetcher.java",
+  "java/src/org/chromium/chrome/browser/crash/ChromeMinidumpUploadDelegate.java",
   "java/src/org/chromium/chrome/browser/crash/CrashFileManager.java",
   "java/src/org/chromium/chrome/browser/crash/LogcatExtractionCallable.java",
   "java/src/org/chromium/chrome/browser/crash/LogcatExtractionService.java",
