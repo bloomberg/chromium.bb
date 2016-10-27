@@ -10,5 +10,5 @@
     ConstructorCallWith=ScriptState,
     RuntimeEnabled=ShapeDetection,
 ] interface FaceDetector {
-    [CallWith=ScriptState] Promise<sequence<DetectedObject>> detect(HTMLImageElement htmlImageElement);
+    [CallWith=ScriptState] Promise<sequence<DetectedObject>> detect(CanvasImageSource image);
 };

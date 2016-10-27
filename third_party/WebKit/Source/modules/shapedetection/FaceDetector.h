@@ -9,13 +9,11 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
+#include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "public/platform/modules/shapedetection/shapedetection.mojom-blink.h"
 
 namespace blink {
 
-class Document;
-class HTMLImageElement;
-class LocalDOMWindow;
 class LocalFrame;
 
 class MODULES_EXPORT FaceDetector final
@@ -25,11 +23,16 @@ class MODULES_EXPORT FaceDetector final
 
  public:
   static FaceDetector* create(ScriptState*);
-  ScriptPromise detect(ScriptState*, const HTMLImageElement*);
+
+  ScriptPromise detect(ScriptState*, const CanvasImageSourceUnion&);
   DECLARE_TRACE();
 
  private:
   explicit FaceDetector(LocalFrame&);
+  ScriptPromise detectFacesOnImageElement(ScriptPromiseResolver*,
+                                          const HTMLImageElement*);
+  ScriptPromise detectFacesOnImageBitmap(ScriptPromiseResolver*, ImageBitmap*);
+
   void onDetectFace(ScriptPromiseResolver*,
                     mojom::blink::FaceDetectionResultPtr);
 

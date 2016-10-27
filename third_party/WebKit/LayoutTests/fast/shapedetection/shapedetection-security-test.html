@@ -3,9 +3,6 @@
 <script src=../../resources/testharnessreport.js></script>
 <script>
 
-// TODO(xianglu): Consider adding tests for image with only one dimension
-// equal to zero.
-
 // Returns a Promise that is resolve()d if detect() fails.
 function detectFaceAndExpectError(imageUrl) {
   return new Promise(function(resolve, reject) {
@@ -25,15 +22,6 @@ function detectFaceAndExpectError(imageUrl) {
     image.src = imageUrl;
   });
 }
-
-// This test verifies that FaceDetector will reject an empty image.
-promise_test(function(t) {
-  return detectFaceAndExpectError("")
-      .then(function(error) {
-        assert_equals(error.name, "InvalidStateError");
-        assert_equals(error.message, "HTMLImageElement is empty.");
-      });
-}, "FaceDetector should reject empty images with InvalidStateError.");
 
 // This test verifies that FaceDetector will reject an undecodable image.
 promise_test(function(t) {

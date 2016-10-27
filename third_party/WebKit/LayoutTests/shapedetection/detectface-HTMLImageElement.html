@@ -8,9 +8,8 @@
 </body>
 <script>
 
-// This test verifies that FaceDetector can detect(). A mock mojo
-// server is implemented in mock-shapedetection.js.
-
+// This test verifies that FaceDetector can detect(HTMLImageElement). Uses the
+// mock mojo server implemented in mock-shapedetection.js.
 async_test(function(t) {
   var img = document.getElementById("img");
 
@@ -28,7 +27,8 @@ async_test(function(t) {
     })
     .then(faceDetectionResult => {
       const imageReceivedByMock = theMock.getFrameData();
-      assert_equals(imageReceivedByMock.byteLength, 2500, "imageReceivedByMock.byteLength");
+      assert_equals(imageReceivedByMock.byteLength, 2500,
+                    "imageReceivedByMock.byteLength");
       const GREEN_PIXEL = 0xFF00FF00;
       assert_equals(imageReceivedByMock[0], GREEN_PIXEL, "pixel must be green");
       assert_equals(faceDetectionResult.length, 3, "faceDetectionResult.length");
@@ -38,6 +38,6 @@ async_test(function(t) {
       assert_unreached("Error during detect(img): " + error);
     });
 
-}, 'exercises the ShapeDetection API detect()');
+}, 'exercises the ShapeDetection API detect(HTMLImageElement)');
 
 </script>
