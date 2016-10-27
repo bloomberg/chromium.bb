@@ -343,7 +343,6 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void didAddClient(ResourceClient*);
   void willAddClientOrObserver(PreloadReferencePolicy);
 
-  // |this| object may be dead after didRemoveClientOrObserver().
   void didRemoveClientOrObserver();
   virtual void allClientsAndObserversRemoved();
 

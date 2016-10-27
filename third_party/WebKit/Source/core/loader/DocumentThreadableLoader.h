@@ -73,7 +73,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   void overrideTimeout(unsigned long timeout) override;
 
-  // |this| may be dead after calling this method in async mode.
   void cancel() override;
   void setDefersLoading(bool);
 
@@ -91,15 +90,11 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void clear();
 
   // ResourceClient
-  //
-  // |this| may be dead after calling this method.
   void notifyFinished(Resource*) override;
 
   String debugName() const override { return "DocumentThreadableLoader"; }
 
   // RawResourceClient
-  //
-  // |this| may be dead after calling these methods.
   void dataSent(Resource*,
                 unsigned long long bytesSent,
                 unsigned long long totalBytesToBeSent) override;
@@ -115,7 +110,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void dataDownloaded(Resource*, int) override;
   void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
 
-  // |this| may be dead after calling this method in async mode.
   void cancelWithError(const ResourceError&);
 
   // Notify Inspector and log to console about resource response. Use this
@@ -125,42 +119,29 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   // Methods containing code to handle resource fetch results which are common
   // to both sync and async mode.
-  //
-  // |this| may be dead after calling these method in async mode.
   void handleResponse(unsigned long identifier,
                       const ResourceResponse&,
                       std::unique_ptr<WebDataConsumerHandle>);
   void handleReceivedData(const char* data, size_t dataLength);
   void handleSuccessfulFinish(unsigned long identifier, double finishTime);
 
-  // |this| may be dead after calling this method.
   void didTimeout(TimerBase*);
   // Calls the appropriate loading method according to policy and data about
   // origin. Only for handling the initial load (including fallback after
   // consulting ServiceWorker).
-  //
-  // |this| may be dead after calling this method in async mode.
   void dispatchInitialRequest(const ResourceRequest&);
-  // |this| may be dead after calling this method in async mode.
   void makeCrossOriginAccessRequest(const ResourceRequest&);
   // Loads m_fallbackRequestForServiceWorker.
-  //
-  // |this| may be dead after calling this method in async mode.
   void loadFallbackRequestForServiceWorker();
   // Loads m_actualRequest.
   void loadActualRequest();
   // Clears m_actualRequest and reports access control check failure to
   // m_client.
-  //
-  // |this| may be dead after calling this method in async mode.
   void handlePreflightFailure(const String& url,
                               const String& errorDescription);
   // Investigates the response for the preflight request. If successful,
   // the actual request will be made later in handleSuccessfulFinish().
-  //
-  // |this| may be dead after calling this method in async mode.
   void handlePreflightResponse(const ResourceResponse&);
-  // |this| may be dead after calling this method.
   void handleError(const ResourceError&);
 
   void loadRequestAsync(const ResourceRequest&, ResourceLoaderOptions);

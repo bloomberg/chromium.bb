@@ -131,8 +131,6 @@ class CORE_EXPORT ThreadableLoader
   WTF_MAKE_NONCOPYABLE(ThreadableLoader);
 
  public:
-  // ThreadableLoaderClient methods may not destroy the ThreadableLoader
-  // instance in them.
   static void loadResourceSynchronously(ExecutionContext&,
                                         const ResourceRequest&,
                                         ThreadableLoaderClient&,
@@ -169,10 +167,7 @@ class CORE_EXPORT ThreadableLoader
   // called with a ResourceError with isCancellation() returning true
   // also for cancellation happened inside the loader.)
   //
-  // ThreadableLoaderClient methods:
-  // - may call cancel()
-  // - can destroy the ThreadableLoader instance in them (by clearing
-  //   std::unique_ptr<ThreadableLoader>).
+  // ThreadableLoaderClient methods may call cancel().
   static ThreadableLoader* create(ExecutionContext&,
                                   ThreadableLoaderClient*,
                                   const ThreadableLoaderOptions&,

@@ -353,9 +353,6 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(
           Document::NoDismissal)
     return;
 
-  // DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL can cause the
-  // DocumentLoader to get deref'ed and possible destroyed, so protect it with a
-  // RefPtr.
   DocumentLoader* documentLoader(m_frame->document()->loader());
 
   UseCounter::count(*m_frame->document(),
@@ -608,7 +605,7 @@ void FrameLoader::finishedParsing() {
   checkCompleted();
 
   if (!m_frame->view())
-    return;  // We are being destroyed by something checkCompleted called.
+    return;
 
   // Check if the scrollbars are really needed for the content. If not, remove
   // them, relayout, and repaint.

@@ -647,7 +647,6 @@ bool DocumentThreadableLoader::redirectReceived(
   for (const auto& header : m_simpleRequestHeaders)
     crossOriginRequest.setHTTPHeaderField(header.key, header.value);
   makeCrossOriginAccessRequest(crossOriginRequest);
-  // |this| may be dead here.
 
   return false;
 }
@@ -963,14 +962,9 @@ void DocumentThreadableLoader::handlePreflightFailure(
 }
 
 void DocumentThreadableLoader::handleError(const ResourceError& error) {
-  // Copy the ResourceError instance to make it sure that the passed
-  // ResourceError is alive during didFail() even when the Resource is
-  // destructed during didFail().
-  ResourceError copiedError = error;
-
   ThreadableLoaderClient* client = m_client;
   clear();
-  client->didFail(copiedError);
+  client->didFail(error);
 }
 
 void DocumentThreadableLoader::loadRequestAsync(
