@@ -11,6 +11,7 @@
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_sequence_generator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
@@ -20,6 +21,20 @@ namespace ws {
 class ServerWindow;
 class ServerWindowCompositorFrameSink;
 class ServerWindowCompositorFrameSinkManagerTestApi;
+
+struct CompositorFrameSinkData {
+  CompositorFrameSinkData();
+  CompositorFrameSinkData(CompositorFrameSinkData&& other);
+  ~CompositorFrameSinkData();
+
+  CompositorFrameSinkData& operator=(CompositorFrameSinkData&& other);
+
+  cc::SurfaceId latest_submitted_surface_id;
+  gfx::Size latest_submitted_frame_size;
+  cc::SurfaceSequenceGenerator surface_sequence_generator;
+  // TODO(fsamuel): This should be a mojo interface.
+  std::unique_ptr<ServerWindowCompositorFrameSink> compositor_frame_sink;
+};
 
 // ServerWindowCompositorFrameSinkManager tracks the surfaces associated with a
 // ServerWindow.
@@ -47,6 +62,16 @@ class ServerWindowCompositorFrameSinkManager {
   bool HasCompositorFrameSinkOfType(mojom::CompositorFrameSinkType type) const;
   bool HasAnyCompositorFrameSink() const;
 
+  // Creates a surface dependency token that expires when the
+  // CompositorFrameSink of type |type| goes away associated with this window.
+  cc::SurfaceSequence CreateSurfaceSequence(
+      mojom::CompositorFrameSinkType type);
+  gfx::Size GetLatestFrameSize(mojom::CompositorFrameSinkType type) const;
+  cc::SurfaceId GetLatestSurfaceId(mojom::CompositorFrameSinkType type) const;
+  void SetLatestSurfaceInfo(mojom::CompositorFrameSinkType type,
+                            const cc::SurfaceId& surface_id,
+                            const gfx::Size& frame_size);
+
   cc::SurfaceManager* GetCompositorFrameSinkManager();
 
  private:
@@ -61,8 +86,7 @@ class ServerWindowCompositorFrameSinkManager {
   ServerWindow* window_;
 
   using TypeToCompositorFrameSinkMap =
-      std::map<mojom::CompositorFrameSinkType,
-               std::unique_ptr<ServerWindowCompositorFrameSink>>;
+      std::map<mojom::CompositorFrameSinkType, CompositorFrameSinkData>;
 
   TypeToCompositorFrameSinkMap type_to_compositor_frame_sink_map_;
 

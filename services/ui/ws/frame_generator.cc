@@ -89,14 +89,6 @@ void FrameGenerator::Draw() {
   dirty_rect_.Intersect(output_rect);
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   cc::CompositorFrame frame(GenerateCompositorFrame(output_rect));
-  if (frame.metadata.may_contain_video != may_contain_video_) {
-    may_contain_video_ = frame.metadata.may_contain_video;
-    // TODO(sad): Schedule notifying observers.
-    if (may_contain_video_) {
-      // TODO(sad): Start a timer to reset the bit if no new frame with video
-      // is submitted 'soon'.
-    }
-  }
   if (compositor_frame_sink_) {
     frame_pending_ = true;
     compositor_frame_sink_->SubmitCompositorFrame(
@@ -119,9 +111,8 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   render_pass->SetNew(render_pass_id, output_rect, dirty_rect_,
                       gfx::Transform());
 
-  bool may_contain_video = false;
   DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
-                 1.0f, &may_contain_video);
+                 1.0f);
 
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);
@@ -148,7 +139,6 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
 
   cc::CompositorFrame frame;
   frame.delegated_frame_data = std::move(frame_data);
-  frame.metadata.may_contain_video = may_contain_video;
   return frame;
 }
 
@@ -156,16 +146,9 @@ void FrameGenerator::DrawWindowTree(
     cc::RenderPass* pass,
     ServerWindow* window,
     const gfx::Vector2d& parent_to_root_origin_offset,
-    float opacity,
-    bool* may_contain_video) {
+    float opacity) {
   if (!window->visible())
     return;
-
-  ServerWindowCompositorFrameSink* default_compositor_frame_sink =
-      window->compositor_frame_sink_manager()
-          ? window->compositor_frame_sink_manager()
-                ->GetDefaultCompositorFrameSink()
-          : nullptr;
 
   const gfx::Rect absolute_bounds =
       window->bounds() + parent_to_root_origin_offset;
@@ -173,19 +156,24 @@ void FrameGenerator::DrawWindowTree(
   const float combined_opacity = opacity * window->opacity();
   for (ServerWindow* child : base::Reversed(children)) {
     DrawWindowTree(pass, child, absolute_bounds.OffsetFromOrigin(),
-                   combined_opacity, may_contain_video);
+                   combined_opacity);
   }
 
   if (!window->compositor_frame_sink_manager() ||
       !window->compositor_frame_sink_manager()->ShouldDraw())
     return;
 
-  ServerWindowCompositorFrameSink* underlay_compositor_frame_sink =
-      window->compositor_frame_sink_manager()->GetUnderlayCompositorFrameSink();
-  if (!default_compositor_frame_sink && !underlay_compositor_frame_sink)
+  cc::SurfaceId underlay_surface_id =
+      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
+          mojom::CompositorFrameSinkType::UNDERLAY);
+  cc::SurfaceId default_surface_id =
+      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
+          mojom::CompositorFrameSinkType::DEFAULT);
+
+  if (underlay_surface_id.is_null() && default_surface_id.is_null())
     return;
 
-  if (default_compositor_frame_sink) {
+  if (!default_surface_id.is_null()) {
     gfx::Transform quad_to_target_transform;
     quad_to_target_transform.Translate(absolute_bounds.x(),
                                        absolute_bounds.y());
@@ -202,15 +190,14 @@ void FrameGenerator::DrawWindowTree(
                 combined_opacity, SkXfermode::kSrcOver_Mode,
                 0 /* sorting-context_id */);
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-    AddOrUpdateSurfaceReference(default_compositor_frame_sink);
+    AddOrUpdateSurfaceReference(mojom::CompositorFrameSinkType::DEFAULT,
+                                window);
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 default_compositor_frame_sink->GetSurfaceId());
-    if (default_compositor_frame_sink->may_contain_video())
-      *may_contain_video = true;
+                 default_surface_id);
   }
-  if (underlay_compositor_frame_sink) {
+  if (!underlay_surface_id.is_null()) {
     const gfx::Rect underlay_absolute_bounds =
         absolute_bounds - window->underlay_offset();
     gfx::Transform quad_to_target_transform;
@@ -218,7 +205,8 @@ void FrameGenerator::DrawWindowTree(
                                        underlay_absolute_bounds.y());
     cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
     const gfx::Rect bounds_at_origin(
-        underlay_compositor_frame_sink->last_submitted_frame_size());
+        window->compositor_frame_sink_manager()->GetLatestFrameSize(
+            mojom::CompositorFrameSinkType::UNDERLAY));
     sqs->SetAll(quad_to_target_transform,
                 bounds_at_origin.size() /* layer_bounds */,
                 bounds_at_origin /* visible_layer_bounds */,
@@ -227,20 +215,23 @@ void FrameGenerator::DrawWindowTree(
                 0 /* sorting-context_id */);
 
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-    AddOrUpdateSurfaceReference(underlay_compositor_frame_sink);
+    AddOrUpdateSurfaceReference(mojom::CompositorFrameSinkType::UNDERLAY,
+                                window);
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 underlay_compositor_frame_sink->GetSurfaceId());
-    DCHECK(!underlay_compositor_frame_sink->may_contain_video());
+                 underlay_surface_id);
   }
 }
 
 void FrameGenerator::AddOrUpdateSurfaceReference(
-    ServerWindowCompositorFrameSink* window_surface) {
-  if (!window_surface->has_frame())
+    mojom::CompositorFrameSinkType type,
+    ServerWindow* window) {
+  cc::SurfaceId surface_id =
+      window->compositor_frame_sink_manager()->GetLatestSurfaceId(type);
+  if (surface_id.is_null())
     return;
-  cc::SurfaceId surface_id = window_surface->GetSurfaceId();
+  // TODO(fsamuel): Use mojo interface to give root window a surface reference.
   cc::SurfaceManager* surface_manager = display_compositor_->manager();
   auto it = dependencies_.find(surface_id.frame_sink_id());
   if (it == dependencies_.end()) {
@@ -257,7 +248,7 @@ void FrameGenerator::AddOrUpdateSurfaceReference(
     dependencies_[surface_id.frame_sink_id()] = dependency;
     // Observe |window_surface|'s window so that we can release references when
     // the window is destroyed.
-    Add(window_surface->window());
+    Add(window);
     return;
   }
 
@@ -277,7 +268,7 @@ void FrameGenerator::AddOrUpdateSurfaceReference(
   // in the previous line and cleared from the dependencies_ map. Thus, in the
   // recursive call, we'll enter the second if blcok because the FrameSinkId
   // is no longer referenced in the map.
-  AddOrUpdateSurfaceReference(window_surface);
+  AddOrUpdateSurfaceReference(type, window);
 }
 
 void FrameGenerator::ReleaseFrameSinkReference(
@@ -303,20 +294,24 @@ void FrameGenerator::ReleaseAllSurfaceReferences() {
 
 void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
   Remove(window);
-  ServerWindowCompositorFrameSinkManager* surface_manager =
+  ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
       window->compositor_frame_sink_manager();
-  // If FrameGenerator was observing |window|, then that means it had a surface
-  // at some point in time and should have a
+  // If FrameGenerator was observing |window|, then that means it had a
+  // CompositorFrame at some point in time and should have a
   // ServerWindowCompositorFrameSinkManager.
-  DCHECK(surface_manager);
-  ServerWindowCompositorFrameSink* default_compositor_frame_sink =
-      surface_manager->GetDefaultCompositorFrameSink();
-  if (default_compositor_frame_sink)
-    ReleaseFrameSinkReference(default_compositor_frame_sink->frame_sink_id());
-  ServerWindowCompositorFrameSink* underlay_compositor_frame_sink =
-      surface_manager->GetUnderlayCompositorFrameSink();
-  if (underlay_compositor_frame_sink)
-    ReleaseFrameSinkReference(underlay_compositor_frame_sink->frame_sink_id());
+  DCHECK(compositor_frame_sink_manager);
+
+  cc::SurfaceId default_surface_id =
+      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
+          mojom::CompositorFrameSinkType::DEFAULT);
+  if (!default_surface_id.is_null())
+    ReleaseFrameSinkReference(default_surface_id.frame_sink_id());
+
+  cc::SurfaceId underlay_surface_id =
+      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
+          mojom::CompositorFrameSinkType::UNDERLAY);
+  if (!underlay_surface_id.is_null())
+    ReleaseFrameSinkReference(underlay_surface_id.frame_sink_id());
 }
 
 }  // namespace ws

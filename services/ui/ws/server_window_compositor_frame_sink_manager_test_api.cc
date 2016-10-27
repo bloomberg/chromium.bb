@@ -20,7 +20,7 @@ ServerWindowCompositorFrameSinkManagerTestApi::
 void ServerWindowCompositorFrameSinkManagerTestApi::
     CreateEmptyDefaultCompositorFrameSink() {
   manager_->type_to_compositor_frame_sink_map_
-      [mojom::CompositorFrameSinkType::DEFAULT] = nullptr;
+      [mojom::CompositorFrameSinkType::DEFAULT] = CompositorFrameSinkData();
 }
 
 void ServerWindowCompositorFrameSinkManagerTestApi::

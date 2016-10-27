@@ -19,8 +19,7 @@ bool WindowHasValidFrame(const ServerWindow* window) {
   const ServerWindowCompositorFrameSinkManager* manager =
       window->compositor_frame_sink_manager();
   return manager &&
-         !manager->GetDefaultCompositorFrameSink()
-              ->last_submitted_frame_size()
+         !manager->GetLatestFrameSize(mojom::CompositorFrameSinkType::DEFAULT)
               .IsEmpty();
 }
 

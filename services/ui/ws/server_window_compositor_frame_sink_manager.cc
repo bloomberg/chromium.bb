@@ -45,11 +45,12 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
   cc::FrameSinkId frame_sink_id(
       WindowIdToTransportId(window_->id()),
       static_cast<uint32_t>(compositor_frame_sink_type));
-  std::unique_ptr<ServerWindowCompositorFrameSink> compositor_frame_sink(
-      new ServerWindowCompositorFrameSink(
-          this, frame_sink_id, std::move(request), std::move(client)));
-  type_to_compositor_frame_sink_map_[compositor_frame_sink_type] =
-      std::move(compositor_frame_sink);
+  CompositorFrameSinkData& data =
+      type_to_compositor_frame_sink_map_[compositor_frame_sink_type];
+  data.compositor_frame_sink =
+      base::MakeUnique<ServerWindowCompositorFrameSink>(
+          this, frame_sink_id, std::move(request), std::move(client));
+  data.surface_sequence_generator.set_frame_sink_id(frame_sink_id);
 }
 
 ServerWindowCompositorFrameSink*
@@ -66,8 +67,9 @@ ServerWindowCompositorFrameSink*
 ServerWindowCompositorFrameSinkManager::GetCompositorFrameSinkByType(
     mojom::CompositorFrameSinkType type) const {
   auto iter = type_to_compositor_frame_sink_map_.find(type);
-  return iter == type_to_compositor_frame_sink_map_.end() ? nullptr
-                                                          : iter->second.get();
+  return iter == type_to_compositor_frame_sink_map_.end()
+             ? nullptr
+             : iter->second.compositor_frame_sink.get();
 }
 
 bool ServerWindowCompositorFrameSinkManager::HasCompositorFrameSinkOfType(
@@ -77,6 +79,43 @@ bool ServerWindowCompositorFrameSinkManager::HasCompositorFrameSinkOfType(
 
 bool ServerWindowCompositorFrameSinkManager::HasAnyCompositorFrameSink() const {
   return GetDefaultCompositorFrameSink() || GetUnderlayCompositorFrameSink();
+}
+
+cc::SurfaceSequence
+ServerWindowCompositorFrameSinkManager::CreateSurfaceSequence(
+    mojom::CompositorFrameSinkType type) {
+  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()),
+                                static_cast<uint32_t>(type));
+  CompositorFrameSinkData& data = type_to_compositor_frame_sink_map_[type];
+  data.surface_sequence_generator.set_frame_sink_id(frame_sink_id);
+  return data.surface_sequence_generator.CreateSurfaceSequence();
+}
+
+gfx::Size ServerWindowCompositorFrameSinkManager::GetLatestFrameSize(
+    mojom::CompositorFrameSinkType type) const {
+  auto it = type_to_compositor_frame_sink_map_.find(type);
+  if (it == type_to_compositor_frame_sink_map_.end())
+    return gfx::Size();
+
+  return it->second.latest_submitted_frame_size;
+}
+
+cc::SurfaceId ServerWindowCompositorFrameSinkManager::GetLatestSurfaceId(
+    mojom::CompositorFrameSinkType type) const {
+  auto it = type_to_compositor_frame_sink_map_.find(type);
+  if (it == type_to_compositor_frame_sink_map_.end())
+    return cc::SurfaceId();
+
+  return it->second.latest_submitted_surface_id;
+}
+
+void ServerWindowCompositorFrameSinkManager::SetLatestSurfaceInfo(
+    mojom::CompositorFrameSinkType type,
+    const cc::SurfaceId& surface_id,
+    const gfx::Size& frame_size) {
+  CompositorFrameSinkData& data = type_to_compositor_frame_sink_map_[type];
+  data.latest_submitted_surface_id = surface_id;
+  data.latest_submitted_frame_size = frame_size;
 }
 
 cc::SurfaceManager*
@@ -90,12 +129,28 @@ bool ServerWindowCompositorFrameSinkManager::
   auto iter = type_to_compositor_frame_sink_map_.find(type);
   if (iter == type_to_compositor_frame_sink_map_.end())
     return false;
-  if (iter->second->last_submitted_frame_size().IsEmpty())
+  if (iter->second.latest_submitted_frame_size.IsEmpty())
     return false;
-  const gfx::Size& last_submitted_frame_size =
-      iter->second->last_submitted_frame_size();
-  return last_submitted_frame_size.width() >= window_->bounds().width() &&
-         last_submitted_frame_size.height() >= window_->bounds().height();
+  const gfx::Size& latest_submitted_frame_size =
+      iter->second.latest_submitted_frame_size;
+  return latest_submitted_frame_size.width() >= window_->bounds().width() &&
+         latest_submitted_frame_size.height() >= window_->bounds().height();
+}
+
+CompositorFrameSinkData::CompositorFrameSinkData() {}
+
+CompositorFrameSinkData::~CompositorFrameSinkData() {}
+
+CompositorFrameSinkData::CompositorFrameSinkData(
+    CompositorFrameSinkData&& other)
+    : latest_submitted_surface_id(other.latest_submitted_surface_id),
+      compositor_frame_sink(std::move(other.compositor_frame_sink)) {}
+
+CompositorFrameSinkData& CompositorFrameSinkData::operator=(
+    CompositorFrameSinkData&& other) {
+  latest_submitted_surface_id = other.latest_submitted_surface_id;
+  compositor_frame_sink = std::move(other.compositor_frame_sink);
+  return *this;
 }
 
 }  // namespace ws

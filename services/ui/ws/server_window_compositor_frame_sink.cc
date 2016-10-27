@@ -33,7 +33,6 @@ ServerWindowCompositorFrameSink::ServerWindowCompositorFrameSink(
       manager_->GetCompositorFrameSinkManager();
   surface_manager->RegisterFrameSinkId(frame_sink_id_);
   surface_manager->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-  surface_sequence_generator_.set_frame_sink_id(frame_sink_id_);
 }
 
 ServerWindowCompositorFrameSink::~ServerWindowCompositorFrameSink() {
@@ -64,27 +63,13 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
     local_frame_id_ = surface_id_allocator_.GenerateId();
     surface_factory_.Create(local_frame_id_);
   }
-  may_contain_video_ = frame.metadata.may_contain_video;
   surface_factory_.SubmitCompositorFrame(
       local_frame_id_, std::move(frame),
       base::Bind(&ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck,
                  base::Unretained(this)));
   last_submitted_frame_size_ = frame_size;
-  window()->delegate()->OnScheduleWindowPaint(window());
-}
-
-cc::SurfaceId ServerWindowCompositorFrameSink::GetSurfaceId() const {
-  if (local_frame_id_.is_null())
-    return cc::SurfaceId();
-  return cc::SurfaceId(frame_sink_id_, local_frame_id_);
-}
-
-cc::SurfaceSequence ServerWindowCompositorFrameSink::CreateSurfaceSequence() {
-  return surface_sequence_generator_.CreateSurfaceSequence();
-}
-
-ServerWindow* ServerWindowCompositorFrameSink::window() {
-  return manager_->window();
+  ServerWindow* window = manager_->window_;
+  window->delegate()->OnScheduleWindowPaint(window);
 }
 
 void ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck() {

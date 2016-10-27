@@ -16,6 +16,7 @@
 #include "services/ui/ws/gpu_service_proxy.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/window_coordinate_conversions.h"
 #include "services/ui/ws/window_manager_access_policy.h"
@@ -803,17 +804,26 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
                                     float device_scale_factor) {
   WindowId window_id(
       WindowIdFromTransportId(surface_id.frame_sink_id().client_id()));
-  mojom::CompositorFrameSinkType surface_type(
+  mojom::CompositorFrameSinkType compositor_frame_sink_type(
       static_cast<mojom::CompositorFrameSinkType>(
           surface_id.frame_sink_id().sink_id()));
-  // We only care about propagating default surface IDs.
-  // TODO(fsamuel, sadrul): we should get rid of surface types.
-  if (surface_type != mojom::CompositorFrameSinkType::DEFAULT)
-    return;
   ServerWindow* window = GetWindow(window_id);
   // If the window doesn't have a parent then we have nothing to propagate.
-  if (!window || !window->parent())
+  if (!window)
     return;
+
+  // Cache the last submitted surface ID in the window server.
+  // DisplayCompositorFrameSink may submit a CompositorFrame without
+  // creating a CompositorFrameSinkManager.
+  window->GetOrCreateCompositorFrameSinkManager()->SetLatestSurfaceInfo(
+      compositor_frame_sink_type, surface_id, frame_size);
+
+  // We only care about propagating default surface IDs.
+  // TODO(fsamuel, sadrul): we should get rid of CompositorFrameSinkTypes.
+  if (compositor_frame_sink_type != mojom::CompositorFrameSinkType::DEFAULT ||
+      !window->parent()) {
+    return;
+  }
   WindowTree* window_tree = GetTreeWithId(window->parent()->id().client_id);
   if (window_tree) {
     window_tree->ProcessWindowSurfaceChanged(window, surface_id, frame_size,

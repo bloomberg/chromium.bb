@@ -775,9 +775,9 @@ void WindowTree::ProcessWindowSurfaceChanged(ServerWindow* window,
 
   ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
       window->GetOrCreateCompositorFrameSinkManager();
-  ServerWindowCompositorFrameSink* compositor_frame_sink =
-      compositor_frame_sink_manager->GetDefaultCompositorFrameSink();
-  cc::SurfaceSequence sequence = compositor_frame_sink->CreateSurfaceSequence();
+  cc::SurfaceSequence sequence =
+      compositor_frame_sink_manager->CreateSurfaceSequence(
+          mojom::CompositorFrameSinkType::DEFAULT);
   client()->OnWindowSurfaceChanged(client_window_id.id, surface_id, sequence,
                                    frame_size, device_scale_factor);
 }

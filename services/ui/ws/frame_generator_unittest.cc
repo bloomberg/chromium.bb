@@ -31,10 +31,14 @@ void InitWindow(ServerWindow* window) {
   window->SetVisible(true);
   ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
       window->GetOrCreateCompositorFrameSinkManager();
-  compositor_frame_sink_manager->CreateCompositorFrameSink(
+  compositor_frame_sink_manager->SetLatestSurfaceInfo(
       mojom::CompositorFrameSinkType::DEFAULT,
-      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink>(),
-      cc::mojom::MojoCompositorFrameSinkClientPtr());
+      cc::SurfaceId(
+          cc::FrameSinkId(
+              WindowIdToTransportId(window->id()),
+              static_cast<uint32_t>(mojom::CompositorFrameSinkType::DEFAULT)),
+          cc::LocalFrameId(1u, 1u)),
+      gfx::Size(100, 100));
 }
 
 }  // namespace
@@ -74,9 +78,8 @@ class FrameGeneratorTest : public testing::Test {
 };
 
 void FrameGeneratorTest::DrawWindowTree(cc::RenderPass* pass) {
-  frame_generator_->DrawWindowTree(pass,
-                                   frame_generator_delegate_->GetRootWindow(),
-                                   gfx::Vector2d(), 1.0f, nullptr);
+  frame_generator_->DrawWindowTree(
+      pass, frame_generator_delegate_->GetRootWindow(), gfx::Vector2d(), 1.0f);
 }
 
 void FrameGeneratorTest::SetUp() {
@@ -120,13 +123,16 @@ TEST_F(FrameGeneratorTest, DrawWindowTree) {
   // which should be a product of the child and the parent opacity.
   EXPECT_EQ(child_opacity * root_opacity, child_sqs->opacity);
 
-  // Create the UNDERLAY Surface for the child window, and confirm that this
-  // creates an extra SharedQuadState in the CompositorFrame.
-  child_window.GetOrCreateCompositorFrameSinkManager()
-      ->CreateCompositorFrameSink(
-          mojom::CompositorFrameSinkType::UNDERLAY,
-          cc::mojom::MojoCompositorFrameSinkRequest(),
-          cc::mojom::MojoCompositorFrameSinkClientPtr());
+  // Pretend to create the UNDERLAY Surface for the child window, and confirm
+  // that this creates an extra SharedQuadState in the CompositorFrame.
+  child_window.GetOrCreateCompositorFrameSinkManager()->SetLatestSurfaceInfo(
+      mojom::CompositorFrameSinkType::UNDERLAY,
+      cc::SurfaceId(
+          cc::FrameSinkId(
+              WindowIdToTransportId(child_window.id()),
+              static_cast<uint32_t>(mojom::CompositorFrameSinkType::UNDERLAY)),
+          cc::LocalFrameId(1u, 1u)),
+      gfx::Size(100, 100));
 
   render_pass = cc::RenderPass::Create();
   DrawWindowTree(render_pass.get());

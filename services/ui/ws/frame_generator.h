@@ -14,6 +14,7 @@
 #include "cc/surfaces/local_frame_id.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surface_sequence_generator.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_tracker.h"
 #include "ui/gfx/geometry/rect.h"
@@ -84,8 +85,7 @@ class FrameGenerator : public ServerWindowTracker {
   void DrawWindowTree(cc::RenderPass* pass,
                       ServerWindow* window,
                       const gfx::Vector2d& parent_to_root_origin_offset,
-                      float opacity,
-                      bool* may_contain_video);
+                      float opacity);
 
   // Adds a reference to the current cc::Surface of the provided
   // |window_compositor_frame_sink|. If an existing reference is held with a
@@ -96,8 +96,8 @@ class FrameGenerator : public ServerWindowTracker {
   // submission of the top-level frame to drawing the frame to screen.
   // TODO(fsamuel, kylechar): This will go away once we get surface lifetime
   // management.
-  void AddOrUpdateSurfaceReference(
-      ServerWindowCompositorFrameSink* window_compositor_frame_sink);
+  void AddOrUpdateSurfaceReference(mojom::CompositorFrameSinkType type,
+                                   ServerWindow* window);
 
   // Releases any retained references for the provided FrameSink.
   // TODO(fsamuel, kylechar): This will go away once we get surface lifetime
@@ -126,7 +126,6 @@ class FrameGenerator : public ServerWindowTracker {
   gfx::Rect dirty_rect_;
   base::Timer draw_timer_;
   bool frame_pending_ = false;
-  bool may_contain_video_ = false;
   struct SurfaceDependency {
     cc::LocalFrameId local_frame_id;
     cc::SurfaceSequence sequence;
