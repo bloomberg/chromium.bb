@@ -1386,6 +1386,8 @@ class CORE_EXPORT UseCounter {
     RTCConfigurationIceTransportPolicyNone = 1663,
     RTCConfigurationIceTransports = 1664,
     DocumentFullscreenElementInV0Shadow = 1665,
+    ScriptWithCSPBypassingSchemeParserInserted = 1666,
+    ScriptWithCSPBypassingSchemeNotParserInserted = 1667,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

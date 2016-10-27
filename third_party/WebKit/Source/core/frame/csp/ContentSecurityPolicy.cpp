@@ -577,8 +577,19 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
                     ParserDisposition parserDisposition,
                     RedirectStatus redirectStatus,
                     ContentSecurityPolicy::ReportingStatus reportingStatus) {
-  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol()))
-    return true;
+  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol())) {
+    // If we're running experimental features, bypass CSP only for
+    // non-parser-inserted resources whose scheme otherwise bypasses CSP. If
+    // we're not running experimental features, bypass CSP for all resources
+    // regardless of parser state. Once we have more data via the
+    // 'ScriptWithCSPBypassingScheme*' metrics, make a decision about what
+    // behavior to ship. https://crbug.com/653521
+    if (parserDisposition == NotParserInserted ||
+        !RuntimeEnabledFeatures::
+            experimentalContentSecurityPolicyFeaturesEnabled()) {
+      return true;
+    }
+  }
 
   bool isAllowed = true;
   for (const auto& policy : policies) {
@@ -761,6 +772,13 @@ bool ContentSecurityPolicy::allowScriptFromSource(
     ParserDisposition parserDisposition,
     RedirectStatus redirectStatus,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol())) {
+    UseCounter::count(
+        document(),
+        parserDisposition == ParserInserted
+            ? UseCounter::ScriptWithCSPBypassingSchemeParserInserted
+            : UseCounter::ScriptWithCSPBypassingSchemeNotParserInserted);
+  }
   return isAllowedByAll<&CSPDirectiveList::allowScriptFromSource>(
       m_policies, url, nonce, parserDisposition, redirectStatus,
       reportingStatus);
