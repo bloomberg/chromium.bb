@@ -37,7 +37,7 @@ class Document;
 class Element;
 class Range;
 
-class FormatBlockCommand final : public ApplyBlockElementCommand {
+class CORE_EXPORT FormatBlockCommand final : public ApplyBlockElementCommand {
  public:
   static FormatBlockCommand* create(Document& document,
                                     const QualifiedName& tagName) {

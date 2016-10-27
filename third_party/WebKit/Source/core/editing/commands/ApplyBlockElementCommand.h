@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class ApplyBlockElementCommand : public CompositeEditCommand {
+class CORE_EXPORT ApplyBlockElementCommand : public CompositeEditCommand {
  protected:
   ApplyBlockElementCommand(Document&,
                            const QualifiedName& tagName,
@@ -58,16 +58,19 @@ class ApplyBlockElementCommand : public CompositeEditCommand {
                            const Position& endOfSelection,
                            HTMLElement*&,
                            EditingState*) = 0;
-  void rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition&,
-                                                   Position&,
-                                                   Position&);
-  VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition&,
-                                                              Position&,
-                                                              Position&);
+  void rangeForParagraphSplittingTextNodesIfNeeded(
+      const VisiblePosition& endOfCurrentParagraph,
+      Position& endOfLastParagraph,
+      Position& start,
+      Position& end);
+  VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(
+      VisiblePosition& endOfCurrentParagraph,
+      Position& endOfLastParagraph,
+      Position& start,
+      Position& end);
 
   QualifiedName m_tagName;
   AtomicString m_inlineStyle;
-  Position m_endOfLastParagraph;
 };
 
 }  // namespace blink

@@ -1099,6 +1099,7 @@ source_set("unit_tests") {
     "editing/VisiblePositionTest.cpp",
     "editing/VisibleSelectionTest.cpp",
     "editing/VisibleUnitsTest.cpp",
+    "editing/commands/ApplyBlockElementCommandTest.cpp",
     "editing/commands/InsertListCommandTest.cpp",
     "editing/commands/ReplaceSelectionCommandTest.cpp",
     "editing/iterators/BackwardsTextBufferTest.cpp",

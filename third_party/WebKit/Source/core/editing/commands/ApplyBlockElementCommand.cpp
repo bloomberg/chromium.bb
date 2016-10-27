@@ -138,10 +138,11 @@ void ApplyBlockElementCommand::formatSelection(
     EditingState* editingState) {
   // Special case empty unsplittable elements because there's nothing to split
   // and there's nothing to move.
-  Position start = mostForwardCaretPosition(startOfSelection.deepEquivalent());
-  if (isAtUnsplittableElement(start)) {
+  const Position& caretPosition =
+      mostForwardCaretPosition(startOfSelection.deepEquivalent());
+  if (isAtUnsplittableElement(caretPosition)) {
     HTMLElement* blockquote = createBlockElement();
-    insertNodeAt(blockquote, start, editingState);
+    insertNodeAt(blockquote, caretPosition, editingState);
     if (editingState->isAborted())
       return;
     HTMLBRElement* placeholder = HTMLBRElement::create(document());
@@ -159,29 +160,31 @@ void ApplyBlockElementCommand::formatSelection(
 
   HTMLElement* blockquoteForNextIndent = nullptr;
   VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
-  VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
-  Position endAfterSelection =
-      endOfParagraph(nextPositionOf(endOfLastParagraph)).deepEquivalent();
-  m_endOfLastParagraph = endOfLastParagraph.deepEquivalent();
+  const VisiblePosition& visibleEndOfLastParagraph =
+      endOfParagraph(endOfSelection);
+  const Position& endOfNextLastParagraph =
+      endOfParagraph(nextPositionOf(visibleEndOfLastParagraph))
+          .deepEquivalent();
+  Position endOfLastParagraph = visibleEndOfLastParagraph.deepEquivalent();
 
   bool atEnd = false;
-  Position end;
-  while (endOfCurrentParagraph.deepEquivalent() != endAfterSelection &&
+  while (endOfCurrentParagraph.deepEquivalent() != endOfNextLastParagraph &&
          !atEnd) {
-    if (endOfCurrentParagraph.deepEquivalent() == m_endOfLastParagraph)
+    if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph)
       atEnd = true;
 
-    rangeForParagraphSplittingTextNodesIfNeeded(endOfCurrentParagraph, start,
-                                                end);
+    Position start, end;
+    rangeForParagraphSplittingTextNodesIfNeeded(endOfCurrentParagraph,
+                                                endOfLastParagraph, start, end);
     endOfCurrentParagraph = createVisiblePosition(end);
 
     Node* enclosingCell = enclosingNodeOfType(start, &isTableCell);
     PositionWithAffinity endOfNextParagraph =
-        endOfNextParagrahSplittingTextNodesIfNeeded(endOfCurrentParagraph,
-                                                    start, end)
+        endOfNextParagrahSplittingTextNodesIfNeeded(
+            endOfCurrentParagraph, endOfLastParagraph, start, end)
             .toPositionWithAffinity();
 
-    formatRange(start, end, m_endOfLastParagraph, blockquoteForNextIndent,
+    formatRange(start, end, endOfLastParagraph, blockquoteForNextIndent,
                 editingState);
     if (editingState->isAborted())
       return;
@@ -194,9 +197,11 @@ void ApplyBlockElementCommand::formatSelection(
       blockquoteForNextIndent = nullptr;
 
     // indentIntoBlockquote could move more than one paragraph if the paragraph
-    // is in a list item or a table. As a result, endAfterSelection could refer
-    // to a position no longer in the document.
-    if (endAfterSelection.isNotNull() && !endAfterSelection.isConnected())
+    // is in a list item or a table. As a result,
+    // |endOfNextLastParagraph| could refer to a position no longer in the
+    // document.
+    if (endOfNextLastParagraph.isNotNull() &&
+        !endOfNextLastParagraph.isConnected())
       break;
     // Sanity check: Make sure our moveParagraph calls didn't remove
     // endOfNextParagraph.anchorNode() If somehow, e.g. mutation
@@ -235,6 +240,7 @@ static const ComputedStyle* computedStyleOfEnclosingTextNode(
 
 void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(
     const VisiblePosition& endOfCurrentParagraph,
+    Position& endOfLastParagraph,
     Position& start,
     Position& end) {
   start = startOfParagraph(endOfCurrentParagraph).deepEquivalent();
@@ -247,9 +253,9 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(
         computedStyleOfEnclosingTextNode(end) &&
         start.computeContainerNode() == end.computeContainerNode();
     bool isStartAndEndOfLastParagraphOnSameNode =
-        computedStyleOfEnclosingTextNode(m_endOfLastParagraph) &&
+        computedStyleOfEnclosingTextNode(endOfLastParagraph) &&
         start.computeContainerNode() ==
-            m_endOfLastParagraph.computeContainerNode();
+            endOfLastParagraph.computeContainerNode();
 
     // Avoid obtanining the start of next paragraph for start
     // TODO(yosin) We should use |PositionMoveType::CodePoint| for
@@ -276,18 +282,18 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(
         end = Position(startText, end.offsetInContainerNode() - startOffset);
       }
       if (isStartAndEndOfLastParagraphOnSameNode) {
-        DCHECK_GE(m_endOfLastParagraph.offsetInContainerNode(), startOffset);
-        m_endOfLastParagraph =
-            Position(startText, m_endOfLastParagraph.offsetInContainerNode() -
-                                    startOffset);
+        DCHECK_GE(endOfLastParagraph.offsetInContainerNode(), startOffset);
+        endOfLastParagraph =
+            Position(startText,
+                     endOfLastParagraph.offsetInContainerNode() - startOffset);
       }
     }
   }
 
   if (const ComputedStyle* endStyle = computedStyleOfEnclosingTextNode(end)) {
     bool isEndAndEndOfLastParagraphOnSameNode =
-        computedStyleOfEnclosingTextNode(m_endOfLastParagraph) &&
-        end.anchorNode() == m_endOfLastParagraph.anchorNode();
+        computedStyleOfEnclosingTextNode(endOfLastParagraph) &&
+        end.anchorNode() == endOfLastParagraph.anchorNode();
     // Include \n at the end of line if we're at an empty paragraph
     if (endStyle->preserveNewline() && start == end &&
         end.offsetInContainerNode() <
@@ -301,8 +307,8 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(
         end = Position(end.computeContainerNode(), endOffset + 1);
       if (isEndAndEndOfLastParagraphOnSameNode &&
           end.offsetInContainerNode() >=
-              m_endOfLastParagraph.offsetInContainerNode())
-        m_endOfLastParagraph = end;
+              endOfLastParagraph.offsetInContainerNode())
+        endOfLastParagraph = end;
     }
 
     // If end is in the middle of a text node, split.
@@ -317,13 +323,13 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(
       if (isStartAndEndOnSameNode)
         start = firstPositionInOrBeforeNode(endContainer->previousSibling());
       if (isEndAndEndOfLastParagraphOnSameNode) {
-        if (m_endOfLastParagraph.offsetInContainerNode() ==
+        if (endOfLastParagraph.offsetInContainerNode() ==
             end.offsetInContainerNode())
-          m_endOfLastParagraph =
+          endOfLastParagraph =
               lastPositionInOrAfterNode(endContainer->previousSibling());
         else
-          m_endOfLastParagraph = Position(
-              endContainer, m_endOfLastParagraph.offsetInContainerNode() -
+          endOfLastParagraph = Position(
+              endContainer, endOfLastParagraph.offsetInContainerNode() -
                                 end.offsetInContainerNode());
       }
       end = Position::lastPositionInNode(endContainer->previousSibling());
@@ -334,58 +340,68 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(
 VisiblePosition
 ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfNeeded(
     VisiblePosition& endOfCurrentParagraph,
+    Position& endOfLastParagraph,
     Position& start,
     Position& end) {
-  VisiblePosition endOfNextParagraph =
+  const VisiblePosition& endOfNextParagraph =
       endOfParagraph(nextPositionOf(endOfCurrentParagraph));
-  Position position = endOfNextParagraph.deepEquivalent();
-  const ComputedStyle* style = computedStyleOfEnclosingTextNode(position);
+  const Position& endOfNextParagraphPosition =
+      endOfNextParagraph.deepEquivalent();
+  const ComputedStyle* style =
+      computedStyleOfEnclosingTextNode(endOfNextParagraphPosition);
   if (!style)
     return endOfNextParagraph;
 
-  Text* text = toText(position.computeContainerNode());
-  if (!style->preserveNewline() || !position.offsetInContainerNode() ||
-      !isNewLineAtPosition(Position::firstPositionInNode(text)))
+  Text* const endOfNextParagraphText =
+      toText(endOfNextParagraphPosition.computeContainerNode());
+  if (!style->preserveNewline() ||
+      !endOfNextParagraphPosition.offsetInContainerNode() ||
+      !isNewLineAtPosition(
+          Position::firstPositionInNode(endOfNextParagraphText)))
     return endOfNextParagraph;
 
   // \n at the beginning of the text node immediately following the current
   // paragraph is trimmed by moveParagraphWithClones. If endOfNextParagraph was
   // pointing at this same text node, endOfNextParagraph will be shifted by one
   // paragraph. Avoid this by splitting "\n"
-  splitTextNode(text, 1);
+  splitTextNode(endOfNextParagraphText, 1);
   document().updateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (text == start.computeContainerNode() && text->previousSibling() &&
-      text->previousSibling()->isTextNode()) {
-    DCHECK_LT(start.offsetInContainerNode(), position.offsetInContainerNode());
-    start = Position(toText(text->previousSibling()),
-                     start.offsetInContainerNode());
+  Text* const previousText =
+      endOfNextParagraphText->previousSibling() &&
+              endOfNextParagraphText->previousSibling()->isTextNode()
+          ? toText(endOfNextParagraphText->previousSibling())
+          : nullptr;
+  if (endOfNextParagraphText == start.computeContainerNode() && previousText) {
+    DCHECK_LT(start.offsetInContainerNode(),
+              endOfNextParagraphPosition.offsetInContainerNode());
+    start = Position(previousText, start.offsetInContainerNode());
   }
-  if (text == end.computeContainerNode() && text->previousSibling() &&
-      text->previousSibling()->isTextNode()) {
-    DCHECK_LT(end.offsetInContainerNode(), position.offsetInContainerNode());
-    end =
-        Position(toText(text->previousSibling()), end.offsetInContainerNode());
+  if (endOfNextParagraphText == end.computeContainerNode() && previousText) {
+    DCHECK_LT(end.offsetInContainerNode(),
+              endOfNextParagraphPosition.offsetInContainerNode());
+    end = Position(previousText, end.offsetInContainerNode());
   }
-  if (text == m_endOfLastParagraph.computeContainerNode()) {
-    if (m_endOfLastParagraph.offsetInContainerNode() <
-        position.offsetInContainerNode()) {
+  if (endOfNextParagraphText == endOfLastParagraph.computeContainerNode()) {
+    if (endOfLastParagraph.offsetInContainerNode() <
+        endOfNextParagraphPosition.offsetInContainerNode()) {
       // We can only fix endOfLastParagraph if the previous node was still text
       // and hasn't been modified by script.
-      if (text->previousSibling()->isTextNode() &&
-          static_cast<unsigned>(m_endOfLastParagraph.offsetInContainerNode()) <=
-              toText(text->previousSibling())->length())
-        m_endOfLastParagraph =
-            Position(toText(text->previousSibling()),
-                     m_endOfLastParagraph.offsetInContainerNode());
+      if (previousText &&
+          static_cast<unsigned>(endOfLastParagraph.offsetInContainerNode()) <=
+              previousText->length()) {
+        endOfLastParagraph =
+            Position(previousText, endOfLastParagraph.offsetInContainerNode());
+      }
     } else {
-      m_endOfLastParagraph =
-          Position(text, m_endOfLastParagraph.offsetInContainerNode() - 1);
+      endOfLastParagraph =
+          Position(endOfNextParagraphText,
+                   endOfLastParagraph.offsetInContainerNode() - 1);
     }
   }
 
   return createVisiblePosition(
-      Position(text, position.offsetInContainerNode() - 1));
+      Position(endOfNextParagraphText,
+               endOfNextParagraphPosition.offsetInContainerNode() - 1));
 }
 
 HTMLElement* ApplyBlockElementCommand::createBlockElement() const {
@@ -396,7 +412,6 @@ HTMLElement* ApplyBlockElementCommand::createBlockElement() const {
 }
 
 DEFINE_TRACE(ApplyBlockElementCommand) {
-  visitor->trace(m_endOfLastParagraph);
   CompositeEditCommand::trace(visitor);
 }
 
