@@ -20,6 +20,11 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProvider
   // the current platform.
   static PlatformSensorProvider* GetInstance();
 
+  // This method allows to set a provider for testing and therefore
+  // skip the default platform provider. This allows testing without
+  // relying on the platform provider.
+  static void SetProviderForTesting(PlatformSensorProvider* provider);
+
  protected:
   PlatformSensorProvider() = default;
   ~PlatformSensorProvider() override = default;

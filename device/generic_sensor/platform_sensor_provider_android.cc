@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/generic_sensor/platform_sensor_provider.h"
+#include "device/generic_sensor/platform_sensor_provider_android.h"
 
 #include "base/android/context_utils.h"
 #include "base/android/scoped_java_ref.h"
@@ -14,30 +14,6 @@ using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
 namespace device {
-
-class PlatformSensorProviderAndroid : public PlatformSensorProvider {
- public:
-  PlatformSensorProviderAndroid();
-  ~PlatformSensorProviderAndroid() override;
-
-  static PlatformSensorProviderAndroid* GetInstance();
-
- protected:
-  void CreateSensorInternal(mojom::SensorType type,
-                            mojo::ScopedSharedBufferMapping mapping,
-                            const CreateSensorCallback& callback) override;
-
- private:
-  // Java object org.chromium.device.sensors.PlatformSensorProvider
-  base::android::ScopedJavaGlobalRef<jobject> j_object_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderAndroid);
-};
-
-// static
-PlatformSensorProvider* PlatformSensorProvider::GetInstance() {
-  return PlatformSensorProviderAndroid::GetInstance();
-}
 
 // static
 PlatformSensorProviderAndroid* PlatformSensorProviderAndroid::GetInstance() {

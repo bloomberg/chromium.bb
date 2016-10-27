@@ -17,11 +17,12 @@ component("generic_sensor") {
     "platform_sensor_ambient_light_mac.h",
     "platform_sensor_android.cc",
     "platform_sensor_android.h",
+    "platform_sensor_provider.cc",
     "platform_sensor_provider.h",
     "platform_sensor_provider_android.cc",
+    "platform_sensor_provider_android.h",
     "platform_sensor_provider_base.cc",
     "platform_sensor_provider_base.h",
-    "platform_sensor_provider_default.cc",
     "platform_sensor_provider_mac.cc",
     "platform_sensor_provider_mac.h",
     "sensor_impl.cc",
@@ -47,14 +48,11 @@ component("generic_sensor") {
       "android/sensors_jni_registrar.cc",
       "android/sensors_jni_registrar.h",
     ]
-    sources -= [ "platform_sensor_provider_default.cc" ]
 
     deps += [ ":jni_headers" ]
   }
 
   if (is_mac) {
-    sources -= [ "platform_sensor_provider_default.cc" ]
-
     deps += [ "//device/sensors/public/cpp" ]
 
     libs = [ "IOKit.framework" ]

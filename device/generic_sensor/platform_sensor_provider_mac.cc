@@ -10,11 +10,6 @@
 namespace device {
 
 // static
-PlatformSensorProvider* PlatformSensorProvider::GetInstance() {
-  return PlatformSensorProviderMac::GetInstance();
-}
-
-// static
 PlatformSensorProviderMac* PlatformSensorProviderMac::GetInstance() {
   return base::Singleton<
       PlatformSensorProviderMac,
