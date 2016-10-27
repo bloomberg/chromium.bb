@@ -42,22 +42,20 @@ void MediaPlayerRenderer::Initialize(
     return;
   }
 
-  GURL url = demuxer_stream_provider->GetUrl();
+  media::MediaUrlParams url_params =
+      demuxer_stream_provider->GetMediaUrlParams();
   renderer_client_ = client;
 
   const std::string user_agent = GetContentClient()->GetUserAgent();
 
-  // TODO(tguilbert): Get the first party cookies from WMPI. See
-  // crbug.com/636604.
   media_player_.reset(new media::MediaPlayerBridge(
-      kUnusedAndIrrelevantPlayerId, url,
-      GURL(),  // first_party_for_cookies
-      user_agent,
+      kUnusedAndIrrelevantPlayerId, url_params.media_url,
+      url_params.first_party_for_cookies, user_agent,
       false,  // hide_url_log
       this, base::Bind(&MediaPlayerRenderer::OnDecoderResourcesReleased,
                        weak_factory_.GetWeakPtr()),
       GURL(),  // frame_url
-      false));   // allow_crendentials
+      true));  // allow_crendentials
 
   media_player_->Initialize();
   init_cb.Run(media::PIPELINE_OK);

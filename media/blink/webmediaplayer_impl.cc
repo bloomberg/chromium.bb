@@ -59,6 +59,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -1516,7 +1517,9 @@ void WebMediaPlayerImpl::StartPipeline() {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnEncryptedMediaInitData);
 
   if (use_fallback_path_) {
-    demuxer_.reset(new MediaUrlDemuxer(media_task_runner_, fallback_url_));
+    demuxer_.reset(
+        new MediaUrlDemuxer(media_task_runner_, fallback_url_,
+                            frame_->document().firstPartyForCookies()));
     pipeline_controller_.Start(demuxer_.get(), this, false, false);
     return;
   }

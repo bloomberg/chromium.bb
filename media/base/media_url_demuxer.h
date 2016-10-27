@@ -30,12 +30,13 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
  public:
   MediaUrlDemuxer(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const GURL& url);
+      const GURL& media_url,
+      const GURL& first_party_for_cookies);
   ~MediaUrlDemuxer() override;
 
   // DemuxerStreamProvider interface.
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
-  GURL GetUrl() const override;
+  MediaUrlParams GetMediaUrlParams() const override;
   DemuxerStreamProvider::Type GetType() const override;
 
   // Demuxer interface.
@@ -57,7 +58,7 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
                                    base::TimeDelta currTime) override;
 
  private:
-  GURL url_;
+  MediaUrlParams params_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

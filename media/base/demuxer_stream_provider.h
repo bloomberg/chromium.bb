@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
+#include "media/base/media_url_params.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -20,6 +21,7 @@ namespace media {
 // "MediaProvider". This class would be a good candidate for renaming, if
 // ever Pipeline were to support this class directly, instead of the Demuxer
 // interface.
+// TODO(tguilbert): Rename this class. See crbug.com/658062.
 //
 // The derived classes must return a non-null value for the getter method
 // associated with their type, and return a null/empty value for other getters.
@@ -42,11 +44,11 @@ class MEDIA_EXPORT DemuxerStreamProvider {
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;
 
   // For Type::URL:
-  //   Returns the URL of the media to play. This might be an empty URL, and
-  //   should be handled appropriately by the caller.
+  //   Returns the URL parameters of the media to play. Empty URLs are legal,
+  //   and should be handled appropriately by the caller.
   // Other types:
   //   Should not be called.
-  virtual GURL GetUrl() const;
+  virtual MediaUrlParams GetMediaUrlParams() const;
 
   virtual DemuxerStreamProvider::Type GetType() const;
 

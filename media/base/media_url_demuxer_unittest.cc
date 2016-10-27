@@ -16,20 +16,25 @@ namespace media {
 
 class MediaUrlDemuxerTest : public testing::Test {
  public:
-  MediaUrlDemuxerTest() : default_url_("http://example.com/") {}
+  MediaUrlDemuxerTest()
+      : default_media_url_("http://example.com/file.mp4"),
+        default_first_party_url_("http://example.com/") {}
 
-  void InitializeTest(const GURL& gurl) {
-    demuxer_.reset(
-        new MediaUrlDemuxer(base::ThreadTaskRunnerHandle::Get(), gurl));
+  void InitializeTest(const GURL& media_url, const GURL& first_party) {
+    demuxer_.reset(new MediaUrlDemuxer(base::ThreadTaskRunnerHandle::Get(),
+                                       media_url, first_party));
   }
 
-  void InitializeTest() { InitializeTest(default_url_); }
+  void InitializeTest() {
+    InitializeTest(default_media_url_, default_first_party_url_);
+  }
 
   void VerifyCallbackOk(PipelineStatus status) {
     EXPECT_EQ(PIPELINE_OK, status);
   }
 
-  GURL default_url_;
+  GURL default_media_url_;
+  GURL default_first_party_url_;
   std::unique_ptr<Demuxer> demuxer_;
 
   // Necessary, or else base::ThreadTaskRunnerHandle::Get() fails.
@@ -43,13 +48,18 @@ TEST_F(MediaUrlDemuxerTest, BaseCase) {
   InitializeTest();
 
   EXPECT_EQ(DemuxerStreamProvider::Type::URL, demuxer_->GetType());
-  EXPECT_EQ(default_url_, demuxer_->GetUrl());
+
+  MediaUrlParams params = demuxer_->GetMediaUrlParams();
+  EXPECT_EQ(default_media_url_, params.media_url);
+  EXPECT_EQ(default_first_party_url_, params.first_party_for_cookies);
 }
 
 TEST_F(MediaUrlDemuxerTest, AcceptsEmptyStrings) {
-  InitializeTest(GURL());
+  InitializeTest(GURL(), GURL());
 
-  EXPECT_EQ(GURL::EmptyGURL(), demuxer_->GetUrl());
+  MediaUrlParams params = demuxer_->GetMediaUrlParams();
+  EXPECT_EQ(GURL::EmptyGURL(), params.media_url);
+  EXPECT_EQ(GURL::EmptyGURL(), params.first_party_for_cookies);
 }
 
 TEST_F(MediaUrlDemuxerTest, InitializeReturnsPipelineOk) {

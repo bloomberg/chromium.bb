@@ -835,7 +835,7 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
 
     case DemuxerStreamProvider::Type::URL:
       // NOTE: Empty GURL are not valid.
-      if (!demuxer_->GetUrl().is_valid()) {
+      if (!demuxer_->GetMediaUrlParams().media_url.is_valid()) {
         DVLOG(1) << "Error: demuxer does not have a valid URL.";
         done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
         return;

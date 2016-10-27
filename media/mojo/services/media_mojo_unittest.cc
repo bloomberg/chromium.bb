@@ -127,6 +127,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     renderer_->Initialize(std::move(client_ptr_info), nullptr,
                           std::move(video_stream_proxy), base::nullopt,
+                          base::nullopt,
                           base::Bind(&MediaServiceTest::OnRendererInitialized,
                                      base::Unretained(this)));
   }

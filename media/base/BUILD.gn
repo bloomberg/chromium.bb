@@ -166,6 +166,7 @@ target(link_target_type, "base") {
     "media_tracks.h",
     "media_url_demuxer.cc",
     "media_url_demuxer.h",
+    "media_url_params.h",
     "media_util.cc",
     "media_util.h",
     "mime_util.cc",

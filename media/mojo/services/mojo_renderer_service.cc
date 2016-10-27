@@ -68,7 +68,8 @@ void MojoRendererService::Initialize(
     mojom::RendererClientAssociatedPtrInfo client,
     mojom::DemuxerStreamPtr audio,
     mojom::DemuxerStreamPtr video,
-    const base::Optional<GURL>& url,
+    const base::Optional<GURL>& media_url,
+    const base::Optional<GURL>& first_party_for_cookies,
     const InitializeCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -76,7 +77,7 @@ void MojoRendererService::Initialize(
   client_.Bind(std::move(client));
   state_ = STATE_INITIALIZING;
 
-  if (url == base::nullopt) {
+  if (media_url == base::nullopt) {
     stream_provider_.reset(new DemuxerStreamProviderShim(
         std::move(audio), std::move(video),
         base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
@@ -85,8 +86,10 @@ void MojoRendererService::Initialize(
 
   DCHECK(!audio);
   DCHECK(!video);
-  DCHECK(!url.value().is_empty());
-  stream_provider_.reset(new MediaUrlDemuxer(nullptr, url.value()));
+  DCHECK(!media_url.value().is_empty());
+  DCHECK(first_party_for_cookies);
+  stream_provider_.reset(new MediaUrlDemuxer(nullptr, media_url.value(),
+                                             first_party_for_cookies.value()));
   renderer_->Initialize(
       stream_provider_.get(), this,
       base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,

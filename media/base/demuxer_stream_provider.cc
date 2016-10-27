@@ -10,9 +10,9 @@ DemuxerStreamProvider::DemuxerStreamProvider() {}
 
 DemuxerStreamProvider::~DemuxerStreamProvider() {}
 
-GURL DemuxerStreamProvider::GetUrl() const {
+MediaUrlParams DemuxerStreamProvider::GetMediaUrlParams() const {
   NOTREACHED();
-  return GURL();
+  return MediaUrlParams{GURL(), GURL()};
 }
 
 DemuxerStreamProvider::Type DemuxerStreamProvider::GetType() const {
