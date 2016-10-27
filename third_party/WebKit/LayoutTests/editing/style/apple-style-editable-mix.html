@@ -1,40 +1,31 @@
-<html>
-    <head>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '^abc',
+            '<div contenteditable="false">',
+                'def',
+                '<div contenteditable>xyz</div>',
+                'ghi',
+            '</div>',
+            'def|',
+        '</div>',
+    ].join(''),
+    'bold',
+    [
+        '<div contenteditable>',
+            '<b>^abc</b>',
+            '<div contenteditable="false">',
+                'def',
+                '<div contenteditable><b>xyz</b></div>',
+                'ghi',
+            '</div>',
+            '<b>def|</b>',
+        '</div>',
+    ].join('')),
+    'Apply style to mixed editable contents');
 </script>
-
-        <script>
-            function test()
-            {
-                var tbl1 = document.getElementById('tbl1');
-                var tbl2 = document.getElementById('tbl2');
-                var selection = window.getSelection();
-                selectAllCommand();
-                boldCommand();
-            }
-        </script>
-        <script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-    </head>
-<body onload="test()" contenteditable>
-    <table id="tbl1" contenteditable=false>
-        <tr>
-            <td>This tests that a style can be applied to a selection that contains both editable and non-editable content.
-            </td>
-            <td>
-                <span contenteditable>Editable - line 1</span>
-            </td>
-        </tr>
-    </table>
-    <table id="tbl2" contenteditable=false>
-        <tr>
-            <td>The test passes if the editable content is bold, and the non editable content remains unchanged.
-            </td>
-            <td>
-                <span contenteditable>Editable - line 2</span>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
