@@ -300,7 +300,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_AfterConstruction) {
   state = ComputeBackgroundedPlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
-  EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_suspended);
 
   state = ComputeMustSuspendPlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);

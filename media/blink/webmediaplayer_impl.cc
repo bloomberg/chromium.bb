@@ -1741,7 +1741,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // After HaveMetadata, we know which tracks are present and the duration.
   bool have_metadata = ready_state_ >= WebMediaPlayer::ReadyStateHaveMetadata;
 
-  // After HaveFutureData, Blink will call play() if the state is not paused.
+  // After HaveFutureData, Blink will call play() if the state is not paused;
+  // prior to this point |paused_| is not accurate.
   bool have_future_data =
       highest_ready_state_ >= WebMediaPlayer::ReadyStateHaveFutureData;
 
@@ -1756,8 +1757,13 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
       delegate_ && delegate_->IsPlayingBackgroundVideo();
   bool background_suspended = is_backgrounded_video &&
                               !(can_play_backgrounded && is_background_playing);
-  bool background_pause_suspended = is_backgrounded && paused_;
+  bool background_pause_suspended =
+      is_backgrounded && paused_ && have_future_data;
 
+  // Idle suspension is allowed prior to have future data since there exist
+  // mechanisms to exit the idle state when the player is capable of reaching
+  // the have future data state; see didLoadingProgress().
+  //
   // TODO(sandersd): Make the delegate suspend idle players immediately when
   // hidden.
   bool idle_suspended = is_idle_ && paused_ && !seeking_ && !overlay_enabled_;
