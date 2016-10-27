@@ -867,7 +867,7 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
   EXPECT_EQ(pushPageGurl1, pushedEntry.navigationItem->GetReferrer().url);
 }
 
-TEST_F(CRWSessionControllerTest, IsPushStateNavigation) {
+TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
   ScopedVector<web::NavigationItem> items;
   items.push_back(
       CreateNavigationItem("http://foo.com", "http://google.com", @"First"));
@@ -895,21 +895,23 @@ TEST_F(CRWSessionControllerTest, IsPushStateNavigation) {
   CRWSessionEntry* entry4 = [controller.get().entries objectAtIndex:4];
   CRWSessionEntry* entry5 = [controller.get().entries objectAtIndex:5];
   entry1.navigationItemImpl->SetIsCreatedFromPushState(true);
-  entry4.navigationItemImpl->SetIsCreatedFromPushState(true);
+  entry4.navigationItemImpl->SetIsCreatedFromHashChange(true);
   entry5.navigationItemImpl->SetIsCreatedFromPushState(true);
 
-  EXPECT_TRUE(
-      [controller isPushStateNavigationBetweenEntry:entry0 andEntry:entry1]);
-  EXPECT_TRUE(
-      [controller isPushStateNavigationBetweenEntry:entry5 andEntry:entry3]);
-  EXPECT_TRUE(
-      [controller isPushStateNavigationBetweenEntry:entry4 andEntry:entry3]);
   EXPECT_FALSE(
-      [controller isPushStateNavigationBetweenEntry:entry1 andEntry:entry2]);
+      [controller isSameDocumentNavigationBetweenEntry:entry0 andEntry:entry0]);
+  EXPECT_TRUE(
+      [controller isSameDocumentNavigationBetweenEntry:entry0 andEntry:entry1]);
+  EXPECT_TRUE(
+      [controller isSameDocumentNavigationBetweenEntry:entry5 andEntry:entry3]);
+  EXPECT_TRUE(
+      [controller isSameDocumentNavigationBetweenEntry:entry4 andEntry:entry3]);
   EXPECT_FALSE(
-      [controller isPushStateNavigationBetweenEntry:entry0 andEntry:entry5]);
+      [controller isSameDocumentNavigationBetweenEntry:entry1 andEntry:entry2]);
   EXPECT_FALSE(
-      [controller isPushStateNavigationBetweenEntry:entry2 andEntry:entry4]);
+      [controller isSameDocumentNavigationBetweenEntry:entry0 andEntry:entry5]);
+  EXPECT_FALSE(
+      [controller isSameDocumentNavigationBetweenEntry:entry2 andEntry:entry4]);
 }
 
 TEST_F(CRWSessionControllerTest, UpdateCurrentEntry) {

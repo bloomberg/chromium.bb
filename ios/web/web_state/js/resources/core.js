@@ -374,8 +374,8 @@ goog.require('__crWeb.message');
   // Various aspects of global DOM behavior are overridden here.
 
   // A popstate event needs to be fired anytime the active history entry
-  // changes. Either via back, forward, go navigation or by loading the URL,
-  // clicking on a link, etc.
+  // changes without an associated document change. Either via back, forward, go
+  // navigation or by loading the URL, clicking on a link, etc.
   __gCrWeb['dispatchPopstateEvent'] = function(stateObject) {
     var popstateEvent = window.document.createEvent('HTMLEvents');
     popstateEvent.initEvent('popstate', true, false);
@@ -387,6 +387,24 @@ goog.require('__crWeb.message');
     // cause a ReentryGuard failure.
     window.setTimeout(function() {
       window.dispatchEvent(popstateEvent);
+    }, 0);
+  };
+
+  // A hashchange event needs to be fired after a same-document history
+  // navigation between two URLs that are equivalent except for their fragments.
+  __gCrWeb['dispatchHashchangeEvent'] = function(oldURL, newURL) {
+    var hashchangeEvent = window.document.createEvent('HTMLEvents');
+    hashchangeEvent.initEvent('hashchange', true, false);
+    if (oldURL)
+      hashchangeEvent.oldURL = oldURL;
+    if (newURL)
+      hashchangeEvent.newURL = newURL
+
+    // setTimeout() is used in order to return immediately. Otherwise the
+    // dispatchEvent call waits for all event handlers to return, which could
+    // cause a ReentryGuard failure.
+    window.setTimeout(function() {
+      window.dispatchEvent(hashchangeEvent);
     }, 0);
   };
 

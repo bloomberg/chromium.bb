@@ -400,6 +400,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // Set to YES on window.history.willChangeState message. To NO on
   // window.history.didPushState or window.history.didReplaceState.
   BOOL _changingHistoryState;
+  // Set to YES when a hashchange event is manually dispatched for same-document
+  // history navigations.
+  BOOL _dispatchingSameDocumentHashChangeEvent;
   // YES if the web process backing _wkWebView is believed to currently be dead.
   BOOL _webProcessIsDead;
 
@@ -677,19 +680,37 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)registerLoadRequest:(const GURL&)URL
                    referrer:(const web::Referrer&)referrer
                  transition:(ui::PageTransition)transition;
+// Updates the HTML5 history state of the page using the current NavigationItem.
+// For same-document navigations and navigations affected by
+// window.history.[push/replace]State(), the URL and serialized state object
+// will be updated to the current NavigationItem's values.  A popState event
+// will be triggered for all same-document navigations.  Additionaly, a
+// hashchange event will be triggered for same-document navigations where the
+// only difference between the current and previous URL is the fragment.
+- (void)updateHTML5HistoryState;
 // Generates the JavaScript string used to update the UIWebView's URL so that it
 // matches the URL displayed in the omnibox and sets window.history.state to
 // stateObject. Needed for history.pushState() and history.replaceState().
-- (NSString*)javascriptToReplaceWebViewURL:(const GURL&)URL
+- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
                            stateObjectJSON:(NSString*)stateObject;
-// Injects JavaScript into the web view to update the URL to |URL|, to set
-// window.history.state to |stateObject|, and to trigger a popstate() event.
-// Upon the scripts completion, resets |urlOnStartLoading_| and
-// |_lastRegisteredRequestURL| to |URL|.  This is necessary so that sites that
-// depend on URL params/fragments continue to work correctly and that checks for
-// the URL don't incorrectly trigger |-pageChanged| calls.
-- (void)setPushedOrReplacedURL:(const GURL&)URL
-                   stateObject:(NSString*)stateObject;
+// Generates the JavaScript string used to manually dispatch a popstate event,
+// using |stateObjectJSON| as the event parameter.
+- (NSString*)javaScriptToDispatchPopStateWithObject:(NSString*)stateObjectJSON;
+// Generates the JavaScript string used to manually dispatch a hashchange event,
+// using |oldURL| and |newURL| as the event parameters.
+- (NSString*)javaScriptToDispatchHashChangeWithOldURL:(const GURL&)oldURL
+                                               newURL:(const GURL&)newURL;
+// Injects JavaScript to update the URL and state object of the webview to the
+// values found in the current NavigationItem.  A hashchange event will be
+// dispatched if |dispatchHashChange| is YES, and a popstate event will be
+// dispatched if |sameDocument| is YES.  Upon the script's completion, resets
+// |urlOnStartLoading_| and |_lastRegisteredRequestURL| to the current
+// NavigationItem's URL.  This is necessary so that sites that depend on URL
+// params/fragments continue to work correctly and that checks for the URL don't
+// incorrectly trigger |-webPageChanged| calls.
+- (void)injectHTML5HistoryScriptWithHashChange:(BOOL)dispatchHashChange
+                        sameDocumentNavigation:(BOOL)sameDocumentNavigation;
+
 - (BOOL)isLoaded;
 // Extracts the current page's viewport tag information and calls |completion|.
 // If the page has changed before the viewport tag is successfully extracted,
@@ -1707,7 +1728,50 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
 }
 
-- (NSString*)javascriptToReplaceWebViewURL:(const GURL&)URL
+- (void)updateHTML5HistoryState {
+  web::NavigationItemImpl* currentItem =
+      static_cast<web::NavigationItemImpl*>([self currentNavItem]);
+  if (!currentItem)
+    return;
+
+  // Same-document navigations must trigger a popState event.
+  CRWSessionController* sessionController = self.sessionController;
+  BOOL sameDocumentNavigation = [sessionController
+      isSameDocumentNavigationBetweenEntry:sessionController.currentEntry
+                                  andEntry:sessionController.previousEntry];
+  // WKWebView doesn't send hashchange events for same-document non-BFLI
+  // navigations, so one must be dispatched manually for hash change same-
+  // document navigations.
+  web::NavigationItem* previousItem =
+      self.sessionController.previousEntry.navigationItem;
+  const GURL URL = currentItem->GetURL();
+  const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
+  BOOL shouldDispatchHashchange = sameDocumentNavigation && previousItem &&
+                                  (web::GURLByRemovingRefFromGURL(URL) ==
+                                   web::GURLByRemovingRefFromGURL(oldURL));
+  // The URL and state object must be set for same-document navigations and
+  // NavigationItems that were created or updated by calls to pushState() or
+  // replaceState().
+  BOOL shouldUpdateState = sameDocumentNavigation ||
+                           currentItem->IsCreatedFromPushState() ||
+                           currentItem->HasStateBeenReplaced();
+  if (!shouldUpdateState)
+    return;
+
+  // TODO(stuartmorgan): Make CRWSessionController manage this internally (or
+  // remove it; it's not clear this matches other platforms' behavior).
+  _webStateImpl->GetNavigationManagerImpl().OnNavigationItemCommitted();
+  // Record that a same-document hashchange event will be fired.  This flag will
+  // be reset when resonding to the hashchange message.  Note that resetting the
+  // flag in the completion block below is too early, as that block is called
+  // before hashchange event listeners have a chance to fire.
+  _dispatchingSameDocumentHashChangeEvent = shouldDispatchHashchange;
+  // Inject the JavaScript to update the state on the browser side.
+  [self injectHTML5HistoryScriptWithHashChange:shouldDispatchHashchange
+                        sameDocumentNavigation:sameDocumentNavigation];
+}
+
+- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
                            stateObjectJSON:(NSString*)stateObject {
   std::string outURL;
   base::EscapeJSONString(URL.spec(), true, &outURL);
@@ -1716,30 +1780,53 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                                  base::SysUTF8ToNSString(outURL), stateObject];
 }
 
-- (void)setPushedOrReplacedURL:(const GURL&)URL
-                   stateObject:(NSString*)stateObject {
-  // TODO(stuartmorgan): Make CRWSessionController manage this internally (or
-  // remove it; it's not clear this matches other platforms' behavior).
-  _webStateImpl->GetNavigationManagerImpl().OnNavigationItemCommitted();
-
-  NSString* replaceWebViewUrlJS =
-      [self javascriptToReplaceWebViewURL:URL stateObjectJSON:stateObject];
+- (NSString*)javaScriptToDispatchPopStateWithObject:(NSString*)stateObjectJSON {
   std::string outState;
-  base::EscapeJSONString(base::SysNSStringToUTF8(stateObject), true, &outState);
-  NSString* popstateJS =
-      [NSString stringWithFormat:@"__gCrWeb.dispatchPopstateEvent(%@);",
-                                 base::SysUTF8ToNSString(outState)];
-  NSString* combinedJS =
-      [NSString stringWithFormat:@"%@%@", replaceWebViewUrlJS, popstateJS];
-  GURL blockURL(URL);
+  base::EscapeJSONString(base::SysNSStringToUTF8(stateObjectJSON), true,
+                         &outState);
+  return [NSString stringWithFormat:@"__gCrWeb.dispatchPopstateEvent(%@);",
+                                    base::SysUTF8ToNSString(outState)];
+}
+
+- (NSString*)javaScriptToDispatchHashChangeWithOldURL:(const GURL&)oldURL
+                                               newURL:(const GURL&)newURL {
+  return [NSString
+      stringWithFormat:@"__gCrWeb.dispatchHashchangeEvent(\'%s\', \'%s\');",
+                       oldURL.spec().c_str(), newURL.spec().c_str()];
+}
+
+- (void)injectHTML5HistoryScriptWithHashChange:(BOOL)dispatchHashChange
+                        sameDocumentNavigation:(BOOL)sameDocumentNavigation {
+  web::NavigationItemImpl* currentItem =
+      static_cast<web::NavigationItemImpl*>([self currentNavItem]);
+  if (!currentItem)
+    return;
+
+  const GURL URL = currentItem->GetURL();
+  NSString* stateObject = currentItem->GetSerializedStateObject();
+  NSMutableString* script = [NSMutableString
+      stringWithString:[self javaScriptToReplaceWebViewURL:URL
+                                           stateObjectJSON:stateObject]];
+  if (sameDocumentNavigation) {
+    [script
+        appendString:[self javaScriptToDispatchPopStateWithObject:stateObject]];
+  }
+  if (dispatchHashChange) {
+    web::NavigationItemImpl* previousItem =
+        self.sessionController.previousEntry.navigationItemImpl;
+    const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
+    [script appendString:[self javaScriptToDispatchHashChangeWithOldURL:oldURL
+                                                                 newURL:URL]];
+  }
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self executeJavaScript:combinedJS completionHandler:^(id, NSError*) {
-    if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
-      return;
-    base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-    strongSelf.get()->_URLOnStartLoading = blockURL;
-    strongSelf.get()->_lastRegisteredRequestURL = blockURL;
-  }];
+  [self executeJavaScript:script
+        completionHandler:^(id, NSError*) {
+          if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
+            return;
+          base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
+          strongSelf.get()->_URLOnStartLoading = URL;
+          strongSelf.get()->_lastRegisteredRequestURL = URL;
+        }];
 }
 
 // Load the current URL in a web view, first ensuring the web view is visible.
@@ -2328,8 +2415,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // window.history.pushState() call from |fromEntry|.
   BOOL shouldLoadURL =
       ![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
-          isPushStateNavigationBetweenEntry:fromEntry
-                                   andEntry:self.currentSessionEntry];
+          isSameDocumentNavigationBetweenEntry:fromEntry
+                                      andEntry:self.currentSessionEntry];
   web::NavigationItemImpl* currentItem =
       self.currentSessionEntry.navigationItemImpl;
   GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
@@ -2345,19 +2432,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     params.transition_type = transition;
     [self loadWithParams:params];
   }
-  // Set the serialized state if necessary.  State must be set if the document
-  // objects are the same. This can happen if:
-  // - The navigation is a pushState (i.e., shouldLoadURL is NO).
-  // - The navigation is a hash change.
-  // TODO(crbug.com/566157): This misses some edge cases (e.g., a mixed series
-  // of hash changes and push/replaceState calls will likely end up dispatching
-  // this in cases where it shouldn't.
-  if (!shouldLoadURL ||
-      (web::GURLByRemovingRefFromGURL(endURL) ==
-       web::GURLByRemovingRefFromGURL(fromEntry.navigationItem->GetURL()))) {
-    NSString* stateObject = currentItem->GetSerializedStateObject();
-    [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:stateObject];
-  }
+  // If this is a same-document navigation, update the HTML5 history state
+  // immediately.  For cross-document navigations, the history state will be
+  // updated after the navigation is committed, as attempting to replace the URL
+  // here will result in a JavaScript SecurityError due to the URLs having
+  // different origins.
+  if (!shouldLoadURL)
+    [self updateHTML5HistoryState];
 }
 
 - (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer {
@@ -2942,6 +3023,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self executeJavaScript:@"__gCrWeb.sendFaviconsToHost();"
         completionHandler:nil];
 
+  // Record that the current NavigationItem was created by a hash change, but
+  // ignore hashchange events that are manually dispatched for same-document
+  // navigations.
+  if (_dispatchingSameDocumentHashChangeEvent) {
+    _dispatchingSameDocumentHashChangeEvent = NO;
+  } else {
+    web::NavigationItemImpl* item =
+        static_cast<web::NavigationItemImpl*>([self currentNavItem]);
+    DCHECK(item);
+    item->SetIsCreatedFromHashChange(true);
+  }
+
   // Notify the observers.
   _webStateImpl->OnUrlHashChanged();
   return YES;
@@ -3033,7 +3126,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                   transition:transition];
 
   NSString* replaceWebViewJS =
-      [self javascriptToReplaceWebViewURL:pushURL stateObjectJSON:stateObject];
+      [self javaScriptToReplaceWebViewURL:pushURL stateObjectJSON:stateObject];
   base::WeakNSObject<CRWWebController> weakSelf(self);
   [self executeJavaScript:replaceWebViewJS completionHandler:^(id, NSError*) {
     if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
@@ -3091,7 +3184,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _URLOnStartLoading = replaceURL;
   _lastRegisteredRequestURL = replaceURL;
   [self replaceStateWithPageURL:replaceURL stateObject:stateObject];
-  NSString* replaceStateJS = [self javascriptToReplaceWebViewURL:replaceURL
+  NSString* replaceStateJS = [self javaScriptToReplaceWebViewURL:replaceURL
                                                  stateObjectJSON:stateObject];
   base::WeakNSObject<CRWWebController> weakSelf(self);
   [self executeJavaScript:replaceStateJS completionHandler:^(id, NSError*) {
@@ -5160,6 +5253,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self webPageChanged];
 
   [self updateSSLStatusForCurrentNavigationItem];
+
+  // Attempt to update the HTML5 history state.
+  [self updateHTML5HistoryState];
 
   // Report cases where SSL cert is missing for a secure connection.
   if (_documentURL.SchemeIsCryptographic()) {

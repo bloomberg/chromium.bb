@@ -141,10 +141,10 @@ struct SSLStatus;
 // Returns the URLs in the entries that are redirected to the current entry.
 - (std::vector<GURL>)currentRedirectedUrls;
 
-// Determines if navigation between the two given entries is a push state
-// navigation. Entries can be passed in in any order.
-- (BOOL)isPushStateNavigationBetweenEntry:(CRWSessionEntry*)firstEntry
-                                 andEntry:(CRWSessionEntry*)secondEntry;
+// Determines whether a navigation between |firstEntry| and |secondEntry| is a
+// same-document navigation.  Entries can be passed in any order.
+- (BOOL)isSameDocumentNavigationBetweenEntry:(CRWSessionEntry*)firstEntry
+                                    andEntry:(CRWSessionEntry*)secondEntry;
 
 // Find the most recent session entry that is not a redirect. Returns nil if
 // |entries_| is empty.
