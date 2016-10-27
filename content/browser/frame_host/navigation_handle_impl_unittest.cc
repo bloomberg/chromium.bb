@@ -8,6 +8,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
 #include "content/test/test_render_frame_host.h"
+#include "content/test/test_web_contents.h"
 
 namespace content {
 
@@ -71,6 +72,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         base::TimeTicks::Now(), 0, false);
     EXPECT_EQ(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
               test_handle_->request_context_type_);
+    contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
   }
 
   void TearDown() override {

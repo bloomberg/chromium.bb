@@ -35,6 +35,8 @@ class PreviewsInfoBarTabHelperUnitTest
     PreviewsInfoBarTabHelper::CreateForWebContents(web_contents());
     test_handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
         GURL(kTestUrl), main_rfh());
+    content::RenderFrameHostTester::For(main_rfh())
+        ->InitializeRenderFrameIfNeeded();
 
     drp_test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()

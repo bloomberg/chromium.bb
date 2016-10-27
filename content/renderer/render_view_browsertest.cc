@@ -1588,32 +1588,6 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 }
 #endif
 
-TEST_F(RenderViewImplTest, ZoomLimit) {
-  const double kMinZoomLevel = ZoomFactorToZoomLevel(kMinimumZoomFactor);
-  const double kMaxZoomLevel = ZoomFactorToZoomLevel(kMaximumZoomFactor);
-
-  // Verifies navigation to a URL with preset zoom level indeed sets the level.
-  // Regression test for http://crbug.com/139559, where the level was not
-  // properly set when it is out of the default zoom limits of WebView.
-  CommonNavigationParams common_params;
-  common_params.url = GURL("data:text/html,min_zoomlimit_test");
-  view()->OnSetZoomLevelForLoadingURL(common_params.url, kMinZoomLevel);
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    RequestNavigationParams());
-  ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMinZoomLevel, view()->GetWebView()->zoomLevel());
-
-  // It should work even when the zoom limit is temporarily changed in the page.
-  view()->GetWebView()->zoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
-                                          ZoomFactorToZoomLevel(1.0));
-  common_params.url = GURL("data:text/html,max_zoomlimit_test");
-  view()->OnSetZoomLevelForLoadingURL(common_params.url, kMaxZoomLevel);
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    RequestNavigationParams());
-  ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMaxZoomLevel, view()->GetWebView()->zoomLevel());
-}
-
 TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   // Load an HTML page consisting of an input field.
   LoadHTML("<html>"

@@ -54,6 +54,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/host_zoom_map_impl.h"
+#include "content/browser/host_zoom_map_observer.h"
 #include "content/browser/loader/loader_io_thread_notifier.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
@@ -469,6 +470,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   wake_lock_service_context_.reset(new device::WakeLockServiceContext(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
       base::Bind(&WebContentsImpl::GetNativeView, base::Unretained(this))));
+  host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
 }
 
 WebContentsImpl::~WebContentsImpl() {

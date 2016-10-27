@@ -6,7 +6,6 @@
 
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/host_zoom_level_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_messages.h"
@@ -22,7 +21,6 @@ ResourceMessageFilter::ResourceMessageFilter(
     ChromeBlobStorageContext* blob_storage_context,
     storage::FileSystemContext* file_system_context,
     ServiceWorkerContextWrapper* service_worker_context,
-    HostZoomLevelContext* host_zoom_level_context,
     const GetContextsCallback& get_contexts_callback)
     : BrowserMessageFilter(ResourceMsgStart),
       child_id_(child_id),
@@ -31,7 +29,6 @@ ResourceMessageFilter::ResourceMessageFilter(
       blob_storage_context_(blob_storage_context),
       file_system_context_(file_system_context),
       service_worker_context_(service_worker_context),
-      host_zoom_level_context_(host_zoom_level_context),
       get_contexts_callback_(get_contexts_callback),
       weak_ptr_factory_(this) {
 }
@@ -61,12 +58,6 @@ void ResourceMessageFilter::GetContexts(
     net::URLRequestContext** request_context) {
   return get_contexts_callback_.Run(resource_type, resource_context,
                                     request_context);
-}
-
-const HostZoomMap* ResourceMessageFilter::GetHostZoomMap() const {
-  if (host_zoom_level_context_.get())
-    return host_zoom_level_context_->GetHostZoomMap();
-  return NULL;
 }
 
 base::WeakPtr<ResourceMessageFilter> ResourceMessageFilter::GetWeakPtr() {

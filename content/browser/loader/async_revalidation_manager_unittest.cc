@@ -212,7 +212,6 @@ class BlackholeFilter : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
-            nullptr,
             base::Bind(&BlackholeFilter::GetContexts, base::Unretained(this))),
         resource_context_(resource_context) {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());

@@ -27,6 +27,7 @@
 #include "content/common/associated_interface_registry_impl.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/host_zoom.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_message_type.h"
@@ -41,6 +42,7 @@
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
@@ -174,6 +176,7 @@ class CreateFrameWidgetParams;
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       NON_EXPORTED_BASE(mojom::Frame),
+      NON_EXPORTED_BASE(mojom::HostZoom),
       NON_EXPORTED_BASE(public blink::WebFrameClient),
       NON_EXPORTED_BASE(public blink::WebFrameSerializerClient) {
  public:
@@ -454,6 +457,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void GetInterfaceProvider(
       service_manager::mojom::InterfaceProviderRequest request) override;
 
+  // mojom::HostZoom implementation:
+  void SetHostZoomLevel(const GURL& url, double zoom_level) override;
+
   // blink::WebFrameClient implementation:
   blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                  const blink::WebPluginParams& params) override;
@@ -726,6 +732,7 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderAccessibilityImplTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest, ZoomLimit);
 
   // A wrapper class used as the callback for JavaScript executed
   // in an isolated world.
@@ -1048,6 +1055,8 @@ class CONTENT_EXPORT RenderFrameImpl
   template <typename Interface>
   void GetInterface(mojo::InterfaceRequest<Interface> request);
 
+  void OnHostZoomClientRequest(mojom::HostZoomAssociatedRequest request);
+
   // Returns the media delegate for WebMediaPlayer usage.  If
   // |media_player_delegate_| is NULL, one is created.
   media::RendererWebMediaPlayerDelegate* GetWebMediaPlayerDelegate();
@@ -1313,7 +1322,10 @@ class CONTENT_EXPORT RenderFrameImpl
   PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
 
+  HostZoomLevels host_zoom_levels_;
+
   mojo::Binding<mojom::Frame> frame_binding_;
+  mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojom::FrameHostPtr frame_host_;
 
   // Indicates whether |didAccessInitialDocument| was called.

@@ -61,6 +61,7 @@ class BrowserPluginGuest;
 class DateTimeChooserAndroid;
 class DownloadItem;
 class FindRequestManager;
+class HostZoomMapObserver;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class LoaderIOThreadNotifier;
@@ -1416,6 +1417,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Observes pepper playback changes, and notifies MediaSession.
   std::unique_ptr<PepperPlaybackObserver> pepper_playback_observer_;
 #endif  // defined(ENABLE_PLUGINS)
+
+  std::unique_ptr<HostZoomMapObserver> host_zoom_map_observer_;
 
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 

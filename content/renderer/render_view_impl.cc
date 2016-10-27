@@ -1317,8 +1317,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageScale, OnSetPageScale)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
-                        OnSetZoomLevelForLoadingURL)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -2243,21 +2241,6 @@ void RenderViewImpl::OnZoom(PageZoom zoom) {
   }
   SetZoomLevel(zoom_level);
   zoomLevelChanged();
-}
-
-void RenderViewImpl::OnSetZoomLevelForLoadingURL(const GURL& url,
-                                                 double zoom_level) {
-  // TODO(wjmaclean): We should see if this restriction is really necessary,
-  // since it isn't enforced in other parts of the page zoom system (e.g.
-  // when a users changes the zoom of a currently displayed page). Android
-  // has no UI for this, so in theory the following code would normally just use
-  // the default zoom anyways.
-#if !defined(OS_ANDROID)
-  // On Android, page zoom isn't used, and in case of WebView, text zoom is used
-  // for legacy WebView text scaling emulation. Thus, the code that resets
-  // the zoom level from this map will be effectively resetting text zoom level.
-  host_zoom_levels_[url] = zoom_level;
-#endif
 }
 
 void RenderViewImpl::OnSetZoomLevel(

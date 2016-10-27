@@ -90,7 +90,6 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
             nullptr,
             nullptr,
             nullptr,
-            nullptr,
             base::Bind(&URLLoaderFactoryImplTest::GetContexts,
                        base::Unretained(this)))) {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(GetParam());

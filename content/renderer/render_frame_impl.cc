@@ -66,6 +66,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
@@ -1117,6 +1118,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       pepper_last_mouse_event_target_(nullptr),
 #endif
       frame_binding_(this),
+      host_zoom_binding_(this),
       has_accessed_initial_document_(false),
       weak_factory_(this) {
   // We don't have a service_manager::Connection at this point, so use empty
@@ -2643,6 +2645,22 @@ void RenderFrameImpl::GetInterfaceProvider(
   interface_registry_->Bind(std::move(request),
                             service_manager::Identity(),
                             service_manager::InterfaceProviderSpec());
+}
+
+// mojom::HostZoom implementation ----------------------------------------------
+
+void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
+  // TODO(wjmaclean): We should see if this restriction is really necessary,
+  // since it isn't enforced in other parts of the page zoom system (e.g.
+  // when a users changes the zoom of a currently displayed page). Android
+  // has no UI for this, so in theory the following code would normally just use
+  // the default zoom anyways.
+#if !defined(OS_ANDROID)
+  // On Android, page zoom isn't used, and in case of WebView, text zoom is used
+  // for legacy WebView text scaling emulation. Thus, the code that resets
+  // the zoom level from this map will be effectively resetting text zoom level.
+  host_zoom_levels_[url] = zoom_level;
+#endif
 }
 
 // blink::WebFrameClient implementation ----------------------------------------
@@ -4842,7 +4860,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     // Set zoom level, but don't do it for full-page plugin since they don't use
     // the same zoom settings.
     HostZoomLevels::iterator host_zoom =
-        render_view_->host_zoom_levels_.find(GURL(request.url()));
+        host_zoom_levels_.find(GURL(request.url()));
     if (render_view_->webview()->mainFrame()->isWebLocalFrame() &&
         render_view_->webview()->mainFrame()->document().isPluginDocument()) {
       // Reset the zoom levels for plugins.
@@ -4850,15 +4868,15 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     } else {
       // If the zoom level is not found, then do nothing. In-page navigation
       // relies on not changing the zoom level in this case.
-      if (host_zoom != render_view_->host_zoom_levels_.end())
+      if (host_zoom != host_zoom_levels_.end())
         render_view_->SetZoomLevel(host_zoom->second);
     }
 
-    if (host_zoom != render_view_->host_zoom_levels_.end()) {
+    if (host_zoom != host_zoom_levels_.end()) {
       // This zoom level was merely recorded transiently for this load.  We can
       // erase it now.  If at some point we reload this page, the browser will
       // send us a new, up-to-date zoom level.
-      render_view_->host_zoom_levels_.erase(host_zoom);
+      host_zoom_levels_.erase(host_zoom);
     }
 
     // Update contents MIME type for main frame.
@@ -6423,16 +6441,26 @@ media::DecoderFactory* RenderFrameImpl::GetDecoderFactory() {
 }
 
 void RenderFrameImpl::RegisterMojoInterfaces() {
-  // Only main frame have ImageDownloader service.
   if (!frame_->parent()) {
+    // Only main frame have ImageDownloader service.
     GetInterfaceRegistry()->AddInterface(base::Bind(
         &ImageDownloaderImpl::CreateMojoService, base::Unretained(this)));
+
+    // Host zoom is per-page, so only added on the main frame.
+    GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
+        &RenderFrameImpl::OnHostZoomClientRequest, weak_factory_.GetWeakPtr()));
   }
 }
 
 template <typename Interface>
 void RenderFrameImpl::GetInterface(mojo::InterfaceRequest<Interface> request) {
   GetRemoteInterfaces()->GetInterface(std::move(request));
+}
+
+void RenderFrameImpl::OnHostZoomClientRequest(
+    mojom::HostZoomAssociatedRequest request) {
+  DCHECK(!host_zoom_binding_.is_bound());
+  host_zoom_binding_.Bind(std::move(request));
 }
 
 media::RendererWebMediaPlayerDelegate*
