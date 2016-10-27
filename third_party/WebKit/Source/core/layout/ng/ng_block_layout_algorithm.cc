@@ -55,10 +55,12 @@ NGExclusion* CreateExclusion(const NGFragment& fragment,
 // @param space Constraint space that is used to find layout opportunity for
 //              the fragment.
 // @param fragment Fragment that needs to be placed.
+// @param margins Margins of the fragment.
 // @return Layout opportunity for the fragment.
 const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     const Member<NGConstraintSpace>& space,
-    const NGFragment& fragment) {
+    const NGFragment& fragment,
+    const NGBoxStrut& margins) {
   NGLayoutOpportunityIterator* opportunity_iter = space->LayoutOpportunities();
   NGLayoutOpportunity opportunity;
   NGLayoutOpportunity opportunity_candidate = opportunity_iter->Next();
@@ -67,7 +69,8 @@ const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     opportunity = opportunity_candidate;
     // Checking opportunity's block size is not necessary as a float cannot be
     // positioned on top of another float inside of the same constraint space.
-    if (opportunity.size.inline_size > fragment.InlineSize())
+    auto fragment_inline_size = fragment.InlineSize() + margins.InlineSum();
+    if (opportunity.size.inline_size > fragment_inline_size)
       break;
 
     opportunity_candidate = opportunity_iter->Next();
@@ -334,7 +337,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.
   const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
-      constraint_space_for_children_, fragment);
+      constraint_space_for_children_, fragment, margins);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.
@@ -344,7 +347,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
   }
 
   // Add the float as an exclusion.
-  NGExclusion* exclusion =
+  const NGExclusion* exclusion =
       CreateExclusion(fragment, opportunity, float_offset, margins);
   constraint_space_for_children_->AddExclusion(exclusion);
 
