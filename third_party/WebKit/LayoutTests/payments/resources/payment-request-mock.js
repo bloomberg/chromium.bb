@@ -6,7 +6,7 @@
 
 let paymentRequestMock = loadMojoModules(
     'paymentRequestMock',
-    ['third_party/WebKit/public/platform/modules/payments/payment_request.mojom',
+    ['components/payments/payment_request.mojom',
      'mojo/public/js/router',
     ]).then(mojo => {
   let [paymentRequest, router] =  mojo.modules;
