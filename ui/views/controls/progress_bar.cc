@@ -5,6 +5,7 @@
 #include "ui/views/controls/progress_bar.h"
 
 #include <algorithm>
+#include <cmath>
 #include <string>
 
 #include "base/logging.h"
@@ -182,21 +183,19 @@ void ProgressBar::OnPaintIndeterminate(gfx::Canvas* canvas) {
     bar2_width = 0.25 - (time - 0.75);
   }
 
-  int bar1_x = static_cast<int>(content_bounds.width() * bar1_left);
-  int bar1_w =
-      std::min(static_cast<int>(content_bounds.width() * bar1_width + 0.5),
-               content_bounds.width() - bar1_x);
-  int bar2_x = static_cast<int>(content_bounds.width() * bar2_left);
-  int bar2_w =
-      std::min(static_cast<int>(content_bounds.width() * bar2_width + 0.5),
-               content_bounds.width() - bar2_x);
+  int bar1_start_x = std::round(content_bounds.width() * bar1_left);
+  int bar1_end_x = std::round(
+      content_bounds.width() * std::min(1.0, bar1_left + bar1_width));
+  int bar2_start_x = std::round(content_bounds.width() * bar2_left);
+  int bar2_end_x = std::round(
+      content_bounds.width() * std::min(1.0, bar2_left + bar2_width));
 
   gfx::Rect slice_bounds = content_bounds;
-  slice_bounds.set_x(content_bounds.x() + bar1_x);
-  slice_bounds.set_width(bar1_w);
+  slice_bounds.set_x(content_bounds.x() + bar1_start_x);
+  slice_bounds.set_width(bar1_end_x - bar1_start_x);
   AddPossiblyRoundRectToPath(slice_bounds, &slice_path);
-  slice_bounds.set_x(content_bounds.x() + bar2_x);
-  slice_bounds.set_width(bar2_w);
+  slice_bounds.set_x(content_bounds.x() + bar2_start_x);
+  slice_bounds.set_width(bar2_end_x - bar2_start_x);
   AddPossiblyRoundRectToPath(slice_bounds, &slice_path);
 
   SkPaint slice_paint;
