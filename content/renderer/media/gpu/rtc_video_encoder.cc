@@ -42,7 +42,7 @@ media::VideoCodecProfile WebRTCVideoCodecToVideoCodecProfile(
     case webrtc::kVideoCodecVP8:
       return media::VP8PROFILE_ANY;
     case webrtc::kVideoCodecH264: {
-      switch (codec_settings->codecSpecific.H264.profile) {
+      switch (codec_settings->H264().profile) {
         case webrtc::kProfileBase:
           return media::H264PROFILE_BASELINE;
         case webrtc::kProfileMain:

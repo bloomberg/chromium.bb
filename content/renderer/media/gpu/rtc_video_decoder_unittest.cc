@@ -182,7 +182,7 @@ TEST_P(RTCVideoDecoderTest, CreateAndInitSucceeds) {
 
 TEST_F(RTCVideoDecoderTest, InitDecodeReturnsErrorOnFeedbackMode) {
   CreateDecoder(webrtc::kVideoCodecVP8);
-  codec_.codecSpecific.VP8.feedbackModeOn = true;
+  codec_.VP8()->feedbackModeOn = true;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR, rtc_decoder_->InitDecode(&codec_, 1));
 }
 
