@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -68,7 +69,7 @@ class JavaScriptDialogTabHelper
                    const base::string16& user_input);
 
   // The dialog being displayed on the observed WebContents.
-  base::WeakPtr<JavaScriptDialogViews> dialog_;
+  base::WeakPtr<JavaScriptDialog> dialog_;
 
   // The callback provided for when the dialog is closed. Usually the dialog
   // itself calls it, but in the cases where the dialog is closed not by the

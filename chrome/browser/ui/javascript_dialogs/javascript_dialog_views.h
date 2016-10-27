@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -19,7 +19,8 @@ class MessageBoxView;
 // A Views version of a JavaScript dialog that automatically dismisses itself
 // when the user switches away to a different tab, used for WebContentses that
 // are browser tabs.
-class JavaScriptDialogViews : public views::DialogDelegate {
+class JavaScriptDialogViews : public JavaScriptDialog,
+                              public views::DialogDelegate {
  public:
   ~JavaScriptDialogViews() override;
 
@@ -33,11 +34,8 @@ class JavaScriptDialogViews : public views::DialogDelegate {
       const content::JavaScriptDialogManager::DialogClosedCallback&
           dialog_callback);
 
-  // Closes the dialog without sending a callback. This is useful when the
-  // JavaScriptDialogTabHelper needs to make this dialog go away so that it can
-  // respond to a call that requires it to make no callback or make a customized
-  // one.
-  void CloseDialogWithoutCallback();
+  // JavaScriptDialog:
+  void CloseDialogWithoutCallback() override;
 
   // views::DialogDelegate:
   int GetDefaultDialogButton() const override;

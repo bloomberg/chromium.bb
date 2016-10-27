@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/app_modal/javascript_dialog_manager.h"
@@ -99,8 +98,7 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
         AppModalDialogManager()->GetTitle(alerting_web_contents, origin_url);
     dialog_callback_ = callback;
     BrowserList::AddObserver(this);
-    // TODO(avi): abstract out so that we have a Mac version too...
-    dialog_ = JavaScriptDialogViews::Create(
+    dialog_ = JavaScriptDialog::Create(
         parent_web_contents, alerting_web_contents, title, message_type,
         message_text, default_prompt_text, callback);
 
