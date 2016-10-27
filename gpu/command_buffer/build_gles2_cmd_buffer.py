@@ -5700,17 +5700,7 @@ class NoCommandHandler(CustomHandler):
 
 
 class DataHandler(TypeHandler):
-  """Handler for glBufferData, glBufferSubData, glTexImage*D, glTexSubImage*D,
-     glCompressedTexImage*D, glCompressedTexImageSub*D."""
-
-  def InitFunction(self, func):
-    """Overrriden from TypeHandler."""
-    if (func.name.startswith('CompressedTex') and func.name.endswith('Bucket')):
-      # Remove imageSize argument, take the size from the bucket instead.
-      func.cmd_args = [arg for arg in func.cmd_args if arg.name != 'imageSize']
-      func.AddCmdArg(Argument('bucket_id', 'GLuint'))
-    else:
-      TypeHandler.InitFunction(self, func)
+  """Handler for glBufferData, glBufferSubData, glTex{Sub}Image*D."""
 
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5720,18 +5710,6 @@ class DataHandler(TypeHandler):
       name = name[0:-9]
     if name == 'BufferData' or name == 'BufferSubData':
       f.write("  uint32_t data_size = size;\n")
-    elif (name.startswith('CompressedTex')):
-      if name.endswith('Bucket'):
-        f.write("""  Bucket* bucket = GetBucket(bucket_id);
-  if (!bucket)
-    return error::kInvalidArguments;
-  uint32_t data_size = bucket->size();
-  GLsizei imageSize = data_size;
-  const void* data = bucket->GetData(0, data_size);
-  DCHECK(data || !imageSize);
-""")
-      else:
-        f.write("  uint32_t data_size = imageSize;\n")
     elif name == 'TexImage2D' or name == 'TexSubImage2D':
       code = """  uint32_t data_size;
   if (!GLES2Util::ComputeImageDataSize(
