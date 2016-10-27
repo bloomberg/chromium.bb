@@ -146,9 +146,9 @@ void WindowProxy::clearForNavigation() {
 v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
   if (!isContextInitialized())
     return v8::Local<v8::Object>();
-  ASSERT(m_scriptState->contextIsValid());
-  ASSERT(m_global == m_scriptState->context()->Global());
-  return m_global.newLocal(m_isolate);
+  DCHECK(m_scriptState->contextIsValid());
+  DCHECK(m_globalProxy == m_scriptState->context()->Global());
+  return m_globalProxy.newLocal(m_isolate);
 }
 
 v8::Local<v8::Object> WindowProxy::releaseGlobal() {
@@ -158,13 +158,13 @@ v8::Local<v8::Object> WindowProxy::releaseGlobal() {
   // clearForNavigation().
   if (m_scriptState)
     ASSERT(m_scriptState->isGlobalObjectDetached());
-  v8::Local<v8::Object> global = m_global.newLocal(m_isolate);
-  m_global.clear();
+  v8::Local<v8::Object> global = m_globalProxy.newLocal(m_isolate);
+  m_globalProxy.clear();
   return global;
 }
 
 void WindowProxy::setGlobal(v8::Local<v8::Object> global) {
-  m_global.set(m_isolate, global);
+  m_globalProxy.set(m_isolate, global);
 
   // Initialize the window proxy now, to re-establish the connection between
   // the global object and the v8::Context. This is really only needed for a
@@ -232,9 +232,9 @@ bool WindowProxy::initialize() {
 
   ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Context> context = m_scriptState->context();
-  if (m_global.isEmpty()) {
-    m_global.set(m_isolate, context->Global());
-    if (m_global.isEmpty()) {
+  if (m_globalProxy.isEmpty()) {
+    m_globalProxy.set(m_isolate, context->Global());
+    if (m_globalProxy.isEmpty()) {
       disposeContext(DoNotDetachGlobal);
       return false;
     }
@@ -322,8 +322,9 @@ void WindowProxy::createContext() {
   {
     V8PerIsolateData::UseCounterDisabledScope useCounterDisabled(
         V8PerIsolateData::from(m_isolate));
-    context = v8::Context::New(m_isolate, &extensionConfiguration,
-                               globalTemplate, m_global.newLocal(m_isolate));
+    context =
+        v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate,
+                         m_globalProxy.newLocal(m_isolate));
   }
   if (context.IsEmpty())
     return;
