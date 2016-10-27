@@ -62,7 +62,6 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       service_worker_domain_(this),
       target_domain_(this),
       tracing_domain_(this),
-      worker_domain_(this),
       browser_main_thread_(content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI)),
       weak_ptr_factory_(this) {}
@@ -287,10 +286,6 @@ target::Domain* HeadlessDevToolsClientImpl::GetTarget() {
 
 tracing::Domain* HeadlessDevToolsClientImpl::GetTracing() {
   return &tracing_domain_;
-}
-
-worker::Domain* HeadlessDevToolsClientImpl::GetWorker() {
-  return &worker_domain_;
 }
 
 template <typename CallbackType>

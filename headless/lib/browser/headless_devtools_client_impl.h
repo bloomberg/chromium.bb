@@ -40,7 +40,6 @@
 #include "headless/public/domains/service_worker.h"
 #include "headless/public/domains/target.h"
 #include "headless/public/domains/tracing.h"
-#include "headless/public/domains/worker.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/internal/message_dispatcher.h"
 
@@ -94,7 +93,6 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   service_worker::Domain* GetServiceWorker() override;
   target::Domain* GetTarget() override;
   tracing::Domain* GetTracing() override;
-  worker::Domain* GetWorker() override;
 
   // content::DevToolstAgentHostClient implementation:
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
@@ -195,7 +193,6 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   service_worker::ExperimentalDomain service_worker_domain_;
   target::ExperimentalDomain target_domain_;
   tracing::ExperimentalDomain tracing_domain_;
-  worker::ExperimentalDomain worker_domain_;
   scoped_refptr<base::SingleThreadTaskRunner> browser_main_thread_;
   base::WeakPtrFactory<HeadlessDevToolsClientImpl> weak_ptr_factory_;
 

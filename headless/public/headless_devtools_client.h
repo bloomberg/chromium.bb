@@ -102,9 +102,6 @@ class Domain;
 namespace tracing {
 class Domain;
 }
-namespace worker {
-class Domain;
-}
 
 // An interface for controlling and receiving events from a devtools target.
 class HEADLESS_EXPORT HeadlessDevToolsClient {
@@ -148,7 +145,6 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
   virtual service_worker::Domain* GetServiceWorker() = 0;
   virtual target::Domain* GetTarget() = 0;
   virtual tracing::Domain* GetTracing() = 0;
-  virtual worker::Domain* GetWorker() = 0;
 
   // TODO(skyostil): Add notification for disconnection.
 

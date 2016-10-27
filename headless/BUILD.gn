@@ -123,8 +123,6 @@ generated_devtools_api = [
   "$target_gen_dir/public/domains/type_conversions.h",
   "$target_gen_dir/public/domains/types.cc",
   "$target_gen_dir/public/domains/types.h",
-  "$target_gen_dir/public/domains/worker.cc",
-  "$target_gen_dir/public/domains/worker.h",
 ]
 
 action("gen_devtools_client_api") {
