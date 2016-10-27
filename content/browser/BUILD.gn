@@ -1451,7 +1451,6 @@ source_set("browser") {
     deps += [
       "//jingle:jingle_glue",
       "//third_party/libjingle:libjingle_webrtc",
-      "//third_party/webrtc",
       "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/desktop_capture:primitives",

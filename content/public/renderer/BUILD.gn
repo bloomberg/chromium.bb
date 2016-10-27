@@ -108,7 +108,6 @@ target(link_target_type, "renderer_sources") {
     deps += [
       "//content/public/common:feature_h264_with_openh264_ffmpeg",
       "//content/public/common:features",
-      "//third_party/webrtc",
     ]
   }
 
