@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "sql/connection.h"
@@ -144,6 +145,9 @@ class ScopedCommitHook {
 }  // namespace test
 
 namespace {
+
+using sql::test::ExecuteWithResults;
+using sql::test::ExecuteWithResult;
 
 // Helper to return the count of items in sqlite_master.  Return -1 in
 // case of error.
@@ -502,34 +506,76 @@ TEST_F(SQLConnectionTest, Raze) {
   }
 }
 
-// Test that Raze() maintains page_size.
+// Helper for SQLConnectionTest.RazePageSize.  Creates a fresh db based on
+// db_prefix, with the given initial page size, and verifies it against the
+// expected size.  Then changes to the final page size and razes, verifying that
+// the fresh database ends up with the expected final page size.
+void TestPageSize(const base::FilePath& db_prefix,
+                  int initial_page_size,
+                  const std::string& expected_initial_page_size,
+                  int final_page_size,
+                  const std::string& expected_final_page_size) {
+  const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
+  const char kInsertSql1[] = "INSERT INTO x VALUES ('This is a test')";
+  const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
+
+  const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
+      base::IntToString(initial_page_size));
+  sql::Connection::Delete(db_path);
+  sql::Connection db;
+  db.set_page_size(initial_page_size);
+  ASSERT_TRUE(db.Open(db_path));
+  ASSERT_TRUE(db.Execute(kCreateSql));
+  ASSERT_TRUE(db.Execute(kInsertSql1));
+  ASSERT_TRUE(db.Execute(kInsertSql2));
+  ASSERT_EQ(expected_initial_page_size,
+            ExecuteWithResult(&db, "PRAGMA page_size"));
+
+  // Raze will use the page size set in the connection object, which may not
+  // match the file's page size.
+  db.set_page_size(final_page_size);
+  ASSERT_TRUE(db.Raze());
+
+  // SQLite 3.10.2 (at least) has a quirk with the sqlite3_backup() API (used by
+  // Raze()) which causes the destination database to remember the previous
+  // page_size, even if the overwriting database changed the page_size.  Access
+  // the actual database to cause the cached value to be updated.
+  EXPECT_EQ("0", ExecuteWithResult(&db, "SELECT COUNT(*) FROM sqlite_master"));
+
+  EXPECT_EQ(expected_final_page_size,
+            ExecuteWithResult(&db, "PRAGMA page_size"));
+  EXPECT_EQ("1", ExecuteWithResult(&db, "PRAGMA page_count"));
+}
+
+// Verify that sql::Recovery maintains the page size, and the virtual table
+// works with page sizes other than SQLite's default.  Also verify the case
+// where the default page size has changed.
 TEST_F(SQLConnectionTest, RazePageSize) {
-  // Fetch the default page size and double it for use in this test.
-  // Scoped to release statement before Close().
-  int default_page_size = 0;
-  {
-    sql::Statement s(db().GetUniqueStatement("PRAGMA page_size"));
-    ASSERT_TRUE(s.Step());
-    default_page_size = s.ColumnInt(0);
-  }
-  ASSERT_GT(default_page_size, 0);
-  const int kPageSize = 2 * default_page_size;
+  const std::string default_page_size =
+      ExecuteWithResult(&db(), "PRAGMA page_size");
 
-  // Re-open the database to allow setting the page size.
-  db().Close();
-  db().set_page_size(kPageSize);
-  ASSERT_TRUE(db().Open(db_path()));
+  // The database should have the default page size after raze.
+  EXPECT_NO_FATAL_FAILURE(
+      TestPageSize(db_path(), 0, default_page_size, 0, default_page_size));
 
-  // page_size should match the indicated value.
-  sql::Statement s(db().GetUniqueStatement("PRAGMA page_size"));
-  ASSERT_TRUE(s.Step());
-  ASSERT_EQ(kPageSize, s.ColumnInt(0));
+  // Sync user 32k pages.
+  EXPECT_NO_FATAL_FAILURE(
+      TestPageSize(db_path(), 32768, "32768", 32768, "32768"));
 
-  // After raze, page_size should still match the indicated value.
-  ASSERT_TRUE(db().Raze());
-  s.Reset(true);
-  ASSERT_TRUE(s.Step());
-  ASSERT_EQ(kPageSize, s.ColumnInt(0));
+  // Many clients use 4k pages.  This is the SQLite default after 3.12.0.
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 4096, "4096", 4096, "4096"));
+
+  // 1k is the default page size before 3.12.0.
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 1024, "1024", 1024, "1024"));
+
+  EXPECT_NO_FATAL_FAILURE(
+      TestPageSize(db_path(), 2048, "2048", 4096, "4096"));
+
+  // Databases with no page size specified should result in the new default
+  // page size.  2k has never been the default page size.
+  ASSERT_NE("2048", default_page_size);
+  EXPECT_NO_FATAL_FAILURE(
+      TestPageSize(db_path(), 2048, "2048", 0, default_page_size));
 }
 
 // Test that Raze() results are seen in other connections.
