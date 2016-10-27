@@ -64,15 +64,18 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService
   // A helper object required to get CDM from CDM id.
   base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
 
-  // The AudioDecoder that does actual decoding work.
-  std::unique_ptr<media::AudioDecoder> decoder_;
-
   // The destination for the decoded buffers.
   mojom::AudioDecoderClientAssociatedPtr client_;
 
   // Hold a reference to the CDM to keep it alive for the lifetime of the
   // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.
   scoped_refptr<MediaKeys> cdm_;
+
+  // The AudioDecoder that does actual decoding work.
+  // This MUST be declared after |cdm_| to maintain correct destruction order.
+  // The |decoder_| may need to access the CDM to do some clean up work in its
+  // own destructor.
+  std::unique_ptr<media::AudioDecoder> decoder_;
 
   base::WeakPtr<MojoAudioDecoderService> weak_this_;
   base::WeakPtrFactory<MojoAudioDecoderService> weak_factory_;
