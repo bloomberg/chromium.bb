@@ -200,7 +200,6 @@ bool BoxReader::ScanChildren() {
     pos_ += child.size();
   }
 
-  DCHECK(!err);
   return !err && pos_ == size_;
 }
 
