@@ -503,24 +503,32 @@ public abstract class Linker {
     }
 
     /**
-     * Determine whether a library is the linker library.
+     * Determine whether a library is the linker library. Also deal with the
+     * component build that adds a .cr suffix to the name.
      *
      * @param library the name of the library.
      * @return true is the library is the Linker's own JNI library.
      */
     public boolean isChromiumLinkerLibrary(String library) {
-        return library.equals(LINKER_JNI_LIBRARY);
+        return library.equals(LINKER_JNI_LIBRARY) || library.equals(LINKER_JNI_LIBRARY + ".cr");
     }
 
     /**
      * Load the Linker JNI library. Throws UnsatisfiedLinkError on error.
+     * In a component build, the suffix ".cr" is added to each library name, so
+     * if the initial load fails we retry with a suffix.
      */
     protected static void loadLinkerJniLibrary() {
         String libName = "lib" + LINKER_JNI_LIBRARY + ".so";
         if (DEBUG) {
             Log.i(TAG, "Loading " + libName);
         }
-        System.loadLibrary(LINKER_JNI_LIBRARY);
+        try {
+            System.loadLibrary(LINKER_JNI_LIBRARY);
+        } catch (UnsatisfiedLinkError e) {
+            Log.w(TAG, "Couldn't load " + libName + ", trying " + libName + ".cr");
+            System.loadLibrary(LINKER_JNI_LIBRARY + ".cr");
+        }
     }
 
     /**
