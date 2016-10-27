@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
 
 assert(enable_pdf)
@@ -66,4 +67,21 @@ static_library("pdf") {
   if (pdf_enable_xfa) {
     defines += [ "PDF_ENABLE_XFA" ]
   }
+}
+
+test("pdf_unittests") {
+  sources = [
+    "chunk_stream_unittest.cc",
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":pdf",
+    "//base",
+    "//base/test:test_support",
+    "//ppapi/c",
+    "//ppapi/cpp",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
