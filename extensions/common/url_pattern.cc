@@ -445,28 +445,24 @@ bool URLPattern::ImpliesAllHosts() const {
   if (!match_subdomains_)
     return false;
 
-  // If |host_| is a recognized TLD, this will be 0. We don't include private
-  // TLDs, so that, e.g., *.appspot.com does not imply all hosts.
-  size_t registry_length = net::registry_controlled_domains::GetRegistryLength(
-      host_,
-      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   // If there was more than just a TLD in the host (e.g., *.foobar.com), it
-  // doesn't imply all hosts.
-  if (registry_length > 0)
+  // doesn't imply all hosts. We don't include private TLDs, so that, e.g.,
+  // *.appspot.com does not imply all hosts.
+  if (net::registry_controlled_domains::HostHasRegistryControlledDomain(
+          host_, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
     return false;
 
   // At this point the host could either be just a TLD ("com") or some unknown
   // TLD-like string ("notatld"). To disambiguate between them construct a
-  // fake URL, and check the registry. This returns 0 if the TLD is
-  // unrecognized, or the length of the recognized TLD.
-  registry_length = net::registry_controlled_domains::GetRegistryLength(
-      base::StringPrintf("foo.%s", host_.c_str()),
+  // fake URL, and check the registry.
+  //
+  // If we recognized this TLD, then this is a pattern like *.com, and it
+  // should imply all hosts.
+  return net::registry_controlled_domains::HostHasRegistryControlledDomain(
+      "notatld." + host_,
       net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
       net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  // If we recognized this TLD, then this is a pattern like *.com, and it
-  // should imply all hosts. Otherwise, this doesn't imply all hosts.
-  return registry_length > 0;
 }
 
 bool URLPattern::MatchesSingleOrigin() const {

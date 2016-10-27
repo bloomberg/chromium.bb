@@ -13,10 +13,13 @@ WebPublicSuffixListImpl::~WebPublicSuffixListImpl() {
 
 size_t WebPublicSuffixListImpl::getPublicSuffixLength(
     const blink::WebString& host) {
-  size_t result = net::registry_controlled_domains::GetRegistryLength(
-      host.utf8(),
-      net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  // Blink passes some things that aren't technically hosts like "*.foo", so
+  // use the permissive variant.
+  size_t result =
+      net::registry_controlled_domains::PermissiveGetHostRegistryLength(
+          host.utf8(),
+          net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   return result ? result : host.length();
 }
 
