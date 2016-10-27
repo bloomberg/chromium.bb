@@ -79,6 +79,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     protected final CallbackHelper mUnableToAbort;
     protected final CallbackHelper mBillingAddressChangeProcessed;
     protected final CallbackHelper mShowFailed;
+    protected final CallbackHelper mExpirationMonthChange;
     protected PaymentRequestUI mUI;
 
     private final AtomicReference<ContentViewCore> mViewCoreRef;
@@ -100,6 +101,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         mDismissed = new CallbackHelper();
         mUnableToAbort = new CallbackHelper();
         mBillingAddressChangeProcessed = new CallbackHelper();
+        mExpirationMonthChange = new CallbackHelper();
         mShowFailed = new CallbackHelper();
         mViewCoreRef = new AtomicReference<>();
         mWebContentsRef = new AtomicReference<>();
@@ -603,6 +605,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     public void onPaymentRequestServiceBillingAddressChangeProcessed() {
         ThreadUtils.assertOnUiThread();
         mBillingAddressChangeProcessed.notifyCalled();
+    }
+
+    @Override
+    public void onPaymentRequestServiceExpirationMonthChange() {
+        ThreadUtils.assertOnUiThread();
+        mExpirationMonthChange.notifyCalled();
     }
 
     @Override

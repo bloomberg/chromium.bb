@@ -2597,6 +2597,9 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE" desc="The text that informs the user that the credit card number they have entered is not valid.">
         Invalid card number
       </message>
+      <message name="IDS_PAYMENTS_CARD_EXPIRATION_INVALID_VALIDATION_MESSAGE" desc="The text that informs the user that the credit card expiration date they have entered is not valid.">
+        Invalid expiration date
+      </message>
       <message name="IDS_PAYMENTS_ADD_CONTACT" desc="Text on a button that lets a user add new contact details, like the user's full name, an email address or a phone number.">
         Add contact info
       </message>

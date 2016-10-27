@@ -98,6 +98,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         void onPaymentRequestServiceBillingAddressChangeProcessed();
 
         /**
+         * Called when the controller is notified of an expiration month change.
+         */
+        void onPaymentRequestServiceExpirationMonthChange();
+
+        /**
          * Called when a show request failed. This can happen when:
          * <ul>
          *   <li>The merchant requests only unsupported payment methods.</li>

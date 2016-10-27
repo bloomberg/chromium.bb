@@ -195,6 +195,29 @@ public class EditorFieldModel {
         return result;
     }
 
+    /**
+     * Constructs a dropdown field model with a validator.
+     *
+     * @param label                The human-readable label for user to understand the type of data
+     *                             that should be entered into this field.
+     * @param dropdownKeyValues    The keyed values to display in the dropdown.
+     * @param validator            The validator for the values in this field.
+     * @param requiredErrorMessage The error message that indicates to the user that they
+     *                             cannot leave this field empty.
+     */
+    public static EditorFieldModel createDropdown(
+            @Nullable CharSequence label, List<DropdownKeyValue> dropdownKeyValues,
+            EditorFieldValidator validator,
+            CharSequence invalidErrorMessage) {
+        assert dropdownKeyValues != null;
+        assert validator != null;
+        assert invalidErrorMessage != null;
+        EditorFieldModel result = createDropdown(label, dropdownKeyValues);
+        result.mValidator = validator;
+        result.mInvalidErrorMessage = invalidErrorMessage;
+        return result;
+    }
+
     /** Constructs a text input field model without any special text formatting hints. */
     public static EditorFieldModel createTextInput() {
         return new EditorFieldModel(INPUT_TYPE_HINT_NONE);

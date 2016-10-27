@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
+import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -80,5 +81,35 @@ public class PaymentRequestExpiredLocalCardTest extends PaymentRequestTestBase {
         CreditCard storedCard = mHelper.getCreditCard(mCreditCardId);
         assertEquals("11", storedCard.getMonth());
         assertEquals("2026", storedCard.getYear());
+    }
+
+    /**
+     * Tests that it is not possible to add an expired card in a payment request.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testCannotAddExpiredCard()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // If the current date is in January skip this test. It is not possible to select an expired
+        // data in the card editor in January.
+        Calendar now = Calendar.getInstance();
+        if (now.get(Calendar.MONTH) == 0) return;
+
+        triggerUIAndWait(mReadyToPay);
+
+        // Try to add an expired card.
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        // Set the expiration date to past month of the current year.
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {now.get(Calendar.MONTH) - 1, 0, 1}, mBillingAddressChangeProcessed);
+        setTextInCardEditorAndWait(new String[] {"4111111111111111", "Jon Doe"}, mEditorTextUpdate);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
+
+        // Set the expiration date to the current month of the current year.
+        setSpinnerSelectionsInCardEditorAndWait(new int[] {now.get(Calendar.MONTH), 0, 1},
+                mExpirationMonthChange);
+
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
     }
 }
