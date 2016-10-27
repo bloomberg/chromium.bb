@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -10,8 +13,10 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "net/dns/mock_host_resolver.h"
 
 class ChromeNavigationBrowserTest : public InProcessBrowserTest {
  public:
@@ -125,4 +130,73 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(new_web_contents->GetController().GetTransientEntry());
     EXPECT_FALSE(new_web_contents->IsLoading());
   }
+}
+
+class ChromeNavigationPortMappedBrowserTest : public InProcessBrowserTest {
+ public:
+  ChromeNavigationPortMappedBrowserTest() {}
+  ~ChromeNavigationPortMappedBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    // Use the command line parameter for the host resolver, so URLs without
+    // explicit port numbers can be mapped under the hood to the port number
+    // the |embedded_test_server| uses. It is required to test with potentially
+    // malformed URLs.
+    std::string port =
+        base::IntToString(embedded_test_server()->host_port_pair().port());
+    command_line->AppendSwitchASCII(
+        "host-resolver-rules",
+        "MAP * 127.0.0.1:" + port + ", EXCLUDE 127.0.0.1*");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeNavigationPortMappedBrowserTest);
+};
+
+// Test to verify that a malformed URL set as the virtual URL of a
+// NavigationEntry will result in the navigation being dropped.
+// See https://crbug.com/657720.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
+                       ContextMenuNavigationToInvalidUrl) {
+  GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  GURL new_tab_url(
+      "www.foo.com::/server-redirect?http%3A%2F%2Fbar.com%2Ftitle2.html");
+
+  // Navigate to an initial page, to ensure we have a committed document
+  // from which to perform a context menu initiated navigation.
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // This corresponds to "Open link in new tab".
+  content::ContextMenuParams params;
+  params.is_editable = false;
+  params.media_type = blink::WebContextMenuData::MediaTypeNone;
+  params.page_url = initial_url;
+  params.link_url = new_tab_url;
+
+  content::WindowedNotificationObserver tab_added_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+
+  TestRenderViewContextMenu menu(web_contents->GetMainFrame(), params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
+
+  // Wait for the new tab to be created and for loading to stop. The
+  // navigation should not be allowed, therefore there should not be a last
+  // committed URL in the new tab.
+  tab_added_observer.Wait();
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(
+          browser()->tab_strip_model()->count() - 1);
+  WaitForLoadStop(new_web_contents);
+
+  // If the test is unsuccessful, the return value from GetLastCommittedURL
+  // will be the virtual URL for the created NavigationEntry.
+  // Note: Before the bug was fixed, the URL was the new_tab_url with a scheme
+  // prepended and one less ":" character after the host.
+  EXPECT_EQ(GURL(), new_web_contents->GetLastCommittedURL());
 }
