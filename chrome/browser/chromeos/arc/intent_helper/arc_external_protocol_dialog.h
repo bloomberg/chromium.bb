@@ -31,6 +31,8 @@ bool RunArcExternalProtocolDialog(const GURL& url,
                                   ui::PageTransition page_transition,
                                   bool has_user_gesture);
 
+bool ShouldIgnoreNavigationForTesting(ui::PageTransition page_transition);
+
 GetActionResult GetActionForTesting(
     const GURL& original_url,
     const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
