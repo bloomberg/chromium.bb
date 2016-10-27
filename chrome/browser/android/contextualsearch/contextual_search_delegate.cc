@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_field_trial.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "chrome/browser/android/proto/client_discourse_context.pb.h"
@@ -48,6 +49,14 @@ const char kContextualSearchPreventPreload[] = "prevent_preload";
 const char kContextualSearchMentions[] = "mentions";
 const char kContextualSearchCaption[] = "caption";
 const char kContextualSearchThumbnail[] = "thumbnail";
+const char kContextualSearchAction[] = "action";
+const char kContextualSearchCategory[] = "category";
+
+const char kActionCategoryAddress[] = "ADDRESS";
+const char kActionCategoryEmail[] = "EMAIL";
+const char kActionCategoryEvent[] = "EVENT";
+const char kActionCategoryPhone[] = "PHONE";
+
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
 const int kContextualSearchRequestVersion = 2;
 const int kContextualSearchMaxSelection = 100;
@@ -59,7 +68,9 @@ const char kDoPreventPreloadValue[] = "1";
 const int kSurroundingSizeForUI = 60;
 
 // The version of the Contextual Cards API that we want to invoke.
-const int kContextualCardsVersion = 1;
+const int kContextualCardsNoIntegration = 0;
+const int kContextualCardsBarIntegration = 1;
+const int kContextualCardsSingleAction = 2;
 
 }  // namespace
 
@@ -216,9 +227,13 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
-  int contextual_cards_version =
-      field_trial_->IsContextualCardsBarIntegrationEnabled()
-      ? kContextualCardsVersion : 0;
+  int contextual_cards_version = kContextualCardsNoIntegration;
+  if (field_trial_->IsContextualCardsBarIntegrationEnabled())
+    contextual_cards_version = kContextualCardsBarIntegration;
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContextualSearchSingleActions)) {
+    contextual_cards_version = kContextualCardsSingleAction;
+  }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
       kContextualSearchRequestVersion, selected_text, std::string(),
@@ -503,13 +518,40 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   }
 
   if (field_trial_->IsContextualCardsBarIntegrationEnabled()) {
+    // Contextual Cards V1 Integration.
     // Get the basic Bar data for Contextual Cards integration directly
     // from the root.
     dict->GetString(kContextualSearchCaption, caption);
     dict->GetString(kContextualSearchThumbnail, thumbnail_url);
-    // For testing purposes check if there was a coca backend failure and
-    // flag that in the log.
-    // TODO(donnd): remove after full Coca integration.
+  }
+
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContextualSearchSingleActions)) {
+    // Contextual Cards V2 Integration.
+    // Get the Single Action data.
+    dict->GetString(kContextualSearchAction, quick_action_uri);
+    std::string quick_action_category_string;
+    dict->GetString(kContextualSearchCategory, &quick_action_category_string);
+    if (!quick_action_category_string.empty()) {
+      if (quick_action_category_string == kActionCategoryAddress) {
+        *quick_action_category = QUICK_ACTION_CATEGORY_ADDRESS;
+      } else if (quick_action_category_string == kActionCategoryEmail) {
+        *quick_action_category = QUICK_ACTION_CATEGORY_EMAIL;
+      } else if (quick_action_category_string == kActionCategoryEvent) {
+        *quick_action_category = QUICK_ACTION_CATEGORY_EVENT;
+      } else if (quick_action_category_string == kActionCategoryPhone) {
+        *quick_action_category = QUICK_ACTION_CATEGORY_PHONE;
+      }
+    }
+  }
+
+  if (field_trial_->IsContextualCardsBarIntegrationEnabled() ||
+      base::FeatureList::IsEnabled(
+          chrome::android::kContextualSearchSingleActions)) {
+    // Any Contextual Cards integration.
+    // For testing purposes check if there was a Contextual Cards backend
+    // failure and flag that in the log.
+    // TODO(donnd): remove after full Contextual Cards integration.
     bool contextual_cards_backend_responded = true;
     dict->GetBoolean("coca_responded", &contextual_cards_backend_responded);
     if (!contextual_cards_backend_responded) {
@@ -520,8 +562,6 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
              "request!!! The backend server may not be configured or is down.";
       DVLOG(0) << "";
     }
-
-    // TODO(donnd): parse information about quick action uri and category.
   }
 }
 
