@@ -42,7 +42,7 @@ class ContentSuggestion {
 
   // Creates a new ContentSuggestion. The caller must ensure that the |id|
   // passed in here is unique application-wide.
-  ContentSuggestion(ID id, const GURL& url);
+  ContentSuggestion(const ID& id, const GURL& url);
   ContentSuggestion(Category category,
                     const std::string& id_within_category,
                     const GURL& url);
@@ -106,7 +106,7 @@ class ContentSuggestion {
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestion);
 };
 
-std::ostream& operator<<(std::ostream& os, ContentSuggestion::ID id);
+std::ostream& operator<<(std::ostream& os, const ContentSuggestion::ID& id);
 
 }  // namespace ntp_snippets
 

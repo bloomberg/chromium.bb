@@ -73,8 +73,8 @@ std::vector<LanguageModel::LanguageInfo> GetAllLanguages(
        itr.Advance()) {
     if (!itr.value().GetAsInteger(&counter_value))
       continue;
-    top_languages.push_back(
-        {itr.key(), static_cast<float>(counter_value) / counters_sum});
+    top_languages.emplace_back(
+        itr.key(), static_cast<float>(counter_value) / counters_sum);
   }
   return top_languages;
 }

@@ -61,7 +61,7 @@ class NTPSnippetsDatabase {
   // Deletes the snippet with the given ID.
   void DeleteSnippet(const std::string& snippet_id);
   // Deletes all the given snippets (identified by their IDs).
-  void DeleteSnippets(std::unique_ptr<std::vector<std::string>> keys_to_remove);
+  void DeleteSnippets(std::unique_ptr<std::vector<std::string>> snippet_ids);
 
   // Loads the image data for the snippet with the given ID and passes it to
   // |callback|. Passes an empty string if not found.

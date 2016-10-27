@@ -52,7 +52,7 @@ RecentTabSuggestionsProvider::RecentTabSuggestionsProvider(
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(
           category_factory->FromKnownCategory(KnownCategories::RECENT_TABS)),
-      offline_page_proxy_(offline_page_proxy),
+      offline_page_proxy_(std::move(offline_page_proxy)),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);

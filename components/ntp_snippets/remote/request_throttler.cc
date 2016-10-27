@@ -153,7 +153,7 @@ bool RequestThrottler::DemandQuotaForRequest(bool interactive_request) {
 
 void RequestThrottler::ResetCounterIfDayChanged() {
   // Get the date, "concatenated" into an int in "YYYYMMDD" format.
-  base::Time::Exploded now_exploded;
+  base::Time::Exploded now_exploded{};
   base::Time::Now().LocalExplode(&now_exploded);
   int now_day = 10000 * now_exploded.year + 100 * now_exploded.month +
                 now_exploded.day_of_month;

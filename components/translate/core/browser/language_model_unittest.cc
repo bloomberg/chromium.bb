@@ -22,6 +22,11 @@ const char kLang3[] = "es";
 
 namespace translate {
 
+bool operator==(const LanguageModel::LanguageInfo& lhs,
+                const LanguageModel::LanguageInfo& rhs) {
+  return lhs.language_code == rhs.language_code;
+}
+
 TEST(LanguageModelTest, ListSorted) {
   TestingPrefServiceSimple prefs;
   LanguageModel::RegisterProfilePrefs(prefs.registry());
@@ -34,9 +39,11 @@ TEST(LanguageModelTest, ListSorted) {
     model.OnPageVisited(kLang2);
   }
 
+  // Note: LanguageInfo's operator== only checks the language code, not the
+  // frequency.
   EXPECT_THAT(model.GetTopLanguages(),
-              ElementsAre(LanguageModel::LanguageInfo{kLang1},
-                          LanguageModel::LanguageInfo{kLang2}));
+              ElementsAre(LanguageModel::LanguageInfo(kLang1, 0.0f),
+                          LanguageModel::LanguageInfo(kLang2, 0.0f)));
 }
 
 TEST(LanguageModelTest, ListSortedReversed) {
@@ -51,9 +58,11 @@ TEST(LanguageModelTest, ListSortedReversed) {
     model.OnPageVisited(kLang1);
   }
 
+  // Note: LanguageInfo's operator== only checks the language code, not the
+  // frequency.
   EXPECT_THAT(model.GetTopLanguages(),
-              ElementsAre(LanguageModel::LanguageInfo{kLang1},
-                          LanguageModel::LanguageInfo{kLang2}));
+              ElementsAre(LanguageModel::LanguageInfo(kLang1, 0.0f),
+                          LanguageModel::LanguageInfo(kLang2, 0.0f)));
 }
 
 TEST(LanguageModelTest, RightFrequencies) {

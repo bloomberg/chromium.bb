@@ -24,6 +24,10 @@ namespace translate {
 class LanguageModel : public KeyedService {
  public:
   struct LanguageInfo {
+    LanguageInfo() = default;
+    LanguageInfo(const std::string& language_code, float frequency)
+        : language_code(language_code), frequency(frequency) {}
+
     // The ISO 639 language code.
     std::string language_code;
 
@@ -31,11 +35,7 @@ class LanguageModel : public KeyedService {
     // and 1 (can be understood as the probability that the next page the user
     // opens is in this language). Frequencies over all LanguageInfos from
     // GetTopLanguages() sum to 1 (unless there are no top languages, yet).
-    float frequency;
-
-    bool operator==(const LanguageInfo& m) const {
-      return language_code == m.language_code;
-    }
+    float frequency = 0.0f;
   };
 
   explicit LanguageModel(PrefService* pref_service);

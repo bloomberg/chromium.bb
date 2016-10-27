@@ -187,8 +187,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     std::string obfuscated_gaia_id;
     bool only_return_personalized_results = false;
     std::string user_class;
-    translate::LanguageModel::LanguageInfo ui_language{"", 0.0f};
-    translate::LanguageModel::LanguageInfo other_top_language{"", 0.0f};
+    translate::LanguageModel::LanguageInfo ui_language;
+    translate::LanguageModel::LanguageInfo other_top_language;
 
     RequestBuilder();
     RequestBuilder(RequestBuilder&&);

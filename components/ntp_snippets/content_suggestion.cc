@@ -15,7 +15,7 @@ bool ContentSuggestion::ID::operator!=(const ID& rhs) const {
   return !(*this == rhs);
 }
 
-ContentSuggestion::ContentSuggestion(ID id, const GURL& url)
+ContentSuggestion::ContentSuggestion(const ID& id, const GURL& url)
     : id_(id), url_(url), score_(0) {}
 
 ContentSuggestion::ContentSuggestion(Category category,
@@ -29,7 +29,7 @@ ContentSuggestion& ContentSuggestion::operator=(ContentSuggestion&&) = default;
 
 ContentSuggestion::~ContentSuggestion() = default;
 
-std::ostream& operator<<(std::ostream& os, ContentSuggestion::ID id) {
+std::ostream& operator<<(std::ostream& os, const ContentSuggestion::ID& id) {
   os << id.category() << "|" << id.id_within_category();
   return os;
 }

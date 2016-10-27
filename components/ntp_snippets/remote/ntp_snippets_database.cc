@@ -95,12 +95,11 @@ void NTPSnippetsDatabase::DeleteSnippet(const std::string& snippet_id) {
 }
 
 void NTPSnippetsDatabase::DeleteSnippets(
-    std::unique_ptr<std::vector<std::string>> keys_to_remove) {
+    std::unique_ptr<std::vector<std::string>> snippet_ids) {
   DCHECK(IsInitialized());
 
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
-  database_->UpdateEntries(std::move(entries_to_save),
-                           std::move(keys_to_remove),
+  database_->UpdateEntries(std::move(entries_to_save), std::move(snippet_ids),
                            base::Bind(&NTPSnippetsDatabase::OnDatabaseSaved,
                                       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -135,10 +134,10 @@ void NTPSnippetsDatabase::DeleteImage(const std::string& snippet_id) {
 }
 
 void NTPSnippetsDatabase::DeleteImages(
-    std::unique_ptr<std::vector<std::string>> keys_to_remove) {
+    std::unique_ptr<std::vector<std::string>> snippet_ids) {
   DCHECK(IsInitialized());
   image_database_->UpdateEntries(
-      base::MakeUnique<ImageKeyEntryVector>(), std::move(keys_to_remove),
+      base::MakeUnique<ImageKeyEntryVector>(), std::move(snippet_ids),
       base::Bind(&NTPSnippetsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }
