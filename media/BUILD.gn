@@ -715,6 +715,7 @@ test("media_unittests") {
     ":unit_tests",
     "//media/audio:unit_tests",
     "//media/base:unit_tests",
+    "//media/mojo:unit_tests",
     "//media/test:pipeline_integration_tests",
     "//media/test:run_all_unittests",
   ]

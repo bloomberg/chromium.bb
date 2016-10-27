@@ -4,7 +4,8 @@
 
 import("//testing/test.gni")
 
-test("media_mojo_unittests") {
+source_set("unit_tests") {
+  testonly = true
   sources = [
     "clients/mojo_audio_decoder_unittest.cc",
     "clients/mojo_renderer_unittest.cc",
@@ -24,9 +25,15 @@ test("media_mojo_unittests") {
     "//media/mojo/common",
     "//media/mojo/interfaces",
     "//media/mojo/services",
-    "//mojo/edk/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
+  ]
+}
+
+test("media_mojo_unittests") {
+  deps = [
+    ":unit_tests",
+    "//mojo/edk/test:run_all_unittests",
   ]
 }
