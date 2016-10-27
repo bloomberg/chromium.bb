@@ -1,8 +1,8 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Top-level presubmit script for the sync_driver component.
+"""Presubmit script for sync_bookmarks component.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
@@ -10,16 +10,23 @@ for more details about the presubmit API built into depot_tools.
 
 import re
 
-SYNC_DRIVER_SOURCE_FILES=(r'^components[\\/]sync_driver[\\/].*\.(cc|h)$',)
+SYNC_BOOKMARKS_SOURCE_FILES = (
+  r'^components[\\/]sync_bookmarks[\\/].*\.(cc|h)$',)
 
 def CheckChangeLintsClean(input_api, output_api):
   source_filter = lambda x: input_api.FilterSourceFile(
-    x, white_list=SYNC_DRIVER_SOURCE_FILES, black_list=None)
-
+    x, white_list=SYNC_BOOKMARKS_SOURCE_FILES, black_list=None)
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, source_filter, lint_filters=[], verbose_level=1)
 
-def CheckChangeOnUpload(input_api, output_api):
+def CheckChanges(input_api, output_api):
   results = []
   results += CheckChangeLintsClean(input_api, output_api)
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   return results
+
+def CheckChangeOnUpload(input_api, output_api):
+  return CheckChanges(input_api, output_api)
+
+def CheckChangeOnCommit(input_api, output_api):
+  return CheckChanges(input_api, output_api)

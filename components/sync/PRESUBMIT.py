@@ -1,13 +1,15 @@
-# Copyright (c) 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Presubmit script for sync
-This checks that ModelTypeInfo entries in model_type.cc follow conventions.
-See CheckModelTypeInfoMap or model_type.cc for more detail on the rules.
+"""Presubmit script for sync component.
+
+See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
+for more details about the presubmit API built into depot_tools.
 """
 
 import os
+import re
 
 # Some definitions don't follow all the conventions we want to enforce.
 # It's either difficult or impossible to fix this, so we ignore the problem(s).
@@ -57,26 +59,7 @@ MODEL_TYPE_END_PATTERN = '^\};'
 PROTO_FILE_PATH = './protocol/sync.proto'
 MODEL_TYPE_FILE_NAME = 'model_type.cc'
 
-
-def CheckChangeOnUpload(input_api, output_api):
-  """Preupload check function required by presubmit convention.
-  See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-  """
-  for f in input_api.AffectedFiles():
-    if(f.LocalPath().endswith(MODEL_TYPE_FILE_NAME)):
-      return CheckModelTypeInfoMap(input_api, output_api, f)
-  return []
-
-
-def CheckChangeOnCommit(input_api, output_api):
-  """Precommit check function required by presubmit convention.
-  See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-  """
-  for f in input_api.AffectedFiles():
-    if f.LocalPath().endswith(MODEL_TYPE_FILE_NAME):
-      return CheckModelTypeInfoMap(input_api, output_api, f)
-  return []
-
+SYNC_SOURCE_FILES = (r'^components[\\/]sync[\\/].*\.(cc|h)$',)
 
 def CheckModelTypeInfoMap(input_api, output_api, model_type_file):
   """Checks the kModelTypeInfoMap in model_type.cc follows conventions.
@@ -379,3 +362,25 @@ def FieldNumberToPrototypeString(field_number):
   return field_number.replace(FIELD_NUMBER_PREFIX, '').replace(
     'FieldNumber', 'Specifics').replace(
     'AppNotificationSpecifics', 'AppNotification')
+
+def CheckChangeLintsClean(input_api, output_api):
+  source_filter = lambda x: input_api.FilterSourceFile(
+    x, white_list=SYNC_SOURCE_FILES, black_list=None)
+
+  return input_api.canned_checks.CheckChangeLintsClean(
+      input_api, output_api, source_filter, lint_filters=[], verbose_level=1)
+
+def CheckChanges(input_api, output_api):
+  results = []
+  results += CheckChangeLintsClean(input_api, output_api)
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
+  for f in input_api.AffectedFiles():
+    if f.LocalPath().endswith(MODEL_TYPE_FILE_NAME):
+      return CheckModelTypeInfoMap(input_api, output_api, f)
+  return results
+
+def CheckChangeOnUpload(input_api, output_api):
+  return CheckChanges(input_api, output_api)
+
+def CheckChangeOnCommit(input_api, output_api):
+  return CheckChanges(input_api, output_api)
