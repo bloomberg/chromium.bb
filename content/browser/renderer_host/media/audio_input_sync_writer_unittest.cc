@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "media/audio/audio_device_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -47,6 +46,7 @@ static_assert(AudioBus::kChannelAlignment == DATA_ALIGNMENT,
 ALIGNAS(DATA_ALIGNMENT)
 uint8_t data[kSegments * (sizeof(media::AudioInputBufferParameters) +
                           frames * channels * sizeof(float))];
+
 }  // namespace
 
 // Mocked out sockets used for Send/ReceiveWithTimeout. Counts the number of
@@ -62,7 +62,7 @@ class MockCancelableSyncSocket : public base::CancelableSyncSocket {
         read_buffer_index_(0) {}
 
   size_t Send(const void* buffer, size_t length) override {
-    EXPECT_EQ(length, sizeof(media::AudioDeviceThread::Packet));
+    EXPECT_EQ(length, sizeof(uint32_t));
 
     ++writes_;
     EXPECT_LE(NumberOfBuffersFilled(), buffer_size_);

@@ -12,12 +12,10 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/audio/audio_device_thread.h"
 
 using media::AudioBus;
 using media::AudioInputBuffer;
 using media::AudioInputBufferParameters;
-using Packet = media::AudioDeviceThread::Packet;
 
 namespace content {
 
@@ -327,10 +325,8 @@ void AudioInputSyncWriter::WriteParametersToCurrentSegment(
 }
 
 bool AudioInputSyncWriter::SignalDataWrittenAndUpdateCounters() {
-  Packet packet = {
-      current_segment_id_,
-      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds()};
-  if (socket_->Send(&packet, sizeof(Packet)) != sizeof(Packet)) {
+  if (socket_->Send(&current_segment_id_, sizeof(current_segment_id_)) !=
+      sizeof(current_segment_id_)) {
     const std::string error_message = "AISW: No room in socket buffer.";
     LOG(WARNING) << error_message;
     AddToNativeLog(error_message);

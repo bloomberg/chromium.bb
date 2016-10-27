@@ -41,7 +41,7 @@ class AudioInputDevice::AudioThreadCallback
   void MapSharedMemory() override;
 
   // Called whenever we receive notifications about pending data.
-  void Process(int64_t pending_data, base::TimeTicks data_timestamp) override;
+  void Process(uint32_t pending_data) override;
 
  private:
   const double bytes_per_ms_;
@@ -307,9 +307,7 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   }
 }
 
-void AudioInputDevice::AudioThreadCallback::Process(
-    int64_t pending_data,
-    base::TimeTicks data_timestamp) {
+void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
@@ -331,9 +329,9 @@ void AudioInputDevice::AudioThreadCallback::Process(
     capture_callback_->OnCaptureError(message);
   }
   if (current_segment_id_ != static_cast<int>(pending_data)) {
-    std::string message =
-        base::StringPrintf("Segment id not matching. Remote = %d. Local = %d.",
-                           static_cast<int>(pending_data), current_segment_id_);
+    std::string message = base::StringPrintf(
+        "Segment id not matching. Remote = %u. Local = %d.",
+        pending_data, current_segment_id_);
     LOG(ERROR) << message;
     capture_callback_->OnCaptureError(message);
   }

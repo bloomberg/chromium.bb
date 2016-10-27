@@ -75,12 +75,12 @@ bool FakeAudioRendererSink::CurrentThreadIsRenderingThread() {
 }
 
 bool FakeAudioRendererSink::Render(AudioBus* dest,
-                                   base::TimeDelta delay,
+                                   uint32_t frames_delayed,
                                    int* frames_written) {
   if (state_ != kPlaying)
     return false;
 
-  *frames_written = callback_->Render(delay, base::TimeTicks::Now(), 0, dest);
+  *frames_written = callback_->Render(dest, frames_delayed, 0);
   return true;
 }
 

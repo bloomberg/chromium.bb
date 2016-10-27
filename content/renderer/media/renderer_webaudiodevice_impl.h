@@ -41,10 +41,9 @@ class RendererWebAudioDeviceImpl
   double sampleRate() override;
 
   // AudioRendererSink::RenderCallback implementation.
-  int Render(base::TimeDelta delay,
-             base::TimeTicks delay_timestamp,
-             int prior_frames_skipped,
-             media::AudioBus* dest) override;
+  int Render(media::AudioBus* dest,
+             uint32_t frames_delayed,
+             uint32_t frames_skipped) override;
 
   void OnRenderError() override;
 

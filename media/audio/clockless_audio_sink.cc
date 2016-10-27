@@ -51,8 +51,7 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
   void Run() override {
      base::TimeTicks start;
      while (!stop_event_->IsSignaled()) {
-       const int frames_received = callback_->Render(
-           base::TimeDelta(), base::TimeTicks::Now(), 0, audio_bus_.get());
+       const int frames_received = callback_->Render(audio_bus_.get(), 0, 0);
        DCHECK_GE(frames_received, 0);
        if (audio_hash_)
          audio_hash_->Update(audio_bus_.get(), frames_received);

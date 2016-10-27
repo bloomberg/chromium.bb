@@ -97,10 +97,9 @@ class CONTENT_EXPORT TrackAudioRenderer
   // media::AudioRendererSink::RenderCallback implementation.
   // Render() is called on the AudioOutputDevice thread and OnRenderError()
   // on the IO thread.
-  int Render(base::TimeDelta delay,
-             base::TimeTicks delay_timestamp,
-             int prior_frames_skipped,
-             media::AudioBus* audio_bus) override;
+  int Render(media::AudioBus* audio_bus,
+             uint32_t frames_delayed,
+             uint32_t frames_skipped) override;
   void OnRenderError() override;
 
   // Initializes and starts the |sink_| if
