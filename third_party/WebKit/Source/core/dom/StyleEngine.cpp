@@ -455,6 +455,8 @@ void StyleEngine::clearResolver() {
   for (TreeScope* treeScope : m_activeTreeScopes)
     treeScope->clearScopedStyleResolver();
 
+  m_treeBoundaryCrossingScopes.clear();
+
   if (m_resolver) {
     TRACE_EVENT1("blink", "StyleEngine::clearResolver", "frame",
                  document().frame());
