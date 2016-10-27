@@ -1,22 +1,22 @@
 <h1>Extensions Quality Guidelines FAQ</h1>
 
-<h2 id="one">1.) What is the new policy?</h2>
+<h2 id="one">1.) What is the policy?</h2>
 
 <p>
 To maintain the quality of the Chrome user experience,
-we recently launched a new policy requiring Chrome extensions
+we launched a policy requiring Chrome extensions
 to have a single purpose.
-We are also introducing the new
+We also introduced the
 <a href="http://blog.chromium.org/2014/03/protecting-user-settings-on-windows.html">Settings Override API</a>
 to allow extensions to manage important Chrome settings on Windows.
 Beginning with the July 2014 release of Chrome,
 the Settings Override API will be the only approved path
 for offering settings changes to Chrome users on Windows.
 In addition, starting with the May 20, 2014 release of Chrome,
-we <a href="http://blog.chromium.org/2014/02/make-sure-to-get-your-extension-in.html">have begun to require</a>
+we <a href="http://blog.chromium.org/2014/02/make-sure-to-get-your-extension-in.html">started requiring</a>
 that extensions in Chrome for Windows be hosted in the Chrome Web Store.
 Starting in Chrome 44 in July 2015,
-extensions in Mac are also
+extensions in Mac were also
 <a href="http://blog.chromium.org/2015/05/continuing-to-protect-chrome-users-from.html">required to be hosted in the Chrome Web Store</a>.</p>
 
 <h2 id="two">2.) Why did Google launch a “single purpose” Chrome extensions policy?</h2>
@@ -342,7 +342,22 @@ with your extension ID if you’d like feedback.
 We’ll try to respond within a week.
 </p>
 
-<h2 id="nineteen">19.) I need help. Who should I contact?</h2>
+<h2 id="nineteen">19.) Chrome version 49 (released March 2016) updated the browser UI and now includes a browser or page action button of my extension in the upper-right corner of the toolbar. If my extension’s single purpose is to change the new tab page, how can I comply with the Single Purpose Policy with these new browser changes?</h2>
+
+<p>
+The addition of a page or browser action button under the new Chrome UI (Chrome 49 and later),
+will not trigger a single purpose policy violation
+if the button only serves as a shortcut to the extension’s main functionality.
+For example, if an extension’s single purpose is changing the new tab page,
+clicking the toolbar icon can open a new tab page.
+The page or browser action button  button, however,
+cannot introduce any additional functionality or content.
+If an extension’s single purpose is a narrow subject matter or focus area,
+then the functionality and content of the browser action button must likewise fall
+within that narrow purpose.
+</p>
+
+<h2 id="twenty">20.) I need help. Who should I contact?</h2>
 
 <p>
 You can email
