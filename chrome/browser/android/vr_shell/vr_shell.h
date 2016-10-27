@@ -15,8 +15,11 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
+
+using blink::WebInputEvent;
 
 namespace content {
 class WebContents;
@@ -36,7 +39,6 @@ class VrInputManager;
 class VrShellDelegate;
 class VrShellRenderer;
 struct ContentRectangle;
-struct VrGesture;
 
 enum UiAction {
   HISTORY_BACK = 0,

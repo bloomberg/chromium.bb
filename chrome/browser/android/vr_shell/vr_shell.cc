@@ -10,7 +10,6 @@
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
-#include "chrome/browser/android/vr_shell/vr_gesture.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
@@ -22,7 +21,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/screen_info.h"
 #include "jni/VrShellImpl_jni.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
@@ -104,6 +102,24 @@ gvr::Quatf GetRotationFromZAxis(gvr::Vec3f vec) {
     vr_shell::NormalizeQuat(quat);
   }
   return quat;
+}
+
+blink::WebMouseEvent MakeMouseEvent(WebInputEvent::Type type,
+                                    double timestamp,
+                                    float x,
+                                    float y) {
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = type;
+  mouse_event.pointerType = blink::WebPointerProperties::PointerType::Mouse;
+  mouse_event.x = x;
+  mouse_event.y = y;
+  mouse_event.windowX = x;
+  mouse_event.windowY = y;
+  mouse_event.timeStampSeconds = timestamp;
+  mouse_event.clickCount = 1;
+  mouse_event.modifiers = 0;
+
+  return mouse_event;
 }
 
 }  // namespace
@@ -249,7 +265,7 @@ void VrShell::InitializeGl(JNIEnv* env,
 
 void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
-  std::unique_ptr<VrGesture> gesture = controller_->DetectGesture();
+  std::unique_ptr<WebGestureEvent> gesture = controller_->DetectGesture();
 
   // TODO(asimjour) for now, scroll is sent to the main content.
   if (gesture->type == WebInputEvent::GestureScrollBegin ||
@@ -352,27 +368,25 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   bool new_target = input_target != current_input_target_;
   if (new_target && current_input_target_ != nullptr) {
     // Send a move event indicating that the pointer moved off of an element.
-    gesture->type = WebInputEvent::MouseLeave;
-    gesture->details.move.delta.x = 0;
-    gesture->details.move.delta.y = 0;
-    current_input_target_->ProcessUpdatedGesture(*gesture.get());
+    blink::WebMouseEvent mouse_event = MakeMouseEvent(
+        WebInputEvent::MouseLeave, gesture->timeStampSeconds, 0, 0);
+    current_input_target_->ProcessUpdatedGesture(mouse_event);
   }
   current_input_target_ = input_target;
   if (current_input_target_ == nullptr) {
     return;
   }
+  WebInputEvent::Type type =
+      new_target ? WebInputEvent::MouseEnter : WebInputEvent::MouseMove;
+  blink::WebMouseEvent mouse_event =
+      MakeMouseEvent(type, gesture->timeStampSeconds, pixel_x, pixel_y);
+  current_input_target_->ProcessUpdatedGesture(mouse_event);
 
-  gesture->type = new_target ? WebInputEvent::MouseEnter
-                             : WebInputEvent::MouseMove;
-  gesture->details.move.delta.x = pixel_x;
-  gesture->details.move.delta.y = pixel_y;
-  current_input_target_->ProcessUpdatedGesture(*gesture.get());
-
-  if (original_type == WebInputEvent::GestureTap || touch_pending_) {
+  if (original_type == WebInputEvent::GestureTapDown || touch_pending_) {
     touch_pending_ = false;
-    gesture->type = WebInputEvent::GestureTap;
-    gesture->details.buttons.pos.x = pixel_x;
-    gesture->details.buttons.pos.y = pixel_y;
+    gesture->type = WebInputEvent::GestureTapDown;
+    gesture->data.tapDown.width = pixel_x;
+    gesture->data.tapDown.height = pixel_y;
     current_input_target_->ProcessUpdatedGesture(*gesture.get());
   }
 }
