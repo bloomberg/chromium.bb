@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "ios/chrome/browser/ssl/ios_ssl_blocking_page.h"
-#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/ssl/ssl_info.h"
 
@@ -40,8 +39,5 @@ void IOSSSLErrorHandler::InterstitialWasDismissed(
     web::WebState* web_state,
     const base::Callback<void(bool)>& callback,
     bool proceed) {
-  if (!proceed) {
-    web_state->GetNavigationManager()->Reload(true /* check_for_repost */);
-  }
   callback.Run(proceed);
 }

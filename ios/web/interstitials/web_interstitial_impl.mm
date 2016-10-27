@@ -83,11 +83,16 @@ void WebInterstitialImpl::DontProceed() {
 
   // Clear the pending entry, since that's the page that's not being
   // proceeded to.
-  GetWebStateImpl()->GetNavigationManager()->DiscardNonCommittedItems();
+  NavigationManager* nav_manager = GetWebStateImpl()->GetNavigationManager();
+  nav_manager->DiscardNonCommittedItems();
 
   Hide();
 
   GetDelegate()->OnDontProceed();
+
+  // Reload last committed entry.
+  nav_manager->Reload(true /* check_for_repost */);
+
   delete this;
 }
 
