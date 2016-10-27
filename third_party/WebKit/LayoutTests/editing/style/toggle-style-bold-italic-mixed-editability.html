@@ -1,30 +1,77 @@
-<!DOCTYPE html>
-<html>
-<body>
-<p id="description">This tests bold/italic style toggling for a content with mixed editability</p>
-<div contenteditable id="root">
-<div id="test">
-Editable <span contenteditable=false>Non-editable</span> Editable
-</div>
-</div>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-test('mac');
-test('win');
-test('unix');
-function test(platform) {
-    if (window.internals)
-        internals.settings.setEditingBehavior(platform);
-    startNewMarkupGroup('Test for '+platform);
-    runDumpAsTextEditingTest(true);
-}
-function editingTest() {
-    execSelectAllCommand();
-    execBoldCommand();
-    execItalicCommand();
-    execBoldCommand();
-    execItalicCommand();
-}
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '^abc <span contenteditable="false">def</span> ghi|',
+        '</div>',
+    ].join(''),
+    'bold',
+    [
+        '<div contenteditable>',
+            '<b>^abc </b><span contenteditable="false">def</span><b> ghi|</b>',
+        '</div>',
+    ].join('')),
+    'bold');
+
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '^abc <span contenteditable="false">def</span> ghi|',
+        '</div>',
+    ].join(''),
+    selection => {
+        selection.document.execCommand('bold');
+        selection.document.execCommand('italic');
+    },
+    [
+        '<div contenteditable>',
+            '<b><i>^abc </i></b>',
+            '<span contenteditable="false">def</span>',
+            '<b><i> ghi|</i></b>',
+        '</div>',
+    ].join('')),
+    'bold+italic');
+
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '^abc <span contenteditable="false">def</span> ghi|',
+        '</div>',
+    ].join(''),
+    selection => {
+        selection.document.execCommand('bold');
+        selection.document.execCommand('italic');
+        selection.document.execCommand('bold');
+    },
+    [
+        '<div contenteditable>',
+            '<i>^abc </i>',
+            '<span contenteditable="false">def</span>',
+            '<i> ghi|</i>',
+        '</div>',
+    ].join('')),
+    'bold+italic+bold');
+
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '^abc <span contenteditable="false">def</span> ghi|',
+        '</div>',
+    ].join(''),
+    selection => {
+        selection.document.execCommand('bold');
+        selection.document.execCommand('italic');
+        selection.document.execCommand('bold');
+        selection.document.execCommand('italic');
+    },
+    [
+        '<div contenteditable>',
+            '^abc <span contenteditable="false">def</span> ghi|',
+        '</div>',
+    ].join('')),
+    'bold+italic+bold+italic');
 </script>
-</body>
-</html>
