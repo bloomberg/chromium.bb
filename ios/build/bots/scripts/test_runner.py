@@ -154,6 +154,7 @@ class TestRunner(object):
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
       XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
+    app_path = os.path.abspath(app_path)
     if not os.path.exists(app_path):
       raise AppNotFoundError(app_path)
 
@@ -375,6 +376,7 @@ class SimulatorTestRunner(TestRunner):
         xctest=xctest,
     )
 
+    iossim_path = os.path.abspath(iossim_path)
     if not os.path.exists(iossim_path):
       raise SimulatorNotFoundError(iossim_path)
 
