@@ -21,7 +21,7 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy,
                      WildcardDisposition hostWildcard,
                      WildcardDisposition portWildcard)
     : m_policy(policy),
-      m_scheme(scheme),
+      m_scheme(scheme.lower()),
       m_host(host),
       m_port(port),
       m_path(path),
@@ -30,33 +30,32 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy,
 
 bool CSPSource::matches(const KURL& url,
                         ResourceRequest::RedirectStatus redirectStatus) const {
-  if (!schemeMatches(url))
+  bool schemesMatch = m_scheme.isEmpty() ? m_policy->protocolMatchesSelf(url)
+                                         : schemeMatches(url.protocol());
+  if (!schemesMatch)
     return false;
   if (isSchemeOnly())
     return true;
-  bool pathsMatch =
-      (redirectStatus == RedirectStatus::FollowedRedirect) || pathMatches(url);
-  return hostMatches(url) && portMatches(url) && pathsMatch;
+  bool pathsMatch = (redirectStatus == RedirectStatus::FollowedRedirect) ||
+                    pathMatches(url.path());
+  return hostMatches(url.host()) && portMatches(url.port(), url.protocol()) &&
+         pathsMatch;
 }
 
-bool CSPSource::schemeMatches(const KURL& url) const {
-  if (m_scheme.isEmpty())
-    return m_policy->protocolMatchesSelf(url);
-  if (equalIgnoringCase(m_scheme, "http"))
-    return equalIgnoringCase(url.protocol(), "http") ||
-           equalIgnoringCase(url.protocol(), "https");
-  if (equalIgnoringCase(m_scheme, "ws"))
-    return equalIgnoringCase(url.protocol(), "ws") ||
-           equalIgnoringCase(url.protocol(), "wss");
-  return equalIgnoringCase(url.protocol(), m_scheme);
+bool CSPSource::schemeMatches(const String& protocol) const {
+  DCHECK_EQ(protocol, protocol.lower());
+  if (m_scheme == "http")
+    return protocol == "http" || protocol == "https";
+  if (m_scheme == "ws")
+    return protocol == "ws" || protocol == "wss";
+  return protocol == m_scheme;
 }
 
-bool CSPSource::hostMatches(const KURL& url) const {
-  const String& host = url.host();
+bool CSPSource::hostMatches(const String& host) const {
   Document* document = m_policy->document();
   bool match;
 
-  bool equalHosts = equalIgnoringCase(host, m_host);
+  bool equalHosts = m_host == host;
   if (m_hostWildcard == HasWildcard) {
     match = host.endsWith(String("." + m_host), TextCaseInsensitive);
 
@@ -74,11 +73,11 @@ bool CSPSource::hostMatches(const KURL& url) const {
   return match;
 }
 
-bool CSPSource::pathMatches(const KURL& url) const {
+bool CSPSource::pathMatches(const String& urlPath) const {
   if (m_path.isEmpty())
     return true;
 
-  String path = decodeURLEscapeSequences(url.path());
+  String path = decodeURLEscapeSequences(urlPath);
 
   if (m_path.endsWith("/"))
     return path.startsWith(m_path);
@@ -86,25 +85,22 @@ bool CSPSource::pathMatches(const KURL& url) const {
   return path == m_path;
 }
 
-bool CSPSource::portMatches(const KURL& url) const {
+bool CSPSource::portMatches(int port, const String& protocol) const {
   if (m_portWildcard == HasWildcard)
     return true;
-
-  int port = url.port();
 
   if (port == m_port)
     return true;
 
   if (m_port == 80 &&
-      (port == 443 ||
-       (port == 0 && defaultPortForProtocol(url.protocol()) == 443)))
+      (port == 443 || (port == 0 && defaultPortForProtocol(protocol) == 443)))
     return true;
 
   if (!port)
-    return isDefaultPortForProtocol(m_port, url.protocol());
+    return isDefaultPortForProtocol(m_port, protocol);
 
   if (!m_port)
-    return isDefaultPortForProtocol(port, url.protocol());
+    return isDefaultPortForProtocol(port, protocol);
 
   return false;
 }

@@ -35,10 +35,11 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
   DECLARE_TRACE();
 
  private:
-  bool schemeMatches(const KURL&) const;
-  bool hostMatches(const KURL&) const;
-  bool pathMatches(const KURL&) const;
-  bool portMatches(const KURL&) const;
+  bool schemeMatches(const String&) const;
+  bool hostMatches(const String&) const;
+  bool pathMatches(const String&) const;
+  // Protocol is necessary to determine default port if it is zero.
+  bool portMatches(int port, const String& protocol) const;
   bool isSchemeOnly() const;
 
   Member<ContentSecurityPolicy> m_policy;
