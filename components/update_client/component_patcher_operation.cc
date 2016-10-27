@@ -12,7 +12,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/update_client/component_patcher.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 #include "courgette/courgette.h"
@@ -61,7 +60,7 @@ void DeltaUpdateOp::Run(
     const base::FilePath& input_dir,
     const base::FilePath& unpack_dir,
     const scoped_refptr<CrxInstaller>& installer,
-    const ComponentUnpacker::Callback& callback,
+    const ComponentPatcher::Callback& callback,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   callback_ = callback;
   task_runner_ = task_runner;
@@ -134,7 +133,7 @@ ComponentUnpacker::Error DeltaUpdateOpCopy::DoParseArguments(
   return ComponentUnpacker::kNone;
 }
 
-void DeltaUpdateOpCopy::DoRun(const ComponentUnpacker::Callback& callback) {
+void DeltaUpdateOpCopy::DoRun(const ComponentPatcher::Callback& callback) {
   if (!base::CopyFile(input_abs_path_, output_abs_path_))
     callback.Run(ComponentUnpacker::kDeltaOperationFailure, 0);
   else
@@ -161,7 +160,7 @@ ComponentUnpacker::Error DeltaUpdateOpCreate::DoParseArguments(
   return ComponentUnpacker::kNone;
 }
 
-void DeltaUpdateOpCreate::DoRun(const ComponentUnpacker::Callback& callback) {
+void DeltaUpdateOpCreate::DoRun(const ComponentPatcher::Callback& callback) {
   if (!base::Move(patch_abs_path_, output_abs_path_))
     callback.Run(ComponentUnpacker::kDeltaOperationFailure, 0);
   else
@@ -197,7 +196,7 @@ ComponentUnpacker::Error DeltaUpdateOpPatch::DoParseArguments(
   return ComponentUnpacker::kNone;
 }
 
-void DeltaUpdateOpPatch::DoRun(const ComponentUnpacker::Callback& callback) {
+void DeltaUpdateOpPatch::DoRun(const ComponentPatcher::Callback& callback) {
   if (out_of_process_patcher_.get()) {
     out_of_process_patcher_->Patch(
         operation_, GetTaskRunner(), input_abs_path_, patch_abs_path_,
@@ -221,7 +220,7 @@ void DeltaUpdateOpPatch::DoRun(const ComponentUnpacker::Callback& callback) {
 }
 
 void DeltaUpdateOpPatch::DonePatching(
-    const ComponentUnpacker::Callback& callback,
+    const ComponentPatcher::Callback& callback,
     int result) {
   if (operation_ == kBsdiff) {
     if (result == bsdiff::OK) {

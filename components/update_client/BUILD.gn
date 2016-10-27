@@ -117,6 +117,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "component_patcher_unittest.cc",
+    "component_unpacker_unittest.cc",
     "persisted_data_unittest.cc",
     "ping_manager_unittest.cc",
     "request_sender_unittest.cc",

@@ -9,11 +9,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "base/version.h"
+#include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/utils.h"
 
@@ -65,18 +69,22 @@ void ActionUpdate::Run(UpdateContext* update_context, Callback callback) {
   CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
-  const bool is_background_download(IsBackgroundDownload(item));
+  StartDownload(item);
+}
+
+void ActionUpdate::StartDownload(CrxUpdateItem* item) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   crx_downloader_.reset((*update_context_->crx_downloader_factory)(
-                            is_background_download,
+                            IsBackgroundDownload(item),
                             update_context_->config->RequestContext(),
                             update_context_->blocking_task_runner)
                             .release());
-  crx_downloader_->set_progress_callback(
-      base::Bind(&ActionUpdate::DownloadProgress, base::Unretained(this), id));
-
   OnDownloadStart(item);
 
+  const std::string id = item->id;
+  crx_downloader_->set_progress_callback(
+      base::Bind(&ActionUpdate::DownloadProgress, base::Unretained(this), id));
   crx_downloader_->StartDownload(
       GetUrls(item), GetHash(item),
       base::Bind(&ActionUpdate::DownloadComplete, base::Unretained(this), id));
@@ -111,61 +119,111 @@ void ActionUpdate::DownloadComplete(
   } else {
     OnDownloadSuccess(item, download_result);
     update_context_->main_task_runner->PostDelayedTask(
-        FROM_HERE, base::Bind(&ActionUpdate::Install, base::Unretained(this),
-                              id, download_result.response),
+        FROM_HERE,
+        base::Bind(&ActionUpdate::StartInstall, base::Unretained(this), item,
+                   download_result.response),
         base::TimeDelta::FromMilliseconds(
             update_context_->config->StepDelay()));
   }
 }
 
-void ActionUpdate::Install(const std::string& id,
-                           const base::FilePath& crx_path) {
+void ActionUpdate::StartInstall(CrxUpdateItem* item,
+                                const base::FilePath& crx_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(id == update_context_->queue.front());
-
-  CrxUpdateItem* item = FindUpdateItemById(id);
-  DCHECK(item);
+  DCHECK(item->id == update_context_->queue.front());
 
   OnInstallStart(item);
 
   update_context_->blocking_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&ActionUpdate::DoInstallOnBlockingTaskRunner,
-                 base::Unretained(this), update_context_, item, crx_path));
+      FROM_HERE, base::Bind(&ActionUpdate::StartUnpackOnBlockingTaskRunner,
+                            base::Unretained(this), item, crx_path));
 }
 
-void ActionUpdate::DoInstallOnBlockingTaskRunner(
-    UpdateContext* update_context,
+void ActionUpdate::StartUnpackOnBlockingTaskRunner(
     CrxUpdateItem* item,
     const base::FilePath& crx_path) {
+  DCHECK(update_context_->blocking_task_runner->RunsTasksOnCurrentThread());
   unpacker_ = new ComponentUnpacker(
-      item->component.pk_hash, crx_path, item->next_fp,
+      item->component.pk_hash, crx_path,
       item->component.installer,
-      update_context->config->CreateOutOfProcessPatcher(),
-      update_context->blocking_task_runner);
-  unpacker_->Unpack(base::Bind(&ActionUpdate::EndUnpackingOnBlockingTaskRunner,
-                               base::Unretained(this), update_context, item,
-                               crx_path));
+      update_context_->config->CreateOutOfProcessPatcher(),
+      update_context_->blocking_task_runner);
+  unpacker_->Unpack(
+      base::Bind(&ActionUpdate::UnpackCompleteOnBlockingTaskRunner,
+                 base::Unretained(this), item, crx_path));
 }
 
-void ActionUpdate::EndUnpackingOnBlockingTaskRunner(
-    UpdateContext* update_context,
+void ActionUpdate::UnpackCompleteOnBlockingTaskRunner(
+    CrxUpdateItem* item,
+    const base::FilePath& crx_path,
+    const ComponentUnpacker::Result& result) {
+  DCHECK(update_context_->blocking_task_runner->RunsTasksOnCurrentThread());
+  unpacker_ = nullptr;
+
+  if (result.error == ComponentUnpacker::Error::kNone) {
+    update_context_->blocking_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&ActionUpdate::StartInstallOnBlockingTaskRunner,
+                   base::Unretained(this), item, crx_path, result.unpack_path));
+  } else {
+    update_context_->blocking_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&ActionUpdate::InstallCompleteOnBlockingTaskRunner,
+                   base::Unretained(this), item, crx_path, result.error,
+                   result.extended_error));
+  }
+}
+
+void ActionUpdate::StartInstallOnBlockingTaskRunner(
+    CrxUpdateItem* item,
+    const base::FilePath& crx_path,
+    const base::FilePath& unpack_path) {
+  DCHECK(update_context_->blocking_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(!unpack_path.empty());
+
+  const auto error = DoInstall(item, crx_path, unpack_path);
+  update_context_->blocking_task_runner->PostTask(
+      FROM_HERE, base::Bind(&ActionUpdate::InstallCompleteOnBlockingTaskRunner,
+                            base::Unretained(this), item, crx_path, error, 0));
+}
+
+void ActionUpdate::InstallCompleteOnBlockingTaskRunner(
     CrxUpdateItem* item,
     const base::FilePath& crx_path,
     ComponentUnpacker::Error error,
     int extended_error) {
-  unpacker_ = nullptr;
   update_client::DeleteFileAndEmptyParentDirectory(crx_path);
-  update_context->main_task_runner->PostDelayedTask(
+  update_context_->main_task_runner->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ActionUpdate::DoneInstalling, base::Unretained(this),
+      base::Bind(&ActionUpdate::InstallComplete, base::Unretained(this),
                  item->id, error, extended_error),
-      base::TimeDelta::FromMilliseconds(update_context->config->StepDelay()));
+      base::TimeDelta::FromMilliseconds(update_context_->config->StepDelay()));
 }
 
-void ActionUpdate::DoneInstalling(const std::string& id,
-                                  ComponentUnpacker::Error error,
-                                  int extended_error) {
+ComponentUnpacker::Error ActionUpdate::DoInstall(
+    CrxUpdateItem* item,
+    const base::FilePath& crx_path,
+    const base::FilePath& unpack_path) {
+  const auto& fingerprint = item->next_fp;
+  if (static_cast<int>(fingerprint.size()) !=
+      base::WriteFile(
+          unpack_path.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
+          fingerprint.c_str(), base::checked_cast<int>(fingerprint.size()))) {
+    return ComponentUnpacker::Error::kFingerprintWriteFailed;
+  }
+
+  std::unique_ptr<base::DictionaryValue> manifest = ReadManifest(unpack_path);
+  if (!manifest.get())
+    return ComponentUnpacker::Error::kBadManifest;
+
+  return item->component.installer->Install(*manifest, unpack_path)
+             ? ComponentUnpacker::Error::kNone
+             : ComponentUnpacker::Error::kInstallerError;
+}
+
+void ActionUpdate::InstallComplete(const std::string& id,
+                                   ComponentUnpacker::Error error,
+                                   int extended_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(id == update_context_->queue.front());
 

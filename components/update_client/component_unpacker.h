@@ -29,9 +29,7 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
     const base::FilePath& unpack_path);
 
 // In charge of unpacking the component CRX package and verifying that it is
-// well formed and the cryptographic signature is correct. If there is no
-// error the component specific installer will be invoked to proceed with
-// the component installation or update.
+// well formed and the cryptographic signature is correct.
 //
 // This class should be used only by the component updater. It is inspired by
 // and overlaps with code in the extension's SandboxedUnpacker.
@@ -49,8 +47,7 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
 //     \_ BeginPatching ---> DifferentialUpdatePatch
 //                             ...
 //   EndPatching <------------ ...
-//     \_ Install
-//     \_ Finish
+//     \_ EndUnpacking
 //
 // For a full CRX, the flow is:
 //   [ComponentUpdater]
@@ -61,17 +58,17 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
 //          |
 //          V
 //   EndPatching
-//     \_ Install
-//     \_ Finish
+//     \_ EndUnpacking
 //
 // In both cases, if there is an error at any point, the remaining steps will
-// be skipped and Finish will be called.
+// be skipped and EndUnpacking will be called.
 class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
  public:
   // Possible error conditions.
   // Add only to the bottom of this enum; the order must be kept stable.
+  // TODO(sorin): move errors to update_client/errors.h header file.
   enum Error {
-    kNone,
+    kNone = 0,
     kInvalidParams,
     kInvalidFile,
     kUnzipPathError,
@@ -91,7 +88,21 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
     kFingerprintWriteFailed,
   };
 
-  typedef base::Callback<void(Error, int)> Callback;
+  // Contains the result of the unpacking.
+  struct Result {
+    Result();
+
+    // Unpack error: 0 indicates success.
+    enum Error error = kNone;
+
+    // Additional error information, such as errno or last error.
+    int extended_error = 0;
+
+    // Path of the unpacked files if the unpacking was successful.
+    base::FilePath unpack_path;
+  };
+
+  using Callback = base::Callback<void(const Result& result)>;
 
   // Constructs an unpacker for a specific component unpacking operation.
   // |pk_hash| is the expected/ public key SHA256 hash. |path| is the current
@@ -99,13 +110,13 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   ComponentUnpacker(
       const std::vector<uint8_t>& pk_hash,
       const base::FilePath& path,
-      const std::string& fingerprint,
       const scoped_refptr<CrxInstaller>& installer,
       const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
-  // Begins the actual unpacking of the files. May invoke a patcher if the
-  // package is a differential update. Calls |callback| with the result.
+  // Begins the actual unpacking of the files. May invoke a patcher and the
+  // component installer if the package is a differential update.
+  // Calls |callback| with the result.
   void Unpack(const Callback& callback);
 
  private:
@@ -128,26 +139,19 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // (non-differential) updates. This step is asynchronous. Returns false if an
   // error is encountered.
   bool BeginPatching();
-
-  // When patching is complete, EndPatching is called before moving on to step
-  // four.
   void EndPatching(Error error, int extended_error);
-
-  // The fourth step is to install the unpacked component.
-  void Install();
 
   // The final step is to do clean-up for things that can't be tidied as we go.
   // If there is an error at any step, the remaining steps are skipped and
-  // and Finish is called.
-  // Finish is responsible for calling the callback provided in Start().
-  void Finish();
+  // EndUnpacking is called. EndUnpacking is responsible for calling the
+  // callback provided in Unpack().
+  void EndUnpacking();
 
   std::vector<uint8_t> pk_hash_;
   base::FilePath path_;
   base::FilePath unpack_path_;
   base::FilePath unpack_diff_path_;
   bool is_delta_;
-  std::string fingerprint_;
   scoped_refptr<ComponentPatcher> patcher_;
   scoped_refptr<CrxInstaller> installer_;
   Callback callback_;

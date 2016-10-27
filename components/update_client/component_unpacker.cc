@@ -34,24 +34,6 @@ using crx_file::CrxFile;
 
 namespace update_client {
 
-ComponentUnpacker::ComponentUnpacker(
-    const std::vector<uint8_t>& pk_hash,
-    const base::FilePath& path,
-    const std::string& fingerprint,
-    const scoped_refptr<CrxInstaller>& installer,
-    const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : pk_hash_(pk_hash),
-      path_(path),
-      is_delta_(false),
-      fingerprint_(fingerprint),
-      installer_(installer),
-      oop_patcher_(oop_patcher),
-      error_(kNone),
-      extended_error_(0),
-      task_runner_(task_runner) {
-}
-
 // TODO(cpu): add a specific attribute check to a component json that the
 // extension unpacker will reject, so that a component cannot be installed
 // as an extension.
@@ -72,6 +54,25 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
       static_cast<base::DictionaryValue*>(root.release()));
 }
 
+ComponentUnpacker::Result::Result() {}
+
+ComponentUnpacker::ComponentUnpacker(
+    const std::vector<uint8_t>& pk_hash,
+    const base::FilePath& path,
+    const scoped_refptr<CrxInstaller>& installer,
+    const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : pk_hash_(pk_hash),
+      path_(path),
+      is_delta_(false),
+      installer_(installer),
+      oop_patcher_(oop_patcher),
+      error_(kNone),
+      extended_error_(0),
+      task_runner_(task_runner) {}
+
+ComponentUnpacker::~ComponentUnpacker() {}
+
 bool ComponentUnpacker::UnpackInternal() {
   return Verify() && Unzip() && BeginPatching();
 }
@@ -79,7 +80,7 @@ bool ComponentUnpacker::UnpackInternal() {
 void ComponentUnpacker::Unpack(const Callback& callback) {
   callback_ = callback;
   if (!UnpackInternal())
-    Finish();
+    EndUnpacking();
 }
 
 bool ComponentUnpacker::Verify() {
@@ -120,14 +121,15 @@ bool ComponentUnpacker::Verify() {
 }
 
 bool ComponentUnpacker::Unzip() {
+  // Mind the reference to non-const type, passed as an argument below.
   base::FilePath& destination = is_delta_ ? unpack_diff_path_ : unpack_path_;
-  VLOG(1) << "Unpacking in: " << destination.value();
   if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
                                     &destination)) {
     VLOG(1) << "Unable to create temporary directory for unpacking.";
     error_ = kUnzipPathError;
     return false;
   }
+  VLOG(1) << "Unpacking in: " << destination.value();
   if (!zip::Unzip(path_, destination)) {
     VLOG(1) << "Unzipping failed.";
     error_ = kUnzipFailed;
@@ -165,51 +167,23 @@ void ComponentUnpacker::EndPatching(Error error, int extended_error) {
   error_ = error;
   extended_error_ = extended_error;
   patcher_ = NULL;
-  if (error_ != kNone) {
-    Finish();
-    return;
-  }
-  // Optimization: clean up patch files early, in case disk space is too low to
-  // install otherwise.
-  if (!unpack_diff_path_.empty()) {
-    base::DeleteFile(unpack_diff_path_, true);
-    unpack_diff_path_.clear();
-  }
-  Install();
-  Finish();
+
+  EndUnpacking();
 }
 
-void ComponentUnpacker::Install() {
-  // Write the fingerprint to disk.
-  if (static_cast<int>(fingerprint_.size()) !=
-      base::WriteFile(
-          unpack_path_.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
-          fingerprint_.c_str(), base::checked_cast<int>(fingerprint_.size()))) {
-    error_ = kFingerprintWriteFailed;
-    return;
-  }
-  std::unique_ptr<base::DictionaryValue> manifest(ReadManifest(unpack_path_));
-  if (!manifest.get()) {
-    error_ = kBadManifest;
-    return;
-  }
-  DCHECK(error_ == kNone);
-  if (!installer_->Install(*manifest, unpack_path_)) {
-    error_ = kInstallerError;
-    return;
-  }
-}
-
-void ComponentUnpacker::Finish() {
+void ComponentUnpacker::EndUnpacking() {
   if (!unpack_diff_path_.empty())
     base::DeleteFile(unpack_diff_path_, true);
-  if (!unpack_path_.empty())
+  if (error_ != kNone && !unpack_path_.empty())
     base::DeleteFile(unpack_path_, true);
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(callback_, error_, extended_error_));
-}
 
-ComponentUnpacker::~ComponentUnpacker() {
+  Result result;
+  result.error = error_;
+  result.extended_error = extended_error_;
+  if (error_ == kNone)
+    result.unpack_path = unpack_path_;
+
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
 }
 
 }  // namespace update_client

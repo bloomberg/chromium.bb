@@ -56,7 +56,7 @@ ComponentPatcher::ComponentPatcher(
 ComponentPatcher::~ComponentPatcher() {
 }
 
-void ComponentPatcher::Start(const ComponentUnpacker::Callback& callback) {
+void ComponentPatcher::Start(const Callback& callback) {
   callback_ = callback;
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&ComponentPatcher::StartPatching,
