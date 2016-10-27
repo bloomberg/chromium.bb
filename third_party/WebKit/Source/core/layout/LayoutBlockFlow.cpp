@@ -492,6 +492,14 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
   LayoutState state(*this, locationOffset(), pageLogicalHeight,
                     pageLogicalHeightChanged, logicalWidthChanged);
 
+  if (m_paginationStateChanged) {
+    // We now need a deep layout to clean up struts after pagination, if we
+    // just ceased to be paginated, or, if we just became paginated on the
+    // other hand, we now need the deep layout, to insert pagination struts.
+    m_paginationStateChanged = false;
+    state.setPaginationStateChanged();
+  }
+
   // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg,
   // to track our current maximal positive and negative margins. These values
   // are used when we are collapsed with adjacent blocks, so for example, if you
@@ -4212,6 +4220,7 @@ void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(
       // spanners, paged containers may not).
       multiColumnFlowThread()->evacuateAndDestroy();
       ASSERT(!multiColumnFlowThread());
+      m_paginationStateChanged = true;
     }
   }
 
@@ -4231,6 +4240,7 @@ void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(
 
   LayoutMultiColumnFlowThread* flowThread = createMultiColumnFlowThread(type);
   addChild(flowThread);
+  m_paginationStateChanged = true;
 
   // Check that addChild() put the flow thread as a direct child, and didn't do
   // fancy things.

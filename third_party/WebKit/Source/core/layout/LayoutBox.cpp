@@ -4707,6 +4707,10 @@ void LayoutBox::markChildForPaginationRelayoutIfNeeded(
     SubtreeLayoutScope& layoutScope) {
   DCHECK(!child.needsLayout());
   LayoutState* layoutState = view()->layoutState();
+  if (layoutState->paginationStateChanged()) {
+    layoutScope.setChildNeedsLayout(&child);
+    return;
+  }
   if (!layoutState->isPaginated())
     return;
 

@@ -99,7 +99,8 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
       m_isSelfCollapsing(false),
       m_descendantsWithFloatsMarkedForLayout(false),
       m_hasPositionedObjects(false),
-      m_hasPercentHeightDescendants(false) {
+      m_hasPercentHeightDescendants(false),
+      m_paginationStateChanged(false) {
   // LayoutBlockFlow calls setChildrenInline(true).
   // By default, subclasses do not have inline children.
 }

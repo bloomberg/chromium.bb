@@ -37,6 +37,7 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight,
     : m_isPaginated(pageLogicalHeight),
       m_pageLogicalHeightChanged(pageLogicalHeightChanged),
       m_containingBlockLogicalWidthChanged(false),
+      m_paginationStateChanged(false),
       m_flowThread(nullptr),
       m_next(nullptr),
       m_pageLogicalHeight(pageLogicalHeight),
@@ -59,6 +60,7 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
     m_flowThread = m_next->flowThread();
   else
     m_flowThread = nullptr;
+  m_paginationStateChanged = m_next->m_paginationStateChanged;
   layoutObject.view()->pushLayoutState(*this);
   m_heightOffsetForTableHeaders = m_next->heightOffsetForTableHeaders();
 
@@ -118,6 +120,7 @@ LayoutState::LayoutState(LayoutObject& root)
     : m_isPaginated(false),
       m_pageLogicalHeightChanged(false),
       m_containingBlockLogicalWidthChanged(false),
+      m_paginationStateChanged(false),
       m_flowThread(nullptr),
       m_next(root.view()->layoutState()),
       m_layoutObject(root) {

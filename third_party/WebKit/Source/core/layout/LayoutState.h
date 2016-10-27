@@ -103,6 +103,9 @@ class LayoutState {
     return m_containingBlockLogicalWidthChanged;
   }
 
+  bool paginationStateChanged() const { return m_paginationStateChanged; }
+  void setPaginationStateChanged() { m_paginationStateChanged = true; }
+
   LayoutState* next() const { return m_next; }
 
   LayoutFlowThread* flowThread() const { return m_flowThread; }
@@ -116,6 +119,7 @@ class LayoutState {
   // If our page height has changed, this will force all blocks to relayout.
   bool m_pageLogicalHeightChanged : 1;
   bool m_containingBlockLogicalWidthChanged : 1;
+  bool m_paginationStateChanged : 1;
 
   LayoutFlowThread* m_flowThread;
 

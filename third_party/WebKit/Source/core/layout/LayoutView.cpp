@@ -235,10 +235,13 @@ void LayoutView::layout() {
 
   if (pageLogicalHeight() && shouldUsePrintingLayout()) {
     m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
-    if (!m_fragmentationContext)
+    if (!m_fragmentationContext) {
       m_fragmentationContext = wrapUnique(new ViewFragmentationContext(*this));
+      m_paginationStateChanged = true;
+    }
   } else if (m_fragmentationContext) {
     m_fragmentationContext.reset();
+    m_paginationStateChanged = true;
   }
 
   SubtreeLayoutScope layoutScope(*this);

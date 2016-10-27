@@ -545,6 +545,14 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   unsigned m_hasPositionedObjects : 1;
   unsigned m_hasPercentHeightDescendants : 1;
 
+  // When an object ceases to establish a fragmentation context (e.g. the
+  // LayoutView when we're no longer printing), we need a deep layout
+  // afterwards, to clear all pagination struts. Likewise, when an object
+  // becomes fragmented, we need to re-lay out the entire subtree. There might
+  // be forced breaks somewhere in there that we suddenly have to pay attention
+  // to, for all we know.
+  unsigned m_paginationStateChanged : 1;
+
   // FIXME: This is temporary as we move code that accesses block flow
   // member variables out of LayoutBlock and into LayoutBlockFlow.
   friend class LayoutBlockFlow;
