@@ -54,6 +54,7 @@ class CORE_EXPORT Text : public CharacterData {
   Text* replaceWholeText(const String&);
 
   void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
+  void rebuildTextLayoutTree(Text* nextTextSibling);
   bool textLayoutObjectIsNeeded(const ComputedStyle&,
                                 const LayoutObject& parent) const;
   LayoutText* createTextLayoutObject(const ComputedStyle&);

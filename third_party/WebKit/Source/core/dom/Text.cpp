@@ -397,11 +397,15 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling) {
       layoutItem.setText(dataImpl());
     clearNeedsStyleRecalc();
   } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
-    reattachLayoutTree();
-    if (this->layoutObject())
-      reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
-    clearNeedsReattachLayoutTree();
+    rebuildTextLayoutTree(nextTextSibling);
   }
+}
+
+void Text::rebuildTextLayoutTree(Text* nextTextSibling) {
+  reattachLayoutTree();
+  if (layoutObject())
+    reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
+  clearNeedsReattachLayoutTree();
 }
 
 // If a whitespace node had no layoutObject and goes through a recalcStyle it
