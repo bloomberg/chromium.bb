@@ -18,20 +18,89 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "ipc/ipc_message_start.h"
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+
+namespace {
+
+// Waits until a PageLoadMetricsMsg_TimingUpdated message IPC is received.
+class TimingUpdatedObserver : public content::BrowserMessageFilter {
+ public:
+  explicit TimingUpdatedObserver(content::RenderWidgetHost* render_widget_host)
+      : content::BrowserMessageFilter(PageLoadMetricsMsgStart) {
+    render_widget_host->GetProcess()->AddFilter(this);
+
+    // Roudtrip to the IO thread, to ensure that the filter is properly
+    // installed.
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE, base::Bind(&base::DoNothing),
+        base::Bind(&TimingUpdatedObserver::Quit, this));
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset(nullptr);
+  }
+
+  // Waits for the IPC. Returns immediately if the IPC has already been received
+  // before this call.
+  void WaitForTimingUpdatedIPC() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (timing_updated_)
+      return;
+
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset(nullptr);
+  }
+
+ private:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    if (message.type() == PageLoadMetricsMsg_TimingUpdated::ID) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&TimingUpdatedObserver::SetTimingUpdatedAndQuit, this));
+    }
+
+    return false;
+  }
+
+  void Quit() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void SetTimingUpdatedAndQuit() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    timing_updated_ = true;
+    Quit();
+  }
+
+  ~TimingUpdatedObserver() override {}
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+  bool timing_updated_ = false;
+};
+
+}  // namespace
 
 class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
@@ -45,6 +114,20 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
 
   bool NoPageLoadMetricsRecorded() {
     return histogram_tester_.GetTotalCountsForPrefix("PageLoad.").empty();
+  }
+
+  void WaitForTimingUpdatedIPC() {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    scoped_refptr<TimingUpdatedObserver> observer(new TimingUpdatedObserver(
+        web_contents->GetRenderViewHost()->GetWidget()));
+
+    // The observer must be created before checking this, to avoid a race
+    // condition.
+    if (!NoPageLoadMetricsRecorded())
+      return;
+
+    observer->WaitForTimingUpdatedIPC();
   }
 
   base::HistogramTester histogram_tester_;
@@ -77,6 +160,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
                                embedded_test_server()->GetURL("/title1.html"));
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
@@ -100,6 +184,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SamePageNavigation) {
       browser(), embedded_test_server()->GetURL("/title1.html#hash"));
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
@@ -115,6 +200,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   NavigateToUntrackedUrl();
 
   // We expect one histogram sample for each navigation to title1.html.
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 2);
@@ -201,6 +287,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreloadDocumentWrite) {
                      "/page_load_metrics/document_write_external_script.html"));
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 1);
 }
@@ -237,6 +324,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
                      "/page_load_metrics/document_write_script_block.html"));
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
 }
@@ -257,6 +345,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteReload) {
       browser(), embedded_test_server()->GetURL(
                      "/page_load_metrics/document_write_script_block.html"));
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
 
@@ -318,6 +407,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, BadXhtml) {
       embedded_test_server()->GetURL("/page_load_metrics/badxml.xhtml"));
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
   histogram_tester_.ExpectBucketCount(page_load_metrics::internal::kErrorEvents,
@@ -346,6 +436,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortNewNavigation) {
   chrome::Navigate(&params2);
 
   manager2.WaitForNavigationFinished();
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramAbortNewNavigationBeforeCommit, 1);
 }
@@ -367,6 +458,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortReload) {
   chrome::Navigate(&params2);
 
   manager2.WaitForNavigationFinished();
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramAbortReloadBeforeCommit, 1);
 }
@@ -449,6 +541,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClientRedirect) {
 
   manager.WaitForNavigationFinished();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramAbortClientRedirectBeforeCommit, 1);
 }
@@ -473,6 +566,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   EXPECT_TRUE(result);
 
   NavigateToUntrackedUrl();
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectUniqueSample(
       internal::kHistogramFirstMeaningfulPaintStatus,
       internal::FIRST_MEANINGFUL_PAINT_RECORDED, 1);
@@ -492,6 +586,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // Navigate away before a FMP is reported.
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectUniqueSample(
       internal::kHistogramFirstMeaningfulPaintStatus,
       internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE, 1);
@@ -509,6 +604,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                embedded_test_server()->GetURL("/title1.html"));
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
           prerender::ORIGIN_NONE, false, true, base::TimeDelta()),
@@ -527,6 +623,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                embedded_test_server()->GetURL("/nostore.html"));
   NavigateToUntrackedUrl();
 
+  WaitForTimingUpdatedIPC();
   histogram_tester_.ExpectTotalCount(
       prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
           prerender::ORIGIN_NONE, false, true, base::TimeDelta()),
