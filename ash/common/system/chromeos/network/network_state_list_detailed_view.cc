@@ -474,13 +474,15 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
     if (login_ == LoginStatus::LOCKED)
       return;
 
-    info_button_md_ = new SystemMenuButton(this, kSystemMenuInfoIcon,
-                                           IDS_ASH_STATUS_TRAY_NETWORK_INFO);
+    info_button_md_ = new SystemMenuButton(
+        this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuInfoIcon,
+        IDS_ASH_STATUS_TRAY_NETWORK_INFO);
     title_row()->AddViewToTitleRow(info_button_md_);
 
     if (login_ != LoginStatus::NOT_LOGGED_IN) {
       settings_button_md_ = new SystemMenuButton(
-          this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
+          this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
+          IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
 
       // Allow the user to access settings only if user is logged in
       // and showing settings is allowed. There are situations (supervised user
@@ -491,9 +493,9 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
 
       title_row()->AddViewToTitleRow(settings_button_md_);
     } else {
-      proxy_settings_button_md_ =
-          new SystemMenuButton(this, kSystemMenuSettingsIcon,
-                               IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS);
+      proxy_settings_button_md_ = new SystemMenuButton(
+          this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
+          IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS);
       title_row()->AddViewToTitleRow(proxy_settings_button_md_);
     }
 

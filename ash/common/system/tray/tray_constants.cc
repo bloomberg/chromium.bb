@@ -92,6 +92,11 @@ const int kSeparatorWidth = 1;
 const SkColor kHorizontalSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 const int kHorizontalSeparatorHeight = 24;
 
+const SkColor kTrayPopupInkDropBaseColor = SK_ColorBLACK;
+const float kTrayPopupInkDropRippleOpacity = 0.06f;
+const float kTrayPopupInkDropHighlightOpacity = 0.08f;
+const int kTrayPopupInkDropInset = 4;
+
 int GetTrayConstant(TrayConstant constant) {
   const int kTrayItemHeightLegacy[] = {38, 38, kTrayItemSize};
   const int kTraySpacing[] = {4, 4, 0};

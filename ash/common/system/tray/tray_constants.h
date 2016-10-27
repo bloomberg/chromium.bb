@@ -101,6 +101,20 @@ extern const int kMenuSeparatorVerticalPadding;
 // The horizontal padding for the system menu separator.
 extern const int kMenuExtraMarginFromLeftEdge;
 
+// The base color used for all ink drops in the system menu.
+extern const SkColor kTrayPopupInkDropBaseColor;
+
+// The opacity of the ink drop ripples for all ink drops in the system menu.
+extern const float kTrayPopupInkDropRippleOpacity;
+
+// The opacity of the ink drop ripples for all ink highlights in the system
+// menu.
+extern const float kTrayPopupInkDropHighlightOpacity;
+
+// The inset applied to clickable surfaces in the system menu that do not have
+// the ink drop filling the entire bounds.
+extern const int kTrayPopupInkDropInset;
+
 enum TrayConstant {
   // A legacy height value used in non-MD calculations for applying additional
   // borders on tray items.

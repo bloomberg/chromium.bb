@@ -101,7 +101,8 @@ void SpecialPopupRow::SetContent(views::View* view) {
 
 views::Button* SpecialPopupRow::AddBackButton(views::ButtonListener* listener) {
   SystemMenuButton* button = new SystemMenuButton(
-      listener, kSystemMenuArrowBackIcon, IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
+      listener, SystemMenuButton::InkDropStyle::SQUARE,
+      kSystemMenuArrowBackIcon, IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
   AddViewBeforeContent(button);
   return button;
 }
@@ -110,7 +111,8 @@ views::CustomButton* SpecialPopupRow::AddSettingsButton(
     views::ButtonListener* listener,
     LoginStatus status) {
   SystemMenuButton* button = new SystemMenuButton(
-      listener, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_SETTINGS);
+      listener, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
+      IDS_ASH_STATUS_TRAY_SETTINGS);
   if (!CanOpenWebUISettings(status))
     button->SetState(views::Button::STATE_DISABLED);
   AddViewAfterContent(button);
@@ -120,8 +122,9 @@ views::CustomButton* SpecialPopupRow::AddSettingsButton(
 views::CustomButton* SpecialPopupRow::AddHelpButton(
     views::ButtonListener* listener,
     LoginStatus status) {
-  SystemMenuButton* button = new SystemMenuButton(listener, kSystemMenuHelpIcon,
-                                                  IDS_ASH_STATUS_TRAY_HELP);
+  SystemMenuButton* button =
+      new SystemMenuButton(listener, SystemMenuButton::InkDropStyle::SQUARE,
+                           kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
   if (!CanOpenWebUISettings(status))
     button->SetState(views::Button::STATE_DISABLED);
   AddViewAfterContent(button);

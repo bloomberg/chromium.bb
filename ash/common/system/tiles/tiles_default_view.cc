@@ -72,15 +72,17 @@ void TilesDefaultView::Init() {
   // |power_button_| which is always shown as enabled.
   const bool disable_buttons = !CanOpenWebUISettings(login_);
 
-  settings_button_ = new SystemMenuButton(this, kSystemMenuSettingsIcon,
-                                          IDS_ASH_STATUS_TRAY_SETTINGS);
+  settings_button_ = new SystemMenuButton(
+      this, SystemMenuButton::InkDropStyle::FLOOD_FILL, kSystemMenuSettingsIcon,
+      IDS_ASH_STATUS_TRAY_SETTINGS);
   if (disable_buttons || !shell->system_tray_delegate()->ShouldShowSettings())
     settings_button_->SetState(views::Button::STATE_DISABLED);
   AddChildView(settings_button_);
   AddSeparator();
 
   help_button_ =
-      new SystemMenuButton(this, kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
+      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
+                           kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
   if (base::i18n::IsRTL() &&
       base::i18n::GetConfiguredLocale() == kHebrewLocale) {
     // The asset for the help button is a question mark '?'. Normally this asset
@@ -95,15 +97,17 @@ void TilesDefaultView::Init() {
 
 #if !defined(OS_WIN)
   lock_button_ =
-      new SystemMenuButton(this, kSystemMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
+      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
+                           kSystemMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
   if (disable_buttons || !shell->GetSessionStateDelegate()->CanLockScreen())
     lock_button_->SetState(views::Button::STATE_DISABLED);
 
   AddChildView(lock_button_);
   AddSeparator();
 
-  power_button_ = new SystemMenuButton(this, kSystemMenuPowerIcon,
-                                       IDS_ASH_STATUS_TRAY_SHUTDOWN);
+  power_button_ =
+      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
+                           kSystemMenuPowerIcon, IDS_ASH_STATUS_TRAY_SHUTDOWN);
   AddChildView(power_button_);
   SystemTrayDelegate* system_tray_delegate = shell->system_tray_delegate();
   system_tray_delegate->AddShutdownPolicyObserver(this);

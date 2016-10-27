@@ -59,6 +59,10 @@ class VIEWS_EXPORT InkDropHighlight {
 
   void set_explode_size(const gfx::Size& size) { explode_size_ = size; }
 
+  void set_visible_opacity(float visible_opacity) {
+    visible_opacity_ = visible_opacity;
+  }
+
   // Returns true if the highlight animation is either in the process of fading
   // in or is fully visible.
   bool IsFadingInOrVisible() const;
