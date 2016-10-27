@@ -1487,12 +1487,14 @@ class DiskCache(LocalCache):
   """
   STATE_FILE = u'state.json'
 
-  def __init__(self, cache_dir, policies, hash_algo):
+  def __init__(self, cache_dir, policies, hash_algo, trim=True):
     """
     Arguments:
       cache_dir: directory where to place the cache.
       policies: cache retention policies.
       algo: hashing algorithm used.
+      trim: if True to enforce |policies| right away.
+        It can be done later by calling trim() explicitly.
     """
     # All protected methods (starting with '_') except _path should be called
     # with self._lock held.
@@ -1504,7 +1506,8 @@ class DiskCache(LocalCache):
     # Items in a LRU lookup dict(digest: size).
     self._lru = lru.LRUDict()
     # Current cached free disk space. It is updated by self._trim().
-    self._free_disk = 0
+    file_path.ensure_tree(self.cache_dir)
+    self._free_disk = file_path.get_free_space(self.cache_dir)
     # The first item in the LRU cache that must not be evicted during this run
     # since it was referenced. All items more recent that _protected in the LRU
     # cache are also inherently protected. It could be a set() of all items
@@ -1514,8 +1517,7 @@ class DiskCache(LocalCache):
     self._operations = []
     with tools.Profiler('Setup'):
       with self._lock:
-        # self._load() calls self._trim() which initializes self._free_disk.
-        self._load()
+        self._load(trim=trim)
 
   def __contains__(self, digest):
     with self._lock:
@@ -1665,7 +1667,26 @@ class DiskCache(LocalCache):
       self._add(digest, size)
     return digest
 
-  def _load(self):
+  def get_oldest(self):
+    """Returns digest of the LRU item or None."""
+    try:
+      return self._lru.get_oldest()[0]
+    except KeyError:
+      return None
+
+  def get_timestamp(self, digest):
+    """Returns timestamp of last use of an item.
+
+    Raises KeyError if item is not found.
+    """
+    return self._lru.get_timestamp(digest)
+
+  def trim(self):
+    """Forces retention policies."""
+    with self._lock:
+      self._trim()
+
+  def _load(self, trim):
     """Loads state of the cache from json file.
 
     If cache_dir does not exist on disk, it is created.
@@ -1683,7 +1704,8 @@ class DiskCache(LocalCache):
         logging.error('Failed to load cache state: %s' % (err,))
         # Don't want to keep broken state file.
         file_path.try_remove(self.state_file)
-    self._trim()
+    if trim:
+      self._trim()
     # We want the initial cache size after trimming, i.e. what is readily
     # avaiable.
     self._initial_number_items = len(self._lru)
@@ -2396,7 +2418,7 @@ def add_cache_options(parser):
   parser.add_option_group(cache_group)
 
 
-def process_cache_options(options):
+def process_cache_options(options, trim=True):
   if options.cache:
     policies = CachePolicies(
         options.max_cache_size, options.min_free_space, options.max_items)
@@ -2405,7 +2427,8 @@ def process_cache_options(options):
     return DiskCache(
         unicode(os.path.abspath(options.cache)),
         policies,
-        isolated_format.get_hash_algo(options.namespace))
+        isolated_format.get_hash_algo(options.namespace),
+        trim=trim)
   else:
     return MemoryCache()
 

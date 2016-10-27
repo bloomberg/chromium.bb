@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.8.6'
+__version__ = '0.9'
 
 import argparse
 import base64
@@ -54,6 +54,7 @@ from utils import zip_package
 import auth
 import cipd
 import isolateserver
+import named_cache
 
 
 # Absolute path to this file (can be None if running from zip on Mac).
@@ -120,6 +121,7 @@ def get_as_zip_package(executable=True):
   package.add_python_file(os.path.join(BASE_DIR, 'isolateserver.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'auth.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'cipd.py'))
+  package.add_python_file(os.path.join(BASE_DIR, 'named_cache.py'))
   package.add_directory(os.path.join(BASE_DIR, 'libs'))
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
   package.add_directory(os.path.join(BASE_DIR, 'utils'))
@@ -351,9 +353,9 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 
 def map_and_run(
-    command, isolated_hash, storage, isolate_cache, leak_temp_dir, root_dir,
-    hard_timeout, grace_period, bot_file, extra_args, install_packages_fn,
-    use_symlinks):
+    command, isolated_hash, storage, isolate_cache, init_name_caches,
+    leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
+    install_packages_fn, use_symlinks):
   """Runs a command with optional isolated input/output.
 
   See run_tha_test for argument documentation.
@@ -443,6 +445,8 @@ def map_and_run(
     command = process_command(command, out_dir, bot_file)
     file_path.ensure_command_has_abs_path(command, cwd)
 
+    init_name_caches(run_dir)
+
     sys.stdout.flush()
     start = time.time()
     try:
@@ -514,9 +518,9 @@ def map_and_run(
 
 
 def run_tha_test(
-    command, isolated_hash, storage, isolate_cache, leak_temp_dir, result_json,
-    root_dir, hard_timeout, grace_period, bot_file, extra_args,
-    install_packages_fn, use_symlinks):
+    command, isolated_hash, storage, isolate_cache, init_name_caches,
+    leak_temp_dir, result_json, root_dir, hard_timeout, grace_period, bot_file,
+    extra_args, install_packages_fn, use_symlinks):
   """Runs an executable and records execution metadata.
 
   Either command or isolated_hash must be specified.
@@ -542,6 +546,8 @@ def run_tha_test(
     isolate_cache: an isolateserver.LocalCache to keep from retrieving the
                    same objects constantly by caching the objects retrieved.
                    Can be on-disk or in-memory.
+    init_name_caches: a function (run_dir) => void that creates symlinks for
+                      named caches in |run_dir|.
     leak_temp_dir: if true, the temporary directory will be deliberately leaked
                    for later examination.
     result_json: file path to dump result metadata into. If set, the process
@@ -579,9 +585,9 @@ def run_tha_test(
 
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
-      command, isolated_hash, storage, isolate_cache, leak_temp_dir, root_dir,
-      hard_timeout, grace_period, bot_file, extra_args, install_packages_fn,
-      use_symlinks)
+      command, isolated_hash, storage, isolate_cache, init_name_caches,
+      leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
+      install_packages_fn, use_symlinks)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
@@ -704,6 +710,28 @@ def install_packages(
   }
 
 
+def clean_caches(options, isolate_cache, named_cache_manager):
+  """Trims isolated and named caches."""
+  # Which cache to trim first? Which of caches was used least recently?
+  with named_cache_manager.open():
+    oldest_isolated = isolate_cache.get_oldest()
+    oldest_named = named_cache_manager.get_oldest()
+    trimmers = [
+      (
+        isolate_cache.trim,
+        isolate_cache.get_timestamp(oldest_isolated) if oldest_isolated else 0,
+      ),
+      (
+        lambda: named_cache_manager.trim(options.min_free_space),
+        named_cache_manager.get_timestamp(oldest_named) if oldest_named else 0,
+      ),
+    ]
+    trimmers.sort(key=lambda (_, ts): ts)
+    for trim, _ in trimmers:
+      trim()
+  isolate_cache.cleanup()
+
+
 def create_option_parser():
   parser = logging_utils.OptionParserWithLogging(
       usage='%prog <options> [command to run or extra args]',
@@ -752,6 +780,7 @@ def create_option_parser():
   isolateserver.add_cache_options(parser)
 
   cipd.add_cipd_options(parser)
+  named_cache.add_named_cache_options(parser)
 
   debug_group = optparse.OptionGroup(parser, 'Debugging')
   debug_group.add_option(
@@ -765,7 +794,10 @@ def create_option_parser():
 
   auth.add_auth_options(parser)
 
-  parser.set_defaults(cache='cache', cipd_cache='cipd_cache')
+  parser.set_defaults(
+      cache='cache',
+      cipd_cache='cipd_cache',
+      named_cache_root='named_caches')
   return parser
 
 
@@ -800,7 +832,8 @@ def parse_args(args):
 def main(args):
   (parser, options, args) = parse_args(args)
 
-  isolated_cache = isolateserver.process_cache_options(options)
+  isolate_cache = isolateserver.process_cache_options(options, trim=False)
+  named_cache_manager = named_cache.process_named_cache_options(parser, options)
   if options.clean:
     if options.isolated:
       parser.error('Can\'t use --isolated with --clean.')
@@ -808,10 +841,13 @@ def main(args):
       parser.error('Can\'t use --isolate-server with --clean.')
     if options.json:
       parser.error('Can\'t use --json with --clean.')
-    isolated_cache.cleanup()
+    if options.named_caches:
+      parser.error('Can\t use --named-cache with --clean.')
+    clean_caches(options, isolate_cache, named_cache_manager)
     return 0
+
   if not options.no_clean:
-    isolated_cache.cleanup()
+    clean_caches(options, isolate_cache, named_cache_manager)
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')
@@ -839,25 +875,46 @@ def main(args):
       options.cipd_server, options.cipd_client_package,
       options.cipd_client_version, cache_dir=options.cipd_cache)
 
+  def init_named_caches(run_dir):
+    with named_cache_manager.open():
+      named_cache_manager.create_symlinks(run_dir, options.named_caches)
+
   try:
     command = [] if options.isolated else args
     if options.isolate_server:
       storage = isolateserver.get_storage(
           options.isolate_server, options.namespace)
       with storage:
-        # Hashing schemes used by |storage| and |isolated_cache| MUST match.
-        assert storage.hash_algo == isolated_cache.hash_algo
+        # Hashing schemes used by |storage| and |isolate_cache| MUST match.
+        assert storage.hash_algo == isolate_cache.hash_algo
         return run_tha_test(
-            command, options.isolated, storage, isolated_cache,
-            options.leak_temp_dir, options.json, options.root_dir,
-            options.hard_timeout, options.grace_period, options.bot_file, args,
-            install_packages_fn, options.use_symlinks)
+            command,
+            options.isolated,
+            storage,
+            isolate_cache,
+            init_named_caches,
+            options.leak_temp_dir,
+            options.json, options.root_dir,
+            options.hard_timeout,
+            options.grace_period,
+            options.bot_file, args,
+            install_packages_fn,
+            options.use_symlinks)
     return run_tha_test(
-        command, options.isolated, None, isolated_cache, options.leak_temp_dir,
-        options.json, options.root_dir, options.hard_timeout,
-        options.grace_period, options.bot_file, args, install_packages_fn,
+        command,
+        options.isolated,
+        None,
+        isolate_cache,
+        init_named_caches,
+        options.leak_temp_dir,
+        options.json,
+        options.root_dir,
+        options.hard_timeout,
+        options.grace_period,
+        options.bot_file, args,
+        install_packages_fn,
         options.use_symlinks)
-  except cipd.Error as ex:
+  except (cipd.Error, named_cache.Error) as ex:
     print >> sys.stderr, ex.message
     return 1
 

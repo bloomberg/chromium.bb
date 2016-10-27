@@ -161,6 +161,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--no-log',
         '--isolated', isolated_hash,
         '--cache', self.tempdir,
+        '--named-cache-root', os.path.join(self.tempdir, 'c'),
         '--isolate-server', 'https://localhost',
     ]
     ret = run_isolated.main(cmd)
@@ -183,6 +184,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--isolated', isolated_hash,
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost',
+        '--named-cache-root', os.path.join(self.tempdir, 'c'),
         '--',
         '--extraargs',
         'bar',
@@ -210,6 +212,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         isolated_hash,
         StorageFake(files),
         isolateserver.MemoryCache(),
+        lambda run_dir: None,
         False,
         None,
         None,
@@ -320,6 +323,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--isolated', isolated_hash,
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost',
+        '--named-cache-root', os.path.join(self.tempdir, 'c'),
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
@@ -333,6 +337,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     cmd = [
       '--no-log',
       '--cache', self.tempdir,
+      '--named-cache-root', os.path.join(self.tempdir, 'c'),
       '/bin/echo',
       'hello',
       'world',
@@ -352,6 +357,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--cache', self.tempdir,
         '--root-dir', workdir,
         '--leak-temp-dir',
+        '--named-cache-root', os.path.join(self.tempdir, 'c'),
         '/bin/echo',
         'hello',
         'world',
@@ -399,6 +405,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--cipd-package', '.:infra/data/y:canary',
       '--cipd-server', self.cipd_server.url,
       '--cipd-cache', cipd_cache,
+      '--named-cache-root', os.path.join(self.tempdir, 'c'),
       'bin/echo${EXECUTABLE_SUFFIX}',
       'hello',
       'world',
@@ -437,6 +444,29 @@ class RunIsolatedTest(RunIsolatedTestBase):
         os.path.sep + 'bin' + os.path.sep + 'echo' + cipd.EXECUTABLE_SUFFIX),
         echo_cmd[0])
     self.assertEqual(echo_cmd[1:], ['hello', 'world'])
+
+  def test_main_naked_with_caches(self):
+    cmd = [
+      '--no-log',
+      '--leak-temp-dir',
+      '--cache', os.path.join(self.tempdir, 'cache'),
+      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--named-cache', 'cache_foo', 'foo',
+      '--named-cache', 'cache_bar', 'bar',
+      'bin/echo${EXECUTABLE_SUFFIX}',
+      'hello',
+      'world',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
+
+    for path, cache_name in [('foo', 'cache_foo'), ('bar', 'cache_bar')]:
+      self.assertEqual(
+          os.path.abspath(os.readlink(
+              os.path.join(self.tempdir, 'ir', path))),
+          os.path.abspath(os.readlink(
+              os.path.join(self.tempdir, 'c', 'named', cache_name))),
+      )
 
   def test_modified_cwd(self):
     isolated = json_dumps({
@@ -511,6 +541,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           isolated_hash,
           store,
           isolateserver.MemoryCache(),
+          lambda run_dir: None,
           False,
           None,
           None,
@@ -604,6 +635,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
         '--isolated', isolated_in_hash,
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost:1',
+        '--named-cache-root', os.path.join(self.tempdir, 'c'),
         '--json', out,
     ]
     ret = run_isolated.main(cmd)
