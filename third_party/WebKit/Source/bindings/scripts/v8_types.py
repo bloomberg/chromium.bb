@@ -583,7 +583,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif idl_type.is_callback_function:
         cpp_expression_format = (
-            '{idl_type}::create({isolate}, v8::Local<v8::Function>::Cast({v8_value}))')
+            '{idl_type}::create(ScriptState::current({isolate}), v8::Local<v8::Function>::Cast({v8_value}))')
     else:
         cpp_expression_format = (
             'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')

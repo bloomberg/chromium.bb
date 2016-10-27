@@ -18,17 +18,14 @@
 
 namespace blink {
 
-IDBObserver* IDBObserver::create(ScriptState* scriptState,
-                                 IDBObserverCallback* callback,
+IDBObserver* IDBObserver::create(IDBObserverCallback* callback,
                                  const IDBObserverInit& options) {
-  return new IDBObserver(scriptState, callback, options);
+  return new IDBObserver(callback, options);
 }
 
-IDBObserver::IDBObserver(ScriptState* scriptState,
-                         IDBObserverCallback* callback,
+IDBObserver::IDBObserver(IDBObserverCallback* callback,
                          const IDBObserverInit& options)
-    : m_scriptState(scriptState),
-      m_callback(callback),
+    : m_callback(callback),
       m_transaction(options.transaction()),
       m_values(options.values()),
       m_noRecords(options.noRecords()) {
@@ -102,9 +99,8 @@ void IDBObserver::onChange(int32_t id,
                            const WebVector<int32_t>& observationIndex) {
   auto it = m_observerIds.find(id);
   DCHECK(it != m_observerIds.end());
-  m_callback->call(
-      m_scriptState.get(), this,
-      IDBObserverChanges::create(it->value, observations, observationIndex));
+  m_callback->call(this, IDBObserverChanges::create(it->value, observations,
+                                                    observationIndex));
 }
 
 DEFINE_TRACE(IDBObserver) {

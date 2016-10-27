@@ -22,9 +22,9 @@ class ScriptState;
 class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public GarbageCollectedFinalized<StringSequenceCallbackFunctionLongSequenceArg>,
                                         public TraceWrapperBase {
 public:
-    static StringSequenceCallbackFunctionLongSequenceArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static StringSequenceCallbackFunctionLongSequenceArg* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
     {
-        return new StringSequenceCallbackFunctionLongSequenceArg(isolate, callback);
+        return new StringSequenceCallbackFunctionLongSequenceArg(scriptState, callback);
     }
 
     ~StringSequenceCallbackFunctionLongSequenceArg() = default;
@@ -32,7 +32,7 @@ public:
     DECLARE_TRACE();
     DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, const Vector<int>& arg, Vector<String>& returnValue);
+    bool call(ScriptWrappable* scriptWrappable, const Vector<int>& arg, Vector<String>& returnValue);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -46,7 +46,9 @@ public:
     }
 
 private:
-    StringSequenceCallbackFunctionLongSequenceArg(v8::Isolate* isolate, v8::Local<v8::Function>);
+    StringSequenceCallbackFunctionLongSequenceArg(ScriptState*, v8::Local<v8::Function>);
+
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Function> m_callback;
 };
 

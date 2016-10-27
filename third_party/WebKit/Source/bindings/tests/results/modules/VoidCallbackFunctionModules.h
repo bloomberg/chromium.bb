@@ -22,9 +22,9 @@ class ScriptState;
 class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules>,
                                         public TraceWrapperBase {
 public:
-    static VoidCallbackFunctionModules* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static VoidCallbackFunctionModules* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
     {
-        return new VoidCallbackFunctionModules(isolate, callback);
+        return new VoidCallbackFunctionModules(scriptState, callback);
     }
 
     ~VoidCallbackFunctionModules() = default;
@@ -32,7 +32,7 @@ public:
     DECLARE_TRACE();
     DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable);
+    bool call(ScriptWrappable* scriptWrappable);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -46,7 +46,9 @@ public:
     }
 
 private:
-    VoidCallbackFunctionModules(v8::Isolate* isolate, v8::Local<v8::Function>);
+    VoidCallbackFunctionModules(ScriptState*, v8::Local<v8::Function>);
+
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Function> m_callback;
 };
 

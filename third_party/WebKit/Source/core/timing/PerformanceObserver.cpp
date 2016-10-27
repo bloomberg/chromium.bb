@@ -90,7 +90,7 @@ void PerformanceObserver::deliver() {
   performanceEntries.swap(m_performanceEntries);
   PerformanceObserverEntryList* entryList =
       new PerformanceObserverEntryList(performanceEntries);
-  m_callback->call(m_scriptState.get(), this, entryList, this);
+  m_callback->call(this, entryList, this);
 }
 
 DEFINE_TRACE(PerformanceObserver) {

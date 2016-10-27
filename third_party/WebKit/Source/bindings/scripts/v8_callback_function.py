@@ -51,7 +51,8 @@ def callback_function_context(callback_function):
             'return_value': idl_type.v8_value_to_local_cpp_value(
                 callback_function.extended_attributes,
                 'v8ReturnValue', 'cppValue',
-                isolate='scriptState->isolate()', bailout_return_value='false'),
+                isolate='m_scriptState->isolate()',
+                bailout_return_value='false'),
         })
 
     context.update(arguments_context(callback_function.arguments, context.get('return_cpp_type')))
@@ -63,12 +64,11 @@ def arguments_context(arguments, return_cpp_type):
         return {
             'argument_name': '%sArgument' % argument.name,
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
-                argument.name, isolate='scriptState->isolate()',
-                creation_context='scriptState->context()->Global()'),
+                argument.name, isolate='m_scriptState->isolate()',
+                creation_context='m_scriptState->context()->Global()'),
         }
 
     argument_declarations = [
-        'ScriptState* scriptState',
         'ScriptWrappable* scriptWrappable',
     ]
     argument_declarations.extend(

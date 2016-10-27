@@ -20,9 +20,9 @@ class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_c
                                         public TraceWrapperBase {
 
 public:
-    static {{cpp_class}}* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static {{cpp_class}}* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
     {
-        return new {{cpp_class}}(isolate, callback);
+        return new {{cpp_class}}(scriptState, callback);
     }
 
     ~{{cpp_class}}() = default;
@@ -44,7 +44,9 @@ public:
     }
 
 private:
-    {{cpp_class}}(v8::Isolate* isolate, v8::Local<v8::Function>);
+    {{cpp_class}}(ScriptState*, v8::Local<v8::Function>);
+
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Function> m_callback;
 };
 

@@ -49,12 +49,13 @@ void V8PerformanceObserver::constructorCustom(
             "The callback provided as parameter 1 is not a function."));
     return;
   }
+  ScriptState* scriptState = ScriptState::forReceiverObject(info);
   v8::Local<v8::Function> v8Callback = v8::Local<v8::Function>::Cast(info[0]);
   PerformanceObserverCallback* callback =
-      PerformanceObserverCallback::create(info.GetIsolate(), v8Callback);
+      PerformanceObserverCallback::create(scriptState, v8Callback);
 
-  PerformanceObserver* observer = PerformanceObserver::create(
-      ScriptState::forReceiverObject(info), performance, callback);
+  PerformanceObserver* observer =
+      PerformanceObserver::create(scriptState, performance, callback);
 
   // TODO(bashi): Don't set private property (and remove this custom
   // constructor) when we can call setWrapperReference() correctly.

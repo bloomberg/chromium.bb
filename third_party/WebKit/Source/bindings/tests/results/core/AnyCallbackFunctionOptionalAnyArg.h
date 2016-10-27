@@ -22,9 +22,9 @@ class ScriptState;
 class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollectedFinalized<AnyCallbackFunctionOptionalAnyArg>,
                                         public TraceWrapperBase {
 public:
-    static AnyCallbackFunctionOptionalAnyArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static AnyCallbackFunctionOptionalAnyArg* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
     {
-        return new AnyCallbackFunctionOptionalAnyArg(isolate, callback);
+        return new AnyCallbackFunctionOptionalAnyArg(scriptState, callback);
     }
 
     ~AnyCallbackFunctionOptionalAnyArg() = default;
@@ -32,7 +32,7 @@ public:
     DECLARE_TRACE();
     DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);
+    bool call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -46,7 +46,9 @@ public:
     }
 
 private:
-    AnyCallbackFunctionOptionalAnyArg(v8::Isolate* isolate, v8::Local<v8::Function>);
+    AnyCallbackFunctionOptionalAnyArg(ScriptState*, v8::Local<v8::Function>);
+
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Function> m_callback;
 };
 

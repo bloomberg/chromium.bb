@@ -202,7 +202,7 @@ void RemotePlayback::notifyInitialAvailability(int callbackId) {
   if (iter == m_availabilityCallbacks.end())
     return;
 
-  iter->value->call(m_scriptState.get(), this, m_availability);
+  iter->value->call(this, m_availability);
 }
 
 void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
@@ -243,7 +243,7 @@ void RemotePlayback::availabilityChanged(bool available) {
 
   m_availability = available;
   for (auto& callback : m_availabilityCallbacks.values())
-    callback->call(m_scriptState.get(), this, m_availability);
+    callback->call(this, m_availability);
 }
 
 void RemotePlayback::promptCancelled() {

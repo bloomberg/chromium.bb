@@ -649,7 +649,7 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
 
         return;
     }
-    arg = VoidCallbackFunctionModules::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    arg = VoidCallbackFunctionModules::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodVoidCallbackFunctionModulesArg(arg);
 }

@@ -23,9 +23,9 @@ class HTMLDivElement;
 class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg>,
                                         public TraceWrapperBase {
 public:
-    static VoidCallbackFunctionInterfaceArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static VoidCallbackFunctionInterfaceArg* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
     {
-        return new VoidCallbackFunctionInterfaceArg(isolate, callback);
+        return new VoidCallbackFunctionInterfaceArg(scriptState, callback);
     }
 
     ~VoidCallbackFunctionInterfaceArg() = default;
@@ -33,7 +33,7 @@ public:
     DECLARE_TRACE();
     DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);
+    bool call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -47,7 +47,9 @@ public:
     }
 
 private:
-    VoidCallbackFunctionInterfaceArg(v8::Isolate* isolate, v8::Local<v8::Function>);
+    VoidCallbackFunctionInterfaceArg(ScriptState*, v8::Local<v8::Function>);
+
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Function> m_callback;
 };
 

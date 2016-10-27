@@ -964,7 +964,7 @@ static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8
     TestObject* impl = V8TestObject::toImpl(holder);
 
     // Prepare the value to be set.
-    VoidCallbackFunction* cppValue = VoidCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(v8Value));
+    VoidCallbackFunction* cppValue = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
 
     impl->setVoidCallbackFunctionAttribute(cppValue);
 }
@@ -996,7 +996,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<
     TestObject* impl = V8TestObject::toImpl(holder);
 
     // Prepare the value to be set.
-    AnyCallbackFunctionOptionalAnyArg* cppValue = AnyCallbackFunctionOptionalAnyArg::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(v8Value));
+    AnyCallbackFunctionOptionalAnyArg* cppValue = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
 
     impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
 }
@@ -6785,7 +6785,7 @@ static void voidMethodVoidCallbackFunctionArgMethod(const v8::FunctionCallbackIn
 
         return;
     }
-    voidCallbackFunctionArg = VoidCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
@@ -6815,7 +6815,7 @@ static void voidMethodOptionalVoidCallbackFunctionArgMethod(const v8::FunctionCa
 
         return;
     }
-    voidCallbackFunctionArg = VoidCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodOptionalVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
@@ -6840,7 +6840,7 @@ static void voidMethodNullableVoidCallbackFunctionArgMethod(const v8::FunctionCa
 
         return;
     }
-    voidCallbackFunctionArg = VoidCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodNullableVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
@@ -6865,7 +6865,7 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::Function
 
         return;
     }
-    anyCallbackFunctionOptionalAnyArgArg = AnyCallbackFunctionOptionalAnyArg::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    anyCallbackFunctionOptionalAnyArgArg = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodAnyCallbackFunctionOptionalAnyArg(anyCallbackFunctionOptionalAnyArgArg);
 }
@@ -6890,7 +6890,7 @@ static void voidMethodLongCallbackFunctionArgMethod(const v8::FunctionCallbackIn
 
         return;
     }
-    longCallbackFunctionArg = LongCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    longCallbackFunctionArg = LongCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodLongCallbackFunctionArg(longCallbackFunctionArg);
 }

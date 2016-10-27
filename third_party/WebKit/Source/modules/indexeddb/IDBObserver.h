@@ -28,9 +28,7 @@ class MODULES_EXPORT IDBObserver final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObserver* create(ScriptState*,
-                             IDBObserverCallback*,
-                             const IDBObserverInit&);
+  static IDBObserver* create(IDBObserverCallback*, const IDBObserverInit&);
 
   void removeObserver(int32_t id);
   void onChange(int32_t id,
@@ -51,9 +49,8 @@ class MODULES_EXPORT IDBObserver final
   DECLARE_TRACE();
 
  private:
-  IDBObserver(ScriptState*, IDBObserverCallback*, const IDBObserverInit&);
+  IDBObserver(IDBObserverCallback*, const IDBObserverInit&);
 
-  RefPtr<ScriptState> m_scriptState;
   Member<IDBObserverCallback> m_callback;
   bool m_transaction;
   bool m_values;

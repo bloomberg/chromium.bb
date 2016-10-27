@@ -45,11 +45,11 @@ void V8IDBObserver::constructorCustom(
   if (exceptionState.hadException())
     return;
 
+  ScriptState* scriptState = ScriptState::forReceiverObject(info);
   v8::Local<v8::Function> v8Callback = v8::Local<v8::Function>::Cast(info[0]);
   IDBObserverCallback* callback =
-      IDBObserverCallback::create(info.GetIsolate(), v8Callback);
-  IDBObserver* observer = IDBObserver::create(
-      ScriptState::forReceiverObject(info), callback, idbObserverInit);
+      IDBObserverCallback::create(scriptState, v8Callback);
+  IDBObserver* observer = IDBObserver::create(callback, idbObserverInit);
   if (exceptionState.hadException())
     return;
   DCHECK(observer);

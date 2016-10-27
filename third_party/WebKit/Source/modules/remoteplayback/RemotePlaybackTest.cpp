@@ -150,7 +150,7 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 
   MockFunction* callbackFunction = MockFunction::create(scope.getScriptState());
   RemotePlaybackAvailabilityCallback* availabilityCallback =
-      RemotePlaybackAvailabilityCallback::create(scope.isolate(),
+      RemotePlaybackAvailabilityCallback::create(scope.getScriptState(),
                                                  callbackFunction->bind());
 
   // The initial call upon registering will not happen as it's posted on the

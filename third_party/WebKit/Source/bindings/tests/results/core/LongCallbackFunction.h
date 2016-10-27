@@ -22,9 +22,9 @@ class ScriptState;
 class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<LongCallbackFunction>,
                                         public TraceWrapperBase {
 public:
-    static LongCallbackFunction* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static LongCallbackFunction* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
     {
-        return new LongCallbackFunction(isolate, callback);
+        return new LongCallbackFunction(scriptState, callback);
     }
 
     ~LongCallbackFunction() = default;
@@ -32,7 +32,7 @@ public:
     DECLARE_TRACE();
     DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue);
+    bool call(ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -46,7 +46,9 @@ public:
     }
 
 private:
-    LongCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function>);
+    LongCallbackFunction(ScriptState*, v8::Local<v8::Function>);
+
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Function> m_callback;
 };
 

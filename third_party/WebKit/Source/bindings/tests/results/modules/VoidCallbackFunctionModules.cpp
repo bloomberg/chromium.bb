@@ -17,8 +17,9 @@
 
 namespace blink {
 
-VoidCallbackFunctionModules::VoidCallbackFunctionModules(v8::Isolate* isolate, v8::Local<v8::Function> callback)
-    : m_callback(isolate, callback)
+VoidCallbackFunctionModules::VoidCallbackFunctionModules(ScriptState* scriptState, v8::Local<v8::Function> callback)
+    : m_scriptState(scriptState),
+    m_callback(scriptState->isolate(), callback)
 {
     DCHECK(!m_callback.isEmpty());
     m_callback.setPhantom();
@@ -33,12 +34,12 @@ DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionModules)
     visitor->traceWrappers(&m_callback.cast<v8::Object>());
 }
 
-bool VoidCallbackFunctionModules::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable)
+bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable)
 {
-    if (!scriptState->contextIsValid())
+    if (!m_scriptState->contextIsValid())
         return false;
 
-    ExecutionContext* context = scriptState->getExecutionContext();
+    ExecutionContext* context = m_scriptState->getExecutionContext();
     DCHECK(context);
     if (context->activeDOMObjectsAreSuspended() || context->activeDOMObjectsAreStopped())
         return false;
@@ -49,17 +50,17 @@ bool VoidCallbackFunctionModules::call(ScriptState* scriptState, ScriptWrappable
     // TODO(bashi): Make sure that using TrackExceptionState is OK.
     // crbug.com/653769
     TrackExceptionState exceptionState;
-    ScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(m_scriptState.get());
 
-    v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> thisValue = toV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
 
     v8::Local<v8::Value> *argv = nullptr;
 
     v8::Local<v8::Value> v8ReturnValue;
-    v8::TryCatch exceptionCatcher(scriptState->isolate());
+    v8::TryCatch exceptionCatcher(m_scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
 
-    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 0, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
+    if (V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisValue, 0, argv, m_scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
         return true;
     }

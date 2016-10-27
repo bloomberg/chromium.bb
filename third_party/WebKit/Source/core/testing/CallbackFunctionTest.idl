@@ -8,8 +8,8 @@
 [ExperimentalCallbackFunction] callback TestSequenceCallback = sequence<DOMString> (sequence<long> numbers);
 
 interface CallbackFunctionTest {
-    [CallWith=ScriptState, RaisesException] DOMString testCallback(TestCallback callback, DOMString message1, DOMString message2);
-    [CallWith=ScriptState, RaisesException] void testInterfaceCallback(TestInterfaceCallback callback, HTMLDivElement divElement);
-    [CallWith=ScriptState, RaisesException] void testReceiverObjectCallback(TestReceiverObjectCallback callback);
-    [CallWith=ScriptState, RaisesException] sequence<DOMString> testSequenceCallback(TestSequenceCallback callback, sequence<long> numbers);
+    [RaisesException] DOMString testCallback(TestCallback callback, DOMString message1, DOMString message2);
+    [RaisesException] void testInterfaceCallback(TestInterfaceCallback callback, HTMLDivElement divElement);
+    [RaisesException] void testReceiverObjectCallback(TestReceiverObjectCallback callback);
+    [RaisesException] sequence<DOMString> testSequenceCallback(TestSequenceCallback callback, sequence<long> numbers);
 };
