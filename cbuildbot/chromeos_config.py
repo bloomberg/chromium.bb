@@ -691,11 +691,6 @@ _smoke_only_vmtest_boards = frozenset([
 # corresponds to the set of experimental or self-standing configs.
 _waterfall_config_map = {
     constants.WATERFALL_EXTERNAL: frozenset([
-        # Incremental
-        'amd64-generic-incremental',
-        'daisy-incremental',
-        'x86-generic-incremental',
-
         # Full
         'amd64-generic-full',
         'arm-generic-full',
@@ -713,11 +708,6 @@ _waterfall_config_map = {
         'reef-paladin',
         'gale-paladin',
         'lakitu_next-paladin',
-
-        # Incremental Builders.
-        'mario-incremental',
-        'lakitu-incremental',
-        'lakitu_next-incremental',
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
@@ -1187,6 +1177,14 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
   )
 
   site_config.AddTemplate(
+      'tot_asan_informational',
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.asan,
+      unittests=True,
+      description='Build TOT Chrome with Address Sanitizer (Clang)',
+  )
+
+  site_config.AddTemplate(
       'chrome_perf',
       site_config.templates.chrome_pfq_informational,
       site_config.templates.no_unittest_builder,
@@ -1197,14 +1195,6 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
           timeout=90 * 60, critical=True, num=1)],
       use_chrome_lkgm=True,
       useflags=append_useflags(['-cros-debug']),
-  )
-
-  site_config.AddTemplate(
-      'tot_asan_informational',
-      site_config.templates.chromium_pfq_informational,
-      site_config.templates.asan,
-      unittests=True,
-      description='Build TOT Chrome with Address Sanitizer (Clang)',
   )
 
   # Because branch directories may be shared amongst builders on multiple
@@ -1495,36 +1485,36 @@ def CreateBoardConfigs(site_config, ge_build_config):
     board_config = config_lib.BuildConfig(boards=[board])
 
     if board in _internal_boards:
-      board_config.update(site_config.templates.internal)
-      board_config.update(site_config.templates.official_chrome)
-      board_config.update(manifest=constants.OFFICIAL_MANIFEST)
+      board_config.apply(site_config.templates.internal,
+                         site_config.templates.official_chrome,
+                         manifest=constants.OFFICIAL_MANIFEST)
     if board in _brillo_boards:
-      board_config.update(site_config.templates.brillo)
+      board_config.apply(site_config.templates.brillo)
     if board in _lakitu_boards:
-      board_config.update(site_config.templates.lakitu)
+      board_config.apply(site_config.templates.lakitu)
     if board in _moblab_boards:
-      board_config.update(site_config.templates.moblab)
+      board_config.apply(site_config.templates.moblab)
     if board in _nofactory_boards:
-      board_config.update(factory=False)
-      board_config.update(factory_toolkit=False)
-      board_config.update(factory_install_netboot=False)
-      board_config.update(images=remove_images(['factory_install']))
+      board_config.apply(factory=False,
+                         factory_toolkit=False,
+                         factory_install_netboot=False,
+                         images=remove_images(['factory_install']))
     if board in _toolchains_from_source:
-      board_config.update(usepkg_toolchain=False)
+      board_config.apply(usepkg_toolchain=False)
     if board in _noimagetest_boards:
-      board_config.update(image_test=False)
+      board_config.apply(image_test=False)
     if board in _nohwqual_boards:
-      board_config.update(hwqual=False)
+      board_config.apply(hwqual=False)
     if board in _norootfs_verification_boards:
-      board_config.update(rootfs_verification=False)
+      board_config.apply(rootfs_verification=False)
     if board in _base_layout_boards:
-      board_config.update(disk_layout='base')
+      board_config.apply(disk_layout='base')
     if board in _no_unittest_boards:
-      board_config.update(site_config.templates.no_unittest_builder)
+      board_config.apply(site_config.templates.no_unittest_builder)
     if board in _no_vmtest_boards:
-      board_config.update(site_config.templates.no_vmtest_builder)
+      board_config.apply(site_config.templates.no_vmtest_builder)
     if board in _smoke_only_vmtest_boards:
-      board_config.update(site_config.templates.smoke_only_vmtest_builder)
+      board_config.apply(site_config.templates.smoke_only_vmtest_builder)
     if board in _beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
 
@@ -1959,16 +1949,13 @@ def AndroidPfqBuilders(site_config, board_configs, hw_test_list):
   )
 
 
-def _GetConfig(site_config, board_configs, hw_test_list):
+def _GetConfig(site_config, board_configs):
   """Method with un-refactored build configs/templates.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
     board_configs: Dictionary mapping board names to per-board configurations.
-    hw_test_list: Object to help create lists of standard HW Tests.
-    is_release_branch: True if config for a release branch, False for TOT.
   """
 
   site_config.Add(
@@ -2009,6 +1996,7 @@ def _GetConfig(site_config, board_configs, hw_test_list):
         overlays=constants.PUBLIC_OVERLAYS,
         prebuilts=constants.PUBLIC,
         **external_overrides)
+    # TODO: Move to Informational
     site_config.AddForBoards(
         'tot-chromium-pfq-informational',
         _all_full_boards,
@@ -2019,6 +2007,7 @@ def _GetConfig(site_config, board_configs, hw_test_list):
         manifest_repo_url=site_config.params['MANIFEST_URL'],
         overlays=constants.PUBLIC_OVERLAYS,
         **external_overrides)
+    # TODO: Move to Informational
     site_config.AddForBoards(
         'tot-chromium-pfq-informational-gn',
         _all_full_boards,
@@ -2046,254 +2035,16 @@ def _GetConfig(site_config, board_configs, hw_test_list):
 
   _AddFullConfigs()
 
-  _chrome_pfq_important_boards = frozenset([
-      'cyan',
-      'daisy_skate',
-      'falco',
-      'lumpy',
-      'nyan',
-      'peach_pit',
-      'peppy',
-      'tricky',
-      'veyron_minnie',
-      'veyron_pinky',
-      'veyron_rialto',
-      'x86-alex',
-  ])
 
-  _telemetry_boards = frozenset([
-      'amd64-generic',
-      'arm-generic',
-      'x86-generic',
-  ])
+def CqBuilders(site_config, board_configs, hw_test_list):
+  """Create all CQ build configs.
 
-  site_config.AddForBoards(
-      'telemetry',
-      _telemetry_boards,
-      board_configs,
-      site_config.templates.telemetry,
-  )
-
-  site_config.Add(
-      'x86-generic-asan',
-      site_config.templates.asan,
-      site_config.templates.incremental,
-      boards=['x86-generic'],
-      chroot_replace=True,
-      hw_tests=hw_test_list.AsanTest(),
-      hw_tests_override=hw_test_list.AsanTest(),
-      description='Build with Address Sanitizer (Clang)',
-      trybot_list=True,
-  )
-
-  site_config.Add(
-      'x86-generic-tot-asan-informational',
-      site_config.templates.tot_asan_informational,
-      boards=['x86-generic'],
-  )
-
-  site_config.Add(
-      'amd64-generic-asan',
-      site_config.templates.asan,
-      site_config.templates.incremental,
-      boards=['amd64-generic'],
-      description='Build with Address Sanitizer (Clang)',
-      trybot_list=True,
-  )
-
-  site_config.Add(
-      'amd64-generic-tot-asan-informational',
-      site_config.templates.tot_asan_informational,
-      boards=['amd64-generic'],
-  )
-
-  site_config.Add(
-      'beaglebone-incremental',
-      site_config.templates.incremental,
-      site_config.templates.beaglebone,
-      boards=['beaglebone'],
-      trybot_list=True,
-      description='Incremental Beaglebone Builder',
-  )
-
-  site_config.Add(
-      'x86-generic-incremental',
-      site_config.templates.incremental,
-      board_configs['x86-generic'],
-  )
-
-  # Build external source, for an internal board.
-  site_config.Add(
-      'daisy-incremental',
-      site_config.templates.incremental,
-      board_configs['daisy'],
-      site_config.templates.external,
-      useflags=append_useflags(['-chrome_internal']),
-  )
-
-  site_config.Add(
-      'amd64-generic-incremental',
-      site_config.templates.incremental,
-      board_configs['amd64-generic'],
-      # This builder runs on a VM, so it can't run VM tests.
-      vm_tests=[],
-  )
-
-  site_config.Add(
-      'x32-generic-incremental',
-      site_config.templates.incremental,
-      board_configs['x32-generic'],
-      # This builder runs on a VM, so it can't run VM tests.
-      vm_tests=[],
-  )
-
-  site_config.Add(
-      'x86-generic-asan-paladin',
-      site_config.templates.paladin,
-      board_configs['x86-generic'],
-      site_config.templates.asan,
-      description='Paladin build with Address Sanitizer (Clang)',
-      important=False,
-  )
-
-  site_config.Add(
-      'amd64-generic-asan-paladin',
-      site_config.templates.paladin,
-      board_configs['amd64-generic'],
-      site_config.templates.asan,
-      description='Paladin build with Address Sanitizer (Clang)',
-      important=False,
-  )
-
-  _chrome_perf_boards = frozenset([
-      'daisy',
-      'lumpy',
-      'parrot',
-  ])
-
-  site_config.AddForBoards(
-      'chrome-perf',
-      _chrome_perf_boards,
-      board_configs,
-      site_config.templates.chrome_perf,
-      trybot_list=True,
-  )
-
-  site_config.AddForBoards(
-      'telem-chromium-pfq-informational',
-      ['x86-generic', 'amd64-generic'],
-      board_configs,
-      site_config.templates.chromium_pfq_informational,
-      site_config.templates.telemetry,
-      site_config.templates.chrome_try,
-  )
-
-  #
-  # Internal Builds
-  #
-  site_config.AddForBoards(
-      'nowithdebug-paladin',
-      ['x86-generic', 'amd64-generic'],
-      board_configs,
-      site_config.templates.paladin,
-      site_config.templates.internal_nowithdebug_paladin,
-      important=False,
-  )
-
-  site_config.Add(
-      'x86-mario-nowithdebug-paladin',
-      site_config.templates.paladin,
-      site_config.templates.internal_nowithdebug_paladin,
-      boards=['x86-mario'])
-
-  # Used for builders which build completely from source except Chrome.
-
-  # These boards pass with -clang-clean CFLAG, so ensure they stay that way.
-  site_config.AddForBoards(
-      'full-compile-paladin',
-      ['falco', 'nyan'],
-      board_configs,
-      site_config.templates.paladin,
-      board_replace=True,
-      chrome_binhost_only=True,
-      chrome_sdk=False,
-      compilecheck=True,
-      cpe_export=False,
-      debug_symbols=False,
-      prebuilts=False,
-      unittests=False,
-      upload_hw_test_artifacts=False,
-      vm_tests=[],
-  )
-
-  site_config.Add(
-      'samus-pre-flight-branch',
-      site_config.templates.pre_flight_branch,
-      master=True,
-      push_overlays=constants.BOTH_OVERLAYS,
-      boards=['samus'],
-      android_rev=constants.ANDROID_REV_LATEST,
-      afdo_generate=True,
-      afdo_update_ebuild=True,
-      vm_tests=[],
-      hw_tests=[hw_test_list.AFDORecordTest()],
-  )
-
-  # Create our unittest stress build configs (used for tryjobs only)
-  site_config.AddForBoards(
-      'unittest-stress',
-      _all_boards,
-      board_configs,
-      site_config.templates.unittest_stress,
-  )
-
-  ### Master paladin (CQ builder).
-
-  site_config.Add(
-      'master-paladin',
-      site_config.templates.paladin,
-      site_config.templates.internal_paladin,
-      boards=[],
-      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
-      master=True,
-      binhost_test=True,
-      push_overlays=constants.BOTH_OVERLAYS,
-      description='Commit Queue master (all others are slaves)',
-
-      # This name should remain synced with with the name used in
-      # build_internals/masters/master.chromeos/board_config.py.
-      # TODO(mtennant): Fix this.  There should be some amount of auto-
-      # configuration in the board_config.py code.
-      health_threshold=3,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'tree'],
-      sanity_check_slaves=['wolf-tot-paladin'],
-      trybot_list=False,
-      auto_reboot=False,
-  )
-
-  ### Other paladins (CQ builders).
-  # These are slaves of the master paladin by virtue of matching
-  # in a few config values (e.g. 'build_type', 'branch', etc).  If
-  # they are not 'important' then they are ignored slaves.
-  # TODO(mtennant): This master-slave relationship should be specified
-  # here in the configuration, rather than GetSlavesForMaster().
-  # Something like the following:
-  # master_paladin = site_config.AddConfig(internal_paladin, ...)
-  # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
-
-  # Sanity check builder, part of the CQ but builds without the patches
-  # under test.
-  site_config.Add(
-      'wolf-tot-paladin',
-      site_config.templates.paladin,
-      site_config.templates.internal_paladin,
-      boards=['wolf'],
-      do_not_apply_cq_patches=True,
-      prebuilts=False,
-      hw_tests=hw_test_list.SharedPoolCQ(),
-  )
-
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
+    hw_test_list: Object to help create lists of standard HW Tests.
+  """
   _paladin_boards = _all_boards
 
   # List of paladin boards where the regular paladin config is important.
@@ -2412,104 +2163,165 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       'amd64-generic',
   ])
 
-  def _CreatePaladinConfigs():
-    for board in _paladin_boards:
-      assert board in board_configs, '%s not in board_configs' % board
-      config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
-      customizations = config_lib.BuildConfig()
-      base_config = board_configs[board]
-      if board in _paladin_hwtest_boards:
-        customizations.update(hw_tests=hw_test_list.DefaultListCQ())
-      if board in _paladin_moblab_hwtest_boards:
-        customizations.update(
-            hw_tests=[
-                config_lib.HWTestConfig(
-                    constants.HWTEST_MOBLAB_QUICK_SUITE,
-                    num=1, timeout=120*60,
-                    pool=constants.HWTEST_PALADIN_POOL)
-            ])
-      if board in _paladin_cheets_hwtest_boards:
-        customizations.update(
-            hw_tests=[
-                config_lib.HWTestConfig(
-                    constants.HWTEST_ARC_COMMIT_SUITE,
-                    pool=constants.HWTEST_PALADIN_POOL)
-            ])
-      if board in _paladin_jetstream_hwtest_boards:
-        customizations.update(
-            hw_tests=[
-                config_lib.HWTestConfig(
-                    constants.HWTEST_JETSTREAM_COMMIT_SUITE,
-                    pool=constants.HWTEST_PALADIN_POOL)
-            ])
-      if board not in _paladin_important_boards:
-        customizations.update(important=False)
-      if board in _paladin_chroot_replace_boards:
-        customizations.update(chroot_replace=True)
-      if board in _internal_boards:
-        customizations = customizations.derive(
-            site_config.templates.internal,
-            site_config.templates.official_chrome,
-            manifest=constants.OFFICIAL_MANIFEST)
-      if board in _paladin_separate_symbols:
-        customizations.update(separate_debug_symbols=True)
+  ### Master paladin (CQ builder).
+  site_config.Add(
+      'master-paladin',
+      site_config.templates.paladin,
+      site_config.templates.internal_paladin,
+      boards=[],
+      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
+      master=True,
+      binhost_test=True,
+      push_overlays=constants.BOTH_OVERLAYS,
+      description='Commit Queue master (all others are slaves)',
 
-      if board not in _paladin_default_vmtest_boards:
-        vm_tests = []
-        if board in _paladin_simple_vmtest_boards:
-          vm_tests.append(
-              config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE))
-        if board in _paladin_cros_vmtest_boards:
-          vm_tests.append(config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE))
-        if board in _paladin_devmode_vmtest_boards:
-          vm_tests.append(config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE))
-        if board in _paladin_smoke_vmtest_boards:
-          vm_tests.append(
-              config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE))
+      # This name should remain synced with with the name used in
+      # build_internals/masters/master.chromeos/board_config.py.
+      # TODO(mtennant): Fix this.  There should be some amount of auto-
+      # configuration in the board_config.py code.
+      health_threshold=3,
+      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
+                               'tree'],
+      sanity_check_slaves=['wolf-tot-paladin'],
+      trybot_list=False,
+      auto_reboot=False,
+  )
 
-        customizations.update(vm_tests=vm_tests)
+  ### Other paladins (CQ builders).
+  # These are slaves of the master paladin by virtue of matching
+  # in a few config values (e.g. 'build_type', 'branch', etc).  If
+  # they are not 'important' then they are ignored slaves.
+  # TODO(mtennant): This master-slave relationship should be specified
+  # here in the configuration, rather than GetSlavesForMaster().
+  # Something like the following:
+  # master_paladin = site_config.AddConfig(internal_paladin, ...)
+  # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
 
-        if site_config.templates.paladin.vm_tests_override is not None:
-          # Make sure any new tests are also in override.
-          override = site_config.templates.paladin.vm_tests_override[:]
-          for test in vm_tests:
-            if test not in override:
-              override.append(test)
+  # Sanity check builder, part of the CQ but builds without the patches
+  # under test.
+  site_config.Add(
+      'wolf-tot-paladin',
+      site_config.templates.paladin,
+      site_config.templates.internal_paladin,
+      boards=['wolf'],
+      do_not_apply_cq_patches=True,
+      prebuilts=False,
+      hw_tests=hw_test_list.SharedPoolCQ(),
+  )
 
-          customizations.update(vm_tests_override=override)
+  for board in _paladin_boards:
+    assert board in board_configs, '%s not in board_configs' % board
+    config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
+    customizations = config_lib.BuildConfig()
+    base_config = board_configs[board]
+    if board in _paladin_hwtest_boards:
+      customizations.update(hw_tests=hw_test_list.DefaultListCQ())
+    if board in _paladin_moblab_hwtest_boards:
+      customizations.update(
+          hw_tests=[
+              config_lib.HWTestConfig(
+                  constants.HWTEST_MOBLAB_QUICK_SUITE,
+                  num=1, timeout=120*60,
+                  pool=constants.HWTEST_PALADIN_POOL)
+          ])
+    if board in _paladin_cheets_hwtest_boards:
+      customizations.update(
+          hw_tests=[
+              config_lib.HWTestConfig(
+                  constants.HWTEST_ARC_COMMIT_SUITE,
+                  pool=constants.HWTEST_PALADIN_POOL)
+          ])
+    if board in _paladin_jetstream_hwtest_boards:
+      customizations.update(
+          hw_tests=[
+              config_lib.HWTestConfig(
+                  constants.HWTEST_JETSTREAM_COMMIT_SUITE,
+                  pool=constants.HWTEST_PALADIN_POOL)
+          ])
+    if board not in _paladin_important_boards:
+      customizations.update(important=False)
+    if board in _paladin_chroot_replace_boards:
+      customizations.update(chroot_replace=True)
+    if board in _internal_boards:
+      customizations = customizations.derive(
+          site_config.templates.internal,
+          site_config.templates.official_chrome,
+          manifest=constants.OFFICIAL_MANIFEST)
+    if board in _paladin_separate_symbols:
+      customizations.update(separate_debug_symbols=True)
 
-      if base_config.get('internal'):
-        customizations.update(
-            prebuilts=constants.PRIVATE,
-            description=(site_config.templates.paladin.description +
-                         ' (internal)'))
-      else:
-        customizations.update(prebuilts=constants.PUBLIC)
+    if board not in _paladin_default_vmtest_boards:
+      vm_tests = []
+      if board in _paladin_simple_vmtest_boards:
+        vm_tests.append(
+            config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE))
+      if board in _paladin_cros_vmtest_boards:
+        vm_tests.append(config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE))
+      if board in _paladin_devmode_vmtest_boards:
+        vm_tests.append(config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE))
+      if board in _paladin_smoke_vmtest_boards:
+        vm_tests.append(
+            config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE))
 
-      if board in _lakitu_boards:
-        # Note: Because |customizations| precedes |base_config|, it will be
-        # overridden by |base_config|. So we have to append lakitu
-        # customizations after |base_config| is applied.
-        # TODO(crbug.com/553749)
-        # Also, I can't do
-        # `lakitu_test_customizations if xxx else None` because the Add function
-        # doesn't allow optional args to be None.
-        site_config.Add(
-            config_name,
-            site_config.templates.paladin,
-            customizations,
-            base_config,
-            site_config.templates.lakitu_test_customizations,
-        )
-      else:
-        site_config.Add(
-            config_name,
-            site_config.templates.paladin,
-            customizations,
-            base_config,
-        )
+      customizations.update(vm_tests=vm_tests)
 
-  _CreatePaladinConfigs()
+      if site_config.templates.paladin.vm_tests_override is not None:
+        # Make sure any new tests are also in override.
+        override = site_config.templates.paladin.vm_tests_override[:]
+        for test in vm_tests:
+          if test not in override:
+            override.append(test)
+
+        customizations.update(vm_tests_override=override)
+
+    if base_config.get('internal'):
+      customizations.update(
+          prebuilts=constants.PRIVATE,
+          description=(site_config.templates.paladin.description +
+                       ' (internal)'))
+    else:
+      customizations.update(prebuilts=constants.PUBLIC)
+
+    if board in _lakitu_boards:
+      # Note: Because |customizations| precedes |base_config|, it will be
+      # overridden by |base_config|. So we have to append lakitu
+      # customizations after |base_config| is applied.
+      # TODO(crbug.com/553749)
+      # Also, I can't do
+      # `lakitu_test_customizations if xxx else None` because the Add function
+      # doesn't allow optional args to be None.
+      site_config.Add(
+          config_name,
+          site_config.templates.paladin,
+          customizations,
+          base_config,
+          site_config.templates.lakitu_test_customizations,
+      )
+    else:
+      site_config.Add(
+          config_name,
+          site_config.templates.paladin,
+          customizations,
+          base_config,
+      )
+
+  #
+  # Paladins with alternative configs.
+  #
+  site_config.AddForBoards(
+      'nowithdebug-paladin',
+      ['x86-generic', 'amd64-generic'],
+      board_configs,
+      site_config.templates.paladin,
+      site_config.templates.internal_nowithdebug_paladin,
+      important=False,
+  )
+
+  site_config.Add(
+      'x86-mario-nowithdebug-paladin',
+      site_config.templates.paladin,
+      site_config.templates.internal_nowithdebug_paladin,
+      boards=['x86-mario'])
 
   site_config.Add(
       'lumpy-incremental-paladin',
@@ -2520,6 +2332,44 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       prebuilts=False,
       compilecheck=True,
       unittests=False,
+  )
+
+  # Used for builders which build completely from source except Chrome.
+  # These boards pass with -clang-clean CFLAG, so ensure they stay that way.
+  site_config.AddForBoards(
+      'full-compile-paladin',
+      ['falco', 'nyan'],
+      board_configs,
+      site_config.templates.paladin,
+      board_replace=True,
+      chrome_binhost_only=True,
+      chrome_sdk=False,
+      compilecheck=True,
+      cpe_export=False,
+      debug_symbols=False,
+      prebuilts=False,
+      unittests=False,
+      upload_hw_test_artifacts=False,
+      vm_tests=[],
+  )
+
+  # These are not built. Can they be removed?
+  site_config.Add(
+      'x86-generic-asan-paladin',
+      site_config.templates.paladin,
+      board_configs['x86-generic'],
+      site_config.templates.asan,
+      description='Paladin build with Address Sanitizer (Clang)',
+      important=False,
+  )
+
+  site_config.Add(
+      'amd64-generic-asan-paladin',
+      site_config.templates.paladin,
+      board_configs['amd64-generic'],
+      site_config.templates.asan,
+      description='Paladin build with Address Sanitizer (Clang)',
+      important=False,
   )
 
   def ShardHWTestsBetweenBuilders(*args):
@@ -2564,132 +2414,300 @@ def _GetConfig(site_config, board_configs, hw_test_list):
   ShardHWTestsBetweenBuilders('winky-paladin', 'kip-paladin')
   ShardHWTestsBetweenBuilders('elm-paladin', None)
 
+
+def Incrementals(site_config, board_configs):
+  """Create all incremental build configs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
+  """
+  site_config.Add(
+      'beaglebone-incremental',
+      site_config.templates.incremental,
+      site_config.templates.beaglebone,
+      boards=['beaglebone'],
+      trybot_list=True,
+      description='Incremental Beaglebone Builder',
+  )
+
+  site_config.Add(
+      'x86-generic-incremental',
+      site_config.templates.incremental,
+      board_configs['x86-generic'],
+      active_waterfall=constants.WATERFALL_EXTERNAL,
+  )
+
+  # Build external source, for an internal board.
+  site_config.Add(
+      'daisy-incremental',
+      site_config.templates.incremental,
+      board_configs['daisy'],
+      site_config.templates.external,
+      useflags=append_useflags(['-chrome_internal']),
+      active_waterfall=constants.WATERFALL_EXTERNAL,
+  )
+
+  site_config.Add(
+      'amd64-generic-incremental',
+      site_config.templates.incremental,
+      board_configs['amd64-generic'],
+      # This builder runs on a VM, so it can't run VM tests.
+      vm_tests=[],
+      active_waterfall=constants.WATERFALL_EXTERNAL,
+  )
+
+  site_config.Add(
+      'x32-generic-incremental',
+      site_config.templates.incremental,
+      board_configs['x32-generic'],
+      # This builder runs on a VM, so it can't run VM tests.
+      vm_tests=[],
+  )
+
   site_config.Add(
       'mario-incremental',
       site_config.templates.incremental,
       site_config.templates.internal_incremental,
       boards=['x86-mario'],
+      active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
   site_config.Add(
       'lakitu-incremental',
       site_config.templates.incremental,
       site_config.templates.internal_incremental,
+      site_config.templates.lakitu_notification_emails,
       board_configs['lakitu'],
       site_config.templates.lakitu_test_customizations,
-      site_config.templates.lakitu_notification_emails,
+      active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
   site_config.Add(
       'lakitu_next-incremental',
       site_config.templates.incremental,
       site_config.templates.internal_incremental,
+      site_config.templates.lakitu_notification_emails,
       board_configs['lakitu_next'],
       site_config.templates.lakitu_test_customizations,
-      site_config.templates.lakitu_notification_emails,
+      active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
+
+def ReleaseAfdoTryjobs(site_config, board_configs):
+  """Create AFDO Performance tryjobs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
+  """
   # Now generate generic release-afdo configs if we haven't created anything
   # more specific above already. release-afdo configs are builders that do AFDO
   # profile collection and optimization in the same builder. Used by developers
   # that want to measure performance changes caused by their changes.
-  def _AddAFDOConfigs():
-    for board in _all_release_boards:
-      base = board_configs[board]
+  for board in _all_release_boards:
+    base = board_configs[board]
 
-      config_name = '%s-%s' % (board, config_lib.CONFIG_TYPE_RELEASE_AFDO)
-      if config_name in site_config:
-        continue
+    config_name = '%s-%s' % (board, config_lib.CONFIG_TYPE_RELEASE_AFDO)
+    if config_name in site_config:
+      continue
 
-      generate_config_name = (
-          '%s-%s-%s' % (board,
-                        config_lib.CONFIG_TYPE_RELEASE_AFDO,
-                        'generate'))
-      use_config_name = '%s-%s-%s' % (board,
-                                      config_lib.CONFIG_TYPE_RELEASE_AFDO,
-                                      'use')
+    generate_config_name = (
+        '%s-%s-%s' % (board,
+                      config_lib.CONFIG_TYPE_RELEASE_AFDO,
+                      'generate'))
+    use_config_name = '%s-%s-%s' % (board,
+                                    config_lib.CONFIG_TYPE_RELEASE_AFDO,
+                                    'use')
 
-      # We can't use AFDO data if afdo_use is disabled for this board.
-      if not base.get('afdo_use', True):
-        continue
+    # We can't use AFDO data if afdo_use is disabled for this board.
+    if not base.get('afdo_use', True):
+      continue
 
-      site_config.AddGroup(
-          config_name,
-          site_config.Add(
-              generate_config_name,
-              site_config.templates.release_afdo_generate,
-              base
-          ),
-          site_config.Add(
-              use_config_name,
-              site_config.templates.release_afdo_use,
-              base
-          ),
-      )
+    site_config.AddGroup(
+        config_name,
+        site_config.Add(
+            generate_config_name,
+            site_config.templates.release_afdo_generate,
+            base
+        ),
+        site_config.Add(
+            use_config_name,
+            site_config.templates.release_afdo_use,
+            base
+        ),
+    )
 
-  _AddAFDOConfigs()
 
-  ### Informational hwtest
+def Informational(site_config, board_configs, hw_test_list):
+  """Create all informational builders.
 
+  We have a number of informational builders that are built, but whose output is
+  not directly used for anything other than reporting success or failure.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
+    hw_test_list: Object to help create lists of standard HW Tests.
+  """
   _chrome_informational_hwtest_boards = frozenset([
       'peach_pit',
       'tricky',
   ])
 
-
   # We have to mark all autogenerated PFQs as not important so the master
   # does not wait for them.  http://crbug.com/386214
   # If you want an important PFQ, you'll have to declare it yourself.
 
-  def _AddInformationalConfigs():
-    site_config.AddForBoards(
-        'tot-chrome-pfq-informational',
-        _chrome_informational_hwtest_boards,
-        board_configs,
-        site_config.templates.chrome_pfq_informational,
-        important=False,
-        hw_tests=hw_test_list.DefaultListPFQ(
-            pool=constants.HWTEST_CONTINUOUS_POOL),
-    )
-    informational_boards = set(_all_release_boards) - set(_cheets_boards)
-    site_config.AddForBoards(
-        'tot-chrome-pfq-informational',
-        informational_boards-_chrome_informational_hwtest_boards,
-        board_configs,
-        site_config.templates.chrome_pfq_informational,
-        important=False)
-    site_config.AddForBoards(
-        'tot-chrome-pfq-informational-gn',
-        informational_boards,
-        board_configs,
-        site_config.templates.chrome_pfq_informational_gn,
-        important=False)
-    site_config.AddForBoards(
-        'tot-chrome-pfq-cheets-informational',
-        _cheets_boards,
-        board_configs,
-        site_config.templates.chrome_pfq_cheets_informational,
-        important=False)
+  site_config.AddForBoards(
+      'tot-chrome-pfq-informational',
+      _chrome_informational_hwtest_boards,
+      board_configs,
+      site_config.templates.chrome_pfq_informational,
+      important=False,
+      hw_tests=hw_test_list.DefaultListPFQ(
+          pool=constants.HWTEST_CONTINUOUS_POOL),
+  )
+  informational_boards = set(_all_release_boards) - set(_cheets_boards)
+  site_config.AddForBoards(
+      'tot-chrome-pfq-informational',
+      informational_boards-_chrome_informational_hwtest_boards,
+      board_configs,
+      site_config.templates.chrome_pfq_informational,
+      important=False)
+  site_config.AddForBoards(
+      'tot-chrome-pfq-informational-gn',
+      informational_boards,
+      board_configs,
+      site_config.templates.chrome_pfq_informational_gn,
+      important=False)
+  site_config.AddForBoards(
+      'tot-chrome-pfq-cheets-informational',
+      _cheets_boards,
+      board_configs,
+      site_config.templates.chrome_pfq_cheets_informational,
+      important=False)
 
-  def _AddPfqConfigs():
-    site_config.AddForBoards(
-        'chrome-pfq',
-        _chrome_pfq_important_boards,
-        board_configs,
-        site_config.templates.chrome_pfq,
-        important=True
-    )
-    site_config.AddForBoards(
-        'chrome-pfq',
-        _all_release_boards - _chrome_pfq_important_boards,
-        board_configs,
-        site_config.templates.chrome_pfq,
-        important=False,
-    )
+  site_config.Add(
+      'x86-generic-tot-asan-informational',
+      site_config.templates.tot_asan_informational,
+      boards=['x86-generic'],
+  )
 
-  _AddInformationalConfigs()
-  _AddPfqConfigs()
+  site_config.Add(
+      'amd64-generic-asan',
+      site_config.templates.asan,
+      site_config.templates.incremental,
+      boards=['amd64-generic'],
+      description='Build with Address Sanitizer (Clang)',
+      trybot_list=True,
+  )
 
+  site_config.Add(
+      'amd64-generic-tot-asan-informational',
+      site_config.templates.tot_asan_informational,
+      boards=['amd64-generic'],
+  )
+
+  _chrome_perf_boards = frozenset([
+      'daisy',
+      'lumpy',
+      'parrot',
+  ])
+
+  site_config.AddForBoards(
+      'chrome-perf',
+      _chrome_perf_boards,
+      board_configs,
+      site_config.templates.chrome_perf,
+      trybot_list=True,
+  )
+
+  site_config.AddForBoards(
+      'telem-chromium-pfq-informational',
+      ['x86-generic', 'amd64-generic'],
+      board_configs,
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.telemetry,
+      site_config.templates.chrome_try,
+  )
+
+  _telemetry_boards = frozenset([
+      'amd64-generic',
+      'arm-generic',
+      'x86-generic',
+  ])
+
+  site_config.AddForBoards(
+      'telemetry',
+      _telemetry_boards,
+      board_configs,
+      site_config.templates.telemetry,
+  )
+
+  site_config.Add(
+      'x86-generic-asan',
+      site_config.templates.asan,
+      site_config.templates.incremental,
+      boards=['x86-generic'],
+      chroot_replace=True,
+      hw_tests=hw_test_list.AsanTest(),
+      hw_tests_override=hw_test_list.AsanTest(),
+      description='Build with Address Sanitizer (Clang)',
+      trybot_list=True,
+  )
+
+
+def ChromePfq(site_config, board_configs):
+  """Create all Chrome PFQ build configs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
+  """
+  _chrome_pfq_important_boards = frozenset([
+      'cyan',
+      'daisy_skate',
+      'falco',
+      'lumpy',
+      'nyan',
+      'peach_pit',
+      'peppy',
+      'tricky',
+      'veyron_minnie',
+      'veyron_pinky',
+      'veyron_rialto',
+      'x86-alex',
+  ])
+
+  site_config.AddForBoards(
+      'chrome-pfq',
+      _chrome_pfq_important_boards,
+      board_configs,
+      site_config.templates.chrome_pfq,
+      important=True
+  )
+  site_config.AddForBoards(
+      'chrome-pfq',
+      _all_release_boards - _chrome_pfq_important_boards,
+      board_configs,
+      site_config.templates.chrome_pfq,
+      important=False,
+  )
+
+
+def FirmwareBuilders(site_config, board_configs):
+  """Create all firmware build configs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
+  """
   _firmware_boards = frozenset([
       'asuka',
       'auron',
@@ -2787,41 +2805,29 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       'zako',
   ])
 
+  # Add x86 and arm firmware configs.
+  for board in _firmware_boards:
+    site_config.Add(
+        '%s-%s' % (board, config_lib.CONFIG_TYPE_FIRMWARE),
+        site_config.templates.firmware,
+        board_configs[board],
+        site_config.templates.no_vmtest_builder,
+    )
 
-  def _AddFirmwareConfigs():
-    """Add x86 and arm firmware configs."""
-    for board in _firmware_boards:
-      site_config.Add(
-          '%s-%s' % (board, config_lib.CONFIG_TYPE_FIRMWARE),
-          site_config.templates.firmware,
-          board_configs[board],
-          site_config.templates.no_vmtest_builder,
-      )
-
-    for board in _x86_depthcharge_firmware_boards:
-      site_config.Add(
-          '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
-          site_config.templates.depthcharge_firmware,
-          board_configs[board],
-          site_config.templates.no_vmtest_builder,
-      )
-      site_config.Add(
-          '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
-                           config_lib.CONFIG_TYPE_FIRMWARE),
-          site_config.templates.depthcharge_full_firmware,
-          board_configs[board],
-          site_config.templates.no_vmtest_builder,
-      )
-
-  _AddFirmwareConfigs()
-
-  # This is an example factory branch configuration.
-  # Modify it to match your factory branch.
-  site_config.Add(
-      'x86-mario-factory',
-      site_config.templates.factory,
-      boards=['x86-mario'],
-  )
+  for board in _x86_depthcharge_firmware_boards:
+    site_config.Add(
+        '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
+        site_config.templates.depthcharge_firmware,
+        board_configs[board],
+        site_config.templates.no_vmtest_builder,
+    )
+    site_config.Add(
+        '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
+                         config_lib.CONFIG_TYPE_FIRMWARE),
+        site_config.templates.depthcharge_full_firmware,
+        board_configs[board],
+        site_config.templates.no_vmtest_builder,
+    )
 
 
 def ReleaseBuilders(site_config, board_configs, ge_build_config,
@@ -3181,8 +3187,15 @@ def ApplyCustomOverrides(site_config, hw_test_list):
     site_config[config_name].apply(**overrides)
 
 
-def SpecialtyBuilders(site_config):
-  """Add a variety of specialized builders or tryjobs."""
+def SpecialtyBuilders(site_config, board_configs, hw_test_list):
+  """Add a variety of specialized builders or tryjobs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
+    hw_test_list: Object to help create lists of standard HW Tests.
+  """
   site_config.AddWithoutTemplate(
       'chromiumos-sdk',
       site_config.templates.full,
@@ -3249,6 +3262,14 @@ def SpecialtyBuilders(site_config):
       active_waterfall=constants.WATERFALL_TRYBOT,
   )
 
+  # Create our unittest stress build configs (used for tryjobs only)
+  site_config.AddForBoards(
+      'unittest-stress',
+      _all_boards,
+      board_configs,
+      site_config.templates.unittest_stress,
+  )
+
   site_config.AddGroup(
       'test-ap-group',
       site_config.Add('stumpy-test-ap',
@@ -3263,6 +3284,26 @@ def SpecialtyBuilders(site_config):
       description='Create images used to power access points in WiFi lab.',
   )
 
+  site_config.Add(
+      'samus-pre-flight-branch',
+      site_config.templates.pre_flight_branch,
+      master=True,
+      push_overlays=constants.BOTH_OVERLAYS,
+      boards=['samus'],
+      android_rev=constants.ANDROID_REV_LATEST,
+      afdo_generate=True,
+      afdo_update_ebuild=True,
+      vm_tests=[],
+      hw_tests=[hw_test_list.AFDORecordTest()],
+  )
+
+  # This is an example factory branch configuration.
+  # Modify it to match your factory branch.
+  site_config.Add(
+      'x86-mario-factory',
+      site_config.templates.factory,
+      boards=['x86-mario'],
+  )
 
 @factory.CachedFunctionCall
 def GetConfig():
@@ -3296,14 +3337,26 @@ def GetConfig():
 
   AddPayloadTryjobs(site_config)
 
-  SpecialtyBuilders(site_config)
+  SpecialtyBuilders(site_config, board_configs, hw_test_list)
 
-  # Fill in templates and build configurations.
-  _GetConfig(site_config, board_configs, hw_test_list)
+  PreCqBuilders(site_config, board_configs, hw_test_list)
+
+  CqBuilders(site_config, board_configs, hw_test_list)
+
+  Incrementals(site_config, board_configs)
+
+  ReleaseAfdoTryjobs(site_config, board_configs)
+
+  Informational(site_config, board_configs, hw_test_list)
+
+  ChromePfq(site_config, board_configs)
+
+  FirmwareBuilders(site_config, board_configs)
 
   AndroidPfqBuilders(site_config, board_configs, hw_test_list)
 
-  PreCqBuilders(site_config, board_configs, hw_test_list)
+  # Fill in templates and build configurations.
+  _GetConfig(site_config, board_configs)
 
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():
