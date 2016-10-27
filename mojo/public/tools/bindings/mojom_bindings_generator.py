@@ -37,7 +37,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 from mojom.error import Error
 import mojom.fileutil as fileutil
-from mojom.generate.data import OrderedModuleFromData
+from mojom.generate import translate
 from mojom.generate import template_expander
 from mojom.parse.parser import Parse
 
@@ -152,7 +152,7 @@ class MojomProcessor(object):
       imports[parsed_imp.import_filename] = self._GenerateModule(
           args, remaining_args, generator_modules, rel_import_file)
 
-    module = OrderedModuleFromData(tree, name, imports)
+    module = translate.OrderedModule(tree, name, imports)
 
     # Set the path as relative to the source root.
     module.path = rel_filename.relative_path()
