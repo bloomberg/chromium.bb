@@ -142,9 +142,9 @@ TEST_F(ReadingListModelTest, EmptyLoaded) {
 TEST_F(ReadingListModelTest, AddEntry) {
   ClearCounts();
   const ReadingListEntry& entry =
-      model_->AddEntry(GURL("http://example.com"), "sample");
+      model_->AddEntry(GURL("http://example.com"), "\n  \tsample Test ");
   EXPECT_EQ(GURL("http://example.com"), entry.URL());
-  EXPECT_EQ("sample", entry.Title());
+  EXPECT_EQ("sample Test", entry.Title());
 
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1);
   EXPECT_EQ(1ul, model_->unread_size());
@@ -153,7 +153,7 @@ TEST_F(ReadingListModelTest, AddEntry) {
 
   const ReadingListEntry& other_entry = model_->GetUnreadEntryAtIndex(0);
   EXPECT_EQ(GURL("http://example.com"), other_entry.URL());
-  EXPECT_EQ("sample", other_entry.Title());
+  EXPECT_EQ("sample Test", other_entry.Title());
 }
 
 TEST_F(ReadingListModelTest, ReadEntry) {

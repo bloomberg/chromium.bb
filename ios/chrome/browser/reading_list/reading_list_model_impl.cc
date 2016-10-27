@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_model_impl.h"
 
+#include "base/strings/string_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_storage.h"
 #include "url/gurl.h"
 
@@ -129,7 +130,11 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
     const std::string& title) {
   DCHECK(loaded());
   RemoveEntryByUrl(url);
-  ReadingListEntry entry(url, title);
+
+  std::string trimmedTitle(title);
+  base::TrimWhitespaceASCII(trimmedTitle, base::TRIM_ALL, &trimmedTitle);
+
+  ReadingListEntry entry(url, trimmedTitle);
   for (auto& observer : observers_)
     observer.ReadingListWillAddUnreadEntry(this, entry);
   unread_.insert(unread_.begin(), std::move(entry));
