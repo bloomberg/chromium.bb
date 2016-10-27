@@ -1098,11 +1098,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/newtab/NewTabButton.java",
 ]
 
-# Only used for testing, should not be shipped to end users.
-if (!is_official_build) {
-  chrome_java_sources += [ "java/src/org/chromium/chrome/browser/offlinepages/evaluation/OfflinePageEvaluationBridge.java" ]
-}
-
 chrome_vr_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContextImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApiImpl.java",
@@ -1502,3 +1497,9 @@ sync_shell_test_java_sources = [
   "sync_shell/javatests/src/org/chromium/chrome/browser/sync/TypedUrlsTest.java",
   "sync_shell/javatests/src/org/chromium/chrome/browser/sync/ui/PassphraseTypeDialogFragmentTest.java",
 ]
+
+# Only used for testing, should not be shipped to end users.
+if (!is_official_build) {
+  chrome_java_sources += [ "java/src/org/chromium/chrome/browser/offlinepages/evaluation/OfflinePageEvaluationBridge.java" ]
+  chrome_test_java_sources += [ "javatests/src/org/chromium/chrome/browser/offlinepages/OfflinePageSavePageLaterEvaluationTest.java" ]
+}

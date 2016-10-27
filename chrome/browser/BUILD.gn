@@ -3372,6 +3372,8 @@ split_static_library("browser") {
     # Used for testing only, should not be shipped to end users.
     if (!is_official_build) {
       sources += [
+        "android/offline_pages/evaluation/evaluation_test_scheduler.cc",
+        "android/offline_pages/evaluation/evaluation_test_scheduler.h",
         "android/offline_pages/evaluation/offline_page_evaluation_bridge.cc",
         "android/offline_pages/evaluation/offline_page_evaluation_bridge.h",
       ]

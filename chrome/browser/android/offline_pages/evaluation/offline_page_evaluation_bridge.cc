@@ -76,14 +76,23 @@ void OnPushRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
 static ScopedJavaLocalRef<jobject> GetBridgeForProfile(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jobject>& j_profile) {
+    const JavaParamRef<jobject>& j_profile,
+    const jboolean j_use_evaluation_scheduler) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
 
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);
 
-  RequestCoordinator* request_coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(profile);
+  RequestCoordinator* request_coordinator = nullptr;
+
+  if (j_use_evaluation_scheduler) {
+    request_coordinator = static_cast<RequestCoordinator*>(
+        RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile, &RequestCoordinatorFactory::GetTestingFactory));
+  } else {
+    request_coordinator =
+        RequestCoordinatorFactory::GetForBrowserContext(profile);
+  }
 
   if (offline_page_model == nullptr || request_coordinator == nullptr)
     return ScopedJavaLocalRef<jobject>();
@@ -172,7 +181,7 @@ void OfflinePageEvaluationBridge::GetAllPages(
       base::Bind(&GetAllPagesCallback, j_result_ref, j_callback_ref));
 }
 
-void OfflinePageEvaluationBridge::PushRequestProcessing(
+bool OfflinePageEvaluationBridge::PushRequestProcessing(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_callback_obj) {
@@ -183,7 +192,7 @@ void OfflinePageEvaluationBridge::PushRequestProcessing(
   net::NetworkChangeNotifier::ConnectionType connection =
       net::NetworkChangeNotifier::GetConnectionType();
   DeviceConditions device_conditions(false, 0, connection);
-  request_coordinator_->StartProcessing(
+  return request_coordinator_->StartProcessing(
       device_conditions, base::Bind(&OnPushRequestsDone, j_callback_ref));
 }
 

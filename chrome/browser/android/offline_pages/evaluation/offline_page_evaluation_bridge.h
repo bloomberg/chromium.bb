@@ -55,7 +55,9 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
                    const base::android::JavaParamRef<jobject>& j_result_obj,
                    const base::android::JavaParamRef<jobject>& j_callback_obj);
 
-  void PushRequestProcessing(
+  // Return true if processing starts and callback is expected to be called.
+  // False otherwise.
+  bool PushRequestProcessing(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
