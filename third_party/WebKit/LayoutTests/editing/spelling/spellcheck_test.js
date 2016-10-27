@@ -208,6 +208,11 @@ class MarkerSerializer {
     Array.from(element.attributes)
         .sort((attr1, attr2) => attr1.name.localeCompare(attr2.name))
         .forEach(attr => {
+          // HTMLInputElement's value attribute need special handling.
+          if (isHTMLInputElement(element)) {
+            if (attr.name === 'value')
+              return;
+          }
           if (attr.value === '')
             return this.emit(` ${attr.name}`);
           const value = attr.value.replace(/&/g, '&amp;')

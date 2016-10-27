@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+
+<script>
+test(() => assert_not_equals(window.internals, undefined),
+     'This test requires internals to set editing behavior.');
+
+test(() => assert_not_equals(window.eventSender, undefined),
+     'This test requires event sender to simulate keyboard and mouse actions.');
+
+function assertContextClickSelection(input, offsetX, expected) {
+  const document = input.ownerDocument;
+  const x = document.offsetLeft + input.offsetLeft + offsetX;
+  const y = document.offsetTop + input.offsetTop + input.offsetHeight / 2;
+  eventSender.mouseMoveTo(x, y);
+  eventSender.contextClick();
+
+  // Esc key to hide the context menu.
+  eventSender.keyDown('Escape', null);
+
+  assert_equals(document.getSelection().toString(), expected);
+}
+
+function getTextWidth(input) {
+  const shadowRoot = internals.shadowRoot(input);
+  const innerEditor = shadowRoot.firstChild;
+  const text = innerEditor.firstChild;
+  const range = input.ownerDocument.createRange();
+  range.selectNode(text);
+  return range.getClientRects()[0].width;
+}
+
+function contextClickSelectionTests(input) {
+  const textWidth = getTextWidth(input);
+
+  // There seems to be some bug with testharness.js that, if the first test
+  // completes before the next two tests start, the whole testharness is
+  // considered as ran to complete and the subsequent tests are not evaluated.
+  // Hence, we use async_test and defer the completion as a workaround.
+  const heldTest = async_test(
+      () => assertContextClickSelection(input, textWidth / 4, 'wellcome'),
+      'Context clicking "wellcome" selects the misspelled word');
+
+  ['Win', 'Unix', 'Android', 'Mac'].forEach(platform => {
+    internals.settings.setEditingBehavior(platform);
+    const shouldSelect = platform === 'Mac';
+    test(() => assertContextClickSelection(input, textWidth * 3 / 4,
+                                           shouldSelect ? 'home' : ''),
+         'Context clicking "home" ' +
+           `${shouldSelect ? 'selects' : 'does not select'} ` +
+           `the correctly spelled word on ${platform}`);
+  })
+
+  heldTest.done();
+}
+
+spellcheck_test(
+    '<input type="text" value="wellcome home.">',
+    document => document.querySelector('input').focus(),
+    '<input type="text" value="_wellcome_ home.">',
+    {
+      title: 'Mark misspelling in the initial text of an input field.',
+      callback: sample => contextClickSelectionTests(
+          sample.document.querySelector('input'))
+    });
+</script>
