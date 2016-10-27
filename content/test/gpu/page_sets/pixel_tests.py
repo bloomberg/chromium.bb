@@ -299,7 +299,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_canvas2d_webgl.html',
       name=base_name + '.2DCanvasWebGL' + es3_suffix,
       test_rect=[0, 0, 300, 300],
-      revision=2,
+      revision=3,
       story_set=self,
       shared_page_state_class=shared_page_state_class,
       expectations=expectations))
