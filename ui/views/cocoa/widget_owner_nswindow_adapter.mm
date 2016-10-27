@@ -14,13 +14,14 @@
 #import "ui/views/cocoa/bridged_native_widget.h"
 
 // Bridges an AppKit observer to observe when the (non-views) NSWindow owning a
-// views::Widget will close.
+// views::Widget will close or change occlusion state.
 @interface WidgetOwnerNSWindowAdapterBridge : NSObject {
  @private
   views::WidgetOwnerNSWindowAdapter* adapter_;  // Weak. Owns us.
 }
 - (instancetype)initWithAdapter:(views::WidgetOwnerNSWindowAdapter*)adapter;
 - (void)windowWillClose:(NSNotification*)notification;
+- (void)windowDidChangeOcclusionState:(NSNotification*)notification;
 @end
 
 @implementation WidgetOwnerNSWindowAdapterBridge
@@ -33,6 +34,10 @@
 
 - (void)windowWillClose:(NSNotification*)notification {
   adapter_->OnWindowWillClose();
+}
+
+- (void)windowDidChangeOcclusionState:(NSNotification*)notification {
+  adapter_->OnWindowDidChangeOcclusionState();
 }
 
 @end
@@ -59,6 +64,15 @@ WidgetOwnerNSWindowAdapter::WidgetOwnerNSWindowAdapter(
          selector:@selector(windowWillClose:)
              name:NSWindowWillCloseNotification
            object:anchor_window_];
+
+  // BridgedNativeWidget removes NSWindow parent/child relationships for hidden
+  // windows. Observe when the parent's visibility changes so they can be
+  // reconnected.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:observer_bridge_
+         selector:@selector(windowDidChangeOcclusionState:)
+             name:NSWindowDidChangeOcclusionStateNotification
+           object:anchor_window_];
 }
 
 void WidgetOwnerNSWindowAdapter::OnWindowWillClose() {
@@ -78,6 +92,32 @@ void WidgetOwnerNSWindowAdapter::OnWindowWillClose() {
 
   DCHECK(![child_window parentWindow]);
   DCHECK(![child_window delegate]);
+}
+
+void WidgetOwnerNSWindowAdapter::OnWindowDidChangeOcclusionState() {
+  // The adapter only needs to handle a parent "show", since the only way it
+  // should be hidden is via -[NSApp hide], and all BridgedNativeWidgets
+  // subscribe to NSApplicationDidHideNotification already.
+  if (![anchor_window_ isVisible])
+    return;
+
+  if (child_->window_visible()) {
+    DCHECK([child_->ns_window() parentWindow]);
+    DCHECK(child_->wants_to_be_visible());
+    return;
+  }
+
+  // The parent relationship should have been removed when the child was hidden.
+  DCHECK(![child_->ns_window() parentWindow]);
+  if (!child_->wants_to_be_visible())
+    return;
+
+  [child_->ns_window() orderWindow:NSWindowAbove
+                        relativeTo:[anchor_window_ windowNumber]];
+
+  // Ordering the window should add back the relationship.
+  DCHECK([child_->ns_window() parentWindow]);
+  DCHECK(child_->window_visible());
 }
 
 NSWindow* WidgetOwnerNSWindowAdapter::GetNSWindow() {

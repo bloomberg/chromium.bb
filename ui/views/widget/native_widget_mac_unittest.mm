@@ -666,10 +666,9 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
   widget->CloseNow();
 }
 
-// Tests creating a views::Widget parented off a native NSWindow.
-TEST_F(NativeWidgetMacTest, NonWidgetParent) {
-  NSWindow* native_parent = MakeNativeParent();
+namespace {
 
+Widget* AttachPopupToNativeParent(NSWindow* native_parent) {
   base::scoped_nsobject<NSView> anchor_view(
       [[NSView alloc] initWithFrame:[[native_parent contentView] bounds]]);
   [[native_parent contentView] addSubview:anchor_view];
@@ -682,7 +681,15 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   init_params.parent = anchor_view;
   init_params.type = Widget::InitParams::TYPE_POPUP;
   child->Init(init_params);
+  return child;
+}
 
+}  // namespace
+
+// Tests creating a views::Widget parented off a native NSWindow.
+TEST_F(NativeWidgetMacTest, NonWidgetParent) {
+  NSWindow* native_parent = MakeNativeParent();
+  Widget* child = AttachPopupToNativeParent(native_parent);
   TestWidgetObserver child_observer(child);
 
   // GetTopLevelNativeWidget() only goes as far as there exists a Widget (i.e.
@@ -713,10 +720,11 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   // bounds set above should be in screen coordinates.
   EXPECT_EQ(child_bounds, child->GetWindowBoundsInScreen());
 
-  // Removing the anchor_view from its view hierarchy is permitted. This should
+  // Removing the anchor view from its view hierarchy is permitted. This should
   // not break the relationship between the two windows.
+  NSView* anchor_view = [[native_parent contentView] subviews][0];
+  EXPECT_TRUE(anchor_view);
   [anchor_view removeFromSuperview];
-  anchor_view.reset();
   EXPECT_EQ(native_parent, bridged_native_widget->parent()->GetNSWindow());
 
   // Closing the parent should close and destroy the child.
@@ -756,6 +764,25 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
     EXPECT_TRUE(child_dealloced);
   }
   EXPECT_TRUE(native_parent_dealloced);
+}
+
+// Tests visibility for child of native NSWindow, reshowing after -[NSApp hide].
+TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentShow) {
+  NSWindow* native_parent = MakeNativeParent();
+  Widget* child = AttachPopupToNativeParent(native_parent);
+  child->Show();
+  EXPECT_TRUE(child->IsVisible());
+
+  WidgetChangeObserver child_observer(child);
+  [NSApp hide:nil];
+  child_observer.WaitForVisibleCounts(0, 1);
+  EXPECT_FALSE(child->IsVisible());
+
+  [native_parent makeKeyAndOrderFront:nil];
+  child_observer.WaitForVisibleCounts(1, 1);
+  EXPECT_TRUE(child->IsVisible());
+
+  [native_parent close];
 }
 
 // Use Native APIs to query the tooltip text that would be shown once the

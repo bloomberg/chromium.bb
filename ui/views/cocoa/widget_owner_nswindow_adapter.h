@@ -27,6 +27,9 @@ class WidgetOwnerNSWindowAdapter : public BridgedNativeWidgetOwner {
   // Called when the owning window is closing.
   void OnWindowWillClose();
 
+  // Called when the owning window is hidden or shown.
+  void OnWindowDidChangeOcclusionState();
+
   // Overridden from BridgedNativeWidgetOwner:
   NSWindow* GetNSWindow() override;
   gfx::Vector2d GetChildWindowOffset() const override;

@@ -193,7 +193,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   }
 
   bool target_fullscreen_state() const { return target_fullscreen_state_; }
-  bool window_visible() { return window_visible_; }
+  bool window_visible() const { return window_visible_; }
+  bool wants_to_be_visible() const { return wants_to_be_visible_; }
 
   // Overridden from ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
