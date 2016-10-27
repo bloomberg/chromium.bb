@@ -32,10 +32,10 @@
 #include "ui/views/test/views_test_base.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/menu/menu_pre_target_handler.h"
-#include "ui/wm/public/drag_drop_client.h"
 #endif
 
 #if defined(USE_X11)

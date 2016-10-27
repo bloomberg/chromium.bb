@@ -4,8 +4,8 @@
 
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
 
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 namespace aura {
 namespace client {

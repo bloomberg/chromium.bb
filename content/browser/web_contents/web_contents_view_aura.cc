@@ -46,6 +46,7 @@
 #include "net/base/filename_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -71,7 +72,6 @@
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/touch_selection/touch_selection_controller.h"
-#include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
 namespace content {

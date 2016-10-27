@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -23,7 +24,6 @@
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 namespace aura {
 namespace client {

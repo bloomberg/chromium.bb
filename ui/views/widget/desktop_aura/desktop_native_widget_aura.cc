@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -56,7 +57,6 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/public/activation_client.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"

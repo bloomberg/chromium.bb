@@ -61,6 +61,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -75,7 +76,6 @@
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/tooltip_client.h"
 #include "ui/wm/public/window_types.h"
 

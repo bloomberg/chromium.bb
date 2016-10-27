@@ -6,8 +6,8 @@
 #define UI_VIEWS_MUS_DRAG_DROP_CLIENT_MUS_H_
 
 #include "base/callback.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 namespace aura {
 class Window;

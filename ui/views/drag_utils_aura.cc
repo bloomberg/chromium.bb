@@ -4,10 +4,10 @@
 
 #include "ui/views/drag_utils.h"
 
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 namespace views {
 

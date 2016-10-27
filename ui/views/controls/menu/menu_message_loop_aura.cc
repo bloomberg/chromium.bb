@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -18,7 +19,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 
 using aura::client::ScreenPositionClient;

@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/views/views_export.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 namespace ui {
 class DragSourceWin;

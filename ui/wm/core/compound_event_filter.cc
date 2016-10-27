@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -15,7 +16,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/wm/public/activation_client.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck

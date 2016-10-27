@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/widget/tooltip_manager.h"
-#include "ui/wm/public/drag_drop_client.h"
 
 namespace views {
 namespace corewm {

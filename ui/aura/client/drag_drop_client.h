@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WM_PUBLIC_DRAG_DROP_CLIENT_H_
-#define UI_WM_PUBLIC_DRAG_DROP_CLIENT_H_
+#ifndef UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_
+#define UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -59,4 +59,4 @@ AURA_EXPORT DragDropClient* GetDragDropClient(Window* root_window);
 }  // namespace client
 }  // namespace aura
 
-#endif  // UI_WM_PUBLIC_DRAG_DROP_CLIENT_H_
+#endif  // UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_

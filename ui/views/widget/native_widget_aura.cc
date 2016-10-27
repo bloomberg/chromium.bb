@@ -15,6 +15,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -46,7 +47,6 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
-#include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/window_move_client.h"
 #include "ui/wm/public/window_types.h"
 

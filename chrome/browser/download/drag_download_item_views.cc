@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/mime_util.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -21,7 +22,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/public/drag_drop_client.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)

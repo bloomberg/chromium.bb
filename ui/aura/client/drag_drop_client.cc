@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/public/drag_drop_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
