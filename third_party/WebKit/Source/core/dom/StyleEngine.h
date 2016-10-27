@@ -156,7 +156,6 @@ class CORE_EXPORT StyleEngine final
 
   void resetCSSFeatureFlags(const RuleFeatureSet&);
 
-  void didRemoveShadowRoot(ShadowRoot*);
   void shadowRootRemovedFromDocument(ShadowRoot*);
   void appendActiveAuthorStyleSheets();
   void addTreeBoundaryCrossingScope(const TreeScope&);

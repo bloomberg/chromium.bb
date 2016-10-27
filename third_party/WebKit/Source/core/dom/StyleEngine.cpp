@@ -373,12 +373,6 @@ StyleEngine::activeStyleSheetsForInspector() const {
   return activeStyleSheets;
 }
 
-void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot) {
-  m_styleSheetCollectionMap.remove(shadowRoot);
-  m_activeTreeScopes.remove(shadowRoot);
-  m_dirtyTreeScopes.remove(shadowRoot);
-}
-
 void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot) {
   if (StyleResolver* styleResolver = resolver()) {
     if (TreeScopeStyleSheetCollection* collection =
@@ -442,13 +436,18 @@ void StyleEngine::clearResolver() {
   DCHECK(isMaster() || !m_resolver);
 
   document().clearScopedStyleResolver();
-  // StyleEngine::shadowRootRemovedFromDocument removes not-in-document
-  // treescopes from activeTreeScopes. StyleEngine::didRemoveShadowRoot
-  // removes treescopes which are being destroyed from activeTreeScopes.
-  // So we need to clearScopedStyleResolver for treescopes which have been
-  // just removed from document. If document is destroyed before invoking
-  // updateActiveStyleSheets, the treescope has a scopedStyleResolver which
-  // has destroyed StyleSheetContents.
+  // TODO(rune@opera.com): The clearing of all shadow tree scoped style
+  // resolvers below should not be necessary. It was introduced to fix a crash
+  // bug (https://crbug.com/447976) when clearResolver is called from didDetach
+  // on document destruction. That was pre-oilpan, and removing the for-loop
+  // below does not re-introduce that crash. If m_activeTreeScopes keeps too
+  // much memory alive after detach, we should probably clear m_activeTreeScopes
+  // in didDetach instead.
+  //
+  // The current code will clear too much if clearResolver is called from
+  // clearMasterResolver as a result of a Reconstruct in
+  // DocumentStyleSheetCollection. Such a reconstruct should not necessarily
+  // affect scoped resolvers from shadow trees at all.
   for (TreeScope* treeScope : m_activeTreeScopes)
     treeScope->clearScopedStyleResolver();
 
