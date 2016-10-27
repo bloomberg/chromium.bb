@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/bad_message.h"
@@ -80,10 +81,10 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
 
   auto frame_ptr = base::MakeUnique<SynchronousCompositor::Frame>();
   frame_ptr->compositor_frame_sink_id = std::get<0>(param);
-  cc::CompositorFrame& compositor_frame = std::get<1>(param);
-  if (compositor_frame.delegated_frame_data) {
+  base::Optional<cc::CompositorFrame>& compositor_frame = std::get<1>(param);
+  if (compositor_frame) {
     frame_ptr->frame.reset(new cc::CompositorFrame);
-    *frame_ptr->frame = std::move(compositor_frame);
+    *frame_ptr->frame = std::move(*compositor_frame);
   }
   future->SetFrame(std::move(frame_ptr));
   // TODO(boliu): Post metadata back to UI thread.

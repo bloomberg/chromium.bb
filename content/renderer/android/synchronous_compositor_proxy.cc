@@ -188,9 +188,9 @@ void SynchronousCompositorProxy::DoDemandDrawHw(
   if (inside_receive_) {
     // Did not swap.
     if (!reply_message) {
-      SendDemandDrawHwReplyAsync(cc::CompositorFrame(), 0u);
+      SendDemandDrawHwReplyAsync(base::nullopt, 0u);
     } else {
-      SendDemandDrawHwReply(cc::CompositorFrame(), 0u, reply_message);
+      SendDemandDrawHwReply(base::nullopt, 0u, reply_message);
     }
     inside_receive_ = false;
   }
@@ -216,14 +216,14 @@ void SynchronousCompositorProxy::SubmitCompositorFrameHw(
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReplyAsync(
-    cc::CompositorFrame frame,
+    base::Optional<cc::CompositorFrame> frame,
     uint32_t compositor_frame_sink_id) {
   Send(new SyncCompositorHostMsg_ReturnFrame(routing_id_,
                                              compositor_frame_sink_id, frame));
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReply(
-    cc::CompositorFrame frame,
+    base::Optional<cc::CompositorFrame> frame,
     uint32_t compositor_frame_sink_id,
     IPC::Message* reply_message) {
   SyncCompositorCommonRendererParams common_renderer_params;

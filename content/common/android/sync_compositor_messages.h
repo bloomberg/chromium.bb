@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/memory/shared_memory_handle.h"
+#include "base/optional.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "content/common/content_export.h"
@@ -131,7 +132,7 @@ IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorDemandDrawHwParams,
                            content::SyncCompositorCommonRendererParams,
                            uint32_t /* compositor_frame_sink_id */,
-                           cc::CompositorFrame)
+                           base::Optional<cc::CompositorFrame>);
 
 IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_SetSharedMemory,
                            content::SyncCompositorSetSharedMemoryParams,
@@ -170,4 +171,4 @@ IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
 
 IPC_MESSAGE_ROUTED2(SyncCompositorHostMsg_ReturnFrame,
                     uint32_t /* compositor_frame_sink_id */,
-                    cc::CompositorFrame);
+                    base::Optional<cc::CompositorFrame>);

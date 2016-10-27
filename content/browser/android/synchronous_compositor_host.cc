@@ -121,7 +121,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
                                           viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
   uint32_t compositor_frame_sink_id;
-  cc::CompositorFrame compositor_frame;
+  base::Optional<cc::CompositorFrame> compositor_frame;
   SyncCompositorCommonRendererParams common_renderer_params;
 
   if (!sender_->Send(new SyncCompositorMsg_DemandDrawHw(
@@ -132,8 +132,11 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
 
   ProcessCommonParams(common_renderer_params);
 
+  if (!compositor_frame)
+    return SynchronousCompositor::Frame();
+
   return ProcessHardwareFrame(compositor_frame_sink_id,
-                              std::move(compositor_frame));
+                              std::move(*compositor_frame));
 }
 
 SynchronousCompositor::Frame SynchronousCompositorHost::ProcessHardwareFrame(
@@ -143,13 +146,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::ProcessHardwareFrame(
   frame.frame.reset(new cc::CompositorFrame);
   frame.compositor_frame_sink_id = compositor_frame_sink_id;
   *frame.frame = std::move(compositor_frame);
-  if (!frame.frame->delegated_frame_data) {
-    // This can happen if compositor did not swap in this draw.
-    frame.frame.reset();
-  }
-  if (frame.frame) {
-    UpdateFrameMetaData(frame.frame->metadata.Clone());
-  }
+  UpdateFrameMetaData(frame.frame->metadata.Clone());
   return frame;
 }
 

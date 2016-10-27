@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/renderer/android/synchronous_compositor_frame_sink.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
@@ -93,10 +94,10 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
                                     cc::CompositorFrame frame);
   void SubmitCompositorFrameHw(uint32_t compositor_frame_sink_id,
                                cc::CompositorFrame frame);
-  void SendDemandDrawHwReply(cc::CompositorFrame frame,
+  void SendDemandDrawHwReply(base::Optional<cc::CompositorFrame> frame,
                              uint32_t compositor_frame_sink_id,
                              IPC::Message* reply_message);
-  void SendDemandDrawHwReplyAsync(cc::CompositorFrame frame,
+  void SendDemandDrawHwReplyAsync(base::Optional<cc::CompositorFrame> frame,
                                   uint32_t compositor_frame_sink_id);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
   void SubmitCompositorFrameSw(cc::CompositorFrame frame);
