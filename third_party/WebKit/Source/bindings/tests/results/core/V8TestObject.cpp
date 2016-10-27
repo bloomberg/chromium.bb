@@ -117,18 +117,6 @@ static_assert(
 
 namespace TestObjectV8Internal {
 
-void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
-    v8SetReturnValueInt(info, 1);
-}
-
-void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
-    v8SetReturnValueInt(info, 1);
-}
-
 static void stringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -13137,77 +13125,6 @@ static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWo
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    const V8DOMConfiguration::ConstantConfiguration V8TestObjectConstants[] = {
-        {"CONST_VALUE_0", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_2", 2, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_4", 4, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_8", 8, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_9", -1, 0, V8DOMConfiguration::ConstantTypeShort},
-        {"CONST_VALUE_11", 0xffffffff, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_12", 0x01, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_13", 0X20, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_14", 0x1abc, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_15", 010, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_16", -010, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_16", -0x1A, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_17", -0X1a, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_18", 0, 0.123, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_19", 0, 4e9, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_20", 0, 3.4e5, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_21", 0, -1.3, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_22", 0, -4e-9, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_23", 0, .123, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_24", 0, 5E+4, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_25", 0, 1, V8DOMConfiguration::ConstantTypeFloat},
-        {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
-    };
-    V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants));
-    if (RuntimeEnabledFeatures::featureName1Enabled()) {
-        const V8DOMConfiguration::ConstantConfiguration constantFeature1EnabledConst1Configuration = {"FEATURE1_ENABLED_CONST1", 1, 0, V8DOMConfiguration::ConstantTypeShort};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature1EnabledConst1Configuration);
-        const V8DOMConfiguration::ConstantConfiguration constantFeature1EnabledConst2Configuration = {"FEATURE1_ENABLED_CONST2", 2, 0, V8DOMConfiguration::ConstantTypeShort};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature1EnabledConst2Configuration);
-    }
-    if (RuntimeEnabledFeatures::featureName2Enabled()) {
-        const V8DOMConfiguration::ConstantConfiguration constantFeature2EnabledConst1Configuration = {"FEATURE2_ENABLED_CONST1", 3, 0, V8DOMConfiguration::ConstantTypeShort};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature2EnabledConst1Configuration);
-        const V8DOMConfiguration::ConstantConfiguration constantFeature2EnabledConst2Configuration = {"FEATURE2_ENABLED_CONST2", 4, 0, V8DOMConfiguration::ConstantTypeShort};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature2EnabledConst2Configuration);
-    }
-    if (RuntimeEnabledFeatures::featureName3Enabled()) {
-        const V8DOMConfiguration::ConstantConfiguration constantFeature3EnabledConst1Configuration = {"FEATURE3_ENABLED_CONST1", 5, 0, V8DOMConfiguration::ConstantTypeShort};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature3EnabledConst1Configuration);
-    }
-    V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback);
-    V8DOMConfiguration::installConstantWithGetter(isolate, interfaceTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestObjectV8Internal::MEASURED_CONSTANTConstantGetterCallback);
-    static_assert(0 == TestObject::kConstValue0, "the value of TestObject_kConstValue0 does not match with implementation");
-    static_assert(1 == TestObject::kConstValue1, "the value of TestObject_kConstValue1 does not match with implementation");
-    static_assert(2 == TestObject::kConstValue2, "the value of TestObject_kConstValue2 does not match with implementation");
-    static_assert(4 == TestObject::kConstValue4, "the value of TestObject_kConstValue4 does not match with implementation");
-    static_assert(8 == TestObject::kConstValue8, "the value of TestObject_kConstValue8 does not match with implementation");
-    static_assert(-1 == TestObject::kConstValue9, "the value of TestObject_kConstValue9 does not match with implementation");
-    static_assert(0xffffffff == TestObject::kConstValue11, "the value of TestObject_kConstValue11 does not match with implementation");
-    static_assert(0x01 == TestObject::kConstValue12, "the value of TestObject_kConstValue12 does not match with implementation");
-    static_assert(0X20 == TestObject::kConstValue13, "the value of TestObject_kConstValue13 does not match with implementation");
-    static_assert(0x1abc == TestObject::kConstValue14, "the value of TestObject_kConstValue14 does not match with implementation");
-    static_assert(010 == TestObject::kConstValue15, "the value of TestObject_kConstValue15 does not match with implementation");
-    static_assert(-010 == TestObject::kConstValue16, "the value of TestObject_kConstValue16 does not match with implementation");
-    static_assert(-0x1A == TestObject::kConstValue16, "the value of TestObject_kConstValue16 does not match with implementation");
-    static_assert(-0X1a == TestObject::kConstValue17, "the value of TestObject_kConstValue17 does not match with implementation");
-    static_assert(1 == TestObject::kDeprecatedConstant, "the value of TestObject_kDeprecatedConstant does not match with implementation");
-    static_assert(1 == TestObject::kMeasuredConstant, "the value of TestObject_kMeasuredConstant does not match with implementation");
-    static_assert(1 == TestObject::kFeature1EnabledConst1, "the value of TestObject_kFeature1EnabledConst1 does not match with implementation");
-    static_assert(2 == TestObject::kFeature1EnabledConst2, "the value of TestObject_kFeature1EnabledConst2 does not match with implementation");
-    static_assert(3 == TestObject::kFeature2EnabledConst1, "the value of TestObject_kFeature2EnabledConst1 does not match with implementation");
-    static_assert(4 == TestObject::kFeature2EnabledConst2, "the value of TestObject_kFeature2EnabledConst2 does not match with implementation");
-    static_assert(5 == TestObject::kFeature3EnabledConst1, "the value of TestObject_kFeature3EnabledConst1 does not match with implementation");
-    static_assert(1 == TestObject::kFeature1OriginTrialEnabledConst1, "the value of TestObject_kFeature1OriginTrialEnabledConst1 does not match with implementation");
-    static_assert(2 == TestObject::kFeature1OriginTrialEnabledConst2, "the value of TestObject_kFeature1OriginTrialEnabledConst2 does not match with implementation");
-    static_assert(3 == TestObject::kFeature2OriginTrialEnabledConst1, "the value of TestObject_kFeature2OriginTrialEnabledConst1 does not match with implementation");
-    static_assert(4 == TestObject::kFeature2OriginTrialEnabledConst2, "the value of TestObject_kFeature2OriginTrialEnabledConst2 does not match with implementation");
-    static_assert(5 == TestObject::kFeature3OriginTrialEnabledConst1, "the value of TestObject_kFeature3OriginTrialEnabledConst1 does not match with implementation");
-    static_assert(1 == TestObject::CONST_IMPL, "the value of TestObject_CONST_IMPL does not match with implementation");
     V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes));
     V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestObjectAccessors, WTF_ARRAY_LENGTH(V8TestObjectAccessors));
     V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods));
@@ -13281,70 +13198,6 @@ void V8TestObject::installFeatureName(ScriptState* scriptState, v8::Local<v8::Ob
 void V8TestObject::installFeatureName(ScriptState* scriptState)
 {
     installFeatureName(scriptState, v8::Local<v8::Object>());
-}
-
-void V8TestObject::installFeatureName1(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
-{
-    const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", 1, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst1Configuration);
-    const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst2Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2", 2, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst2Configuration);
-}
-
-void V8TestObject::installFeatureName1(ScriptState* scriptState, v8::Local<v8::Object> instance)
-{
-    V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
-    v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestObject::wrapperTypeInfo);
-    v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestObject::wrapperTypeInfo);
-    ALLOW_UNUSED_LOCAL(interface);
-    installFeatureName1(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
-}
-
-void V8TestObject::installFeatureName1(ScriptState* scriptState)
-{
-    installFeatureName1(scriptState, v8::Local<v8::Object>());
-}
-
-void V8TestObject::installFeatureName2(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
-{
-    const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst1Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1", 3, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst1Configuration);
-    const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst2Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2", 4, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst2Configuration);
-}
-
-void V8TestObject::installFeatureName2(ScriptState* scriptState, v8::Local<v8::Object> instance)
-{
-    V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
-    v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestObject::wrapperTypeInfo);
-    v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestObject::wrapperTypeInfo);
-    ALLOW_UNUSED_LOCAL(interface);
-    installFeatureName2(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
-}
-
-void V8TestObject::installFeatureName2(ScriptState* scriptState)
-{
-    installFeatureName2(scriptState, v8::Local<v8::Object>());
-}
-
-void V8TestObject::installFeatureName3(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
-{
-    const V8DOMConfiguration::ConstantConfiguration constantFeature3OriginTrialEnabledConst1Configuration = {"FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1", 5, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature3OriginTrialEnabledConst1Configuration);
-}
-
-void V8TestObject::installFeatureName3(ScriptState* scriptState, v8::Local<v8::Object> instance)
-{
-    V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
-    v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestObject::wrapperTypeInfo);
-    v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestObject::wrapperTypeInfo);
-    ALLOW_UNUSED_LOCAL(interface);
-    installFeatureName3(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
-}
-
-void V8TestObject::installFeatureName3(ScriptState* scriptState)
-{
-    installFeatureName3(scriptState, v8::Local<v8::Object>());
 }
 v8::Local<v8::FunctionTemplate> V8TestObject::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {

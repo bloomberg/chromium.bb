@@ -92,18 +92,6 @@ public:
     static void installFeatureName(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
     static void installFeatureName(ScriptState*, v8::Local<v8::Object> instance);
     static void installFeatureName(ScriptState*);
-
-    static void installFeatureName1(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-    static void installFeatureName1(ScriptState*, v8::Local<v8::Object> instance);
-    static void installFeatureName1(ScriptState*);
-
-    static void installFeatureName2(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-    static void installFeatureName2(ScriptState*, v8::Local<v8::Object> instance);
-    static void installFeatureName2(ScriptState*);
-
-    static void installFeatureName3(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-    static void installFeatureName3(ScriptState*, v8::Local<v8::Object> instance);
-    static void installFeatureName3(ScriptState*);
 };
 
 template <>

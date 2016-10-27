@@ -33,45 +33,6 @@ enum TestEnum2 {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 
 // No extended attributes on the interface; those go in TestInterface.idl
 interface TestObject {
-    // Constants
-    const unsigned short CONST_VALUE_0 = 0;
-    const unsigned short CONST_VALUE_1 = 1;
-    const unsigned short CONST_VALUE_2 = 2;
-    const unsigned short CONST_VALUE_4 = 4;
-    const unsigned short CONST_VALUE_8 = 8;
-    const short CONST_VALUE_9 = -1;
-    const unsigned short CONST_VALUE_11 = 0xffffffff;
-    const unsigned short CONST_VALUE_12 = 0x01;
-    const unsigned short CONST_VALUE_13 = 0X20;
-    const unsigned short CONST_VALUE_14 = 0x1abc;
-    const unsigned short CONST_VALUE_15 = 010;
-    const unsigned short CONST_VALUE_16 = -010;
-    const unsigned short CONST_VALUE_16 = -0x1A;
-    const unsigned short CONST_VALUE_17 = -0X1a;
-    const double CONST_VALUE_18 = 0.123;
-    const double CONST_VALUE_19 = 4e9;
-    const double CONST_VALUE_20 = 3.4e5;
-    const double CONST_VALUE_21 = -1.3;
-    const double CONST_VALUE_22 = -4e-9;
-    const double CONST_VALUE_23 = .123;
-    const double CONST_VALUE_24 = 5E+4;
-    const float CONST_VALUE_25 = 1;
-
-    // Extended attributes
-    [DeprecateAs=Constant] const short DEPRECATED_CONSTANT = 1;
-    [MeasureAs=Constant] const short MEASURED_CONSTANT = 1;
-    [RuntimeEnabled=FeatureName1] const short FEATURE1_ENABLED_CONST1 = 1;
-    [RuntimeEnabled=FeatureName1] const short FEATURE1_ENABLED_CONST2 = 2;
-    [RuntimeEnabled=FeatureName2] const short FEATURE2_ENABLED_CONST1 = 3;
-    [RuntimeEnabled=FeatureName2] const short FEATURE2_ENABLED_CONST2 = 4;
-    [RuntimeEnabled=FeatureName3] const short FEATURE3_ENABLED_CONST1 = 5;
-    [OriginTrialEnabled=FeatureName1] const short FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1 = 1;
-    [OriginTrialEnabled=FeatureName1] const short FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2 = 2;
-    [OriginTrialEnabled=FeatureName2] const short FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1 = 3;
-    [OriginTrialEnabled=FeatureName2] const short FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2 = 4;
-    [OriginTrialEnabled=FeatureName3] const short FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1 = 5;
-    [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
-
     stringifier attribute DOMString stringifierAttribute;
 
     // Attributes
