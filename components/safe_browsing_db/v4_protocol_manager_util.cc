@@ -89,6 +89,10 @@ const ListIdentifier GetChromeUrlApiId() {
   return ListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
+const ListIdentifier GetChromeUrlClientIncidentId() {
+  return ListIdentifier(CHROME_PLATFORM, URL, CLIENT_INCIDENT);
+}
+
 const ListIdentifier GetUrlMalwareId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }

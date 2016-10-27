@@ -86,6 +86,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // This represents the case when we're trying to determine if any of the
     // URLs in a vector of URLs is unsafe for downloading binaries.
     CHECK_DOWNLOAD_URLS = 1,
+
+    // This represents the case when we're trying to determine if a URL is an
+    // unsafe resource.
+    CHECK_RESOURCE_URL = 2,
   };
 
   // The information we need to process a URL safety reputation request and

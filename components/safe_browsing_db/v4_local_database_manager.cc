@@ -176,9 +176,18 @@ bool V4LocalDatabaseManager::CheckExtensionIDs(
 }
 
 bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
-  // TODO(vakh): Implement this skeleton.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+
+  if (!enabled_ || !CanCheckUrl(url)) {
+    return true;
+  }
+
+  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
+      client, ClientCallbackType::CHECK_RESOURCE_URL,
+      StoresToCheck({GetChromeUrlClientIncidentId()}),
+      std::vector<GURL>(1, url));
+
+  return HandleCheck(std::move(check));
 }
 
 bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
