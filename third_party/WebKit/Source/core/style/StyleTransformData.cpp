@@ -33,7 +33,10 @@ StyleTransformData::StyleTransformData()
                ComputedStyle::initialOffsetPosition(),
                nullptr,
                ComputedStyle::initialOffsetDistance(),
-               ComputedStyle::initialOffsetRotation()) {}
+               ComputedStyle::initialOffsetRotation()),
+      m_translate(ComputedStyle::initialTranslate()),
+      m_rotate(ComputedStyle::initialRotate()),
+      m_scale(ComputedStyle::initialScale()) {}
 
 StyleTransformData::StyleTransformData(const StyleTransformData& o)
     : RefCounted<StyleTransformData>(),

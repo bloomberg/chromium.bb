@@ -1700,8 +1700,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Independent transform properties.
   // translate
   static PassRefPtr<TranslateTransformOperation> initialTranslate() {
-    return TranslateTransformOperation::create(
-        Length(0, Fixed), Length(0, Fixed), 0, TransformOperation::Translate3D);
+    return nullptr;
   }
   TranslateTransformOperation* translate() const {
     return m_rareNonInheritedData->m_transform->m_translate.get();
@@ -1712,8 +1711,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // rotate
   static PassRefPtr<RotateTransformOperation> initialRotate() {
-    return RotateTransformOperation::create(0, 0, 1, 0,
-                                            TransformOperation::Rotate3D);
+    return nullptr;
   }
   RotateTransformOperation* rotate() const {
     return m_rareNonInheritedData->m_transform->m_rotate.get();
@@ -1723,10 +1721,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // scale
-  static PassRefPtr<ScaleTransformOperation> initialScale() {
-    return ScaleTransformOperation::create(1, 1, 1,
-                                           TransformOperation::Scale3D);
-  }
+  static PassRefPtr<ScaleTransformOperation> initialScale() { return nullptr; }
   ScaleTransformOperation* scale() const {
     return m_rareNonInheritedData->m_transform->m_scale.get();
   }
