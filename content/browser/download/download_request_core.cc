@@ -147,9 +147,9 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
     // re-post. For GETs, try to retrieve data from the cache and skip
     // validating the entry if present.
     if (request->get_upload())
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
     else
-      load_flags |= net::LOAD_PREFERRING_CACHE;
+      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
   } else {
     load_flags |= net::LOAD_DISABLE_CACHE;
   }

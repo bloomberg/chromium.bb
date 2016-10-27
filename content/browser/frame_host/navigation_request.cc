@@ -59,10 +59,11 @@ void UpdateLoadFlagsWithCacheFlags(
       *load_flags |= net::LOAD_BYPASS_CACHE;
       break;
     case FrameMsg_Navigate_Type::RESTORE:
-      *load_flags |= net::LOAD_PREFERRING_CACHE;
+      *load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
       break;
     case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
-      *load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      *load_flags |=
+          net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
       break;
     case FrameMsg_Navigate_Type::NORMAL:
       if (is_post)

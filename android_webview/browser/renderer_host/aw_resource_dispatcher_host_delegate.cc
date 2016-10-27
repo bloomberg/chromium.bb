@@ -45,10 +45,9 @@ base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>
 
 void SetCacheControlFlag(
     net::URLRequest* request, int flag) {
-  const int all_cache_control_flags = net::LOAD_BYPASS_CACHE |
-      net::LOAD_VALIDATE_CACHE |
-      net::LOAD_PREFERRING_CACHE |
-      net::LOAD_ONLY_FROM_CACHE;
+  const int all_cache_control_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_VALIDATE_CACHE |
+      net::LOAD_SKIP_CACHE_VALIDATION | net::LOAD_ONLY_FROM_CACHE;
   DCHECK_EQ((flag & all_cache_control_flags), flag);
   int load_flags = request->load_flags();
   load_flags &= ~all_cache_control_flags;
@@ -211,18 +210,20 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
     if (request_->url().SchemeIs(url::kFtpScheme)) {
       return true;
     }
-    SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE);
+    SetCacheControlFlag(
+        request_, net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION);
   } else {
     AwContentsIoThreadClient::CacheMode cache_mode = io_client->GetCacheMode();
     switch(cache_mode) {
       case AwContentsIoThreadClient::LOAD_CACHE_ELSE_NETWORK:
-        SetCacheControlFlag(request_, net::LOAD_PREFERRING_CACHE);
+        SetCacheControlFlag(request_, net::LOAD_SKIP_CACHE_VALIDATION);
         break;
       case AwContentsIoThreadClient::LOAD_NO_CACHE:
         SetCacheControlFlag(request_, net::LOAD_BYPASS_CACHE);
         break;
       case AwContentsIoThreadClient::LOAD_CACHE_ONLY:
-        SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE);
+        SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE |
+                                          net::LOAD_SKIP_CACHE_VALIDATION);
         break;
       default:
         break;

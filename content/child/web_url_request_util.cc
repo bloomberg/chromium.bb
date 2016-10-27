@@ -199,10 +199,10 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
       load_flags |= net::LOAD_BYPASS_CACHE;
       break;
     case WebCachePolicy::ReturnCacheDataElseLoad:
-      load_flags |= net::LOAD_PREFERRING_CACHE;
+      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
       break;
     case WebCachePolicy::ReturnCacheDataDontLoad:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
       break;
     case WebCachePolicy::UseProtocolCachePolicy:
       break;

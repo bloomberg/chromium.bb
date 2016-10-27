@@ -266,7 +266,9 @@ TEST_F(PrecacheFetcherFetcherTest, ResourceNotInCache) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_NE(nullptr, fetcher1);
-  EXPECT_EQ(net::LOAD_ONLY_FROM_CACHE | kNoTracking, fetcher1->GetLoadFlags());
+  EXPECT_EQ(
+      net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION | kNoTracking,
+      fetcher1->GetLoadFlags());
   ASSERT_NE(nullptr, fetcher2);
   EXPECT_EQ(net::LOAD_VALIDATE_CACHE | kNoTracking, fetcher2->GetLoadFlags());
 }
@@ -289,7 +291,9 @@ TEST_F(PrecacheFetcherFetcherTest, ResourceHasValidators) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_NE(nullptr, fetcher1);
-  EXPECT_EQ(net::LOAD_ONLY_FROM_CACHE | kNoTracking, fetcher1->GetLoadFlags());
+  EXPECT_EQ(
+      net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION | kNoTracking,
+      fetcher1->GetLoadFlags());
   ASSERT_NE(nullptr, fetcher2);
   EXPECT_EQ(net::LOAD_VALIDATE_CACHE | kNoTracking, fetcher2->GetLoadFlags());
 }
@@ -310,7 +314,9 @@ TEST_F(PrecacheFetcherFetcherTest, ResourceHasNoValidators) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(net::LOAD_ONLY_FROM_CACHE | kNoTracking, fetcher->GetLoadFlags());
+  EXPECT_EQ(
+      net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION | kNoTracking,
+      fetcher->GetLoadFlags());
 }
 
 TEST_F(PrecacheFetcherFetcherTest, ResourceTooBig) {

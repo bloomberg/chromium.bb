@@ -320,7 +320,7 @@ void SaveFileManager::OnSaveURL(const GURL& url,
 
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
-  request->SetLoadFlags(net::LOAD_PREFERRING_CACHE);
+  request->SetLoadFlags(net::LOAD_SKIP_CACHE_VALIDATION);
 
   // Check if the renderer is permitted to request the requested URL.
   using AuthorizationState = SaveFileResourceHandler::AuthorizationState;

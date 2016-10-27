@@ -6253,11 +6253,11 @@ void RenderFrameImpl::PopulateDocumentStateFromPending(
           url::kJavaScriptScheme) &&
       pending_navigation_params_->common_params.navigation_type ==
           FrameMsg_Navigate_Type::RESTORE) {
-    // We're doing a load of a page that was restored from the last session. By
-    // default this prefers the cache over loading (LOAD_PREFERRING_CACHE) which
-    // can result in stale data for pages that are set to expire. We explicitly
-    // override that by setting the policy here so that as necessary we load
-    // from the network.
+    // We're doing a load of a page that was restored from the last session.
+    // By default this prefers the cache over loading
+    // (LOAD_SKIP_CACHE_VALIDATION) which can result in stale data for pages
+    // that are set to expire. We explicitly override that by setting the
+    // policy here so that as necessary we load from the network.
     //
     // TODO(davidben): Remove this in favor of passing a cache policy to the
     // loadHistoryItem call in OnNavigate. That requires not overloading

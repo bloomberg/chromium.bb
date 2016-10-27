@@ -602,13 +602,13 @@ void HttpProtocolHandlerCore::SetLoadFlags() {
         load_flags |= LOAD_VALIDATE_CACHE;
         break;
       case RequestTracker::CACHE_HISTORY:
-        load_flags |= LOAD_PREFERRING_CACHE;
+        load_flags |= LOAD_SKIP_CACHE_VALIDATION;
         break;
       case RequestTracker::CACHE_BYPASS:
         load_flags |= LOAD_DISABLE_CACHE | LOAD_BYPASS_CACHE;
         break;
       case RequestTracker::CACHE_ONLY:
-        load_flags |= LOAD_ONLY_FROM_CACHE;
+        load_flags |= LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
         break;
       case RequestTracker::CACHE_NORMAL:
         // Do nothing, normal load.
@@ -622,10 +622,10 @@ void HttpProtocolHandlerCore::SetLoadFlags() {
         load_flags |= LOAD_DISABLE_CACHE;
         break;
       case NSURLRequestReturnCacheDataElseLoad:
-        load_flags |= LOAD_PREFERRING_CACHE;
+        load_flags |= LOAD_SKIP_CACHE_VALIDATION;
         break;
       case NSURLRequestReturnCacheDataDontLoad:
-        load_flags |= LOAD_ONLY_FROM_CACHE;
+        load_flags |= LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
         break;
       case NSURLRequestReloadRevalidatingCacheData:
         load_flags |= LOAD_VALIDATE_CACHE;

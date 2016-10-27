@@ -169,7 +169,7 @@ bool AsyncRevalidationManager::QualifiesForAsyncRevalidation(
     const ResourceRequest& request) {
   if (request.load_flags &
       (net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-       net::LOAD_VALIDATE_CACHE | net::LOAD_PREFERRING_CACHE |
+       net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
        net::LOAD_ONLY_FROM_CACHE | net::LOAD_IGNORE_LIMITS |
        net::LOAD_PREFETCH)) {
     return false;

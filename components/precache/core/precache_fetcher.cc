@@ -268,7 +268,9 @@ void PrecacheFetcher::Fetcher::LoadFromCache() {
       cache_url_fetcher_.get(),
       data_use_measurement::DataUseUserData::PRECACHE);
   cache_url_fetcher_->SetRequestContext(request_context_);
-  cache_url_fetcher_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE | kNoTracking);
+  cache_url_fetcher_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE |
+                                   net::LOAD_SKIP_CACHE_VALIDATION |
+                                   kNoTracking);
   std::unique_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
   cache_url_fetcher_->SaveResponseWithWriter(std::move(null_writer));
   cache_url_fetcher_->Start();

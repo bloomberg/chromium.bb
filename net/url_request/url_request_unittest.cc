@@ -7799,7 +7799,7 @@ TEST_F(URLRequestTestHTTP, NetworkAccessedClearOnLoadOnlyFromCache) {
   GURL test_url(http_test_server()->GetURL("/"));
   std::unique_ptr<URLRequest> req(
       default_context_.CreateRequest(test_url, DEFAULT_PRIORITY, &d));
-  req->SetLoadFlags(LOAD_ONLY_FROM_CACHE);
+  req->SetLoadFlags(LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION);
 
   req->Start();
   base::RunLoop().Run();
