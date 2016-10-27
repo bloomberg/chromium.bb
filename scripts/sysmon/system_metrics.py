@@ -105,6 +105,9 @@ _uptime_metric = ts_mon.GaugeMetric(
 _proc_count_metric = ts_mon.GaugeMetric(
     'dev/proc/count',
     description='Number of processes currently running.')
+_autoserv_proc_count_metric = ts_mon.GaugeMetric(
+    'dev/proc/autoserv_count',
+    description='Number of autoserv processes currently running.')
 _load_average_metric = ts_mon.FloatMetric(
     'dev/proc/load_average',
     description='Number of processes currently '
@@ -301,8 +304,20 @@ def _get_python_arch():
 
 
 def get_proc_info():
-  procs = psutil.pids()
-  _proc_count_metric.set(len(procs))
+  autoserv_count = 0
+  total = 0
+  for proc in psutil.process_iter():
+    if _is_autoserv_proc(proc):
+      autoserv_count += 1
+    total += 1
+  _autoserv_proc_count_metric.set(autoserv_count)
+  _proc_count_metric.set(total)
+
+
+def _is_autoserv_proc(proc):
+  return (
+      proc.name == 'python'
+      and '/usr/local/autotest/server/autoserv' in proc.cmdline)
 
 
 def get_load_avg():
