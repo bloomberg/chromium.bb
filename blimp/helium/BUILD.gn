@@ -55,7 +55,6 @@ source_set("unit_tests") {
     "lww_register_unittest.cc",
     "result_unittest.cc",
     "revision_generator_unittest.cc",
-    "sample/syncable_comparison_unittest.cc",
     "version_vector_unittest.cc",
   ]
 
@@ -63,6 +62,7 @@ source_set("unit_tests") {
     ":helium",
     "//base",
     "//blimp/common",
+    "//blimp/helium/sample:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]
