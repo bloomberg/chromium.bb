@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
@@ -397,6 +398,40 @@ class DropShadowSource : public ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(DropShadowSource);
 };
 
+// An image source that is 1dp wide, suitable for tiling horizontally.
+class HorizontalShadowSource : public CanvasImageSource {
+ public:
+  HorizontalShadowSource(const std::vector<ShadowValue>& shadows,
+                         bool fades_down)
+      : CanvasImageSource(Size(1, GetHeightForShadows(shadows)), false),
+        shadows_(shadows),
+        fades_down_(fades_down) {}
+  ~HorizontalShadowSource() override {}
+
+  // CanvasImageSource overrides:
+  void Draw(Canvas* canvas) override {
+    SkPaint paint;
+    paint.setLooper(CreateShadowDrawLooperCorrectBlur(shadows_));
+    canvas->DrawRect(RectF(0, fades_down_ ? -1 : size().height(), 1, 1), paint);
+  }
+
+ private:
+  static int GetHeightForShadows(const std::vector<ShadowValue>& shadows) {
+    int height = 0;
+    for (const auto& shadow : shadows) {
+      height = std::max(height, shadow.y() + ToCeiledInt(shadow.blur() / 2));
+    }
+    return height;
+  }
+
+  const std::vector<ShadowValue> shadows_;
+
+  // The orientation of the shadow (true for shadows that emanate downwards).
+  bool fades_down_;
+
+  DISALLOW_COPY_AND_ASSIGN(HorizontalShadowSource);
+};
+
 // RotatedSource generates image reps that are rotations of those in
 // |source| that represent requested scale factors.
 class RotatedSource : public ImageSkiaSource {
@@ -554,6 +589,15 @@ ImageSkia ImageSkiaOperations::CreateImageWithDropShadow(
   shadow_image_size.Enlarge(shadow_padding.width(),
                             shadow_padding.height());
   return ImageSkia(new DropShadowSource(source, shadows), shadow_image_size);
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateHorizontalShadow(
+    const std::vector<ShadowValue>& shadows,
+    bool fades_down) {
+  HorizontalShadowSource* source =
+      new HorizontalShadowSource(shadows, fades_down);
+  return ImageSkia(source, source->size());
 }
 
 // static

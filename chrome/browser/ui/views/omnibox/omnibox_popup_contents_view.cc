@@ -22,51 +22,16 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
-#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/shadow_value.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace {
-
-// This creates a shadow image that is 1dp wide, suitable for tiling along the
-// top or bottom edge of the omnibox popup.
-class ShadowImageSource : public gfx::CanvasImageSource {
- public:
-  ShadowImageSource(const std::vector<gfx::ShadowValue>& shadows, bool bottom)
-      : gfx::CanvasImageSource(gfx::Size(1, GetHeightForShadows(shadows)),
-                               false),
-        shadows_(shadows),
-        bottom_(bottom) {}
-  ~ShadowImageSource() override {}
-
-  void Draw(gfx::Canvas* canvas) override {
-    SkPaint paint;
-    paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows_));
-    canvas->DrawRect(gfx::RectF(0, bottom_ ? -1 : size().height(), 1, 1),
-                     paint);
-  }
-
- private:
-  static int GetHeightForShadows(const std::vector<gfx::ShadowValue>& shadows) {
-    int height = 0;
-    for (const auto& shadow : shadows) {
-      height =
-          std::max(height, shadow.y() + gfx::ToCeiledInt(shadow.blur() / 2));
-    }
-    return height;
-  }
-
-  const std::vector<gfx::ShadowValue> shadows_;
-  bool bottom_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShadowImageSource);
-};
 
 // Cache the shadow images so that potentially expensive shadow drawing isn't
 // repeated.
@@ -122,9 +87,8 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     std::vector<gfx::ShadowValue> shadows;
     // Blur by 1dp. See comment below about blur accounting.
     shadows.emplace_back(gfx::Vector2d(), 2, SK_ColorBLACK);
-
-    auto source = new ShadowImageSource(shadows, false);
-    g_top_shadow.Get() = gfx::ImageSkia(source, source->size());
+    g_top_shadow.Get() =
+        gfx::ImageSkiaOperations::CreateHorizontalShadow(shadows, false);
   }
   if (g_bottom_shadow.Get().isNull()) {
     const int kSmallShadowBlur = 3;
@@ -140,8 +104,8 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     shadows.emplace_back(gfx::Vector2d(0, kLargeShadowYOffset),
                          2 * kLargeShadowBlur, SK_ColorBLACK);
 
-    auto source = new ShadowImageSource(shadows, true);
-    g_bottom_shadow.Get() = gfx::ImageSkia(source, source->size());
+    g_bottom_shadow.Get() =
+        gfx::ImageSkiaOperations::CreateHorizontalShadow(shadows, true);
   }
 
   SetEventTargeter(

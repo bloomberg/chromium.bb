@@ -87,6 +87,13 @@ class GFX_EXPORT ImageSkiaOperations {
   static ImageSkia CreateImageWithDropShadow(const ImageSkia& source,
                                              const ShadowValues& shadows);
 
+  // Creates an image that is 1dp wide, suitable for tiling horizontally to
+  // create a drop shadow effect. The purpose of tiling a static image is to
+  // avoid repeatedly asking Skia to draw a shadow.
+  static gfx::ImageSkia CreateHorizontalShadow(
+      const std::vector<ShadowValue>& shadows,
+      bool fades_down);
+
   // Creates an image which is a rotation of the |source|. |rotation| is the
   // amount of clockwise rotation in degrees.
   static ImageSkia CreateRotatedImage(
