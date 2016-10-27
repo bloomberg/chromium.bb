@@ -114,6 +114,7 @@
       },
       "test": "net_unittests"
     },
+    "pdf_unittests",
     "ppapi_unittests",
     "printing_unittests",
     "remoting_unittests",

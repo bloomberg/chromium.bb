@@ -672,6 +672,10 @@
     "label": "//ui/ozone/gl:ozone_gl_unittests",
     "type": "console_test_launcher",
   },
+  "pdf_unittests": {
+    "label": "//pdf:pdf_unittests",
+    "type": "console_test_launcher",
+  },
   "pdfium_test": {
     "label": "//third_party/pdfium/samples:pdfium_test",
     "type": "additional_compile_target",

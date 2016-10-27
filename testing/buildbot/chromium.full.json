@@ -43,6 +43,7 @@
       "mojo_public_bindings_unittests",
       "mojo_common_unittests",
       "net_unittests",
+      "pdf_unittests",
       "printing_unittests",
       "remoting_unittests",
       "sql_unittests",
@@ -61,6 +62,7 @@
       "blink_platform_unittests",
       "capture_unittests",
       "url_unittests",
+      "pdf_unittests",
       "printing_unittests",
       "media_unittests",
       "midi_unittests",
@@ -324,6 +326,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "net_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "pdf_unittests"
       },
       {
         "swarming": {
@@ -628,6 +636,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "pdf_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ppapi_unittests"
       },
       {
@@ -880,6 +894,12 @@
           "shards": 4
         },
         "test": "net_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "pdf_unittests"
       },
       {
         "swarming": {
@@ -1666,6 +1686,9 @@
         "test": "libaddressinput_unittests"
       },
       {
+        "test": "pdf_unittests"
+      },
+      {
         "test": "printing_unittests"
       },
       {
@@ -1905,6 +1928,9 @@
         "test": "net_unittests"
       },
       {
+        "test": "pdf_unittests"
+      },
+      {
         "test": "printing_unittests"
       },
       {
@@ -2042,6 +2068,9 @@
       },
       {
         "test": "net_unittests"
+      },
+      {
+        "test": "pdf_unittests"
       },
       {
         "test": "printing_unittests"
