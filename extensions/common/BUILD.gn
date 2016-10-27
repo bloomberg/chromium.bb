@@ -348,6 +348,7 @@ if (enable_extensions) {
       "//base/test:test_support",
       "//components/crx_file",
       "//device/usb",
+      "//device/usb:test_support",
       "//extensions:extensions_resources",
 
       # TODO(brettw) these tests should not be including headers from browser.

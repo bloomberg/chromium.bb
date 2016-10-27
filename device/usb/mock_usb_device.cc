@@ -56,6 +56,24 @@ MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
 MockUsbDevice::MockUsbDevice(
     uint16_t vendor_id,
     uint16_t product_id,
+    uint8_t device_class,
+    const std::vector<UsbConfigDescriptor>& configurations)
+    : UsbDevice(0x0200,  // usb_version
+                device_class,
+                0xff,  // device_subclass
+                0xff,  // device_protocol
+                vendor_id,
+                product_id,
+                0x0100,  // device_version
+                base::string16(),
+                base::string16(),
+                base::string16()) {
+  configurations_ = configurations;
+}
+
+MockUsbDevice::MockUsbDevice(
+    uint16_t vendor_id,
+    uint16_t product_id,
     const std::string& manufacturer_string,
     const std::string& product_string,
     const std::string& serial_number,

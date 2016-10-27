@@ -4,8 +4,6 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
 
@@ -17,6 +15,10 @@ class Value;
 
 }  // namespace base
 
+namespace device {
+class UsbDevice;
+}
+
 namespace extensions {
 
 // A pattern that can be used to match a USB device permission.
@@ -24,21 +26,22 @@ namespace extensions {
 // productId are decimal strings representing uint16_t values.
 class UsbDevicePermissionData {
  public:
-  enum SpecialInterfaces {
+  enum SpecialValues {
     // A special interface id for stating permissions for an entire USB device,
     // no specific interface. This value must match value of Rule::ANY_INTERFACE
     // from ChromeOS permission_broker project.
-    ANY_INTERFACE = -1,
+    SPECIAL_VALUE_ANY = -1,
 
     // A special interface id for |Check| to indicate that interface field is
     // not to be checked. Not used in manifest file.
-    UNSPECIFIED_INTERFACE = -2
+    SPECIAL_VALUE_UNSPECIFIED = -2
   };
 
   UsbDevicePermissionData();
-  UsbDevicePermissionData(uint16_t vendor_id,
-                          uint16_t product_id,
-                          int interface_id);
+  UsbDevicePermissionData(int vendor_id,
+                          int product_id,
+                          int interface_id,
+                          int interface_class);
 
   // Check if |param| (which must be a UsbDevicePermissionData::CheckParam)
   // matches the vendor and product IDs associated with |this|.
@@ -53,18 +56,23 @@ class UsbDevicePermissionData {
   bool operator<(const UsbDevicePermissionData& rhs) const;
   bool operator==(const UsbDevicePermissionData& rhs) const;
 
-  const uint16_t& vendor_id() const { return vendor_id_; }
-  const uint16_t& product_id() const { return product_id_; }
+  const int& vendor_id() const { return vendor_id_; }
+  const int& product_id() const { return product_id_; }
+  const int& interface_class() const { return interface_class_; }
 
   // These accessors are provided for IPC_STRUCT_TRAITS_MEMBER.  Please
   // think twice before using them for anything else.
-  uint16_t& vendor_id() { return vendor_id_; }
-  uint16_t& product_id() { return product_id_; }
+  int& vendor_id() { return vendor_id_; }
+  int& product_id() { return product_id_; }
+  int& interface_class() { return interface_class_; }
 
  private:
-  uint16_t vendor_id_;
-  uint16_t product_id_;
-  int interface_id_;
+  int vendor_id_{SPECIAL_VALUE_ANY};
+  int product_id_{SPECIAL_VALUE_ANY};
+  // Not useful anymore. Kept around not to trigger permission change warnings
+  // for existing apps.
+  int interface_id_{SPECIAL_VALUE_ANY};
+  int interface_class_{SPECIAL_VALUE_ANY};
 };
 
 }  // namespace extensions

@@ -13,4 +13,7 @@ const char BehaviorFeature::kDoNotSync[] = "do_not_sync";
 
 const char BehaviorFeature::kZoomWithoutBubble[] = "zoom_without_bubble";
 
+const char BehaviorFeature::kAllowUsbDevicesPermissionInterfaceClass[] =
+    "allow_usb_devices_permission_interface_class";
+
 }  // namespace extensions

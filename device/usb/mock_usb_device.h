@@ -37,6 +37,10 @@ class MockUsbDevice : public UsbDevice {
                 const UsbConfigDescriptor& configuration);
   MockUsbDevice(uint16_t vendor_id,
                 uint16_t product_id,
+                uint8_t device_class,
+                const std::vector<UsbConfigDescriptor>& configurations);
+  MockUsbDevice(uint16_t vendor_id,
+                uint16_t product_id,
                 const std::string& manufacturer_string,
                 const std::string& product_string,
                 const std::string& serial_number,

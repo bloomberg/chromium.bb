@@ -343,12 +343,12 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
         permissions_manager->GetForExtension(extension->id());
     for (const auto& device : devices) {
       if (manifest_data->SupportsDevice(device)) {
-        extensions::UsbDevicePermission::CheckParam param(
-            device->vendor_id(), device->product_id(),
-            extensions::UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+        std::unique_ptr<extensions::UsbDevicePermission::CheckParam> param =
+            extensions::UsbDevicePermission::CheckParam::ForUsbDevice(
+                extension.get(), device.get());
         if (device_permissions->FindUsbDeviceEntry(device) ||
             extension->permissions_data()->CheckAPIPermissionWithParam(
-                extensions::APIPermission::kUsbDevice, &param)) {
+                extensions::APIPermission::kUsbDevice, param.get())) {
           // Skip devices the extension already has permission to access.
           continue;
         }

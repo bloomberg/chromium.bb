@@ -104,11 +104,11 @@ bool HasAppThatSupportsPrinter(Profile* profile,
       return true;
     }
 
-    extensions::UsbDevicePermission::CheckParam param(
-        device->vendor_id(), device->product_id(),
-        extensions::UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+    std::unique_ptr<extensions::UsbDevicePermission::CheckParam> param =
+        extensions::UsbDevicePermission::CheckParam::ForUsbDevice(
+            extension.get(), device.get());
     if (extension->permissions_data()->CheckAPIPermissionWithParam(
-            extensions::APIPermission::kUsbDevice, &param)) {
+            extensions::APIPermission::kUsbDevice, param.get())) {
       return true;
     }
   }

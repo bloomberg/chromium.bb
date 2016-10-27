@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/usb/usb_event_router.h"
 
+#include <memory>
 #include <utility>
 
 #include "device/base/device_client.h"
@@ -33,11 +34,10 @@ bool WillDispatchDeviceEvent(scoped_refptr<UsbDevice> device,
                              Event* event,
                              const base::DictionaryValue* listener_filter) {
   // Check install-time and optional permissions.
-  UsbDevicePermission::CheckParam param(
-      device->vendor_id(), device->product_id(),
-      UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+  std::unique_ptr<UsbDevicePermission::CheckParam> param =
+      UsbDevicePermission::CheckParam::ForUsbDevice(extension, device.get());
   if (extension->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kUsbDevice, &param)) {
+          APIPermission::kUsbDevice, param.get())) {
     return true;
   }
 

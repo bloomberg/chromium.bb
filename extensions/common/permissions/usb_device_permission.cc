@@ -4,20 +4,111 @@
 
 #include "extensions/common/permissions/usb_device_permission.h"
 
-#include <set>
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "device/usb/usb_descriptors.h"
+#include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/features/behavior_feature.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
+
+namespace {
+
+const int kHidInterfaceClass = 3;
+
+bool IsInterfaceClassPermissionAlowed(const Extension* extension) {
+  const Feature* feature = FeatureProvider::GetBehaviorFeature(
+      BehaviorFeature::kAllowUsbDevicesPermissionInterfaceClass);
+  if (!feature)
+    return false;
+  if (!extension)
+    return false;
+  return feature->IsAvailableToExtension(extension).is_available();
+}
+
+}  // namespace
+
+// static
+std::unique_ptr<UsbDevicePermission::CheckParam>
+UsbDevicePermission::CheckParam::ForUsbDevice(const Extension* extension,
+                                              const device::UsbDevice* device) {
+  return CheckParam::ForUsbDeviceAndInterface(
+      extension, device, UsbDevicePermissionData::SPECIAL_VALUE_UNSPECIFIED);
+}
+
+// static
+std::unique_ptr<UsbDevicePermission::CheckParam>
+UsbDevicePermission::CheckParam::ForDeviceWithAnyInterfaceClass(
+    const Extension* extension,
+    uint16_t vendor_id,
+    uint16_t product_id,
+    int interface_id) {
+  return base::MakeUnique<CheckParam>(extension, vendor_id, product_id,
+                                      std::unique_ptr<std::set<int>>(),
+                                      interface_id);
+}
+
+// static
+std::unique_ptr<UsbDevicePermission::CheckParam>
+UsbDevicePermission::CheckParam::ForUsbDeviceAndInterface(
+    const Extension* extension,
+    const device::UsbDevice* device,
+    int interface_id) {
+  std::unique_ptr<std::set<int>> interface_classes(new std::set<int>());
+  // If device class is set, match interface class against it as well. This is
+  // to enable filtering devices by device-only class (for example, hubs), which
+  // might or might not have an interface with class set to device class value.
+  if (device->device_class())
+    interface_classes->insert(device->device_class());
+
+  for (const auto& configuration : device->configurations()) {
+    for (const auto& interface : configuration.interfaces)
+      interface_classes->insert(interface.interface_class);
+  }
+
+  return base::MakeUnique<CheckParam>(
+      extension, device->vendor_id(), device->product_id(),
+      std::move(interface_classes), interface_id);
+}
+
+// static
+std::unique_ptr<UsbDevicePermission::CheckParam>
+UsbDevicePermission::CheckParam::ForHidDevice(const Extension* extension,
+                                              uint16_t vendor_id,
+                                              uint16_t product_id) {
+  std::unique_ptr<std::set<int>> interface_classes(new std::set<int>());
+  interface_classes->insert(kHidInterfaceClass);
+  return base::MakeUnique<UsbDevicePermission::CheckParam>(
+      extension, vendor_id, product_id, std::move(interface_classes),
+      UsbDevicePermissionData::SPECIAL_VALUE_UNSPECIFIED);
+}
+
+UsbDevicePermission::CheckParam::CheckParam(
+    const Extension* extension,
+    uint16_t vendor_id,
+    uint16_t product_id,
+    std::unique_ptr<std::set<int>> interface_classes,
+    int interface_id)
+    : vendor_id(vendor_id),
+      product_id(product_id),
+      interface_classes(std::move(interface_classes)),
+      interface_id(interface_id),
+      interface_class_allowed(IsInterfaceClassPermissionAlowed(extension)) {}
+
+UsbDevicePermission::CheckParam::~CheckParam() {}
 
 UsbDevicePermission::UsbDevicePermission(const APIPermissionInfo* info)
     : SetDisjunctionPermission<UsbDevicePermissionData, UsbDevicePermission>(
@@ -47,6 +138,10 @@ PermissionIDSet UsbDevicePermission::GetPermissions() const {
   bool found_unknown_vendor = false;
 
   for (const UsbDevicePermissionData& data : data_set_) {
+    // Interface class permissions should be only available in kiosk sessions,
+    // don't include those in installation warning for now.
+    if (data.interface_class() != UsbDevicePermissionData::SPECIAL_VALUE_ANY)
+      continue;
     const char* vendor = device::UsbIds::GetVendorName(data.vendor_id());
     if (vendor) {
       const char* product =

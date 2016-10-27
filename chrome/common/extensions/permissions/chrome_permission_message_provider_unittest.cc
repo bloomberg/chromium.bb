@@ -106,8 +106,10 @@ TEST_F(ChromePermissionMessageProviderUnittest,
   std::unique_ptr<UsbDevicePermission> usb(new UsbDevicePermission(
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kUsbDevice)));
   std::unique_ptr<base::ListValue> devices_list(new base::ListValue());
-  devices_list->Append(UsbDevicePermissionData(0x02ad, 0x138c, -1).ToValue());
-  devices_list->Append(UsbDevicePermissionData(0x02ad, 0x138d, -1).ToValue());
+  devices_list->Append(
+      UsbDevicePermissionData(0x02ad, 0x138c, -1, -1).ToValue());
+  devices_list->Append(
+      UsbDevicePermissionData(0x02ad, 0x138d, -1, -1).ToValue());
   ASSERT_TRUE(usb->FromValue(devices_list.get(), nullptr, nullptr));
   permissions.insert(usb.release());
 

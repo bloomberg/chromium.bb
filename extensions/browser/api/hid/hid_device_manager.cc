@@ -183,11 +183,11 @@ bool HidDeviceManager::HasPermission(const Extension* extension,
     return true;
   }
 
-  UsbDevicePermission::CheckParam usbParam(
-      device_info->vendor_id(), device_info->product_id(),
-      UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+  std::unique_ptr<UsbDevicePermission::CheckParam> usb_param =
+      UsbDevicePermission::CheckParam::ForHidDevice(
+          extension, device_info->vendor_id(), device_info->product_id());
   if (extension->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kUsbDevice, &usbParam)) {
+          APIPermission::kUsbDevice, usb_param.get())) {
     return true;
   }
 
