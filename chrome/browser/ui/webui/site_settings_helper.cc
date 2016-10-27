@@ -50,6 +50,31 @@ typedef std::map<GURL, SortedObjects> OneOriginObjects;
 typedef std::map<std::pair<GURL, std::string>, OneOriginObjects>
     AllOriginObjects;
 
+const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
+    {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
+    {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
+    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
+    {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
+    {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
+    {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
+    {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
+    {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
+    {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
+    {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
+    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
+    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
+    {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, "ssl-cert-decisions"},
+#if defined(OS_CHROMEOS)
+    {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
+#endif
+    {CONTENT_SETTINGS_TYPE_KEYGEN, "keygen"},
+    {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
+};
+
 }  // namespace
 
 bool HasRegisteredGroupName(ContentSettingsType type) {

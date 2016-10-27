@@ -33,52 +33,6 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * A utility function to lookup a category name from its enum. Note: The
-   * category name is visible to the user as part of the URL.
-   * @param {string} category The category ID to look up.
-   * @return {string} The category found or blank string if not found.
-   * @protected
-   */
-  computeCategoryTextId: function(category) {
-    switch (category) {
-      case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
-        return 'automatic-downloads';
-      case settings.ContentSettingsTypes.BACKGROUND_SYNC:
-        return 'background-sync';
-      case settings.ContentSettingsTypes.CAMERA:
-        return 'camera';
-      case settings.ContentSettingsTypes.COOKIES:
-        return 'cookies';
-      case settings.ContentSettingsTypes.GEOLOCATION:
-        return 'location';
-      case settings.ContentSettingsTypes.IMAGES:
-        return 'images';
-      case settings.ContentSettingsTypes.JAVASCRIPT:
-        return 'javascript';
-      case settings.ContentSettingsTypes.KEYGEN:
-        return 'keygen';
-      case settings.ContentSettingsTypes.MIC:
-        return 'microphone';
-      case settings.ContentSettingsTypes.NOTIFICATIONS:
-        return 'notifications';
-      case settings.ContentSettingsTypes.PLUGINS:
-        return 'plugins';
-      case settings.ContentSettingsTypes.POPUPS:
-        return 'popups';
-      case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
-        return 'handlers';
-      case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
-        return 'unsandboxed-plugins';
-      case settings.ContentSettingsTypes.USB_DEVICES:
-        return 'usb-devices';
-      case settings.ContentSettingsTypes.ZOOM_LEVELS:
-        return 'zoom-levels';
-      default:
-        return '';
-    }
-  },
-
-  /**
    * A utility function to lookup the route for a category name.
    * @param {string} category The category ID to look up.
    * @return {!settings.Route}

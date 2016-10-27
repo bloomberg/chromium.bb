@@ -146,8 +146,6 @@ cr.define('site_settings_category', function() {
           if (category != settings.ContentSettingsTypes.FULLSCREEN &&
               category != settings.ContentSettingsTypes.USB_DEVICES &&
               category != settings.ContentSettingsTypes.ZOOM_LEVELS) {
-            assertNotEquals('', testElement.computeCategoryTextId(category));
-
             assertNotEquals('', testElement.computeCategoryDesc(
                 category, settings.PermissionValues.ALLOW, true));
             assertNotEquals('', testElement.computeCategoryDesc(
