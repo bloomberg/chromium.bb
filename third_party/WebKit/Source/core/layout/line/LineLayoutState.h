@@ -44,10 +44,18 @@ class LineLayoutState {
         m_floatIndex(0),
         m_endLineMatched(false),
         m_hasInlineChild(false),
-        m_isFullLayout(fullLayout) {}
+        m_isFullLayout(fullLayout),
+        m_needsPaginationStrutRecalculation(false) {}
 
   void markForFullLayout() { m_isFullLayout = true; }
   bool isFullLayout() const { return m_isFullLayout; }
+
+  bool needsPaginationStrutRecalculation() const {
+    return m_needsPaginationStrutRecalculation || isFullLayout();
+  }
+  void setNeedsPaginationStrutRecalculation() {
+    m_needsPaginationStrutRecalculation = true;
+  }
 
   bool endLineMatched() const { return m_endLineMatched; }
   void setEndLineMatched(bool endLineMatched) {
@@ -96,6 +104,8 @@ class LineLayoutState {
   bool m_hasInlineChild;
 
   bool m_isFullLayout;
+
+  bool m_needsPaginationStrutRecalculation;
 
   LayoutUnit m_adjustedLogicalLineTop;
 };

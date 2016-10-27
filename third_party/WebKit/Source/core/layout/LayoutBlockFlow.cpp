@@ -1123,6 +1123,8 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox,
   logicalOffset += delta;
   lineBox.setPaginationStrut(LayoutUnit());
   lineBox.setIsFirstAfterPageBreak(false);
+  if (!view()->layoutState()->isPaginated())
+    return;
   LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
   if (!pageLogicalHeight)
     return;

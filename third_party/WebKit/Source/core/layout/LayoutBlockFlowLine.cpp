@@ -1076,6 +1076,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
   const ComputedStyle& styleToUse = styleRef();
   bool paginated =
       view()->layoutState() && view()->layoutState()->isPaginated();
+  bool recalculateStruts = layoutState.needsPaginationStrutRecalculation();
   LineMidpointState& lineMidpointState = resolver.midpointState();
   InlineIterator endOfLine = resolver.position();
   LayoutTextInfo layoutTextInfo;
@@ -1190,7 +1191,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
       if (lineBox) {
         lineBox->setLineBreakInfo(endOfLine.getLineLayoutItem(),
                                   endOfLine.offset(), resolver.status());
-        if (paginated) {
+        if (recalculateStruts) {
           if (paginationStrutFromDeletedLine) {
             // This is a line that got re-created because it got pushed to the
             // next fragmentainer, and there were floats in the vicinity that
@@ -1239,11 +1240,12 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
     if (!paginationStrutFromDeletedLine) {
       for (const auto& positionedObject : lineBreaker.positionedObjects()) {
         if (positionedObject.style()->isOriginalDisplayInlineType()) {
-          // Auto-positioend "inline" out-of-flow objects have already been
-          // positioned, but if we're paginated, we need to update their
-          // position now, since the line they "belong" to may have been pushed
-          // by a pagination strut.
-          if (paginated && lineBox)
+          // Auto-positioned "inline" out-of-flow objects have already been
+          // positioned, but if we're paginated, or just ceased to be so, we
+          // need to update their position now, since the line they "belong" to
+          // may have been pushed by a pagination strut, or pulled back because
+          // a pagination strut was removed.
+          if (recalculateStruts && lineBox)
             positionedObject.layer()->setStaticBlockPosition(
                 lineBox->lineTopWithLeading());
           continue;
@@ -1346,15 +1348,14 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
 void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
   if (layoutState.endLine()) {
     if (layoutState.endLineMatched()) {
-      bool paginated =
-          view()->layoutState() && view()->layoutState()->isPaginated();
+      bool recalculateStruts = layoutState.needsPaginationStrutRecalculation();
       // Attach all the remaining lines, and then adjust their y-positions as
       // needed.
       LayoutUnit delta = logicalHeight() - layoutState.endLineLogicalTop();
       for (RootInlineBox* line = layoutState.endLine(); line;
            line = line->nextRootBox()) {
         line->attachLine();
-        if (paginated) {
+        if (recalculateStruts) {
           delta -= line->paginationStrut();
           adjustLinePositionForPagination(*line, delta);
         }
@@ -1896,6 +1897,11 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
     if (firstLineBox())
       setShouldDoFullPaintInvalidation();
     lineBoxes()->deleteLineBoxes();
+  } else if (const LayoutState* boxState = view()->layoutState()) {
+    // We'll attempt to keep the line boxes that we have, but we may need to
+    // add, change or remove pagination struts in front of them.
+    if (boxState->isPaginated() || boxState->paginationStateChanged())
+      layoutState.setNeedsPaginationStrutRecalculation();
   }
 
   // Text truncation kicks in if overflow isn't visible and text-overflow isn't
@@ -2005,12 +2011,11 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
   // function.
   if (!layoutState.isFullLayout()) {
     // Paginate all of the clean lines.
-    bool paginated =
-        view()->layoutState() && view()->layoutState()->isPaginated();
+    bool recalculateStruts = layoutState.needsPaginationStrutRecalculation();
     LayoutUnit paginationDelta;
     for (curr = firstRootBox(); curr && !curr->isDirty();
          curr = curr->nextRootBox()) {
-      if (paginated) {
+      if (recalculateStruts) {
         paginationDelta -= curr->paginationStrut();
         adjustLinePositionForPagination(*curr, paginationDelta);
         if (paginationDelta) {
@@ -2183,9 +2188,7 @@ bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(
 
   LayoutUnit lineDelta = logicalHeight() - layoutState.endLineLogicalTop();
 
-  bool paginated =
-      view()->layoutState() && view()->layoutState()->isPaginated();
-  if (paginated) {
+  if (layoutState.needsPaginationStrutRecalculation()) {
     // Check all lines from here to the end, and see if the hypothetical new
     // position for the lines will result
     // in a different available line width.
