@@ -1105,22 +1105,6 @@ scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {
 void WebMediaPlayerAndroid::PutCurrentFrame() {
 }
 
-void WebMediaPlayerAndroid::RemoveSurfaceTextureAndProxy() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  if (texture_id_) {
-    GLES2Interface* gl = stream_texture_factory_->ContextGL();
-    gl->DeleteTextures(1, &texture_id_);
-    // Flush to ensure that the stream texture gets deleted in a timely fashion.
-    gl->ShallowFlushCHROMIUM();
-    texture_id_ = 0;
-    texture_mailbox_ = gpu::Mailbox();
-  }
-  stream_texture_proxy_.reset();
-  needs_establish_peer_ =
-      !is_remote_ && !is_fullscreen_ && (hasVideo() || IsHLSStream());
-}
-
 void WebMediaPlayerAndroid::UpdateStreamTextureProxyCallback(
     cc::VideoFrameProvider::Client* client) {
   base::Closure frame_received_cb;

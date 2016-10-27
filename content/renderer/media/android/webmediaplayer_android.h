@@ -245,7 +245,6 @@ class WebMediaPlayerAndroid
   void DrawRemotePlaybackText(const std::string& remote_playback_message);
   void ReallocateVideoFrame();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
-  void RemoveSurfaceTextureAndProxy();
   void DidLoadMediaInfo(MediaInfoLoader::Status status,
                         const GURL& redirected_url,
                         const GURL& first_party_for_cookies,
