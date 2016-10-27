@@ -1559,10 +1559,11 @@ bool FrameLoader::shouldContinueForNavigationPolicy(
   if (request.url().isEmpty() || substituteData.isValid())
     return true;
 
-  // If we're loading content into a subframe, check against the parent's
-  // Content Security Policy and kill the load if that check fails, unless we
-  // should bypass the main world's CSP.
-  if (shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) {
+  // If we're loading content into |m_frame| (NavigationPolicyCurrentTab), check
+  // against the parent's Content Security Policy and kill the load if that
+  // check fails, unless we should bypass the main world's CSP.
+  if (policy == NavigationPolicyCurrentTab &&
+      shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) {
     Frame* parentFrame = m_frame->tree().parent();
     if (parentFrame) {
       ContentSecurityPolicy* parentPolicy =

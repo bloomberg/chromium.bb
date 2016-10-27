@@ -34,6 +34,9 @@ if (window.testRunner) {
 
     // Shift-clicking doesn't set window.opener, so we allow the new window
     // to find the opener using the name being set below.
+    // TODO(lukasza): After fixing https://crbug.com/658386, the test will
+    // need to use another mechanism for communicating verification results
+    // (most likely OOPIF-replicated testRunner.setCustomTextOutput).
     window.name = "mainTestWindow";
     window.addEventListener('message', function(e) {
         concludeTest(e.data);
