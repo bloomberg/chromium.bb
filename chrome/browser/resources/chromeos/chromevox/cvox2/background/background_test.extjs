@@ -657,6 +657,15 @@ TEST_F('BackgroundTest', 'Checkbox', function() {
   });
 });
 
+TEST_F('BackgroundTest', 'MixedCheckbox', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="checkbox" aria-checked="mixed">go</div>
+  */}, function(root) {
+    mockFeedback.expectSpeech('go', 'Check box', 'Partially checked').replay();
+  });
+});
+
 /** Tests navigating into and out of iframes using nextButton */
 TEST_F('BackgroundTest', 'ForwardNavigationThroughIframeButtons', function() {
   var mockFeedback = this.createMockFeedback();
