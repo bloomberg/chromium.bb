@@ -29,7 +29,7 @@ const double kTranslationOfferThreshold = 0.5;
 
 // Parameters for model fetching.
 const char kTranslateRankerModelURL[] =
-    "https://chromium-i18n-canary.appspot.com/ssl-translate-ranker-model";
+    "https://chromium-i18n.appspot.com/ssl-translate-ranker-model";
 const int kMaxRetryOn5xx = 3;
 const int kDownloadRefractoryPeriodMin = 15;
 const char kUnknown[] = "UNKNOWN";
