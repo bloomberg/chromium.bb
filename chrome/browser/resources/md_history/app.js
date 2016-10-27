@@ -86,17 +86,26 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
       notify: true,
-    }
+    },
+
+    showMenuPromo_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showMenuPromo');
+      },
+    },
   },
 
-  // TODO(calamity): Replace these event listeners with data bound properties.
   listeners: {
-    'cr-menu-tap': 'onMenuTap_',
-    'history-checkbox-select': 'checkboxSelected',
-    'unselect-all': 'unselectAll',
+    'cr-toolbar-menu-promo-close': 'onCrToolbarMenuPromoClose_',
+    'cr-toolbar-menu-promo-shown': 'onCrToolbarMenuPromoShown_',
+    'cr-toolbar-menu-tap': 'onCrToolbarMenuTap_',
     'delete-selected': 'deleteSelected',
+    'history-checkbox-select': 'checkboxSelected',
     'history-close-drawer': 'closeDrawer_',
     'history-view-changed': 'historyViewChanged_',
+    'opened-changed': 'onOpenedChanged_',
+    'unselect-all': 'unselectAll',
   },
 
   /** @override */
@@ -140,10 +149,29 @@ Polymer({
   },
 
   /** @private */
-  onMenuTap_: function() {
+  onCrToolbarMenuPromoClose_: function() {
+    this.showMenuPromo_ = false;
+  },
+
+  /** @private */
+  onCrToolbarMenuPromoShown_: function() {
+    md_history.BrowserService.getInstance().menuPromoShown();
+  },
+
+  /** @private */
+  onCrToolbarMenuTap_: function() {
     var drawer = this.$$('#drawer');
     if (drawer)
       drawer.toggle();
+  },
+
+  /**
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onOpenedChanged_: function(e) {
+    if (e.detail.value)
+      this.showMenuPromo_ = false;
   },
 
   /**

@@ -67,12 +67,7 @@ Polymer({
 
     // Whether to show the menu promo (a tooltip that points at the menu button
     // in narrow mode).
-    showMenuPromo_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showMenuPromo');
-      },
-    },
+    showMenuPromo: Boolean,
   },
 
   /** @return {CrToolbarSearchFieldElement} */
@@ -103,11 +98,6 @@ Polymer({
       this.searchField.showAndFocus();
       this.searchField.setValue(this.searchTerm);
     }
-  },
-
-  /** @private */
-  onMenuPromoShown_: function() {
-    md_history.BrowserService.getInstance().menuPromoShown();
   },
 
   /**

@@ -21,10 +21,12 @@
         display: block;
         height: 100%;
         overflow: hidden;
+        z-index: 0;
       }
 
       history-toolbar {
         background: var(--md-toolbar-color);
+        z-index: 2;
       }
 
       /* Sizing this with flex causes slow load performance, see
@@ -32,6 +34,7 @@
       #main-container {
         height: calc(100% - var(--toolbar-height));
         position: relative;
+        z-index: 1;
       }
 
       :host([grouped_]) #main-container {
@@ -53,6 +56,10 @@
 
       #drawer:unresolved {
         display: none;
+      }
+
+      #drawer {
+        z-index: 3;
       }
 
       #drawer-header {
@@ -99,7 +106,8 @@
         query-start-time="[[queryResult_.info.queryStartTime]]"
         query-end-time="[[queryResult_.info.queryEndTime]]"
         has-drawer="[[hasDrawer_]]"
-        show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]">
+        show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]"
+        show-menu-promo="[[showMenuPromo_]]">
     </history-toolbar>
 
     <div id="main-container">

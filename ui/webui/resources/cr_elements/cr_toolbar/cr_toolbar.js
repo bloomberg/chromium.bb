@@ -64,13 +64,12 @@ Polymer({
 
   /** @private */
   onClosePromoTap_: function() {
-    this.showMenuPromo = false;
+    this.fire('cr-toolbar-menu-promo-close');
   },
 
   /** @private */
   onMenuTap_: function() {
-    this.fire('cr-menu-tap');
-    this.onClosePromoTap_();
+    this.fire('cr-toolbar-menu-tap');
   },
 
   /** @private */
@@ -83,7 +82,7 @@ Polymer({
           duration: 500,
           fill: 'forwards'
         }));
-        this.fire('cr-menu-promo-shown');
+        this.fire('cr-toolbar-menu-promo-shown');
       }
     }.bind(this));
   },

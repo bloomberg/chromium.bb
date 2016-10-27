@@ -86,10 +86,13 @@
       }
     </style>
     <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
-    <cr-toolbar page-name="$i18n{settings}" clear-label="$i18n{clearSearch}"
-        search-prompt="$i18n{searchPrompt}" on-cr-menu-tap="onMenuButtonTap_"
-        spinner-active="[[toolbarSpinnerActive_]]" show-menu
-        menu-label="$i18n{menuButtonLabel}">
+    <cr-toolbar page-name="$i18n{settings}"
+        clear-label="$i18n{clearSearch}"
+        search-prompt="$i18n{searchPrompt}"
+        on-cr-toolbar-menu-tap="onMenuButtonTap_"
+        spinner-active="[[toolbarSpinnerActive_]]"
+        menu-label="$i18n{menuButtonLabel}"
+        show-menu>
     </cr-toolbar>
     <app-drawer swipe-open>
       <div class="drawer-header">$i18n{settings}</div>

@@ -181,12 +181,11 @@
           hidden$="[[itemsSelected_]]"
           spinner-active="[[spinnerActive]]"
           show-menu="[[hasDrawer]]"
-          show-menu-promo="[[showMenuPromo_]]"
+          show-menu-promo="[[showMenuPromo]]"
           menu-label="$i18n{historyMenuButton}"
           menu-promo="$i18n{menuPromo}"
           close-menu-promo="$i18n{closeMenuPromo}"
-          on-search-changed="onSearchChanged_"
-          on-cr-menu-promo-shown="onMenuPromoShown_">
+          on-search-changed="onSearchChanged_">
         <div class="more-actions">
           <template is="dom-if" if="[[showSyncNotice]]">
             <button is="paper-icon-button-light" id="info-button"

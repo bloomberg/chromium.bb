@@ -2718,7 +2718,7 @@ paper-tabs {
 
 </style>
     <div id="toolbar-container">
-      <cr-toolbar id="main-toolbar" page-name="$i18n{title}" clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}" hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]" show-menu="[[hasDrawer]]" show-menu-promo="[[showMenuPromo_]]" menu-label="$i18n{historyMenuButton}" menu-promo="$i18n{menuPromo}" close-menu-promo="$i18n{closeMenuPromo}" on-search-changed="onSearchChanged_" on-cr-menu-promo-shown="onMenuPromoShown_">
+      <cr-toolbar id="main-toolbar" page-name="$i18n{title}" clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}" hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]" show-menu="[[hasDrawer]]" show-menu-promo="[[showMenuPromo]]" menu-label="$i18n{historyMenuButton}" menu-promo="$i18n{menuPromo}" close-menu-promo="$i18n{closeMenuPromo}" on-search-changed="onSearchChanged_">
         <div class="more-actions">
           <template is="dom-if" if="[[showSyncNotice]]">
             <button is="paper-icon-button-light" id="info-button" on-click="onInfoButtonTap_" aria-label="$i18n{hasSyncedResultsDescription}">
@@ -3861,15 +3861,18 @@ button.more-vert-button div {
   display: block;
         height: 100%;
         overflow: hidden;
+        z-index: 0;
 }
 
 history-toolbar {
   background: var(--md-toolbar-color);
+        z-index: 2;
 }
 
 #main-container {
   height: calc(100% - var(--toolbar-height));
         position: relative;
+        z-index: 1;
 }
 
 :host([grouped_]) #main-container {
@@ -3890,6 +3893,10 @@ history-toolbar {
 
 #drawer:unresolved {
   display: none;
+}
+
+#drawer {
+  z-index: 3;
 }
 
 #drawer-header {
@@ -3928,7 +3935,7 @@ h1 {
     </history-router>
     <history-toolbar id="toolbar" spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
-                                             queryState_.searchTerm)]]" is-grouped-mode="{{grouped_}}" grouped-range="{{queryState_.range}}" search-term="{{queryState_.searchTerm}}" query-start-time="[[queryResult_.info.queryStartTime]]" query-end-time="[[queryResult_.info.queryEndTime]]" has-drawer="[[hasDrawer_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]">
+                                             queryState_.searchTerm)]]" is-grouped-mode="{{grouped_}}" grouped-range="{{queryState_.range}}" search-term="{{queryState_.searchTerm}}" query-start-time="[[queryResult_.info.queryStartTime]]" query-end-time="[[queryResult_.info.queryEndTime]]" has-drawer="[[hasDrawer_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]" show-menu-promo="[[showMenuPromo_]]">
     </history-toolbar>
 
     <div id="main-container">
