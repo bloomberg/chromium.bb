@@ -44,8 +44,8 @@ class CronetEnvironment {
   static void Initialize();
 
   // |user_agent| will be used to generate the user-agent if
-  // |user_agent_partial|
-  // is true, or will be used as complete user-agent otherwise.
+  // |user_agent_partial| is true, or will be used as the complete user-agent
+  // otherwise.
   CronetEnvironment(const std::string& user_agent, bool user_agent_partial);
   ~CronetEnvironment();
 
@@ -92,19 +92,19 @@ class CronetEnvironment {
     ssl_key_log_file_name_ = ssl_key_log_file_name;
   }
 
+  // Returns the URLRequestContext associated with this object.
   net::URLRequestContext* GetURLRequestContext() const;
 
+  // Return the URLRequestContextGetter associated with this object.
   net::URLRequestContextGetter* GetURLRequestContextGetter() const;
-
-  bool IsOnNetworkThread();
-
-  // Runs a closure on the network thread.
-  void PostToNetworkThread(const tracked_objects::Location& from_here,
-                           const base::Closure& task);
 
  private:
   // Performs initialization tasks that must happen on the network thread.
   void InitializeOnNetworkThread();
+
+  // Runs a closure on the network thread.
+  void PostToNetworkThread(const tracked_objects::Location& from_here,
+                           const base::Closure& task);
 
   // Runs a closure on the file user blocking thread.
   void PostToFileUserBlockingThread(const tracked_objects::Location& from_here,

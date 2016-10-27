@@ -254,11 +254,11 @@ class CronetHttpProtocolHandlerDelegate
                             encoding:[NSString defaultCStringEncoding]];
 }
 
-+ (cronet_engine*)getGlobalEngine {
++ (stream_engine*)getGlobalEngine {
   DCHECK(gChromeNet.Get().get());
   if (gChromeNet.Get().get()) {
-    static cronet_engine engine;
-    engine.obj = gChromeNet.Get().get();
+    static stream_engine engine;
+    engine.obj = gChromeNet.Get()->GetURLRequestContextGetter();
     return &engine;
   }
   return nil;
@@ -281,9 +281,9 @@ class CronetHttpProtocolHandlerDelegate
 }
 
 // This is a non-public dummy method that prevents the linker from stripping out
-// the otherwise non-referenced methods from 'cronet_bidirectional_stream.cc'.
+// the otherwise non-referenced methods from 'bidirectional_stream.cc'.
 + (void)preventStrippingCronetBidirectionalStream {
-  cronet_bidirectional_stream_create(NULL, 0, 0);
+  bidirectional_stream_create(NULL, 0, 0);
 }
 
 @end

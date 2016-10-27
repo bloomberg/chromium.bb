@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/ios/test/quic_test_server.h"
+#include "components/grpc_support/test/quic_test_server.h"
 
 #include <utility>
 
@@ -20,7 +20,7 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
-namespace cronet {
+namespace grpc_support {
 
 // This must match the certificate used (quic_test.example.com.crt and
 // quic_test.example.com.key.pkcs8).
@@ -50,10 +50,10 @@ void SetupQuicInMemoryCache() {
     return;
   setup_done = true;
   net::SpdyHeaderBlock headers;
-  headers.AppendValueOrAddHeader(kHelloHeaderName, kHelloHeaderValue);
-  headers.AppendValueOrAddHeader(kStatusHeader, kHelloStatus);
+  headers[kHelloHeaderName] = kHelloHeaderValue;
+  headers[kStatusHeader] =  kHelloStatus;
   net::SpdyHeaderBlock trailers;
-  trailers.AppendValueOrAddHeader(kHelloTrailerName, kHelloTrailerValue);
+  trailers[kHelloTrailerName] = kHelloTrailerValue;
   net::QuicInMemoryCache::GetInstance()->AddResponse(
       kTestServerHost, kHelloPath, std::move(headers), kHelloBodyValue,
       std::move(trailers));
@@ -73,9 +73,9 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
   std::unique_ptr<net::ProofSourceChromium> proof_source(
       new net::ProofSourceChromium());
   CHECK(proof_source->Initialize(
-      directory.Append("quic_test.example.com.crt"),
-      directory.Append("quic_test.example.com.key.pkcs8"),
-      directory.Append("quic_test.example.com.key.sct")));
+      directory.AppendASCII("quic_test.example.com.crt"),
+      directory.AppendASCII("quic_test.example.com.key.pkcs8"),
+      directory.AppendASCII("quic_test.example.com.key.sct")));
   g_quic_server =
       new net::QuicSimpleServer(std::move(proof_source), config,
                                 net::QuicCryptoServerConfig::ConfigOptions(),
@@ -105,15 +105,13 @@ bool StartQuicTestServer() {
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   bool started = g_quic_server_thread->StartWithOptions(thread_options);
   DCHECK(started);
-  base::FilePath test_files_root;
-  if (!PathService::Get(base::DIR_EXE, &test_files_root))
-    return false;
+  base::FilePath test_files_root = net::GetTestCertsDirectory();
+
   base::WaitableEvent server_started_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&StartQuicServerOnServerThread,
-                            test_files_root.Append("net/data/ssl/certificates"),
+      FROM_HERE, base::Bind(&StartQuicServerOnServerThread, test_files_root,
                             &server_started_event));
   server_started_event.Wait();
   return true;
@@ -133,4 +131,4 @@ void ShutdownQuicTestServer() {
   g_quic_server_thread = nullptr;
 }
 
-}  // namespace cronet
+}  // namespace grpc_support
