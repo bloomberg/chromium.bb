@@ -25,11 +25,8 @@ promise_test(() => {
       var old_device_id = device.id;
       device.id = 'overwritten';
       device.name = 'overwritten';
-      device.uuids = 'overwritten';
       assert_equals(device.id, old_device_id);
       assert_equals(device.name, 'Heart Rate Device');
-      assert_equals(device.uuids.length, 1);
-      assert_equals(device.uuids[0], heart_rate.uuid);
     });
 }, 'BluetoothDevice attributes.');
 </script>

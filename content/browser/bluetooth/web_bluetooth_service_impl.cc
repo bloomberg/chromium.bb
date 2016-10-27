@@ -782,25 +782,12 @@ void WebBluetoothServiceImpl::OnGetDeviceSuccess(
       allowed_devices_map_.AddDevice(GetOrigin(), device_address, options);
 
   VLOG(1) << "Device: " << device->GetNameForDisplay();
-  VLOG(1) << "UUIDs: ";
-
-  mojo::Array<mojo::String> filtered_uuids;
-  for (const BluetoothUUID& uuid : device->GetUUIDs()) {
-    if (allowed_devices_map_.IsOriginAllowedToAccessService(
-            GetOrigin(), device_id_for_origin, uuid)) {
-      VLOG(1) << "\t Allowed: " << uuid.canonical_value();
-      filtered_uuids.push_back(uuid.canonical_value());
-    } else {
-      VLOG(1) << "\t Not Allowed: " << uuid.canonical_value();
-    }
-  }
 
   blink::mojom::WebBluetoothDevicePtr device_ptr =
       blink::mojom::WebBluetoothDevice::New();
   device_ptr->id = device_id_for_origin;
   device_ptr->name = device->GetName() ? mojo::String(device->GetName().value())
                                        : mojo::String(nullptr);
-  device_ptr->uuids = std::move(filtered_uuids);
 
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);
   callback.Run(blink::mojom::WebBluetoothResult::SUCCESS,

@@ -76,11 +76,4 @@ DEFINE_TRACE(BluetoothDevice) {
   visitor->trace(m_gatt);
 }
 
-Vector<String> BluetoothDevice::uuids() {
-  Vector<String> uuids(m_webDevice->uuids.size());
-  for (size_t i = 0; i < m_webDevice->uuids.size(); ++i)
-    uuids[i] = m_webDevice->uuids[i];
-  return uuids;
-}
-
 }  // namespace blink

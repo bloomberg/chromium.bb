@@ -17,9 +17,6 @@
     readonly    attribute DOMString id;
     readonly    attribute DOMString?                 name;
     readonly    attribute BluetoothRemoteGATTServer  gatt;
-    // TODO(jyasskin): |uuids| was FrozenArray<UUID>, now removed:
-    // https://github.com/WebBluetoothCG/web-bluetooth/pull/292
-    [DeprecateAs=DeprecatedBluetoothDeviceUUIDsAttribute] readonly attribute UUID[] uuids;
 
     attribute EventHandler ongattserverdisconnected;
 };

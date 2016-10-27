@@ -95,7 +95,6 @@ struct WebBluetoothDeviceId {
 struct WebBluetoothDevice {
   WebBluetoothDeviceId id;
   string? name;
-  array<string> uuids;
 };
 
 struct WebBluetoothRemoteGATTService {

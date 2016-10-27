@@ -186,15 +186,10 @@ void WebBluetoothImpl::OnRequestDeviceComplete(
     const blink::mojom::WebBluetoothResult result,
     blink::mojom::WebBluetoothDevicePtr device) {
   if (result == blink::mojom::WebBluetoothResult::SUCCESS) {
-    blink::WebVector<blink::WebString> uuids(device->uuids.size());
-    for (size_t i = 0; i < device->uuids.size(); ++i)
-      uuids[i] = blink::WebString::fromUTF8(device->uuids[i]);
-
     callbacks->onSuccess(base::MakeUnique<blink::WebBluetoothDeviceInit>(
         blink::WebString::fromUTF8(device->id.str()),
         device->name.is_null() ? blink::WebString()
-                               : blink::WebString::fromUTF8(device->name),
-        uuids));
+                               : blink::WebString::fromUTF8(device->name)));
   } else {
     callbacks->onError(ToInt32(result));
   }

@@ -325,7 +325,6 @@ interface BluetoothDevice : EventTarget
     getter id
     getter name
     getter ongattserverdisconnected
-    getter uuids
     method constructor
     setter ongattserverdisconnected
 interface BluetoothRemoteGATTCharacteristic : EventTarget

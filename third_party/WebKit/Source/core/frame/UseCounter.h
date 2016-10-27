@@ -1358,7 +1358,6 @@ class CORE_EXPORT UseCounter {
     GamepadPoseOrientation = 1634,
     GamepadPoseAngularVelocity = 1635,
     GamepadPoseAngularAcceleration = 1636,
-    DeprecatedBluetoothDeviceUUIDsAttribute = 1637,
     V8RTCDataChannel_MaxRetransmitTime_AttributeGetter = 1638,
     V8RTCDataChannel_MaxRetransmits_AttributeGetter = 1639,
     V8RTCDataChannel_Reliable_AttributeGetter = 1640,

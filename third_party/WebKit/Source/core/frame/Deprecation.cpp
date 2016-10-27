@@ -461,12 +461,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::VRDeprecatedGetPose:
       return replacedBy("VRDisplay.getPose()", "VRDisplay.getFrameData()");
 
-    case UseCounter::DeprecatedBluetoothDeviceUUIDsAttribute:
-      return String::format(
-          "BluetoothDevice.uuids is deprecated and will be removed in %s. Use "
-          "getPrimaryServices() to retrieve all available UUIDs.",
-          milestoneString(M57));
-
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

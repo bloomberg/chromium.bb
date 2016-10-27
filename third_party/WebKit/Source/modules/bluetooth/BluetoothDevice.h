@@ -76,7 +76,6 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   String id() { return m_webDevice->id; }
   String name() { return m_webDevice->name; }
   BluetoothRemoteGATTServer* gatt() { return m_gatt; }
-  Vector<String> uuids();
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected);
 
