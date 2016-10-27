@@ -538,8 +538,8 @@ const char* SpdyFramer::ErrorCodeToString(int error_code) {
 
 const char* SpdyFramer::StatusCodeToString(int status_code) {
   switch (status_code) {
-    case RST_STREAM_INVALID:
-      return "INVALID";
+    case RST_STREAM_NO_ERROR:
+      return "NO_ERROR";
     case RST_STREAM_PROTOCOL_ERROR:
       return "PROTOCOL_ERROR";
     case RST_STREAM_INVALID_STREAM:
@@ -2107,7 +2107,7 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
         DCHECK(successful_read);
       }
 
-      SpdyRstStreamStatus status = RST_STREAM_INVALID;
+      SpdyRstStreamStatus status = RST_STREAM_NO_ERROR;
       uint32_t status_raw = status;
       bool successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);

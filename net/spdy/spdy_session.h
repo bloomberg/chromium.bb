@@ -113,7 +113,7 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE = 37,
   SPDY_ERROR_OVERSIZED_PAYLOAD = 40,
   // SpdyRstStreamStatus mappings.
-  // RST_STREAM_INVALID not mapped.
+  STATUS_CODE_NO_ERROR = 41,
   STATUS_CODE_PROTOCOL_ERROR = 11,
   STATUS_CODE_INVALID_STREAM = 12,
   STATUS_CODE_REFUSED_STREAM = 13,
@@ -140,7 +140,7 @@ enum SpdyProtocolErrorDetails {
   PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION = 28,
 
   // Next free value.
-  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 41,
+  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 42,
 };
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
     MapFramerErrorToProtocolError(SpdyFramer::SpdyError error);

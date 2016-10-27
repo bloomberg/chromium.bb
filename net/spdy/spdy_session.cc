@@ -413,6 +413,8 @@ SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
       return STATUS_CODE_INADEQUATE_SECURITY;
     case RST_STREAM_HTTP_1_1_REQUIRED:
       return STATUS_CODE_HTTP_1_1_REQUIRED;
+    case RST_STREAM_NO_ERROR:
+      return STATUS_CODE_NO_ERROR;
     default:
       NOTREACHED();
       return static_cast<SpdyProtocolErrorDetails>(-1);
@@ -2327,8 +2329,8 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
 
   CHECK_EQ(it->second.stream->stream_id(), stream_id);
 
-  if (status == 0) {
-    it->second.stream->OnDataReceived(std::unique_ptr<SpdyBuffer>());
+  if (status == RST_STREAM_NO_ERROR) {
+    CloseActiveStreamIterator(it, ERR_SPDY_RST_STREAM_NO_ERROR_RECEIVED);
   } else if (status == RST_STREAM_REFUSED_STREAM) {
     CloseActiveStreamIterator(it, ERR_SPDY_SERVER_REFUSED_STREAM);
   } else if (status == RST_STREAM_HTTP_1_1_REQUIRED) {
