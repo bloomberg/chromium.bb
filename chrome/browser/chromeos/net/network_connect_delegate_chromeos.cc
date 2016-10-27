@@ -53,7 +53,7 @@ bool NetworkConnectDelegateChromeOS::ShowEnrollNetwork(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return false;
-  return enrollment::CreateDialog(network_id, GetNativeWindow());
+  return enrollment::CreateEnrollmentDialog(network_id, GetNativeWindow());
 }
 
 void NetworkConnectDelegateChromeOS::ShowMobileSimDialog() {

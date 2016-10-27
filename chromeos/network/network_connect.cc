@@ -204,7 +204,8 @@ bool NetworkConnectImpl::MaybeShowConfigureUIImpl(
   }
 
   if (connect_error == NetworkConnectionHandler::kErrorCertificateRequired) {
-    if (!delegate_->ShowEnrollNetwork(service_path))
+    const NetworkState* network = GetNetworkState(service_path);
+    if (!network || !delegate_->ShowEnrollNetwork(network->guid()))
       HandleUnconfiguredNetwork(service_path);
     return true;
   }

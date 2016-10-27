@@ -66,11 +66,6 @@ const char kTagSimOpSetLocked[] = "setLocked";
 const char kTagSimOpSetUnlocked[] = "setUnlocked";
 const char kTagSimOpUnlock[] = "unlock";
 
-const NetworkState* GetNetworkState(const std::string& service_path) {
-  return NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-}
-
 std::string ServicePathFromGuid(const std::string& guid) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
@@ -239,11 +234,9 @@ void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
   if (args->GetSize() >= 2)
     args->GetBoolean(1, &force_show);
 
-  const std::string service_path = ServicePathFromGuid(guid);
-  if (service_path.empty())
-    return;
-
-  const NetworkState* network = GetNetworkState(service_path);
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          guid);
   if (!network)
     return;
 
@@ -259,11 +252,11 @@ void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
 
   // If a network is not connectable, show the enrollment dialog if available.
   if (!force_show && !network->connectable() &&
-      enrollment::CreateDialog(service_path, GetNativeWindow())) {
+      enrollment::CreateEnrollmentDialog(guid, GetNativeWindow())) {
     return;
   }
 
-  NetworkConfigView::ShowInParent(network->guid(), GetNativeWindow());
+  NetworkConfigView::ShowInParent(guid, GetNativeWindow());
 }
 
 }  // namespace options

@@ -17,8 +17,8 @@ namespace chromeos {
 namespace enrollment {
 
 // Returns true if a dialog was successfully created.
-bool CreateDialog(const std::string& service_path,
-                  gfx::NativeWindow owning_window);
+bool CreateEnrollmentDialog(const std::string& network_id,
+                            gfx::NativeWindow owning_window);
 
 }  // namespace enrollment
 }  // namespace chromeos

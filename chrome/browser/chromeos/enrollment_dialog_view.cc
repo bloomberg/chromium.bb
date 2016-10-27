@@ -241,8 +241,8 @@ bool DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
   return false;
 }
 
-void EnrollmentComplete(const std::string& service_path) {
-  NET_LOG_USER("Enrollment Complete", service_path);
+void EnrollmentComplete(const std::string& network_id) {
+  NET_LOG_USER("Enrollment Complete", network_id);
 }
 
 }  // namespace
@@ -252,12 +252,13 @@ void EnrollmentComplete(const std::string& service_path) {
 
 namespace enrollment {
 
-bool CreateDialog(const std::string& service_path,
-                  gfx::NativeWindow owning_window) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
+bool CreateEnrollmentDialog(const std::string& network_id,
+                            gfx::NativeWindow owning_window) {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          network_id);
   if (!network) {
-    NET_LOG_ERROR("Enrolling Unknown network", service_path);
+    NET_LOG_ERROR("Enrolling Unknown network", network_id);
     return false;
   }
   Browser* browser = chrome::FindBrowserWithWindow(owning_window);
@@ -269,7 +270,7 @@ bool CreateDialog(const std::string& service_path,
   const base::DictionaryValue* policy =
       NetworkHandler::Get()
           ->managed_network_configuration_handler()
-          ->FindPolicyByGUID(username_hash, network->guid(), &onc_source);
+          ->FindPolicyByGUID(username_hash, network_id, &onc_source);
 
   // We skip certificate patterns for device policy ONC so that an unmanaged
   // user can't get to the place where a cert is presented for them
@@ -284,19 +285,19 @@ bool CreateDialog(const std::string& service_path,
     return false;
 
   if (cert_config.pattern.Empty())
-    NET_LOG_ERROR("Certificate pattern is empty", service_path);
+    NET_LOG_ERROR("Certificate pattern is empty", network_id);
 
   if (cert_config.pattern.enrollment_uri_list().empty()) {
-    NET_LOG_EVENT("No enrollment URIs", service_path);
+    NET_LOG_EVENT("No enrollment URIs", network_id);
     return false;
   }
 
-  NET_LOG_USER("Enrolling", service_path);
+  NET_LOG_USER("Enrolling", network_id);
 
   DialogEnrollmentDelegate* enrollment =
       new DialogEnrollmentDelegate(owning_window, network->name(), profile);
   return enrollment->Enroll(cert_config.pattern.enrollment_uri_list(),
-                            base::Bind(&EnrollmentComplete, service_path));
+                            base::Bind(&EnrollmentComplete, network_id));
 }
 
 }  // namespace enrollment
