@@ -50,6 +50,7 @@ class PrerenderDispatcher : public content::RenderThreadObserver,
   void add(const blink::WebPrerender& prerender) override;
   void cancel(const blink::WebPrerender& prerender) override;
   void abandon(const blink::WebPrerender& prerender) override;
+  void prefetchFinished() override;
 
   // From WebKit, prerender elements launched by renderers in our process.
   std::map<int, blink::WebPrerender> prerenders_;

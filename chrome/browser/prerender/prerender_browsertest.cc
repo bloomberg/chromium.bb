@@ -604,6 +604,36 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
 
   ~PrerenderBrowserTest() override {}
 
+  std::unique_ptr<TestPrerender> PrerenderTestURL(
+      const std::string& html_file,
+      FinalStatus expected_final_status,
+      int expected_number_of_loads) {
+    GURL url = src_server()->GetURL(MakeAbsolute(html_file));
+    return PrerenderTestURL(url, expected_final_status,
+                            expected_number_of_loads);
+  }
+
+  std::unique_ptr<TestPrerender> PrerenderTestURL(
+      const GURL& url,
+      FinalStatus expected_final_status,
+      int expected_number_of_loads) {
+    std::vector<FinalStatus> expected_final_status_queue(1,
+                                                         expected_final_status);
+    auto prerenders = PrerenderTestURLImpl(url, expected_final_status_queue,
+                                           expected_number_of_loads);
+    CHECK_EQ(1u, prerenders.size());
+    return std::move(prerenders[0]);
+  }
+
+  std::vector<std::unique_ptr<TestPrerender>> PrerenderTestURL(
+      const std::string& html_file,
+      const std::vector<FinalStatus>& expected_final_status_queue,
+      int expected_number_of_loads) {
+    GURL url = src_server()->GetURL(MakeAbsolute(html_file));
+    return PrerenderTestURLImpl(url, expected_final_status_queue,
+                                expected_number_of_loads);
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrerenderInProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
@@ -914,27 +944,19 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   std::vector<std::unique_ptr<TestPrerender>> PrerenderTestURLImpl(
       const GURL& prerender_url,
       const std::vector<FinalStatus>& expected_final_status_queue,
-      int expected_number_of_loads) override {
+      int expected_number_of_loads) {
     dest_url_ = prerender_url;
 
-    base::StringPairs replacement_text;
-    replacement_text.push_back(
-        make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
-    std::string replacement_path;
-    net::test_server::GetFilePathWithReplacements(
-        loader_path_, replacement_text, &replacement_path);
-
-    GURL loader_url =
-        src_server()->GetURL(replacement_path + "&" + loader_query_);
-
+    GURL loader_url = ServeLoaderURL(loader_path_, "REPLACE_WITH_PRERENDER_URL",
+                                     prerender_url, "&" + loader_query_);
     GURL::Replacements loader_replacements;
     if (!loader_host_override_.empty())
       loader_replacements.SetHostStr(loader_host_override_);
     loader_url = loader_url.ReplaceComponents(loader_replacements);
 
     std::vector<std::unique_ptr<TestPrerender>> prerenders =
-        NavigateWithPrerenders(loader_url, expected_final_status_queue,
-                               expected_number_of_loads);
+        NavigateWithPrerenders(loader_url, expected_final_status_queue);
+    prerenders[0]->WaitForLoads(expected_number_of_loads);
 
     FinalStatus expected_final_status = expected_final_status_queue.front();
     if (ShouldAbortPrerenderBeforeSwap(expected_final_status)) {

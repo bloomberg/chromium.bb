@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/prerender_messages.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -45,6 +47,8 @@ class ShutdownNotifierFactory
 PrerenderMessageFilter::PrerenderMessageFilter(int render_process_id,
                                                Profile* profile)
     : BrowserMessageFilter(PrerenderMsgStart),
+      prerender_manager_(
+          PrerenderManagerFactory::GetForBrowserContext(profile)),
       render_process_id_(render_process_id),
       prerender_link_manager_(
           PrerenderLinkManagerFactory::GetForProfile(profile)) {
@@ -71,6 +75,7 @@ bool PrerenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         PrerenderHostMsg_CancelLinkRelPrerender, OnCancelPrerender)
     IPC_MESSAGE_HANDLER(
         PrerenderHostMsg_AbandonLinkRelPrerender, OnAbandonPrerender)
+    IPC_MESSAGE_HANDLER(PrerenderHostMsg_PrefetchFinished, OnPrefetchFinished)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -81,7 +86,8 @@ void PrerenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, content::BrowserThread::ID* thread) {
   if (message.type() == PrerenderHostMsg_AddLinkRelPrerender::ID ||
       message.type() == PrerenderHostMsg_CancelLinkRelPrerender::ID ||
-      message.type() == PrerenderHostMsg_AbandonLinkRelPrerender::ID) {
+      message.type() == PrerenderHostMsg_AbandonLinkRelPrerender::ID ||
+      message.type() == PrerenderHostMsg_PrefetchFinished::ID) {
     *thread = BrowserThread::UI;
   }
 }
@@ -126,6 +132,19 @@ void PrerenderMessageFilter::OnAbandonPrerender(
   if (!prerender_link_manager_)
     return;
   prerender_link_manager_->OnAbandonPrerender(render_process_id_, prerender_id);
+}
+
+void PrerenderMessageFilter::OnPrefetchFinished() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(prerender_manager_);
+  // Kill the process doing the prefetch. Only one prefetch per renderer is
+  // possible, also prefetches are not shared with other renderer processes.
+  if (prerender_manager_) {
+    PrerenderContents* prerender_contents =
+        prerender_manager_->GetPrerenderContentsForProcess(render_process_id_);
+    if (prerender_contents)
+      prerender_contents->Destroy(FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  }
 }
 
 void PrerenderMessageFilter::ShutdownOnUIThread() {

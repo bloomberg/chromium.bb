@@ -46,6 +46,10 @@ IPC_MESSAGE_CONTROL1(PrerenderHostMsg_CancelLinkRelPrerender,
 IPC_MESSAGE_CONTROL1(PrerenderHostMsg_AbandonLinkRelPrerender,
                      int /* prerender_id, assigned by WebPrerendererClient */)
 
+// Sent by the renderer process to notify that the resource prefetcher has
+// discovered all possible subresources and issued requests for them.
+IPC_MESSAGE_CONTROL0(PrerenderHostMsg_PrefetchFinished)
+
 // PrerenderDispatcher Messages
 // These are messages sent from the browser to the renderer in relation to
 // running prerenders.
