@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/custom_button.h"
 
 namespace ash {
 class SystemTrayItem;
@@ -18,7 +18,11 @@ class SystemTrayItem;
 // moves the mouse out of the view and then releases, then the action will not
 // be performed.
 // Exported for SystemTray.
-class ASH_EXPORT ActionableView : public views::View {
+//
+// TODO(bruthig): Consider removing ActionableView and make clients use
+// CustomButtons instead. (See crbug.com/614453)
+class ASH_EXPORT ActionableView : public views::ButtonListener,
+                                  public views::CustomButton {
  public:
   static const char kViewClassName[];
 
@@ -47,25 +51,26 @@ class ASH_EXPORT ActionableView : public views::View {
   // been handled and an action was performed. Returns false otherwise.
   virtual bool PerformAction(const ui::Event& event) = 0;
 
-  // Overridden from views::View.
+  // Overridden from views::CustomButton.
   const char* GetClassName() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
   void GetAccessibleState(ui::AXViewState* state) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
 
-  // Overridden from ui::EventHandler.
-  void OnGestureEvent(ui::GestureEvent* event) override;
+  // Overridden from views::ButtonListener.
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
+  // Used by ButtonPressed() to determine whether |this| has been destroyed as a
+  // result of performing the associated action. This is necessary because in
+  // the not-destroyed case ButtonPressed() uses member variables.
+  bool* destroyed_;
+
   SystemTrayItem* owner_;
 
   base::string16 accessible_name_;
-  bool has_capture_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionableView);
 };

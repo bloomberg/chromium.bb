@@ -29,7 +29,6 @@ namespace tray {
 class VolumeButton;
 
 class VolumeView : public ActionableView,
-                   public views::ButtonListener,
                    public views::SliderListener {
  public:
   VolumeView(SystemTrayItem* owner,
@@ -49,9 +48,6 @@ class VolumeView : public ActionableView,
   void HandleVolumeUp(float percent);
   void HandleVolumeDown(float percent);
 
-  // Overridden from views::ButtonListener.
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // Overridden from views::SliderListener.
   void SliderValueChanged(views::Slider* sender,
                           float value,
@@ -60,6 +56,7 @@ class VolumeView : public ActionableView,
 
   // Overriden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

@@ -22,8 +22,7 @@ namespace ash {
 // Adds a logout button to the launcher's status area if enabled by the
 // kShowLogoutButtonInTray pref.
 class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
-                                    public LogoutButtonObserver,
-                                    public views::ButtonListener {
+                                    public LogoutButtonObserver {
  public:
   explicit LogoutButtonTray(WmShelf* wm_shelf);
   ~LogoutButtonTray() override;
@@ -33,13 +32,11 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // LogoutButtonObserver:
   void OnShowLogoutButtonInTrayChanged(bool show) override;
   void OnLogoutDialogDurationChanged(base::TimeDelta duration) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void UpdateAfterLoginStatusChange(LoginStatus login_status);
 

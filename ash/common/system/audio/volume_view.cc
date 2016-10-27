@@ -297,7 +297,11 @@ void VolumeView::HandleVolumeDown(float level) {
 }
 
 void VolumeView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  CHECK(sender == icon_);
+  if (sender != icon_) {
+    ActionableView::ButtonPressed(sender, event);
+    return;
+  }
+
   bool mute_on = !audio_delegate_->IsOutputAudioMuted();
   audio_delegate_->SetOutputAudioIsMuted(mute_on);
   if (!mute_on)

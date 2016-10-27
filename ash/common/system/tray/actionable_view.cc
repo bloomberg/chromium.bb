@@ -7,8 +7,11 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 
 namespace ash {
 
@@ -16,11 +19,15 @@ namespace ash {
 const char ActionableView::kViewClassName[] = "tray/ActionableView";
 
 ActionableView::ActionableView(SystemTrayItem* owner)
-    : owner_(owner), has_capture_(false) {
+    : views::CustomButton(this), destroyed_(nullptr), owner_(owner) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  set_has_ink_drop_action_on_click(false);
 }
 
-ActionableView::~ActionableView() {}
+ActionableView::~ActionableView() {
+  if (destroyed_)
+    *destroyed_ = true;
+}
 
 void ActionableView::OnPaintFocus(gfx::Canvas* canvas) {
   gfx::Rect rect(GetFocusBounds());
@@ -37,26 +44,11 @@ const char* ActionableView::GetClassName() const {
 }
 
 bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_SPACE ||
-      event.key_code() == ui::VKEY_RETURN) {
-    return PerformAction(event);
+  if (state() != STATE_DISABLED && event.key_code() == ui::VKEY_SPACE) {
+    NotifyClick(event);
+    return true;
   }
-  return false;
-}
-
-bool ActionableView::OnMousePressed(const ui::MouseEvent& event) {
-  // Return true so that this view starts capturing the events.
-  has_capture_ = true;
-  return true;
-}
-
-void ActionableView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (has_capture_ && GetLocalBounds().Contains(event.location()))
-    PerformAction(event);
-}
-
-void ActionableView::OnMouseCaptureLost() {
-  has_capture_ = false;
+  return CustomButton::OnKeyPressed(event);
 }
 
 void ActionableView::SetAccessibleName(const base::string16& name) {
@@ -69,31 +61,43 @@ void ActionableView::GetAccessibleState(ui::AXViewState* state) {
 }
 
 void ActionableView::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
+  CustomButton::OnPaint(canvas);
   if (HasFocus())
     OnPaintFocus(canvas);
 }
 
 void ActionableView::OnFocus() {
-  View::OnFocus();
+  CustomButton::OnFocus();
   // We render differently when focused.
   SchedulePaint();
 }
 
 void ActionableView::OnBlur() {
-  View::OnBlur();
+  CustomButton::OnBlur();
   // We render differently when focused.
   SchedulePaint();
-}
-
-void ActionableView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP && PerformAction(*event))
-    event->SetHandled();
 }
 
 void ActionableView::CloseSystemBubble() {
   DCHECK(owner_);
   owner_->system_tray()->CloseSystemBubble();
+}
+
+void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {
+  bool destroyed = false;
+  destroyed_ = &destroyed;
+  const bool action_performed = PerformAction(event);
+  if (destroyed)
+    return;
+  destroyed_ = nullptr;
+
+  if (action_performed) {
+    AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED,
+                   ui::LocatedEvent::FromIfValid(&event));
+  } else {
+    AnimateInkDrop(views::InkDropState::HIDDEN,
+                   ui::LocatedEvent::FromIfValid(&event));
+  }
 }
 
 }  // namespace ash

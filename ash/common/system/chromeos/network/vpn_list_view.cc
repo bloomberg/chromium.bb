@@ -75,8 +75,7 @@ class VPNListProviderEntry : public VPNListEntryBase {
 // network is currently connected, a disconnect button will be shown next to its
 // name.
 class VPNListNetworkEntry : public VPNListEntryBase,
-                            public network_icon::AnimationObserver,
-                            public views::ButtonListener {
+                            public network_icon::AnimationObserver {
  public:
   VPNListNetworkEntry(VPNListView* parent,
                       const chromeos::NetworkState* network);
@@ -85,7 +84,7 @@ class VPNListNetworkEntry : public VPNListEntryBase,
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 
-  // views::ButtonListener:
+  // Overriden from ActionableView.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
@@ -148,6 +147,11 @@ void VPNListNetworkEntry::NetworkIconChanged() {
 
 void VPNListNetworkEntry::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
+  if (sender != disconnect_button_) {
+    ActionableView::ButtonPressed(sender, event);
+    return;
+  }
+
   WmShell::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_VPN_DISCONNECT_CLICKED);
   chromeos::NetworkHandler::Get()
