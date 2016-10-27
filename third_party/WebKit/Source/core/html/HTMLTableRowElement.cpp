@@ -55,6 +55,16 @@ const QualifiedName& HTMLTableRowElement::subResourceAttributeName() const {
   return backgroundAttr;
 }
 
+static int findIndexInRowCollection(const HTMLCollection& rows,
+                                    const HTMLTableRowElement& target) {
+  Element* candidate = rows.item(0);
+  for (int i = 0; candidate; i++, candidate = rows.item(i)) {
+    if (target == candidate)
+      return i;
+  }
+  return -1;
+}
+
 int HTMLTableRowElement::rowIndex() const {
   ContainerNode* maybeTable = parentNode();
   if (maybeTable && isHTMLTableSectionElement(maybeTable)) {
@@ -63,31 +73,22 @@ int HTMLTableRowElement::rowIndex() const {
   }
   if (!(maybeTable && isHTMLTableElement(maybeTable)))
     return -1;
-
-  HTMLTableRowsCollection* rows = toHTMLTableElement(maybeTable)->rows();
-  HTMLTableRowElement* candidate = rows->item(0);
-  for (int i = 0; candidate; i++, candidate = rows->item(i)) {
-    if (this == candidate)
-      return i;
-  }
-
-  return -1;
+  return findIndexInRowCollection(*toHTMLTableElement(maybeTable)->rows(),
+                                  *this);
 }
 
 int HTMLTableRowElement::sectionRowIndex() const {
   ContainerNode* maybeTable = parentNode();
-  if (!(maybeTable && (isHTMLTableSectionElement(maybeTable) ||
-                       isHTMLTableElement(maybeTable))))
+  if (!maybeTable)
     return -1;
-  int rIndex = 0;
-  const Node* n = this;
-  do {
-    n = n->previousSibling();
-    if (n && isHTMLTableRowElement(*n))
-      ++rIndex;
-  } while (n);
-
-  return rIndex;
+  HTMLCollection* rows = nullptr;
+  if (isHTMLTableSectionElement(maybeTable))
+    rows = toHTMLTableSectionElement(maybeTable)->rows();
+  else if (isHTMLTableElement(maybeTable))
+    rows = toHTMLTableElement(maybeTable)->rows();
+  if (!rows)
+    return -1;
+  return findIndexInRowCollection(*rows, *this);
 }
 
 HTMLElement* HTMLTableRowElement::insertCell(int index,
