@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/input/top_controls_manager.h"
+#include "cc/input/browser_controls_offset_manager.h"
 
 #include <stdint.h>
 
@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/input/top_controls_manager_client.h"
+#include "cc/input/browser_controls_offset_manager_client.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/animation/tween.h"
@@ -25,17 +25,18 @@ const int64_t kShowHideMaxDurationMs = 200;
 }
 
 // static
-std::unique_ptr<TopControlsManager> TopControlsManager::Create(
-    TopControlsManagerClient* client,
-    float top_controls_show_threshold,
-    float top_controls_hide_threshold) {
-  return base::WrapUnique(new TopControlsManager(
-      client, top_controls_show_threshold, top_controls_hide_threshold));
+std::unique_ptr<BrowserControlsOffsetManager>
+BrowserControlsOffsetManager::Create(BrowserControlsOffsetManagerClient* client,
+                                     float controls_show_threshold,
+                                     float controls_hide_threshold) {
+  return base::WrapUnique(new BrowserControlsOffsetManager(
+      client, controls_show_threshold, controls_hide_threshold));
 }
 
-TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
-                                       float top_controls_show_threshold,
-                                       float top_controls_hide_threshold)
+BrowserControlsOffsetManager::BrowserControlsOffsetManager(
+    BrowserControlsOffsetManagerClient* client,
+    float controls_show_threshold,
+    float controls_hide_threshold)
     : client_(client),
       animation_start_value_(0.f),
       animation_stop_value_(0.f),
@@ -43,46 +44,52 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
       permitted_state_(BOTH),
       accumulated_scroll_delta_(0.f),
       baseline_content_offset_(0.f),
-      top_controls_show_threshold_(top_controls_hide_threshold),
-      top_controls_hide_threshold_(top_controls_show_threshold),
+      controls_show_threshold_(controls_hide_threshold),
+      controls_hide_threshold_(controls_show_threshold),
       pinch_gesture_active_(false) {
   CHECK(client_);
 }
 
-TopControlsManager::~TopControlsManager() {
-}
+BrowserControlsOffsetManager::~BrowserControlsOffsetManager() {}
 
-float TopControlsManager::ControlsTopOffset() const {
+float BrowserControlsOffsetManager::ControlsTopOffset() const {
   return ContentTopOffset() - TopControlsHeight();
 }
 
-float TopControlsManager::ContentTopOffset() const {
+float BrowserControlsOffsetManager::ContentTopOffset() const {
   return TopControlsShownRatio() * TopControlsHeight();
 }
 
-float TopControlsManager::TopControlsShownRatio() const {
-  return client_->CurrentTopControlsShownRatio();
+float BrowserControlsOffsetManager::ContentOffsetInternal() const {
+  if (!TopControlsHeight())
+    return BottomControlsShownRatio() * BottomControlsHeight();
+  return ContentTopOffset();
 }
 
-float TopControlsManager::TopControlsHeight() const {
+float BrowserControlsOffsetManager::TopControlsShownRatio() const {
+  return client_->CurrentBrowserControlsShownRatio();
+}
+
+float BrowserControlsOffsetManager::TopControlsHeight() const {
   return client_->TopControlsHeight();
 }
 
-float TopControlsManager::BottomControlsHeight() const {
+float BrowserControlsOffsetManager::BottomControlsHeight() const {
   return client_->BottomControlsHeight();
 }
 
-float TopControlsManager::ContentBottomOffset() const {
-  return TopControlsShownRatio() * BottomControlsHeight();
+float BrowserControlsOffsetManager::ContentBottomOffset() const {
+  return BottomControlsShownRatio() * BottomControlsHeight();
 }
 
-float TopControlsManager::BottomControlsShownRatio() const {
+float BrowserControlsOffsetManager::BottomControlsShownRatio() const {
   return TopControlsShownRatio();
 }
 
-void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
-                                                TopControlsState current,
-                                                bool animate) {
+void BrowserControlsOffsetManager::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
   DCHECK(!(constraints == SHOWN && current == HIDDEN));
   DCHECK(!(constraints == HIDDEN && current == SHOWN));
 
@@ -105,11 +112,11 @@ void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
     SetupAnimation(final_shown_ratio ? SHOWING_CONTROLS : HIDING_CONTROLS);
   } else {
     ResetAnimations();
-    client_->SetCurrentTopControlsShownRatio(final_shown_ratio);
+    client_->SetCurrentBrowserControlsShownRatio(final_shown_ratio);
   }
 }
 
-void TopControlsManager::ScrollBegin() {
+void BrowserControlsOffsetManager::ScrollBegin() {
   if (pinch_gesture_active_)
     return;
 
@@ -117,9 +124,14 @@ void TopControlsManager::ScrollBegin() {
   ResetBaseline();
 }
 
-gfx::Vector2dF TopControlsManager::ScrollBy(
+gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
     const gfx::Vector2dF& pending_delta) {
-  if (!TopControlsHeight())
+  // If one or both of the top/bottom controls are showing, the shown ratio
+  // needs to be computed.
+  float controls_height =
+      TopControlsHeight() ? TopControlsHeight() : BottomControlsHeight();
+
+  if (!controls_height)
     return pending_delta;
 
   if (pinch_gesture_active_)
@@ -132,10 +144,9 @@ gfx::Vector2dF TopControlsManager::ScrollBy(
 
   accumulated_scroll_delta_ += pending_delta.y();
 
-  float old_offset = ContentTopOffset();
-  client_->SetCurrentTopControlsShownRatio(
-      (baseline_content_offset_ - accumulated_scroll_delta_) /
-      TopControlsHeight());
+  float old_offset = ContentOffsetInternal();
+  client_->SetCurrentBrowserControlsShownRatio(
+      (baseline_content_offset_ - accumulated_scroll_delta_) / controls_height);
 
   // If the controls are fully visible, treat the current position as the
   // new baseline even if the gesture didn't end.
@@ -144,24 +155,24 @@ gfx::Vector2dF TopControlsManager::ScrollBy(
 
   ResetAnimations();
 
-  gfx::Vector2dF applied_delta(0.f, old_offset - ContentTopOffset());
+  gfx::Vector2dF applied_delta(0.f, old_offset - ContentOffsetInternal());
   return pending_delta - applied_delta;
 }
 
-void TopControlsManager::ScrollEnd() {
+void BrowserControlsOffsetManager::ScrollEnd() {
   if (pinch_gesture_active_)
     return;
 
   StartAnimationIfNecessary();
 }
 
-void TopControlsManager::PinchBegin() {
+void BrowserControlsOffsetManager::PinchBegin() {
   DCHECK(!pinch_gesture_active_);
   pinch_gesture_active_ = true;
   StartAnimationIfNecessary();
 }
 
-void TopControlsManager::PinchEnd() {
+void BrowserControlsOffsetManager::PinchEnd() {
   DCHECK(pinch_gesture_active_);
   // Pinch{Begin,End} will always occur within the scope of Scroll{Begin,End},
   // so return to a state expected by the remaining scroll sequence.
@@ -169,28 +180,29 @@ void TopControlsManager::PinchEnd() {
   ScrollBegin();
 }
 
-void TopControlsManager::MainThreadHasStoppedFlinging() {
+void BrowserControlsOffsetManager::MainThreadHasStoppedFlinging() {
   StartAnimationIfNecessary();
 }
 
-gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
+gfx::Vector2dF BrowserControlsOffsetManager::Animate(
+    base::TimeTicks monotonic_time) {
   if (!has_animation() || !client_->HaveRootScrollLayer())
     return gfx::Vector2dF();
 
-  float old_offset = ContentTopOffset();
+  float old_offset = ContentOffsetInternal();
   float new_ratio = gfx::Tween::ClampedFloatValueBetween(
       monotonic_time, animation_start_time_, animation_start_value_,
       animation_stop_time_, animation_stop_value_);
-  client_->SetCurrentTopControlsShownRatio(new_ratio);
+  client_->SetCurrentBrowserControlsShownRatio(new_ratio);
 
   if (IsAnimationComplete(new_ratio))
     ResetAnimations();
 
-  gfx::Vector2dF scroll_delta(0.f, ContentTopOffset() - old_offset);
+  gfx::Vector2dF scroll_delta(0.f, ContentOffsetInternal() - old_offset);
   return scroll_delta;
 }
 
-void TopControlsManager::ResetAnimations() {
+void BrowserControlsOffsetManager::ResetAnimations() {
   animation_start_time_ = base::TimeTicks();
   animation_start_value_ = 0.f;
   animation_stop_time_ = base::TimeTicks();
@@ -199,7 +211,8 @@ void TopControlsManager::ResetAnimations() {
   animation_direction_ = NO_ANIMATION;
 }
 
-void TopControlsManager::SetupAnimation(AnimationDirection direction) {
+void BrowserControlsOffsetManager::SetupAnimation(
+    AnimationDirection direction) {
   DCHECK_NE(NO_ANIMATION, direction);
   DCHECK(direction != HIDING_CONTROLS || TopControlsShownRatio() > 0.f);
   DCHECK(direction != SHOWING_CONTROLS || TopControlsShownRatio() < 1.f);
@@ -207,8 +220,8 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   if (has_animation() && animation_direction_ == direction)
     return;
 
-  if (!TopControlsHeight()) {
-    client_->SetCurrentTopControlsShownRatio(
+  if (!TopControlsHeight() && !BottomControlsHeight()) {
+    client_->SetCurrentBrowserControlsShownRatio(
         direction == HIDING_CONTROLS ? 0.f : 1.f);
     return;
   }
@@ -223,17 +236,17 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   animation_stop_value_ = animation_start_value_ + max_ending_ratio;
 
   animation_direction_ = direction;
-  client_->DidChangeTopControlsPosition();
+  client_->DidChangeBrowserControlsPosition();
 }
 
-void TopControlsManager::StartAnimationIfNecessary() {
+void BrowserControlsOffsetManager::StartAnimationIfNecessary() {
   if (TopControlsShownRatio() == 0.f || TopControlsShownRatio() == 1.f)
     return;
 
-  if (TopControlsShownRatio() >= 1.f - top_controls_hide_threshold_) {
+  if (TopControlsShownRatio() >= 1.f - controls_hide_threshold_) {
     // If we're showing so much that the hide threshold won't trigger, show.
     SetupAnimation(SHOWING_CONTROLS);
-  } else if (TopControlsShownRatio() <= top_controls_show_threshold_) {
+  } else if (TopControlsShownRatio() <= controls_show_threshold_) {
     // If we're showing so little that the show threshold won't trigger, hide.
     SetupAnimation(HIDING_CONTROLS);
   } else {
@@ -245,14 +258,14 @@ void TopControlsManager::StartAnimationIfNecessary() {
   }
 }
 
-bool TopControlsManager::IsAnimationComplete(float new_ratio) {
+bool BrowserControlsOffsetManager::IsAnimationComplete(float new_ratio) {
   return (animation_direction_ == SHOWING_CONTROLS && new_ratio >= 1.f) ||
          (animation_direction_ == HIDING_CONTROLS && new_ratio <= 0.f);
 }
 
-void TopControlsManager::ResetBaseline() {
+void BrowserControlsOffsetManager::ResetBaseline() {
   accumulated_scroll_delta_ = 0.f;
-  baseline_content_offset_ = ContentTopOffset();
+  baseline_content_offset_ = ContentOffsetInternal();
 }
 
 }  // namespace cc

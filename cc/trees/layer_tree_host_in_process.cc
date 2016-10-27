@@ -886,13 +886,13 @@ const base::WeakPtr<InputHandler>& LayerTreeHostInProcess::GetInputHandler()
   return input_handler_weak_ptr_;
 }
 
-void LayerTreeHostInProcess::UpdateTopControlsState(
-    TopControlsState constraints,
-    TopControlsState current,
+void LayerTreeHostInProcess::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
     bool animate) {
-  // Top controls are only used in threaded or remote mode.
+  // Browser controls are only used in threaded or remote mode.
   DCHECK(IsThreaded() || IsRemoteServer());
-  proxy_->UpdateTopControlsState(constraints, current, animate);
+  proxy_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
 void LayerTreeHostInProcess::AnimateLayers(base::TimeTicks monotonic_time) {

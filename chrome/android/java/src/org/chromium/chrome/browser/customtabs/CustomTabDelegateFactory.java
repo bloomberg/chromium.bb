@@ -15,12 +15,12 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
-import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
@@ -136,26 +136,26 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         }
     }
 
-    private final boolean mShouldHideTopControls;
+    private final boolean mShouldHideBrowserControls;
     private final boolean mIsOpenedByChrome;
 
     private ExternalNavigationDelegateImpl mNavigationDelegate;
     private ExternalNavigationHandler mNavigationHandler;
 
     /**
-     * @param shouldHideTopControls Whether or not the top controls may auto-hide.
+     * @param shouldHideBrowserControls Whether or not the browser controls may auto-hide.
      */
-    public CustomTabDelegateFactory(boolean shouldHideTopControls, boolean isOpenedByChrome) {
-        mShouldHideTopControls = shouldHideTopControls;
+    public CustomTabDelegateFactory(boolean shouldHideBrowserControls, boolean isOpenedByChrome) {
+        mShouldHideBrowserControls = shouldHideBrowserControls;
         mIsOpenedByChrome = isOpenedByChrome;
     }
 
     @Override
-    public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
-        return new TopControlsVisibilityDelegate(tab) {
+    public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
+        return new BrowserControlsVisibilityDelegate(tab) {
             @Override
-            public boolean isHidingTopControlsEnabled() {
-                return mShouldHideTopControls && super.isHidingTopControlsEnabled();
+            public boolean isHidingBrowserControlsEnabled() {
+                return mShouldHideBrowserControls && super.isHidingBrowserControlsEnabled();
             }
         };
     }

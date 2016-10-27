@@ -82,9 +82,9 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -243,28 +243,29 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
     }
 
-    private class TabbedModeTopControlsVisibilityDelegate extends TopControlsVisibilityDelegate {
-        public TabbedModeTopControlsVisibilityDelegate(Tab tab) {
+    private class TabbedModeBrowserControlsVisibilityDelegate
+            extends BrowserControlsVisibilityDelegate {
+        public TabbedModeBrowserControlsVisibilityDelegate(Tab tab) {
             super(tab);
         }
 
         @Override
-        public boolean isShowingTopControlsEnabled() {
+        public boolean isShowingBrowserControlsEnabled() {
             if (mVrShellDelegate.isInVR()) return false;
-            return super.isShowingTopControlsEnabled();
+            return super.isShowingBrowserControlsEnabled();
         }
 
         @Override
-        public boolean isHidingTopControlsEnabled() {
+        public boolean isHidingBrowserControlsEnabled() {
             if (mVrShellDelegate.isInVR()) return true;
-            return super.isHidingTopControlsEnabled();
+            return super.isHidingBrowserControlsEnabled();
         }
     }
 
     private class TabbedModeTabDelegateFactory extends TabDelegateFactory {
         @Override
-        public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
-            return new TabbedModeTopControlsVisibilityDelegate(tab);
+        public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
+            return new TabbedModeBrowserControlsVisibilityDelegate(tab);
         }
     }
 

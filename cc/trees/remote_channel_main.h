@@ -30,9 +30,9 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
   ~RemoteChannelMain() override;
 
   // ChannelMain implementation
-  void UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                    TopControlsState current,
-                                    bool animate) override;
+  void UpdateBrowserControlsStateOnImpl(BrowserControlsState constraints,
+                                        BrowserControlsState current,
+                                        bool animate) override;
   void InitializeCompositorFrameSinkOnImpl(CompositorFrameSink*) override;
   void InitializeMutatorOnImpl(
       std::unique_ptr<LayerTreeMutator> mutator) override;

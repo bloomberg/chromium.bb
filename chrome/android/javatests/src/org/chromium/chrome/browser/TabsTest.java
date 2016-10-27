@@ -312,7 +312,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         assertEquals(expectedWidth, innerWidth);
 
-        // Height can be affected by top controls so just make sure it's non-0.
+        // Height can be affected by browser controls so just make sure it's non-0.
         assertTrue("innerHeight was not set by page load time", innerHeight > 0);
     }
 

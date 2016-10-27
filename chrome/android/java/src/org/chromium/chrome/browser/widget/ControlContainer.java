@@ -10,7 +10,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandl
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
- * Interface that defines the responsibilities of the layout container for the top controls.
+ * Interface that defines the responsibilities of the layout container for the browser controls.
  * <p>
  * Concrete implementations of this class must extend ViewGroup.
  */

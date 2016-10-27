@@ -21,9 +21,9 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
 #include "cc/debug/micro_benchmark_controller_impl.h"
+#include "cc/input/browser_controls_offset_manager_client.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar_animation_controller.h"
-#include "cc/input/top_controls_manager_client.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/begin_frame_args.h"
@@ -52,6 +52,7 @@ namespace cc {
 
 class AnimationEvents;
 class AnimationHost;
+class BrowserControlsOffsetManager;
 class CompletionEvent;
 class CompositorFrameMetadata;
 class CompositorFrameSink;
@@ -77,7 +78,6 @@ class SwapPromiseMonitor;
 class SynchronousTaskGraphRunner;
 class TaskGraphRunner;
 class TextureMailboxDeleter;
-class TopControlsManager;
 class UIResourceBitmap;
 class UIResourceRequest;
 struct ScrollAndScaleSet;
@@ -137,7 +137,7 @@ class CC_EXPORT LayerTreeHostImpl
     : public InputHandler,
       public TileManagerClient,
       public CompositorFrameSinkClient,
-      public TopControlsManagerClient,
+      public BrowserControlsOffsetManagerClient,
       public ScrollbarAnimationControllerClient,
       public VideoFrameControllerClient,
       public LayerTreeMutatorClient,
@@ -205,12 +205,12 @@ class CC_EXPORT LayerTreeHostImpl
                                gfx::ScrollOffset* offset) override;
   bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) override;
 
-  // TopControlsManagerClient implementation.
+  // BrowserControlsOffsetManagerClient implementation.
   float TopControlsHeight() const override;
   float BottomControlsHeight() const override;
-  void SetCurrentTopControlsShownRatio(float offset) override;
-  float CurrentTopControlsShownRatio() const override;
-  void DidChangeTopControlsPosition() override;
+  void SetCurrentBrowserControlsShownRatio(float offset) override;
+  float CurrentBrowserControlsShownRatio() const override;
+  void DidChangeBrowserControlsPosition() override;
   bool HaveRootScrollLayer() const override;
 
   void UpdateViewportContainerSizes();
@@ -473,8 +473,8 @@ class CC_EXPORT LayerTreeHostImpl
   MemoryHistory* memory_history() { return memory_history_.get(); }
   DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
   ResourceProvider* resource_provider() { return resource_provider_.get(); }
-  TopControlsManager* top_controls_manager() {
-    return top_controls_manager_.get();
+  BrowserControlsOffsetManager* browser_controls_manager() {
+    return browser_controls_offset_manager_.get();
   }
   const GlobalStateThatImpactsTilePriority& global_tile_state() {
     return global_tile_state_;
@@ -654,7 +654,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);
-  bool AnimateTopControls(base::TimeTicks monotonic_time);
+  bool AnimateBrowserControls(base::TimeTicks monotonic_time);
 
   void TrackDamageForAllSurfaces(
       const LayerImplList& render_surface_layer_list);
@@ -767,7 +767,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool pinch_gesture_active_;
   bool pinch_gesture_end_should_clear_scrolling_layer_;
 
-  std::unique_ptr<TopControlsManager> top_controls_manager_;
+  std::unique_ptr<BrowserControlsOffsetManager>
+      browser_controls_offset_manager_;
 
   std::unique_ptr<PageScaleAnimation> page_scale_animation_;
 

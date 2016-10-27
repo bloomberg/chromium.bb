@@ -681,9 +681,9 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       target_url_status_(TARGET_NONE),
       uses_temporary_zoom_level_(false),
 #if defined(OS_ANDROID)
-      top_controls_constraints_(TOP_CONTROLS_STATE_BOTH),
+      top_controls_constraints_(BROWSER_CONTROLS_STATE_BOTH),
 #endif
-      top_controls_shrink_blink_size_(false),
+      browser_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
       webview_(nullptr),
       has_scrolled_focused_editable_node_into_rect_(false),
@@ -1363,8 +1363,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetHistoryOffsetAndLength)
 
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
-                        OnUpdateTopControlsState)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserControlsState,
+                        OnUpdateBrowserControlsState)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtractSmartClipData, OnExtractSmartClipData)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedText,
@@ -2395,8 +2395,8 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
     resize_params.screen_info = screen_info_;
     resize_params.new_size = new_size;
     resize_params.physical_backing_size = physical_backing_size_;
-    resize_params.top_controls_shrink_blink_size =
-        top_controls_shrink_blink_size_;
+    resize_params.browser_controls_shrink_blink_size =
+        browser_controls_shrink_blink_size_;
     resize_params.top_controls_height = top_controls_height_;
     resize_params.visible_viewport_size = visible_viewport_size_;
     resize_params.is_fullscreen_granted = is_fullscreen_granted();
@@ -2496,9 +2496,9 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
 }
 
 void RenderViewImpl::ResizeWebWidget() {
-    webview()->resizeWithTopControls(GetSizeForWebWidget(),
-                                     top_controls_height_,
-                                     top_controls_shrink_blink_size_);
+  webview()->resizeWithBrowserControls(GetSizeForWebWidget(),
+                                       top_controls_height_,
+                                       browser_controls_shrink_blink_size_);
 }
 
 void RenderViewImpl::OnResize(const ResizeParams& params) {
@@ -2519,7 +2519,8 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
 
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
 
-  top_controls_shrink_blink_size_ = params.top_controls_shrink_blink_size;
+  browser_controls_shrink_blink_size_ =
+      params.browser_controls_shrink_blink_size;
   top_controls_height_ = params.top_controls_height;
 
   RenderWidget::OnResize(params);
@@ -2955,7 +2956,7 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.new_size = size();
   params.visible_viewport_size = visible_viewport_size_;
   params.physical_backing_size = gfx::ScaleToCeiledSize(size(), factor);
-  params.top_controls_shrink_blink_size = false;
+  params.browser_controls_shrink_blink_size = false;
   params.top_controls_height = 0.f;
   params.is_fullscreen_granted = is_fullscreen_granted();
   params.display_mode = display_mode_;

@@ -41,13 +41,13 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/ErrorEvent.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/Settings.h"
-#include "core/frame/TopControls.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -166,7 +166,7 @@ FrameView::FrameView(LocalFrame* frame)
       m_inputEventsScaleFactorForEmulation(1),
       m_layoutSizeFixedToFrameSize(true),
       m_didScrollTimer(this, &FrameView::didScrollTimerFired),
-      m_topControlsViewportAdjustment(0),
+      m_browserControlsViewportAdjustment(0),
       m_needsUpdateWidgetGeometries(false),
       m_needsUpdateViewportIntersection(true),
       m_needsUpdateViewportIntersectionInSubtree(true),
@@ -1299,14 +1299,14 @@ FloatSize FrameView::viewportSizeForViewportUnits() const {
   // so that we get correct results on mobile where the page is laid out into
   // a rect that may be larger than the viewport (e.g. the 980px fallback
   // width for desktop pages). Since the layout height is statically set to
-  // be the viewport with top controls showing, we add the top controls
+  // be the viewport with browser controls showing, we add the browser controls
   // height, compensating for page scale as well, since we want to use the
-  // viewport with top controls hidden for vh (to match Safari).
-  TopControls& topControls = m_frame->host()->topControls();
+  // viewport with browser controls hidden for vh (to match Safari).
+  BrowserControls& browserControls = m_frame->host()->browserControls();
   if (m_frame->isMainFrame() && size.width()) {
     float pageScaleAtLayoutWidth =
         m_frame->host()->visualViewport().size().width() / size.width();
-    size.expand(0, topControls.height() / pageScaleAtLayoutWidth);
+    size.expand(0, browserControls.height() / pageScaleAtLayoutWidth);
   }
 
   size.scale(1 / zoom);
@@ -3454,8 +3454,8 @@ void FrameView::didAddScrollbar(Scrollbar& scrollbar,
   ScrollableArea::didAddScrollbar(scrollbar, orientation);
 }
 
-void FrameView::setTopControlsViewportAdjustment(float adjustment) {
-  m_topControlsViewportAdjustment = adjustment;
+void FrameView::setBrowserControlsViewportAdjustment(float adjustment) {
+  m_browserControlsViewportAdjustment = adjustment;
 }
 
 IntSize FrameView::maximumScrollOffsetInt() const {
@@ -3463,7 +3463,7 @@ IntSize FrameView::maximumScrollOffsetInt() const {
   // FIXME: We probably shouldn't be storing the bounds in a float.
   // crbug.com/422331.
   IntSize visibleSize =
-      visibleContentSize(ExcludeScrollbars) + topControlsSize();
+      visibleContentSize(ExcludeScrollbars) + browserControlsSize();
   IntSize contentBounds = contentsSize();
   IntSize maximumOffset =
       toIntSize(-scrollOrigin() + (contentBounds - visibleSize));

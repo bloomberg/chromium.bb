@@ -60,8 +60,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnSetVisuallyDeemphasized)
 #endif
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
-                        OnUpdateTopControlsState)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateBrowserControlsState,
+                        OnUpdateBrowserControlsState)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetWebApplicationInfo,
                         OnGetWebApplicationInfo)
@@ -80,11 +80,11 @@ void ChromeRenderViewObserver::OnWebUIJavaScript(
 #endif
 
 #if defined(OS_ANDROID)
-void ChromeRenderViewObserver::OnUpdateTopControlsState(
-    content::TopControlsState constraints,
-    content::TopControlsState current,
+void ChromeRenderViewObserver::OnUpdateBrowserControlsState(
+    content::BrowserControlsState constraints,
+    content::BrowserControlsState current,
     bool animate) {
-  render_view()->UpdateTopControlsState(constraints, current, animate);
+  render_view()->UpdateBrowserControlsState(constraints, current, animate);
 }
 #endif
 

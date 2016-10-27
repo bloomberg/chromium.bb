@@ -180,7 +180,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)
   IPC_STRUCT_TRAITS_MEMBER(screen_info)
   IPC_STRUCT_TRAITS_MEMBER(new_size)
   IPC_STRUCT_TRAITS_MEMBER(physical_backing_size)
-  IPC_STRUCT_TRAITS_MEMBER(top_controls_shrink_blink_size)
+  IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
   IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
   IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
   IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
@@ -584,9 +584,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
 IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
 
 #if defined(OS_ANDROID)
-// Notifies the renderer whether hiding/showing the top controls is enabled
+// Notifies the renderer whether hiding/showing the browser controls is enabled
 // and whether or not to animate to the proper state.
-IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
+IPC_MESSAGE_ROUTED3(ViewMsg_UpdateBrowserControlsState,
                     bool /* enable_hiding */,
                     bool /* enable_showing */,
                     bool /* animate */)

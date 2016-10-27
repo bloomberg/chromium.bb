@@ -10,21 +10,21 @@
 namespace content {
 
 // static
-void LayerTreeSettingsFactory::SetTopControlsSettings(
+void LayerTreeSettingsFactory::SetBrowserControlsSettings(
     cc::LayerTreeSettings& settings,
     const base::CommandLine& cmd) {
-  if (cmd.HasSwitch(cc::switches::kTopControlsShowThreshold)) {
+  if (cmd.HasSwitch(cc::switches::kBrowserControlsShowThreshold)) {
     std::string top_threshold_str =
-        cmd.GetSwitchValueASCII(cc::switches::kTopControlsShowThreshold);
+        cmd.GetSwitchValueASCII(cc::switches::kBrowserControlsShowThreshold);
     double show_threshold;
     if (base::StringToDouble(top_threshold_str, &show_threshold) &&
         show_threshold >= 0.f && show_threshold <= 1.f)
       settings.top_controls_show_threshold = show_threshold;
   }
 
-  if (cmd.HasSwitch(cc::switches::kTopControlsHideThreshold)) {
+  if (cmd.HasSwitch(cc::switches::kBrowserControlsHideThreshold)) {
     std::string top_threshold_str =
-        cmd.GetSwitchValueASCII(cc::switches::kTopControlsHideThreshold);
+        cmd.GetSwitchValueASCII(cc::switches::kBrowserControlsHideThreshold);
     double hide_threshold;
     if (base::StringToDouble(top_threshold_str, &hide_threshold) &&
         hide_threshold >= 0.f && hide_threshold <= 1.f)

@@ -726,14 +726,14 @@ gfx::Size ContentViewCoreImpl::GetViewSizeWithOSKHidden() const {
       Java_ContentViewCore_getViewportHeightWithOSKHiddenPix(env, j_obj));
 
   gfx::Size size_dip = gfx::ScaleToCeiledSize(size_pix, 1.0f / dpi_scale());
-  if (DoTopControlsShrinkBlinkSize())
+  if (DoBrowserControlsShrinkBlinkSize())
     size_dip.Enlarge(0, -GetTopControlsHeightDip());
   return size_dip;
 }
 
 gfx::Size ContentViewCoreImpl::GetViewSize() const {
   gfx::Size size = GetViewportSizeDip();
-  if (DoTopControlsShrinkBlinkSize())
+  if (DoBrowserControlsShrinkBlinkSize())
     size.Enlarge(0, -GetTopControlsHeightDip() - GetBottomControlsHeightDip());
   return size;
 }
@@ -777,12 +777,12 @@ gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
   return gfx::ScaleToCeiledSize(GetViewportSizePix(), 1.0f / dpi_scale());
 }
 
-bool ContentViewCoreImpl::DoTopControlsShrinkBlinkSize() const {
+bool ContentViewCoreImpl::DoBrowserControlsShrinkBlinkSize() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return false;
-  return Java_ContentViewCore_doTopControlsShrinkBlinkSize(env, j_obj);
+  return Java_ContentViewCore_doBrowserControlsShrinkBlinkSize(env, j_obj);
 }
 
 float ContentViewCoreImpl::GetTopControlsHeightDip() const {

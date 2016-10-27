@@ -13,47 +13,49 @@
 
 namespace content {
 
-// Check content::TopControlsState, and blink::WebWidget::TopControlsState
+// Check content::BrowserControlsState, and
+// blink::WebWidget::BrowserControlsState
 // are kept in sync.
-static_assert(
-    int(TOP_CONTROLS_STATE_SHOWN) == int(blink::WebTopControlsShown),
-    "mismatching enums: SHOWN");
-static_assert(
-    int(TOP_CONTROLS_STATE_HIDDEN) == int(blink::WebTopControlsHidden),
-    "mismatching enums: HIDDEN");
-static_assert(
-    int(TOP_CONTROLS_STATE_BOTH) == int(blink::WebTopControlsBoth),
-    "mismatching enums: BOTH");
+static_assert(int(BROWSER_CONTROLS_STATE_SHOWN) ==
+                  int(blink::WebBrowserControlsShown),
+              "mismatching enums: SHOWN");
+static_assert(int(BROWSER_CONTROLS_STATE_HIDDEN) ==
+                  int(blink::WebBrowserControlsHidden),
+              "mismatching enums: HIDDEN");
+static_assert(int(BROWSER_CONTROLS_STATE_BOTH) ==
+                  int(blink::WebBrowserControlsBoth),
+              "mismatching enums: BOTH");
 
-blink::WebTopControlsState ContentToBlink(
-    TopControlsState state) {
-  return static_cast<blink::WebTopControlsState>(state);
+blink::WebBrowserControlsState ContentToBlink(BrowserControlsState state) {
+  return static_cast<blink::WebBrowserControlsState>(state);
 }
 
 
 // TODO(mvanouwerkerk): Stop calling this code path and delete it.
-void RenderViewImpl::OnUpdateTopControlsState(bool enable_hiding,
-                                              bool enable_showing,
-                                              bool animate) {
+void RenderViewImpl::OnUpdateBrowserControlsState(bool enable_hiding,
+                                                  bool enable_showing,
+                                                  bool animate) {
   // TODO(tedchoc): Investigate why messages are getting here before the
   //                compositor has been initialized.
-  LOG_IF(WARNING, !compositor_) << "OnUpdateTopControlsState was unhandled.";
-  TopControlsState constraints = TOP_CONTROLS_STATE_BOTH;
+  LOG_IF(WARNING, !compositor_)
+      << "OnUpdateBrowserControlsState was unhandled.";
+  BrowserControlsState constraints = BROWSER_CONTROLS_STATE_BOTH;
   if (!enable_showing)
-    constraints = TOP_CONTROLS_STATE_HIDDEN;
+    constraints = BROWSER_CONTROLS_STATE_HIDDEN;
   if (!enable_hiding)
-    constraints = TOP_CONTROLS_STATE_SHOWN;
-  TopControlsState current = TOP_CONTROLS_STATE_BOTH;
+    constraints = BROWSER_CONTROLS_STATE_SHOWN;
+  BrowserControlsState current = BROWSER_CONTROLS_STATE_BOTH;
 
-  UpdateTopControlsState(constraints, current, animate);
+  UpdateBrowserControlsState(constraints, current, animate);
 }
 
-void RenderViewImpl::UpdateTopControlsState(TopControlsState constraints,
-                                            TopControlsState current,
-                                            bool animate) {
+void RenderViewImpl::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
   if (GetWebWidget())
-    GetWebWidget()->updateTopControlsState(ContentToBlink(constraints),
-                                           ContentToBlink(current), animate);
+    GetWebWidget()->updateBrowserControlsState(
+        ContentToBlink(constraints), ContentToBlink(current), animate);
 
   top_controls_constraints_ = constraints;
 }
@@ -62,10 +64,11 @@ void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
   if (delta.height == 0)
     return;
 
-  TopControlsState current = delta.height < 0 ? TOP_CONTROLS_STATE_SHOWN
-                                              : TOP_CONTROLS_STATE_HIDDEN;
+  BrowserControlsState current = delta.height < 0
+                                     ? BROWSER_CONTROLS_STATE_SHOWN
+                                     : BROWSER_CONTROLS_STATE_HIDDEN;
 
-  UpdateTopControlsState(top_controls_constraints_, current, true);
+  UpdateBrowserControlsState(top_controls_constraints_, current, true);
 }
 
 void RenderViewImpl::OnExtractSmartClipData(const gfx::Rect& rect) {

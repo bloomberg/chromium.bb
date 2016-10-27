@@ -175,7 +175,7 @@ public abstract class FullScreenActivity extends ChromeActivity {
                 if (!isMainFrame) return;
                 // Notify the renderer to permanently hide the top controls since they do
                 // not apply to fullscreen content views.
-                mTab.updateTopControlsState(mTab.getTopControlsStateConstraints(), true);
+                mTab.updateBrowserControlsState(mTab.getBrowserControlsStateConstraints(), true);
             }
         };
     }

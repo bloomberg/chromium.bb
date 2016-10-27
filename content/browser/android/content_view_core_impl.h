@@ -378,7 +378,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetViewportSizeDip() const;
-  bool DoTopControlsShrinkBlinkSize() const;
+  bool DoBrowserControlsShrinkBlinkSize() const;
   float GetTopControlsHeightDip() const;
   float GetBottomControlsHeightDip() const;
 

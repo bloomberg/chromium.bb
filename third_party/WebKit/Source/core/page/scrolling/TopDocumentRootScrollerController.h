@@ -21,8 +21,8 @@ class ViewportScrollCallback;
 // This class manages the the page level aspects of the root scroller.  That
 // is, given all the iframes on a page and their individual root scrollers,
 // this class will determine which ultimate Element should be used as the root
-// scroller and ensures that Element is used to scroll top controls and provide
-// overscroll effects.
+// scroller and ensures that Element is used to scroll browser controls and
+// provide overscroll effects.
 // TODO(bokan): This class is currently OOPIF unaware. crbug.com/642378.
 class CORE_EXPORT TopDocumentRootScrollerController
     : public GarbageCollected<TopDocumentRootScrollerController> {
@@ -36,7 +36,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
   void didUpdateCompositing();
 
   // This method needs to be called to create a ViewportScrollCallback that
-  // will be used to apply viewport scrolling actions like top controls
+  // will be used to apply viewport scrolling actions like browser controls
   // movement and overscroll glow.
   void initializeViewportScrollCallback(RootFrameViewport&);
 
@@ -74,13 +74,13 @@ class CORE_EXPORT TopDocumentRootScrollerController
 
   void setNeedsCompositingInputsUpdateOnGlobalRootScroller();
 
-  // The apply-scroll callback that moves top controls and produces
+  // The apply-scroll callback that moves browser controls and produces
   // overscroll effects. This class makes sure this callback is set on the
   // appropriate root scroller element.
   Member<ViewportScrollCallback> m_viewportApplyScroll;
 
   // The page level root scroller. i.e. The actual element for which
-  // scrolling should move top controls and produce overscroll glow. Once an
+  // scrolling should move browser controls and produce overscroll glow. Once an
   // m_viewportApplyScroll has been created, it will always be set on this
   // Element.
   WeakMember<Element> m_globalRootScroller;

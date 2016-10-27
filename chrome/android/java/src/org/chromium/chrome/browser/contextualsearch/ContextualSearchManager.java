@@ -47,7 +47,7 @@ import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.TopControlsState;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -909,7 +909,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
         @Override
         public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
-            mSearchPanel.updateTopControlsState();
+            mSearchPanel.updateBrowserControlsState();
 
             if (isExternalUrl) {
                 onExternalNavigation(url);
@@ -1216,7 +1216,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     public void onSelectionChanged(String selection) {
         if (!isOverlayVideoMode()) {
             mSelectionController.handleSelectionChanged(selection);
-            mSearchPanel.updateTopControlsState(TopControlsState.BOTH, true);
+            mSearchPanel.updateBrowserControlsState(BrowserControlsState.BOTH, true);
         }
     }
 

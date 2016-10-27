@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/frame/BrowserControls.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RootFrameViewport.h"
-#include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -58,9 +58,9 @@ class RootScrollerTest : public ::testing::Test {
     m_helper.initializeAndLoad(m_baseURL + pageName, true, nullptr, client,
                                nullptr, &configureSettings);
 
-    // Initialize top controls to be shown.
-    webViewImpl()->resizeWithTopControls(IntSize(400, 400), 50, true);
-    webViewImpl()->topControls().setShownRatio(1);
+    // Initialize browser controls to be shown.
+    webViewImpl()->resizeWithBrowserControls(IntSize(400, 400), 50, true);
+    webViewImpl()->browserControls().setShownRatio(1);
 
     mainFrameView()->updateAllLifecyclePhases();
 
@@ -114,7 +114,9 @@ class RootScrollerTest : public ::testing::Test {
     return frameHost().visualViewport();
   }
 
-  TopControls& topControls() const { return frameHost().topControls(); }
+  BrowserControls& browserControls() const {
+    return frameHost().browserControls();
+  }
 
   Element* effectiveRootScroller(Document* doc) const {
     return doc->rootScrollerController()->effectiveRootScroller();
@@ -195,12 +197,12 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
       generateTouchGestureEvent(WebInputEvent::GestureScrollBegin));
 
   {
-    // Scrolling over the #container DIV should cause the top controls to
+    // Scrolling over the #container DIV should cause the browser controls to
     // hide.
-    EXPECT_FLOAT_EQ(1, topControls().shownRatio());
+    EXPECT_FLOAT_EQ(1, browserControls().shownRatio());
     webViewImpl()->handleInputEvent(generateTouchGestureEvent(
-        WebInputEvent::GestureScrollUpdate, 0, -topControls().height()));
-    EXPECT_FLOAT_EQ(0, topControls().shownRatio());
+        WebInputEvent::GestureScrollUpdate, 0, -browserControls().height()));
+    EXPECT_FLOAT_EQ(0, browserControls().shownRatio());
   }
 
   {
@@ -256,14 +258,14 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   }
 
   {
-    // Scrolling up should show the top controls.
+    // Scrolling up should show the browser controls.
     webViewImpl()->handleInputEvent(
         generateTouchGestureEvent(WebInputEvent::GestureScrollBegin));
 
-    EXPECT_FLOAT_EQ(0, topControls().shownRatio());
+    EXPECT_FLOAT_EQ(0, browserControls().shownRatio());
     webViewImpl()->handleInputEvent(
         generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, 30));
-    EXPECT_FLOAT_EQ(0.6, topControls().shownRatio());
+    EXPECT_FLOAT_EQ(0.6, browserControls().shownRatio());
 
     webViewImpl()->handleInputEvent(
         generateTouchGestureEvent(WebInputEvent::GestureScrollEnd));

@@ -160,7 +160,7 @@ abstract class OverlayPanelBase {
 
     /**
      * TODO(mdjones): This method should be removed from this class.
-     * @return The resource id that contains how large the top controls are.
+     * @return The resource id that contains how large the browser controls are.
      */
     protected abstract int getControlContainerHeightResource();
 

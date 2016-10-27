@@ -1764,8 +1764,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kShowScreenSpaceRects,
     cc::switches::kShowSurfaceDamageRects,
     cc::switches::kSlowDownRasterScaleFactor,
-    cc::switches::kTopControlsHideThreshold,
-    cc::switches::kTopControlsShowThreshold,
+    cc::switches::kBrowserControlsHideThreshold,
+    cc::switches::kBrowserControlsShowThreshold,
 
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,

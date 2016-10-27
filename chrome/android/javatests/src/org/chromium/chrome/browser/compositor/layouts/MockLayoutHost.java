@@ -119,12 +119,12 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public int getTopControlsHeightPixels() {
+    public int getBrowserControlsHeightPixels() {
         return 0;
     }
 
     @Override
-    public boolean areTopControlsPermanentlyHidden() {
+    public boolean areBrowserControlsPermanentlyHidden() {
         return false;
     }
 
@@ -143,12 +143,12 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     public void onContentChanged() { }
 
     @Override
-    public int getTopControlsBackgroundColor() {
+    public int getBrowserControlsBackgroundColor() {
         return 0;
     }
 
     @Override
-    public float getTopControlsUrlBarAlpha() {
+    public float getBrowserControlsUrlBarAlpha() {
         return 1f;
     }
 

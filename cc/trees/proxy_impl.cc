@@ -15,7 +15,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
-#include "cc/input/top_controls_manager.h"
+#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
 #include "cc/scheduler/compositor_timing_history.h"
@@ -111,11 +111,12 @@ void ProxyImpl::InitializeMutatorOnImpl(
   layer_tree_host_impl_->SetLayerTreeMutator(std::move(mutator));
 }
 
-void ProxyImpl::UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                             TopControlsState current,
-                                             bool animate) {
+void ProxyImpl::UpdateBrowserControlsStateOnImpl(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
   DCHECK(IsImplThread());
-  layer_tree_host_impl_->top_controls_manager()->UpdateTopControlsState(
+  layer_tree_host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
       constraints, current, animate);
 }
 

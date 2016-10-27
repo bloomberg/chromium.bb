@@ -24,7 +24,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "cc/input/top_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/resources/shared_bitmap.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
@@ -32,11 +32,11 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_message_enums.h"
 #include "content/common/view_message_enums.h"
+#include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/common/top_controls_state.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/render_frame_impl.h"
@@ -406,9 +406,9 @@ class CONTENT_EXPORT RenderViewImpl
   void ClearEditCommands() override;
   const std::string& GetAcceptLanguages() const override;
 #if defined(OS_ANDROID)
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate) override;
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override;
 #endif
   void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
@@ -619,9 +619,9 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSelectWordAroundCaret();
 #if defined(OS_ANDROID)
   void OnUndoScrollFocusedEditableNodeIntoRect();
-  void OnUpdateTopControlsState(bool enable_hiding,
-                                bool enable_showing,
-                                bool animate);
+  void OnUpdateBrowserControlsState(bool enable_hiding,
+                                    bool enable_showing,
+                                    bool animate);
   void OnExtractSmartClipData(const gfx::Rect& rect);
 #elif defined(OS_MACOSX)
   void OnGetRenderedText();
@@ -799,16 +799,16 @@ class CONTENT_EXPORT RenderViewImpl
   bool uses_temporary_zoom_level_;
 
 #if defined(OS_ANDROID)
-  // Cache the old top controls state constraints. Used when updating
+  // Cache the old browser controls state constraints. Used when updating
   // current value only without altering the constraints.
-  TopControlsState top_controls_constraints_;
+  BrowserControlsState top_controls_constraints_;
 #endif
 
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar.
-  bool top_controls_shrink_blink_size_;
+  bool browser_controls_shrink_blink_size_;
 
-  // The height of the top controls.
+  // The height of the browser controls.
   float top_controls_height_;
 
   // View ----------------------------------------------------------------------

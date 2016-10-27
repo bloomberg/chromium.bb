@@ -30,11 +30,11 @@
 
 #include "core/frame/FrameHost.h"
 
+#include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/TopControls.h"
 #include "core/frame/VisualViewport.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
@@ -51,7 +51,7 @@ FrameHost* FrameHost::create(Page& page) {
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page),
-      m_topControls(TopControls::create(*this)),
+      m_browserControls(BrowserControls::create(*this)),
       m_pageScaleConstraintsSet(PageScaleConstraintsSet::create()),
       m_visualViewport(VisualViewport::create(*this)),
       m_overscrollController(
@@ -110,12 +110,12 @@ float FrameHost::deviceScaleFactorDeprecated() const {
   return m_page->deviceScaleFactor();
 }
 
-TopControls& FrameHost::topControls() {
-  return *m_topControls;
+BrowserControls& FrameHost::browserControls() {
+  return *m_browserControls;
 }
 
-const TopControls& FrameHost::topControls() const {
-  return *m_topControls;
+const BrowserControls& FrameHost::browserControls() const {
+  return *m_browserControls;
 }
 
 OverscrollController& FrameHost::overscrollController() {
@@ -165,7 +165,7 @@ TopDocumentRootScrollerController& FrameHost::globalRootScrollerController()
 
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
-  visitor->trace(m_topControls);
+  visitor->trace(m_browserControls);
   visitor->trace(m_visualViewport);
   visitor->trace(m_overscrollController);
   visitor->trace(m_eventHandlerRegistry);

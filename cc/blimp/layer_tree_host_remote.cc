@@ -215,10 +215,11 @@ void LayerTreeHostRemote::NotifyInputThrottledUntilCommit() {
   NOTIMPLEMENTED();
 }
 
-void LayerTreeHostRemote::UpdateTopControlsState(TopControlsState constraints,
-                                                 TopControlsState current,
-                                                 bool animate) {
-  NOTREACHED() << "Using TopControls animations is not supported";
+void LayerTreeHostRemote::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
+  NOTREACHED() << "Using BrowserControls animations is not supported";
 }
 
 const base::WeakPtr<InputHandler>& LayerTreeHostRemote::GetInputHandler()

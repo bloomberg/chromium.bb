@@ -178,7 +178,7 @@ public class FullscreenHtmlApiHandler {
     }
 
     /**
-     * Enters or exits persistent fullscreen mode.  In this mode, the top controls will be
+     * Enters or exits persistent fullscreen mode.  In this mode, the browser controls will be
      * permanently hidden until this mode is exited.
      *
      * @param enabled Whether to enable persistent fullscreen mode.

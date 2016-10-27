@@ -139,7 +139,7 @@ class BrowserWindow : public ui::BaseWindow {
   // + or - in the app menu to change zoom).
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) = 0;
 
-  // Windows and GTK remove the top controls in fullscreen, but Mac and Ash
+  // Windows and GTK remove the browser controls in fullscreen, but Mac and Ash
   // keep the controls in a slide-down panel.
   virtual bool ShouldHideUIForFullscreen() const = 0;
 

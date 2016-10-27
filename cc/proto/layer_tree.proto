@@ -22,7 +22,7 @@ message LayerTree {
   optional int32 inner_viewport_scroll_layer_id = 5;
   optional int32 outer_viewport_scroll_layer_id = 6;
 
-  // Top Controls ignored. They are not supported.
+  // Browser Controls ignored. They are not supported.
 
   optional float device_scale_factor = 13;
   optional float painted_device_scale_factor = 14;

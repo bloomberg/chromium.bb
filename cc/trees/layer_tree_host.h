@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/micro_benchmark.h"
-#include "cc/input/top_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 
 namespace base {
 class TimeTicks;
@@ -158,11 +158,11 @@ class CC_EXPORT LayerTreeHost {
   // tree so a commit can be performed.
   virtual void NotifyInputThrottledUntilCommit() = 0;
 
-  // Sets the state of the top controls. (Used for URL bar animations on
+  // Sets the state of the browser controls. (Used for URL bar animations on
   // android).
-  virtual void UpdateTopControlsState(TopControlsState constraints,
-                                      TopControlsState current,
-                                      bool animate) = 0;
+  virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                          BrowserControlsState current,
+                                          bool animate) = 0;
 
   // Returns a reference to the InputHandler used to respond to input events on
   // the compositor thread.

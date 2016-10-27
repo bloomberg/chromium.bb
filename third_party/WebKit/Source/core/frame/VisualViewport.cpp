@@ -63,7 +63,7 @@ namespace blink {
 VisualViewport::VisualViewport(FrameHost& owner)
     : m_frameHost(&owner),
       m_scale(1),
-      m_topControlsAdjustment(0),
+      m_browserControlsAdjustment(0),
       m_maxPageScale(-1),
       m_trackPinchZoomStatsForPage(false) {
   reset();
@@ -151,7 +151,7 @@ void VisualViewport::mainFrameDidChangeSize() {
 
 FloatSize VisualViewport::visibleSize() const {
   FloatSize scaledSize(m_size);
-  scaledSize.expand(0, m_topControlsAdjustment);
+  scaledSize.expand(0, m_browserControlsAdjustment);
   scaledSize.scale(1 / m_scale);
   return scaledSize;
 }
@@ -552,17 +552,17 @@ ScrollOffset VisualViewport::maximumScrollOffset() const {
   // crbug.com/470718.
   FloatSize frameViewSize(contentsSize());
 
-  if (m_topControlsAdjustment) {
+  if (m_browserControlsAdjustment) {
     float minScale =
         frameHost().pageScaleConstraintsSet().finalConstraints().minimumScale;
-    frameViewSize.expand(0, m_topControlsAdjustment / minScale);
+    frameViewSize.expand(0, m_browserControlsAdjustment / minScale);
   }
 
   frameViewSize.scale(m_scale);
   frameViewSize = FloatSize(flooredIntSize(frameViewSize));
 
   FloatSize viewportSize(m_size);
-  viewportSize.expand(0, ceilf(m_topControlsAdjustment));
+  viewportSize.expand(0, ceilf(m_browserControlsAdjustment));
 
   FloatSize maxPosition = frameViewSize - viewportSize;
   maxPosition.scale(1 / m_scale);
@@ -591,8 +591,8 @@ IntPoint VisualViewport::clampDocumentOffsetAtScale(const IntPoint& offset,
   return IntPoint(clamped);
 }
 
-void VisualViewport::setTopControlsAdjustment(float adjustment) {
-  m_topControlsAdjustment = adjustment;
+void VisualViewport::setBrowserControlsAdjustment(float adjustment) {
+  m_browserControlsAdjustment = adjustment;
 }
 
 IntRect VisualViewport::scrollableAreaBoundingBox() const {

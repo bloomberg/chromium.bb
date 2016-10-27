@@ -30,10 +30,10 @@ public abstract class ContentSwitches {
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
 
-    // How much of the top controls need to be shown before they will auto show.
+    // How much of the browser controls need to be shown before they will auto show.
     public static final String TOP_CONTROLS_SHOW_THRESHOLD = "top-controls-show-threshold";
 
-    // How much of the top controls need to be hidden before they will auto hide.
+    // How much of the browser controls need to be hidden before they will auto hide.
     public static final String TOP_CONTROLS_HIDE_THRESHOLD = "top-controls-hide-threshold";
 
     // Native switch - chrome_switches::kEnableInstantExtendedAPI

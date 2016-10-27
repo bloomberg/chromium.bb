@@ -55,7 +55,7 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     params.new_size = gfx::Size(0, 0);
     params.physical_backing_size = gfx::Size(300, 300);
     params.top_controls_height = 0.f;
-    params.top_controls_shrink_blink_size = false;
+    params.browser_controls_shrink_blink_size = false;
     params.is_fullscreen_granted = false;
     rwh->Send(new ViewMsg_Resize(rwh->GetRoutingID(), params));
   }

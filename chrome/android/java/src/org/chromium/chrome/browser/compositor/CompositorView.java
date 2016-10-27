@@ -380,8 +380,8 @@ public class CompositorView
 
     @Override
     public int getOverlayTranslateY() {
-        return mRenderHost.areTopControlsPermanentlyHidden()
-                ? mRenderHost.getTopControlsHeightPixels()
+        return mRenderHost.areBrowserControlsPermanentlyHidden()
+                ? mRenderHost.getBrowserControlsHeightPixels()
                 : mRenderHost.getVisibleViewport(mCacheVisibleViewport).top;
     }
 

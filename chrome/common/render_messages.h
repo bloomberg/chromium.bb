@@ -19,7 +19,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
-#include "content/public/common/top_controls_state.h"
+#include "content/public/common/browser_controls_state.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -82,8 +82,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageAlignment,
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageTiling, THEME_BKGRND_IMAGE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebConsoleMessage::Level,
                           blink::WebConsoleMessage::LevelLast)
-IPC_ENUM_TRAITS_MAX_VALUE(content::TopControlsState,
-                          content::TOP_CONTROLS_STATE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::BrowserControlsState,
+                          content::BROWSER_CONTROLS_STATE_LAST)
 
 // Output parameters for ChromeViewHostMsg_GetPluginInfo message.
 IPC_STRUCT_BEGIN(ChromeViewHostMsg_GetPluginInfo_Output)
@@ -284,14 +284,13 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_RequestThumbnailForContextNode,
                     gfx::Size /* thumbnail_max_size_pixels */,
                     int /* ID of the callback */)
 
-// Notifies the renderer whether hiding/showing the top controls is enabled,
+// Notifies the renderer whether hiding/showing the browser controls is enabled,
 // what the current state should be, and whether or not to animate to the
 // proper state.
-IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateTopControlsState,
-                    content::TopControlsState /* constraints */,
-                    content::TopControlsState /* current */,
+IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateBrowserControlsState,
+                    content::BrowserControlsState /* constraints */,
+                    content::BrowserControlsState /* current */,
                     bool /* animate */)
-
 
 // Updates the window features of the render view.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,

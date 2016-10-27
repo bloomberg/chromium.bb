@@ -109,7 +109,7 @@ gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
                                 display.device_scale_factor());
 }
 
-bool RenderWidgetHostViewBase::DoTopControlsShrinkBlinkSize() const {
+bool RenderWidgetHostViewBase::DoBrowserControlsShrinkBlinkSize() const {
   return false;
 }
 

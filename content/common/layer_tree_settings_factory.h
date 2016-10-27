@@ -18,8 +18,8 @@ class CONTENT_EXPORT LayerTreeSettingsFactory {
   // TODO(xingliu): Refactor LayerTreeSettings generation logic.
   // crbug.com/577985
  public:
-  static void SetTopControlsSettings(cc::LayerTreeSettings& settings,
-                                     const base::CommandLine& command_line);
+  static void SetBrowserControlsSettings(cc::LayerTreeSettings& settings,
+                                         const base::CommandLine& command_line);
 };
 
 }  // namespace content

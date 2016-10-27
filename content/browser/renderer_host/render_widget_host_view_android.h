@@ -108,7 +108,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Rect GetViewBounds() const override;
   gfx::Size GetVisibleViewportSize() const override;
   gfx::Size GetPhysicalBackingSize() const override;
-  bool DoTopControlsShrinkBlinkSize() const override;
+  bool DoBrowserControlsShrinkBlinkSize() const override;
   float GetTopControlsHeight() const override;
   float GetBottomControlsHeight() const override;
   void UpdateCursor(const WebCursor& cursor) override;

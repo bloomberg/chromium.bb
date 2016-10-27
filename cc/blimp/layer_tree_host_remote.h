@@ -78,9 +78,9 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void SetNextCommitForcesRedraw() override;
   void NotifyInputThrottledUntilCommit() override;
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate) override;
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override;
   const base::WeakPtr<InputHandler>& GetInputHandler() const override;
   void DidStopFlinging() override;
   void SetDebugState(const LayerTreeDebugState& debug_state) override;

@@ -86,7 +86,7 @@ class WebLayerTreeViewImplForTesting
                            const gfx::Vector2dF& outerDelta,
                            const gfx::Vector2dF& elasticOverscrollDelta,
                            float pageScale,
-                           float topControlsDelta) override;
+                           float browserControlsDelta) override;
   void RequestNewCompositorFrameSink() override;
   void DidInitializeCompositorFrameSink() override {}
   void DidFailToInitializeCompositorFrameSink() override;

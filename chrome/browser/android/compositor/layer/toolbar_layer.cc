@@ -193,6 +193,10 @@ ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
   debug_layer_->SetIsDrawable(true);
   debug_layer_->SetBackgroundColor(SK_ColorGREEN);
   debug_layer_->SetOpacity(0.5f);
+
+
+  is_chrome_home_enabled_ =
+      base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
 }
 
 ToolbarLayer::~ToolbarLayer() {

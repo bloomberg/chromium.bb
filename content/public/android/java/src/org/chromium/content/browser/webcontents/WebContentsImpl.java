@@ -267,10 +267,10 @@ import java.util.UUID;
     }
 
     @Override
-    public void updateTopControlsState(boolean enableHiding, boolean enableShowing,
-            boolean animate) {
-        nativeUpdateTopControlsState(mNativeWebContentsAndroid, enableHiding,
-                enableShowing, animate);
+    public void updateBrowserControlsState(
+            boolean enableHiding, boolean enableShowing, boolean animate) {
+        nativeUpdateBrowserControlsState(
+                mNativeWebContentsAndroid, enableHiding, enableShowing, animate);
     }
 
     @Override
@@ -521,7 +521,7 @@ import java.util.UUID;
     private native boolean nativeFocusLocationBarByDefault(long nativeWebContentsAndroid);
     private native boolean nativeIsRenderWidgetHostViewReady(long nativeWebContentsAndroid);
     private native void nativeExitFullscreen(long nativeWebContentsAndroid);
-    private native void nativeUpdateTopControlsState(long nativeWebContentsAndroid,
+    private native void nativeUpdateBrowserControlsState(long nativeWebContentsAndroid,
             boolean enableHiding, boolean enableShowing, boolean animate);
     private native void nativeShowImeIfNeeded(long nativeWebContentsAndroid);
     private native void nativeScrollFocusedEditableNodeIntoView(long nativeWebContentsAndroid);

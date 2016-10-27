@@ -98,9 +98,9 @@ import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
-import org.chromium.content_public.common.TopControlsState;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
@@ -347,7 +347,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private TabRedirectHandler mTabRedirectHandler;
 
     private FullscreenManager mFullscreenManager;
-    private float mPreviousFullscreenTopControlsOffsetY = Float.NaN;
+    private float mPreviousFullscreenBrowserControlsOffsetY = Float.NaN;
     private float mPreviousFullscreenContentOffsetY = Float.NaN;
     private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
     private boolean mIsFullscreenWaitingForLoad = false;
@@ -551,7 +551,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     private TabDelegateFactory mDelegateFactory;
 
-    private TopControlsVisibilityDelegate mTopControlsVisibilityDelegate;
+    private BrowserControlsVisibilityDelegate mBrowserControlsVisibilityDelegate;
 
     /**
      * Creates an instance of a {@link Tab}.
@@ -1451,8 +1451,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             RevenueStats.getInstance().tabCreated(this);
 
-            mTopControlsVisibilityDelegate =
-                    mDelegateFactory.createTopControlsVisibilityDelegate(this);
+            mBrowserControlsVisibilityDelegate =
+                    mDelegateFactory.createBrowserControlsVisibilityDelegate(this);
 
             mBlimp = BlimpClientContextFactory
                              .getBlimpClientContextForProfile(
@@ -1594,7 +1594,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
         nativeUpdateDelegates(mNativeTabAndroid,
                 mWebContentsDelegate, mDelegateFactory.createContextMenuPopulator(this));
-        mTopControlsVisibilityDelegate = mDelegateFactory.createTopControlsVisibilityDelegate(this);
+        mBrowserControlsVisibilityDelegate =
+                mDelegateFactory.createBrowserControlsVisibilityDelegate(this);
         setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(this));
         getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
 
@@ -2028,7 +2029,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mInfoBarContainer = null;
         }
 
-        mPreviousFullscreenTopControlsOffsetY = Float.NaN;
+        mPreviousFullscreenBrowserControlsOffsetY = Float.NaN;
         mPreviousFullscreenContentOffsetY = Float.NaN;
 
         mNeedsReload = false;
@@ -2676,31 +2677,32 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * Called when offset values related with fullscreen functionality has been changed by the
      * compositor.
-     * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
+     * @param browserControlsOffsetY The Y offset of the browser controls in physical pixels.
      * @param contentOffsetY The Y offset of the content in physical pixels.
      * @param isNonFullscreenPage Whether a current page is non-fullscreen page or not.
      */
-    private void onOffsetsChanged(float topControlsOffsetY, float contentOffsetY,
-            boolean isNonFullscreenPage) {
-        mPreviousFullscreenTopControlsOffsetY = topControlsOffsetY;
+    private void onOffsetsChanged(
+            float browserControlsOffsetY, float contentOffsetY, boolean isNonFullscreenPage) {
+        mPreviousFullscreenBrowserControlsOffsetY = browserControlsOffsetY;
         mPreviousFullscreenContentOffsetY = contentOffsetY;
 
         if (mFullscreenManager == null) return;
         if (isNonFullscreenPage || isNativePage()) {
             mFullscreenManager.setPositionsForTabToNonFullscreen();
         } else {
-            mFullscreenManager.setPositionsForTab(topControlsOffsetY, contentOffsetY);
+            mFullscreenManager.setPositionsForTab(browserControlsOffsetY, contentOffsetY);
         }
         TabModelImpl.setActualTabSwitchLatencyMetricRequired();
     }
 
     /**
-     * Push state about whether or not the top controls can show or hide to the renderer.
+     * Push state about whether or not the browser controls can show or hide to the renderer.
      */
     public void updateFullscreenEnabledState() {
         if (isFrozen()) return;
 
-        updateTopControlsState(getTopControlsStateConstraints(), TopControlsState.BOTH, true);
+        updateBrowserControlsState(
+                getBrowserControlsStateConstraints(), BrowserControlsState.BOTH, true);
 
         if (getContentViewCore() != null && mFullscreenManager != null) {
             getContentViewCore().updateMultiTouchZoomSupport(
@@ -2709,48 +2711,49 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Updates the top controls state for this tab.  As these values are set at the renderer
+     * Updates the browser controls state for this tab.  As these values are set at the renderer
      * level, there is potential for this impacting other tabs that might share the same
      * process.
      *
      * @param constraints The constraints that determine whether the controls can be shown
      *                    or hidden at all.
      * @param current The desired current state for the controls.  Pass
-     *                {@link TopControlsState#BOTH} to preserve the current position.
+     *                {@link BrowserControlsState#BOTH} to preserve the current position.
      * @param animate Whether the controls should animate to the specified ending condition or
      *                should jump immediately.
      */
-    protected void updateTopControlsState(int constraints, int current, boolean animate) {
+    protected void updateBrowserControlsState(int constraints, int current, boolean animate) {
         if (mNativeTabAndroid == 0) return;
-        nativeUpdateTopControlsState(mNativeTabAndroid, constraints, current, animate);
+        nativeUpdateBrowserControlsState(mNativeTabAndroid, constraints, current, animate);
     }
 
     /**
-     * Updates the top controls state for this tab.  As these values are set at the renderer
+     * Updates the browser controls state for this tab.  As these values are set at the renderer
      * level, there is potential for this impacting other tabs that might share the same
      * process.
      *
      * @param current The desired current state for the controls.  Pass
-     *                {@link TopControlsState#BOTH} to preserve the current position.
+     *                {@link BrowserControlsState#BOTH} to preserve the current position.
      * @param animate Whether the controls should animate to the specified ending condition or
      *                should jump immediately.
      */
-    public void updateTopControlsState(int current, boolean animate) {
-        int constraints = getTopControlsStateConstraints();
+    public void updateBrowserControlsState(int current, boolean animate) {
+        int constraints = getBrowserControlsStateConstraints();
         // Do nothing if current and constraints conflict to avoid error in
         // renderer.
-        if ((constraints == TopControlsState.HIDDEN && current == TopControlsState.SHOWN)
-                || (constraints == TopControlsState.SHOWN && current == TopControlsState.HIDDEN)) {
+        if ((constraints == BrowserControlsState.HIDDEN && current == BrowserControlsState.SHOWN)
+                || (constraints == BrowserControlsState.SHOWN
+                           && current == BrowserControlsState.HIDDEN)) {
             return;
         }
-        updateTopControlsState(getTopControlsStateConstraints(), current, animate);
+        updateBrowserControlsState(getBrowserControlsStateConstraints(), current, animate);
     }
 
     /**
-     * @return Whether hiding top controls is enabled or not.
+     * @return Whether hiding browser controls is enabled or not.
      */
-    private boolean isHidingTopControlsEnabled() {
-        return mTopControlsVisibilityDelegate.isHidingTopControlsEnabled();
+    private boolean isHidingBrowserControlsEnabled() {
+        return mBrowserControlsVisibilityDelegate.isHidingBrowserControlsEnabled();
     }
 
     /**
@@ -2764,25 +2767,25 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return Whether showing top controls is enabled or not.
+     * @return Whether showing browser controls is enabled or not.
      */
-    public boolean isShowingTopControlsEnabled() {
-        return mTopControlsVisibilityDelegate.isShowingTopControlsEnabled();
+    public boolean isShowingBrowserControlsEnabled() {
+        return mBrowserControlsVisibilityDelegate.isShowingBrowserControlsEnabled();
     }
 
     /**
-     * @return The current visibility constraints for the display of top controls.
-     *         {@link TopControlsState} defines the valid return options.
+     * @return The current visibility constraints for the display of browser controls.
+     *         {@link BrowserControlsState} defines the valid return options.
      */
-    public int getTopControlsStateConstraints() {
-        boolean enableHidingTopControls = isHidingTopControlsEnabled();
-        boolean enableShowingTopControls = isShowingTopControlsEnabled();
+    public int getBrowserControlsStateConstraints() {
+        boolean enableHidingBrowserControls = isHidingBrowserControlsEnabled();
+        boolean enableShowingBrowserControls = isShowingBrowserControlsEnabled();
 
-        int constraints = TopControlsState.BOTH;
-        if (!enableShowingTopControls) {
-            constraints = TopControlsState.HIDDEN;
-        } else if (!enableHidingTopControls) {
-            constraints = TopControlsState.SHOWN;
+        int constraints = BrowserControlsState.BOTH;
+        if (!enableShowingBrowserControls) {
+            constraints = BrowserControlsState.HIDDEN;
+        } else if (!enableHidingBrowserControls) {
+            constraints = BrowserControlsState.SHOWN;
         }
         return constraints;
     }
@@ -2794,18 +2797,18 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public void setFullscreenManager(FullscreenManager manager) {
         mFullscreenManager = manager;
         if (mFullscreenManager != null) {
-            if (Float.isNaN(mPreviousFullscreenTopControlsOffsetY)
+            if (Float.isNaN(mPreviousFullscreenBrowserControlsOffsetY)
                     || Float.isNaN(mPreviousFullscreenContentOffsetY)) {
                 mFullscreenManager.setPositionsForTabToNonFullscreen();
             } else {
-                mFullscreenManager.setPositionsForTab(
-                        mPreviousFullscreenTopControlsOffsetY, mPreviousFullscreenContentOffsetY);
+                mFullscreenManager.setPositionsForTab(mPreviousFullscreenBrowserControlsOffsetY,
+                        mPreviousFullscreenContentOffsetY);
             }
             mFullscreenManager.showControlsTransient();
             updateFullscreenEnabledState();
         }
 
-        // For blimp mode, offset the blimp view by the height of top controls. This will ensure
+        // For blimp mode, offset the blimp view by the height of browser controls. This will ensure
         // that the view doesn't get clipped at the bottom of the page and also the touch offsets
         // would work correctly.
         if (getBlimpContents() != null && mFullscreenManager != null) {
@@ -2816,7 +2819,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                         LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
             }
 
-            lp.topMargin = mFullscreenManager.getTopControlsHeight();
+            lp.topMargin = mFullscreenManager.getBrowserControlsHeight();
             blimpView.setLayoutParams(lp);
         }
     }
@@ -3245,7 +3248,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native boolean nativePrint(long nativeTabAndroid);
     private native Bitmap nativeGetFavicon(long nativeTabAndroid);
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
-    private native void nativeUpdateTopControlsState(
+    private native void nativeUpdateBrowserControlsState(
             long nativeTabAndroid, int constraints, int current, boolean animate);
     private native void nativeLoadOriginalImage(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/input/top_controls_manager.h"
+#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
@@ -42,8 +42,8 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   gfx::Vector2dF content_delta = delta;
 
-  if (affect_top_controls && ShouldTopControlsConsumeScroll(delta))
-    content_delta -= ScrollTopControls(delta);
+  if (affect_top_controls && ShouldBrowserControlsConsumeScroll(delta))
+    content_delta -= ScrollBrowserControls(delta);
 
   gfx::Vector2dF pending_content_delta = content_delta;
 
@@ -198,16 +198,16 @@ LayerImpl* Viewport::MainScrollLayer() const {
   return OuterScrollLayer();
 }
 
-gfx::Vector2dF Viewport::ScrollTopControls(const gfx::Vector2dF& delta) {
+gfx::Vector2dF Viewport::ScrollBrowserControls(const gfx::Vector2dF& delta) {
   gfx::Vector2dF excess_delta =
-      host_impl_->top_controls_manager()->ScrollBy(delta);
+      host_impl_->browser_controls_manager()->ScrollBy(delta);
 
   return delta - excess_delta;
 }
 
-bool Viewport::ShouldTopControlsConsumeScroll(
+bool Viewport::ShouldBrowserControlsConsumeScroll(
     const gfx::Vector2dF& scroll_delta) const {
-  // Always consume if it's in the direction to show the top controls.
+  // Always consume if it's in the direction to show the browser controls.
   if (scroll_delta.y() < 0)
     return true;
 

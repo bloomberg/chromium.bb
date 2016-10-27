@@ -84,7 +84,7 @@ using blink::WebFloatPoint;
 using blink::WebRect;
 using blink::WebSelection;
 using blink::WebSize;
-using blink::WebTopControlsState;
+using blink::WebBrowserControlsState;
 
 namespace content {
 namespace {
@@ -195,18 +195,18 @@ gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor) {
   return gfx::Size(default_tile_size, default_tile_size);
 }
 
-// Check cc::TopControlsState, and blink::WebTopControlsState
+// Check cc::BrowserControlsState, and blink::WebBrowserControlsState
 // are kept in sync.
-static_assert(int(blink::WebTopControlsBoth) == int(cc::BOTH),
+static_assert(int(blink::WebBrowserControlsBoth) == int(cc::BOTH),
               "mismatching enums: BOTH");
-static_assert(int(blink::WebTopControlsHidden) == int(cc::HIDDEN),
+static_assert(int(blink::WebBrowserControlsHidden) == int(cc::HIDDEN),
               "mismatching enums: HIDDEN");
-static_assert(int(blink::WebTopControlsShown) == int(cc::SHOWN),
+static_assert(int(blink::WebBrowserControlsShown) == int(cc::SHOWN),
               "mismatching enums: SHOWN");
 
-static cc::TopControlsState ConvertTopControlsState(
-    WebTopControlsState state) {
-  return static_cast<cc::TopControlsState>(state);
+static cc::BrowserControlsState ConvertBrowserControlsState(
+    WebBrowserControlsState state) {
+  return static_cast<cc::BrowserControlsState>(state);
 }
 
 }  // namespace
@@ -361,7 +361,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->AreImageDecodeTasksEnabled();
 
   // Build LayerTreeSettings from command line args.
-  LayerTreeSettingsFactory::SetTopControlsSettings(settings, cmd);
+  LayerTreeSettingsFactory::SetBrowserControlsSettings(settings, cmd);
 
   settings.use_layer_lists = cmd.HasSwitch(cc::switches::kEnableLayerLists);
 
@@ -991,21 +991,22 @@ void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::updateTopControlsState(
-    WebTopControlsState constraints,
-    WebTopControlsState current,
+void RenderWidgetCompositor::updateBrowserControlsState(
+    WebBrowserControlsState constraints,
+    WebBrowserControlsState current,
     bool animate) {
-  layer_tree_host_->UpdateTopControlsState(ConvertTopControlsState(constraints),
-                                           ConvertTopControlsState(current),
-                                           animate);
+  layer_tree_host_->UpdateBrowserControlsState(
+      ConvertBrowserControlsState(constraints),
+      ConvertBrowserControlsState(current), animate);
 }
 
-void RenderWidgetCompositor::setTopControlsHeight(float height, bool shrink) {
-  layer_tree_host_->GetLayerTree()->SetTopControlsHeight(height, shrink);
+void RenderWidgetCompositor::setBrowserControlsHeight(float height,
+                                                      bool shrink) {
+  layer_tree_host_->GetLayerTree()->SetBrowserControlsHeight(height, shrink);
 }
 
-void RenderWidgetCompositor::setTopControlsShownRatio(float ratio) {
-  layer_tree_host_->GetLayerTree()->SetTopControlsShownRatio(ratio);
+void RenderWidgetCompositor::setBrowserControlsShownRatio(float ratio) {
+  layer_tree_host_->GetLayerTree()->SetBrowserControlsShownRatio(ratio);
 }
 
 void RenderWidgetCompositor::setBottomControlsHeight(float height) {

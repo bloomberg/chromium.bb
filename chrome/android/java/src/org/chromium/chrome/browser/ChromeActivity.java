@@ -1205,7 +1205,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * @return The resource id that contains how large the top controls are.
+     * @return The resource id that contains how large the browser controls are.
      */
     public int getControlContainerHeightResource() {
         return R.dimen.control_container_height;

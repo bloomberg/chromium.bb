@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/TopControls.h"
+#include "core/frame/BrowserControls.h"
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/VisualViewport.h"
@@ -12,26 +12,28 @@
 
 namespace blink {
 
-TopControls::TopControls(const FrameHost& frameHost)
+BrowserControls::BrowserControls(const FrameHost& frameHost)
     : m_frameHost(&frameHost),
       m_height(0),
       m_shownRatio(0),
       m_baselineContentOffset(0),
       m_accumulatedScrollDelta(0),
       m_shrinkViewport(false),
-      m_permittedState(WebTopControlsBoth) {}
+      m_permittedState(WebBrowserControlsBoth) {}
 
-DEFINE_TRACE(TopControls) {
+DEFINE_TRACE(BrowserControls) {
   visitor->trace(m_frameHost);
 }
 
-void TopControls::scrollBegin() {
+void BrowserControls::scrollBegin() {
   resetBaseline();
 }
 
-FloatSize TopControls::scrollBy(FloatSize pendingDelta) {
-  if ((m_permittedState == WebTopControlsShown && pendingDelta.height() > 0) ||
-      (m_permittedState == WebTopControlsHidden && pendingDelta.height() < 0))
+FloatSize BrowserControls::scrollBy(FloatSize pendingDelta) {
+  if ((m_permittedState == WebBrowserControlsShown &&
+       pendingDelta.height() > 0) ||
+      (m_permittedState == WebBrowserControlsHidden &&
+       pendingDelta.height() < 0))
     return pendingDelta;
 
   if (m_height == 0)
@@ -40,7 +42,7 @@ FloatSize TopControls::scrollBy(FloatSize pendingDelta) {
   float oldOffset = contentOffset();
   float pageScale = m_frameHost->visualViewport().scale();
 
-  // Update accumulated vertical scroll and apply it to top controls
+  // Update accumulated vertical scroll and apply it to browser controls
   // Compute scroll delta in viewport space by applying page scale
   m_accumulatedScrollDelta += pendingDelta.height() * pageScale;
 
@@ -58,25 +60,25 @@ FloatSize TopControls::scrollBy(FloatSize pendingDelta) {
   newContentOffset = std::max(newContentOffset, 0.f);
 
   // We negate the difference because scrolling down (positive delta) causes
-  // top controls to hide (negative offset difference).
+  // browser controls to hide (negative offset difference).
   FloatSize appliedDelta(0, (oldOffset - newContentOffset) / pageScale);
   return pendingDelta - appliedDelta;
 }
 
-void TopControls::resetBaseline() {
+void BrowserControls::resetBaseline() {
   m_accumulatedScrollDelta = 0;
   m_baselineContentOffset = contentOffset();
 }
 
-float TopControls::layoutHeight() {
+float BrowserControls::layoutHeight() {
   return m_shrinkViewport ? m_height : 0;
 }
 
-float TopControls::contentOffset() {
+float BrowserControls::contentOffset() {
   return m_shownRatio * m_height;
 }
 
-void TopControls::setShownRatio(float shownRatio) {
+void BrowserControls::setShownRatio(float shownRatio) {
   shownRatio = std::min(shownRatio, 1.f);
   shownRatio = std::max(shownRatio, 0.f);
 
@@ -84,18 +86,19 @@ void TopControls::setShownRatio(float shownRatio) {
     return;
 
   m_shownRatio = shownRatio;
-  m_frameHost->chromeClient().didUpdateTopControls();
+  m_frameHost->chromeClient().didUpdateBrowserControls();
 }
 
-void TopControls::updateConstraintsAndState(WebTopControlsState constraints,
-                                            WebTopControlsState current,
-                                            bool animate) {
+void BrowserControls::updateConstraintsAndState(
+    WebBrowserControlsState constraints,
+    WebBrowserControlsState current,
+    bool animate) {
   m_permittedState = constraints;
 
-  DCHECK(
-      !(constraints == WebTopControlsShown && current == WebTopControlsHidden));
-  DCHECK(
-      !(constraints == WebTopControlsHidden && current == WebTopControlsShown));
+  DCHECK(!(constraints == WebBrowserControlsShown &&
+           current == WebBrowserControlsHidden));
+  DCHECK(!(constraints == WebBrowserControlsHidden &&
+           current == WebBrowserControlsShown));
 
   // If the change should be animated, let the impl thread drive the change.
   // Otherwise, immediately set the shown ratio so we don't have to wait for
@@ -103,22 +106,24 @@ void TopControls::updateConstraintsAndState(WebTopControlsState constraints,
   if (animate)
     return;
 
-  if (constraints == WebTopControlsBoth && current == WebTopControlsBoth)
+  if (constraints == WebBrowserControlsBoth &&
+      current == WebBrowserControlsBoth)
     return;
 
-  if (constraints == WebTopControlsHidden || current == WebTopControlsHidden)
+  if (constraints == WebBrowserControlsHidden ||
+      current == WebBrowserControlsHidden)
     setShownRatio(0.f);
   else
     setShownRatio(1.f);
 }
 
-void TopControls::setHeight(float height, bool shrinkViewport) {
+void BrowserControls::setHeight(float height, bool shrinkViewport) {
   if (m_height == height && m_shrinkViewport == shrinkViewport)
     return;
 
   m_height = height;
   m_shrinkViewport = shrinkViewport;
-  m_frameHost->chromeClient().didUpdateTopControls();
+  m_frameHost->chromeClient().didUpdateBrowserControls();
 }
 
 }  // namespace blink

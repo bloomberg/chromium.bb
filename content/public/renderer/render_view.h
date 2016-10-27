@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/top_controls_state.h"
+#include "content/public/common/browser_controls_state.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
@@ -119,9 +119,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual const std::string& GetAcceptLanguages() const = 0;
 
 #if defined(OS_ANDROID)
-  virtual void UpdateTopControlsState(TopControlsState constraints,
-                                      TopControlsState current,
-                                      bool animate) = 0;
+  virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                          BrowserControlsState current,
+                                          bool animate) = 0;
 #endif
 
   // Converts the |rect| from Viewport coordinates to Window coordinates.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/input/top_controls_manager.h"
+#include "cc/input/browser_controls_offset_manager.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "cc/input/top_controls_manager_client.h"
+#include "cc/input/browser_controls_offset_manager_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -23,11 +23,12 @@
 namespace cc {
 namespace {
 
-class MockTopControlsManagerClient : public TopControlsManagerClient {
+class MockBrowserControlsOffsetManagerClient
+    : public BrowserControlsOffsetManagerClient {
  public:
-  MockTopControlsManagerClient(float top_controls_height,
-                               float top_controls_show_threshold,
-                               float top_controls_hide_threshold)
+  MockBrowserControlsOffsetManagerClient(float top_controls_height,
+                                         float browser_controls_show_threshold,
+                                         float browser_controls_hide_threshold)
       : host_impl_(&task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
@@ -36,17 +37,17 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
         bottom_controls_height_(0.f),
         top_controls_shown_ratio_(1.f),
         top_controls_height_(top_controls_height),
-        top_controls_show_threshold_(top_controls_show_threshold),
-        top_controls_hide_threshold_(top_controls_hide_threshold) {
+        browser_controls_show_threshold_(browser_controls_show_threshold),
+        browser_controls_hide_threshold_(browser_controls_hide_threshold) {
     active_tree_ = base::MakeUnique<LayerTreeImpl>(
-        &host_impl_, new SyncedProperty<ScaleGroup>, new SyncedTopControls,
+        &host_impl_, new SyncedProperty<ScaleGroup>, new SyncedBrowserControls,
         new SyncedElasticOverscroll);
     root_scroll_layer_ = LayerImpl::Create(active_tree_.get(), 1);
   }
 
-  ~MockTopControlsManagerClient() override {}
+  ~MockBrowserControlsOffsetManagerClient() override {}
 
-  void DidChangeTopControlsPosition() override {
+  void DidChangeBrowserControlsPosition() override {
     redraw_needed_ = true;
     update_draw_properties_needed_ = true;
   }
@@ -59,7 +60,7 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
 
   float TopControlsHeight() const override { return top_controls_height_; }
 
-  void SetCurrentTopControlsShownRatio(float ratio) override {
+  void SetCurrentBrowserControlsShownRatio(float ratio) override {
     ASSERT_FALSE(std::isnan(ratio));
     ASSERT_FALSE(ratio == std::numeric_limits<float>::infinity());
     ASSERT_FALSE(ratio == -std::numeric_limits<float>::infinity());
@@ -68,24 +69,22 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
     top_controls_shown_ratio_ = ratio;
   }
 
-  float CurrentTopControlsShownRatio() const override {
+  float CurrentBrowserControlsShownRatio() const override {
     return top_controls_shown_ratio_;
   }
 
-  LayerImpl* rootScrollLayer() {
-    return root_scroll_layer_.get();
-  }
+  LayerImpl* rootScrollLayer() { return root_scroll_layer_.get(); }
 
-  TopControlsManager* manager() {
+  BrowserControlsOffsetManager* manager() {
     if (!manager_) {
-      manager_ = TopControlsManager::Create(this,
-                                            top_controls_show_threshold_,
-                                            top_controls_hide_threshold_);
+      manager_ = BrowserControlsOffsetManager::Create(
+          this, browser_controls_show_threshold_,
+          browser_controls_hide_threshold_);
     }
     return manager_.get();
   }
 
-  void SetTopControlsHeight(float height) { top_controls_height_ = height; }
+  void SetBrowserControlsHeight(float height) { top_controls_height_ = height; }
 
   void SetBottomControlsHeight(float height) {
     bottom_controls_height_ = height;
@@ -98,20 +97,20 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   FakeLayerTreeHostImpl host_impl_;
   std::unique_ptr<LayerTreeImpl> active_tree_;
   std::unique_ptr<LayerImpl> root_scroll_layer_;
-  std::unique_ptr<TopControlsManager> manager_;
+  std::unique_ptr<BrowserControlsOffsetManager> manager_;
   bool redraw_needed_;
   bool update_draw_properties_needed_;
 
   float bottom_controls_height_;
   float top_controls_shown_ratio_;
   float top_controls_height_;
-  float top_controls_show_threshold_;
-  float top_controls_hide_threshold_;
+  float browser_controls_show_threshold_;
+  float browser_controls_hide_threshold_;
 };
 
-TEST(TopControlsManagerTest, EnsureScrollThresholdApplied) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest, EnsureScrollThresholdApplied) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBegin();
 
@@ -153,9 +152,9 @@ TEST(TopControlsManagerTest, EnsureScrollThresholdApplied) {
   manager->ScrollEnd();
 }
 
-TEST(TopControlsManagerTest, PartialShownHideAnimation) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest, PartialShownHideAnimation) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
@@ -183,9 +182,9 @@ TEST(TopControlsManagerTest, PartialShownHideAnimation) {
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PartialShownShowAnimation) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest, PartialShownShowAnimation) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
@@ -213,9 +212,10 @@ TEST(TopControlsManagerTest, PartialShownShowAnimation) {
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
-  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest,
+     PartialHiddenWithAmbiguousThresholdShows) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.25f, 0.25f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBegin();
 
@@ -239,9 +239,10 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
-  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest,
+     PartialHiddenWithAmbiguousThresholdHides) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.25f, 0.25f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBegin();
 
@@ -265,9 +266,10 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
-  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest,
+     PartialShownWithAmbiguousThresholdHides) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.25f, 0.25f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBy(gfx::Vector2dF(0.f, 200.f));
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
@@ -295,9 +297,10 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
-  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest,
+     PartialShownWithAmbiguousThresholdShows) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.25f, 0.25f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBy(gfx::Vector2dF(0.f, 200.f));
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
@@ -325,9 +328,9 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PinchIgnoresScroll) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest, PinchIgnoresScroll) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   // Hide the controls.
   manager->ScrollBegin();
@@ -354,9 +357,9 @@ TEST(TopControlsManagerTest, PinchIgnoresScroll) {
   EXPECT_TRUE(manager->has_animation());
 }
 
-TEST(TopControlsManagerTest, PinchBeginStartsAnimationIfNecessary) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -407,45 +410,48 @@ TEST(TopControlsManagerTest, PinchBeginStartsAnimationIfNecessary) {
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 }
 
-TEST(TopControlsManagerTest, HeightChangeMaintainsFullyVisibleControls) {
-  MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest,
+     HeightChangeMaintainsFullyVisibleControls) {
+  MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 
-  client.SetTopControlsHeight(100.f);
+  client.SetBrowserControlsHeight(100.f);
   EXPECT_FALSE(manager->has_animation());
   EXPECT_FLOAT_EQ(100.f, manager->TopControlsHeight());
   EXPECT_FLOAT_EQ(0, manager->ControlsTopOffset());
 
-  client.SetTopControlsHeight(50.f);
+  client.SetBrowserControlsHeight(50.f);
   EXPECT_FALSE(manager->has_animation());
   EXPECT_FLOAT_EQ(50.f, manager->TopControlsHeight());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 }
 
-TEST(TopControlsManagerTest, GrowingHeightKeepsTopControlsHidden) {
-  MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
-  client.SetTopControlsHeight(1.f);
-  manager->UpdateTopControlsState(HIDDEN, HIDDEN, false);
+TEST(BrowserControlsOffsetManagerTest,
+     GrowingHeightKeepsBrowserControlsHidden) {
+  MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
+  client.SetBrowserControlsHeight(1.f);
+  manager->UpdateBrowserControlsState(HIDDEN, HIDDEN, false);
   EXPECT_EQ(-1.f, manager->ControlsTopOffset());
   EXPECT_EQ(0.f, manager->ContentTopOffset());
 
-  client.SetTopControlsHeight(50.f);
+  client.SetBrowserControlsHeight(50.f);
   EXPECT_FALSE(manager->has_animation());
   EXPECT_EQ(-50.f, manager->ControlsTopOffset());
   EXPECT_EQ(0.f, manager->ContentTopOffset());
 
-  client.SetTopControlsHeight(100.f);
+  client.SetBrowserControlsHeight(100.f);
   EXPECT_FALSE(manager->has_animation());
   EXPECT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_EQ(0.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, ShrinkingHeightKeepsTopControlsHidden) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
+TEST(BrowserControlsOffsetManagerTest,
+     ShrinkingHeightKeepsBrowserControlsHidden) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -453,35 +459,35 @@ TEST(TopControlsManagerTest, ShrinkingHeightKeepsTopControlsHidden) {
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  client.SetTopControlsHeight(50.f);
+  client.SetBrowserControlsHeight(50.f);
   EXPECT_FALSE(manager->has_animation());
   EXPECT_FLOAT_EQ(-50.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 
-  client.SetTopControlsHeight(0.f);
+  client.SetBrowserControlsHeight(0.f);
   EXPECT_FALSE(manager->has_animation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, ScrollByWithZeroHeightControlsIsNoop) {
-  MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
-  TopControlsManager* manager = client.manager();
-  manager->UpdateTopControlsState(BOTH, BOTH, false);
+TEST(BrowserControlsOffsetManagerTest, ScrollByWithZeroHeightControlsIsNoop) {
+  MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
+  BrowserControlsOffsetManager* manager = client.manager();
+  manager->UpdateBrowserControlsState(BOTH, BOTH, false);
 
   manager->ScrollBegin();
   gfx::Vector2dF pending = manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
   EXPECT_FLOAT_EQ(20.f, pending.y());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
-  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
   manager->ScrollEnd();
 }
 
-TEST(TopControlsManagerTest, ScrollThenRestoreBottomControls) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
+TEST(BrowserControlsOffsetManagerTest, ScrollThenRestoreBottomControls) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
   client.SetBottomControlsHeight(100.f);
-  TopControlsManager* manager = client.manager();
+  BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
   EXPECT_FLOAT_EQ(80.f, manager->ContentBottomOffset());
@@ -495,10 +501,28 @@ TEST(TopControlsManagerTest, ScrollThenRestoreBottomControls) {
   manager->ScrollEnd();
 }
 
-TEST(TopControlsManagerTest, HideAndPeekBottomControls) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
+TEST(BrowserControlsOffsetManagerTest,
+     ScrollThenRestoreBottomControlsNoBrowserControls) {
+  MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
   client.SetBottomControlsHeight(100.f);
-  TopControlsManager* manager = client.manager();
+  BrowserControlsOffsetManager* manager = client.manager();
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
+  EXPECT_FLOAT_EQ(80.f, manager->ContentBottomOffset());
+  EXPECT_FLOAT_EQ(0.8f, manager->BottomControlsShownRatio());
+  manager->ScrollEnd();
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0.f, -200.f));
+  EXPECT_FLOAT_EQ(100.f, manager->ContentBottomOffset());
+  EXPECT_FLOAT_EQ(1.f, manager->BottomControlsShownRatio());
+  manager->ScrollEnd();
+}
+
+TEST(BrowserControlsOffsetManagerTest, HideAndPeekBottomControls) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
+  client.SetBottomControlsHeight(100.f);
+  BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
   EXPECT_FLOAT_EQ(0.f, manager->ContentBottomOffset());
@@ -512,19 +536,20 @@ TEST(TopControlsManagerTest, HideAndPeekBottomControls) {
   manager->ScrollEnd();
 }
 
-TEST(TopControlsManagerTest, HideAndImmediateShowKeepsControlsVisible) {
-  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
+TEST(BrowserControlsOffsetManagerTest,
+     HideAndImmediateShowKeepsControlsVisible) {
+  MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
   client.SetBottomControlsHeight(100.f);
-  TopControlsManager* manager = client.manager();
-  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  BrowserControlsOffsetManager* manager = client.manager();
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
 
-  manager->UpdateTopControlsState(BOTH, HIDDEN, true);
+  manager->UpdateBrowserControlsState(BOTH, HIDDEN, true);
   EXPECT_TRUE(manager->has_animation());
-  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
 
-  manager->UpdateTopControlsState(BOTH, SHOWN, true);
+  manager->UpdateBrowserControlsState(BOTH, SHOWN, true);
   EXPECT_FALSE(manager->has_animation());
-  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
 }
 
 }  // namespace

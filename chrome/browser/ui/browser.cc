@@ -2497,7 +2497,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
 }
 
 bool Browser::ShouldHideUIForFullscreen() const {
-  // Windows and GTK remove the top controls in fullscreen, but Mac and Ash
+  // Windows and GTK remove the browser controls in fullscreen, but Mac and Ash
   // keep the controls in a slide-down panel.
   return window_ && window_->ShouldHideUIForFullscreen();
 }

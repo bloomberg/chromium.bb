@@ -725,18 +725,18 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
   return content_view_core_->GetPhysicalBackingSize();
 }
 
-bool RenderWidgetHostViewAndroid::DoTopControlsShrinkBlinkSize() const {
+bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar.
   return content_view_core_ &&
-         content_view_core_->DoTopControlsShrinkBlinkSize();
+         content_view_core_->DoBrowserControlsShrinkBlinkSize();
 }
 
 float RenderWidgetHostViewAndroid::GetTopControlsHeight() const {
   if (!content_view_core_)
     return default_bounds_.x();
 
-  // The height of the top controls.
+  // The height of the browser controls.
   return content_view_core_->GetTopControlsHeightDip();
 }
 
@@ -744,7 +744,7 @@ float RenderWidgetHostViewAndroid::GetBottomControlsHeight() const {
   if (!content_view_core_)
     return 0.f;
 
-  // The height of the top controls.
+  // The height of the browser controls.
   return content_view_core_->GetBottomControlsHeightDip();
 }
 

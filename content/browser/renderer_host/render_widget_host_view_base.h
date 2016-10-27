@@ -161,9 +161,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar.
-  virtual bool DoTopControlsShrinkBlinkSize() const;
+  virtual bool DoBrowserControlsShrinkBlinkSize() const;
 
-  // The height of the URL-bar top controls.
+  // The height of the URL-bar browser controls.
   virtual float GetTopControlsHeight() const;
 
   // The height of the bottom bar.

@@ -37,14 +37,15 @@ ThreadedChannel::~ThreadedChannel() {
   DCHECK(!IsInitialized());
 }
 
-void ThreadedChannel::UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                                   TopControlsState current,
-                                                   bool animate) {
+void ThreadedChannel::UpdateBrowserControlsStateOnImpl(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&ProxyImpl::UpdateTopControlsStateOnImpl, proxy_impl_weak_ptr_,
-                 constraints, current, animate));
+      base::Bind(&ProxyImpl::UpdateBrowserControlsStateOnImpl,
+                 proxy_impl_weak_ptr_, constraints, current, animate));
 }
 
 void ThreadedChannel::InitializeCompositorFrameSinkOnImpl(

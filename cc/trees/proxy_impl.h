@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/delayed_unique_notifier.h"
-#include "cc/input/top_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/channel_impl.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -30,9 +30,9 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   ~ProxyImpl() override;
 
   // Virtual for testing.
-  void UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                    TopControlsState current,
-                                    bool animate);
+  void UpdateBrowserControlsStateOnImpl(BrowserControlsState constraints,
+                                        BrowserControlsState current,
+                                        bool animate);
   void InitializeCompositorFrameSinkOnImpl(
       CompositorFrameSink* compositor_frame_sink);
   void InitializeMutatorOnImpl(std::unique_ptr<LayerTreeMutator> mutator);

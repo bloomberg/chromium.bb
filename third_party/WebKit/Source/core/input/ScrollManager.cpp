@@ -6,9 +6,9 @@
 
 #include "core/dom/DOMNodeIds.h"
 #include "core/events/GestureEvent.h"
+#include "core/frame/BrowserControls.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input/EventHandlingUtil.h"
@@ -370,7 +370,7 @@ WebInputEventResult ScrollManager::passScrollGestureEventToWidget(
 
 bool ScrollManager::isEffectiveRootScroller(const Node& node) const {
   // The root scroller is the one Element on the page designated to perform
-  // "viewport actions" like top controls movement and overscroll glow.
+  // "viewport actions" like browser controls movement and overscroll glow.
   if (!m_frame->document())
     return false;
 

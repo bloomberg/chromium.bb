@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "content/public/common/top_controls_state.h"
+#include "content/public/common/browser_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "url/gurl.h"
 
@@ -53,9 +53,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnSetVisuallyDeemphasized(bool deemphasized);
 #endif
 #if defined(OS_ANDROID)
-  void OnUpdateTopControlsState(content::TopControlsState constraints,
-                                content::TopControlsState current,
-                                bool animate);
+  void OnUpdateBrowserControlsState(content::BrowserControlsState constraints,
+                                    content::BrowserControlsState current,
+                                    bool animate);
 #endif
   void OnGetWebApplicationInfo();
   void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);

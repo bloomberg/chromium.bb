@@ -5,10 +5,10 @@
 #include "core/frame/VisualViewport.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/BrowserControls.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/TopControls.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/input/EventHandler.h"
@@ -1289,9 +1289,9 @@ static ScrollOffset expectedMaxFrameViewScrollOffset(
       frameView.contentsSize().height() - newHeight);
 }
 
-TEST_F(VisualViewportTest, TestTopControlsAdjustment) {
+TEST_F(VisualViewportTest, TestBrowserControlsAdjustment) {
   initializeWithAndroidSettings();
-  webViewImpl()->resizeWithTopControls(IntSize(500, 450), 20, false);
+  webViewImpl()->resizeWithBrowserControls(IntSize(500, 450), 20, false);
 
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
@@ -1304,7 +1304,7 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustment) {
   EXPECT_SIZE_EQ(IntSize(500, 450), visualViewport.visibleRect().size());
   EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.frameRect().size());
 
-  // Simulate bringing down the top controls by 20px.
+  // Simulate bringing down the browser controls by 20px.
   webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 1);
   EXPECT_SIZE_EQ(IntSize(500, 430), visualViewport.visibleRect().size());
@@ -1321,13 +1321,13 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustment) {
   EXPECT_SIZE_EQ(expectedMaxFrameViewScrollOffset(visualViewport, frameView),
                  frameView.scrollOffset());
 
-  // Simulate bringing up the top controls by 10.5px.
+  // Simulate bringing up the browser controls by 10.5px.
   webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, -10.5f / 20);
   EXPECT_FLOAT_SIZE_EQ(FloatSize(500, 440.5f),
                        visualViewport.visibleRect().size());
 
-  // maximumScrollPosition |ceil|s the top controls adjustment.
+  // maximumScrollPosition |ceil|s the browser controls adjustment.
   visualViewport.move(ScrollOffset(10000, 10000));
   EXPECT_FLOAT_SIZE_EQ(FloatSize(500, 881 - 441),
                        visualViewport.scrollOffset());
@@ -1338,9 +1338,9 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustment) {
                  frameView.scrollOffset());
 }
 
-TEST_F(VisualViewportTest, TestTopControlsAdjustmentWithScale) {
+TEST_F(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   initializeWithAndroidSettings();
-  webViewImpl()->resizeWithTopControls(IntSize(500, 450), 20, false);
+  webViewImpl()->resizeWithBrowserControls(IntSize(500, 450), 20, false);
 
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
@@ -1353,9 +1353,9 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustmentWithScale) {
   EXPECT_SIZE_EQ(IntSize(250, 225), visualViewport.visibleRect().size());
   EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.frameRect().size());
 
-  // Simulate bringing down the top controls by 20px. Since we're zoomed in, the
-  // top controls take up half as much space (in document-space) than they do at
-  // an unzoomed level.
+  // Simulate bringing down the browser controls by 20px. Since we're zoomed in,
+  // the browser controls take up half as much space (in document-space) than
+  // they do at an unzoomed level.
   webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 1);
   EXPECT_SIZE_EQ(IntSize(250, 215), visualViewport.visibleRect().size());
@@ -1388,7 +1388,7 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustmentWithScale) {
                                      WebFloatSize(), 0.8f, -1);
   EXPECT_SIZE_EQ(FloatSize(625, 562.5), visualViewport.visibleRect().size());
 
-  // Bring out the top controls by 11
+  // Bring out the browser controls by 11
   webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 11 / 20.f);
   EXPECT_SIZE_EQ(FloatSize(625, 548.75), visualViewport.visibleRect().size());
@@ -1404,10 +1404,10 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustmentWithScale) {
 }
 
 // Tests that a scroll all the way to the bottom of the page, while hiding the
-// top controls doesn't cause a clamp in the viewport scroll offset when the top
-// controls initiated resize occurs.
-TEST_F(VisualViewportTest, TestTopControlsAdjustmentAndResize) {
-  int topControlsHeight = 20;
+// browser controls doesn't cause a clamp in the viewport scroll offset when the
+// top controls initiated resize occurs.
+TEST_F(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
+  int browserControlsHeight = 20;
   int visualViewportHeight = 450;
   int layoutViewportHeight = 900;
   float pageScale = 2;
@@ -1415,10 +1415,10 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustmentAndResize) {
 
   initializeWithAndroidSettings();
 
-  // Initialize with top controls showing and shrinking the Blink size.
-  webViewImpl()->resizeWithTopControls(
-      WebSize(500, visualViewportHeight - topControlsHeight), 20, true);
-  webViewImpl()->topControls().setShownRatio(1);
+  // Initialize with browser controls showing and shrinking the Blink size.
+  webViewImpl()->resizeWithBrowserControls(
+      WebSize(500, visualViewportHeight - browserControlsHeight), 20, true);
+  webViewImpl()->browserControls().setShownRatio(1);
 
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
@@ -1429,18 +1429,19 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustmentAndResize) {
 
   visualViewport.setScale(pageScale);
   EXPECT_SIZE_EQ(
-      IntSize(250, (visualViewportHeight - topControlsHeight) / pageScale),
+      IntSize(250, (visualViewportHeight - browserControlsHeight) / pageScale),
       visualViewport.visibleRect().size());
-  EXPECT_SIZE_EQ(
-      IntSize(1000, layoutViewportHeight - topControlsHeight / minPageScale),
-      frameView.frameRect().size());
-  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight - topControlsHeight),
+  EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight -
+                                   browserControlsHeight / minPageScale),
+                 frameView.frameRect().size());
+  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight - browserControlsHeight),
                  visualViewport.size());
 
-  // Scroll all the way to the bottom, hiding the top controls in the process.
+  // Scroll all the way to the bottom, hiding the browser controls in the
+  // process.
   visualViewport.move(ScrollOffset(10000, 10000));
   frameView.scrollBy(ScrollOffset(10000, 10000), UserScroll);
-  webViewImpl()->topControls().setShownRatio(0);
+  webViewImpl()->browserControls().setShownRatio(0);
 
   EXPECT_SIZE_EQ(IntSize(250, visualViewportHeight / pageScale),
                  visualViewport.visibleRect().size());
@@ -1455,11 +1456,11 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustmentAndResize) {
 
   ScrollOffset totalExpected = visualViewportExpected + frameViewExpected;
 
-  // Resize the widget to match the top controls adjustment. Ensure that the
+  // Resize the widget to match the browser controls adjustment. Ensure that the
   // total offset (i.e. what the user sees) doesn't change because of clamping
   // the offsets to valid values.
-  webViewImpl()->resizeWithTopControls(WebSize(500, visualViewportHeight), 20,
-                                       false);
+  webViewImpl()->resizeWithBrowserControls(WebSize(500, visualViewportHeight),
+                                           20, false);
 
   EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.size());
   EXPECT_SIZE_EQ(IntSize(250, visualViewportHeight / pageScale),
@@ -1470,11 +1471,11 @@ TEST_F(VisualViewportTest, TestTopControlsAdjustmentAndResize) {
                  visualViewport.scrollOffset() + frameView.scrollOffset());
 }
 
-// Tests that a scroll all the way to the bottom while showing the top controls
-// doesn't cause a clamp to the viewport scroll offset when the top controls
-// initiated resize occurs.
-TEST_F(VisualViewportTest, TestTopControlsShrinkAdjustmentAndResize) {
-  int topControlsHeight = 20;
+// Tests that a scroll all the way to the bottom while showing the browser
+// controls doesn't cause a clamp to the viewport scroll offset when the browser
+// controls initiated resize occurs.
+TEST_F(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
+  int browserControlsHeight = 20;
   int visualViewportHeight = 500;
   int layoutViewportHeight = 1000;
   int contentHeight = 2000;
@@ -1483,10 +1484,10 @@ TEST_F(VisualViewportTest, TestTopControlsShrinkAdjustmentAndResize) {
 
   initializeWithAndroidSettings();
 
-  // Initialize with top controls hidden and not shrinking the Blink size.
-  webViewImpl()->resizeWithTopControls(IntSize(500, visualViewportHeight), 20,
-                                       false);
-  webViewImpl()->topControls().setShownRatio(0);
+  // Initialize with browser controls hidden and not shrinking the Blink size.
+  webViewImpl()->resizeWithBrowserControls(IntSize(500, visualViewportHeight),
+                                           20, false);
+  webViewImpl()->browserControls().setShownRatio(0);
 
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
@@ -1502,22 +1503,22 @@ TEST_F(VisualViewportTest, TestTopControlsShrinkAdjustmentAndResize) {
                  frameView.frameRect().size());
   EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.size());
 
-  // Scroll all the way to the bottom, showing the the top controls in the
+  // Scroll all the way to the bottom, showing the the browser controls in the
   // process. (This could happen via window.scrollTo during a scroll, for
   // example).
-  webViewImpl()->topControls().setShownRatio(1);
+  webViewImpl()->browserControls().setShownRatio(1);
   visualViewport.move(ScrollOffset(10000, 10000));
   frameView.scrollBy(ScrollOffset(10000, 10000), UserScroll);
 
   EXPECT_SIZE_EQ(
-      IntSize(250, (visualViewportHeight - topControlsHeight) / pageScale),
+      IntSize(250, (visualViewportHeight - browserControlsHeight) / pageScale),
       visualViewport.visibleRect().size());
 
   ScrollOffset frameViewExpected(
       0, contentHeight -
-             (layoutViewportHeight - topControlsHeight / minPageScale));
+             (layoutViewportHeight - browserControlsHeight / minPageScale));
   ScrollOffset visualViewportExpected = ScrollOffset(
-      750, (layoutViewportHeight - topControlsHeight / minPageScale -
+      750, (layoutViewportHeight - browserControlsHeight / minPageScale -
             visualViewport.visibleRect().height()));
 
   EXPECT_SIZE_EQ(visualViewportExpected, visualViewport.scrollOffset());
@@ -1525,39 +1526,39 @@ TEST_F(VisualViewportTest, TestTopControlsShrinkAdjustmentAndResize) {
 
   ScrollOffset totalExpected = visualViewportExpected + frameViewExpected;
 
-  // Resize the widget to match the top controls adjustment. Ensure that the
+  // Resize the widget to match the browser controls adjustment. Ensure that the
   // total offset (i.e. what the user sees) doesn't change because of clamping
   // the offsets to valid values.
-  webViewImpl()->resizeWithTopControls(
-      WebSize(500, visualViewportHeight - topControlsHeight), 20, true);
+  webViewImpl()->resizeWithBrowserControls(
+      WebSize(500, visualViewportHeight - browserControlsHeight), 20, true);
 
-  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight - topControlsHeight),
+  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight - browserControlsHeight),
                  visualViewport.size());
   EXPECT_SIZE_EQ(
-      IntSize(250, (visualViewportHeight - topControlsHeight) / pageScale),
+      IntSize(250, (visualViewportHeight - browserControlsHeight) / pageScale),
       visualViewport.visibleRect().size());
-  EXPECT_SIZE_EQ(
-      IntSize(1000, layoutViewportHeight - topControlsHeight / minPageScale),
-      frameView.frameRect().size());
+  EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight -
+                                   browserControlsHeight / minPageScale),
+                 frameView.frameRect().size());
   EXPECT_SIZE_EQ(totalExpected,
                  visualViewport.scrollOffset() + frameView.scrollOffset());
 }
 
-// Tests that a resize due to top controls hiding doesn't incorrectly clamp the
-// main frame's scroll offset. crbug.com/428193.
+// Tests that a resize due to browser controls hiding doesn't incorrectly clamp
+// the main frame's scroll offset. crbug.com/428193.
 TEST_F(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   initializeWithAndroidSettings();
-  webViewImpl()->resizeWithTopControls(webViewImpl()->size(), 500, false);
+  webViewImpl()->resizeWithBrowserControls(webViewImpl()->size(), 500, false);
   webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 1);
-  webViewImpl()->resizeWithTopControls(WebSize(1000, 1000), 500, true);
+  webViewImpl()->resizeWithBrowserControls(WebSize(1000, 1000), 500, true);
 
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
 
-  // Scroll the FrameView to the bottom of the page but "hide" the top controls
-  // on the compositor side so the max scroll position should account for the
-  // full viewport height.
+  // Scroll the FrameView to the bottom of the page but "hide" the browser
+  // controls on the compositor side so the max scroll position should account
+  // for the full viewport height.
   webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, -1);
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
@@ -1565,7 +1566,7 @@ TEST_F(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   EXPECT_EQ(500, frameView.scrollOffset().height());
 
   // Now send the resize, make sure the scroll offset doesn't change.
-  webViewImpl()->resizeWithTopControls(WebSize(1000, 1500), 500, false);
+  webViewImpl()->resizeWithBrowserControls(WebSize(1000, 1500), 500, false);
   EXPECT_EQ(500, frameView.scrollOffset().height());
 }
 
@@ -2009,8 +2010,8 @@ TEST_P(ParameterizedVisualViewportTest, ResizeWithScrollAnchoring) {
   RuntimeEnabledFeatures::setScrollAnchoringEnabled(wasScrollAnchoringEnabled);
 }
 
-// Ensure that resize anchoring as happens when top controls hide/show affects
-// the scrollable area that's currently set as the root scroller.
+// Ensure that resize anchoring as happens when browser controls hide/show
+// affects the scrollable area that's currently set as the root scroller.
 TEST_P(ParameterizedVisualViewportTest, ResizeAnchoringWithRootScroller) {
   bool wasRootScrollerEnabled =
       RuntimeEnabledFeatures::setRootScrollerEnabled();

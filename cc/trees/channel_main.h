@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/base/completion_event.h"
-#include "cc/input/top_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
@@ -32,9 +32,10 @@ class CC_EXPORT ChannelMain {
   virtual ~ChannelMain() {}
 
   // Interface for commands sent to ProxyImpl
-  virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                            TopControlsState current,
-                                            bool animate) = 0;
+  virtual void UpdateBrowserControlsStateOnImpl(
+      BrowserControlsState constraints,
+      BrowserControlsState current,
+      bool animate) = 0;
   virtual void InitializeCompositorFrameSinkOnImpl(
       CompositorFrameSink* compositor_frame_sink) = 0;
   virtual void InitializeMutatorOnImpl(

@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "cc/input/top_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/swap_promise.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -162,11 +162,11 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void setShowDebugBorders(bool show) override;
   void setShowScrollBottleneckRects(bool show) override;
 
-  void updateTopControlsState(blink::WebTopControlsState constraints,
-                              blink::WebTopControlsState current,
-                              bool animate) override;
-  void setTopControlsHeight(float height, bool shrink) override;
-  void setTopControlsShownRatio(float) override;
+  void updateBrowserControlsState(blink::WebBrowserControlsState constraints,
+                                  blink::WebBrowserControlsState current,
+                                  bool animate) override;
+  void setBrowserControlsHeight(float height, bool shrink) override;
+  void setBrowserControlsShownRatio(float) override;
   // TODO(ianwen): Move this method to WebLayerTreeView and implement main
   // thread scrolling.
   virtual void setBottomControlsHeight(float height);

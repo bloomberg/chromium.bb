@@ -50,6 +50,7 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "core/events/WheelEvent.h"
 #include "core/fetch/UniqueIdentifier.h"
+#include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -58,7 +59,6 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
-#include "core/frame/TopControls.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLMediaElement.h"
@@ -1778,11 +1778,11 @@ void WebViewImpl::resizeVisualViewport(const WebSize& newSize) {
 void WebViewImpl::performResize() {
   // We'll keep the initial containing block size from changing when the top
   // controls hide so that the ICB will always be the same size as the
-  // viewport with the top controls shown.
+  // viewport with the browser controls shown.
   IntSize ICBSize = m_size;
   if (RuntimeEnabledFeatures::inertTopControlsEnabled() &&
-      !topControls().shrinkViewport())
-    ICBSize.expand(0, -topControls().height());
+      !browserControls().shrinkViewport())
+    ICBSize.expand(0, -browserControls().height());
 
   pageScaleConstraintsSet().didChangeInitialContainingBlockSize(ICBSize);
 
@@ -1799,20 +1799,21 @@ void WebViewImpl::performResize() {
   }
 }
 
-void WebViewImpl::updateTopControlsState(WebTopControlsState constraint,
-                                         WebTopControlsState current,
-                                         bool animate) {
-  topControls().updateConstraintsAndState(constraint, current, animate);
+void WebViewImpl::updateBrowserControlsState(WebBrowserControlsState constraint,
+                                             WebBrowserControlsState current,
+                                             bool animate) {
+  browserControls().updateConstraintsAndState(constraint, current, animate);
 
   if (m_layerTreeView)
-    m_layerTreeView->updateTopControlsState(constraint, current, animate);
+    m_layerTreeView->updateBrowserControlsState(constraint, current, animate);
 }
 
-void WebViewImpl::didUpdateTopControls() {
+void WebViewImpl::didUpdateBrowserControls() {
   if (m_layerTreeView) {
-    m_layerTreeView->setTopControlsShownRatio(topControls().shownRatio());
-    m_layerTreeView->setTopControlsHeight(topControls().height(),
-                                          topControls().shrinkViewport());
+    m_layerTreeView->setBrowserControlsShownRatio(
+        browserControls().shownRatio());
+    m_layerTreeView->setBrowserControlsHeight(
+        browserControls().height(), browserControls().shrinkViewport());
   }
 
   WebLocalFrameImpl* mainFrame = mainFrameImpl();
@@ -1828,32 +1829,34 @@ void WebViewImpl::didUpdateTopControls() {
   {
     // This object will save the current visual viewport offset w.r.t. the
     // document and restore it when the object goes out of scope. It's
-    // needed since the top controls adjustment will change the maximum
+    // needed since the browser controls adjustment will change the maximum
     // scroll offset and we may need to reposition them to keep the user's
     // apparent position unchanged.
     ResizeViewportAnchor::ResizeScope resizeScope(*m_resizeViewportAnchor);
 
-    float topControlsViewportAdjustment =
-        topControls().layoutHeight() - topControls().contentOffset();
-    visualViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
+    float browserControlsViewportAdjustment =
+        browserControls().layoutHeight() - browserControls().contentOffset();
+    visualViewport.setBrowserControlsAdjustment(
+        browserControlsViewportAdjustment);
 
     // Since the FrameView is sized to be the visual viewport at minimum
     // scale, its adjustment must also be scaled by the minimum scale.
-    view->setTopControlsViewportAdjustment(topControlsViewportAdjustment /
-                                           minimumPageScaleFactor());
+    view->setBrowserControlsViewportAdjustment(
+        browserControlsViewportAdjustment / minimumPageScaleFactor());
   }
 }
 
-TopControls& WebViewImpl::topControls() {
-  return page()->frameHost().topControls();
+BrowserControls& WebViewImpl::browserControls() {
+  return page()->frameHost().browserControls();
 }
 
 void WebViewImpl::resizeViewWhileAnchored(FrameView* view,
-                                          float topControlsHeight,
-                                          bool topControlsShrinkLayout) {
+                                          float browserControlsHeight,
+                                          bool browserControlsShrinkLayout) {
   DCHECK(mainFrameImpl());
 
-  topControls().setHeight(topControlsHeight, topControlsShrinkLayout);
+  browserControls().setHeight(browserControlsHeight,
+                              browserControlsShrinkLayout);
 
   {
     // Avoids unnecessary invalidations while various bits of state in
@@ -1870,14 +1873,15 @@ void WebViewImpl::resizeViewWhileAnchored(FrameView* view,
   updateAllLifecyclePhases();
 }
 
-void WebViewImpl::resizeWithTopControls(const WebSize& newSize,
-                                        float topControlsHeight,
-                                        bool topControlsShrinkLayout) {
+void WebViewImpl::resizeWithBrowserControls(const WebSize& newSize,
+                                            float browserControlsHeight,
+                                            bool browserControlsShrinkLayout) {
   if (m_shouldAutoResize)
     return;
 
-  if (m_size == newSize && topControls().height() == topControlsHeight &&
-      topControls().shrinkViewport() == topControlsShrinkLayout)
+  if (m_size == newSize &&
+      browserControls().height() == browserControlsHeight &&
+      browserControls().shrinkViewport() == browserControlsShrinkLayout)
     return;
 
   if (page()->mainFrame() && !page()->mainFrame()->isLocalFrame()) {
@@ -1911,10 +1915,12 @@ void WebViewImpl::resizeWithTopControls(const WebSize& newSize,
   if (isRotation) {
     RotationViewportAnchor anchor(*view, visualViewport, viewportAnchorCoords,
                                   pageScaleConstraintsSet());
-    resizeViewWhileAnchored(view, topControlsHeight, topControlsShrinkLayout);
+    resizeViewWhileAnchored(view, browserControlsHeight,
+                            browserControlsShrinkLayout);
   } else {
     ResizeViewportAnchor::ResizeScope resizeScope(*m_resizeViewportAnchor);
-    resizeViewWhileAnchored(view, topControlsHeight, topControlsShrinkLayout);
+    resizeViewWhileAnchored(view, browserControlsHeight,
+                            browserControlsShrinkLayout);
   }
   sendResizeEventAndRepaint();
 }
@@ -1923,8 +1929,8 @@ void WebViewImpl::resize(const WebSize& newSize) {
   if (m_shouldAutoResize || m_size == newSize)
     return;
 
-  resizeWithTopControls(newSize, topControls().height(),
-                        topControls().shrinkViewport());
+  resizeWithBrowserControls(newSize, browserControls().height(),
+                            browserControls().shrinkViewport());
 }
 
 void WebViewImpl::didEnterFullscreen() {
@@ -4223,7 +4229,7 @@ void WebViewImpl::applyViewportDeltas(
     const WebFloatSize&,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
-    float topControlsShownRatioDelta) {
+    float browserControlsShownRatioDelta) {
   VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
   // Store the desired offsets the visual viewport before setting the top
@@ -4234,8 +4240,8 @@ void WebViewImpl::applyViewportDeltas(
   visualViewportOffset.move(visualViewportDelta.width,
                             visualViewportDelta.height);
 
-  topControls().setShownRatio(topControls().shownRatio() +
-                              topControlsShownRatioDelta);
+  browserControls().setShownRatio(browserControls().shownRatio() +
+                                  browserControlsShownRatioDelta);
 
   setPageScaleFactorAndLocation(pageScaleFactor() * pageScaleDelta,
                                 visualViewportOffset);

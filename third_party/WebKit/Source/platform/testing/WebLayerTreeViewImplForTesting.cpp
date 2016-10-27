@@ -150,7 +150,7 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
     const gfx::Vector2dF& outerDelta,
     const gfx::Vector2dF& elasticOverscrollDelta,
     float pageScale,
-    float topControlsDelta) {}
+    float browserControlsDelta) {}
 
 void WebLayerTreeViewImplForTesting::RequestNewCompositorFrameSink() {
   // Intentionally do not create and set an CompositorFrameSink.

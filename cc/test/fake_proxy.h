@@ -38,9 +38,9 @@ class FakeProxy : public Proxy {
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate) override {}
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override {}
 
  private:
   LayerTreeHost* layer_tree_host_;

@@ -407,12 +407,12 @@ class CORE_EXPORT FrameView final
 
   void invalidatePaintForTickmarks();
 
-  // Since the compositor can resize the viewport due to top controls and
+  // Since the compositor can resize the viewport due to browser controls and
   // commit scroll offsets before a WebView::resize occurs, we need to adjust
   // our scroll extents to prevent clamping the scroll offsets.
-  void setTopControlsViewportAdjustment(float);
-  IntSize topControlsSize() const {
-    return IntSize(0, ceilf(m_topControlsViewportAdjustment));
+  void setBrowserControlsViewportAdjustment(float);
+  IntSize browserControlsSize() const {
+    return IntSize(0, ceilf(m_browserControlsViewportAdjustment));
   }
 
   IntSize maximumScrollOffsetInt() const override;
@@ -1003,7 +1003,7 @@ class CORE_EXPORT FrameView final
 
   Vector<IntRect> m_tickmarks;
 
-  float m_topControlsViewportAdjustment;
+  float m_browserControlsViewportAdjustment;
 
   bool m_needsUpdateWidgetGeometries;
   bool m_needsUpdateViewportIntersection;

@@ -61,7 +61,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
                            const WebFloatSize& layoutViewportDelta,
                            const WebFloatSize& elasticOverscrollDelta,
                            float scaleFactor,
-                           float topControlsShownRatioDelta) override;
+                           float browserControlsShownRatioDelta) override;
   void mouseCaptureLost() override;
   void setFocus(bool) override;
   bool setComposition(const WebString& text,
@@ -91,9 +91,9 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   WebPagePopup* pagePopup() const override;
   bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
   void applyReplacementRange(const WebRange&) override;
-  void updateTopControlsState(WebTopControlsState constraints,
-                              WebTopControlsState current,
-                              bool animate) override;
+  void updateBrowserControlsState(WebBrowserControlsState constraints,
+                                  WebBrowserControlsState current,
+                                  bool animate) override;
   void setVisibilityState(WebPageVisibilityState) override;
   bool isTransparent() const override;
   void setIsTransparent(bool) override;

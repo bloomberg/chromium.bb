@@ -117,7 +117,7 @@ class WebView : protected WebWidget {
   using WebWidget::didLosePointerLock;
   using WebWidget::backgroundColor;
   using WebWidget::pagePopup;
-  using WebWidget::updateTopControlsState;
+  using WebWidget::updateBrowserControlsState;
 
   // Initialization ------------------------------------------------------
 
@@ -331,11 +331,11 @@ class WebView : protected WebWidget {
   virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
 
   // Resize the view at the same time as changing the state of the top
-  // controls. If |topControlsShrinkLayout| is true, the embedder shrunk the
-  // WebView size by the top controls height.
-  virtual void resizeWithTopControls(const WebSize&,
-                                     float topControlsHeight,
-                                     bool topControlsShrinkLayout) = 0;
+  // controls. If |browserControlsShrinkLayout| is true, the embedder shrunk the
+  // WebView size by the browser controls height.
+  virtual void resizeWithBrowserControls(const WebSize&,
+                                         float browserControlsHeight,
+                                         bool browserControlsShrinkLayout) = 0;
 
   // Auto-Resize -----------------------------------------------------------
 

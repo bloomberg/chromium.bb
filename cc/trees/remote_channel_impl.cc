@@ -275,9 +275,10 @@ bool RemoteChannelImpl::SupportsImplScrolling() const {
   return true;
 }
 
-void RemoteChannelImpl::UpdateTopControlsState(TopControlsState constraints,
-                                               TopControlsState current,
-                                               bool animate) {
+void RemoteChannelImpl::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
   NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
 }
 

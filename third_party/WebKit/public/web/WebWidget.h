@@ -31,6 +31,7 @@
 #ifndef WebWidget_h
 #define WebWidget_h
 
+#include "../platform/WebBrowserControlsState.h"
 #include "../platform/WebCanvas.h"
 #include "../platform/WebCommon.h"
 #include "../platform/WebFloatSize.h"
@@ -39,7 +40,6 @@
 #include "../platform/WebRect.h"
 #include "../platform/WebSize.h"
 #include "../platform/WebTextInputInfo.h"
-#include "../platform/WebTopControlsState.h"
 #include "WebCompositionUnderline.h"
 #include "WebRange.h"
 #include "WebTextDirection.h"
@@ -133,7 +133,7 @@ class WebWidget {
                                    const WebFloatSize& layoutViewportDelta,
                                    const WebFloatSize& elasticOverscrollDelta,
                                    float scaleFactor,
-                                   float topControlsShownRatioDelta) {}
+                                   float browserControlsShownRatioDelta) {}
 
   // Called to inform the WebWidget that mouse capture was lost.
   virtual void mouseCaptureLost() {}
@@ -245,11 +245,12 @@ class WebWidget {
   // but not the select popup.
   virtual WebPagePopup* pagePopup() const { return 0; }
 
-  // Updates top controls constraints and current state. Allows embedder to
-  // control what are valid states for top controls and if it should animate.
-  virtual void updateTopControlsState(WebTopControlsState constraints,
-                                      WebTopControlsState current,
-                                      bool animate) {}
+  // Updates browser controls constraints and current state. Allows embedder to
+  // control what are valid states for browser controls and if it should
+  // animate.
+  virtual void updateBrowserControlsState(WebBrowserControlsState constraints,
+                                          WebBrowserControlsState current,
+                                          bool animate) {}
 
   // Populate |bounds| with the composition character bounds for the ongoing
   // composition. Returns false if there is no focused input or any ongoing

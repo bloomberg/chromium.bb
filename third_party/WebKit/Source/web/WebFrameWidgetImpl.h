@@ -93,7 +93,7 @@ class WebFrameWidgetImpl final
                            const WebFloatSize& mainFrameDelta,
                            const WebFloatSize& elasticOverscrollDelta,
                            float pageScaleDelta,
-                           float topControlsDelta) override;
+                           float browserControlsDelta) override;
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
   bool setComposition(const WebString& text,

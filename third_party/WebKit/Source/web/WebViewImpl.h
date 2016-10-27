@@ -70,6 +70,7 @@
 
 namespace blink {
 
+class BrowserControls;
 class DataObject;
 class DevToolsEmulator;
 class Frame;
@@ -79,7 +80,6 @@ class LinkHighlightImpl;
 class PageOverlay;
 class PageScaleConstraintsSet;
 class PaintLayerCompositor;
-class TopControls;
 class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentImpl;
@@ -133,7 +133,7 @@ class WEB_EXPORT WebViewImpl final
                            const WebFloatSize& layoutViewportDelta,
                            const WebFloatSize& elasticOverscrollDelta,
                            float pageScaleDelta,
-                           float topControlsShownRatioDelta) override;
+                           float browserControlsShownRatioDelta) override;
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
   bool setComposition(const WebString& text,
@@ -177,9 +177,9 @@ class WEB_EXPORT WebViewImpl final
   void setDomainRelaxationForbidden(bool, const WebString& scheme) override;
   void setWindowFeatures(const WebWindowFeatures&) override;
   void setOpenedByDOM() override;
-  void resizeWithTopControls(const WebSize&,
-                             float topControlsHeight,
-                             bool topControlsShrinkLayout) override;
+  void resizeWithBrowserControls(const WebSize&,
+                                 float browserControlsHeight,
+                                 bool browserControlsShrinkLayout) override;
   WebFrame* mainFrame() override;
   WebFrame* findFrameByName(const WebString& name,
                             WebFrame* relativeToFrame) override;
@@ -484,13 +484,14 @@ class WEB_EXPORT WebViewImpl final
     return m_matchesHeuristicsForGpuRasterization;
   }
 
-  void updateTopControlsState(WebTopControlsState constraint,
-                              WebTopControlsState current,
-                              bool animate) override;
+  void updateBrowserControlsState(WebBrowserControlsState constraint,
+                                  WebBrowserControlsState current,
+                                  bool animate) override;
 
-  TopControls& topControls();
-  // Called anytime top controls layout height or content offset have changed.
-  void didUpdateTopControls();
+  BrowserControls& browserControls();
+  // Called anytime browser controls layout height or content offset have
+  // changed.
+  void didUpdateBrowserControls();
 
   void forceNextWebGLContextCreationToFail() override;
   void forceNextDrawingBufferCreationToFail() override;
@@ -526,8 +527,8 @@ class WEB_EXPORT WebViewImpl final
 
   void performResize();
   void resizeViewWhileAnchored(FrameView*,
-                               float topControlsHeight,
-                               bool topControlsShrinkLayout);
+                               float browserControlsHeight,
+                               bool browserControlsShrinkLayout);
 
   // Overrides the compositor visibility. See the description of
   // m_overrideCompositorVisibility for more details.

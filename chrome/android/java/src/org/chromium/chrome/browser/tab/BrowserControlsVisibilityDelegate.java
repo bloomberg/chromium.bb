@@ -12,53 +12,53 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * A delegate to determine visibility of the top controls.
+ * A delegate to determine visibility of the browser controls.
  */
-public class TopControlsVisibilityDelegate {
+public class BrowserControlsVisibilityDelegate {
     protected final Tab mTab;
 
     /**
      * Basic constructor.
      * @param tab The associated {@link Tab}.
      */
-    public TopControlsVisibilityDelegate(Tab tab) {
+    public BrowserControlsVisibilityDelegate(Tab tab) {
         mTab = tab;
     }
 
     /**
-     * @return Whether hiding top controls is enabled or not.
+     * @return Whether hiding browser controls is enabled or not.
      */
-    public boolean isHidingTopControlsEnabled() {
+    public boolean isHidingBrowserControlsEnabled() {
         WebContents webContents = mTab.getWebContents();
         if (webContents == null || webContents.isDestroyed()) return false;
 
         String url = mTab.getUrl();
-        boolean enableHidingTopControls = url != null;
-        enableHidingTopControls &= !url.startsWith(UrlConstants.CHROME_SCHEME);
-        enableHidingTopControls &= !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+        boolean enableHidingBrowserControls = url != null;
+        enableHidingBrowserControls &= !url.startsWith(UrlConstants.CHROME_SCHEME);
+        enableHidingBrowserControls &= !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
 
         int securityState = mTab.getSecurityLevel();
-        enableHidingTopControls &= (securityState != ConnectionSecurityLevel.DANGEROUS
+        enableHidingBrowserControls &= (securityState != ConnectionSecurityLevel.DANGEROUS
                 && securityState != ConnectionSecurityLevel.SECURITY_WARNING);
 
-        enableHidingTopControls &=
+        enableHidingBrowserControls &=
                 !AccessibilityUtil.isAccessibilityEnabled(mTab.getApplicationContext());
 
         ContentViewCore cvc = mTab.getContentViewCore();
-        enableHidingTopControls &= cvc == null || !cvc.isFocusedNodeEditable();
-        enableHidingTopControls &= !mTab.isShowingErrorPage();
-        enableHidingTopControls &= !webContents.isShowingInterstitialPage();
-        enableHidingTopControls &= (mTab.getFullscreenManager() != null);
-        enableHidingTopControls &= DeviceClassManager.enableFullscreen();
-        enableHidingTopControls &= !mTab.isFullscreenWaitingForLoad();
+        enableHidingBrowserControls &= cvc == null || !cvc.isFocusedNodeEditable();
+        enableHidingBrowserControls &= !mTab.isShowingErrorPage();
+        enableHidingBrowserControls &= !webContents.isShowingInterstitialPage();
+        enableHidingBrowserControls &= (mTab.getFullscreenManager() != null);
+        enableHidingBrowserControls &= DeviceClassManager.enableFullscreen();
+        enableHidingBrowserControls &= !mTab.isFullscreenWaitingForLoad();
 
-        return enableHidingTopControls;
+        return enableHidingBrowserControls;
     }
 
     /**
-     * @return Whether showing top controls is enabled or not.
+     * @return Whether showing browser controls is enabled or not.
      */
-    public boolean isShowingTopControlsEnabled() {
+    public boolean isShowingBrowserControlsEnabled() {
         if (mTab.getFullscreenManager() == null) return true;
         return !mTab.getFullscreenManager().getPersistentFullscreenMode();
     }

@@ -7021,7 +7021,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
       sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionBottomHideTopControls) {
+TEST_F(LayerTreeHostCommonTest, StickyPositionBottomHideBrowserControls) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> scroller = Layer::Create();
   scoped_refptr<Layer> sticky_pos = Layer::Create();
@@ -8408,7 +8408,7 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
   // Sublayer should be bigger than the root enlarged by bounds_delta.
   gfx::Size sublayer_size = gfx::Size(300, 1000);
 
-  // Device viewport accomidated the root and the top controls.
+  // Device viewport accomidated the root and the browser controls.
   gfx::Size device_viewport_size = gfx::Size(300, 600);
 
   host_impl.SetViewportSize(device_viewport_size);

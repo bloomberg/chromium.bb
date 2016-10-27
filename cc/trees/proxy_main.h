@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
-#include "cc/input/top_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/trees/channel_main.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
@@ -99,9 +99,9 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool MainFrameWillHappenForTesting() override;
   void ReleaseCompositorFrameSink() override;
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate) override;
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override;
 
   // This sets the channel used by ProxyMain to communicate with ProxyImpl.
   void SetChannel(std::unique_ptr<ChannelMain> channel_main);

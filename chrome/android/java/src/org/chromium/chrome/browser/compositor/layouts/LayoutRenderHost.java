@@ -67,22 +67,22 @@ public interface LayoutRenderHost {
     /**
      * @return The background color of the toolbar.
      */
-    int getTopControlsBackgroundColor();
+    int getBrowserControlsBackgroundColor();
 
     /**
      * @return The alpha value of the textbox in the toolbar.
      */
-    float getTopControlsUrlBarAlpha();
+    float getBrowserControlsUrlBarAlpha();
 
     /**
      * @return Whether or not the toolbar is currently being faked.
      */
-    boolean areTopControlsPermanentlyHidden();
+    boolean areBrowserControlsPermanentlyHidden();
 
     /**
-     * @return The height of the top controls in pixels.
+     * @return The height of the browser controls in pixels.
      */
-    int getTopControlsHeightPixels();
+    int getBrowserControlsHeightPixels();
 
     /**
      * @return The {@link ResourceManager}.

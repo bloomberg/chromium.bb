@@ -273,11 +273,11 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/browser/invalidate_type.h",
     "//content/public/browser/navigation_controller.h",
     "//content/public/browser/readback_types.h",
+    "//content/public/common/browser_controls_state.h",
     "//content/public/common/console_message_level.h",
     "//content/public/common/result_codes.h",
     "//content/public/common/screen_orientation_values.h",
     "//content/public/common/speech_recognition_error.h",
-    "//content/public/common/top_controls_state.h",
   ]
 }
 

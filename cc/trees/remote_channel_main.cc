@@ -58,9 +58,9 @@ void RemoteChannelMain::OnProtoReceived(
   HandleProto(proto->to_main());
 }
 
-void RemoteChannelMain::UpdateTopControlsStateOnImpl(
-    TopControlsState constraints,
-    TopControlsState current,
+void RemoteChannelMain::UpdateBrowserControlsStateOnImpl(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
     bool animate) {}
 
 void RemoteChannelMain::InitializeCompositorFrameSinkOnImpl(

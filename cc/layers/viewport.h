@@ -38,19 +38,19 @@ class CC_EXPORT Viewport {
   static std::unique_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);
 
   // Differs from scrolling in that only the visual viewport is moved, without
-  // affecting the top controls or outer viewport.
+  // affecting the browser controls or outer viewport.
   void Pan(const gfx::Vector2dF& delta);
 
   // Scrolls the viewport, applying the unique bubbling between the inner and
-  // outer viewport. Scrolls can be consumed by top controls.
+  // outer viewport. Scrolls can be consumed by browser controls.
   ScrollResult ScrollBy(const gfx::Vector2dF& delta,
                         const gfx::Point& viewport_point,
                         bool is_wheel_scroll,
                         bool affect_top_controls);
 
   // Scrolls the viewport. Unlike the above method, scrolls the inner before
-  // the outer viewport. Doesn't affect top controls or return a result since
-  // callers don't need it.
+  // the outer viewport. Doesn't affect browser controls or return a result
+  // since callers don't need it.
   void ScrollByInnerFirst(const gfx::Vector2dF& delta);
 
   // Scrolls the viewport, bubbling the delta between the inner and outer
@@ -72,11 +72,12 @@ class CC_EXPORT Viewport {
   // Returns true if viewport_delta is stricly less than pending_delta.
   static bool ShouldAnimateViewport(const gfx::Vector2dF& viewport_delta,
                                     const gfx::Vector2dF& pending_delta);
-  bool ShouldTopControlsConsumeScroll(const gfx::Vector2dF& scroll_delta) const;
+  bool ShouldBrowserControlsConsumeScroll(
+      const gfx::Vector2dF& scroll_delta) const;
   gfx::Vector2dF AdjustOverscroll(const gfx::Vector2dF& delta) const;
 
-  // Sends the delta to the top controls, returns the amount applied.
-  gfx::Vector2dF ScrollTopControls(const gfx::Vector2dF& delta);
+  // Sends the delta to the browser controls, returns the amount applied.
+  gfx::Vector2dF ScrollBrowserControls(const gfx::Vector2dF& delta);
 
   gfx::ScrollOffset MaxTotalScrollOffset() const;
   gfx::ScrollOffset TotalScrollOffset() const;

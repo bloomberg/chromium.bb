@@ -24,11 +24,11 @@
 #include "cc/base/cc_export.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/scrollbar.h"
-#include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/output/compositor_frame_sink.h"
@@ -71,7 +71,6 @@ class ResourceProvider;
 class ResourceUpdateQueue;
 class SharedBitmapManager;
 class TaskGraphRunner;
-class TopControlsManager;
 struct PendingPageScaleAnimation;
 struct RenderingStats;
 struct ScrollAndScaleSet;
@@ -154,9 +153,9 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void SetNextCommitForcesRedraw() override;
   void NotifyInputThrottledUntilCommit() override;
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate) override;
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override;
   const base::WeakPtr<InputHandler>& GetInputHandler() const override;
   void DidStopFlinging() override;
   void SetDebugState(const LayerTreeDebugState& debug_state) override;

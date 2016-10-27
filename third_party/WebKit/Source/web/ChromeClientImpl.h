@@ -203,7 +203,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) override;
   void onMouseDown(Node*) override;
-  void didUpdateTopControls() const override;
+  void didUpdateBrowserControls() const override;
 
   CompositorProxyClient* createCompositorProxyClient(LocalFrame*) override;
   FloatSize elasticOverscroll() const override;

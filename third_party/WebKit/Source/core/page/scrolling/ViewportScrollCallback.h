@@ -11,16 +11,16 @@
 
 namespace blink {
 
+class BrowserControls;
 class FloatSize;
 class ScrollableArea;
 class ScrollState;
-class TopControls;
 class OverscrollController;
 class RootFrameViewport;
 
 // ViewportScrollCallback is a ScrollStateCallback, meaning that it's applied
 // during the applyScroll step of ScrollCustomization. It implements viewport
-// actions like moving top controls and showing overscroll glow as well as
+// actions like moving browser controls and showing overscroll glow as well as
 // scrolling the Element.
 //
 // ScrollCustomization generally relies on using the nativeApplyScroll to
@@ -32,13 +32,13 @@ class RootFrameViewport;
 // ScrollableArea to use.
 class ViewportScrollCallback : public ScrollStateCallback {
  public:
-  // The TopControls and OverscrollController are given to the
+  // The BrowserControls and OverscrollController are given to the
   // ViewportScrollCallback but are not owned or kept alive by it.
   static ViewportScrollCallback* create(
-      TopControls* topControls,
+      BrowserControls* browserControls,
       OverscrollController* overscrollController,
       RootFrameViewport& rootFrameViewport) {
-    return new ViewportScrollCallback(topControls, overscrollController,
+    return new ViewportScrollCallback(browserControls, overscrollController,
                                       rootFrameViewport);
   }
 
@@ -50,18 +50,19 @@ class ViewportScrollCallback : public ScrollStateCallback {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  // ViewportScrollCallback does not assume ownership of TopControls or of
+  // ViewportScrollCallback does not assume ownership of BrowserControls or of
   // OverscrollController.
-  ViewportScrollCallback(TopControls*,
+  ViewportScrollCallback(BrowserControls*,
                          OverscrollController*,
                          RootFrameViewport&);
 
-  bool shouldScrollTopControls(const ScrollOffset&, ScrollGranularity) const;
-  bool scrollTopControls(ScrollState&);
+  bool shouldScrollBrowserControls(const ScrollOffset&,
+                                   ScrollGranularity) const;
+  bool scrollBrowserControls(ScrollState&);
 
   ScrollResult performNativeScroll(ScrollState&);
 
-  WeakMember<TopControls> m_topControls;
+  WeakMember<BrowserControls> m_browserControls;
   WeakMember<OverscrollController> m_overscrollController;
   WeakMember<RootFrameViewport> m_rootFrameViewport;
 };

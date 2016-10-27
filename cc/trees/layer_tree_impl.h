@@ -53,7 +53,7 @@ class VideoFrameControllerClient;
 struct PendingPageScaleAnimation;
 
 typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
-typedef SyncedProperty<AdditionGroup<float>> SyncedTopControls;
+typedef SyncedProperty<AdditionGroup<float>> SyncedBrowserControls;
 typedef SyncedProperty<AdditionGroup<gfx::Vector2dF>> SyncedElasticOverscroll;
 
 class CC_EXPORT LayerTreeImpl {
@@ -63,7 +63,7 @@ class CC_EXPORT LayerTreeImpl {
   enum : int { kFixedPointHitsThreshold = 3 };
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl,
                 scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
-                scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
+                scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
                 scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
   virtual ~LayerTreeImpl();
 
@@ -245,10 +245,10 @@ class CC_EXPORT LayerTreeImpl {
     return elastic_overscroll_.get();
   }
 
-  SyncedTopControls* top_controls_shown_ratio() {
+  SyncedBrowserControls* top_controls_shown_ratio() {
     return top_controls_shown_ratio_.get();
   }
-  const SyncedTopControls* top_controls_shown_ratio() const {
+  const SyncedBrowserControls* top_controls_shown_ratio() const {
     return top_controls_shown_ratio_.get();
   }
 
@@ -410,17 +410,17 @@ class CC_EXPORT LayerTreeImpl {
   // the viewport.
   void GetViewportSelection(Selection<gfx::SelectionBound>* selection);
 
-  void set_top_controls_shrink_blink_size(bool shrink);
-  bool top_controls_shrink_blink_size() const {
-    return top_controls_shrink_blink_size_;
+  void set_browser_controls_shrink_blink_size(bool shrink);
+  bool browser_controls_shrink_blink_size() const {
+    return browser_controls_shrink_blink_size_;
   }
-  bool SetCurrentTopControlsShownRatio(float ratio);
-  float CurrentTopControlsShownRatio() const {
+  bool SetCurrentBrowserControlsShownRatio(float ratio);
+  float CurrentBrowserControlsShownRatio() const {
     return top_controls_shown_ratio_->Current(IsActiveTree());
   }
   void set_top_controls_height(float top_controls_height);
   float top_controls_height() const { return top_controls_height_; }
-  void PushTopControlsFromMainThread(float top_controls_shown_ratio);
+  void PushBrowserControlsFromMainThread(float top_controls_shown_ratio);
   void set_bottom_controls_height(float bottom_controls_height);
   float bottom_controls_height() const { return bottom_controls_height_; }
 
@@ -468,8 +468,8 @@ class CC_EXPORT LayerTreeImpl {
   bool IsViewportLayerId(int id) const;
   void UpdateScrollbars(int scroll_layer_id, int clip_layer_id);
   void DidUpdatePageScale();
-  void PushTopControls(const float* top_controls_shown_ratio);
-  bool ClampTopControlsShownRatio();
+  void PushBrowserControls(const float* top_controls_shown_ratio);
+  bool ClampBrowserControlsShownRatio();
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
@@ -552,13 +552,13 @@ class CC_EXPORT LayerTreeImpl {
 
   // Whether or not Blink's viewport size was shrunk by the height of the top
   // controls at the time of the last layout.
-  bool top_controls_shrink_blink_size_;
+  bool browser_controls_shrink_blink_size_;
   float top_controls_height_;
   float bottom_controls_height_;
 
-  // The amount that the top controls are shown from 0 (hidden) to 1 (fully
+  // The amount that the browser controls are shown from 0 (hidden) to 1 (fully
   // shown).
-  scoped_refptr<SyncedTopControls> top_controls_shown_ratio_;
+  scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio_;
 
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 

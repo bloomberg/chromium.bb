@@ -419,7 +419,7 @@ void WebFrameWidgetImpl::applyViewportDeltas(
     const WebFloatSize& mainFrameDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
-    float topControlsDelta) {
+    float browserControlsDelta) {
   // FIXME: To be implemented.
 }
 

@@ -4,11 +4,11 @@
 
 #include "core/page/scrolling/ViewportScrollCallback.h"
 
+#include "core/frame/BrowserControls.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
-#include "core/frame/TopControls.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "platform/geometry/FloatSize.h"
@@ -17,23 +17,23 @@
 namespace blink {
 
 ViewportScrollCallback::ViewportScrollCallback(
-    TopControls* topControls,
+    BrowserControls* browserControls,
     OverscrollController* overscrollController,
     RootFrameViewport& rootFrameViewport)
-    : m_topControls(topControls),
+    : m_browserControls(browserControls),
       m_overscrollController(overscrollController),
       m_rootFrameViewport(&rootFrameViewport) {}
 
 ViewportScrollCallback::~ViewportScrollCallback() {}
 
 DEFINE_TRACE(ViewportScrollCallback) {
-  visitor->trace(m_topControls);
+  visitor->trace(m_browserControls);
   visitor->trace(m_overscrollController);
   visitor->trace(m_rootFrameViewport);
   ScrollStateCallback::trace(visitor);
 }
 
-bool ViewportScrollCallback::shouldScrollTopControls(
+bool ViewportScrollCallback::shouldScrollBrowserControls(
     const ScrollOffset& delta,
     ScrollGranularity granularity) const {
   if (granularity != ScrollByPixel && granularity != ScrollByPrecisePixel)
@@ -45,24 +45,24 @@ bool ViewportScrollCallback::shouldScrollTopControls(
   ScrollOffset maxScroll = m_rootFrameViewport->maximumScrollOffset();
   ScrollOffset scrollOffset = m_rootFrameViewport->scrollOffset();
 
-  // Always give the delta to the top controls if the scroll is in
-  // the direction to show the top controls. If it's in the
-  // direction to hide the top controls, only give the delta to the
-  // top controls when the frame can scroll.
+  // Always give the delta to the browser controls if the scroll is in
+  // the direction to show the browser controls. If it's in the
+  // direction to hide the browser controls, only give the delta to the
+  // browser controls when the frame can scroll.
   return delta.height() < 0 || scrollOffset.height() < maxScroll.height();
 }
 
-bool ViewportScrollCallback::scrollTopControls(ScrollState& state) {
-  // Scroll top controls.
-  if (m_topControls) {
+bool ViewportScrollCallback::scrollBrowserControls(ScrollState& state) {
+  // Scroll browser controls.
+  if (m_browserControls) {
     if (state.isBeginning())
-      m_topControls->scrollBegin();
+      m_browserControls->scrollBegin();
 
     FloatSize delta(state.deltaX(), state.deltaY());
     ScrollGranularity granularity =
         ScrollGranularity(static_cast<int>(state.deltaGranularity()));
-    if (shouldScrollTopControls(delta, granularity)) {
-      FloatSize remainingDelta = m_topControls->scrollBy(delta);
+    if (shouldScrollBrowserControls(delta, granularity)) {
+      FloatSize remainingDelta = m_browserControls->scrollBy(delta);
       FloatSize consumed = delta - remainingDelta;
       state.consumeDeltaNative(consumed.width(), consumed.height());
       return !consumed.isZero();
@@ -77,12 +77,12 @@ void ViewportScrollCallback::handleEvent(ScrollState* state) {
   if (!m_rootFrameViewport)
     return;
 
-  bool topControlsDidScroll = scrollTopControls(*state);
+  bool browserControlsDidScroll = scrollBrowserControls(*state);
 
   ScrollResult result = performNativeScroll(*state);
 
-  // We consider top controls movement to be scrolling.
-  result.didScrollY |= topControlsDidScroll;
+  // We consider browser controls movement to be scrolling.
+  result.didScrollY |= browserControlsDidScroll;
 
   // Handle Overscroll.
   if (m_overscrollController) {

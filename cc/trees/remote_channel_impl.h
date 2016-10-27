@@ -150,9 +150,9 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void Stop() override;
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool SupportsImplScrolling() const override;
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate) override;
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override;
   bool MainFrameWillHappenForTesting() override;
 
   // Called on impl thread.

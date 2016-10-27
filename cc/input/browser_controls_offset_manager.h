@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_INPUT_TOP_CONTROLS_MANAGER_H_
-#define CC_INPUT_TOP_CONTROLS_MANAGER_H_
+#ifndef CC_INPUT_BROWSER_CONTROLS_OFFSET_MANAGER_H_
+#define CC_INPUT_BROWSER_CONTROLS_OFFSET_MANAGER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/input/top_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -18,29 +18,25 @@
 namespace cc {
 
 class LayerTreeImpl;
-class TopControlsManagerClient;
+class BrowserControlsOffsetManagerClient;
 
-// Manages the position of the top controls.
-class CC_EXPORT TopControlsManager
-    : public base::SupportsWeakPtr<TopControlsManager> {
+// Manages the position of the browser controls.
+class CC_EXPORT BrowserControlsOffsetManager
+    : public base::SupportsWeakPtr<BrowserControlsOffsetManager> {
  public:
-  enum AnimationDirection {
-    NO_ANIMATION,
-    SHOWING_CONTROLS,
-    HIDING_CONTROLS
-  };
+  enum AnimationDirection { NO_ANIMATION, SHOWING_CONTROLS, HIDING_CONTROLS };
 
-  static std::unique_ptr<TopControlsManager> Create(
-      TopControlsManagerClient* client,
-      float top_controls_show_threshold,
-      float top_controls_hide_threshold);
-  virtual ~TopControlsManager();
+  static std::unique_ptr<BrowserControlsOffsetManager> Create(
+      BrowserControlsOffsetManagerClient* client,
+      float controls_show_threshold,
+      float controls_hide_threshold);
+  virtual ~BrowserControlsOffsetManager();
 
   // The offset from the window top to the top edge of the controls. Runs from 0
   // (controls fully shown) to negative values (down is positive).
   float ControlsTopOffset() const;
   // The amount of offset of the web content area. Same as the current shown
-  // height of the top controls.
+  // height of the browser controls.
   float ContentTopOffset() const;
   float TopControlsShownRatio() const;
   float TopControlsHeight() const;
@@ -56,9 +52,9 @@ class CC_EXPORT TopControlsManager
   bool has_animation() const { return animation_direction_ != NO_ANIMATION; }
   AnimationDirection animation_direction() { return animation_direction_; }
 
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate);
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate);
 
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& pending_delta);
@@ -74,9 +70,9 @@ class CC_EXPORT TopControlsManager
   gfx::Vector2dF Animate(base::TimeTicks monotonic_time);
 
  protected:
-  TopControlsManager(TopControlsManagerClient* client,
-                     float top_controls_show_threshold,
-                     float top_controls_hide_threshold);
+  BrowserControlsOffsetManager(BrowserControlsOffsetManagerClient* client,
+                               float controls_show_threshold,
+                               float controls_hide_threshold);
 
  private:
   void ResetAnimations();
@@ -84,9 +80,11 @@ class CC_EXPORT TopControlsManager
   void StartAnimationIfNecessary();
   bool IsAnimationComplete(float new_ratio);
   void ResetBaseline();
+  // Offset computation regardless of top or bottom control state.
+  float ContentOffsetInternal() const;
 
-  TopControlsManagerClient* client_;  // The client manages the lifecycle of
-                                      // this.
+  // The client manages the lifecycle of this.
+  BrowserControlsOffsetManagerClient* client_;
 
   base::TimeTicks animation_start_time_;
   float animation_start_value_;
@@ -94,7 +92,7 @@ class CC_EXPORT TopControlsManager
   float animation_stop_value_;
   AnimationDirection animation_direction_;
 
-  TopControlsState permitted_state_;
+  BrowserControlsState permitted_state_;
 
   // Accumulated scroll delta since last baseline reset
   float accumulated_scroll_delta_;
@@ -102,19 +100,19 @@ class CC_EXPORT TopControlsManager
   // Content offset when last baseline reset occurred
   float baseline_content_offset_;
 
-  // The percent height of the visible top control such that it must be shown
+  // The percent height of the visible control such that it must be shown
   // when the user stops the scroll.
-  float top_controls_show_threshold_;
+  float controls_show_threshold_;
 
-  // The percent height of the visible top control such that it must be hidden
+  // The percent height of the visible control such that it must be hidden
   // when the user stops the scroll.
-  float top_controls_hide_threshold_;
+  float controls_hide_threshold_;
 
   bool pinch_gesture_active_;
 
-  DISALLOW_COPY_AND_ASSIGN(TopControlsManager);
+  DISALLOW_COPY_AND_ASSIGN(BrowserControlsOffsetManager);
 };
 
 }  // namespace cc
 
-#endif  // CC_INPUT_TOP_CONTROLS_MANAGER_H_
+#endif  // CC_INPUT_BROWSER_CONTROLS_OFFSET_MANAGER_H_

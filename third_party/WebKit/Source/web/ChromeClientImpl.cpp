@@ -1087,8 +1087,8 @@ void ChromeClientImpl::registerViewportLayers() const {
     m_webView->registerViewportLayersWithCompositor();
 }
 
-void ChromeClientImpl::didUpdateTopControls() const {
-  m_webView->didUpdateTopControls();
+void ChromeClientImpl::didUpdateBrowserControls() const {
+  m_webView->didUpdateBrowserControls();
 }
 
 CompositorProxyClient* ChromeClientImpl::createCompositorProxyClient(

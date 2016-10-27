@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content_public.common.TopControlsState;
+import org.chromium.content_public.common.BrowserControlsState;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -92,8 +92,8 @@ public class ChromeFullscreenManager
 
     private boolean mDisableBrowserOverride;
 
-    private boolean mTopControlsPermanentlyHidden;
-    private boolean mTopControlsAndroidViewHidden;
+    private boolean mBrowserControlsPermanentlyHidden;
+    private boolean mBrowserControlsAndroidViewHidden;
     private final boolean mSupportsBrowserOverride;
 
     private final ArrayList<FullscreenListener> mListeners = new ArrayList<FullscreenListener>();
@@ -275,10 +275,10 @@ public class ChromeFullscreenManager
             public void onEnterFullscreen() {
                 Tab tab = getTab();
                 if (getControlOffset() == -mControlContainerHeight) {
-                    // The top controls are currently hidden.
+                    // The browser controls are currently hidden.
                     getHtmlApiHandler().enterFullscreen(tab);
                 } else {
-                    // We should hide top controls first.
+                    // We should hide browser controls first.
                     mIsEnteringPersistentModeState = true;
                     tab.updateFullscreenEnabledState();
                 }
@@ -293,9 +293,9 @@ public class ChromeFullscreenManager
 
             @Override
             public void onFullscreenExited(Tab tab) {
-                // At this point, top controls are hidden. Show top controls only if it's
+                // At this point, browser controls are hidden. Show browser controls only if it's
                 // permitted.
-                tab.updateTopControlsState(TopControlsState.SHOWN, true);
+                tab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
             }
 
             @Override
@@ -306,7 +306,7 @@ public class ChromeFullscreenManager
     }
 
     /**
-     * Disables the ability for the browser to override the renderer provided top controls
+     * Disables the ability for the browser to override the renderer provided browser controls
      * position for testing.
      */
     @VisibleForTesting
@@ -368,34 +368,34 @@ public class ChromeFullscreenManager
     /**
      * @param remove Whether or not to forcefully remove the toolbar.
      */
-    public void setTopControlsPermamentlyHidden(boolean remove) {
-        if (remove == mTopControlsPermanentlyHidden) return;
-        mTopControlsPermanentlyHidden = remove;
+    public void setBrowserControlsPermamentlyHidden(boolean remove) {
+        if (remove == mBrowserControlsPermanentlyHidden) return;
+        mBrowserControlsPermanentlyHidden = remove;
         updateVisuals();
     }
 
     /**
      * @return Whether or not the toolbar is forcefully being removed.
      */
-    public boolean areTopControlsPermanentlyHidden() {
-        return mTopControlsPermanentlyHidden;
+    public boolean areBrowserControlsPermanentlyHidden() {
+        return mBrowserControlsPermanentlyHidden;
     }
 
     /**
-     * @return Whether the top controls should be drawn as a texture.
+     * @return Whether the browser controls should be drawn as a texture.
      */
     public boolean drawControlsAsTexture() {
         return getControlOffset() > -mControlContainerHeight;
     }
 
     @Override
-    public int getTopControlsHeight() {
+    public int getBrowserControlsHeight() {
         return mControlContainerHeight;
     }
 
     @Override
     public float getContentOffset() {
-        if (mTopControlsPermanentlyHidden) return 0;
+        if (mBrowserControlsPermanentlyHidden) return 0;
         return rendererContentOffset();
     }
 
@@ -403,7 +403,7 @@ public class ChromeFullscreenManager
      * @return The offset of the controls from the top of the screen.
      */
     public float getControlOffset() {
-        if (mTopControlsPermanentlyHidden) return -getTopControlsHeight();
+        if (mBrowserControlsPermanentlyHidden) return -getBrowserControlsHeight();
         return mControlOffset;
     }
 
@@ -493,7 +493,7 @@ public class ChromeFullscreenManager
         if (viewCore == null) return;
         if (mInGesture || mContentViewScrolling) return;
 
-        // Update content viewport size only when the top controls are not animating.
+        // Update content viewport size only when the browser controls are not animating.
         int contentOffset = (int) rendererContentOffset();
         if (contentOffset != 0 && contentOffset != mControlContainerHeight) return;
         viewCore.setTopControlsHeight(mControlContainerHeight, contentOffset > 0);
@@ -535,7 +535,8 @@ public class ChromeFullscreenManager
             }
 
             // Whether we need the compositor to draw again to update our animation.
-            // Should be |false| when the top controls are only moved through the page scrolling.
+            // Should be |false| when the browser controls are only moved through the page
+            // scrolling.
             boolean needsAnimate = mControlAnimation != null || shouldShowAndroidControls();
             for (int i = 0; i < mListeners.size(); i++) {
                 mListeners.get(i).onVisibleContentOffsetChanged(
@@ -563,18 +564,18 @@ public class ChromeFullscreenManager
     }
 
     /**
-     * @param hide Whether or not to force the top controls Android view to hide.  If this is
-     *             {@code false} the top controls Android view will show/hide based on position, if
-     *             it is {@code true} the top controls Android view will always be hidden.
+     * @param hide Whether or not to force the browser controls Android view to hide.  If this is
+     *             {@code false} the browser controls Android view will show/hide based on position,
+     *             if it is {@code true} the browser controls Android view will always be hidden.
      */
-    public void setHideTopControlsAndroidView(boolean hide) {
-        if (mTopControlsAndroidViewHidden == hide) return;
-        mTopControlsAndroidViewHidden = hide;
+    public void setHideBrowserControlsAndroidView(boolean hide) {
+        if (mBrowserControlsAndroidViewHidden == hide) return;
+        mBrowserControlsAndroidViewHidden = hide;
         scheduleVisibilityUpdate();
     }
 
     private boolean shouldShowAndroidControls() {
-        if (mTopControlsAndroidViewHidden) return false;
+        if (mBrowserControlsAndroidViewHidden) return false;
 
         boolean showControls = getControlOffset() == 0;
         ContentViewCore contentViewCore = getActiveContentViewCore();
@@ -636,7 +637,7 @@ public class ChromeFullscreenManager
     @Override
     public void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
-        if (tab == null || tab.isShowingTopControlsEnabled()) {
+        if (tab == null || tab.isShowingBrowserControlsEnabled()) {
             setPositionsForTab(0, mControlContainerHeight);
         } else {
             setPositionsForTab(-mControlContainerHeight, 0);
@@ -646,7 +647,7 @@ public class ChromeFullscreenManager
     @Override
     public void setPositionsForTab(float controlsOffset, float contentOffset) {
         // Once we get an update from a tab, clear the activity show token and allow the render
-        // to control the positions of the top controls.
+        // to control the positions of the browser controls.
         if (mActivityShowToken != INVALID_TOKEN) {
             hideControlsPersistent(mActivityShowToken);
             mActivityShowToken = INVALID_TOKEN;
@@ -676,7 +677,7 @@ public class ChromeFullscreenManager
      */
     public boolean onInterceptMotionEvent(MotionEvent e) {
         return e.getY() < getControlOffset() + mControlContainerHeight
-                && !mTopControlsAndroidViewHidden;
+                && !mBrowserControlsAndroidViewHidden;
     }
 
     /**

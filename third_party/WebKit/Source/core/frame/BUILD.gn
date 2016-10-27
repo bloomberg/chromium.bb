@@ -8,6 +8,8 @@ blink_core_sources("frame") {
   sources = [
     "BarProp.cpp",
     "BarProp.h",
+    "BrowserControls.cpp",
+    "BrowserControls.h",
     "DOMTimer.cpp",
     "DOMTimer.h",
     "DOMTimerCoordinator.cpp",
@@ -94,8 +96,6 @@ blink_core_sources("frame") {
     "SubresourceIntegrity.h",
     "SuspendableTimer.cpp",
     "SuspendableTimer.h",
-    "TopControls.cpp",
-    "TopControls.h",
     "UseCounter.cpp",
     "VisualViewport.cpp",
     "VisualViewport.h",

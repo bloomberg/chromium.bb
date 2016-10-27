@@ -51,7 +51,7 @@ public class ContentViewClient {
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
      * @param topContentOffsetY The Y offset of the content in physical pixels.
      */
-    public void onTopControlsChanged(float topControlsOffsetY, float topContentOffsetY) { }
+    public void onTopControlsChanged(float browserControlsOffsetY, float topContentOffsetY) {}
 
     /**
      * Notifies the client of the position of the bottom controls.

@@ -19,7 +19,7 @@ class ScrollableArea;
 class ScrollStateCallback;
 
 // Manages the root scroller associated with a given document. The root
-// scroller causes top controls movement, overscroll effects and prevents
+// scroller causes browser controls movement, overscroll effects and prevents
 // chaining scrolls up further in the DOM. It can be set from script using
 // document.setRootScroller.
 //
@@ -30,7 +30,7 @@ class ScrollStateCallback;
 // element we're using internally to apply viewport scrolling actions.  The
 // effective root scroller will only be null during document initialization.
 // Both these elements come from this controller's associated Document. The
-// final "global" root scroller, the one whose scrolling hides top controls,
+// final "global" root scroller, the one whose scrolling hides browser controls,
 // may be in a different frame.
 //
 // If the currently set m_rootScroller is a valid element to become the root

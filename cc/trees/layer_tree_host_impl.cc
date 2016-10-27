@@ -35,12 +35,12 @@
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_value.h"
+#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar_animation_controller.h"
-#include "cc/input/top_controls_manager.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
@@ -251,7 +251,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
 
   // LTHI always has an active tree.
   active_tree_ = base::MakeUnique<LayerTreeImpl>(
-      this, new SyncedProperty<ScaleGroup>, new SyncedTopControls,
+      this, new SyncedProperty<ScaleGroup>, new SyncedBrowserControls,
       new SyncedElasticOverscroll);
   active_tree_->property_trees()->is_active = true;
 
@@ -260,9 +260,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                                      "cc::LayerTreeHostImpl", id_);
 
-  top_controls_manager_ =
-      TopControlsManager::Create(this, settings.top_controls_show_threshold,
-                                 settings.top_controls_hide_threshold);
+  browser_controls_offset_manager_ = BrowserControlsOffsetManager::Create(
+      this, settings.top_controls_show_threshold,
+      settings.top_controls_hide_threshold);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -462,7 +462,7 @@ void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
   did_animate |= AnimatePageScale(monotonic_time);
   did_animate |= AnimateLayers(monotonic_time);
   did_animate |= AnimateScrollbars(monotonic_time);
-  did_animate |= AnimateTopControls(monotonic_time);
+  did_animate |= AnimateBrowserControls(monotonic_time);
 
   if (active_tree) {
     did_animate |= Mutate(monotonic_time);
@@ -1032,7 +1032,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 }
 
 void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
-  top_controls_manager_->MainThreadHasStoppedFlinging();
+  browser_controls_offset_manager_->MainThreadHasStoppedFlinging();
   if (input_handler_client_)
     input_handler_client_->MainThreadHasStoppedFlinging();
 }
@@ -1539,13 +1539,14 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.root_layer_size = active_tree_->ScrollableSize();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
-  metadata.top_controls_height = top_controls_manager_->TopControlsHeight();
+  metadata.top_controls_height =
+      browser_controls_offset_manager_->TopControlsHeight();
   metadata.top_controls_shown_ratio =
-      top_controls_manager_->TopControlsShownRatio();
+      browser_controls_offset_manager_->TopControlsShownRatio();
   metadata.bottom_controls_height =
-      top_controls_manager_->BottomControlsHeight();
+      browser_controls_offset_manager_->BottomControlsHeight();
   metadata.bottom_controls_shown_ratio =
-      top_controls_manager_->BottomControlsShownRatio();
+      browser_controls_offset_manager_->BottomControlsShownRatio();
   metadata.root_background_color = active_tree_->background_color();
 
   active_tree_->GetViewportSelection(&metadata.selection);
@@ -1858,20 +1859,22 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   ViewportAnchor anchor(InnerViewportScrollLayer(), OuterViewportScrollLayer());
 
   float top_controls_layout_height =
-      active_tree_->top_controls_shrink_blink_size()
+      active_tree_->browser_controls_shrink_blink_size()
           ? active_tree_->top_controls_height()
           : 0.f;
   float delta_from_top_controls =
-      top_controls_layout_height - top_controls_manager_->ContentTopOffset();
+      top_controls_layout_height -
+      browser_controls_offset_manager_->ContentTopOffset();
   float bottom_controls_layout_height =
-      active_tree_->top_controls_shrink_blink_size()
+      active_tree_->browser_controls_shrink_blink_size()
           ? active_tree_->bottom_controls_height()
           : 0.f;
-  delta_from_top_controls += bottom_controls_layout_height -
-                             top_controls_manager_->ContentBottomOffset();
+  delta_from_top_controls +=
+      bottom_controls_layout_height -
+      browser_controls_offset_manager_->ContentBottomOffset();
 
   // Adjust the viewport layers by shrinking/expanding the container to account
-  // for changes in the size (e.g. top controls) since the last resize from
+  // for changes in the size (e.g. browser controls) since the last resize from
   // Blink.
   gfx::Vector2dF amount_to_expand(0.f, delta_from_top_controls);
   inner_container->SetBoundsDelta(amount_to_expand);
@@ -2390,7 +2393,7 @@ const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
   return external_transform_;
 }
 
-void LayerTreeHostImpl::DidChangeTopControlsPosition() {
+void LayerTreeHostImpl::DidChangeBrowserControlsPosition() {
   UpdateViewportContainerSizes();
   SetNeedsRedraw();
   SetNeedsOneBeginImplFrame();
@@ -2406,13 +2409,13 @@ float LayerTreeHostImpl::BottomControlsHeight() const {
   return active_tree_->bottom_controls_height();
 }
 
-void LayerTreeHostImpl::SetCurrentTopControlsShownRatio(float ratio) {
-  if (active_tree_->SetCurrentTopControlsShownRatio(ratio))
-    DidChangeTopControlsPosition();
+void LayerTreeHostImpl::SetCurrentBrowserControlsShownRatio(float ratio) {
+  if (active_tree_->SetCurrentBrowserControlsShownRatio(ratio))
+    DidChangeBrowserControlsPosition();
 }
 
-float LayerTreeHostImpl::CurrentTopControlsShownRatio() const {
-  return active_tree_->CurrentTopControlsShownRatio();
+float LayerTreeHostImpl::CurrentBrowserControlsShownRatio() const {
+  return active_tree_->CurrentBrowserControlsShownRatio();
 }
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
@@ -2607,7 +2610,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   scroll_status.thread = SCROLL_ON_IMPL_THREAD;
   ScrollAnimationAbort(scrolling_layer_impl);
 
-  top_controls_manager_->ScrollBegin();
+  browser_controls_offset_manager_->ScrollBegin();
 
   active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
   // TODO(majidvp): get rid of wheel_scrolling_ and set is_direct_manipulation
@@ -3077,7 +3080,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     return InputHandlerScrollResult();
 
   float initial_top_controls_offset =
-      top_controls_manager_->ControlsTopOffset();
+      browser_controls_offset_manager_->ControlsTopOffset();
 
   scroll_state->set_delta_consumed_for_scroll_sequence(
       did_lock_scrolling_layer_);
@@ -3125,7 +3128,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   accumulated_root_overscroll_ += unused_root_delta;
 
   bool did_scroll_top_controls =
-      initial_top_controls_offset != top_controls_manager_->ControlsTopOffset();
+      initial_top_controls_offset !=
+      browser_controls_offset_manager_->ControlsTopOffset();
 
   InputHandlerScrollResult scroll_result;
   scroll_result.did_scroll = did_scroll_content || did_scroll_top_controls;
@@ -3175,7 +3179,7 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state) {
   DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
 
   DistributeScrollDelta(scroll_state);
-  top_controls_manager_->ScrollEnd();
+  browser_controls_offset_manager_->ScrollEnd();
 
   if (scroll_state->is_in_inertial_phase()) {
     // Only clear the currently scrolling layer if we know the scroll is done.
@@ -3292,7 +3296,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
   active_tree_->SetCurrentlyScrollingLayer(viewport()->MainScrollLayer());
-  top_controls_manager_->PinchBegin();
+  browser_controls_offset_manager_->PinchBegin();
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
@@ -3316,7 +3320,7 @@ void LayerTreeHostImpl::PinchGestureEnd() {
     ClearCurrentlyScrollingLayer();
   }
   viewport()->PinchEnd();
-  top_controls_manager_->PinchEnd();
+  browser_controls_offset_manager_->PinchEnd();
   client_->SetNeedsCommitOnImplThread();
   // When a pinch ends, we may be displaying content cached at incorrect scales,
   // so updating draw properties and drawing will ensure we are using the right
@@ -3397,13 +3401,13 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   return true;
 }
 
-bool LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
-  if (!top_controls_manager_->has_animation())
+bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
+  if (!browser_controls_offset_manager_->has_animation())
     return false;
 
-  gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
+  gfx::Vector2dF scroll = browser_controls_offset_manager_->Animate(time);
 
-  if (top_controls_manager_->has_animation())
+  if (browser_controls_offset_manager_->has_animation())
     SetNeedsOneBeginImplFrame();
 
   if (active_tree_->TotalScrollOffset().y() == 0.f)

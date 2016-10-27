@@ -616,8 +616,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     // ScaleToCeiledSize(new_size, device_scale_factor) ??
     resize_params->physical_backing_size = view_->GetPhysicalBackingSize();
     resize_params->top_controls_height = view_->GetTopControlsHeight();
-    resize_params->top_controls_shrink_blink_size =
-        view_->DoTopControlsShrinkBlinkSize();
+    resize_params->browser_controls_shrink_blink_size =
+        view_->DoBrowserControlsShrinkBlinkSize();
     resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
   }
@@ -627,7 +627,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
       old_resize_params_->new_size != resize_params->new_size ||
       (old_resize_params_->physical_backing_size.IsEmpty() &&
        !resize_params->physical_backing_size.IsEmpty());
-  bool dirty = size_changed ||
+  bool dirty =
+      size_changed ||
       old_resize_params_->screen_info != resize_params->screen_info ||
       old_resize_params_->physical_backing_size !=
           resize_params->physical_backing_size ||
@@ -636,8 +637,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
       old_resize_params_->display_mode != resize_params->display_mode ||
       old_resize_params_->top_controls_height !=
           resize_params->top_controls_height ||
-      old_resize_params_->top_controls_shrink_blink_size !=
-          resize_params->top_controls_shrink_blink_size ||
+      old_resize_params_->browser_controls_shrink_blink_size !=
+          resize_params->browser_controls_shrink_blink_size ||
       old_resize_params_->bottom_controls_height !=
           resize_params->bottom_controls_height ||
       old_resize_params_->visible_viewport_size !=

@@ -534,7 +534,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
     needsDescendantsClippingLayer = false;
 
   // We disable clipping on ancestor layers of the root scroller to give it
-  // the same behavior w.r.t top controls as the real root layer. See the
+  // the same behavior w.r.t browser controls as the real root layer. See the
   // RootScrollerController class for more details.
   if (m_owningLayer.hasRootScrollerAsDescendant())
     needsDescendantsClippingLayer = false;

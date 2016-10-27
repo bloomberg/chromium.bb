@@ -152,7 +152,7 @@ TEST_F(RenderFrameImplTest, MAYBE_FrameResize) {
   resize_params.new_size = size;
   resize_params.physical_backing_size = size;
   resize_params.top_controls_height = 0.f;
-  resize_params.top_controls_shrink_blink_size = false;
+  resize_params.browser_controls_shrink_blink_size = false;
   resize_params.is_fullscreen_granted = false;
 
   ViewMsg_Resize resize_message(0, resize_params);

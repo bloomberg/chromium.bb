@@ -56,7 +56,7 @@ namespace cc {
 LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* layer_tree_host_impl,
     scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
-    scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
+    scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
     scoped_refptr<SyncedElasticOverscroll> elastic_overscroll)
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
@@ -84,7 +84,7 @@ LayerTreeImpl::LayerTreeImpl(
       has_ever_been_drawn_(false),
       have_scroll_event_handlers_(false),
       event_listener_properties_(),
-      top_controls_shrink_blink_size_(false),
+      browser_controls_shrink_blink_size_(false),
       top_controls_height_(0),
       bottom_controls_height_(0),
       top_controls_shown_ratio_(top_controls_shown_ratio) {
@@ -419,7 +419,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   // This needs to be called early so that we don't clamp with incorrect max
   // offsets when UpdateViewportContainerSizes is called from e.g.
-  // PushTopControls
+  // PushBrowserControls
   target_tree->UpdatePropertyTreesForBoundsDelta();
 
   if (next_activation_forces_redraw_) {
@@ -430,11 +430,11 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->PassSwapPromises(std::move(swap_promise_list_));
   swap_promise_list_.clear();
 
-  target_tree->set_top_controls_shrink_blink_size(
-      top_controls_shrink_blink_size_);
+  target_tree->set_browser_controls_shrink_blink_size(
+      browser_controls_shrink_blink_size_);
   target_tree->set_top_controls_height(top_controls_height_);
   target_tree->set_bottom_controls_height(bottom_controls_height_);
-  target_tree->PushTopControls(nullptr);
+  target_tree->PushBrowserControls(nullptr);
 
   // Active tree already shares the page_scale_factor object with pending
   // tree so only the limits need to be provided.
@@ -769,11 +769,11 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
   }
 }
 
-void LayerTreeImpl::set_top_controls_shrink_blink_size(bool shrink) {
-  if (top_controls_shrink_blink_size_ == shrink)
+void LayerTreeImpl::set_browser_controls_shrink_blink_size(bool shrink) {
+  if (browser_controls_shrink_blink_size_ == shrink)
     return;
 
-  top_controls_shrink_blink_size_ = shrink;
+  browser_controls_shrink_blink_size_ = shrink;
   if (IsActiveTree())
     layer_tree_host_impl_->UpdateViewportContainerSizes();
 }
@@ -796,25 +796,25 @@ void LayerTreeImpl::set_bottom_controls_height(float bottom_controls_height) {
     layer_tree_host_impl_->UpdateViewportContainerSizes();
 }
 
-bool LayerTreeImpl::ClampTopControlsShownRatio() {
+bool LayerTreeImpl::ClampBrowserControlsShownRatio() {
   float ratio = top_controls_shown_ratio_->Current(true);
   ratio = std::max(ratio, 0.f);
   ratio = std::min(ratio, 1.f);
   return top_controls_shown_ratio_->SetCurrent(ratio);
 }
 
-bool LayerTreeImpl::SetCurrentTopControlsShownRatio(float ratio) {
+bool LayerTreeImpl::SetCurrentBrowserControlsShownRatio(float ratio) {
   bool changed = top_controls_shown_ratio_->SetCurrent(ratio);
-  changed |= ClampTopControlsShownRatio();
+  changed |= ClampBrowserControlsShownRatio();
   return changed;
 }
 
-void LayerTreeImpl::PushTopControlsFromMainThread(
+void LayerTreeImpl::PushBrowserControlsFromMainThread(
     float top_controls_shown_ratio) {
-  PushTopControls(&top_controls_shown_ratio);
+  PushBrowserControls(&top_controls_shown_ratio);
 }
 
-void LayerTreeImpl::PushTopControls(const float* top_controls_shown_ratio) {
+void LayerTreeImpl::PushBrowserControls(const float* top_controls_shown_ratio) {
   DCHECK(top_controls_shown_ratio || IsActiveTree());
 
   if (top_controls_shown_ratio) {
@@ -823,9 +823,9 @@ void LayerTreeImpl::PushTopControls(const float* top_controls_shown_ratio) {
   }
   if (IsActiveTree()) {
     bool changed_active = top_controls_shown_ratio_->PushPendingToActive();
-    changed_active |= ClampTopControlsShownRatio();
+    changed_active |= ClampBrowserControlsShownRatio();
     if (changed_active)
-      layer_tree_host_impl_->DidChangeTopControlsPosition();
+      layer_tree_host_impl_->DidChangeBrowserControlsPosition();
   }
 }
 

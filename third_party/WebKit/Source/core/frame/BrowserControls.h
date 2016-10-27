@@ -1,26 +1,27 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TopControls_h
-#define TopControls_h
+#ifndef BrowserControls_h
+#define BrowserControls_h
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebTopControlsState.h"
+#include "public/platform/WebBrowserControlsState.h"
 
 namespace blink {
 class FrameHost;
 class FloatSize;
 
-// This class encapsulate data and logic required to show/hide top controls
-// duplicating cc::TopControlsManager behaviour.  Top controls' self-animation
-// to completion is still handled by compositor and kicks in when scrolling is
-// complete (i.e, upon ScrollEnd or FlingEnd).
-class CORE_EXPORT TopControls final : public GarbageCollected<TopControls> {
+// This class encapsulate data and logic required to show/hide browser controls
+// duplicating cc::BrowserControlsManager behaviour.  Browser controls'
+// self-animation to completion is still handled by compositor and kicks in
+// when scrolling is complete (i.e, upon ScrollEnd or FlingEnd).
+class CORE_EXPORT BrowserControls final
+    : public GarbageCollected<BrowserControls> {
  public:
-  static TopControls* create(const FrameHost& host) {
-    return new TopControls(host);
+  static BrowserControls* create(const FrameHost& host) {
+    return new BrowserControls(host);
   }
 
   DECLARE_TRACE();
@@ -28,7 +29,7 @@ class CORE_EXPORT TopControls final : public GarbageCollected<TopControls> {
   // The amount that the viewport was shrunk by to accommodate the top
   // controls.
   float layoutHeight();
-  // The amount that top controls are currently shown.
+  // The amount that browser controls are currently shown.
   float contentOffset();
 
   float height() const { return m_height; }
@@ -38,30 +39,30 @@ class CORE_EXPORT TopControls final : public GarbageCollected<TopControls> {
   float shownRatio() const { return m_shownRatio; }
   void setShownRatio(float);
 
-  void updateConstraintsAndState(WebTopControlsState constraints,
-                                 WebTopControlsState current,
+  void updateConstraintsAndState(WebBrowserControlsState constraints,
+                                 WebBrowserControlsState current,
                                  bool animate);
 
   void scrollBegin();
 
-  // Scrolls top controls vertically if possible and returns the remaining
+  // Scrolls browser controls vertically if possible and returns the remaining
   // scroll amount.
   FloatSize scrollBy(FloatSize scrollDelta);
 
  private:
-  explicit TopControls(const FrameHost&);
+  explicit BrowserControls(const FrameHost&);
   void resetBaseline();
 
   Member<const FrameHost> m_frameHost;
 
-  // The top controls height regardless of whether it is visible or not.
+  // The browser controls height regardless of whether it is visible or not.
   float m_height;
 
-  // The top controls shown amount (normalized from 0 to 1) since the last
+  // The browser controls shown amount (normalized from 0 to 1) since the last
   // compositor commit. This value is updated from two sources:
   // (1) compositor (impl) thread at the beginning of frame if it has
-  //     scrolled top controls since last commit.
-  // (2) blink (main) thread updates this value if it scrolls top controls
+  //     scrolled browser controls since last commit.
+  // (2) blink (main) thread updates this value if it scrolls browser controls
   //     when responding to gesture scroll events.
   // This value is reflected in web layer tree and is synced with compositor
   // during the commit.
@@ -77,9 +78,9 @@ class CORE_EXPORT TopControls final : public GarbageCollected<TopControls> {
   // controls height.
   bool m_shrinkViewport;
 
-  // Constraints on the top controls state
-  WebTopControlsState m_permittedState;
+  // Constraints on the browser controls state
+  WebBrowserControlsState m_permittedState;
 };
 }  // namespace blink
 
-#endif  // TopControls_h
+#endif  // BrowserControls_h

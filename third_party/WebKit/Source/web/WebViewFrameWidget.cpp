@@ -100,10 +100,10 @@ void WebViewFrameWidget::applyViewportDeltas(
     const WebFloatSize& layoutViewportDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float scaleFactor,
-    float topControlsShownRatioDelta) {
+    float browserControlsShownRatioDelta) {
   return m_webView->applyViewportDeltas(
       visualViewportDelta, layoutViewportDelta, elasticOverscrollDelta,
-      scaleFactor, topControlsShownRatioDelta);
+      scaleFactor, browserControlsShownRatioDelta);
 }
 
 void WebViewFrameWidget::mouseCaptureLost() {
@@ -204,10 +204,11 @@ void WebViewFrameWidget::applyReplacementRange(const WebRange& range) {
   m_webView->applyReplacementRange(range);
 }
 
-void WebViewFrameWidget::updateTopControlsState(WebTopControlsState constraints,
-                                                WebTopControlsState current,
-                                                bool animate) {
-  return m_webView->updateTopControlsState(constraints, current, animate);
+void WebViewFrameWidget::updateBrowserControlsState(
+    WebBrowserControlsState constraints,
+    WebBrowserControlsState current,
+    bool animate) {
+  return m_webView->updateBrowserControlsState(constraints, current, animate);
 }
 
 void WebViewFrameWidget::setVisibilityState(

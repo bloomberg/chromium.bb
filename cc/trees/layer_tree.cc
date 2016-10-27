@@ -45,7 +45,7 @@ Layer* UpdateAndGetLayer(Layer* current_layer,
 LayerTree::Inputs::Inputs()
     : top_controls_height(0.f),
       top_controls_shown_ratio(0.f),
-      top_controls_shrink_blink_size(false),
+      browser_controls_shrink_blink_size(false),
       bottom_controls_height(0.f),
       device_scale_factor(1.f),
       painted_device_scale_factor(1.f),
@@ -158,17 +158,17 @@ void LayerTree::SetViewportSize(const gfx::Size& device_viewport_size) {
   SetNeedsCommit();
 }
 
-void LayerTree::SetTopControlsHeight(float height, bool shrink) {
+void LayerTree::SetBrowserControlsHeight(float height, bool shrink) {
   if (inputs_.top_controls_height == height &&
-      inputs_.top_controls_shrink_blink_size == shrink)
+      inputs_.browser_controls_shrink_blink_size == shrink)
     return;
 
   inputs_.top_controls_height = height;
-  inputs_.top_controls_shrink_blink_size = shrink;
+  inputs_.browser_controls_shrink_blink_size = shrink;
   SetNeedsCommit();
 }
 
-void LayerTree::SetTopControlsShownRatio(float ratio) {
+void LayerTree::SetBrowserControlsShownRatio(float ratio) {
   if (inputs_.top_controls_shown_ratio == ratio)
     return;
 
@@ -404,11 +404,12 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
                                          inputs_.min_page_scale_factor,
                                          inputs_.max_page_scale_factor);
 
-  tree_impl->set_top_controls_shrink_blink_size(
-      inputs_.top_controls_shrink_blink_size);
+  tree_impl->set_browser_controls_shrink_blink_size(
+      inputs_.browser_controls_shrink_blink_size);
   tree_impl->set_top_controls_height(inputs_.top_controls_height);
   tree_impl->set_bottom_controls_height(inputs_.bottom_controls_height);
-  tree_impl->PushTopControlsFromMainThread(inputs_.top_controls_shown_ratio);
+  tree_impl->PushBrowserControlsFromMainThread(
+      inputs_.top_controls_shown_ratio);
   tree_impl->elastic_overscroll()->PushFromMainThread(elastic_overscroll_);
   if (tree_impl->IsActiveTree())
     tree_impl->elastic_overscroll()->PushPendingToActive();
@@ -455,8 +456,8 @@ void LayerTree::ToProtobuf(proto::LayerTree* proto, bool inputs_only) {
           ? inputs_.outer_viewport_scroll_layer->id()
           : Layer::INVALID_ID);
 
-  // Top Controls ignored. They are not supported.
-  DCHECK(!inputs_.top_controls_shrink_blink_size);
+  // Browser Controls ignored. They are not supported.
+  DCHECK(!inputs_.browser_controls_shrink_blink_size);
 
   proto->set_device_scale_factor(inputs_.device_scale_factor);
   proto->set_painted_device_scale_factor(inputs_.painted_device_scale_factor);

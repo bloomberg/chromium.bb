@@ -105,7 +105,7 @@ public class RenderCoordinates {
     /**
      * Sets several fields for unit test. (used by {@link CursorAnchorInfoControllerTest}).
      * @param deviceScaleFactor Device scale factor (maps DIP pixels to physical pixels).
-     * @param contentOffsetYPix Physical on-screen Y offset amount below the top controls.
+     * @param contentOffsetYPix Physical on-screen Y offset amount below the browser controls.
      */
     @VisibleForTesting
     public void setFrameInfoForTest(float deviceScaleFactor, float contentOffsetYPix) {
@@ -325,7 +325,7 @@ public class RenderCoordinates {
     }
 
     /**
-     * @return The Physical on-screen Y offset amount below the top controls.
+     * @return The Physical on-screen Y offset amount below the browser controls.
      */
     public float getContentOffsetYPix() {
         return mTopContentOffsetYPix;

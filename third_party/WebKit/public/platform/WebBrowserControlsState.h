@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTopControlsState_h
-#define WebTopControlsState_h
+#ifndef WebBrowserControlsState_h
+#define WebBrowserControlsState_h
 
 namespace blink {
 
-// Represents Top Controls State. Values should be equivalent to
-// Chromium and CC versions namely: |content::TopControlsState|, and
-// |cc::TopControlsState|
-enum WebTopControlsState {
-  WebTopControlsShown = 1,
-  WebTopControlsHidden = 2,
-  WebTopControlsBoth = 3
+// Represents Browser Controls State. Values should be equivalent to
+// Chromium and CC versions namely: |content::BrowserControlsState|, and
+// |cc::BrowserControlsState|
+enum WebBrowserControlsState {
+  WebBrowserControlsShown = 1,
+  WebBrowserControlsHidden = 2,
+  WebBrowserControlsBoth = 3
 };
 
 }  // namespace blink

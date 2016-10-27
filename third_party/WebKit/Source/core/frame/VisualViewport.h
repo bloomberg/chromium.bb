@@ -140,13 +140,13 @@ class CORE_EXPORT VisualViewport final
   IntPoint clampDocumentOffsetAtScale(const IntPoint& offset, float scale);
 
   // FIXME: This is kind of a hack. Ideally, we would just resize the
-  // viewports to account for top controls. However, FrameView includes much
+  // viewports to account for browser controls. However, FrameView includes much
   // more than just scrolling so we can't simply resize it without incurring
   // all sorts of side-effects. Until we can seperate out the scrollability
   // aspect from FrameView, we use this method to let VisualViewport make the
   // necessary adjustments so that we don't incorrectly clamp scroll offsets
   // coming from the compositor. crbug.com/422328
-  void setTopControlsAdjustment(float);
+  void setBrowserControlsAdjustment(float);
 
   // Adjust the viewport's offset so that it remains bounded by the outer
   // viepwort.
@@ -264,7 +264,7 @@ class CORE_EXPORT VisualViewport final
   ScrollOffset m_offset;
   float m_scale;
   IntSize m_size;
-  float m_topControlsAdjustment;
+  float m_browserControlsAdjustment;
   float m_maxPageScale;
   bool m_trackPinchZoomStatsForPage;
 };

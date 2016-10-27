@@ -401,11 +401,12 @@ void ProxyMain::ReleaseCompositorFrameSink() {
   completion.Wait();
 }
 
-void ProxyMain::UpdateTopControlsState(TopControlsState constraints,
-                                       TopControlsState current,
-                                       bool animate) {
+void ProxyMain::UpdateBrowserControlsState(BrowserControlsState constraints,
+                                           BrowserControlsState current,
+                                           bool animate) {
   DCHECK(IsMainThread());
-  channel_main_->UpdateTopControlsStateOnImpl(constraints, current, animate);
+  channel_main_->UpdateBrowserControlsStateOnImpl(constraints, current,
+                                                  animate);
 }
 
 bool ProxyMain::SendCommitRequestToImplThreadIfNeeded(

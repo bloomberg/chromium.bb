@@ -334,7 +334,7 @@ class CORE_EXPORT EventHandler final
 
   WebInputEventResult handleGestureShowPress();
 
-  bool shouldTopControlsConsumeScroll(FloatSize) const;
+  bool shouldBrowserControlsConsumeScroll(FloatSize) const;
 
   FrameHost* frameHost() const;
 

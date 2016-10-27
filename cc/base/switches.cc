@@ -30,11 +30,13 @@ const char kDisableMainFrameBeforeActivation[] =
 const char kEnableMainFrameBeforeActivation[] =
     "enable-main-frame-before-activation";
 
-// Percentage of the top controls need to be hidden before they will auto hide.
-const char kTopControlsHideThreshold[] = "top-controls-hide-threshold";
+// Percentage of the browser controls need to be hidden before they will auto
+// hide.
+const char kBrowserControlsHideThreshold[] = "top-controls-hide-threshold";
 
-// Percentage of the top controls need to be shown before they will auto show.
-const char kTopControlsShowThreshold[] = "top-controls-show-threshold";
+// Percentage of the browser controls need to be shown before they will auto
+// show.
+const char kBrowserControlsShowThreshold[] = "top-controls-show-threshold";
 
 // Re-rasters everything multiple times to simulate a much slower machine.
 // Give a scale factor to cause raster to take that many times longer to

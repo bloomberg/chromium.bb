@@ -734,10 +734,11 @@ void SingleThreadProxy::ScheduledActionInvalidateCompositorFrameSink() {
   NOTREACHED();
 }
 
-void SingleThreadProxy::UpdateTopControlsState(TopControlsState constraints,
-                                               TopControlsState current,
-                                               bool animate) {
-  NOTREACHED() << "Top Controls are used only in threaded mode";
+void SingleThreadProxy::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
+  NOTREACHED() << "Browser Controls are used only in threaded mode";
 }
 
 void SingleThreadProxy::DidFinishImplFrame() {
