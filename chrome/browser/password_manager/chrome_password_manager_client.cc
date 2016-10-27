@@ -17,6 +17,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -210,6 +211,16 @@ bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
           *saving_and_filling_passwords_enabled_) &&
          !DidLastPageLoadEncounterSSLErrors() &&
          IsPasswordManagementEnabledForCurrentPage();
+}
+
+bool ChromePasswordManagerClient::OnCredentialManagerUsed() {
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(web_contents());
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_CREDENTIAL_MANAGER_API);
+    return false;
+  }
+  return true;
 }
 
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(

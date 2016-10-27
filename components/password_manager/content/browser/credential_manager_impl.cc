@@ -63,7 +63,8 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   // Send acknowledge response back.
   callback.Run();
 
-  if (!client_->IsSavingAndFillingEnabledForCurrentPage())
+  if (!client_->IsSavingAndFillingEnabledForCurrentPage() ||
+      !client_->OnCredentialManagerUsed())
     return;
 
   client_->NotifyStorePasswordCalled();
@@ -117,7 +118,8 @@ void CredentialManagerImpl::RequireUserMediation(
         .LogRequireUserMediation(web_contents()->GetLastCommittedURL());
   }
   PasswordStore* store = GetPasswordStore();
-  if (!store || !client_->IsSavingAndFillingEnabledForCurrentPage()) {
+  if (!store || !client_->IsSavingAndFillingEnabledForCurrentPage() ||
+      !client_->OnCredentialManagerUsed()) {
     callback.Run();
     return;
   }
@@ -179,6 +181,7 @@ void CredentialManagerImpl::Get(bool zero_click_only,
   // Return an empty credential if zero-click is required but disabled, or if
   // the current page has TLS errors.
   if (!client_->IsFillingEnabledForCurrentPage() ||
+      !client_->OnCredentialManagerUsed() ||
       (zero_click_only && !IsZeroClickAllowed())) {
     // Callback with empty credential info.
     callback.Run(mojom::CredentialManagerError::SUCCESS, CredentialInfo());

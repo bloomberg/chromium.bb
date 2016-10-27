@@ -64,6 +64,14 @@ class PasswordManagerClient {
   // password manager is disabled, or in the presence of SSL errors on a page.
   virtual bool IsFillingEnabledForCurrentPage() const;
 
+  // Checks if the Credential Manager API is allowed to run on the page. It's
+  // not allowed while prerendering and the pre-rendered WebContents will be
+  // destroyed in this case.
+  // Even if the method returns true the API may still be disabled or limited
+  // depending on the method called because IsFillingEnabledForCurrentPage() and
+  // IsSavingAndFillingEnabledForCurrentPage are respected.
+  virtual bool OnCredentialManagerUsed();
+
   // Informs the embedder of a password form that can be saved or updated in
   // password store if the user allows it. The embedder is not required to
   // prompt the user if it decides that this form doesn't need to be saved or

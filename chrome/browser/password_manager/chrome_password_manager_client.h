@@ -52,6 +52,7 @@ class ChromePasswordManagerClient
   bool IsAutomaticPasswordSavingEnabled() const override;
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
   bool IsFillingEnabledForCurrentPage() const override;
+  bool OnCredentialManagerUsed() override;
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
       password_manager::CredentialSourceType type,

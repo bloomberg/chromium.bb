@@ -67,6 +67,7 @@ const char* kFinalStatusNames[] = {
   "Prerendering Disabled",
   "Cellular Network",
   "Block Third Party Cookies",
+  "Credential Manager API",
   "Max",
 };
 static_assert(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

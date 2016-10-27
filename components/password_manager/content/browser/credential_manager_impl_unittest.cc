@@ -56,6 +56,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsFillingEnabledForCurrentPage, bool());
+  MOCK_METHOD0(OnCredentialManagerUsed, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(NotifyUserAutoSigninPtr, bool());
   MOCK_METHOD1(NotifyUserCouldBeAutoSignedInPtr,
@@ -214,6 +215,8 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
     ON_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsFillingEnabledForCurrentPage())
+        .WillByDefault(testing::Return(true));
+    ON_CALL(*client_, OnCredentialManagerUsed())
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsOffTheRecord()).WillByDefault(testing::Return(false));
 
@@ -1028,6 +1031,18 @@ TEST_F(CredentialManagerImplTest, RequestCredentialWithFirstRunAndSkip) {
 TEST_F(CredentialManagerImplTest, RequestCredentialWithTLSErrors) {
   // If we encounter TLS errors, we won't return credentials.
   EXPECT_CALL(*client_, IsFillingEnabledForCurrentPage())
+      .WillRepeatedly(testing::Return(false));
+
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+
+  ExpectZeroClickSignInFailure(true, true, federations);
+}
+
+TEST_F(CredentialManagerImplTest, RequestCredentialWhilePrerendering) {
+  // The client disallows the credential manager for the current page.
+  EXPECT_CALL(*client_, OnCredentialManagerUsed())
       .WillRepeatedly(testing::Return(false));
 
   store_->AddLogin(form_);

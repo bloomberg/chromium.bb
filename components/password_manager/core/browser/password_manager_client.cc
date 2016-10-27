@@ -19,6 +19,10 @@ bool PasswordManagerClient::IsFillingEnabledForCurrentPage() const {
   return true;
 }
 
+bool PasswordManagerClient::OnCredentialManagerUsed() {
+  return true;
+}
+
 void PasswordManagerClient::ForceSavePassword() {
 }
 
