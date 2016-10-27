@@ -173,10 +173,10 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
         time_since_background, bytes);
     if (no_reads_since_background_) {
       no_reads_since_background_ = false;
-      UMA_HISTOGRAM_LONG_TIMES(
+      IncrementLatencyHistogramByCount(
           is_user_traffic ? "DataUse.BackgroundToFirstDownstream.User"
                           : "DataUse.BackgroundToFirstDownstream.System",
-          time_since_background);
+          time_since_background, 1);
     }
   }
 #endif
