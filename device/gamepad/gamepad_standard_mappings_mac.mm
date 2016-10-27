@@ -376,7 +376,11 @@ struct MappingData {
     {"0079", "0006", MapperDragonRiseGeneric},   // DragonRise Generic USB
     {"045e", "028e", MapperXbox360Gamepad},      // Xbox 360 Wired
     {"045e", "028f", MapperXbox360Gamepad},      // Xbox 360 Wireless
+    {"045e", "02d1", MapperXbox360Gamepad},      // Xbox One Wired
+    {"045e", "02dd", MapperXbox360Gamepad},      // Xbox One Wired (2015 FW)
     {"045e", "02e0", MapperXboxOneHidGamepad},   // Xbox One S (Bluetooth mode)
+    {"045e", "02e3", MapperXbox360Gamepad},      // Xbox One Elite Wired
+    {"045e", "02ea", MapperXbox360Gamepad},      // Xbox One S (USB)
     {"045e", "0719", MapperXbox360Gamepad},      // Xbox 360 Wireless
     {"046d", "c216", MapperDirectInputStyle},    // Logitech F310, D mode
     {"046d", "c218", MapperDirectInputStyle},    // Logitech F510, D mode
