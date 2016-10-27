@@ -108,7 +108,7 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     filter->SetFrameFuture(routing_id_, frame_future);
     sender_->Send(new SyncCompositorMsg_DemandDrawHwAsync(routing_id_, params));
   } else {
-    frame_future->setFrame(nullptr);
+    frame_future->SetFrame(nullptr);
   }
   return frame_future;
 }

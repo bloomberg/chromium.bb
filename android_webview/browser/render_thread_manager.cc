@@ -197,7 +197,7 @@ std::unique_ptr<ChildFrame> RenderThreadManager::GetSynchronousCompositorFrame(
     return nullptr;
   DCHECK(!child_frame->frame.get());
   std::unique_ptr<content::SynchronousCompositor::Frame> frame =
-      frame_future->getFrame();
+      frame_future->GetFrame();
   std::unique_ptr<cc::CompositorFrame> compositor_frame =
       std::move(frame->frame);
   return base::MakeUnique<ChildFrame>(

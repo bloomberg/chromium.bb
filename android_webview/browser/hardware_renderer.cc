@@ -75,7 +75,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     DCHECK(!child_frame_->frame);
 
     std::unique_ptr<content::SynchronousCompositor::Frame> frame =
-        frame_future_->getFrame();
+        frame_future_->GetFrame();
     if (frame) {
       child_frame_->compositor_frame_sink_id = frame->compositor_frame_sink_id;
       child_frame_->frame = std::move(frame->frame);

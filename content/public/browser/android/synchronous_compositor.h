@@ -63,8 +63,8 @@ class CONTENT_EXPORT SynchronousCompositor {
   class FrameFuture : public base::RefCountedThreadSafe<FrameFuture> {
    public:
     FrameFuture();
-    void setFrame(std::unique_ptr<Frame> frame);
-    std::unique_ptr<Frame> getFrame();
+    void SetFrame(std::unique_ptr<Frame> frame);
+    std::unique_ptr<Frame> GetFrame();
 
    private:
     friend class base::RefCountedThreadSafe<FrameFuture>;

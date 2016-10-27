@@ -85,7 +85,7 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
     frame_ptr->frame.reset(new cc::CompositorFrame);
     *frame_ptr->frame = std::move(compositor_frame);
   }
-  future->setFrame(std::move(frame_ptr));
+  future->SetFrame(std::move(frame_ptr));
   // TODO(boliu): Post metadata back to UI thread.
   return true;
 }
@@ -96,7 +96,7 @@ void SynchronousCompositorBrowserFilter::SetFrameFuture(
   DCHECK(frame_future);
   base::AutoLock lock(future_map_lock_);
   if (!filter_ready_) {
-    frame_future->setFrame(nullptr);
+    frame_future->SetFrame(nullptr);
     return;
   }
 
@@ -133,7 +133,7 @@ void SynchronousCompositorBrowserFilter::SignalAllFutures() {
   base::AutoLock lock(future_map_lock_);
   for (auto& pair : future_map_) {
     for (auto& future_ptr : pair.second) {
-      future_ptr->setFrame(nullptr);
+      future_ptr->SetFrame(nullptr);
     }
   }
   future_map_.clear();

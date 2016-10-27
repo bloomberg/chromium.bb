@@ -24,14 +24,14 @@ SynchronousCompositor::FrameFuture::FrameFuture()
 
 SynchronousCompositor::FrameFuture::~FrameFuture() {}
 
-void SynchronousCompositor::FrameFuture::setFrame(
+void SynchronousCompositor::FrameFuture::SetFrame(
     std::unique_ptr<Frame> frame) {
   frame_ = std::move(frame);
   waitable_event_.Signal();
 }
 
 std::unique_ptr<SynchronousCompositor::Frame>
-SynchronousCompositor::FrameFuture::getFrame() {
+SynchronousCompositor::FrameFuture::GetFrame() {
 #if DCHECK_IS_ON()
   DCHECK(!waited_);
   waited_ = true;
