@@ -16,6 +16,7 @@ import android.view.WindowManager;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 
 /**
  * This class facilitates access to android information typically only
@@ -27,6 +28,7 @@ import org.chromium.base.annotations.JNINamespace;
  * This class is being Deprecated. Use DisplayAndroid instead where possible.
  */
 @JNINamespace("gfx")
+@MainDex
 public class DeviceDisplayInfo {
 
     private final Context mAppContext;
