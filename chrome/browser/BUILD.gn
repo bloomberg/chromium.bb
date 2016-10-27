@@ -3497,19 +3497,30 @@ split_static_library("browser") {
       "first_run/upgrade_util.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
-      "fullscreen_aurax11.cc",
       "icon_loader_auralinux.cc",
-      "media/webrtc/window_icon_util_x11.cc",
       "password_manager/native_backend_kwallet_x.cc",
       "password_manager/native_backend_kwallet_x.h",
       "platform_util_linux.cc",
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
       "speech/tts_linux.cc",
-      "themes/theme_service_aurax11.cc",
-      "themes/theme_service_aurax11.h",
       "web_applications/web_app_linux.cc",
     ]
+
+    if (use_x11) {
+      sources += [
+        "fullscreen_aurax11.cc",
+        "media/webrtc/window_icon_util_x11.cc",
+
+        # ThemeServiceAuraX11 does not depend on X11, although its
+        # instantiation/inclusion in theme_service_factory.cc is conditioned
+        # by USE_X11.
+        # TODO(tonikitoo): Check if non-x11 could benefit from it. If so,
+        # rename and use it.
+        "themes/theme_service_aurax11.cc",
+        "themes/theme_service_aurax11.h",
+      ]
+    }
 
     # libsecret hard depends on GLib.
     if (use_glib) {
