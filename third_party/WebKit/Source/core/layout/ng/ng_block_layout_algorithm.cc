@@ -185,30 +185,8 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
     }
     case kStateChildLayout: {
       if (current_child_) {
-        constraint_space_for_children_->SetIsNewFormattingContext(
-            IsNewFormattingContextForInFlowBlockLevelChild(
-                *constraint_space, *current_child_->Style()));
-
-        NGFragment* fragment;
-        if (!current_child_->Layout(constraint_space_for_children_, &fragment))
+        if (!LayoutCurrentChild(constraint_space))
           return false;
-
-        NGBoxStrut child_margins = ComputeMargins(
-            *constraint_space_for_children_, *current_child_->Style(),
-            constraint_space_for_children_->WritingMode(),
-            constraint_space_for_children_->Direction());
-
-        NGLogicalOffset fragment_offset;
-        if (current_child_->Style()->isFloating()) {
-          fragment_offset = PositionFloatFragment(*fragment, child_margins);
-        } else {
-          ApplyAutoMargins(*constraint_space_for_children_,
-                           *current_child_->Style(), *fragment, &child_margins);
-          fragment_offset =
-              PositionFragment(*fragment, child_margins, *constraint_space);
-        }
-        builder_->AddChild(fragment, fragment_offset);
-
         current_child_ = current_child_->NextSibling();
         if (current_child_)
           return false;
@@ -233,6 +211,35 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
   };
   NOTREACHED();
   *out = nullptr;
+  return true;
+}
+
+bool NGBlockLayoutAlgorithm::LayoutCurrentChild(
+    const NGConstraintSpace* constraint_space) {
+  constraint_space_for_children_->SetIsNewFormattingContext(
+      IsNewFormattingContextForInFlowBlockLevelChild(*constraint_space,
+                                                     *current_child_->Style()));
+
+  NGFragment* fragment;
+  if (!current_child_->Layout(constraint_space_for_children_, &fragment))
+    return false;
+
+  NGBoxStrut child_margins =
+      ComputeMargins(*constraint_space_for_children_, *current_child_->Style(),
+                     constraint_space_for_children_->WritingMode(),
+                     constraint_space_for_children_->Direction());
+
+  NGLogicalOffset fragment_offset;
+  if (current_child_->Style()->isFloating()) {
+    fragment_offset = PositionFloatFragment(*fragment, child_margins);
+  } else {
+    // TODO(layout-ng): move ApplyAutoMargins to PositionFragment
+    ApplyAutoMargins(*constraint_space_for_children_, *current_child_->Style(),
+                     *fragment, &child_margins);
+    fragment_offset =
+        PositionFragment(*fragment, child_margins, *constraint_space);
+  }
+  builder_->AddChild(fragment, fragment_offset);
   return true;
 }
 
@@ -351,6 +358,14 @@ void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
     is_fragment_margin_strut_block_start_updated_ = true;
   }
   builder_->SetMarginStrutBlockEnd(from);
+}
+
+DEFINE_TRACE(NGBlockLayoutAlgorithm) {
+  NGLayoutAlgorithm::trace(visitor);
+  visitor->trace(first_child_);
+  visitor->trace(builder_);
+  visitor->trace(constraint_space_for_children_);
+  visitor->trace(current_child_);
 }
 
 }  // namespace blink

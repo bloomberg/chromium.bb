@@ -37,13 +37,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // returns true. The same constraint space has to be passed each time.
   bool Layout(const NGConstraintSpace*, NGPhysicalFragment**) override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    NGLayoutAlgorithm::trace(visitor);
-    visitor->trace(first_child_);
-    visitor->trace(builder_);
-    visitor->trace(constraint_space_for_children_);
-    visitor->trace(current_child_);
-  }
+  DECLARE_VIRTUAL_TRACE();
 
  private:
   // Computes collapsed margins for 2 adjoining blocks and updates the resultant
@@ -84,6 +78,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // the block-start once (on the first non-zero height child fragment) and
   // keeps updating block-end (on every non-zero height child).
   void UpdateMarginStrut(const NGMarginStrut& from);
+
+  bool LayoutCurrentChild(const NGConstraintSpace*);
 
   // Read-only Getters.
   const ComputedStyle& Style() const { return *style_; }
