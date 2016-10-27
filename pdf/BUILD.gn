@@ -39,9 +39,6 @@ static_library("pdf") {
     "preview_mode_client.h",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   if (pdf_engine == 0) {
     deps += [
       "//pdf/pdfium/fuzzers",
