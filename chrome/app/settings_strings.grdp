@@ -2371,14 +2371,23 @@
     <message name="IDS_SETTINGS_DISPLAY_TITLE" desc="In Device Settings, the title for display settings.">
       Displays
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_ARRANGEMENT" desc="In Device Settings > Displays, the label for the display arrangement section.">
+    <message name="IDS_SETTINGS_DISPLAY_ARRANGEMENT_TITLE" desc="In Device Settings > Displays, the label for the display arrangement section.">
       Arrangement
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_MIRROR" desc="In Device Settings > Displays, the label for the control for mirroring.">
-      Mirror displays
+    <message name="IDS_SETTINGS_DISPLAY_ARRANGEMENT_TEXT" desc="In Device Settings > Displays, text describing to use a mouse to drag the displays and change the arrangement.">
+      Drag to move a display
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_MAKE_PRIMARY" desc="In Device Settings > Displays, the label for the control for making a display primary.">
-      Make primary
+    <message name="IDS_SETTINGS_DISPLAY_MIRROR" desc="In Device Settings > Displays, the label for the control for mirroring.">
+      Mirroring
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_SCREEN" desc="In Device Settings > Displays, the label for the dropdown menu for changing the dispay type.">
+      Screen
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_SCREEN_PRIMARY" desc="The label for the dropdown menu list item to set the seleted screen as primary display.">
+      Primary display
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_SCREEN_EXTENDED" desc="The label for the dropdown menu list item to set the seleted screen as extended display.">
+      Extended display
     </message>
     <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_TITLE" desc="In Device Settings > Displays, the label for the section for changing a display's resolution.">
       Resolution
@@ -2398,6 +2407,9 @@
     <message name="IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD" desc="In Device Settings > Displays, the label for standard orientation (0 rotation).">
       Standard
     </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TEXT" desc="Text explaining that this setting is used to adjust the boundaries of the selected display.">
+      Adjust the boundaries of your desktop within the display
+    </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TITLE" desc="Name of the settings subpage which adjusts display overscan.">
       Overscan
     </message>
@@ -2415,6 +2427,12 @@
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_SAVE" desc="Label for saving overscan calibration.">
       Save
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_MIRRORING_ON" desc="Label indicating that the displays are currently mirrored">
+      On
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_MIRRORING_OFF" desc="Label indicating that the displays are currently not mirrored">
+      Off
     </message>
 
     <!-- Storage -->

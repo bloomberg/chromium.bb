@@ -3,7 +3,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/device_page/display_layout.html">
 <link rel="import" href="/device_page/display_overscan_dialog.html">
 <link rel="import" href="/md_select_css.html">
@@ -18,6 +21,14 @@
        padding: 0;
      }
 
+     :host {
+       --paper-tabs-selection-bar-color: var(--paper-blue-500);
+     }
+
+     .display-tabs {
+       width: 100%;
+     }
+
      display-layout {
        align-self: stretch;
        flex: 1 1;
@@ -29,6 +40,10 @@
        margin: 10px 0;
      }
 
+     .title-text {
+       margin-top: 10px;
+     }
+
      .info-text {
        color: var(--paper-grey-500);
        margin-top: 5px;
@@ -37,31 +52,62 @@
      .settings-box > paper-button:first-child {
        padding-left: 0
      }
+
+     paper-tab {
+       text-transform: uppercase;
+     }
+
     </style>
     <div class="settings-box first layout vertical self-stretch">
-      <h2>$i18n{displayArrangement}</h2>
+      <div class="title-text layout self-start">
+        $i18n{displayArrangementTitle}
+      </div>
+      <div class="secondary layout self-start">
+        $i18n{displayArrangementText}
+      </div>
       <display-layout id="displayLayout"
           selected-display="[[selectedDisplay]]"
           on-select-display="onSelectDisplay_">
       </display-layout>
     </div>
+    <div hidden="[[!showDisplayTabMenu_(displays)]]" class="settings-box">
+      <paper-tabs noink selected="[[selectedDisplay.id]]" class="display-tabs"
+          on-iron-select="onSelectDisplayTab_" attr-for-selected="display-id">
+        <template is="dom-repeat" items="[[displays]]">
+          <paper-tab display-id="[[item.id]]">[[item.name]]</paper-tab>
+        </template>
+      </paper-tabs>
+    </div>
+    <div hidden="[[showDisplayTabMenu_(displays)]]"
+        class="settings-box line-only"></div>
     <div class="settings-box layout vertical first">
       <h2>[[selectedDisplay.name]]</h2>
-      <div class="settings-box embedded first">
-        <paper-checkbox class="flex" checked="[[isMirrored_(displays)]]"
-            hidden$="[[!showMirror_(displays)]]" on-tap="onMirroredTap_">
-          $i18n{displayMirror}
-        </paper-checkbox>
-        <paper-button
-            hidden$="[[!showMakePrimary_(selectedDisplay, primaryDisplayId)]]"
-            on-tap="onMakePrimaryTap_">
-          $i18n{displayMakePrimary}
-        </paper-button>
+      <div class="settings-box embedded first two-line"
+          hidden$="[[!showMirror_(displays)]]">
+        <div class="start">
+          <div>$i18n{displayMirror}</div>
+          <div class="secondary">[[getDisplayMirrorText_(displays)]]</div>
+        </div>
+        <paper-toggle-button checked="[[isMirrored_(displays)]]"
+            on-tap="onMirroredTap_">
       </div>
-      <div class="settings-box embedded horizontal justified">
+      <div class="settings-box embedded"
+          hidden$="[[!showDisplaySelectMenu_(displays, selectedDisplay)]]">
+        <div class="start">$i18n{displayScreenTitle}</div>
+        <div class="md-select-wrapper">
+          <select class="md-select" on-change="updatePrimaryDisplay_"
+              value="[[getDisplaySelectMenuIndex_(
+                  selectedDisplay, primaryDisplayId)]]">
+            <option value="0">$i18n{displayScreenPrimary}</option>
+            <option value="1">$i18n{displayScreenExtended}</option>
+          </select>
+          <span class="md-select-underline"></span>
+        </div>
+      </div>
+      <div class="settings-box embedded two-line">
         <div class="start textarea layout vertical">
           <div>$i18n{displayResolutionTitle}</div>
-          <div class="info-text layout self-start">
+          <div class="secondary layout self-start">
             [[getResolutionText_(selectedDisplay, immediateSelectedModeIndex_)]]
           </div>
         </div>
@@ -86,12 +132,14 @@
           <span class="md-select-underline"></span>
         </div>
       </div>
-      <div class="settings-box embedded"
-          hidden$="[[selectedDisplay.isInternal]]">
-        <paper-button disabled="[[selectedDisplay.isInternal]]"
-            on-tap="onOverscanTap_">
-          $i18n{displayOverscanPageTitle}
-        </paper-button>
+      <div id="subpage-trigger" class="settings-box embedded two-line"
+          on-tap="onOverscanTap_" hidden$="[[selectedDisplay.isInternal]]"
+          actionable>
+        <div class="start">
+          <div>$i18n{displayOverscanPageTitle}</div>
+          <div class="secondary">$i18n{displayOverscanPageText}</div>
+        </div>
+        <button class="subpage-arrow" is="paper-icon-button-light"></button>
       </div>
 
       <settings-display-overscan-dialog id="displayOverscan"

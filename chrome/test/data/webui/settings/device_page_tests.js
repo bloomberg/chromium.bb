@@ -475,7 +475,7 @@ cr.define('device_page_tests', function() {
         expectEquals(
             displayPage.displays[1].id, displayPage.selectedDisplay.id);
 
-        displayPage.onMakePrimaryTap_();
+        displayPage.updatePrimaryDisplay_({target: {value: '0'}});
         displayPage.onOrientationChange_({target: {value: '90'}});
         fakeSystemDisplay.onDisplayChanged.callListeners();
 

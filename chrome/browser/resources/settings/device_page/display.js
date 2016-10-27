@@ -161,13 +161,48 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
-   * @param {string} primaryDisplayId
+   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @return {boolean}
    * @private
    */
-  showMakePrimary_: function(selectedDisplay, primaryDisplayId) {
-    return !!selectedDisplay && selectedDisplay.id != primaryDisplayId;
+  showDisplayTabMenu_: function(displays) {
+    return displays.length > 1;
+  },
+
+  /**
+   * Returns false if the display select menu has to be hidden.
+   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @return {boolean}
+   * @private
+   */
+  showDisplaySelectMenu_: function(displays, selectedDisplay) {
+    return displays.length > 1 && !selectedDisplay.isPrimary;
+  },
+
+  /**
+   * Returns the select menu index indicating whether the display currently is
+   * primary or extended.
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @param {string} primaryDisplayId
+   * @return {number} Retruns 0 if the display is primary else returns 1.
+   * @private
+   */
+  getDisplaySelectMenuIndex_: function(selectedDisplay, primaryDisplayId) {
+    if (selectedDisplay && selectedDisplay.id == primaryDisplayId)
+      return 0;
+    return 1;
+  },
+
+  /**
+   * Returns the i18n string for the text to be used for mirroring settings.
+   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
+   * @return {string} i18n string for mirroring settings text.
+   * @private
+   */
+  getDisplayMirrorText_: function(displays) {
+    return this.i18n(
+        this.isMirrored_(displays) ? 'displayMirrorOn' : 'displayMirrorOff');
   },
 
   /**
@@ -245,12 +280,29 @@ Polymer({
     }
   },
 
-  /** @private */
-  onMakePrimaryTap_: function() {
+  /**
+   * Handles event when a display tab is selected.
+   * @param {!{detail: !{item: !{displayId: string}}}} e
+   * @private
+   */
+  onSelectDisplayTab_: function(e) {
+    this.onSelectDisplay_({detail: e.detail.item.displayId});
+  },
+
+  /**
+   * Handles the event when an option from display select menu is selected.
+   * @param {!{target: !HTMLSelectElement}} e
+   * @private
+   */
+  updatePrimaryDisplay_: function(e) {
+    /** @const {number} */ var PRIMARY_DISP_IDX = 0;
     if (!this.selectedDisplay)
       return;
     if (this.selectedDisplay.id == this.primaryDisplayId)
       return;
+    if (e.target.value != PRIMARY_DISP_IDX)
+      return;
+
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
       isPrimary: true
     };

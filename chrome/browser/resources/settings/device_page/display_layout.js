@@ -141,13 +141,17 @@ Polymer({
    */
   getDivStyle_: function(id, displayBounds, visualScale, opt_mirrored) {
     // This matches the size of the box-shadow or border in CSS.
-    /** @const {number} */ var BORDER = opt_mirrored ? 1 : 2;
+    /** @const {number} */ var BORDER = 1;
+    /** @const {number} */ var MARGIN = 4;
     /** @const {number} */ var OFFSET = opt_mirrored ? -4 : 0;
+    /** @const {number} */ var PADDING = 3;
     var bounds = this.getCalculatedDisplayBounds(id, true /* notest */);
     if (!bounds)
       return '';
-    var height = Math.round(bounds.height * this.visualScale) - BORDER * 2;
-    var width = Math.round(bounds.width * this.visualScale) - BORDER * 2;
+    var height = Math.round(bounds.height * this.visualScale) - BORDER * 2 -
+        MARGIN * 2 - PADDING * 2;
+    var width = Math.round(bounds.width * this.visualScale) - BORDER * 2 -
+        MARGIN * 2 - PADDING * 2;
     var left = OFFSET +
         Math.round(this.visualOffset_.left + (bounds.left * this.visualScale));
     var top = OFFSET +
