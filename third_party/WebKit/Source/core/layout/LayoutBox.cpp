@@ -5266,10 +5266,8 @@ LayoutUnit LayoutBox::offsetFromLogicalTopOfFirstPage() const {
     return LayoutUnit();
 
   if (layoutState->layoutObject() == this) {
-    LayoutSize offsetDelta =
-        layoutState->layoutOffset() - layoutState->pageOffset();
-    return isHorizontalWritingMode() ? offsetDelta.height()
-                                     : offsetDelta.width();
+    LayoutSize offset = layoutState->paginationOffset();
+    return isHorizontalWritingMode() ? offset.height() : offset.width();
   }
 
   // A LayoutBlock always establishes a layout state, and this method is only

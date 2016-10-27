@@ -60,64 +60,53 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
   else
     m_flowThread = nullptr;
   layoutObject.view()->pushLayoutState(*this);
-  bool fixed = layoutObject.isOutOfFlowPositioned() &&
-               layoutObject.style()->position() == FixedPosition;
-  if (fixed) {
-    // FIXME: This doesn't work correctly with transforms.
-    FloatPoint fixedOffset =
-        layoutObject.view()->localToAbsolute(FloatPoint(), IsFixed);
-    m_layoutOffset = LayoutSize(fixedOffset.x(), fixedOffset.y()) + offset;
-  } else {
-    m_layoutOffset = m_next->m_layoutOffset + offset;
-  }
   m_heightOffsetForTableHeaders = m_next->heightOffsetForTableHeaders();
 
-  if (layoutObject.isOutOfFlowPositioned() && !fixed) {
-    if (LayoutObject* container = layoutObject.container()) {
-      if (container->style()->hasInFlowPosition() &&
-          container->isLayoutInline())
-        m_layoutOffset +=
-            toLayoutInline(container)->offsetForInFlowPositionedInline(
-                layoutObject);
-    }
-  }
-  // If we establish a new page height, then cache the offset to the top of the
-  // first page. We can compare this later on to figure out what part of the
-  // page we're actually on.
   if (pageLogicalHeight || layoutObject.isLayoutFlowThread()) {
+    // Entering a new pagination context.
     m_pageLogicalHeight = pageLogicalHeight;
-    bool isFlipped = layoutObject.style()->isFlippedBlocksWritingMode();
-    m_pageOffset = LayoutSize(
-        m_layoutOffset.width() +
-            (!isFlipped
-                 ? layoutObject.borderLeft() + layoutObject.paddingLeft()
-                 : layoutObject.borderRight() + layoutObject.paddingRight()),
-        m_layoutOffset.height() +
-            (!isFlipped
-                 ? layoutObject.borderTop() + layoutObject.paddingTop()
-                 : layoutObject.borderBottom() + layoutObject.paddingBottom()));
     m_pageLogicalHeightChanged = pageLogicalHeightChanged;
+    m_paginationOffset = LayoutSize();
     m_isPaginated = true;
-  } else if (m_layoutObject.isSVG() && !m_layoutObject.isSVGRoot()) {
-    // Pagination inside SVG is not allowed.
+    return;
+  }
+
+  // Disable pagination for objects we don't support. For now this includes
+  // overflow:scroll/auto, inline blocks and writing mode roots. Additionally,
+  // pagination inside SVG is not allowed.
+  if (layoutObject.getPaginationBreakability() == LayoutBox::ForbidBreaks ||
+      (m_layoutObject.isSVG() && !m_layoutObject.isSVGRoot())) {
     m_flowThread = nullptr;
+    m_pageLogicalHeight = LayoutUnit();
     m_pageLogicalHeightChanged = false;
     m_isPaginated = false;
-  } else {
-    // If we don't establish a new page height, then propagate the old page
-    // height and offset down.
-    m_pageLogicalHeight = m_next->m_pageLogicalHeight;
-    m_pageLogicalHeightChanged = m_next->m_pageLogicalHeightChanged;
-    m_pageOffset = m_next->m_pageOffset;
+    return;
+  }
 
-    // Disable pagination for objects we don't support. For now this includes
-    // overflow:scroll/auto, inline blocks and writing mode roots.
-    if (layoutObject.getPaginationBreakability() == LayoutBox::ForbidBreaks) {
-      m_flowThread = nullptr;
-      m_pageLogicalHeight = LayoutUnit();
-      m_isPaginated = false;
-    } else {
-      m_isPaginated = m_pageLogicalHeight || m_flowThread;
+  // Propagate the old page height and offset down.
+  m_pageLogicalHeight = m_next->m_pageLogicalHeight;
+  m_pageLogicalHeightChanged = m_next->m_pageLogicalHeightChanged;
+
+  m_isPaginated = m_pageLogicalHeight || m_flowThread;
+  if (!m_isPaginated)
+    return;
+
+  // Now adjust the pagination offset, so that we can easily figure out how far
+  // away we are from the start of the pagination context.
+  m_paginationOffset = m_next->m_paginationOffset;
+  bool fixed = layoutObject.isOutOfFlowPositioned() &&
+               layoutObject.style()->position() == FixedPosition;
+  if (fixed)
+    return;
+  m_paginationOffset = m_next->m_paginationOffset + offset;
+  if (!layoutObject.isOutOfFlowPositioned())
+    return;
+  if (LayoutObject* container = layoutObject.container()) {
+    if (container->style()->hasInFlowPosition() &&
+        container->isLayoutInline()) {
+      m_paginationOffset +=
+          toLayoutInline(container)->offsetForInFlowPositionedInline(
+              layoutObject);
     }
   }
 
@@ -138,11 +127,6 @@ LayoutState::LayoutState(LayoutObject& root)
     return;
 
   root.view()->pushLayoutState(*this);
-
-  LayoutObject* container = root.container();
-  FloatPoint absContentPoint =
-      container->localToAbsolute(FloatPoint(), UseTransforms);
-  m_layoutOffset = LayoutSize(absContentPoint.x(), absContentPoint.y());
 }
 
 LayoutState::~LayoutState() {
@@ -156,8 +140,8 @@ LayoutUnit LayoutState::pageLogicalOffset(
     const LayoutBox& child,
     const LayoutUnit& childLogicalOffset) const {
   if (child.isHorizontalWritingMode())
-    return m_layoutOffset.height() + childLogicalOffset - m_pageOffset.height();
-  return m_layoutOffset.width() + childLogicalOffset - m_pageOffset.width();
+    return m_paginationOffset.height() + childLogicalOffset;
+  return m_paginationOffset.width() + childLogicalOffset;
 }
 
 }  // namespace blink
