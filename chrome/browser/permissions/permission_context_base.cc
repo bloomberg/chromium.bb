@@ -153,16 +153,20 @@ void PermissionContextBase::CancelPermissionRequest(
     const PermissionRequestID& id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (PermissionRequestManager::IsEnabled()) {
+    PermissionRequest* cancelling = pending_requests_.get(id.ToString());
+    if (cancelling != nullptr && web_contents != nullptr &&
+        PermissionRequestManager::FromWebContents(web_contents) != nullptr) {
+      PermissionRequestManager::FromWebContents(web_contents)
+          ->CancelRequest(cancelling);
+    }
+  } else {
 #if defined(OS_ANDROID)
-  GetQueueController()->CancelInfoBarRequest(id);
+    GetQueueController()->CancelInfoBarRequest(id);
 #else
-  PermissionRequest* cancelling = pending_requests_.get(id.ToString());
-  if (cancelling != NULL && web_contents != NULL &&
-      PermissionRequestManager::FromWebContents(web_contents) != NULL) {
-    PermissionRequestManager::FromWebContents(web_contents)
-        ->CancelRequest(cancelling);
-  }
+    NOTREACHED();
 #endif
+  }
 }
 
 void PermissionContextBase::DecidePermission(
