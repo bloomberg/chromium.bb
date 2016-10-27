@@ -589,6 +589,9 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
     return;
   }
 
+  // Update the cached version.
+  *existing_credit_card = credit_card;
+
   if (!database_.get())
     return;
 

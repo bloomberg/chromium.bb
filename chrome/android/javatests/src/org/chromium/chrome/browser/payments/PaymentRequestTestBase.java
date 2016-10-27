@@ -497,6 +497,24 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         helper.waitForCallback(callCount);
     }
 
+    /** Directly sets the text in the expired card unmask UI. */
+    protected void setTextInExpiredCardUnmaskDialogAndWait(
+            final int[] resourceIds, final String[] values, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        assert resourceIds.length == values.length;
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < resourceIds.length; ++i) {
+                    ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceIds[i]))
+                            .setText(values[i]);
+                }
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
     /** Verifies the contents of the test webpage. */
     protected void expectResultContains(final String[] contents) throws InterruptedException {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {

@@ -96,7 +96,7 @@ public class AutofillTestHelper {
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
-    CreditCard getCreditCard(final String guid) throws ExecutionException {
+    public CreditCard getCreditCard(final String guid) throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<CreditCard>() {
             @Override
             public CreditCard call() {

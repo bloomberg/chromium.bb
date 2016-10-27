@@ -181,6 +181,13 @@ void PopulateNativeCreditCardFromJava(
   card->set_server_id(
       ConvertJavaStringToUTF8(Java_CreditCard_getServerId(env, jcard)));
 
+  // Only set the guid if it is an existing card (java guid not empty).
+  // Otherwise, keep the generated one.
+  std::string guid =
+      ConvertJavaStringToUTF8(Java_CreditCard_getGUID(env, jcard));
+  if (!guid.empty())
+    card->set_guid(guid);
+
   if (Java_CreditCard_getIsLocal(env, jcard)) {
     card->set_record_type(CreditCard::LOCAL_CARD);
   } else {
