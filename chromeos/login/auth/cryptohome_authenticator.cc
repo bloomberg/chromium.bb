@@ -25,11 +25,11 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/login/user_names.h"
 #include "chromeos/login_event_recorder.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -555,11 +555,12 @@ void CryptohomeAuthenticator::LoginAsSupervisedUser(
 
 void CryptohomeAuthenticator::LoginOffTheRecord() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  current_state_.reset(new AuthAttemptState(
-      UserContext(user_manager::USER_TYPE_GUEST, login::GuestAccountId()),
-      false,    // unlock
-      false,    // online_complete
-      false));  // user_is_new
+  current_state_.reset(
+      new AuthAttemptState(UserContext(user_manager::USER_TYPE_GUEST,
+                                       user_manager::GuestAccountId()),
+                           false,    // unlock
+                           false,    // online_complete
+                           false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuestAndGetHash(current_state_->AsWeakPtr(),
@@ -589,7 +590,7 @@ void CryptohomeAuthenticator::LoginAsKioskAccount(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   const AccountId& account_id =
-      use_guest_mount ? login::GuestAccountId() : app_account_id;
+      use_guest_mount ? user_manager::GuestAccountId() : app_account_id;
   current_state_.reset(new AuthAttemptState(
       UserContext(user_manager::USER_TYPE_KIOSK_APP, account_id),
       false,    // unlock

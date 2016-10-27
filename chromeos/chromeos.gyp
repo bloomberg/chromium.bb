@@ -236,8 +236,6 @@
       'login/auth/user_context.h',
       'login/login_state.cc',
       'login/login_state.h',
-      'login/user_names.cc',
-      'login/user_names.h',
       'login_event_recorder.cc',
       'login_event_recorder.h',
       'network/auto_connect_handler.cc',

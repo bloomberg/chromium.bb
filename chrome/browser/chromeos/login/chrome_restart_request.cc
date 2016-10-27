@@ -32,12 +32,12 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/login/user_names.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -360,7 +360,7 @@ void GetOffTheRecordCommandLine(const GURL& start_url,
   otr_switches.SetString(::switches::kLoggingLevel, kGuestModeLoggingLevel);
   otr_switches.SetString(
       switches::kLoginUser,
-      cryptohome::Identification(login::GuestAccountId()).id());
+      cryptohome::Identification(user_manager::GuestAccountId()).id());
 
   // Override the home page.
   otr_switches.SetString(::switches::kHomePage,

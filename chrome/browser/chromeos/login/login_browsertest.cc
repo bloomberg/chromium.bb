@@ -24,9 +24,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
@@ -58,8 +58,8 @@ class LoginGuestTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "hash");
-    command_line->AppendSwitchASCII(switches::kLoginUser,
-                                    login::GuestAccountId().GetUserEmail());
+    command_line->AppendSwitchASCII(
+        switches::kLoginUser, user_manager::GuestAccountId().GetUserEmail());
   }
 };
 

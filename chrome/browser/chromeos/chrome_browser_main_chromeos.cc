@@ -112,7 +112,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/login/user_names.h"
 #include "chromeos/login_event_recorder.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
@@ -129,6 +128,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -332,7 +332,7 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
       !parsed_command_line().HasSwitch(switches::kGuestSession)) {
     singleton_command_line->AppendSwitchASCII(
         switches::kLoginUser,
-        cryptohome::Identification(login::StubAccountId()).id());
+        cryptohome::Identification(user_manager::StubAccountId()).id());
     if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
       singleton_command_line->AppendSwitchASCII(switches::kLoginProfile,
                                                 chrome::kTestUserProfileDir);

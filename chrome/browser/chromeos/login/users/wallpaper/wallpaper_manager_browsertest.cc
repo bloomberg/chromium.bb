@@ -28,11 +28,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/user_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "components/wallpaper/wallpaper_files_id.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
@@ -367,7 +367,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        HotPlugInScreenAtGAIALoginScreen) {
   UpdateDisplay("800x600");
   // Set initial wallpaper to the default wallpaper.
-  WallpaperManager::Get()->SetDefaultWallpaperNow(login::StubAccountId());
+  WallpaperManager::Get()->SetDefaultWallpaperNow(
+      user_manager::StubAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
 
   // Hook up a 2000x2000 display. The large resolution custom wallpaper should
@@ -766,8 +767,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallGuestWallpaper) {
     return;
   CreateCmdlineWallpapers();
   user_manager::UserManager::Get()->UserLoggedIn(
-      chromeos::login::GuestAccountId(), chromeos::login::kGuestUserName,
-      false);
+      user_manager::GuestAccountId(), user_manager::kGuestUserName, false);
   UpdateDisplay("800x600");
   WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -782,8 +782,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
 
   CreateCmdlineWallpapers();
   user_manager::UserManager::Get()->UserLoggedIn(
-      chromeos::login::GuestAccountId(), chromeos::login::kGuestUserName,
-      false);
+      user_manager::GuestAccountId(), user_manager::kGuestUserName, false);
   UpdateDisplay("1600x1200");
   WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -824,8 +823,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Start loading the default wallpaper.
   UpdateDisplay("640x480");
   CreateCmdlineWallpapers();
-  user_manager::UserManager::Get()->UserLoggedIn(
-      chromeos::login::StubAccountId(), "test_hash", false);
+  user_manager::UserManager::Get()->UserLoggedIn(user_manager::StubAccountId(),
+                                                 "test_hash", false);
 
   WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
 
@@ -834,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   gfx::ImageSkia image = wallpaper_manager_test_utils::CreateTestImage(
       640, 480, wallpaper_manager_test_utils::kCustomWallpaperColor);
   WallpaperManager::Get()->SetCustomWallpaper(
-      chromeos::login::StubAccountId(),
+      user_manager::StubAccountId(),
       wallpaper::WallpaperFilesId::FromString("test_hash"), "test-nofile.jpeg",
       WALLPAPER_LAYOUT_STRETCH, user_manager::User::CUSTOMIZED, image, true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();

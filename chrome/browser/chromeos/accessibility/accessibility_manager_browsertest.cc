@@ -25,12 +25,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/user_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +55,7 @@ const char kTestUserName[] = "owner@invalid.domain";
 const int kTestAutoclickDelayMs = 2000;
 
 // Test user name for supervised user. The domain part must be matched with
-// chromeos::login::kSupervisedUserDomain.
+// user_manager::kSupervisedUserDomain.
 const char kTestSupervisedUserName[] = "test@locally-managed.localhost";
 
 class MockAccessibilityObserver {
@@ -647,7 +647,7 @@ INSTANTIATE_TEST_CASE_P(
     UserTypeInstantiation,
     AccessibilityManagerUserTypeTest,
     ::testing::Values(kTestUserName,
-                      login::GuestAccountId().GetUserEmail().c_str(),
+                      user_manager::GuestAccountId().GetUserEmail().c_str(),
                       kTestSupervisedUserName));
 
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,

@@ -56,8 +56,8 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/user_names.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #endif  // defined(OS_CHROMEOS)
 
 using base::ASCIIToUTF16;
@@ -515,7 +515,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
     cl->AppendSwitch(::switches::kIncognito);
 
     chromeos::WallpaperManager::Initialize();
-    RegisterUser(chromeos::login::kGuestUserName);
+    RegisterUser(user_manager::kGuestUserName);
 #endif
   }
 };

@@ -23,10 +23,10 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -159,7 +159,7 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
     std::string whitelisted_user;
     new_list->GetString(i, &whitelisted_user);
     if (gaia::ExtractDomainName(whitelisted_user) ==
-        chromeos::login::kSupervisedUserDomain) {
+        user_manager::kSupervisedUserDomain) {
       new_list->Remove(i, NULL);
       --i;
     }

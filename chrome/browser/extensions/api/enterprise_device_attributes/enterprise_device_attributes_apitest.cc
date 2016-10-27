@@ -13,7 +13,6 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/login/user_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"

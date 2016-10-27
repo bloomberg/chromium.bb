@@ -20,9 +20,9 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/user_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_util_internal.h"
@@ -65,7 +65,7 @@ class PlatformKeysTest : public ExtensionApiTest {
 
     command_line->AppendSwitchASCII(
         chromeos::switches::kLoginUser,
-        chromeos::login::StubAccountId().GetUserEmail());
+        user_manager::StubAccountId().GetUserEmail());
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -74,7 +74,7 @@ class PlatformKeysTest : public ExtensionApiTest {
     if (device_status_ == DEVICE_STATUS_ENROLLED) {
       device_policy_test_helper_.device_policy()->policy_data().set_username(
           user_status_ == USER_STATUS_MANAGED_AFFILIATED_DOMAIN
-              ? chromeos::login::StubAccountId().GetUserEmail()
+              ? user_manager::StubAccountId().GetUserEmail()
               : "someuser@anydomain.com");
 
       device_policy_test_helper_.device_policy()->Build();
@@ -181,7 +181,7 @@ class PlatformKeysTest : public ExtensionApiTest {
  private:
   void SetupInitialEmptyPolicy() {
     policy_helper_.reset(new policy::UserPolicyTestHelper(
-        chromeos::login::StubAccountId().GetUserEmail()));
+        user_manager::StubAccountId().GetUserEmail()));
     policy_helper_->Init(
         base::DictionaryValue() /* empty mandatory policy */,
         base::DictionaryValue() /* empty recommended policy */);

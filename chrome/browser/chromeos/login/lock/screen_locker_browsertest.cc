@@ -27,7 +27,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/stub_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
-#include "chromeos/login/user_names.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_GT(lock_bounds.width(), 10);
   EXPECT_GT(lock_bounds.height(), 10);
 
-  UserContext user_context(login::StubAccountId());
+  UserContext user_context(user_manager::StubAccountId());
   user_context.SetKey(Key("pass"));
   tester->InjectStubUserContext(user_context);
   EXPECT_TRUE(tester->IsLocked());
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     EXPECT_FALSE(window_state->hide_shelf_when_fullscreen());
     EXPECT_TRUE(tester->IsLocked());
   }
-  UserContext user_context(login::StubAccountId());
+  UserContext user_context(user_manager::StubAccountId());
   user_context.SetKey(Key("pass"));
   tester->InjectStubUserContext(user_context);
   tester->EnterPassword("pass");

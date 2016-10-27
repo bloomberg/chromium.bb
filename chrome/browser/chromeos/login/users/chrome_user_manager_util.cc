@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 
-#include "chromeos/login/user_names.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 
 namespace chromeos {
@@ -14,13 +14,13 @@ namespace chrome_user_manager_util {
 bool GetPlatformKnownUserId(const std::string& user_email,
                             const std::string& gaia_id,
                             AccountId* out_account_id) {
-  if (user_email == chromeos::login::kStubUser) {
-    *out_account_id = chromeos::login::StubAccountId();
+  if (user_email == user_manager::kStubUser) {
+    *out_account_id = user_manager::StubAccountId();
     return true;
   }
 
-  if (user_email == chromeos::login::kGuestUserName) {
-    *out_account_id = chromeos::login::GuestAccountId();
+  if (user_email == user_manager::kGuestUserName) {
+    *out_account_id = user_manager::GuestAccountId();
     return true;
   }
   return false;

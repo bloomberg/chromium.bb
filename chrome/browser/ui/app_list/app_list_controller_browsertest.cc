@@ -30,7 +30,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/user_names.h"
+#include "components/user_manager/user_names.h"
 #endif  // defined(OS_CHROMEOS)
 
 // Browser Test for AppListController that runs on all platforms supporting
@@ -182,7 +182,7 @@ void AppListControllerGuestModeBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kGuestSession);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                  chromeos::login::kGuestUserName);
+                                  user_manager::kGuestUserName);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                   TestingProfile::kTestUserProfileDir);
   command_line->AppendSwitch(switches::kIncognito);

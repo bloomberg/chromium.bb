@@ -58,8 +58,8 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/login/user_names.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_names.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -98,7 +98,7 @@ const char* GetTestGaiaId() {
 
 const char* GetTestUser() {
 #if defined(OS_CHROMEOS)
-  return chromeos::login::kStubUser;
+  return user_manager::kStubUser;
 #else
   return "user@example.com";
 #endif

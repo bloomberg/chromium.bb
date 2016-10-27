@@ -12,9 +12,9 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
-#include "chromeos/login/user_names.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "crypto/random.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -178,7 +178,7 @@ void BootstrapUserContextInitializer::OnGetUserInfoResponse(
   }
 
   user_context_.SetAccountId(user_manager::known_user::GetAccountId(
-      login::CanonicalizeUserID(email), gaia_id));
+      user_manager::CanonicalizeUserID(email), gaia_id));
   StartCheckExistingKeys();
 }
 

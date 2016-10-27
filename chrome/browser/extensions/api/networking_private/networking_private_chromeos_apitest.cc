@@ -24,7 +24,6 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/login/user_names.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -38,6 +37,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -199,9 +199,8 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     // uses the ProfileHelper to obtain the userhash crbug/238623.
     const cryptohome::Identification login_user =
         cryptohome::Identification::FromString(
-            chromeos::login::CanonicalizeUserID(
-                command_line->GetSwitchValueNative(
-                    chromeos::switches::kLoginUser)));
+            user_manager::CanonicalizeUserID(command_line->GetSwitchValueNative(
+                chromeos::switches::kLoginUser)));
     const std::string sanitized_user =
         CryptohomeClient::GetStubSanitizedUsername(login_user);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,

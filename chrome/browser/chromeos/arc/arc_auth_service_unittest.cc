@@ -26,7 +26,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/login/user_names.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
@@ -35,6 +34,7 @@
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -154,8 +154,8 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
-  fake_user_manager->AddUser(chromeos::login::DemoAccountId());
-  fake_user_manager->SwitchActiveUser(chromeos::login::DemoAccountId());
+  fake_user_manager->AddUser(user_manager::DemoAccountId());
+  fake_user_manager->SwitchActiveUser(user_manager::DemoAccountId());
   auth_service()->Shutdown();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());

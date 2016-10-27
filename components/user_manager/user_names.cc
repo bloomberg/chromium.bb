@@ -1,7 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chromeos/login/user_names.h"
+#include "components/user_manager/user_names.h"
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -45,17 +45,14 @@ class FixedAccountManager {
 };
 
 FixedAccountManager::FixedAccountManager()
-    : stub_account_id_(AccountId::FromUserEmail(chromeos::login::kStubUser)),
+    : stub_account_id_(AccountId::FromUserEmail(user_manager::kStubUser)),
       signin_account_id_(AccountId::FromUserEmail(kSignInUser)),
-      guest_account_id_(
-          AccountId::FromUserEmail(chromeos::login::kGuestUserName)),
+      guest_account_id_(AccountId::FromUserEmail(user_manager::kGuestUserName)),
       demo_account_id_(AccountId::FromUserEmail(kDemoUserName)) {}
 
 }  // namespace
 
-namespace chromeos {
-
-namespace login {
+namespace user_manager {
 
 constexpr const char kStubUser[] = "stub-user@example.com";
 
@@ -65,7 +62,7 @@ constexpr const char kGuestUserName[] = "$guest";
 constexpr const char kSupervisedUserDomain[] = "locally-managed.localhost";
 
 std::string CanonicalizeUserID(const std::string& user_id) {
-  if (user_id == chromeos::login::kGuestUserName)
+  if (user_id == kGuestUserName)
     return user_id;
   return gaia::CanonicalizeEmail(user_id);
 }
@@ -86,6 +83,4 @@ const AccountId& DemoAccountId() {
   return FixedAccountManager::GetInstance()->demo_account_id();
 }
 
-}  // namespace login
-
-}  // namespace chromeos
+}  // namespace user_manager

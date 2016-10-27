@@ -19,9 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/login/user_names.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -68,7 +68,7 @@ ChromeSessionManager::CreateSessionManager(
     return std::unique_ptr<session_manager::SessionManager>(
         new ChromeSessionManager(new LoginOobeSessionManagerDelegate()));
   } else if (!base::SysInfo::IsRunningOnChromeOS() &&
-             login_account_id == login::StubAccountId()) {
+             login_account_id == user_manager::StubAccountId()) {
     VLOG(1) << "Starting Chrome with StubLoginSessionManagerDelegate";
     return std::unique_ptr<session_manager::SessionManager>(
         new ChromeSessionManager(new StubLoginSessionManagerDelegate(
@@ -80,7 +80,8 @@ ChromeSessionManager::CreateSessionManager(
     // 2. Chrome is restarted for Guest session.
     // 3. Chrome is started in browser_tests skipping the login flow.
     // 4. Chrome is started on dev machine i.e. not on Chrome OS device w/o
-    //    login flow. In that case --login-user=[chromeos::login::kStubUser] is
+    //    login flow. In that case
+    //    --login-user=[user_manager::kStubUser] is
     //    added. See PreEarlyInitialization().
     return std::unique_ptr<session_manager::SessionManager>(
         new ChromeSessionManager(new RestoreAfterCrashSessionManagerDelegate(

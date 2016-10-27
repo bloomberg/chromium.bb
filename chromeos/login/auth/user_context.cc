@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/login/auth/user_context.h"
-#include "chromeos/login/user_names.h"
+#include "components/user_manager/user_names.h"
 
 namespace chromeos {
 
@@ -28,7 +28,7 @@ UserContext::UserContext(const UserContext& other)
 UserContext::UserContext(const AccountId& account_id)
     : account_id_(account_id) {
   account_id_.SetUserEmail(
-      login::CanonicalizeUserID(account_id.GetUserEmail()));
+      user_manager::CanonicalizeUserID(account_id.GetUserEmail()));
 }
 
 UserContext::UserContext(user_manager::UserType user_type,
@@ -36,7 +36,7 @@ UserContext::UserContext(user_manager::UserType user_type,
     : account_id_(account_id), user_type_(user_type) {
   if (user_type_ == user_manager::USER_TYPE_REGULAR)
     account_id_.SetUserEmail(
-        login::CanonicalizeUserID(account_id_.GetUserEmail()));
+        user_manager::CanonicalizeUserID(account_id_.GetUserEmail()));
 }
 
 UserContext::~UserContext() {

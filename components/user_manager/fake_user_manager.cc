@@ -9,7 +9,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/user_names.h"
+#include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 
 namespace {
@@ -282,7 +282,7 @@ bool FakeUserManager::IsEnterpriseManaged() const {
 }
 
 bool FakeUserManager::IsDemoApp(const AccountId& account_id) const {
-  return account_id == chromeos::login::DemoAccountId();
+  return account_id == DemoAccountId();
 }
 
 bool FakeUserManager::IsDeviceLocalAccountMarkedForRemoval(
@@ -297,20 +297,20 @@ void FakeUserManager::UpdateLoginState(const user_manager::User* active_user,
 bool FakeUserManager::GetPlatformKnownUserId(const std::string& user_email,
                                              const std::string& gaia_id,
                                              AccountId* out_account_id) const {
-  if (user_email == chromeos::login::kStubUser) {
-    *out_account_id = chromeos::login::StubAccountId();
+  if (user_email == kStubUser) {
+    *out_account_id = StubAccountId();
     return true;
   }
 
-  if (user_email == chromeos::login::kGuestUserName) {
-    *out_account_id = chromeos::login::GuestAccountId();
+  if (user_email == kGuestUserName) {
+    *out_account_id = GuestAccountId();
     return true;
   }
   return false;
 }
 
 const AccountId& FakeUserManager::GetGuestAccountId() const {
-  return chromeos::login::GuestAccountId();
+  return GuestAccountId();
 }
 
 bool FakeUserManager::IsFirstExecAfterBoot() const {
@@ -323,11 +323,11 @@ void FakeUserManager::AsyncRemoveCryptohome(const AccountId& account_id) const {
 }
 
 bool FakeUserManager::IsGuestAccountId(const AccountId& account_id) const {
-  return account_id == chromeos::login::GuestAccountId();
+  return account_id == GuestAccountId();
 }
 
 bool FakeUserManager::IsStubAccountId(const AccountId& account_id) const {
-  return account_id == chromeos::login::StubAccountId();
+  return account_id == StubAccountId();
 }
 
 bool FakeUserManager::IsSupervisedAccountId(const AccountId& account_id) const {

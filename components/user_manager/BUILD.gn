@@ -35,6 +35,8 @@ component("user_manager") {
       "user_manager.h",
       "user_manager_base.cc",
       "user_manager_base.h",
+      "user_names.cc",
+      "user_names.h",
       "user_type.h",
     ]
     deps += [

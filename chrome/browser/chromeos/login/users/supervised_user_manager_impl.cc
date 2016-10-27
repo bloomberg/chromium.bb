@@ -19,11 +19,11 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -147,8 +147,8 @@ std::string SupervisedUserManagerImpl::GenerateUserId() {
   std::string id;
   bool user_exists;
   do {
-    id = base::StringPrintf(
-        "%d@%s", counter, chromeos::login::kSupervisedUserDomain);
+    id = base::StringPrintf("%d@%s", counter,
+                            user_manager::kSupervisedUserDomain);
     counter++;
     user_exists = (nullptr != owner_->FindUser(AccountId::FromUserEmail(id)));
     DCHECK(!user_exists);
@@ -437,8 +437,7 @@ void SupervisedUserManagerImpl::RollbackUserCreationTransaction() {
     return;
   }
 
-  if (gaia::ExtractDomainName(user_id) !=
-      chromeos::login::kSupervisedUserDomain) {
+  if (gaia::ExtractDomainName(user_id) != user_manager::kSupervisedUserDomain) {
     LOG(WARNING) << "Clean up transaction for  non-supervised user found :"
                  << user_id << ", will not remove data";
     prefs->ClearPref(kSupervisedUserCreationTransactionDisplayName);
