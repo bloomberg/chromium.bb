@@ -784,11 +784,9 @@ void FrameLoader::updateForSameDocumentNavigation(
   HistoryCommitType historyCommitType = loadTypeToCommitType(type);
   if (!m_currentItem)
     historyCommitType = HistoryInertCommit;
-  if (m_frame->settings()->historyEntryRequiresUserGesture()) {
-    if (initiatingDocument && !initiatingDocument->hasReceivedUserGesture())
-      historyCommitType = HistoryInertCommit;
-    else if (historyCommitType == StandardCommit)
-      m_frame->document()->clearHasReceivedUserGesture();
+  if (m_frame->settings()->historyEntryRequiresUserGesture() &&
+      initiatingDocument && !initiatingDocument->hasReceivedUserGesture()) {
+    historyCommitType = HistoryInertCommit;
   }
 
   setHistoryItemStateForCommit(

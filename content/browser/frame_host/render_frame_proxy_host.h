@@ -123,6 +123,7 @@ class RenderFrameProxyHost
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);
   void OnFrameFocused();
+  void OnSetHasReceivedUserGesture();
 
   // This RenderFrameProxyHost's routing id.
   int routing_id_;

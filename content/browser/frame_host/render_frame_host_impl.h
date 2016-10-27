@@ -579,6 +579,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // no longer on the stack when we attempt to swap it out.
   void SuppressFurtherDialogs();
 
+  void SetHasReceivedUserGesture();
+
   // PlzNavigate: returns the LoFi state of the last successful navigation that
   // made a network request.
   LoFiState last_navigation_lofi_state() const {

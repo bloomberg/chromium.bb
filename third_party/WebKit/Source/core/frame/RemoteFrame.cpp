@@ -129,6 +129,10 @@ bool RemoteFrame::shouldClose() {
   return true;
 }
 
+void RemoteFrame::setDocumentHasReceivedUserGesture() {
+  client()->setHasReceivedUserGesture();
+}
+
 void RemoteFrame::forwardInputEvent(Event* event) {
   client()->forwardInputEvent(event);
 }

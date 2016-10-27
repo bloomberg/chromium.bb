@@ -1601,6 +1601,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
+                        OnSetHasReceivedUserGesture)
     IPC_MESSAGE_HANDLER(FrameMsg_RunFileChooserResponse, OnFileChooserResponse)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
@@ -5495,6 +5497,11 @@ void RenderFrameImpl::OnEnableViewSourceMode() {
 
 void RenderFrameImpl::OnSuppressFurtherDialogs() {
   suppress_further_dialogs_ = true;
+}
+
+void RenderFrameImpl::OnSetHasReceivedUserGesture() {
+  DCHECK(frame_);
+  frame_->setHasReceivedUserGesture();
 }
 
 void RenderFrameImpl::OnFileChooserResponse(

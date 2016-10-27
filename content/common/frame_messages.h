@@ -916,6 +916,10 @@ IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
 // ScopedPageLoadDeferrer is on the stack for SwapOut.
 IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
 
+// Tells the frame to consider itself to have received a user gesture (based
+// on a user gesture proceed by a descendant).
+IPC_MESSAGE_ROUTED0(FrameMsg_SetHasReceivedUserGesture)
+
 IPC_MESSAGE_ROUTED1(FrameMsg_RunFileChooserResponse,
                     std::vector<content::FileChooserFileInfo>)
 
@@ -1284,6 +1288,10 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_FrameRectChanged, gfx::Rect /* frame_rect */)
 
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
+
+// Indicates that a child of this frame recieved a user gesture, and this
+// frame should in turn consider itself to have received a user gesture.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_SetHasReceivedUserGesture)
 
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params

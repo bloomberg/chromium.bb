@@ -192,4 +192,8 @@ void RemoteFrameClientImpl::visibilityChanged(bool visible) {
   m_webFrame->client()->visibilityChanged(visible);
 }
 
+void RemoteFrameClientImpl::setHasReceivedUserGesture() {
+  m_webFrame->client()->setHasReceivedUserGesture();
+}
+
 }  // namespace blink

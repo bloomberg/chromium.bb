@@ -148,6 +148,10 @@ class WebLocalFrame : public WebFrame {
   // cross process.
   virtual void setCommittedFirstRealLoad() = 0;
 
+  // Mark this frame's document as having received a user gesture, based on
+  // one of its descendants having processed a user gesture.
+  virtual void setHasReceivedUserGesture() = 0;
+
   // Orientation Changes ----------------------------------------------------
 
   // Notify the frame that the screen orientation has changed.

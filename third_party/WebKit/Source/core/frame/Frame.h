@@ -89,6 +89,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   void disconnectOwnerElement();
   virtual bool shouldClose() = 0;
 
+  virtual void setDocumentHasReceivedUserGesture() = 0;
+
   FrameClient* client() const;
 
   // NOTE: Page is moving out of Blink up into the browser process as

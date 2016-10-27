@@ -268,6 +268,7 @@ class WEB_EXPORT WebLocalFrameImpl final
       const override;
   bool isNavigationScheduledWithin(double interval) const override;
   void setCommittedFirstRealLoad() override;
+  void setHasReceivedUserGesture() override;
   void sendOrientationChangeEvent() override;
   void willShowInstallBannerPrompt(int requestId,
                                    const WebVector<WebString>& platforms,

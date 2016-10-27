@@ -2733,6 +2733,10 @@ void RenderFrameHostImpl::SuppressFurtherDialogs() {
   Send(new FrameMsg_SuppressFurtherDialogs(GetRoutingID()));
 }
 
+void RenderFrameHostImpl::SetHasReceivedUserGesture() {
+  Send(new FrameMsg_SetHasReceivedUserGesture(GetRoutingID()));
+}
+
 bool RenderFrameHostImpl::IsSameSiteInstance(
     RenderFrameHostImpl* other_render_frame_host) {
   // As a sanity check, make sure the frame belongs to the same BrowserContext.

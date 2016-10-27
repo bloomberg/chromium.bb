@@ -1316,10 +1316,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Indicates whether the user has interacted with this particular Document.
   void setHasReceivedUserGesture() { m_hasReceivedUserGesture = true; }
-  // Consume user interaction state. Used for an experiment that restricts
-  // adding history entries to Documents that have had a user gesture since
-  // last history state change.
-  void clearHasReceivedUserGesture() { m_hasReceivedUserGesture = false; }
   bool hasReceivedUserGesture() const { return m_hasReceivedUserGesture; }
 
  protected:

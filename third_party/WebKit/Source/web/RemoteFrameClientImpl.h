@@ -42,6 +42,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void frameRectsChanged(const IntRect& frameRect) override;
   void advanceFocus(WebFocusType, LocalFrame*) override;
   void visibilityChanged(bool visible) override;
+  void setHasReceivedUserGesture() override;
 
   WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 

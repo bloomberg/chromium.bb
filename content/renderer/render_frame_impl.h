@@ -863,6 +863,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnStopFinding(StopFindAction action);
   void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
+  void OnSetHasReceivedUserGesture();
   void OnFileChooserResponse(
       const std::vector<content::FileChooserFileInfo>& files);
 #if defined(OS_ANDROID)

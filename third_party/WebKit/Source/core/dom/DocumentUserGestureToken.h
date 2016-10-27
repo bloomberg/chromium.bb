@@ -28,14 +28,12 @@ class DocumentUserGestureToken final : public UserGestureToken {
  private:
   DocumentUserGestureToken(Document* document, Status status)
       : UserGestureToken(status) {
-    if (!document)
+    if (!document || document->hasReceivedUserGesture())
       return;
     document->setHasReceivedUserGesture();
     for (Frame* frame = document->frame()->tree().parent(); frame;
          frame = frame->tree().parent()) {
-      // TODO(japhet): Make this work for RemoteFrames: http://crbug.com/658800
-      if (frame->isLocalFrame())
-        toLocalFrame(frame)->document()->setHasReceivedUserGesture();
+      frame->setDocumentHasReceivedUserGesture();
     }
   }
 };

@@ -2084,6 +2084,11 @@ void WebLocalFrameImpl::setCommittedFirstRealLoad() {
   ensureFrameLoaderHasCommitted(frame()->loader());
 }
 
+void WebLocalFrameImpl::setHasReceivedUserGesture() {
+  if (frame())
+    frame()->document()->setHasReceivedUserGesture();
+}
+
 void WebLocalFrameImpl::sendOrientationChangeEvent() {
   if (!frame())
     return;
