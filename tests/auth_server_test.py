@@ -51,14 +51,16 @@ def call_rpc(scopes):
 
 
 @contextlib.contextmanager
-def local_auth_server(token_cb):
+def local_auth_server(token_cb, **overrides):
   class MockedProvider(object):
     def generate_token(self, scopes):
       return token_cb(scopes)
+
   s = auth_server.LocalAuthServer()
   try:
-    auth = s.start(MockedProvider())
-    with luci_context.write(local_auth=auth):
+    local_auth = s.start(MockedProvider())
+    local_auth.update(overrides)
+    with luci_context.write(local_auth=local_auth):
       yield
   finally:
     s.stop()
@@ -208,25 +210,6 @@ class LocalAuthServerTest(auto_stub.TestCase):
           code=403)
 
 
-@contextlib.contextmanager
-def local_auth_server(token_cb, secret=None, rpc_port=None):
-  class MockedProvider(object):
-    def generate_token(self, scopes):
-      return token_cb(scopes)
-
-  s = auth_server.LocalAuthServer()
-  try:
-    local_auth = s.start(MockedProvider())
-    local_auth = {
-      'secret': secret if secret else local_auth['secret'],
-      'rpc_port': rpc_port if rpc_port else local_auth['rpc_port']}
-
-    with luci_context.write(local_auth=local_auth):
-      yield
-  finally:
-    s.stop()
-
-
 class LocalAuthHttpServiceTest(auto_stub.TestCase):
   """Tests for LocalAuthServer and LuciContextAuthenticator."""
   epoch = 12345678
@@ -313,7 +296,16 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
       del request  # Unused argument
       self.fail('must not be called')
 
-    with local_auth_server(token_gen, rpc_port=22):
+    # this little dance should pick an unused port, bind it and then close it,
+    # trusting that the OS will not reallocate it between now and when the http
+    # client attempts to use it as a local_auth service. This is better than
+    # picking a static port number, as there's at least some guarantee that the
+    # port WASN'T in use before this test ran.
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(('localhost', 0))
+    port = sock.getsockname()[1]
+    sock.close()
+    with local_auth_server(token_gen, rpc_port=port):
       service = self.mocked_http_service(perform_request=handle_request)
       with self.assertRaises(socket.error):
         self.assertRaises(service.request(request_url, data={}).read())
