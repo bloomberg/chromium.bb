@@ -357,12 +357,6 @@ group("both_gn_and_gyp") {
     ]
   }
 
-  if (is_linux && !is_chromeos && !is_chromecast) {
-    # TODO(thomasanderson): Remove this once we build using
-    # GTK3 by default. (crbug.com/132847, crbug.com/79722)
-    deps += [ "//chrome/browser/ui/libgtkui:libgtk3ui" ]
-  }
-
   if (use_ozone) {
     deps += [
       "//ui/ozone",
