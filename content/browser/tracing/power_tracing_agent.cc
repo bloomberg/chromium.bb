@@ -181,4 +181,9 @@ bool PowerTracingAgent::SupportsExplicitClockSync() {
   return battor_agent_->SupportsExplicitClockSync();
 }
 
+void PowerTracingAgent::OnGetFirmwareGitHashComplete(
+    const std::string& version, battor::BattOrError error) {
+  return;
+}
+
 }  // namespace content

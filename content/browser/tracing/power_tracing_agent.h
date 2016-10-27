@@ -46,6 +46,8 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
   void OnStopTracingComplete(const std::string& trace,
                              battor::BattOrError error) override;
   void OnRecordClockSyncMarkerComplete(battor::BattOrError error) override;
+  void OnGetFirmwareGitHashComplete(const std::string& version,
+                                    battor::BattOrError error) override;
 
  private:
   // This allows constructor and destructor to be private and usable only
