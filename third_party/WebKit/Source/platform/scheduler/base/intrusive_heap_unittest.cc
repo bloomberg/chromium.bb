@@ -104,12 +104,12 @@ TEST(IntrusiveHeapTest, InsertDescending) {
 }
 
 TEST(IntrusiveHeapTest, HeapIndex) {
-  IntrusiveHeap<TestElement> heap;
   HeapHandle index5;
   HeapHandle index4;
   HeapHandle index3;
   HeapHandle index2;
   HeapHandle index1;
+  IntrusiveHeap<TestElement> heap;
 
   EXPECT_FALSE(index1.IsValid());
   EXPECT_FALSE(index2.IsValid());
