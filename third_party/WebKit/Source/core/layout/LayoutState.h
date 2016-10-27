@@ -74,7 +74,6 @@ class LayoutState {
   explicit LayoutState(LayoutObject& root);
 
   LayoutState(LayoutBox&,
-              const LayoutSize& offset,
               LayoutUnit pageLogicalHeight = LayoutUnit(),
               bool pageHeightLogicalChanged = false,
               bool containingBlockLogicalWidthChanged = false);

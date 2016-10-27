@@ -465,7 +465,7 @@ void LayoutBox::layout() {
     return;
   }
 
-  LayoutState state(*this, locationOffset());
+  LayoutState state(*this);
   while (child) {
     child->layoutIfNeeded();
     ASSERT(!child->needsLayout());

@@ -48,7 +48,7 @@ void LayoutMedia::layout() {
 
   LayoutRect newRect = contentBoxRect();
 
-  LayoutState state(*this, locationOffset());
+  LayoutState state(*this);
 
 // Iterate the children in reverse order so that the media controls are laid
 // out before the text track container. This is to ensure that the text

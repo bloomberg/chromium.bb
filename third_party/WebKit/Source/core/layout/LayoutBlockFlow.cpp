@@ -489,8 +489,8 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
   if (pageLogicalHeightChanged)
     relayoutChildren = true;
 
-  LayoutState state(*this, locationOffset(), pageLogicalHeight,
-                    pageLogicalHeightChanged, logicalWidthChanged);
+  LayoutState state(*this, pageLogicalHeight, pageLogicalHeightChanged,
+                    logicalWidthChanged);
 
   if (m_paginationStateChanged) {
     // We now need a deep layout to clean up struts after pagination, if we

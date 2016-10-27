@@ -47,7 +47,6 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight,
 }
 
 LayoutState::LayoutState(LayoutBox& layoutObject,
-                         const LayoutSize& offset,
                          LayoutUnit pageLogicalHeight,
                          bool pageLogicalHeightChanged,
                          bool containingBlockLogicalWidthChanged)
@@ -100,7 +99,8 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
                layoutObject.style()->position() == FixedPosition;
   if (fixed)
     return;
-  m_paginationOffset = m_next->m_paginationOffset + offset;
+  m_paginationOffset =
+      m_next->m_paginationOffset + layoutObject.locationOffset();
   if (!layoutObject.isOutOfFlowPositioned())
     return;
   if (LayoutObject* container = layoutObject.container()) {

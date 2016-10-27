@@ -483,7 +483,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
   {
     // LayoutState needs this deliberate scope to pop before updating scroll
     // information (which may trigger relayout).
-    LayoutState state(*this, locationOffset());
+    LayoutState state(*this);
 
     LayoutSize previousSize = size();
 

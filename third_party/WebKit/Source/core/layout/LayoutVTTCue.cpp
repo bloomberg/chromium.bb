@@ -355,7 +355,7 @@ void LayoutVTTCue::layout() {
 
   DCHECK(firstChild());
 
-  LayoutState state(*this, locationOffset());
+  LayoutState state(*this);
 
   // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
   if (!std::isnan(m_snapToLinesPosition))

@@ -602,7 +602,7 @@ bool LayoutBlock::simplifiedLayout() {
 
   {
     // LayoutState needs this deliberate scope to pop before paint invalidation.
-    LayoutState state(*this, locationOffset());
+    LayoutState state(*this);
 
     if (needsPositionedMovementLayout() &&
         !tryLayoutDoingPositionedMovementOnly())

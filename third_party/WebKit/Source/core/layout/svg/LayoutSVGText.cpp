@@ -244,7 +244,7 @@ void LayoutSVGText::layout() {
       borderAfter() + paddingAfter() + scrollbarLogicalHeight();
   setLogicalHeight(beforeEdge);
 
-  LayoutState state(*this, locationOffset());
+  LayoutState state(*this);
   layoutInlineChildren(true, afterEdge);
 
   m_needsReordering = false;

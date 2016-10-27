@@ -563,7 +563,7 @@ void LayoutTable::layout() {
   SubtreeLayoutScope layouter(*this);
 
   {
-    LayoutState state(*this, locationOffset());
+    LayoutState state(*this);
     LayoutUnit oldLogicalWidth = logicalWidth();
     LayoutUnit oldLogicalHeight = logicalHeight();
 

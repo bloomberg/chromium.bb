@@ -398,7 +398,7 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren) {
 
   {
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
-    LayoutState state(*this, locationOffset());
+    LayoutState state(*this);
 
     m_numberOfInFlowChildrenOnFirstLine = -1;
 

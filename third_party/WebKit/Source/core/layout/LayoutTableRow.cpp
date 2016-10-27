@@ -190,14 +190,11 @@ void LayoutTableRow::layout() {
   ASSERT(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  // Table rows do not add translation.
-  LayoutState state(*this, LayoutSize());
-
   for (LayoutTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
     SubtreeLayoutScope layouter(*cell);
     cell->setLogicalTop(logicalTop());
     if (!cell->needsLayout())
-      markChildForPaginationRelayoutIfNeeded(*cell, layouter);
+      section()->markChildForPaginationRelayoutIfNeeded(*cell, layouter);
     if (cell->needsLayout())
       cell->layout();
   }
