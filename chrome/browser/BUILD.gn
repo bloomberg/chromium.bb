@@ -3849,7 +3849,6 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBarDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java",
-      "../android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/SubresourceFilterInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBar.java",

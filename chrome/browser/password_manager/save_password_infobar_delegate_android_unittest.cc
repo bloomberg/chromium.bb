@@ -52,12 +52,10 @@ class TestSavePasswordInfobarDelegate : public SavePasswordInfoBarDelegate {
  public:
   TestSavePasswordInfobarDelegate(
       content::WebContents* web_contents,
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
-      bool should_show_first_run_experience)
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save)
       : SavePasswordInfoBarDelegate(web_contents,
                                     std::move(form_to_save),
-                                    true /* is_smartlock_branding_enabled */,
-                                    should_show_first_run_experience) {}
+                                    true /* is_smartlock_branding_enabled */) {}
 
   ~TestSavePasswordInfobarDelegate() override {}
 };
@@ -79,8 +77,7 @@ class SavePasswordInfoBarDelegateTest : public ChromeRenderViewHostTestHarness {
  protected:
   std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegate(
       std::unique_ptr<password_manager::PasswordFormManager>
-          password_form_manager,
-      bool should_show_first_run_experience);
+      password_form_manager);
 
   password_manager::StubPasswordManagerClient client_;
   password_manager::StubPasswordManagerDriver driver_;
@@ -114,12 +111,10 @@ SavePasswordInfoBarDelegateTest::CreateMockFormManager() {
 std::unique_ptr<ConfirmInfoBarDelegate>
 SavePasswordInfoBarDelegateTest::CreateDelegate(
     std::unique_ptr<password_manager::PasswordFormManager>
-        password_form_manager,
-    bool should_show_first_run_experience) {
+        password_form_manager) {
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new TestSavePasswordInfobarDelegate(web_contents(),
-                                          std::move(password_form_manager),
-                                          should_show_first_run_experience));
+                                          std::move(password_form_manager)));
   return delegate;
 }
 
@@ -136,7 +131,7 @@ TEST_F(SavePasswordInfoBarDelegateTest, CancelTestCredentialSourceAPI) {
       CreateMockFormManager());
   EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
-      CreateDelegate(std::move(password_form_manager), false));
+      CreateDelegate(std::move(password_form_manager)));
   EXPECT_TRUE(infobar->Cancel());
 }
 
@@ -146,36 +141,6 @@ TEST_F(SavePasswordInfoBarDelegateTest,
       CreateMockFormManager());
   EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
-      CreateDelegate(std::move(password_form_manager), false));
+      CreateDelegate(std::move(password_form_manager)));
   EXPECT_TRUE(infobar->Cancel());
-}
-
-TEST_F(SavePasswordInfoBarDelegateTest,
-       CheckResetOfPrefAfterFirstRunMessageWasShown) {
-  using password_manager::CredentialSourceType;
-  prefs()->SetBoolean(
-      password_manager::prefs::kWasSavePrompFirstRunExperienceShown, false);
-  std::unique_ptr<MockPasswordFormManager> password_form_manager(
-      CreateMockFormManager());
-  std::unique_ptr<ConfirmInfoBarDelegate> infobar(
-      CreateDelegate(std::move(password_form_manager), true));
-  EXPECT_TRUE(infobar->Cancel());
-  infobar.reset();
-  EXPECT_TRUE(prefs()->GetBoolean(
-      password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
-}
-
-TEST_F(SavePasswordInfoBarDelegateTest,
-       CheckNoStateOfPrefChangeWhenNoFirstRunExperienceShown) {
-  using password_manager::CredentialSourceType;
-  prefs()->SetBoolean(
-      password_manager::prefs::kWasSavePrompFirstRunExperienceShown, false);
-  std::unique_ptr<MockPasswordFormManager> password_form_manager(
-      CreateMockFormManager());
-  std::unique_ptr<ConfirmInfoBarDelegate> infobar(
-      CreateDelegate(std::move(password_form_manager), false));
-  EXPECT_TRUE(infobar->Cancel());
-  infobar.reset();
-  EXPECT_FALSE(prefs()->GetBoolean(
-      password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
 }

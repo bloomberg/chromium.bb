@@ -422,7 +422,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBarDelegate.java",
   "java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java",
-  "java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java",
   "java/src/org/chromium/chrome/browser/infobar/SubresourceFilterInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/SubPanelListener.java",

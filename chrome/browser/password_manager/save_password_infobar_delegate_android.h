@@ -36,8 +36,6 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
 
   ~SavePasswordInfoBarDelegate() override;
 
-  base::string16 GetFirstRunExperienceMessage();
-
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
@@ -50,8 +48,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   SavePasswordInfoBarDelegate(
       content::WebContents* web_contents,
       std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
-      bool is_smartlock_branding_enabled,
-      bool should_show_first_run_experience);
+      bool is_smartlock_branding_enabled);
 
  private:
   // The PasswordFormManager managing the form we're asking the user about,
@@ -64,10 +61,6 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // Measures the "Save password?" prompt lifetime. Used to report an UMA
   // signal.
   base::ElapsedTimer timer_;
-
-  bool should_show_first_run_experience_;
-
-  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };
