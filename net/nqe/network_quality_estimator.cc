@@ -1188,6 +1188,7 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   base::TimeDelta http_rtt;
   if (GetHttpRTT(&http_rtt)) {
     // Add the 50th percentile value.
+    UMA_HISTOGRAM_TIMES("NQE.MainFrame.RTT.Percentile50", http_rtt);
     base::HistogramBase* rtt_percentile = GetHistogram(
         "MainFrame.RTT.Percentile50.", current_network_id_.type, 10 * 1000);
     rtt_percentile->Add(http_rtt.InMilliseconds());
@@ -1196,6 +1197,8 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   base::TimeDelta transport_rtt;
   if (GetTransportRTT(&transport_rtt)) {
     // Add the 50th percentile value.
+    UMA_HISTOGRAM_TIMES("NQE.MainFrame.TransportRTT.Percentile50",
+                        transport_rtt);
     base::HistogramBase* transport_rtt_percentile =
         GetHistogram("MainFrame.TransportRTT.Percentile50.",
                      current_network_id_.type, 10 * 1000);
@@ -1205,6 +1208,7 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   int32_t kbps;
   if (GetDownlinkThroughputKbps(&kbps)) {
     // Add the 50th percentile value.
+    UMA_HISTOGRAM_COUNTS_1M("NQE.MainFrame.Kbps.Percentile50", kbps);
     base::HistogramBase* throughput_percentile = GetHistogram(
         "MainFrame.Kbps.Percentile50.", current_network_id_.type, 1000 * 1000);
     throughput_percentile->Add(kbps);
@@ -1212,6 +1216,9 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
 
   const EffectiveConnectionType effective_connection_type =
       GetEffectiveConnectionType();
+  UMA_HISTOGRAM_ENUMERATION("NQE.MainFrame.EffectiveConnectionType",
+                            effective_connection_type,
+                            EFFECTIVE_CONNECTION_TYPE_LAST);
   base::HistogramBase* effective_connection_type_histogram =
       base::Histogram::FactoryGet(
           std::string("NQE.MainFrame.EffectiveConnectionType.") +
