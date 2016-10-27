@@ -55,7 +55,7 @@ void TableSectionPainter::paintRepeatingHeaderGroup(
   // Move paginationOffset to the top of the next page.
   // The header may have a pagination strut before it so we need to account for
   // that when establishing its position.
-  LayoutUnit headerGroupOffset = table->pageLogicalOffset();
+  LayoutUnit headerGroupOffset = table->blockOffsetToFirstRepeatableHeader();
   if (LayoutTableRow* row = m_layoutTableSection.firstRow())
     headerGroupOffset += row->paginationStrut();
   LayoutUnit offsetToNextPage =

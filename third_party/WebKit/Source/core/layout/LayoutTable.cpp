@@ -732,15 +732,16 @@ void LayoutTable::layout() {
 
     computeOverflow(clientLogicalBottom());
     updateAfterLayout();
+
+    if (state.pageLogicalHeight()) {
+      m_blockOffsetToFirstRepeatableHeader =
+          state.pageLogicalOffset(*this, LayoutUnit());
+    }
   }
 
   // FIXME: This value isn't the intrinsic content logical height, but we need
   // to update the value as its used by flexbox layout. crbug.com/367324
   setIntrinsicContentLogicalHeight(contentLogicalHeight());
-
-  if (view()->layoutState()->pageLogicalHeight())
-    setPageLogicalOffset(
-        view()->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
   m_columnLogicalWidthChanged = false;
   clearNeedsLayout();
