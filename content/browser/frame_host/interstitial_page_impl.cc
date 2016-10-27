@@ -235,7 +235,8 @@ void InterstitialPageImpl::Show() {
 
     controller_->SetTransientEntry(std::move(entry));
 
-    static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSSLState();
+    static_cast<WebContentsImpl*>(web_contents_)
+        ->DidChangeVisibleSecurityState();
   }
 
   DCHECK(!render_view_host_);
@@ -301,7 +302,7 @@ void InterstitialPageImpl::Hide() {
   if (entry && !new_navigation_ && should_revert_web_contents_title_)
     web_contents_->UpdateTitleForEntry(entry, original_web_contents_title_);
 
-  static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSSLState();
+  static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSecurityState();
 
   InterstitialPageMap::iterator iter =
       g_web_contents_to_interstitial_page->find(web_contents_);

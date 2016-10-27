@@ -1232,7 +1232,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
   delegate->ClearConsoleMessages();
 
-  // Two subsequent triggers of VisibleSSLStateChanged -- one on the
+  // Two subsequent triggers of VisibleSecurityStateChanged -- one on the
   // same navigation and one on another navigation -- should only result
   // in one additional console message.
   contents->OnCreditCardInputShownOnHttp();
@@ -1305,7 +1305,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
   ASSERT_NO_FATAL_FAILURE(CheckForOneFutureHttpWarningConsoleMessage(delegate));
   delegate->ClearConsoleMessages();
 
-  // Two subsequent triggers of VisibleSSLStateChanged -- one on the
+  // Two subsequent triggers of VisibleSecurityStateChanged -- one on the
   // same navigation and one on another navigation -- should only result
   // in one additional console message.
   contents->OnCreditCardInputShownOnHttp();
@@ -1376,7 +1376,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
   delegate->ClearConsoleMessages();
 
-  // Navigate the subframe and trigger VisibleSSLStateChanged
+  // Navigate the subframe and trigger VisibleSecurityStateChanged
   // again. While the security level is still HTTP_SHOW_WARNING, an
   // additional console message should not be logged because there was
   // already a console message logged for the current main-frame
@@ -1460,7 +1460,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
   delegate->ClearConsoleMessages();
 
-  // Navigate with pushState and trigger VisibleSSLStateChanged
+  // Navigate with pushState and trigger VisibleSecurityStateChanged
   // again. While the security level is still HTTP_SHOW_WARNING, an
   // additional console message should not be logged because there was
   // already a console message logged for the current main-frame

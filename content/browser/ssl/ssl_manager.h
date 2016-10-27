@@ -80,7 +80,7 @@ class CONTENT_EXPORT SSLManager {
   // content. These methods update the SSLStatus on the NavigationEntry
   // appropriately. If the result could change the visible SSL state,
   // they notify the WebContents of the change via
-  // DidChangeVisibleSSLState();
+  // DidChangeVisibleSecurityState();
   void DidDisplayMixedContent();
   void DidDisplayContentWithCertErrors();
   void DidShowPasswordInputOnHttp();

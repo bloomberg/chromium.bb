@@ -28,7 +28,7 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   const SSLStatus& last_ssl_state() { return last_ssl_state_; }
 
   // WebContentsDelegate:
-  void VisibleSSLStateChanged(WebContents* source) override {
+  void VisibleSecurityStateChanged(WebContents* source) override {
     NavigationEntry* entry = source->GetController().GetVisibleEntry();
     EXPECT_TRUE(entry);
     last_ssl_state_ = entry->GetSSL();
@@ -48,7 +48,7 @@ class SSLManagerTest : public RenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(SSLManagerTest);
 };
 
-// Tests that VisibleSSLStateChanged() is called when a password input
+// Tests that VisibleSecurityStateChanged() is called when a password input
 // is shown on an HTTP page.
 TEST_F(SSLManagerTest, NotifyVisibleSSLStateChangeOnHttpPassword) {
   TestWebContentsDelegate delegate;
@@ -64,7 +64,7 @@ TEST_F(SSLManagerTest, NotifyVisibleSSLStateChangeOnHttpPassword) {
               SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
 }
 
-// Tests that VisibleSSLStateChanged() is called when a credit card input
+// Tests that VisibleSecurityStateChanged() is called when a credit card input
 // is shown on an HTTP page.
 TEST_F(SSLManagerTest, NotifyVisibleSSLStateChangeOnHttpCreditCard) {
   TestWebContentsDelegate delegate;
@@ -80,7 +80,7 @@ TEST_F(SSLManagerTest, NotifyVisibleSSLStateChangeOnHttpCreditCard) {
               SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
 }
 
-// Tests that VisibleSSLStateChanged() is called when password and
+// Tests that VisibleSecurityStateChanged() is called when password and
 // credit card inputs are shown on an HTTP page.
 TEST_F(SSLManagerTest, NotifyVisibleSSLStateChangeOnPasswordAndHttpCreditCard) {
   TestWebContentsDelegate delegate;
