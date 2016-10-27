@@ -68,9 +68,77 @@ extern "C" {
 #define WL_PRINTF(x, y)
 #endif
 
+/**
+ * Protocol message signature
+ *
+ * A wl_message describes the signature of an actual protocol message, such as a
+ * request or event, that adheres to the Wayland protocol wire format. The
+ * protocol implementation uses a wl_message within its demarshal machinery for
+ * decoding messages between a compositor and its clients. In a sense, a
+ * wl_message is to a protocol message like a class is to an object.
+ *
+ * The `name` of a wl_message is the name of the corresponding protocol message.
+ * The `signature` is an ordered list of symbols representing the data types
+ * of message arguments and, optionally, a protocol version and indicators for
+ * nullability. A leading integer in the `signature` indicates the _since_
+ * version of the protocol message. A `?` preceding a data type symbol indicates
+ * that the following argument type is nullable. When no arguments accompany a
+ * message, `signature` is an empty string.
+ *
+ * * `i`: int
+ * * `u`: uint
+ * * `f`: fixed
+ * * `s`: string
+ * * `o`: object
+ * * `n`: new_id
+ * * `a`: array
+ * * `h`: fd
+ * * `?`: following argument is nullable
+ *
+ * While demarshaling primitive arguments is straightforward, when demarshaling
+ * messages containing `object` or `new_id` arguments, the protocol
+ * implementation often must determine the type of the object. The `types` of a
+ * wl_message is an array of wl_interface references that correspond to `o` and
+ * `n` arguments in `signature`, with `NULL` placeholders for arguments with
+ * non-object types.
+ *
+ * Consider the protocol event wl_display `delete_id` that has a single `uint`
+ * argument. The wl_message is:
+ *
+ * \code
+ * { "delete_id", "u", [NULL] }
+ * \endcode
+ *
+ * Here, the message `name` is `"delete_id"`, the `signature` is `"u"`, and the
+ * argument `types` is `[NULL]`, indicating that the `uint` argument has no
+ * corresponding wl_interface since it is a primitive argument.
+ *
+ * In contrast, consider a `wl_foo` interface supporting protocol request `bar`
+ * that has existed since version 2, and has two arguments: a `uint` and an
+ * object of type `wl_baz_interface` that may be `NULL`. Such a `wl_message`
+ * might be:
+ *
+ * \code
+ * { "bar", "2u?o", [NULL, &wl_baz_interface] }
+ * \endcode
+ *
+ * Here, the message `name` is `"bar"`, and the `signature` is `"2u?o"`. Notice
+ * how the `2` indicates the protocol version, the `u` indicates the first
+ * argument type is `uint`, and the `?o` indicates that the second argument
+ * is an object that may be `NULL`. Lastly, the argument `types` array indicates
+ * that no wl_interface corresponds to the first argument, while the type
+ * `wl_baz_interface` corresponds to the second argument.
+ *
+ * \sa wl_argument
+ * \sa wl_interface
+ * \sa <a href="https://wayland.freedesktop.org/docs/html/ch04.html#sect-Protocol-Wire-Format">Wire Format</a>
+ */
 struct wl_message {
+	/** Message name */
 	const char *name;
+	/** Message signature */
 	const char *signature;
+	/** Object argument interfaces */
 	const struct wl_interface **types;
 };
 
