@@ -1,18 +1,21 @@
+function delete_then_open(t, db_name, upgrade_func, body_func) {
+  var delete_request = indexedDB.deleteDatabase(db_name);
+  delete_request.onerror = t.unreached_func('deleteDatabase should not fail');
+  delete_request.onsuccess = t.step_func(function(e) {
+    var open_request = indexedDB.open(db_name);
+    open_request.onupgradeneeded = t.step_func(function() {
+      upgrade_func(t, open_request.result, open_request);
+    });
+    open_request.onsuccess = t.step_func(function() {
+      body_func(t, open_request.result);
+    });
+  });
+}
+
 function indexeddb_test(upgrade_func, body_func, description) {
   async_test(function(t) {
-    var dbName = 'db' + self.location.pathname + '-' + description;
-    var delete_request = indexedDB.deleteDatabase(dbName);
-    delete_request.onerror = t.unreached_func('deleteDatabase should not fail');
-    delete_request.onsuccess = t.step_func(function(e) {
-      var open_request = indexedDB.open(dbName);
-      open_request.onerror = t.unreached_func('open should not fail');
-      open_request.onupgradeneeded = t.step_func(function(e) {
-        upgrade_func(t, open_request.result, open_request);
-      });
-      open_request.onsuccess = t.step_func(function(e) {
-        body_func(t, open_request.result);
-      });
-    });
+    var db_name = 'db' + self.location.pathname + '-' + description;
+    delete_then_open(t, db_name, upgrade_func, body_func);
   }, description);
 }
 
@@ -33,4 +36,22 @@ function expect(t, expected) {
       t.done();
     }
   };
+}
+
+// Creates a barrier that one calls
+function create_barrier(callback) {
+  var count = 0;
+  var called = false;
+  return function(t) {
+    assert_false(called, "Barrier already used.");
+    ++count;
+    return t.step_func(function() {
+      --count;
+      if (count === 0) {
+        assert_false(called, "Barrier already used.");
+        called = true;
+        callback();
+      }
+    });
+  }
 }

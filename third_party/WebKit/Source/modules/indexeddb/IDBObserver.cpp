@@ -29,7 +29,6 @@ IDBObserver::IDBObserver(IDBObserverCallback* callback,
       m_transaction(options.transaction()),
       m_values(options.values()),
       m_noRecords(options.noRecords()) {
-  // TODO(palakj): Throw an exception if unknown operation type.
   DCHECK_EQ(m_operationTypes.size(),
             static_cast<size_t>(WebIDBOperationTypeCount));
   m_operationTypes.reset();

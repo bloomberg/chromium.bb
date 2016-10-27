@@ -10,7 +10,7 @@ async_test(function(t) {
   var obs = new IDBObserver(t.step_func(function() { callback_count++; }), {operationTypes: ['put']});
 
   openRequest.onupgradeneeded = t.step_func(function() {
-      createDatabase(openRequest.result, ['store']);
+      openRequest.result.createObjectStore('store');
   });
   openRequest.onsuccess = t.step_func(function() {
     var db = openRequest.result;
@@ -36,7 +36,7 @@ async_test(function(t) {
   var callback_count = 0;
   var obs;
   openRequest.onupgradeneeded = t.step_func(function() {
-      createDatabase(openRequest.result, ['store']);
+      openRequest.result.createObjectStore('store');
       obs = new IDBObserver(t.step_func(function(changes) { callback_count++; }), { operationTypes: ['put'] });
   });
   openRequest.onsuccess = t.step_func(function() {
@@ -86,7 +86,7 @@ async_test(function(t) {
   var callback_count = 0;
   var obs = new IDBObserver(t.step_func(function() { callback_count++; }), { operationTypes: ['put'] });
   openRequest.onupgradeneeded = t.step_func(function() {
-    createDatabase(openRequest.result, ['store']);
+    openRequest.result.createObjectStore('store');
   });
   openRequest.onsuccess = t.step_func(function() {
     var db = openRequest.result;
@@ -115,7 +115,7 @@ async_test(function(t) {
   var callback_count = 0;
   var obs = new IDBObserver(t.step_func(function() { callback_count++; }), { operationTypes: ['put'] });
   openRequest.onupgradeneeded = t.step_func(function() {
-    createDatabase(openRequest.result, ['store']);
+    openRequest.result.createObjectStore('store');
   });
   openRequest.onsuccess = t.step_func(function() {
     var db = openRequest.result;

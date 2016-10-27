@@ -26,5 +26,5 @@ total
 # https://github.com/WICG/indexed-db-observers/blob/gh-pages/EXPLAINER.md#records
 add
 put
-delete ImplementedAs=kDelete
+delete Symbol=kDelete
 clear

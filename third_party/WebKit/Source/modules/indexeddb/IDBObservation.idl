@@ -7,7 +7,6 @@
 enum IDBObservationType {
     "add",
     "put",
-    // TODO(palakj): Operation type being returned as kDelete instead of delete.
     "delete",
     "clear"
 };
