@@ -67,12 +67,14 @@ void AudioDeviceThread::ThreadMain() {
 
   uint32_t buffer_index = 0;
   while (true) {
-    uint32_t pending_data = 0;
-    size_t bytes_read = socket_.Receive(&pending_data, sizeof(pending_data));
-    if (bytes_read != sizeof(pending_data))
+    Packet packet = {0, 0};
+    size_t bytes_read = socket_.Receive(&packet, sizeof(packet));
+    if (bytes_read != sizeof(packet)) {
+      LOG(ERROR) << "Failed to receive.";
       break;
+    }
 
-    // std::numeric_limits<uint32_t>::max() is a special signal which is
+    // std::numeric_limits<int64_t>::max() is a special signal which is
     // returned after the browser stops the output device in response to a
     // renderer side request.
     //
@@ -80,8 +82,11 @@ void AudioDeviceThread::ThreadMain() {
     // the buffer index for synchronized buffers though.
     //
     // See comments in AudioOutputController::DoPause() for details on why.
-    if (pending_data != std::numeric_limits<uint32_t>::max())
-      callback_->Process(pending_data);
+    if (packet.pending_data != std::numeric_limits<int64_t>::max()) {
+      callback_->Process(packet.pending_data,
+                         base::TimeTicks() + base::TimeDelta::FromMicroseconds(
+                                                 packet.data_timestamp_us));
+    }
 
     // The usage of synchronized buffers differs between input and output cases.
     //

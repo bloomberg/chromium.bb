@@ -47,9 +47,10 @@ class MEDIA_EXPORT SilentSinkSuspender
   ~SilentSinkSuspender() override;
 
   // AudioRendererSink::RenderCallback implementation.
-  int Render(AudioBus* dest,
-             uint32_t frames_delayed,
-             uint32_t frames_skipped) override;
+  int Render(base::TimeDelta delay,
+             base::TimeTicks delay_timestamp,
+             int prior_frames_skipped,
+             AudioBus* dest) override;
   void OnRenderError() override;
 
   bool is_using_fake_sink_for_testing() const { return is_using_fake_sink_; }

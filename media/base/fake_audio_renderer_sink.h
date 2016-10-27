@@ -42,13 +42,13 @@ class FakeAudioRendererSink : public AudioRendererSink {
   bool CurrentThreadIsRenderingThread() override;
 
   // Attempts to call Render() on the callback provided to
-  // Initialize() with |dest| and |frames_delayed|.
+  // Initialize() with |dest| and |delay|.
   // Returns true and sets |frames_written| to the return value of the
   // Render() call.
   // Returns false if this object is in a state where calling Render()
   // should not occur. (i.e., in the kPaused or kStopped state.) The
   // value of |frames_written| is undefined if false is returned.
-  bool Render(AudioBus* dest, uint32_t frames_delayed, int* frames_written);
+  bool Render(AudioBus* dest, base::TimeDelta delay, int* frames_written);
   void OnRenderError();
 
   State state() const { return state_; }
