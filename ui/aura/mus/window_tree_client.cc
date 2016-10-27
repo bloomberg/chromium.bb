@@ -31,6 +31,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -114,6 +115,10 @@ class EventAckHandler : public base::MessageLoop::NestingObserver {
 
   DISALLOW_COPY_AND_ASSIGN(EventAckHandler);
 };
+
+bool IsInternalProperty(const void* key) {
+  return key == client::kModalKey;
+}
 
 }  // namespace
 
@@ -498,6 +503,26 @@ void WindowTreeClient::OnConnectionLost() {
   delegate_->OnLostConnection(this);
 }
 
+bool WindowTreeClient::HandleInternalPropertyChanged(WindowMus* window,
+                                                     const void* key) {
+  if (key != client::kModalKey)
+    return false;
+
+  if (window->GetWindow()->GetProperty(client::kModalKey) ==
+      ui::MODAL_TYPE_NONE) {
+    // TODO: shouldn't early return, but explicitly tell server to turn off
+    // modality. http://crbug.com/660073.
+    return true;
+  }
+
+  const uint32_t change_id =
+      ScheduleInFlightChange(base::MakeUnique<InFlightSetModalChange>(window));
+  // TODO: this is subtly different that explicitly specifying a type.
+  // http://crbug.com/660073.
+  tree_->SetModal(change_id, window->server_id());
+  return true;
+}
+
 void WindowTreeClient::OnEmbedImpl(ui::mojom::WindowTree* window_tree,
                                    ClientSpecificId client_id,
                                    ui::mojom::WindowDataPtr root_data,
@@ -704,6 +729,9 @@ void WindowTreeClient::OnWindowMusSetVisible(WindowMus* window, bool visible) {
 std::unique_ptr<WindowPortPropertyData>
 WindowTreeClient::OnWindowMusWillChangeProperty(WindowMus* window,
                                                 const void* key) {
+  if (IsInternalProperty(key))
+    return nullptr;
+
   std::unique_ptr<WindowPortPropertyDataMus> data(
       base::MakeUnique<WindowPortPropertyDataMus>());
   if (!delegate_->GetPropertyConverter()->ConvertPropertyForTransport(
@@ -718,8 +746,9 @@ void WindowTreeClient::OnWindowMusPropertyChanged(
     WindowMus* window,
     const void* key,
     std::unique_ptr<WindowPortPropertyData> data) {
-  if (!data)
+  if (HandleInternalPropertyChanged(window, key) || !data)
     return;
+
   WindowPortPropertyDataMus* data_mus =
       static_cast<WindowPortPropertyDataMus*>(data.get());
 

@@ -247,6 +247,10 @@ class AURA_EXPORT WindowTreeClient
   // Called when the ui::mojom::WindowTree connection is lost, deletes this.
   void OnConnectionLost();
 
+  // Called when a Window property changes. If |key| is handled internally
+  // (maps to a function on WindowTree) returns true.
+  bool HandleInternalPropertyChanged(WindowMus* window, const void* key);
+
   // OnEmbed() calls into this. Exposed as a separate function for testing.
   void OnEmbedImpl(ui::mojom::WindowTree* window_tree,
                    ClientSpecificId client_id,

@@ -19,6 +19,7 @@ enum class WindowTreeChangeType {
   // Used for both set and release capture.
   CAPTURE,
   FOCUS,
+  MODAL,
   NEW_TOP_LEVEL,
   NEW_WINDOW,
   PROPERTY,

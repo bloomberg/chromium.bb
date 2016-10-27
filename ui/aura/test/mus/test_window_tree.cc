@@ -182,7 +182,7 @@ void TestWindowTree::RemoveTransientWindowFromParent(
 }
 
 void TestWindowTree::SetModal(uint32_t change_id, uint32_t window_id) {
-  OnChangeReceived(change_id);
+  OnChangeReceived(change_id, WindowTreeChangeType::MODAL);
 }
 
 void TestWindowTree::ReorderWindow(uint32_t change_id,

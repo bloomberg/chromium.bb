@@ -1048,4 +1048,32 @@ TEST_F(WindowTreeClientWmTest, OnWindowTreeCaptureChanged) {
   capture_recorder.reset_capture_captured_count();
 }
 
+TEST_F(WindowTreeClientClientTest, ModalFail) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.SetProperty(client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  // Make sure server was told about it, and have the server say it failed.
+  ASSERT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, false));
+  // Type should be back to MODAL_TYPE_NONE as the server didn't accept the
+  // change.
+  EXPECT_EQ(ui::MODAL_TYPE_NONE, window.GetProperty(client::kModalKey));
+  // There should be no more modal changes.
+  EXPECT_FALSE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, false));
+}
+
+TEST_F(WindowTreeClientClientTest, ModalSuccess) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.SetProperty(client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  // Ack change as succeeding.
+  ASSERT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, true));
+  EXPECT_EQ(ui::MODAL_TYPE_WINDOW, window.GetProperty(client::kModalKey));
+  // There should be no more modal changes.
+  EXPECT_FALSE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, false));
+}
+
 }  // namespace aura

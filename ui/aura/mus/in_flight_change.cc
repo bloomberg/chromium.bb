@@ -4,10 +4,12 @@
 
 #include "ui/aura/mus/in_flight_change.h"
 
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
 
 namespace aura {
 
@@ -230,8 +232,8 @@ InFlightSetModalChange::~InFlightSetModalChange() {}
 void InFlightSetModalChange::SetRevertValueFrom(const InFlightChange& change) {}
 
 void InFlightSetModalChange::Revert() {
-  // TODO: modality is stored in keys in aura.
-  // WindowPrivate(window()).LocalUnsetModal();
+  // TODO: need to support more than just off. http://crbug.com/660073.
+  window()->GetWindow()->SetProperty(client::kModalKey, ui::MODAL_TYPE_NONE);
 }
 
 }  // namespace aura
