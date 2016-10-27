@@ -1299,7 +1299,6 @@ class CORE_EXPORT UseCounter {
     WebAudioWaveShaperNode = 1577,
     CSSZoomReset = 1578,
     CSSZoomDocument = 1579,
-    PaymentAddressCareOf = 1580,
     XSSAuditorBlockedScript = 1581,
     XSSAuditorBlockedEntirePage = 1582,
     XSSAuditorDisabled = 1583,

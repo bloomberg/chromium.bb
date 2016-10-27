@@ -4439,7 +4439,6 @@ interface Path2D
 interface PaymentAddress
     attribute @@toStringTag
     getter addressLine
-    getter careOf
     getter city
     getter country
     getter dependentLocality

@@ -18,6 +18,5 @@
     readonly attribute DOMString languageCode;
     readonly attribute DOMString organization;
     readonly attribute DOMString recipient;
-    [DeprecateAs=PaymentAddressCareOf] readonly attribute DOMString careOf;
     readonly attribute DOMString phone;
 };

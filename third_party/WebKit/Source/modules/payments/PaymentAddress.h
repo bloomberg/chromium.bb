@@ -38,7 +38,6 @@ class MODULES_EXPORT PaymentAddress final
   const String& languageCode() const { return m_languageCode; }
   const String& organization() const { return m_organization; }
   const String& recipient() const { return m_recipient; }
-  const String careOf() const { return WTF::emptyString(); }
   const String& phone() const { return m_phone; }
 
   DEFINE_INLINE_TRACE() {}
