@@ -112,7 +112,7 @@ bool PreviewsPageLoadMetricsObserver::IsOfflinePreview(
 #if BUILDFLAG(ANDROID_JAVA_UI)
   offline_pages::OfflinePageTabHelper* tab_helper =
       offline_pages::OfflinePageTabHelper::FromWebContents(web_contents);
-  return tab_helper && tab_helper->is_offline_preview();
+  return tab_helper && tab_helper->IsShowingOfflinePreview();
 #else
   return false;
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)

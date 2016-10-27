@@ -98,6 +98,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
                      const base::android::JavaParamRef<jstring>& j_client_id,
                      jboolean user_requested);
 
+  jboolean IsShowingOfflinePreview(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+
   base::android::ScopedJavaLocalRef<jstring> GetOfflinePageHeaderForReload(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
