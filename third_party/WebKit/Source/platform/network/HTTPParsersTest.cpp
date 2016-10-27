@@ -296,10 +296,7 @@ TEST(HTTPParsersTest, SuboriginParseValidNames) {
   expectParseNamePass("Alpha", "foo", "foo");
   expectParseNamePass("Whitespace alpha", "  foo  ", "foo");
   expectParseNamePass("Alphanumeric", "f0o", "f0o");
-  expectParseNamePass("Numeric", "42", "42");
-  expectParseNamePass("Hyphen middle", "foo-bar", "foo-bar");
-  expectParseNamePass("Hyphen start", "-foobar", "-foobar");
-  expectParseNamePass("Hyphen end", "foobar-", "foobar-");
+  expectParseNamePass("Numeric at end", "foo42", "foo42");
 
   // Mulitple headers should only give the first name
   expectParseNamePass("Multiple headers, no whitespace", "foo,bar", "foo");
@@ -317,6 +314,10 @@ TEST(HTTPParsersTest, SuboriginParseValidNames) {
 TEST(HTTPParsersTest, SuboriginParseInvalidNames) {
   // Single header, invalid value
   expectParseNameFail("Empty header", "");
+  expectParseNameFail("Numeric", "42");
+  expectParseNameFail("Hyphen middle", "foo-bar");
+  expectParseNameFail("Hyphen start", "-foobar");
+  expectParseNameFail("Hyphen end", "foobar-");
   expectParseNameFail("Whitespace in middle", "foo bar");
   expectParseNameFail("Invalid character at end of name", "foobar'");
   expectParseNameFail("Invalid character at start of name", "'foobar");
