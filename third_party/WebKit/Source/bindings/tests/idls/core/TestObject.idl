@@ -31,13 +31,6 @@
 enum TestEnum {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 enum TestEnum2 {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 
-callback VoidCallbackFunction = void ();
-callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
-callback LongCallbackFunction = long (long num1, long num2);
-callback VoidCallbackFunctionInterfaceArg = void (HTMLDivElement divElement);
-callback StringSequenceCallbackFunctionLongSequenceArg = sequence<DOMString> (sequence<long> arg);
-callback VoidCallbackFunctionTypedef = void (String arg);
-
 // No extended attributes on the interface; those go in TestInterface.idl
 interface TestObject {
     // Constants
@@ -120,9 +113,6 @@ interface TestObject {
     attribute TestInterfaceEmpty testInterfaceEmptyAttribute;
     // Self-reference
     attribute TestObject testObjectAttribute;
-    // Callback function type
-    attribute VoidCallbackFunction voidCallbackFunctionAttribute;
-    attribute AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgAttribute;
     // Names that begin with an acronym
     attribute long cssAttribute;
     attribute long imeAttribute;
@@ -199,7 +189,6 @@ interface TestObject {
     [Custom=Getter] attribute long customGetterLongAttribute;
     [Custom=Getter] readonly attribute object customGetterReadonlyObjectAttribute;
     [Custom=Setter] attribute long customSetterLongAttribute;
-    [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
@@ -320,14 +309,6 @@ interface TestObject {
     TestInterfaceEmpty testInterfaceEmptyMethod();
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
-    // Callback function type
-    VoidCallbackFunction voidCallbackFunctionMethod();
-    AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgMethod();
-    void voidMethodVoidCallbackFunctionArg(VoidCallbackFunction voidCallbackFunctionArg);
-    void voidMethodOptionalVoidCallbackFunctionArg(optional VoidCallbackFunction voidCallbackFunctionArg);
-    void voidMethodNullableVoidCallbackFunctionArg(VoidCallbackFunction? voidCallbackFunctionArg);
-    void voidMethodAnyCallbackFunctionOptionalAnyArg(AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgArg);
-    void voidMethodLongCallbackFunctionArg(LongCallbackFunction longCallbackFunctionArg);
     // Custom type conversions
     any anyMethod();
     void voidMethodEventTargetArg(EventTarget eventTargetArg);
@@ -532,7 +513,6 @@ interface TestObject {
     [Custom] void customVoidMethod();
     [Custom=CallPrologue] void customCallPrologueVoidMethod();
     [Custom=CallEpilogue] void customCallEpilogueVoidMethod();
-    [CustomElementCallbacks] void customElementCallbacksVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
     [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
     [MeasureAs=TestFeature] void measureAsVoidMethod();
