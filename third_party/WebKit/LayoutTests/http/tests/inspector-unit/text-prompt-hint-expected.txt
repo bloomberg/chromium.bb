@@ -25,4 +25,11 @@ Requesting completions
 Text:testT
 TextWithCurrentSuggestion:testTextPrompt
 
+Requesting completions
+Text:something_before test
+TextWithCurrentSuggestion:something_before testTextPrompt
+
+Text:something_before testT
+TextWithCurrentSuggestion:something_before testTextPrompt
+
 

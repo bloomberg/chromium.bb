@@ -56,6 +56,12 @@ function test()
     {
         completionsDone();
         dumpTextPrompt();
+        prompt.setText("something_before test");
+        prompt.complete();
+        completionsDone();
+        dumpTextPrompt();
+        typeCharacter("T");
+        dumpTextPrompt();
         UnitTest.completeTest();
     }
 
@@ -91,7 +97,7 @@ function test()
 
         var selection = element.getComponentSelection();
         var range = selection.getRangeAt(0);
-        var textNode = prompt._ghostTextElement ? prompt._ghostTextElement.previousSibling : element.childTextNodes()[element.childTextNodes().length - 1];
+        var textNode = prompt._ghostTextElement.parentNode ? prompt._ghostTextElement.previousSibling : element.childTextNodes()[element.childTextNodes().length - 1];
         if (!character)
             textNode.textContent = textNode.textContent.substring(0,textNode.textContent.length-1);
         else
