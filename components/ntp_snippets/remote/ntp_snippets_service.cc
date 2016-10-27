@@ -254,15 +254,17 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
       UpdateCategoryStatus(category, CategoryStatus::AVAILABLE_LOADING);
   }
 
-  std::set<std::string> excluded_ids;
+  NTPSnippetsFetcher::Params params;
+  params.language_code = application_language_code_;
+  params.count_to_fetch = kMaxSnippetCount;
+  params.hosts = hosts;
+  params.interactive_request = interactive_request;
   for (const auto& item : categories_) {
     const CategoryContent& content = item.second;
     for (const auto& snippet : content.dismissed)
-      excluded_ids.insert(snippet->id());
+      params.excluded_ids.insert(snippet->id());
   }
-  snippets_fetcher_->FetchSnippetsFromHosts(hosts, application_language_code_,
-                                            excluded_ids, kMaxSnippetCount,
-                                            interactive_request);
+  snippets_fetcher_->FetchSnippets(params);
 }
 
 void NTPSnippetsService::RescheduleFetching(bool force) {

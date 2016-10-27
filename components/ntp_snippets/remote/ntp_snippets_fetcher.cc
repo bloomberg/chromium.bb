@@ -254,6 +254,10 @@ NTPSnippetsFetcher::FetchedCategory::~FetchedCategory() = default;
 NTPSnippetsFetcher::FetchedCategory& NTPSnippetsFetcher::FetchedCategory::
 operator=(FetchedCategory&&) = default;
 
+NTPSnippetsFetcher::Params::Params() = default;
+NTPSnippetsFetcher::Params::Params(const Params&) = default;
+NTPSnippetsFetcher::Params::~Params() = default;
+
 NTPSnippetsFetcher::NTPSnippetsFetcher(
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
@@ -267,18 +271,15 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     : OAuth2TokenService::Consumer("ntp_snippets"),
       signin_manager_(signin_manager),
       token_service_(token_service),
-      waiting_for_refresh_token_(false),
       url_request_context_getter_(std::move(url_request_context_getter)),
       category_factory_(category_factory),
       language_model_(language_model),
       parse_json_callback_(parse_json_callback),
-      count_to_fetch_(0),
       fetch_url_(GetFetchEndpoint()),
       fetch_api_(UsesChromeContentSuggestionsAPI(fetch_url_)
                      ? CHROME_CONTENT_SUGGESTIONS_API
                      : CHROME_READER_API),
       api_key_(api_key),
-      interactive_request_(false),
       tick_clock_(new base::DefaultTickClock()),
       user_classifier_(user_classifier),
       request_throttler_rare_ntp_user_(
@@ -293,7 +294,6 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
           pref_service,
           RequestThrottler::RequestType::
               CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER),
-      oauth_token_retried_(false),
       weak_ptr_factory_(this) {
   // Parse the variation parameters and set the defaults if missing.
   std::string personalization = variations::GetVariationParamValue(
@@ -321,31 +321,20 @@ void NTPSnippetsFetcher::SetCallback(
   snippets_available_callback_ = callback;
 }
 
-void NTPSnippetsFetcher::FetchSnippetsFromHosts(
-    const std::set<std::string>& hosts,
-    const std::string& language_code,
-    const std::set<std::string>& excluded_ids,
-    int count,
-    bool interactive_request) {
-  if (!DemandQuotaForRequest(interactive_request)) {
+void NTPSnippetsFetcher::FetchSnippets(const Params& params) {
+  if (!DemandQuotaForRequest(params.interactive_request)) {
     FetchFinished(OptionalFetchedCategories(),
-                  interactive_request
+                  params.interactive_request
                       ? FetchResult::INTERACTIVE_QUOTA_ERROR
                       : FetchResult::NON_INTERACTIVE_QUOTA_ERROR,
                   /*extra_message=*/std::string());
     return;
   }
 
-  hosts_ = hosts;
+  params_ = params;
   fetch_start_time_ = tick_clock_->NowTicks();
-  excluded_ids_ = excluded_ids;
-
-  locale_ = PosixLocaleFromBCP47Language(language_code);
-  count_to_fetch_ = count;
 
   bool use_authentication = UsesAuthentication();
-  interactive_request_ = interactive_request;
-
   if (use_authentication && signin_manager_->IsAuthenticated()) {
     // Signed-in: get OAuth token --> fetch snippets.
     oauth_token_retried_ = false;
@@ -364,22 +353,15 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
   }
 }
 
-NTPSnippetsFetcher::RequestParams::RequestParams()
-    : fetch_api(),
-      obfuscated_gaia_id(),
-      only_return_personalized_results(),
-      user_locale(),
-      host_restricts(),
-      count_to_fetch(),
-      interactive_request(),
-      user_class(),
-      ui_language{"", 0.0f},
-      other_top_language{"", 0.0f} {}
+NTPSnippetsFetcher::RequestBuilder::RequestBuilder() = default;
 
-NTPSnippetsFetcher::RequestParams::~RequestParams() = default;
+NTPSnippetsFetcher::RequestBuilder::RequestBuilder(RequestBuilder&&) = default;
 
-std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
+NTPSnippetsFetcher::RequestBuilder::~RequestBuilder() = default;
+
+std::string NTPSnippetsFetcher::RequestBuilder::BuildRequest() {
   auto request = base::MakeUnique<base::DictionaryValue>();
+  std::string user_locale = PosixLocaleFromBCP47Language(params.language_code);
   switch (fetch_api) {
     case CHROME_READER_API: {
       auto content_params = base::MakeUnique<base::DictionaryValue>();
@@ -395,7 +377,7 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
       }
 
       auto content_selectors = base::MakeUnique<base::ListValue>();
-      for (const auto& host : host_restricts) {
+      for (const auto& host : params.hosts) {
         auto entry = base::MakeUnique<base::DictionaryValue>();
         entry->SetString("type", "HOST_RESTRICT");
         entry->SetString("value", host);
@@ -410,7 +392,7 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
                                 std::move(content_selectors));
 
       auto global_scoring_params = base::MakeUnique<base::DictionaryValue>();
-      global_scoring_params->SetInteger("num_to_return", count_to_fetch);
+      global_scoring_params->SetInteger("num_to_return", params.count_to_fetch);
       global_scoring_params->SetInteger("sort_type", 1);
 
       auto advanced = base::MakeUnique<base::DictionaryValue>();
@@ -434,16 +416,16 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
       }
 
       auto regular_hosts = base::MakeUnique<base::ListValue>();
-      for (const auto& host : host_restricts) {
+      for (const auto& host : params.hosts) {
         regular_hosts->AppendString(host);
       }
       request->Set("regularlyVisitedHostNames", std::move(regular_hosts));
-      request->SetString("priority", interactive_request
+      request->SetString("priority", params.interactive_request
                                          ? "USER_ACTION"
                                          : "BACKGROUND_PREFETCH");
 
       auto excluded = base::MakeUnique<base::ListValue>();
-      for (const auto& id : excluded_ids) {
+      for (const auto& id : params.excluded_ids) {
         excluded->AppendString(id);
         if (excluded->GetSize() >= kMaxExcludedIds)
           break;
@@ -463,8 +445,8 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
         AppendLanguageInfoToList(language_list.get(), other_top_language);
       request->Set("topLanguages", std::move(language_list));
 
-      // TODO(sfiera): support authentication and personalization
-      // TODO(sfiera): support count_to_fetch
+      // TODO(sfiera): Support only_return_personalized_results.
+      // TODO(sfiera): Support count_to_fetch.
       break;
     }
   }
@@ -515,71 +497,68 @@ bool NTPSnippetsFetcher::UsesAuthentication() const {
           personalization_ == Personalization::kBoth);
 }
 
-void NTPSnippetsFetcher::SetUpCommonFetchingParameters(
-    RequestParams* params) const {
-  params->fetch_api = fetch_api_;
-  params->host_restricts = hosts_;
-  params->user_locale = locale_;
-  params->excluded_ids = excluded_ids_;
-  params->count_to_fetch = count_to_fetch_;
-  params->interactive_request = interactive_request_;
+NTPSnippetsFetcher::RequestBuilder NTPSnippetsFetcher::MakeRequestBuilder()
+    const {
+  RequestBuilder result;
+  result.params = params_;
+  result.fetch_api = fetch_api_;
 
   if (IsSendingUserClassEnabled())
-    params->user_class = GetUserClassString(user_classifier_->GetUserClass());
+    result.user_class = GetUserClassString(user_classifier_->GetUserClass());
 
   // TODO(jkrcal): Add language model factory for iOS and add fakes to tests so
   // that |language_model_| is never nullptr. Remove this check and add a DCHECK
   // into the constructor.
   if (!language_model_ || !IsSendingTopLanguagesEnabled())
-    return;
+    return result;
 
-  params->ui_language.language_code = ISO639FromPosixLocale(locale_);
-  params->ui_language.frequency =
-      language_model_->GetLanguageFrequency(params->ui_language.language_code);
+  // TODO(jkrcal): Is this back-and-forth converting necessary?
+  result.ui_language.language_code = ISO639FromPosixLocale(
+      PosixLocaleFromBCP47Language(result.params.language_code));
+  result.ui_language.frequency =
+      language_model_->GetLanguageFrequency(result.ui_language.language_code);
 
   std::vector<LanguageModel::LanguageInfo> top_languages =
       language_model_->GetTopLanguages();
   for (const LanguageModel::LanguageInfo& info : top_languages) {
-    if (info.language_code != params->ui_language.language_code) {
-      params->other_top_language = info;
+    if (info.language_code != result.ui_language.language_code) {
+      result.other_top_language = info;
 
       // Report to UMA how important the UI language is.
-      DCHECK_GT(params->other_top_language.frequency, 0)
+      DCHECK_GT(result.other_top_language.frequency, 0)
           << "GetTopLanguages() should not return languages with 0 frequency";
-      float ratio_ui_in_both_languages = params->ui_language.frequency /
-                                         (params->ui_language.frequency +
-                                          params->other_top_language.frequency);
+      float ratio_ui_in_both_languages =
+          result.ui_language.frequency /
+          (result.ui_language.frequency + result.other_top_language.frequency);
       UMA_HISTOGRAM_PERCENTAGE(
           "NewTabPage.Languages.UILanguageRatioInTwoTopLanguages",
           ratio_ui_in_both_languages * 100);
       break;
     }
   }
+
+  return result;
 }
 
 void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
   // When not providing OAuth token, we need to pass the Google API key.
   GURL url(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
                               fetch_url_.spec().c_str(), api_key_.c_str()));
-
-  RequestParams params;
-  SetUpCommonFetchingParameters(&params);
-  FetchSnippetsImpl(url, std::string(), params.BuildRequest());
+  FetchSnippetsImpl(url, std::string(), MakeRequestBuilder().BuildRequest());
 }
 
 void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
     const std::string& account_id,
     const std::string& oauth_access_token) {
-  RequestParams params;
-  SetUpCommonFetchingParameters(&params);
-  params.obfuscated_gaia_id = account_id;
-  params.only_return_personalized_results =
+  RequestBuilder builder = MakeRequestBuilder();
+  builder.obfuscated_gaia_id = account_id;
+  builder.only_return_personalized_results =
       personalization_ == Personalization::kPersonal;
   // TODO(jkrcal, treib): Add unit-tests for authenticated fetches.
   FetchSnippetsImpl(fetch_url_,
                     base::StringPrintf(kAuthorizationRequestHeaderFormat,
                                        oauth_access_token.c_str()),
-                    params.BuildRequest());
+                    builder.BuildRequest());
 }
 
 void NTPSnippetsFetcher::StartTokenRequest() {
@@ -644,6 +623,7 @@ void NTPSnippetsFetcher::OnRefreshTokenAvailable(
 // URLFetcherDelegate overrides
 void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
+  std::unique_ptr<URLFetcher> deleter = std::move(url_fetcher_);
 
   const URLRequestStatus& status = source->GetStatus();
 

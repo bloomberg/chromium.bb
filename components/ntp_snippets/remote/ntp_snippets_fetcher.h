@@ -90,6 +90,30 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     kBoth
   };
 
+  // Contains all the parameters for one fetch.
+  struct Params {
+    Params();
+    Params(const Params&);
+    ~Params();
+
+    // If non-empty, restricts the result to the given set of hosts.
+    std::set<std::string> hosts;
+
+    // BCP 47 language code specifying the user's UI language.
+    std::string language_code;
+
+    // A set of suggestion IDs that should not be returned again.
+    std::set<std::string> excluded_ids;
+
+    // Maximum number of snippets to fetch.
+    int count_to_fetch = 0;
+
+    // Whether this is an interactive request, i.e. triggered by an explicit
+    // user action. Typically, non-interactive requests are subject to a daily
+    // quota.
+    bool interactive_request = false;
+  };
+
   NTPSnippetsFetcher(
       SigninManagerBase* signin_manager,
       OAuth2TokenService* token_service,
@@ -106,24 +130,13 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // overriding any previously set callback.
   void SetCallback(const SnippetsAvailableCallback& callback);
 
-  // Fetches snippets from the server. |hosts| restricts the results to a set of
-  // hosts, e.g. "www.google.com". If |hosts| is empty, no host restrictions are
-  // applied.
+  // Initiates a fetch from the server. When done (successfully or not), calls
+  // the subscriber of SetCallback().
   //
-  // |excluded_ids| will be reported to the server; the server should not return
-  // suggestions with those IDs.
-  //
-  // If an ongoing fetch exists, it will be cancelled and a new one started,
-  // without triggering an additional callback (i.e. not noticeable by
-  // subscriber of SetCallback()).
-  //
-  // Fetches snippets only if the daily quota not exceeded, unless
-  // |interactive_request| is set to true (use only for user-initiated fetches).
-  void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
-                              const std::string& language_code,
-                              const std::set<std::string>& excluded_ids,
-                              int count,
-                              bool interactive_request);
+  // If an ongoing fetch exists, it will be silently abandoned and a new one
+  // started, without triggering an additional callback (i.e. the callback will
+  // only be called once).
+  void FetchSnippets(const Params& params);
 
   // Debug string representing the status/result of the last fetch attempt.
   const std::string& last_status() const { return last_status_; }
@@ -137,7 +150,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   Personalization personalization() const { return personalization_; }
 
   // Returns the URL endpoint used by the fetcher.
-  GURL fetch_url() const { return fetch_url_; }
+  const GURL& fetch_url() const { return fetch_url_; }
 
   // Does the fetcher use authentication to get personalized results?
   bool UsesAuthentication() const;
@@ -168,29 +181,27 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     CHROME_CONTENT_SUGGESTIONS_API,
   };
 
-  struct RequestParams {
-    FetchAPI fetch_api;
+  struct RequestBuilder {
+    Params params;
+    FetchAPI fetch_api = CHROME_READER_API;
     std::string obfuscated_gaia_id;
-    bool only_return_personalized_results;
-    std::string user_locale;
-    std::set<std::string> host_restricts;
-    std::set<std::string> excluded_ids;
-    int count_to_fetch;
-    bool interactive_request;
+    bool only_return_personalized_results = false;
     std::string user_class;
-    translate::LanguageModel::LanguageInfo ui_language;
-    translate::LanguageModel::LanguageInfo other_top_language;
+    translate::LanguageModel::LanguageInfo ui_language{"", 0.0f};
+    translate::LanguageModel::LanguageInfo other_top_language{"", 0.0f};
 
-    RequestParams();
-    ~RequestParams();
+    RequestBuilder();
+    RequestBuilder(RequestBuilder&&);
+    ~RequestBuilder();
 
     std::string BuildRequest();
   };
 
+  RequestBuilder MakeRequestBuilder() const;
+
   void FetchSnippetsImpl(const GURL& url,
                          const std::string& auth_header,
                          const std::string& request);
-  void SetUpCommonFetchingParameters(RequestParams* params) const;
   void FetchSnippetsNonAuthenticated();
   void FetchSnippetsAuthenticated(const std::string& account_id,
                                   const std::string& oauth_access_token);
@@ -219,11 +230,14 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 
   bool DemandQuotaForRequest(bool interactive_request);
 
-  // Authorization for signed-in users.
+  // Authentication for signed-in users.
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
   std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
-  bool waiting_for_refresh_token_;
+  bool waiting_for_refresh_token_ = false;
+
+  // When a token request gets canceled, we want to retry once.
+  bool oauth_token_retried_ = false;
 
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
@@ -233,41 +247,17 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   translate::LanguageModel* const language_model_;
 
   const ParseJSONCallback parse_json_callback_;
-  base::TimeTicks fetch_start_time_;
-  std::string last_status_;
-  std::string last_fetch_json_;
-
-  // Hosts to restrict the snippets to.
-  std::set<std::string> hosts_;
-
-  // Snippets to exclude from the results.
-  std::set<std::string> excluded_ids_;
-
-  // Count of snippets to fetch.
-  int count_to_fetch_;
-
-  // Language code to restrict to for personalized results.
-  std::string locale_;
 
   // API endpoint for fetching snippets.
   const GURL fetch_url_;
   // Which API to use
   const FetchAPI fetch_api_;
 
-  // The fetcher for downloading the snippets.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
-
-  // The callback to notify when new snippets get fetched.
-  SnippetsAvailableCallback snippets_available_callback_;
-
   // API key to use for non-authenticated requests.
   const std::string api_key_;
 
   // The variant of the fetching to use, loaded from variation parameters.
   Personalization personalization_;
-
-  // Is the request user initiated?
-  bool interactive_request_;
 
   // Allow for an injectable tick clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;
@@ -280,8 +270,22 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   RequestThrottler request_throttler_active_ntp_user_;
   RequestThrottler request_throttler_active_suggestions_consumer_;
 
-  // When a token request gets canceled, we want to retry once.
-  bool oauth_token_retried_;
+  // The callback to notify when new snippets get fetched.
+  SnippetsAvailableCallback snippets_available_callback_;
+
+  // The parameters for the current request.
+  Params params_;
+
+  // The fetcher for downloading the snippets. Only non-null if a fetch is
+  // currently ongoing.
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
+
+  // When the current request was started, for logging purposes.
+  base::TimeTicks fetch_start_time_;
+
+  // Info on the last finished fetch.
+  std::string last_status_;
+  std::string last_fetch_json_;
 
   base::WeakPtrFactory<NTPSnippetsFetcher> weak_ptr_factory_;
 
