@@ -20,10 +20,6 @@
 
 using content::BrowserThread;
 
-// Keys used to attach handler to the RenderProcessHost
-const char WebRtcEventLogHandler::kWebRtcEventLogHandlerKey[] =
-    "kWebRtcEventLogHandlerKey";
-
 namespace {
 
 // Returns a path name to be used as prefix for RTC event log files.
@@ -36,39 +32,39 @@ base::FilePath GetWebRtcEventLogPrefixPath(const base::FilePath& directory,
 
 }  // namespace
 
-WebRtcEventLogHandler::WebRtcEventLogHandler(Profile* profile)
-    : profile_(profile),
+WebRtcEventLogHandler::WebRtcEventLogHandler(int render_process_id,
+                                             Profile* profile)
+    : render_process_id_(render_process_id),
+      profile_(profile),
       current_rtc_event_log_id_(0) {
   DCHECK(profile_);
-  thread_checker_.DetachFromThread();
 }
 
 WebRtcEventLogHandler::~WebRtcEventLogHandler() {}
 
 void WebRtcEventLogHandler::StartWebRtcEventLogging(
-    content::RenderProcessHost* host,
-    base::TimeDelta delay,
+    base::TimeDelta duration,
     const RecordingDoneCallback& callback,
     const RecordingErrorCallback& error_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&WebRtcEventLogHandler::GetLogDirectoryAndEnsureExists, this),
-      base::Bind(&WebRtcEventLogHandler::DoStartWebRtcEventLogging, this, host,
-                 delay, callback, error_callback));
+      base::Bind(&WebRtcEventLogHandler::DoStartWebRtcEventLogging, this,
+                 duration, callback, error_callback));
 }
 
 void WebRtcEventLogHandler::StopWebRtcEventLogging(
-    content::RenderProcessHost* host,
     const RecordingDoneCallback& callback,
     const RecordingErrorCallback& error_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   const bool is_manual_stop = true;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&WebRtcEventLogHandler::GetLogDirectoryAndEnsureExists, this),
-      base::Bind(&WebRtcEventLogHandler::DoStopWebRtcEventLogging, this, host,
+      base::Bind(&WebRtcEventLogHandler::DoStopWebRtcEventLogging, this,
                  is_manual_stop, current_rtc_event_log_id_, callback,
                  error_callback));
 }
@@ -86,12 +82,18 @@ base::FilePath WebRtcEventLogHandler::GetLogDirectoryAndEnsureExists() {
 }
 
 void WebRtcEventLogHandler::DoStartWebRtcEventLogging(
-    content::RenderProcessHost* host,
-    base::TimeDelta delay,
+    base::TimeDelta duration,
     const RecordingDoneCallback& callback,
     const RecordingErrorCallback& error_callback,
     const base::FilePath& log_directory) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (!host) {
+    error_callback.Run("RenderProcessHost not found");
+    return;
+  }
 
   base::FilePath prefix_path =
       GetWebRtcEventLogPrefixPath(log_directory, ++current_rtc_event_log_id_);
@@ -100,7 +102,7 @@ void WebRtcEventLogHandler::DoStartWebRtcEventLogging(
     return;
   }
 
-  if (delay.is_zero()) {
+  if (duration.is_zero()) {
     const bool is_stopped = false, is_manual_stop = false;
     callback.Run(prefix_path.AsUTF8Unsafe(), is_stopped, is_manual_stop);
     return;
@@ -109,21 +111,27 @@ void WebRtcEventLogHandler::DoStartWebRtcEventLogging(
   const bool is_manual_stop = false;
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebRtcEventLogHandler::DoStopWebRtcEventLogging, this, host,
+      base::Bind(&WebRtcEventLogHandler::DoStopWebRtcEventLogging, this,
                  is_manual_stop, current_rtc_event_log_id_, callback,
                  error_callback, log_directory),
-      delay);
+      duration);
 }
 
 void WebRtcEventLogHandler::DoStopWebRtcEventLogging(
-    content::RenderProcessHost* host,
     bool is_manual_stop,
     uint64_t rtc_event_log_id,
     const RecordingDoneCallback& callback,
     const RecordingErrorCallback& error_callback,
     const base::FilePath& log_directory) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_LE(rtc_event_log_id, current_rtc_event_log_id_);
+
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (!host) {
+    error_callback.Run("RenderProcessHost not found");
+    return;
+  }
 
   base::FilePath prefix_path =
       GetWebRtcEventLogPrefixPath(log_directory, rtc_event_log_id);

@@ -16,9 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
-namespace content {
-class RenderProcessHost;
-}  // namespace content
 class Profile;
 
 // WebRtcEventLogHandler provides an interface to start and stop
@@ -31,31 +28,22 @@ class WebRtcEventLogHandler
   typedef base::Callback<void(const std::string&, bool, bool)>
       RecordingDoneCallback;
 
-  // Key used to attach the handler to the RenderProcessHost.
-  static const char kWebRtcEventLogHandlerKey[];
+  WebRtcEventLogHandler(int render_process_id, Profile* profile);
 
-  explicit WebRtcEventLogHandler(Profile* profile);
-
-  // Starts an RTC event log for each peerconnection on the specified |host|.
-  // The call writes the most recent events to a file and then starts logging
-  // events for the given |delay|.
-  // If |delay| is zero, the logging will continue until
-  // StopWebRtcEventLogging()
-  // is explicitly invoked.
-  // |callback| is invoked once recording stops. If |delay| is zero
-  // |callback| is invoked once recording starts.
-  // If a recording was already in progress, |error_callback| is invoked instead
-  // of |callback|.
-  void StartWebRtcEventLogging(content::RenderProcessHost* host,
-                               base::TimeDelta delay,
+  // Starts an RTC event log for each peerconnection on this RenderProcessHost.
+  // The call writes the most recent events and all future events for |duration|
+  // seconds to a file. After |duration|, recording stops and |callback| is
+  // invoked. If |duration| is zero, |callback| is run immediately and the
+  // logging will continue until StopWebRtcEventLogging() is explicitly invoked.
+  // Must be called on the UI thread.
+  void StartWebRtcEventLogging(base::TimeDelta duration,
                                const RecordingDoneCallback& callback,
                                const RecordingErrorCallback& error_callback);
 
-  // Stops an RTC event log. |callback| is invoked once recording
-  // stops. If no recording was in progress, |error_callback| is invoked instead
-  // of |callback|.
-  void StopWebRtcEventLogging(content::RenderProcessHost* host,
-                              const RecordingDoneCallback& callback,
+  // Stops an RTC event log. Must be called on the UI thread.
+  // |callback| is invoked once recording stops. If no recording was in
+  // progress, |error_callback| is invoked instead of |callback|.
+  void StopWebRtcEventLogging(const RecordingDoneCallback& callback,
                               const RecordingErrorCallback& error_callback);
 
  private:
@@ -65,27 +53,27 @@ class WebRtcEventLogHandler
   base::FilePath GetLogDirectoryAndEnsureExists();
 
   // Helper for starting RTC event logs.
-  void DoStartWebRtcEventLogging(content::RenderProcessHost* host,
-                                 base::TimeDelta delay,
+  void DoStartWebRtcEventLogging(base::TimeDelta duration,
                                  const RecordingDoneCallback& callback,
                                  const RecordingErrorCallback& error_callback,
                                  const base::FilePath& log_directory);
 
   // Helper for stopping RTC event logs.
-  void DoStopWebRtcEventLogging(content::RenderProcessHost* host,
-                                bool is_manual_stop,
-                                uint64_t audio_debug_recordings_id,
+  void DoStopWebRtcEventLogging(bool is_manual_stop,
+                                uint64_t rtc_event_log_id,
                                 const RecordingDoneCallback& callback,
                                 const RecordingErrorCallback& error_callback,
                                 const base::FilePath& log_directory);
 
+  // The ID of our render process.
+  int render_process_id_;
+
   // The profile associated with our renderer process.
-  Profile* const profile_;
+  const Profile* const profile_;
 
   // This counter allows saving each log in a separate file.
   uint64_t current_rtc_event_log_id_;
 
-  base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(WebRtcEventLogHandler);
 };
 

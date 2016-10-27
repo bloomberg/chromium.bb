@@ -469,29 +469,25 @@ bool WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::RunAsync() {
   std::unique_ptr<StartWebRtcEventLogging::Params> params(
       StartWebRtcEventLogging::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
   if (params->seconds < 0) {
     FireErrorCallback("seconds must be greater than or equal to 0");
     return true;
   }
 
-  content::RenderProcessHost* host =
-      RphFromRequest(params->request, params->security_origin);
-  if (!host)
+  scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
+      LoggingHandlerFromRequest(params->request, params->security_origin));
+  if (!webrtc_logging_handler_host.get())
     return false;
 
-  scoped_refptr<WebRtcEventLogHandler> webrtc_event_log_handler(
-      base::UserDataAdapter<WebRtcEventLogHandler>::Get(
-          host, WebRtcEventLogHandler::kWebRtcEventLogHandlerKey));
+  webrtc_logging_handler_host->StartWebRtcEventLogging(
+      base::TimeDelta::FromSeconds(params->seconds),
+      base::Bind(
+          &WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::FireCallback,
+          this),
+      base::Bind(&WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::
+                     FireErrorCallback,
+                 this));
 
-  webrtc_event_log_handler->StartWebRtcEventLogging(
-      host, base::TimeDelta::FromSeconds(params->seconds),
-      base::Bind(
-        &WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::FireCallback,
-        this),
-      base::Bind(
-        &WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::FireErrorCallback,
-        this));
   return true;
 }
 
@@ -505,23 +501,19 @@ bool WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::RunAsync() {
       StopWebRtcEventLogging::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  content::RenderProcessHost* host =
-      RphFromRequest(params->request, params->security_origin);
-  if (!host)
+  scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
+      LoggingHandlerFromRequest(params->request, params->security_origin));
+  if (!webrtc_logging_handler_host.get())
     return false;
 
-  scoped_refptr<WebRtcEventLogHandler> webrtc_event_log_handler(
-      base::UserDataAdapter<WebRtcEventLogHandler>::Get(
-          host, WebRtcEventLogHandler::kWebRtcEventLogHandlerKey));
+  webrtc_logging_handler_host->StopWebRtcEventLogging(
+      base::Bind(
+          &WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::FireCallback,
+          this),
+      base::Bind(&WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::
+                     FireErrorCallback,
+                 this));
 
-  webrtc_event_log_handler->StopWebRtcEventLogging(
-      host,
-      base::Bind(
-        &WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::FireCallback,
-        this),
-      base::Bind(
-        &WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::FireErrorCallback,
-        this));
   return true;
 }
 

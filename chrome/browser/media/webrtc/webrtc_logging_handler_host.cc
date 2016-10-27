@@ -38,6 +38,7 @@ WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
       render_process_id_(render_process_id),
       profile_(profile),
       upload_log_on_render_close_(false),
+      event_log_handler_(new WebRtcEventLogHandler(render_process_id, profile)),
       text_log_handler_(new WebRtcTextLogHandler(render_process_id)),
       rtp_dump_handler_(),
       stop_rtp_dump_callback_(),
@@ -248,6 +249,22 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
   }
 
   rtp_dump_handler_->StopDump(type, callback);
+}
+
+void WebRtcLoggingHandlerHost::StartWebRtcEventLogging(
+    base::TimeDelta duration,
+    const WebRtcEventLogHandler::RecordingDoneCallback& callback,
+    const WebRtcEventLogHandler::RecordingErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  event_log_handler_->StartWebRtcEventLogging(duration, callback,
+                                              error_callback);
+}
+
+void WebRtcLoggingHandlerHost::StopWebRtcEventLogging(
+    const WebRtcEventLogHandler::RecordingDoneCallback& callback,
+    const WebRtcEventLogHandler::RecordingErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  event_log_handler_->StopWebRtcEventLogging(callback, error_callback);
 }
 
 void WebRtcLoggingHandlerHost::OnRtpPacket(
