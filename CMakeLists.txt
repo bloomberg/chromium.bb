@@ -13,6 +13,9 @@ project(AOM C CXX)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+
+# TODO(tomfinegan): Host auto detect goes here when $AOM_TARGET is empty.
+set(AOM_TARGET "generic")
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 
 set(AOM_SRCS
@@ -38,6 +41,7 @@ set(AOM_DSP_SRCS
     "${AOM_ROOT}/aom_dsp/aom_convolve.h"
     "${AOM_ROOT}/aom_dsp/aom_dsp_common.h"
     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
+    "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
     "${AOM_ROOT}/aom_dsp/aom_filter.h"
     "${AOM_ROOT}/aom_dsp/aom_simd.c"
     "${AOM_ROOT}/aom_dsp/aom_simd.h"
@@ -101,6 +105,7 @@ set(AOM_MEM_SRCS
 set(AOM_SCALE_SRCS
     "${AOM_ROOT}/aom_scale/aom_scale.h"
     "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
+    "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
     "${AOM_ROOT}/aom_scale/generic/aom_scale.c"
     "${AOM_ROOT}/aom_scale/generic/gen_scalers.c"
     "${AOM_ROOT}/aom_scale/generic/yv12config.c"
@@ -108,6 +113,8 @@ set(AOM_SCALE_SRCS
     "${AOM_ROOT}/aom_scale/yv12config.h")
 
 # TODO(tomfinegan): Extract aom_ports from aom_util if possible.
+# TODO(tomfinegan): aom_ports has some target specific source files.
+# aom_configure will need to set a var that gets picked up here.
 set(AOM_UTIL_SRCS
     "${AOM_ROOT}/aom_ports/aom_once.h"
     "${AOM_ROOT}/aom_ports/aom_timer.h"
@@ -135,6 +142,7 @@ set(AOM_AV1_COMMON_SRCS
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d.c"
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d_cfg.h"
     "${AOM_ROOT}/av1/common/av1_rtcd.c"
+    "${AOM_CONFIG_DIR}/av1_rtcd.h"
     "${AOM_ROOT}/av1/common/av1_txfm.h"
     "${AOM_ROOT}/av1/common/blockd.c"
     "${AOM_ROOT}/av1/common/blockd.h"
@@ -267,10 +275,29 @@ set(AOM_AV1_ENCODER_SRCS
 # Targets
 add_library(aom_dsp ${AOM_DSP_SRCS})
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
+AomAddRtcdGenerationCommand(${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl
+                            ${AOM_CONFIG_DIR}/aom_dsp_rtcd.h
+                            ${AOM_CONFIG_DIR}/aom_dsp/aom_dsp_rtcd.c
+                            aom_dsp_rtcd)
+
 add_library(aom_mem ${AOM_MEM_SRCS})
+
 add_library(aom_scale ${AOM_SCALE_SRCS})
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
+AomAddRtcdGenerationCommand(${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl
+                            ${AOM_CONFIG_DIR}/aom_scale_rtcd.h
+                            ${AOM_CONFIG_DIR}/aom_scale/aom_scale_rtcd.c
+                            aom_scale_rtcd)
+
 add_library(aom_util ${AOM_UTIL_SRCS})
+
+add_library(aom_av1_common ${AOM_AV1_COMMON_SRCS})
+include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
+AomAddRtcdGenerationCommand(${AOM_ROOT}/av1/common/av1_rtcd_defs.pl
+                            ${AOM_CONFIG_DIR}/av1_rtcd.h
+                            ${AOM_CONFIG_DIR}/av1/common/av1_rtcd.c
+                            aom_av1_rtcd)
+
 add_library(aom_av1_decoder ${AOM_AV1_DECODER_SRCS})
 add_library(aom_av1_encoder ${AOM_AV1_ENCODER_SRCS})
 add_library(aom ${AOM_SRCS})
@@ -279,6 +306,7 @@ target_link_libraries(aom LINK_PUBLIC
                       aom_mem
                       aom_scale
                       aom_util
+                      aom_av1_common
                       aom_av1_decoder
                       aom_av1_encoder)
 add_executable(simple_decoder examples/simple_decoder.c)

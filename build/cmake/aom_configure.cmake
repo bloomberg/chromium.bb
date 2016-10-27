@@ -11,8 +11,14 @@
 cmake_minimum_required(VERSION 3.2)
 
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
+include("${AOM_ROOT}/build/cmake/targets/${AOM_TARGET}.cmake")
+
+# TODO(tomfinegan): For some ${AOM_TARGET} values a toolchain can be
+# inferred, and we could include it here instead of forcing users to
+# remember to explicitly specify ${AOM_TARGET} and the cmake toolchain.
 
 include(FindGit)
+include(FindPerl)
 
 # Defaults for every libaom configuration variable.
 set(RESTRICT)
@@ -121,7 +127,7 @@ set(CONFIG_EC_ADAPT 0)
 # target platform check produces empty INLINE and RESTRICT values (aka empty
 # values require special casing).
 configure_file("${AOM_ROOT}/build/cmake/aom_config.h.cmake"
-               "${CMAKE_CURRENT_BINARY_DIR}/aom_config.h")
+               "${AOM_CONFIG_DIR}/aom_config.h")
 
 # Read the current git hash.
 find_package(Git)
@@ -153,11 +159,54 @@ set(AOM_CMAKE_CONFIG "cmake")
 configure_file("${AOM_ROOT}/build/cmake/aom_config.c.cmake"
                "${AOM_CONFIG_DIR}/aom_config.c")
 
-# Find Perl.
+# Find Perl and generate the RTCD sources.
 find_package(Perl)
 if (NOT PERL_FOUND)
   message(FATAL_ERROR "Perl is required to build libaom.")
 endif ()
+configure_file(
+  "${AOM_ROOT}/build/cmake/targets/rtcd_templates/${AOM_ARCH}.rtcd.cmake"
+  "${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd")
+
+set(AOM_RTCD_CONFIG_FILE_LIST
+    "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
+    "${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl"
+    "${AOM_ROOT}/av1/common/av1_rtcd_defs.pl")
+set(AOM_RTCD_HEADER_FILE_LIST
+    "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
+    "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
+    "${AOM_CONFIG_DIR}/av1_rtcd.h")
+set(AOM_RTCD_SOURCE_FILE_LIST
+    "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
+    "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
+    "${AOM_ROOT}/av1/common/av1_rtcd.c")
+set(AOM_RTCD_SYMBOL_LIST aom_dsp_rtcd aom_scale_rtcd aom_av1_rtcd)
+list(LENGTH AOM_RTCD_SYMBOL_LIST AOM_RTCD_CUSTOM_COMMAND_COUNT)
+math(EXPR AOM_RTCD_CUSTOM_COMMAND_COUNT "${AOM_RTCD_CUSTOM_COMMAND_COUNT} - 1")
+foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
+  list(GET AOM_RTCD_CONFIG_FILE_LIST ${NUM} AOM_RTCD_CONFIG_FILE)
+  list(GET AOM_RTCD_HEADER_FILE_LIST ${NUM} AOM_RTCD_HEADER_FILE)
+  list(GET AOM_RTCD_SOURCE_FILE_LIST ${NUM} AOM_RTCD_SOURCE_FILE)
+  list(GET AOM_RTCD_SYMBOL_LIST ${NUM} AOM_RTCD_SYMBOL)
+  execute_process(COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
+                  --arch=${AOM_ARCH} --sym=${AOM_RTCD_SYMBOL}
+                  --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd
+                  ${AOM_RTCD_CONFIG_FILE}
+                  OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
+endforeach()
+
+macro(AomAddRtcdGenerationCommand config output source symbol)
+  add_custom_command(OUTPUT ${output}
+                     COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
+                             --arch=${AOM_ARCH} --sym=${symbol}
+                             --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd
+                             ${config} > ${output}
+                     DEPENDS ${config}
+                     COMMENT "Generating ${output}"
+                     WORKING_DIRECTORY ${AOM_CONFIG_DIR}
+                     VERBATIM)
+  set_property(SOURCE ${source} APPEND PROPERTY OBJECT_DEPENDS ${output})
+endmacro()
 
 # Generate aom_version.h.
 if ("${AOM_GIT_DESCRIPTION}" STREQUAL "")
