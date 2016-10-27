@@ -157,6 +157,12 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     return false;
   }
 
+  // Check for required extensions
+  if (!feature_info_->feature_flags().angle_robust_client_memory) {
+    Destroy(true);
+    return false;
+  }
+
   image_manager_.reset(new ImageManager());
 
   bind_generates_resource_ = group_->bind_generates_resource();

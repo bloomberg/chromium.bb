@@ -1404,6 +1404,9 @@ void FeatureInfo::InitializeFeatures() {
     // but we emulate ES 3.0 on top of Desktop GL 4.2+.
     feature_flags_.emulate_primitive_restart_fixed_index = true;
   }
+
+  feature_flags_.angle_robust_client_memory =
+      extensions.Contains("GL_ANGLE_robust_client_memory");
 }
 
 bool FeatureInfo::IsES3Capable() const {

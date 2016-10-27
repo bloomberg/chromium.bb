@@ -94,6 +94,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool arb_es3_compatibility;
     bool chromium_color_buffer_float_rgb = false;
     bool chromium_color_buffer_float_rgba = false;
+    bool angle_robust_client_memory = false;
   };
 
   FeatureInfo();
