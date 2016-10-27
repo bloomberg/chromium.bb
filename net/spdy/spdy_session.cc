@@ -2639,6 +2639,21 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   return true;
 }
 
+void SpdySession::CancelPush(const GURL& url) {
+  UnclaimedPushedStreamContainer::const_iterator unclaimed_it =
+      unclaimed_pushed_streams_.find(url);
+  if (unclaimed_it == unclaimed_pushed_streams_.end())
+    return;
+
+  SpdyStreamId stream_id = unclaimed_it->second.stream_id;
+
+  if (active_streams_.find(stream_id) == active_streams_.end()) {
+    ResetStream(stream_id, RST_STREAM_CANCEL,
+                "Cancelled push stream with url: " + url.spec());
+  }
+  unclaimed_pushed_streams_.erase(unclaimed_it);
+}
+
 void SpdySession::OnPushPromise(SpdyStreamId stream_id,
                                 SpdyStreamId promised_stream_id,
                                 SpdyHeaderBlock headers) {

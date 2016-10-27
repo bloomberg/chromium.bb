@@ -1434,6 +1434,26 @@ void QuicChromiumClientSession::OnPushStreamTimedOut(QuicStreamId stream_id) {
     bytes_pushed_and_unclaimed_count_ += stream->stream_bytes_read();
 }
 
+void QuicChromiumClientSession::CancelPush(const GURL& url) {
+  QuicClientPromisedInfo* promised_info =
+      QuicClientSessionBase::GetPromisedByUrl(url.spec());
+  if (!promised_info) {
+    // Push stream has already been claimed.
+    return;
+  }
+
+  QuicStreamId stream_id = promised_info->id();
+
+  // Collect data on the cancelled push stream.
+  QuicSpdyStream* stream = GetPromisedStream(stream_id);
+  if (stream != nullptr)
+    bytes_pushed_and_unclaimed_count_ += stream->stream_bytes_read();
+
+  // Send the reset and remove the promised info from the promise index.
+  QuicClientSessionBase::ResetPromised(stream_id, QUIC_STREAM_CANCELLED);
+  DeletePromised(promised_info);
+}
+
 const LoadTimingInfo::ConnectTiming&
 QuicChromiumClientSession::GetConnectTiming() {
   connect_timing_.ssl_start = connect_timing_.connect_start;

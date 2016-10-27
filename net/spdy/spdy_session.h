@@ -573,6 +573,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, GetActivePushStream);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, DeleteExpiredPushStreams);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, MetricsCollectionOnPushStreams);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushBeforeClaimed);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterExpired);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ProtocolNegotiation);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClearSettings);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustRecvWindowSize);
@@ -674,6 +676,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
                            SpdyHeaderBlock headers);
+
+  // Called when the pushed stream should be cancelled. If the pushed stream is
+  // not claimed and active, sends RST to the server to cancel the stream.
+  void CancelPush(const GURL& url);
 
   // Close the stream pointed to by the given iterator. Note that that
   // stream may hold the last reference to the session.
