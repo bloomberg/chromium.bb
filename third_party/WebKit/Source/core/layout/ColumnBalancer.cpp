@@ -139,7 +139,6 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(
     if (box.needsForcedBreakBefore(previousBreakAfterValue)) {
       addContentRun(flowThreadOffset());
     } else {
-      ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
       if (isFirstAfterBreak(flowThreadOffset())) {
         // This box is first after a soft break.
         recordStrutBeforeOffset(flowThreadOffset(), box.paginationStrut());
@@ -306,7 +305,6 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(
     if (box.needsForcedBreakBefore(previousBreakAfterValue)) {
       m_forcedBreaksCount++;
     } else {
-      ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
       if (isFirstAfterBreak(flowThreadOffset())) {
         // This box is first after a soft break.
         LayoutUnit strut = box.paginationStrut();
