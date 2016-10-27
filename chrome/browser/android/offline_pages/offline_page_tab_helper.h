@@ -42,7 +42,7 @@ class OfflinePageTabHelper :
   }
 
   // Whether the page is an offline preview.
-  bool is_offline_preview() const { return offline_info_.is_offline_preview; }
+  bool IsShowingOfflinePreview() const;
 
   // Returns provisional offline page since actual navigation does not happen
   // during unit tests.
@@ -64,7 +64,7 @@ class OfflinePageTabHelper :
 
     // Whether the page is an offline preview. Offline page previews are shown
     // when a user's effective connection type is prohibitively slow.
-    bool is_offline_preview;
+    bool is_showing_offline_preview;
 
     void Clear();
   };

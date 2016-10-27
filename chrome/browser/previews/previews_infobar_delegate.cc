@@ -120,11 +120,9 @@ base::string16 PreviewsInfoBarDelegate::GetLinkText() const {
 
 bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_LOAD_ORIGINAL_CLICKED);
-
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
   if (infobar_type_ == LITE_PAGE || infobar_type_ == LOFI) {
-    auto* web_contents =
-        InfoBarService::WebContentsFromInfoBar(infobar());
-
     if (infobar_type_ == LITE_PAGE)
       web_contents->GetController().ReloadDisableLoFi(true);
     else if (infobar_type_ == LOFI)
@@ -134,6 +132,8 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
             web_contents->GetBrowserContext());
     data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
+  } else if (infobar_type_ == OFFLINE) {
+    web_contents->GetController().Reload(true);
   }
 
   return true;

@@ -545,6 +545,16 @@ public class OfflinePageUtils {
         return offlinePageBridge.getOfflinePageHeaderForReload(tab.getWebContents());
     }
 
+    /**
+     * @return True if an offline preview is being shown.
+     * @param tab The current tab.
+     */
+    public static boolean isShowingOfflinePreview(Tab tab) {
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
+        if (offlinePageBridge == null) return false;
+        return offlinePageBridge.isShowingOfflinePreview(tab.getWebContents());
+    }
+
     private static boolean isPowerConnected(Intent batteryStatus) {
         int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
         boolean isConnected = (status == BatteryManager.BATTERY_STATUS_CHARGING

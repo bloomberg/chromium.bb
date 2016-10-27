@@ -29,7 +29,7 @@ OfflinePageTabHelper::LoadedOfflinePageInfo::~LoadedOfflinePageInfo() {}
 void OfflinePageTabHelper::LoadedOfflinePageInfo::Clear() {
   offline_page.reset();
   offline_header.Clear();
-  is_offline_preview = false;
+  is_showing_offline_preview = false;
 }
 
 OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
@@ -87,8 +87,8 @@ void OfflinePageTabHelper::DidFinishNavigation(
     offline_info_.offline_page =
         std::move(provisional_offline_info_.offline_page);
     offline_info_.offline_header = provisional_offline_info_.offline_header;
-    offline_info_.is_offline_preview =
-        provisional_offline_info_.is_offline_preview;
+    offline_info_.is_showing_offline_preview =
+        provisional_offline_info_.is_showing_offline_preview;
   }
   provisional_offline_info_.Clear();
 
@@ -166,11 +166,18 @@ void OfflinePageTabHelper::SetOfflinePage(
   provisional_offline_info_.offline_page =
       base::MakeUnique<OfflinePageItem>(offline_page);
   provisional_offline_info_.offline_header = offline_header;
-  provisional_offline_info_.is_offline_preview = is_offline_preview;
+  provisional_offline_info_.is_showing_offline_preview = is_offline_preview;
 }
 
 const OfflinePageItem* OfflinePageTabHelper::GetOfflinePageForTest() const {
   return provisional_offline_info_.offline_page.get();
+}
+
+bool OfflinePageTabHelper::IsShowingOfflinePreview() const {
+  // TODO: Change this once offline pages infrastructure uses NavigationHandle
+  // instead of a back channel. crbug.com/658899
+  return provisional_offline_info_.is_showing_offline_preview ||
+         offline_info_.is_showing_offline_preview;
 }
 
 }  // namespace offline_pages
