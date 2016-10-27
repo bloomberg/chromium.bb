@@ -43,7 +43,6 @@ import optparse
 import re
 import sys
 
-
 from webkitpy.common import find_files
 from webkitpy.common import read_checksum_from_png
 from webkitpy.common.memoized import memoized
@@ -53,6 +52,7 @@ from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
+from webkitpy.layout_tests.models.test_expectations import SKIP
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
@@ -931,6 +931,21 @@ class Port(object):
     def skipped_layout_tests(self, test_list):
         """Returns tests skipped outside of the TestExpectations files."""
         return set(self._skipped_tests_for_unsupported_features(test_list))
+
+    def skips_test(self, test, generic_expectations, full_expectations):
+        """Checks whether the given test is skipped for this port.
+
+        This should return True if the test is skipped because the port
+        runs smoke tests only, or because there's a skip test expectation line.
+        """
+        fs = self.host.filesystem
+        if self.default_smoke_test_only():
+            smoke_test_filename = fs.join(self.layout_tests_dir(), 'SmokeTests')
+            if fs.exists(smoke_test_filename) and test not in fs.read_text_file(smoke_test_filename):
+                return True
+
+        return (SKIP in full_expectations.get_expectations(test) and
+                SKIP not in generic_expectations.get_expectations(test))
 
     def _tests_from_skipped_file_contents(self, skipped_file_contents):
         tests_to_skip = []

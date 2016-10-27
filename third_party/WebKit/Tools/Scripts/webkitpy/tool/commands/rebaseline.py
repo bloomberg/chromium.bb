@@ -192,6 +192,8 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
                 continue
 
             expectations = TestExpectations(port, [test_name])
+            # TODO(qyearsley): Make sure we're also skipping copying existing baselines in
+            # the case where the port only runs smoke tests and the test is a smoke test.
             if SKIP in expectations.get_expectations(test_name):
                 _log.debug("%s is skipped on %s.", test_name, port.name())
                 continue
@@ -425,7 +427,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             generic_expectations = TestExpectations(port, tests=tests, include_overrides=False)
             full_expectations = TestExpectations(port, tests=tests, include_overrides=True)
             for test in tests:
-                if self._port_skips_test(port, test, generic_expectations, full_expectations):
+                if port.skips_test(test, generic_expectations, full_expectations):
                     for test_configuration in port.all_test_configurations():
                         if test_configuration.version == port.test_configuration().version:
                             to_remove.append((test, test_configuration))
@@ -442,17 +444,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         expectations_string = expectations.remove_configurations(to_remove)
         path = port.path_to_generic_test_expectations_file()
         self._tool.filesystem.write_text_file(path, expectations_string)
-
-    @staticmethod
-    def _port_skips_test(port, test, generic_expectations, full_expectations):
-        fs = port.host.filesystem
-        if port.default_smoke_test_only():
-            smoke_test_filename = fs.join(port.layout_tests_dir(), 'SmokeTests')
-            if fs.exists(smoke_test_filename) and test not in fs.read_text_file(smoke_test_filename):
-                return True
-
-        return (SKIP in full_expectations.get_expectations(test) and
-                SKIP not in generic_expectations.get_expectations(test))
 
     def _run_in_parallel(self, commands):
         if not commands:
