@@ -11,9 +11,6 @@
 // (chromium/src/components/autofill/core/common/form_data.h) for further
 // processing.
 
-/** @typedef {HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement} */
-var FormControlElement;
-
 /**
   * @typedef {{
   *   name: string,
@@ -250,7 +247,7 @@ function scanFormControlElements_(controlElements) {
  * In the C++ version, |fieldsets| can be NULL, in which case we do not try to
  * append to it.
  *
- * @param {Array<FormControlElement>} elements elements to look through.
+ * @param {Array<!FormControlElement>} elements elements to look through.
  * @param {Array<Element>} fieldsets out param for unowned fieldsets.
  * @return {Array<FormControlElement>} The elements that are not part of a form.
  */
@@ -631,7 +628,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     // TODO(bondd): Handle __gCrWeb.autofill.isCheckableElement(element) ==
     // true. |is_checked| is not currently passed in by the caller.
 
-    element.setAttribute('chrome-autofilled');
+    element.setAttribute('chrome-autofilled', '');
     element.isAutofilled = true;
     element.addEventListener('input', controlElementInputListener);
   }
@@ -1037,7 +1034,7 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth, divsToSkip) {
         node.tagName === 'NOSCRIPT') {
       return '';
     }
-    if (__gCrWeb.common.isFormControlElement(node)) {
+    if (__gCrWeb.common.isFormControlElement(/** @type {Element} */ (node))) {
       var input = /** @type {FormControlElement} */ (node);
       if (__gCrWeb.autofill.isAutofillableElement(input)) {
         return '';

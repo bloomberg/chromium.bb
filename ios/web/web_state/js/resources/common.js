@@ -9,6 +9,9 @@ goog.provide('__crWeb.common');
 goog.require('__crWeb.base');
 
 
+/** @typedef {HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement} */
+var FormControlElement;
+
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected. String 'common' is used in |__gCrWeb['common']| as it needs to be
@@ -89,7 +92,7 @@ __gCrWeb['common'] = {};
    *
    * @param {Element} form A form element for which the control elements are
    *   returned.
-   * @return {Array<Element>}
+   * @return {Array<FormControlElement>}
    */
   __gCrWeb.common.getFormControlElements = function(form) {
     if (!form) {
@@ -111,7 +114,7 @@ __gCrWeb['common'] = {};
     var elements = form.elements;
     for (var i = 0; i < elements.length; i++) {
       if (__gCrWeb.common.isFormControlElement(elements[i])) {
-        results.push(elements[i]);
+        results.push(/** @type {FormControlElement} */ (elements[i]));
       }
     }
     return results;
