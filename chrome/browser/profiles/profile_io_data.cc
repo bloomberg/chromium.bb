@@ -216,15 +216,13 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   if (p.IsAbsolute())
     return false;
 
-  base::FilePath inspector_dir;
-  if (!PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir))
+  base::FilePath inspector_debug_dir;
+  if (!PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &inspector_debug_dir))
     return false;
 
-  if (inspector_dir.empty())
-    return false;
+  DCHECK(!inspector_debug_dir.empty());
 
-  // Use the non-bundled and non-minified devtools app for development
-  *path = inspector_dir.AppendASCII("debug").AppendASCII(relative_path);
+  *path = inspector_debug_dir.AppendASCII(relative_path);
   return true;
 }
 

@@ -105,7 +105,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
 
   base::FilePath debug_frontend_dir;
 #if defined(DEBUG_DEVTOOLS)
-  PathService::Get(chrome::DIR_INSPECTOR, &debug_frontend_dir);
+  PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &debug_frontend_dir);
 #endif
 
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
