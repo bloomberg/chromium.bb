@@ -60,13 +60,13 @@ TEST(IntentFilterTest, TestAuthorityEntry_empty) {
   IntentFilter filter = IntentFilterBuilder()
       .authority("authority1");
 
-  EXPECT_FALSE(filter.match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL()));
 
   // Empty URL shouldn't match a filter with an authority and port.
   IntentFilter filter_port_100 = IntentFilterBuilder()
       .authority("authority1", 100);
 
-  EXPECT_FALSE(filter_port_100.match(GURL()));
+  EXPECT_FALSE(filter_port_100.Match(GURL()));
 }
 
 TEST(IntentFilterTest, TestAuthorityEntry_simple) {
@@ -74,11 +74,11 @@ TEST(IntentFilterTest, TestAuthorityEntry_simple) {
   IntentFilter filter = IntentFilterBuilder()
       .authority("authority1");
 
-  EXPECT_FALSE(filter.match(GURL("http://authority2")));
-  EXPECT_FALSE(filter.match(GURL("https://authority2")));
+  EXPECT_FALSE(filter.Match(GURL("http://authority2")));
+  EXPECT_FALSE(filter.Match(GURL("https://authority2")));
 
-  EXPECT_TRUE(filter.match(GURL("http://authority1")));
-  EXPECT_TRUE(filter.match(GURL("https://authority1")));
+  EXPECT_TRUE(filter.Match(GURL("http://authority1")));
+  EXPECT_TRUE(filter.Match(GURL("https://authority1")));
 }
 
 TEST(IntentFilterTest, TestAuthorityEntry_no_port) {
@@ -86,14 +86,14 @@ TEST(IntentFilterTest, TestAuthorityEntry_no_port) {
   IntentFilter filter_no_port = IntentFilterBuilder()
       .authority("authority1");
 
-  EXPECT_TRUE(filter_no_port.match(GURL("http://authority1:0")));
-  EXPECT_TRUE(filter_no_port.match(GURL("https://authority1:0")));
-  EXPECT_TRUE(filter_no_port.match(GURL("http://authority1:22")));
-  EXPECT_TRUE(filter_no_port.match(GURL("https://authority1:22")));
-  EXPECT_TRUE(filter_no_port.match(GURL("http://authority1:1024")));
-  EXPECT_TRUE(filter_no_port.match(GURL("https://authority1:1024")));
-  EXPECT_TRUE(filter_no_port.match(GURL("http://authority1:65535")));
-  EXPECT_TRUE(filter_no_port.match(GURL("https://authority1:65535")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("http://authority1:0")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("https://authority1:0")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("http://authority1:22")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("https://authority1:22")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("http://authority1:1024")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("https://authority1:1024")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("http://authority1:65535")));
+  EXPECT_TRUE(filter_no_port.Match(GURL("https://authority1:65535")));
 }
 
 TEST(IntentFilterTest, TestAuthorityEntry_with_port) {
@@ -101,19 +101,19 @@ TEST(IntentFilterTest, TestAuthorityEntry_with_port) {
   IntentFilter filter_port_100 = IntentFilterBuilder()
       .authority("authority1", 100);
 
-  EXPECT_FALSE(filter_port_100.match(GURL("http://authority1")));
-  EXPECT_FALSE(filter_port_100.match(GURL("https://authority1")));
-  EXPECT_FALSE(filter_port_100.match(GURL("http://authority1:0")));
-  EXPECT_FALSE(filter_port_100.match(GURL("https://authority1:0")));
-  EXPECT_FALSE(filter_port_100.match(GURL("http://authority1:22")));
-  EXPECT_FALSE(filter_port_100.match(GURL("https://authority1:22")));
-  EXPECT_FALSE(filter_port_100.match(GURL("http://authority1:1024")));
-  EXPECT_FALSE(filter_port_100.match(GURL("https://authority1:1024")));
-  EXPECT_FALSE(filter_port_100.match(GURL("http://authority1:65535")));
-  EXPECT_FALSE(filter_port_100.match(GURL("https://authority1:65535")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("http://authority1")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("https://authority1")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("http://authority1:0")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("https://authority1:0")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("http://authority1:22")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("https://authority1:22")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("http://authority1:1024")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("https://authority1:1024")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("http://authority1:65535")));
+  EXPECT_FALSE(filter_port_100.Match(GURL("https://authority1:65535")));
 
-  EXPECT_TRUE(filter_port_100.match(GURL("http://authority1:100")));
-  EXPECT_TRUE(filter_port_100.match(GURL("https://authority1:100")));
+  EXPECT_TRUE(filter_port_100.Match(GURL("http://authority1:100")));
+  EXPECT_TRUE(filter_port_100.Match(GURL("https://authority1:100")));
 }
 
 TEST(IntentFilterTest, TestAuthorityEntry_default_port) {
@@ -124,10 +124,10 @@ TEST(IntentFilterTest, TestAuthorityEntry_default_port) {
       .authority("authority1", 80)
       .authority("authority1", 443);
 
-  EXPECT_TRUE(filter_default_port.match(GURL("http://authority1")));
-  EXPECT_TRUE(filter_default_port.match(GURL("https://authority1")));
-  EXPECT_TRUE(filter_default_port.match(GURL("http://authority1:80")));
-  EXPECT_TRUE(filter_default_port.match(GURL("https://authority1:443")));
+  EXPECT_TRUE(filter_default_port.Match(GURL("http://authority1")));
+  EXPECT_TRUE(filter_default_port.Match(GURL("https://authority1")));
+  EXPECT_TRUE(filter_default_port.Match(GURL("http://authority1:80")));
+  EXPECT_TRUE(filter_default_port.Match(GURL("https://authority1:443")));
 }
 
 TEST(IntentFilterTest, TestAuthorityEntry_multiple) {
@@ -137,11 +137,11 @@ TEST(IntentFilterTest, TestAuthorityEntry_multiple) {
       .authority("authority1", 100)
       .authority("authority2");
 
-  EXPECT_FALSE(filter.match(GURL("http://authority1")));
-  EXPECT_FALSE(filter.match(GURL("http://authority3")));
+  EXPECT_FALSE(filter.Match(GURL("http://authority1")));
+  EXPECT_FALSE(filter.Match(GURL("http://authority3")));
 
-  EXPECT_TRUE(filter.match(GURL("http://authority1:100")));
-  EXPECT_TRUE(filter.match(GURL("http://authority2")));
+  EXPECT_TRUE(filter.Match(GURL("http://authority1:100")));
+  EXPECT_TRUE(filter.Match(GURL("http://authority2")));
 }
 
 TEST(IntentFilterTest, TestAuthorityEntry_substring) {
@@ -149,8 +149,8 @@ TEST(IntentFilterTest, TestAuthorityEntry_substring) {
   IntentFilter filter = IntentFilterBuilder()
       .authority("authority1");
 
-  EXPECT_FALSE(filter.match(GURL("http://authority")));
-  EXPECT_FALSE(filter.match(GURL("http://authority12")));
+  EXPECT_FALSE(filter.Match(GURL("http://authority")));
+  EXPECT_FALSE(filter.Match(GURL("http://authority12")));
 }
 
 TEST(IntentFilterTest, TestAuthorityEntry_wild) {
@@ -158,14 +158,14 @@ TEST(IntentFilterTest, TestAuthorityEntry_wild) {
   IntentFilter filter = IntentFilterBuilder()
       .authority("*.authority1");
 
-  EXPECT_FALSE(filter.match(GURL("http://.authority")));
-  EXPECT_FALSE(filter.match(GURL("http://.authority12")));
+  EXPECT_FALSE(filter.Match(GURL("http://.authority")));
+  EXPECT_FALSE(filter.Match(GURL("http://.authority12")));
 
-  EXPECT_TRUE(filter.match(GURL("http://.authority1")));
-  EXPECT_TRUE(filter.match(GURL("http://foo.authority1")));
-  EXPECT_TRUE(filter.match(GURL("http://bar.authority1")));
-  EXPECT_TRUE(filter.match(GURL("http://foo.bar.authority1")));
-  EXPECT_TRUE(filter.match(GURL("http://foo.authority1.authority1")));
+  EXPECT_TRUE(filter.Match(GURL("http://.authority1")));
+  EXPECT_TRUE(filter.Match(GURL("http://foo.authority1")));
+  EXPECT_TRUE(filter.Match(GURL("http://bar.authority1")));
+  EXPECT_TRUE(filter.Match(GURL("http://foo.bar.authority1")));
+  EXPECT_TRUE(filter.Match(GURL("http://foo.authority1.authority1")));
 }
 
 TEST(IntentFilterTest, TestDataPath_literal) {
@@ -174,13 +174,13 @@ TEST(IntentFilterTest, TestDataPath_literal) {
       .path("/path1", mojom::PatternType::PATTERN_LITERAL);
 
   // Empty paths, prefix-, and substring-matches should fail.
-  EXPECT_FALSE(filter.match(GURL()));
-  EXPECT_FALSE(filter.match(GURL("http://host.com")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/path")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/path12")));
+  EXPECT_FALSE(filter.Match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/path")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/path12")));
 
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path1")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path1")));
 }
 
 TEST(IntentFilterTest, TestDataPath_prefix) {
@@ -189,13 +189,13 @@ TEST(IntentFilterTest, TestDataPath_prefix) {
       .path("/path1", mojom::PatternType::PATTERN_PREFIX);
 
   // Empty paths and substring-matches should fail.
-  EXPECT_FALSE(filter.match(GURL()));
-  EXPECT_FALSE(filter.match(GURL("http://host.com")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/path")));
+  EXPECT_FALSE(filter.Match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/path")));
 
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path1")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path12")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path1")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path12")));
 }
 
 // Glob tests based loosely on android's CTS IntentFilterTest#testPaths.
@@ -205,18 +205,18 @@ TEST(IntentFilterTest, TestDataPath_globSuffix) {
       .path("/path1.*", mojom::PatternType::PATTERN_SIMPLE_GLOB);
 
   // Empty paths and substring-matches should fail.
-  EXPECT_FALSE(filter.match(GURL()));
-  EXPECT_FALSE(filter.match(GURL("http://host.com")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/path")));
+  EXPECT_FALSE(filter.Match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/path")));
 
   // Glob should match any substring including the empty susbstring.
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path1")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path11")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path112345")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path1.")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path1.....")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/path1path")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path1")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path11")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path112345")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path1.")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path1.....")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/path1path")));
 }
 
 // Glob tests based loosely on android's CTS IntentFilterTest#testPaths.
@@ -226,31 +226,31 @@ TEST(IntentFilterTest, TestDataPath_globInfix) {
       .path("/a.*b", mojom::PatternType::PATTERN_SIMPLE_GLOB);
 
   // Empty paths and substring-matches should fail.
-  EXPECT_FALSE(filter.match(GURL()));
-  EXPECT_FALSE(filter.match(GURL("http://host.com")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a")));
+  EXPECT_FALSE(filter.Match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a")));
 
   // Extra junk on the end should fail.
-  EXPECT_FALSE(filter.match(GURL("http://host.com/abc")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/abc")));
 
   // Glob should match any substring including the empty susbstring.
-  EXPECT_TRUE(filter.match(GURL("http://host.com/ab")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a1b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a12345b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a.b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a.....b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/aab")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/aaaaab")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a/foo/b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/ab")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a1b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a12345b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a.b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a.....b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/aab")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/aaaaab")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a/foo/b")));
 
   // TODO(kenobi): These cases don't work correctly.  However, the chrome-side
   // intent filter matching code needs to replicate the results of the
   // android-side pattern matcher, otherwise chrome will attempt to send URLs to
   // android that won't successfully match with any installed app.  See
   // b/30160040.
-  // EXPECT_TRUE(filter.match(GURL("http://host.com/abb")));
-  // EXPECT_TRUE(filter.match(GURL("http://host.com/abbbbb")));
+  // EXPECT_TRUE(filter.Match(GURL("http://host.com/abb")));
+  // EXPECT_TRUE(filter.Match(GURL("http://host.com/abbbbb")));
 }
 
 // Glob tests based loosely on android's CTS IntentFilterTest#testPaths.
@@ -260,15 +260,15 @@ TEST(IntentFilterTest, TestDataPath_globOnly) {
       .path("/.*", mojom::PatternType::PATTERN_SIMPLE_GLOB);
 
   // Empty URLs should fail.
-  EXPECT_FALSE(filter.match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL()));
 
   // Any path should match.
-  EXPECT_TRUE(filter.match(GURL("http://host.com")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/aaa")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/aaa/bbb")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/.")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/aaa")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/aaa/bbb")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/.")));
 }
 
 // Glob tests based loosely on android's CTS IntentFilterTest#testPaths.
@@ -277,16 +277,16 @@ TEST(IntentFilterTest, TestDataPath_globSingleChar) {
       .authority("host.com")
       .path("/a1*b", mojom::PatternType::PATTERN_SIMPLE_GLOB);
 
-  EXPECT_FALSE(filter.match(GURL()));
-  EXPECT_FALSE(filter.match(GURL("http://host.com")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a12b")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/ab12b")));
+  EXPECT_FALSE(filter.Match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a12b")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/ab12b")));
 
-  EXPECT_TRUE(filter.match(GURL("http://host.com/ab")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a1b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a111b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/ab")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a1b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a111b")));
 }
 
 // Glob tests based loosely on android's CTS IntentFilterTest#testPaths.
@@ -295,19 +295,19 @@ TEST(IntentFilterTest, TestDataPath_globEscapedChar) {
       .authority("host.com")
       .path("/a\\.*b", mojom::PatternType::PATTERN_SIMPLE_GLOB);
 
-  EXPECT_FALSE(filter.match(GURL()));
-  EXPECT_FALSE(filter.match(GURL("http://host.com")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a1b")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a111b")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/abc")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a.bc")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a...bc")));
+  EXPECT_FALSE(filter.Match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a1b")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a111b")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/abc")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a.bc")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a...bc")));
 
-  EXPECT_TRUE(filter.match(GURL("http://host.com/ab")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a.b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a...b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/ab")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a.b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a...b")));
 }
 
 // Glob tests based loosely on android's CTS IntentFilterTest#testPaths.
@@ -316,20 +316,20 @@ TEST(IntentFilterTest, TestDataPath_globEscapedStar) {
       .authority("host.com")
       .path("/a.\\*b", mojom::PatternType::PATTERN_SIMPLE_GLOB);
 
-  EXPECT_FALSE(filter.match(GURL()));
-  EXPECT_FALSE(filter.match(GURL("http://host.com")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/ab")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a.b")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a*b")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a1b")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a.*bc")));
-  EXPECT_FALSE(filter.match(GURL("http://host.com/a1*bc")));
+  EXPECT_FALSE(filter.Match(GURL()));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/ab")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a.b")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a*b")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a1b")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a.*bc")));
+  EXPECT_FALSE(filter.Match(GURL("http://host.com/a1*bc")));
 
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a.*b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a1*b")));
-  EXPECT_TRUE(filter.match(GURL("http://host.com/a2*b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a.*b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a1*b")));
+  EXPECT_TRUE(filter.Match(GURL("http://host.com/a2*b")));
 }
 
 }  // namespace arc

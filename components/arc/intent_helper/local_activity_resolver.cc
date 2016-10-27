@@ -19,7 +19,7 @@ bool LocalActivityResolver::ShouldChromeHandleUrl(const GURL& url) {
   }
 
   for (const IntentFilter& filter : intent_filters_) {
-    if (filter.match(url))
+    if (filter.Match(url))
       return false;
   }
 

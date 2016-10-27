@@ -24,14 +24,14 @@ class IntentFilter {
   IntentFilter(const IntentFilter& other);
   ~IntentFilter();
 
-  bool match(const GURL& url) const;
+  bool Match(const GURL& url) const;
 
  private:
   // A helper class for handling matching of the host part of the URL.
   class AuthorityEntry {
    public:
     explicit AuthorityEntry(const mojom::AuthorityEntryPtr& entry);
-    bool match(const GURL& url) const;
+    bool Match(const GURL& url) const;
 
    private:
     std::string host_;
@@ -43,17 +43,17 @@ class IntentFilter {
   class PatternMatcher {
    public:
     explicit PatternMatcher(const mojom::PatternMatcherPtr& pattern);
-    bool match(const std::string& match) const;
+    bool Match(const std::string& match) const;
 
    private:
-    bool matchGlob(const std::string& match) const;
+    bool MatchGlob(const std::string& match) const;
 
     std::string pattern_;
     mojom::PatternType match_type_;
   };
 
-  bool matchDataAuthority(const GURL& url) const;
-  bool hasDataPath(const GURL& url) const;
+  bool MatchDataAuthority(const GURL& url) const;
+  bool HasDataPath(const GURL& url) const;
 
   std::vector<AuthorityEntry> authorities_;
   std::vector<PatternMatcher> paths_;
