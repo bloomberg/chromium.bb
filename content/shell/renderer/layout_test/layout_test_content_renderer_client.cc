@@ -292,10 +292,6 @@ void LayoutTestContentRendererClient::
           switches::kEnableFontAntialiasing)) {
     blink::setFontAntialiasingEnabledForTest(true);
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAlwaysUseComplexText)) {
-    blink::setAlwaysUseComplexTextForTest(true);
-  }
 }
 
 }  // namespace content

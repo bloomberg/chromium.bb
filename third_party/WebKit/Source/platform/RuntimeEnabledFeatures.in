@@ -28,7 +28,6 @@
 // being false.
 
 Accelerated2dCanvas status=stable, settable_from_internals=True
-AlwaysUseComplexText status=stable
 AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
 AudioWorklet status=experimental

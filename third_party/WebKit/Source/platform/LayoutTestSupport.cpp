@@ -37,7 +37,6 @@ namespace blink {
 static bool s_isRunningLayoutTest = false;
 static bool s_isMockThemeEnabled = false;
 static bool s_isFontAntialiasingEnabled = false;
-static bool s_alwaysUseComplexTextForTest = false;
 
 bool LayoutTestSupport::isRunningLayoutTest() {
   return s_isRunningLayoutTest;
@@ -62,14 +61,6 @@ bool LayoutTestSupport::isFontAntialiasingEnabledForTest() {
 
 void LayoutTestSupport::setFontAntialiasingEnabledForTest(bool value) {
   s_isFontAntialiasingEnabled = value;
-}
-
-bool LayoutTestSupport::alwaysUseComplexTextForTest() {
-  return s_alwaysUseComplexTextForTest;
-}
-
-void LayoutTestSupport::setAlwaysUseComplexTextForTest(bool value) {
-  s_alwaysUseComplexTextForTest = value;
 }
 
 }  // namespace blink

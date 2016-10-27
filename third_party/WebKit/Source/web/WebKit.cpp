@@ -134,14 +134,6 @@ bool fontAntialiasingEnabledForTest() {
   return LayoutTestSupport::isFontAntialiasingEnabledForTest();
 }
 
-void setAlwaysUseComplexTextForTest(bool value) {
-  LayoutTestSupport::setAlwaysUseComplexTextForTest(value);
-}
-
-bool alwaysUseComplexTextForTest() {
-  return LayoutTestSupport::alwaysUseComplexTextForTest();
-}
-
 void resetPluginCache(bool reloadPages) {
   DCHECK(!reloadPages);
   Page::refreshPlugins();
