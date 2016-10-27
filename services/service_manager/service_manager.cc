@@ -39,6 +39,8 @@ const char kCapability_UserID[] = "service_manager:user_id";
 const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_InstanceName[] = "service_manager:instance_name";
 const char kCapability_AllUsers[] = "service_manager:all_users";
+const char kCapability_InstancePerChild[] =
+    "service_manager:instance_per_child";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 }  // namespace
@@ -85,6 +87,7 @@ class ServiceManager::Instance
         interface_provider_specs_(interface_provider_specs),
         allow_any_application_(GetConnectionSpec().requires.count("*") == 1),
         pid_receiver_binding_(this),
+        state_(State::IDLE),
         weak_factory_(this) {
     if (identity_.name() == kServiceManagerName ||
         identity_.name() == kCatalogName) {
@@ -103,8 +106,12 @@ class ServiceManager::Instance
     connectors_.CloseAllBindings();
     service_manager_bindings_.CloseAllBindings();
 
-    // Notify the ServiceManager that this Instance is really going away.
-    service_manager_->OnInstanceStopped(identity_);
+    if (state_ == State::STARTING) {
+      service_manager_->NotifyServiceFailedToStart(identity_);
+    } else {
+      // Notify the ServiceManager that this Instance is really going away.
+      service_manager_->OnInstanceStopped(identity_);
+    }
 
     // Release |runner_| so that if we are called back to OnRunnerCompleted()
     // we know we're in the destructor.
@@ -112,7 +119,7 @@ class ServiceManager::Instance
     runner.reset();
   }
 
-  Instance* parent() { return parent_; }
+  Instance* parent() const { return parent_; }
 
   void AddChild(std::unique_ptr<Instance> child) {
     child->parent_ = this;
@@ -148,6 +155,7 @@ class ServiceManager::Instance
 
   void StartWithService(mojom::ServicePtr service) {
     CHECK(!service_);
+    state_ = State::STARTING;
     service_ = std::move(service);
     service_.set_connection_error_handler(
         base::Bind(&Instance::OnServiceLost, base::Unretained(this),
@@ -192,6 +200,7 @@ class ServiceManager::Instance
     return it != interface_provider_specs_.end() ? it->second : empty_spec_;
   }
   const Identity& identity() const { return identity_; }
+  void set_identity(const Identity& identity) { identity_ = identity; }
   uint32_t id() const { return id_; }
 
   // Service:
@@ -209,6 +218,18 @@ class ServiceManager::Instance
   }
 
  private:
+   enum class State {
+    // The service was not started yet.
+    IDLE,
+
+    // The service was started but the service manager hasn't received the
+    // initial response from it yet.
+    STARTING,
+
+    // The service was started successfully.
+    STARTED
+  };
+
   // mojom::Connector implementation:
   void Connect(const service_manager::Identity& in_target,
                mojom::InterfaceProviderRequest remote_interfaces,
@@ -367,7 +388,6 @@ class ServiceManager::Instance
       return;
     }
     pid_ = pid;
-    service_manager_->NotifyPIDAvailable(identity_, pid_);
   }
 
   void OnServiceLost(
@@ -389,12 +409,14 @@ class ServiceManager::Instance
   }
 
   void OnInitializeResponse(mojom::ConnectorRequest connector_request) {
+    state_ = State::STARTED;
     if (connector_request.is_pending()) {
       connectors_.AddBinding(this, std::move(connector_request));
       connectors_.set_connection_error_handler(
           base::Bind(&Instance::OnConnectionLost, base::Unretained(this),
                      service_manager_->GetWeakPtr()));
     }
+    service_manager_->NotifyServiceStarted(identity_, pid_);
   }
 
   // Callback when NativeRunner completes.
@@ -411,7 +433,7 @@ class ServiceManager::Instance
   // may vend multiple application instances, and this object may exist before a
   // process is launched.
   const uint32_t id_;
-  const Identity identity_;
+  Identity identity_;
   const InterfaceProviderSpecMap interface_provider_specs_;
   const InterfaceProviderSpec empty_spec_;
   const bool allow_any_application_;
@@ -423,6 +445,7 @@ class ServiceManager::Instance
   base::ProcessId pid_ = base::kNullProcessId;
   Instance* parent_ = nullptr;
   InstanceMap children_;
+  State state_;
   base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
@@ -649,11 +672,18 @@ ServiceManager::Instance* ServiceManager::GetExistingInstance(
   return nullptr;
 }
 
-void ServiceManager::NotifyPIDAvailable(const Identity& identity,
-                                        base::ProcessId pid) {
+void ServiceManager::NotifyServiceStarted(const Identity& identity,
+                                          base::ProcessId pid) {
   listeners_.ForAllPtrs(
       [identity, pid](mojom::ServiceManagerListener* listener) {
         listener->OnServiceStarted(identity, pid);
+      });
+}
+
+void ServiceManager::NotifyServiceFailedToStart(const Identity& identity) {
+  listeners_.ForAllPtrs(
+      [identity](mojom::ServiceManagerListener* listener) {
+        listener->OnServiceFailedToStart(identity);
       });
 }
 
@@ -759,6 +789,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   if (it != result->interface_provider_specs.end())
     connection_spec = it->second;
 
+  const Identity original_target(params->target());
   const std::string user_id =
       HasCapability(connection_spec, kCapability_AllUsers)
           ? base::GenerateGUID() : params->target().user_id();
@@ -819,9 +850,28 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
     }
 
     if (target.name() != result->resolved_name) {
+      // This service is part of a package.
+      std::string target_user_id = target.user_id();
+      std::string factory_instance_name = instance_name;
+      bool instance_per_child = result->package_spec.has_value() &&
+          HasCapability(result->package_spec.value(),
+                        kCapability_InstancePerChild);
+      if (instance_per_child) {
+        // If configured to start a new instance, create a random instance name
+        // for the factory so that we don't reuse an existing process.
+        factory_instance_name = base::GenerateGUID();
+      } else {
+        // Use the original user ID so the existing embedder factory can
+        // be found and used to create the new service.
+        target_user_id = original_target.user_id();
+        Identity packaged_service_target(target);
+        packaged_service_target.set_user_id(original_target.user_id());
+        instance->set_identity(packaged_service_target);
+      }
       instance->StartWithService(std::move(service));
-      Identity factory(result->resolved_name, target.user_id(),
-                       instance_name);
+
+      Identity factory(result->resolved_name, target_user_id,
+                       factory_instance_name);
       CreateServiceWithFactory(factory, target.name(), std::move(request));
     } else {
       base::FilePath package_path;

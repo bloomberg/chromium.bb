@@ -122,7 +122,8 @@ class ServiceManager : public Service {
   // running as a different user if one is available that services all users.
   Instance* GetExistingInstance(const Identity& identity) const;
 
-  void NotifyPIDAvailable(const Identity& identity, base::ProcessId pid);
+  void NotifyServiceStarted(const Identity& identity, base::ProcessId pid);
+  void NotifyServiceFailedToStart(const Identity& identity);
 
   // Attempt to complete the connection requested by |params| by connecting to
   // an existing instance. If there is an existing instance, |params| is taken,

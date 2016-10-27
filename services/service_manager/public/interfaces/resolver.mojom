@@ -29,6 +29,9 @@ struct ResolveResult {
   // will be empty.
   map<string, InterfaceProviderSpec> interface_provider_specs;
 
+  // The set of capabilities of the containing package if any.
+  InterfaceProviderSpec? package_spec;
+
   // A path to the package file specified by |name|.
   mojo.common.mojom.FilePath package_path;
 };

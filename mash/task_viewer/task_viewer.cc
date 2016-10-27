@@ -186,6 +186,9 @@ class TaskViewerContents
       }
     }
   }
+  void OnServiceFailedToStart(
+      const service_manager::Identity& identity) override {
+  }
   void OnServiceStopped(const service_manager::Identity& identity) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->identity == identity) {

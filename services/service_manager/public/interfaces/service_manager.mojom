@@ -30,6 +30,10 @@ interface ServiceManagerListener {
   // assigned to it.
   OnServiceStarted(Identity identity, uint32 pid);
 
+  // Called when a service failed to start. (typically because it was shutdown
+  // before the manager heard back from the service).
+  OnServiceFailedToStart(Identity identity);
+
   // Called when the Service Manager has stopped tracking a service. (i.e. when
   // it has ended/quit).
   OnServiceStopped(Identity identity);

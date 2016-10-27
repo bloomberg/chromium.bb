@@ -1,18 +1,16 @@
 {
-  "name": "exe:mash_browser_tests",
-  "display_name": "Mash Browser Tests",
+  "name": "exe:service_manager_unittest_embedder",
+  "display_name": "Service Manager Unittest: Embedder",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        "service_manager_unittest:embedder": [ ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
         ]
       },
       "requires": {
-        "*": [ "app" ],
-        "service:service_manager": [
-           "service_manager:instance_per_child"
-        ]
+        "exe:service_manager_unittest_target": [ ]
       }
     }
   }

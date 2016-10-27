@@ -7,6 +7,9 @@
 namespace service_manager {
 namespace switches {
 
+// Enable the tracing service.
+const char kEnableTracing[] = "enable-service-manager-tracing";
+
 // Disables the sandbox for debugging.
 const char kNoSandbox[] = "no-sandbox";
 

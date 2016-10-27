@@ -208,32 +208,6 @@ TEST_F(ConnectTest, Instances) {
   EXPECT_NE(instance_a1, instance_b);
 }
 
-// When both the unresolved and resolved instance names are their default
-// values, the instance name from the unresolved name must be used.
-// (The case where the instance names differ is covered by
-// LifecycleTest.PackagedApp_CrashCrashesOtherProvidedApp).
-TEST_F(ConnectTest, PreferUnresolvedDefaultInstanceName) {
-  // Connect to an app with no manifest-supplied instance name provided by a
-  // package, the instance name must be derived from the application instance
-  // name, not the package.
-  std::unique_ptr<Connection> connection = connector()->Connect(kTestAppName);
-  {
-    base::RunLoop loop;
-    connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
-    loop.Run();
-  }
-
-  std::string instance;
-  {
-    test::mojom::ConnectTestServicePtr service;
-    connection->GetInterface(&service);
-    base::RunLoop loop;
-    service->GetInstance(base::Bind(&ReceiveOneString, &instance, &loop));
-    loop.Run();
-  }
-  EXPECT_EQ(GetNamePath(kTestAppName), instance);
-}
-
 // BlockedInterface should not be exposed to this application because it is not
 // in our CapabilityFilter whitelist.
 TEST_F(ConnectTest, BlockedInterface) {

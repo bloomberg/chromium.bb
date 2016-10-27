@@ -259,6 +259,12 @@ TypeConverter<service_manager::mojom::ResolveResultPtr,
   result->resolved_name = package.name();
   result->qualifier = input.qualifier();
   result->interface_provider_specs = input.interface_provider_specs();
+  if (input.package()) {
+    auto it = package.interface_provider_specs().find(
+        service_manager::mojom::kServiceManager_ConnectorSpec);
+    if (it != package.interface_provider_specs().end())
+      result->package_spec = it->second;
+  }
   result->package_path = package.path();
   return result;
 }

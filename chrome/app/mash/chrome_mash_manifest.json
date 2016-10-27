@@ -16,6 +16,7 @@
         ]
       },
       "requires": {
+        "service:service_manager": [ "service_manager:instance_per_child" ],
         "service:mash_session": [ "app" ],
         "service:catalog": [ "control" ]
       }

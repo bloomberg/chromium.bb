@@ -25,6 +25,7 @@ source_set("service_manager") {
 
   data_deps = [
     ":manifest",
+    ":service_manager_unittest_embedder",
     ":service_manager_unittest_driver",
     ":service_manager_unittest_target",
   ]
@@ -99,4 +100,44 @@ service_manifest("target_manifest") {
   type = "exe"
   name = "service_manager_unittest_target"
   source = "target_manifest.json"
+}
+
+service_manifest("embedder_manifest") {
+  type = "exe"
+  name = "service_manager_unittest_embedder"
+  source = "embedder_manifest.json"
+  deps = [
+    ":singleton_manifest",
+  ]
+  packaged_services = [ "service_manager_unittest_singleton" ]
+}
+
+service_manifest("singleton_manifest") {
+  name = "service_manager_unittest_singleton"
+  source = "singleton_manifest.json"
+}
+
+executable("service_manager_unittest_embedder") {
+  testonly = true
+
+  sources = [
+    "embedder.cc",
+  ]
+
+  deps = [
+    ":interfaces",
+    "//base",
+    "//build/win:default_exe_manifest",
+    "//mojo/edk/system",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
+    "//services/service_manager/runner:init",
+    "//services/service_manager/runner/child:test_native_main",
+    "//services/service_manager/runner/common",
+  ]
+
+  data_deps = [
+    ":embedder_manifest",
+    ":singleton_manifest",
+  ]
 }

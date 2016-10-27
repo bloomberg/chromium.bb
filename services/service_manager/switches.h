@@ -13,6 +13,7 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
+extern const char kEnableTracing[];
 extern const char kNoSandbox[];
 extern const char kSingleProcess[];
 

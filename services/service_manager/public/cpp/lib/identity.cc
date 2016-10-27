@@ -18,7 +18,7 @@ Identity::Identity(const std::string& name, const std::string& user_id,
                    const std::string& instance)
     : name_(name),
       user_id_(user_id),
-      instance_(instance.empty() ? GetNamePath(name_) : instance) {
+      instance_(instance) {
   CHECK(!user_id.empty());
   CHECK(base::IsValidGUID(user_id));
 }

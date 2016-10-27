@@ -12,6 +12,12 @@
         "service:service_manager": [ "service_manager:service_manager" ],
         "exe:service_manager_unittest_driver": [
           "service_manager_unittest:driver"
+        ],
+        "exe:service_manager_unittest_embedder": [
+          "service_manager_unittest:embedder"
+        ],
+        "service:service_manager_unittest_singleton": [
+          "service_manager_unittest:singleton"
         ]
       }
     }

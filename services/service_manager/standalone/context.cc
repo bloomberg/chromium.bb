@@ -182,35 +182,39 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
     }
   }
 
+  bool enable_stats_collection_bindings =
+      command_line.HasSwitch(tracing::kEnableStatsCollectionBindings);
 
-  Identity source_identity = CreateServiceManagerIdentity();
-  Identity tracing_identity("service:tracing", mojom::kRootUserID);
-  tracing::mojom::FactoryPtr factory;
-  ConnectToInterface(service_manager(), source_identity, tracing_identity,
-                     &factory);
-  provider_.InitializeWithFactory(&factory);
-
-  if (command_line.HasSwitch(tracing::kTraceStartup)) {
-    tracing::mojom::CollectorPtr coordinator;
+  if (enable_stats_collection_bindings ||
+      command_line.HasSwitch(switches::kEnableTracing)) {
+    Identity source_identity = CreateServiceManagerIdentity();
+    Identity tracing_identity("service:tracing", mojom::kRootUserID);
+    tracing::mojom::FactoryPtr factory;
     ConnectToInterface(service_manager(), source_identity, tracing_identity,
-                       &coordinator);
-    tracer_.StartCollectingFromTracingService(std::move(coordinator));
-  }
+                       &factory);
+    provider_.InitializeWithFactory(&factory);
 
-  // Record the service manager startup metrics used for performance testing.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          tracing::kEnableStatsCollectionBindings)) {
-    tracing::mojom::StartupPerformanceDataCollectorPtr collector;
-    ConnectToInterface(service_manager(), source_identity, tracing_identity,
-                       &collector);
+    if (command_line.HasSwitch(tracing::kTraceStartup)) {
+      tracing::mojom::CollectorPtr coordinator;
+      ConnectToInterface(service_manager(), source_identity, tracing_identity,
+                         &coordinator);
+      tracer_.StartCollectingFromTracingService(std::move(coordinator));
+    }
+
+    // Record the service manager startup metrics used for performance testing.
+    if (enable_stats_collection_bindings) {
+      tracing::mojom::StartupPerformanceDataCollectorPtr collector;
+      ConnectToInterface(service_manager(), source_identity, tracing_identity,
+                         &collector);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-    // CurrentProcessInfo::CreationTime is only defined on some platforms.
-    const base::Time creation_time = base::CurrentProcessInfo::CreationTime();
-    collector->SetServiceManagerProcessCreationTime(
-        creation_time.ToInternalValue());
+      // CurrentProcessInfo::CreationTime is only defined on some platforms.
+      const base::Time creation_time = base::CurrentProcessInfo::CreationTime();
+      collector->SetServiceManagerProcessCreationTime(
+          creation_time.ToInternalValue());
 #endif
-    collector->SetServiceManagerMainEntryPointTime(
-        main_entry_time_.ToInternalValue());
+      collector->SetServiceManagerMainEntryPointTime(
+          main_entry_time_.ToInternalValue());
+    }
   }
 }
 
