@@ -15,7 +15,9 @@ Windows10CaptionButton::Windows10CaptionButton(
     ViewID button_type)
     : views::CustomButton(frame_view),
       frame_view_(frame_view),
-      button_type_(button_type) {}
+      button_type_(button_type) {
+  set_animate_on_state_change(true);
+}
 
 gfx::Size Windows10CaptionButton::GetPreferredSize() const {
   // TODO(bsep): The sizes in this function are for 1x device scale and don't
