@@ -41,8 +41,10 @@ int GetUniqueIDInConstructor() {
   return ++unique_id_counter;
 }
 
-void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
-                                     NavigationEntryImpl::TreeNode* node) {
+void RecursivelyGenerateFrameEntries(
+    const ExplodedFrameState& state,
+    const std::vector<base::NullableString16>& referenced_files,
+    NavigationEntryImpl::TreeNode* node) {
   node->frame_entry = new FrameNavigationEntry(
       UTF16ToUTF8(state.target.string()), state.item_sequence_number,
       state.document_sequence_number, nullptr, nullptr,
@@ -52,6 +54,15 @@ void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
 
   // Set a single-frame PageState on the entry.
   ExplodedPageState page_state;
+
+  // Copy the incoming PageState's list of referenced files into the main
+  // frame's PageState.  (We don't pass the list to subframes below.)
+  // TODO(creis): Grant access to this list for each process that renders
+  // this page, even for OOPIFs.  Eventually keep track of a verified list of
+  // files per frame, so that we only grant access to processes that need it.
+  if (referenced_files.size() > 0)
+    page_state.referenced_files = referenced_files;
+
   page_state.top = state;
   std::string data;
   EncodePageState(page_state, &data);
@@ -62,11 +73,16 @@ void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
   }
   node->frame_entry->SetPageState(PageState::CreateFromEncodedData(data));
 
+  // Don't pass the file list to subframes, since that would result in multiple
+  // copies of it ending up in the combined list in GetPageState (via
+  // RecursivelyGenerateFrameState).
+  std::vector<base::NullableString16> empty_file_list;
+
   for (const ExplodedFrameState& child_state : state.children) {
     NavigationEntryImpl::TreeNode* child_node =
         new NavigationEntryImpl::TreeNode(node, nullptr);
     node->children.push_back(child_node);
-    RecursivelyGenerateFrameEntries(child_state, child_node);
+    RecursivelyGenerateFrameEntries(child_state, empty_file_list, child_node);
   }
 }
 
@@ -365,7 +381,8 @@ void NavigationEntryImpl::SetPageState(const PageState& state) {
     return;
   }
 
-  RecursivelyGenerateFrameEntries(exploded_state.top, frame_tree_.get());
+  RecursivelyGenerateFrameEntries(
+      exploded_state.top, exploded_state.referenced_files, frame_tree_.get());
 }
 
 PageState NavigationEntryImpl::GetPageState() const {

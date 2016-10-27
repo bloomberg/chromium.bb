@@ -2057,6 +2057,76 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Ensure that the file access still exists in the new process ID.
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+
+  // Do another in-page navigation in the child to make sure we hear a PageState
+  // with the chosen file.
+  // TODO(creis): Remove this in-page navigation once we keep track of
+  // FrameTreeNodes that are pending deletion.  See https://crbug.com/609963.
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    std::string script = "location.href='#foo';";
+    EXPECT_TRUE(ExecuteScript(root->child_at(0), script));
+    nav_observer.Wait();
+  }
+
+  // Also try cloning the tab by creating a new NavigationEntry with the same
+  // PageState.  This exercises a different path, by combining the frame
+  // specific PageStates into a full-tree PageState and converting back.  There
+  // was a bug where this caused us to lose the list of referenced files.  See
+  // https://crbug.com/620261.
+  std::unique_ptr<NavigationEntryImpl> cloned_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationControllerImpl::CreateNavigationEntry(
+              url1, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
+              std::string(), shell()->web_contents()->GetBrowserContext()));
+  prev_entry = shell()->web_contents()->GetController().GetEntryAtIndex(0);
+  cloned_entry->SetPageState(prev_entry->GetPageState());
+  const std::vector<base::FilePath>& cloned_files =
+      cloned_entry->GetPageState().GetReferencedFiles();
+  ASSERT_EQ(1U, cloned_files.size());
+  EXPECT_EQ(file, cloned_files.at(0));
+
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(cloned_entry));
+  Shell* new_shell =
+      Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
+                             GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  new_controller.Restore(entries.size() - 1,
+                         RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  ASSERT_EQ(1U, new_root->child_count());
+  EXPECT_EQ(url1, new_root->current_url());
+
+  // Ensure that the file access exists in the new process ID.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      new_root->current_frame_host()->GetProcess()->GetID(), file));
+
+  // Also, extract the file from the renderer process to ensure that the
+  // response made it over successfully and the proper filename is set.
+  std::string file_name;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      new_root->child_at(0),
+      "window.domAutomationController.send("
+      "document.getElementById('fileinput').files[0].name);",
+      &file_name));
+  EXPECT_EQ("bar", file_name);
+
+  // Navigate to a same site page to trigger a PageState update and ensure the
+  // renderer is not killed.
+  EXPECT_TRUE(
+      NavigateToURL(new_shell, embedded_test_server()->GetURL("/title2.html")));
 }
 
 // Ensures that no RenderFrameHost/RenderViewHost objects are leaked when
