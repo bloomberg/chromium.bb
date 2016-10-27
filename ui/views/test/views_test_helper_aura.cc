@@ -9,7 +9,6 @@
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
-#include "ui/wm/core/wm_state.h"
 
 namespace views {
 
@@ -32,7 +31,6 @@ void ViewsTestHelperAura::SetUp() {
   aura_test_helper_->SetUp(context_factory_);
   gfx::NativeWindow root_window = GetContext();
   new wm::DefaultActivationClient(root_window);
-  wm_state_.reset(new wm::WMState);
 
   if (!aura::client::GetScreenPositionClient(root_window)) {
     screen_position_client_.reset(new wm::DefaultScreenPositionClient);
@@ -56,7 +54,6 @@ void ViewsTestHelperAura::TearDown() {
     aura::client::SetScreenPositionClient(GetContext(), nullptr);
 
   aura_test_helper_->TearDown();
-  wm_state_.reset();
   CHECK(!wm::ScopedCaptureClient::IsActive());
 }
 

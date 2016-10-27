@@ -63,6 +63,7 @@
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -92,7 +93,6 @@
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 #include "ui/wm/public/tooltip_client.h"
-#include "ui/wm/public/transient_window_client.h"
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)

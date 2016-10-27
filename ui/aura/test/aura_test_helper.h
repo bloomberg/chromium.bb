@@ -22,7 +22,12 @@ class InputMethod;
 class ScopedAnimationDurationScaleMode;
 }
 
+namespace wm {
+class WMState;
+}
+
 namespace aura {
+class Env;
 class TestScreen;
 class TestWindowTree;
 class TestWindowTreeClientSetup;
@@ -84,6 +89,7 @@ class AuraTestHelper {
   bool teardown_called_;
   std::unique_ptr<TestWindowTreeClientSetup> window_tree_client_setup_;
   std::unique_ptr<aura::Env> env_;
+  std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<WindowTreeHost> host_;
   std::unique_ptr<TestWindowParentingClient> parenting_client_;
   std::unique_ptr<client::DefaultCaptureClient> capture_client_;

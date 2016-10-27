@@ -4,6 +4,7 @@
 
 #include "ui/wm/test/wm_test_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/input_method_glue.h"
@@ -11,11 +12,13 @@
 #include "ui/aura/window.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/wm_state.h"
 
 namespace wm {
 
 WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
                            ui::ContextFactory* context_factory) {
+  wm_state_ = base::MakeUnique<WMState>();
   aura::Env::GetInstance()->set_context_factory(context_factory);
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
   host_->InitHost();

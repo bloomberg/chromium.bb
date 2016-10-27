@@ -14,7 +14,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/wm/core/transient_window_observer.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/core/wm_state.h"
 
 using aura::Window;
 
@@ -75,16 +74,6 @@ class TransientWindowManagerTest : public aura::test::AuraTestBase {
   TransientWindowManagerTest() {}
   ~TransientWindowManagerTest() override {}
 
-  void SetUp() override {
-    AuraTestBase::SetUp();
-    wm_state_.reset(new wm::WMState);
-  }
-
-  void TearDown() override {
-    wm_state_.reset();
-    AuraTestBase::TearDown();
-  }
-
  protected:
   // Creates a transient window that is transient to |parent|.
   Window* CreateTransientChild(int id, Window* parent) {
@@ -98,8 +87,6 @@ class TransientWindowManagerTest : public aura::test::AuraTestBase {
   }
 
  private:
-  std::unique_ptr<wm::WMState> wm_state_;
-
   DISALLOW_COPY_AND_ASSIGN(TransientWindowManagerTest);
 };
 

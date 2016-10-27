@@ -24,6 +24,10 @@ namespace views {
 class ViewsDelegate;
 }
 
+namespace wm {
+class WMState;
+}
+
 namespace ash {
 namespace test {
 
@@ -80,6 +84,7 @@ class AshTestHelper {
   // Owned by ash::AcceleratorController
   TestScreenshotDelegate* test_screenshot_delegate_;
 
+  std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
 
 #if defined(OS_CHROMEOS)

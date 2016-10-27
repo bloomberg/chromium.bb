@@ -36,6 +36,9 @@ namespace views {
 class Widget;
 class ViewsDelegate;
 }
+namespace wm {
+class WMState;
+}
 #endif  // defined(USE_AURA)
 
 class GURL;
@@ -253,6 +256,8 @@ class Shell : public WebContentsDelegate,
 #if defined(OS_CHROMEOS)
   static wm::WMTestHelper* wm_test_helper_;
   static display::Screen* test_screen_;
+#else
+  static wm::WMState* wm_state_;
 #endif
 #if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;

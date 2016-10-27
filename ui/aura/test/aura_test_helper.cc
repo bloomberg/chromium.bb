@@ -4,7 +4,6 @@
 
 #include "ui/aura/test/aura_test_helper.h"
 
-#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -29,6 +28,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/wm_state.h"
 
 #if defined(USE_X11)
 #include "ui/aura/window_tree_host_x11.h"
@@ -70,6 +70,7 @@ void AuraTestHelper::EnableMus(WindowTreeClientDelegate* window_tree_delegate,
 void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   setup_called_ = true;
 
+  wm_state_ = base::MakeUnique<wm::WMState>();
   // Needs to be before creating WindowTreeClient.
   focus_client_ = base::MakeUnique<TestFocusClient>();
   capture_client_ = base::MakeUnique<client::DefaultCaptureClient>();
@@ -137,6 +138,7 @@ void AuraTestHelper::TearDown() {
     EnvTestHelper(Env::GetInstance())
         .SetWindowPortFactory(Env::WindowPortFactory());
   }
+  wm_state_.reset();
 }
 
 void AuraTestHelper::RunAllPendingInMessageLoop() {

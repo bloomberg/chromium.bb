@@ -6,10 +6,13 @@
 #define UI_WM_CORE_TRANSIENT_WINDOW_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "ui/wm/public/transient_window_client.h"
+#include "base/observer_list.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/wm/wm_export.h"
 
 namespace wm {
+
+class TransientWindowManager;
 
 // TransientWindowClient implementation. Uses TransientWindowManager to handle
 // tracking transient per window.
@@ -19,13 +22,26 @@ class WM_EXPORT TransientWindowController
   TransientWindowController();
   ~TransientWindowController() override;
 
+  // Returns the single TransientWindowController instance.
+  static TransientWindowController* Get() { return instance_; }
+
   // TransientWindowClient:
   void AddTransientChild(aura::Window* parent, aura::Window* child) override;
   void RemoveTransientChild(aura::Window* parent, aura::Window* child) override;
   aura::Window* GetTransientParent(aura::Window* window) override;
   const aura::Window* GetTransientParent(const aura::Window* window) override;
+  void AddObserver(
+      aura::client::TransientWindowClientObserver* observer) override;
+  void RemoveObserver(
+      aura::client::TransientWindowClientObserver* observer) override;
 
  private:
+  friend class TransientWindowManager;
+
+  static TransientWindowController* instance_;
+
+  base::ObserverList<aura::client::TransientWindowClientObserver> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(TransientWindowController);
 };
 

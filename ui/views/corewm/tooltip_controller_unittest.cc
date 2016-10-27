@@ -31,7 +31,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
-#include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/tooltip_client.h"
 #include "ui/wm/public/window_types.h"
 
@@ -573,7 +572,6 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
   ~TooltipControllerTest2() override {}
 
   void SetUp() override {
-    wm_state_.reset(new wm::WMState);
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     controller_.reset(
@@ -591,7 +589,6 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
     generator_.reset();
     helper_.reset();
     aura::test::AuraTestBase::TearDown();
-    wm_state_.reset();
   }
 
  protected:
@@ -602,7 +599,6 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
 
  private:
   std::unique_ptr<TooltipController> controller_;
-  std::unique_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest2);
 };
@@ -648,7 +644,6 @@ class TooltipControllerTest3 : public ViewsTestBase {
   ~TooltipControllerTest3() override {}
 
   void SetUp() override {
-    wm_state_.reset(new wm::WMState);
     ViewsTestBase::SetUp();
 
     aura::Window* root_window = GetContext();
@@ -680,7 +675,6 @@ class TooltipControllerTest3 : public ViewsTestBase {
     helper_.reset();
     widget_.reset();
     ViewsTestBase::TearDown();
-    wm_state_.reset();
   }
 
   aura::Window* GetWindow() { return widget_->GetNativeWindow(); }
@@ -695,7 +689,6 @@ class TooltipControllerTest3 : public ViewsTestBase {
 
  private:
   std::unique_ptr<TooltipController> controller_;
-  std::unique_ptr<wm::WMState> wm_state_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

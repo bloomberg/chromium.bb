@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "ui/aura/env.h"
-#include "ui/wm/core/wm_state.h"
 
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -19,9 +18,6 @@ TestViewsDelegate::TestViewsDelegate()
     : context_factory_(nullptr),
       use_desktop_native_widgets_(false),
       use_transparent_windows_(false) {
-#if defined(USE_AURA)
-  wm_state_.reset(new wm::WMState);
-#endif
 }
 
 TestViewsDelegate::~TestViewsDelegate() {

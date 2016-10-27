@@ -19,7 +19,6 @@
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace wm {
@@ -30,7 +29,6 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   ~ShadowControllerTest() override {}
 
   void SetUp() override {
-    wm_state_.reset(new wm::WMState);
     AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     aura::client::ActivationClient* activation_client =
@@ -40,7 +38,6 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   void TearDown() override {
     shadow_controller_.reset();
     AuraTestBase::TearDown();
-    wm_state_.reset();
   }
 
  protected:
@@ -55,7 +52,6 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
 
  private:
   std::unique_ptr<ShadowController> shadow_controller_;
-  std::unique_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowControllerTest);
 };

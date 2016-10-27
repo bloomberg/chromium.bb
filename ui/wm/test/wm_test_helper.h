@@ -34,6 +34,7 @@ class ContextFactory;
 namespace wm {
 
 class CompoundEventFilter;
+class WMState;
 
 // Creates a minimal environment for running the shell. We can't pull in all of
 // ash here, but we can create attach several of the same things we'd find in
@@ -52,6 +53,7 @@ class WMTestHelper : public aura::client::WindowParentingClient {
                                  const gfx::Rect& bounds) override;
 
  private:
+  std::unique_ptr<WMState> wm_state_;
   std::unique_ptr<aura::WindowTreeHost> host_;
   std::unique_ptr<aura::InputMethodGlue> input_method_glue_;
   std::unique_ptr<wm::CompoundEventFilter> root_window_event_filter_;

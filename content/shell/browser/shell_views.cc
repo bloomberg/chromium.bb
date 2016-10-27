@@ -40,6 +40,10 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/wm/core/wm_state.h"
+#endif
+
 #if defined(OS_WIN)
 #include <fcntl.h>
 #include <io.h>
@@ -307,10 +311,16 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 }  // namespace
 
 #if defined(OS_CHROMEOS)
-wm::WMTestHelper* Shell::wm_test_helper_ = NULL;
-display::Screen* Shell::test_screen_ = NULL;
+// static
+wm::WMTestHelper* Shell::wm_test_helper_ = nullptr;
+// static
+display::Screen* Shell::test_screen_ = nullptr;
+#elif defined(USE_AURA)
+// static
+wm::WMState* Shell::wm_state_ = nullptr;
 #endif
-views::ViewsDelegate* Shell::views_delegate_ = NULL;
+// static
+views::ViewsDelegate* Shell::views_delegate_ = nullptr;
 
 // static
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
@@ -324,6 +334,9 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   wm_test_helper_ = new wm::WMTestHelper(default_window_size,
                                          GetContextFactory());
 #else
+#if defined(USE_AURA)
+  wm_state_ = new wm::WMState;
+#endif
   display::Screen::SetScreenInstance(views::CreateDesktopScreen());
 #endif
   views_delegate_ = new views::DesktopTestViewsDelegate();
@@ -332,15 +345,18 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 void Shell::PlatformExit() {
 #if defined(OS_CHROMEOS)
   delete wm_test_helper_;
-  wm_test_helper_ = NULL;
+  wm_test_helper_ = nullptr;
 
   delete test_screen_;
-  test_screen_ = NULL;
+  test_screen_ = nullptr;
+#elif defined(USE_AURA)
+  delete wm_state_;
+  wm_state_ = nullptr;
 #endif
   delete views_delegate_;
-  views_delegate_ = NULL;
+  views_delegate_ = nullptr;
   delete platform_;
-  platform_ = NULL;
+  platform_ = nullptr;
 }
 
 void Shell::PlatformCleanUp() {

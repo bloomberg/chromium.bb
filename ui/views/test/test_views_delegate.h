@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "ui/views/views_delegate.h"
 
-namespace wm {
-class WMState;
-}
-
 namespace views {
 
 class TestViewsDelegate : public ViewsDelegate {
@@ -50,10 +46,6 @@ class TestViewsDelegate : public ViewsDelegate {
   ui::ContextFactory* context_factory_;
   bool use_desktop_native_widgets_;
   bool use_transparent_windows_;
-
-#if defined(USE_AURA)
-  std::unique_ptr<wm::WMState> wm_state_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

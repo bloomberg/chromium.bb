@@ -9,9 +9,11 @@
 
 #include "base/auto_reset.h"
 #include "base/stl_util.h"
+#include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/wm/core/transient_window_controller.h"
 #include "ui/wm/core/transient_window_observer.h"
 #include "ui/wm/core/transient_window_stacking_client.h"
 #include "ui/wm/core/window_util.h"
@@ -67,6 +69,11 @@ void TransientWindowManager::AddTransientChild(Window* child) {
   transient_children_.push_back(child);
   child_manager->transient_parent_ = window_;
 
+  for (aura::client::TransientWindowClientObserver& observer :
+       TransientWindowController::Get()->observers_) {
+    observer.OnTransientChildWindowAdded(window_, child);
+  }
+
   // Restack |child| properly above its transient parent, if they share the same
   // parent.
   if (child->parent() == window_->parent())
@@ -83,7 +90,12 @@ void TransientWindowManager::RemoveTransientChild(Window* child) {
   transient_children_.erase(i);
   TransientWindowManager* child_manager = Get(child);
   DCHECK_EQ(window_, child_manager->transient_parent_);
-  child_manager->transient_parent_ = NULL;
+  child_manager->transient_parent_ = nullptr;
+
+  for (aura::client::TransientWindowClientObserver& observer :
+       TransientWindowController::Get()->observers_) {
+    observer.OnTransientChildWindowRemoved(window_, child);
+  }
 
   // If |child| and its former transient parent share the same parent, |child|
   // should be restacked properly so it is not among transient children of its

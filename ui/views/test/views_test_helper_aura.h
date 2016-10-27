@@ -24,10 +24,6 @@ namespace base {
 class MessageLoopForUI;
 }
 
-namespace wm {
-class WMState;
-}
-
 namespace views {
 
 class ViewsTestHelperAura : public ViewsTestHelper {
@@ -44,7 +40,6 @@ class ViewsTestHelperAura : public ViewsTestHelper {
  private:
   ui::ContextFactory* context_factory_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestHelperAura);
