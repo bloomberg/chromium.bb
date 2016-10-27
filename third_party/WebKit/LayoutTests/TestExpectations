@@ -117,8 +117,8 @@ crbug.com/658479 paint/invalidation/background-resize-height.html [ Failure Pass
 # LayoutNG - is a new layout system for Blink.
 
 #### fast/block/basic
-#### Passed: 11
-#### Skipped: 21
+#### Passed: 12
+#### Skipped: 20
 crbug.com/635619 virtual/layout_ng/fast/block/basic/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/003.html [ Skip ]
@@ -161,7 +161,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/033.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/035.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/037.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/038.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/041.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/042.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/043.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/044.html [ Skip ]
@@ -196,6 +195,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/clear-nested-float
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/clearance-less-than-margin.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/empty-clear-blocks.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/line-beside-float-complex-margin-collapsing.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/positioned-element-margin-change.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-block-creates-block-formatting-context.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-block-with-float-child-collapsed-margins.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-block-with-float-child.html [ Skip ]
@@ -208,8 +208,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
 
 #### fast/block/float
-#### Passed: 52
-#### Skipped: 142
+#### Passed: 47
+#### Skipped: 148
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
@@ -277,6 +277,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling3.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling5.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-pre-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-line-obeys-container-padding.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-zero-height-line.html [ Skip ]
@@ -284,6 +286,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-overflow-hidden-contai
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-overhangs-root.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-do-not-overhang-from-block-formatting-context.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/floats-not-cleared-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-offset-image-quirk-line-height.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-offset-image-quirk.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-offset-image-strict-line-height.html [ Skip ]
@@ -296,6 +299,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-00
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-004.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-006.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-007.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/floats-with-margin-should-not-wrap.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/formatting-context-changes.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/in-margin.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/independent-align-positioning.html [ Skip ]
@@ -344,7 +348,9 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-with-over
 crbug.com/635619 virtual/layout_ng/fast/block/float/override-property-float.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/previous-sibling-abspos-001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/previous-sibling-abspos-002.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/previous-sibling-float-001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/previous-sibling-float-002.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/relative-painted-twice.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/shrink-to-avoid-float-complexity.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/shrink-to-fit-width.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/table-relayout.html [ Skip ]
