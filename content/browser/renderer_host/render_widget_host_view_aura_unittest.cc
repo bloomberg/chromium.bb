@@ -1894,23 +1894,23 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   view_->window_->RemoveObserver(&observer);
 }
 
-// Recreating the layers for a window should cause Surface destruction to
+// Mirroring the layers for a window should cause Surface destruction to
 // depend on both layers.
-TEST_F(RenderWidgetHostViewAuraTest, RecreateLayers) {
+TEST_F(RenderWidgetHostViewAuraTest, MirrorLayers) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
+  aura::Window* const root = parent_view_->GetNativeView()->GetRootWindow();
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
+      view_->GetNativeView(), root, gfx::Rect());
   view_->SetSize(view_size);
   view_->Show();
 
   view_->OnSwapCompositorFrame(0,
                                MakeDelegatedFrame(1.f, view_size, view_rect));
-  std::unique_ptr<ui::LayerTreeOwner> cloned_owner(
-      wm::RecreateLayers(view_->GetNativeView(), nullptr));
+  std::unique_ptr<ui::LayerTreeOwner> mirror(wm::MirrorLayers(
+      view_->GetNativeView(), false /* sync_bounds */));
 
   cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
   if (!id.is_null()) {
@@ -1918,8 +1918,14 @@ TEST_F(RenderWidgetHostViewAuraTest, RecreateLayers) {
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
-    // Should be a SurfaceSequence for both the original and new layers.
+
+    // An orphaned mirror should not be a destruction dependency.
+    EXPECT_EQ(1u, surface->GetDestructionDependencyCount());
+
+    // Both layers should be destruction dependencies.
+    root->layer()->Add(mirror->root());
     EXPECT_EQ(2u, surface->GetDestructionDependencyCount());
+    root->layer()->Remove(mirror->root());
   }
 }
 

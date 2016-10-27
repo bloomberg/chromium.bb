@@ -5,7 +5,6 @@
 #include "ash/wm/window_mirror_view.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/wm/forwarding_layer_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
@@ -13,6 +12,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
@@ -74,24 +74,15 @@ void WindowMirrorView::OnVisibleBoundsChanged() {
     InitLayerOwner();
 }
 
-ui::LayerDelegate* WindowMirrorView::CreateDelegate(ui::Layer* new_layer,
-                                                    ui::Layer* old_layer) {
-  if (!old_layer || !old_layer->delegate())
-    return nullptr;
-  delegates_.push_back(
-      base::MakeUnique<ForwardingLayerDelegate>(new_layer, old_layer));
-  return delegates_.back().get();
-}
-
 void WindowMirrorView::InitLayerOwner() {
   if (!layer_owner_) {
     target_->aura_window()->SetProperty(aura::client::kMirroringEnabledKey,
                                         true);
   }
 
-  layer_owner_ = ::wm::RecreateLayers(target_->aura_window(), this);
+  layer_owner_ =
+      ::wm::MirrorLayers(target_->aura_window(), false /* sync_bounds */);
 
-  GetMirrorLayer()->parent()->Remove(GetMirrorLayer());
   SetPaintToLayer(true);
   layer()->Add(GetMirrorLayer());
   // This causes us to clip the non-client areas of the window.

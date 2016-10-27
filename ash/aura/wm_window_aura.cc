@@ -498,7 +498,7 @@ void WmWindowAura::SetBoundsDirectCrossFade(const gfx::Rect& bounds) {
   // Specify |set_bounds| to true here to keep the old bounds in the child
   // windows of |window|.
   std::unique_ptr<ui::LayerTreeOwner> old_layer_owner =
-      ::wm::RecreateLayers(window_, nullptr);
+      ::wm::RecreateLayers(window_);
   ui::Layer* old_layer = old_layer_owner->root();
   DCHECK(old_layer);
   ui::Layer* new_layer = window_->layer();

@@ -84,7 +84,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
   // activation change does not put the window above the animating
   // layer.
   void DetachAndRecreateLayers() {
-    layer_owner_ = RecreateLayers(window_, nullptr);
+    layer_owner_ = RecreateLayers(window_);
     if (window_->parent()) {
       const aura::Window::Windows& transient_children =
           GetTransientChildren(window_);

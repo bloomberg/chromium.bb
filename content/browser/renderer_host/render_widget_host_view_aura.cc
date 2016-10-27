@@ -1860,7 +1860,6 @@ void RenderWidgetHostViewAura::CreateAuraWindow() {
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
   aura::client::SetFocusChangeObserver(window_, this);
-  window_->set_layer_owner_delegate(delegated_frame_host_.get());
   display::Screen::GetScreen()->AddObserver(this);
 }
 

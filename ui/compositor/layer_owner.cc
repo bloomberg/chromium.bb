@@ -17,10 +17,10 @@ LayerOwner::LayerOwner() : layer_(NULL), layer_owner_delegate_(NULL) {
 LayerOwner::~LayerOwner() {
 }
 
-void LayerOwner::SetLayer(Layer* layer) {
+void LayerOwner::SetLayer(std::unique_ptr<Layer> layer) {
   DCHECK(!OwnsLayer());
-  layer_owner_.reset(layer);
-  layer_ = layer;
+  layer_owner_ = std::move(layer);
+  layer_ = layer_owner_.get();
   layer_->owner_ = this;
 }
 
@@ -38,33 +38,16 @@ std::unique_ptr<Layer> LayerOwner::RecreateLayer() {
   LayerDelegate* old_delegate = old_layer->delegate();
   old_layer->set_delegate(NULL);
 
-  const gfx::Rect layer_bounds(old_layer->bounds());
-  Layer* new_layer = new ui::Layer(old_layer->type());
-  SetLayer(new_layer);
-  new_layer->SetVisible(old_layer->GetTargetVisibility());
-  new_layer->SetOpacity(old_layer->GetTargetOpacity());
-  new_layer->SetBounds(layer_bounds);
-  new_layer->SetMasksToBounds(old_layer->GetMasksToBounds());
-  new_layer->set_name(old_layer->name());
-  new_layer->SetFillsBoundsOpaquely(old_layer->fills_bounds_opaquely());
-  new_layer->SetFillsBoundsCompletely(old_layer->FillsBoundsCompletely());
-  new_layer->SetSubpixelPositionOffset(old_layer->subpixel_position_offset());
-  new_layer->SetLayerInverted(old_layer->layer_inverted());
-  new_layer->SetTransform(old_layer->GetTargetTransform());
-  if (old_layer->type() == LAYER_SOLID_COLOR)
-    new_layer->SetColor(old_layer->GetTargetColor());
-  SkRegion* alpha_shape = old_layer->alpha_shape();
-  if (alpha_shape)
-    new_layer->SetAlphaShape(base::MakeUnique<SkRegion>(*alpha_shape));
+  SetLayer(old_layer->Clone());
 
   if (old_layer->parent()) {
     // Install new layer as a sibling of the old layer, stacked below it.
-    old_layer->parent()->Add(new_layer);
-    old_layer->parent()->StackBelow(new_layer, old_layer.get());
+    old_layer->parent()->Add(layer_);
+    old_layer->parent()->StackBelow(layer_, old_layer.get());
   } else if (old_layer->GetCompositor()) {
     // If old_layer was the layer tree root then we need to move the Compositor
     // over to the new root.
-    old_layer->GetCompositor()->SetRootLayer(new_layer);
+    old_layer->GetCompositor()->SetRootLayer(layer_);
   }
 
   // Migrate all the child layers over to the new layer. Copy the list because
@@ -74,15 +57,15 @@ std::unique_ptr<Layer> LayerOwner::RecreateLayer() {
        it != children_copy.end();
        ++it) {
     ui::Layer* child = *it;
-    new_layer->Add(child);
+    layer_->Add(child);
   }
 
   // Install the delegate last so that the delegate isn't notified as we copy
   // state to the new layer.
-  new_layer->set_delegate(old_delegate);
+  layer_->set_delegate(old_delegate);
 
   if (layer_owner_delegate_)
-    layer_owner_delegate_->OnLayerRecreated(old_layer.get(), new_layer);
+    layer_owner_delegate_->OnLayerRecreated(old_layer.get(), layer_);
 
   return old_layer;
 }

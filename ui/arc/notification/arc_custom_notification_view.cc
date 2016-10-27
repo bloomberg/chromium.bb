@@ -113,7 +113,7 @@ class ArcCustomNotificationView::SlideHelper
   void OnSlideStart() {
     if (!owner_->surface_ || !owner_->surface_->window())
       return;
-    surface_copy_ = ::wm::RecreateLayers(owner_->surface_->window(), nullptr);
+    surface_copy_ = ::wm::RecreateLayers(owner_->surface_->window());
     // |surface_copy_| is at (0, 0) in owner_->layer().
     surface_copy_->root()->SetBounds(gfx::Rect(surface_copy_->root()->size()));
     owner_->layer()->Add(surface_copy_->root());

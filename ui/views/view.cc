@@ -2079,7 +2079,7 @@ void View::CreateLayer() {
   for (int i = 0, count = child_count(); i < count; ++i)
     child_at(i)->UpdateChildLayerVisibility(true);
 
-  SetLayer(new ui::Layer());
+  SetLayer(base::MakeUnique<ui::Layer>());
   layer()->set_delegate(this);
   layer()->set_name(GetClassName());
 

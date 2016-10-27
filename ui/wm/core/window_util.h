@@ -17,7 +17,6 @@ class Window;
 
 namespace ui {
 class Layer;
-class LayerDelegate;
 class LayerOwner;
 class LayerTreeOwner;
 }
@@ -37,30 +36,20 @@ WM_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 // determination.
 WM_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
 
-// A factory method to create a delegate for recreated layers.
-class WM_EXPORT LayerDelegateFactory {
- public:
-  virtual ~LayerDelegateFactory() = default;
-  // |original_layer| may already be deleted by the time the new
-  // delegate is created, so if the new delegate has to access it
-  // later, it is the new delegate's responsibility to make sure the
-  // original layer/delegate is alive.
-  virtual ui::LayerDelegate* CreateDelegate(ui::Layer* new_layer,
-                                            ui::Layer* original_layer) = 0;
-};
-
 // Returns the existing Layer for |root| (and all its descendants) and creates
 // a new layer for |root| and all its descendants. This is intended for
 // animations that want to animate between the existing visuals and a new state.
 //
 // As a result of this |root| has freshly created layers, meaning the layers
 // have not yet been painted to.
-//
-// When a non null |delegate_factory| is passed, it will be used to
-// create a delegate for an old layer which had its own delegate.
 WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(
-    ui::LayerOwner* root,
-    LayerDelegateFactory* delegate_factory);
+    ui::LayerOwner* root);
+
+// Returns a layer tree that mirrors |root|. Used for live window previews. If
+// |sync_bounds| is true, the bounds of all mirror layers except the root are
+// synchronized. See |sync_bounds_| in ui::Layer.
+WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> MirrorLayers(
+    ui::LayerOwner* root, bool sync_bounds);
 
 // Convenience functions that get the TransientWindowManager for the window and
 // redirect appropriately. These are preferable to calling functions on

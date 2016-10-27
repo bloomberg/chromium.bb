@@ -11,10 +11,10 @@ namespace ui {
 
 class Layer;
 
+// TODO(domlaskowski): This is only used for layer mirroring, so it should be
+// removed and replaced by a private equivalent in the Layer class.
 class COMPOSITOR_EXPORT LayerObserver {
  public:
-  virtual void DidPaintLayer(Layer* layer, const gfx::Rect& region) {}
-  virtual void SurfaceChanged(Layer* layer) {}
   virtual void LayerDestroyed(Layer* layer) {}
 
  protected:

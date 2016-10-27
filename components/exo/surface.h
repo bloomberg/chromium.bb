@@ -21,7 +21,6 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -89,8 +88,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public ui::LayerOwnerDelegate,
-                public ui::ContextFactoryObserver {
+class Surface : public ui::ContextFactoryObserver {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
 
@@ -209,9 +207,6 @@ class Surface : public ui::LayerOwnerDelegate,
   bool HasPendingDamageForTesting(const gfx::Rect& damage) const {
     return pending_damage_.contains(gfx::RectToSkIRect(damage));
   }
-
-  // Overridden from ui::LayerOwnerDelegate:
-  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
 
   // Overridden from ui::ContextFactoryObserver.
   void OnLostResources() override;

@@ -210,7 +210,6 @@ Surface::Surface()
   window_->SetName("ExoSurface");
   window_->SetProperty(kSurfaceKey, this);
   window_->Init(ui::LAYER_SOLID_COLOR);
-  window_->set_layer_owner_delegate(this);
   window_->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   window_->set_owned_by_parent(false);
   factory_owner_->surface_ = this;
@@ -488,13 +487,16 @@ void Surface::CommitSurfaceHierarchy() {
 
   if (old_local_frame_id != local_frame_id_) {
     float contents_surface_to_layer_scale = 1.0;
+    // The bounds must be updated before switching to the new surface, because
+    // the layer may be mirrored, in which case a surface change causes the
+    // mirror layer to update its surface using the latest bounds.
+    window_->layer()->SetBounds(
+        gfx::Rect(window_->layer()->bounds().origin(), content_size_));
     window_->layer()->SetShowSurface(
         cc::SurfaceId(factory_owner_->frame_sink_id_, local_frame_id_),
         base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
         base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
         content_size_, contents_surface_to_layer_scale, content_size_);
-    window_->layer()->SetBounds(
-        gfx::Rect(window_->layer()->bounds().origin(), content_size_));
     window_->layer()->SetFillsBoundsOpaquely(
         state_.blend_mode == SkXfermode::kSrc_Mode ||
         state_.opaque_region.contains(
@@ -610,17 +612,6 @@ std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
   return value;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// ui::LayerOwnerDelegate overrides:
-
-void Surface::OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) {
-  if (!current_buffer_.buffer())
-    return;
-
-  // TODO(reveman): Give the client a chance to provide new contents.
-  SetSurfaceLayerContents(new_layer);
-}
-
 void Surface::WillDraw(const cc::LocalFrameId& id) {
   while (!active_frame_callbacks_.empty()) {
     active_frame_callbacks_.front().Run(base::TimeTicks::Now());
@@ -693,20 +684,6 @@ void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
   for (auto& sub_surface_entry : pending_sub_surfaces_) {
     sub_surface_entry.first->SetSurfaceHierarchyNeedsCommitToNewSurfaces();
   }
-}
-
-void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
-  if (local_frame_id_.is_null())
-    return;
-
-  gfx::Size layer_size = layer->bounds().size();
-  float contents_surface_to_layer_scale = 1.0f;
-
-  layer->SetShowSurface(
-      cc::SurfaceId(factory_owner_->frame_sink_id_, local_frame_id_),
-      base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
-      base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
-      layer_size, contents_surface_to_layer_scale, layer_size);
 }
 
 void Surface::UpdateResource(bool client_usage) {

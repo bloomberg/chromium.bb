@@ -24,7 +24,8 @@ void DeepDeleteLayers(Layer* layer) {
 
 }  // namespace
 
-LayerTreeOwner::LayerTreeOwner(Layer* root) : root_(root) {}
+LayerTreeOwner::LayerTreeOwner(std::unique_ptr<Layer> root)
+    : root_(root.release()) {}
 
 LayerTreeOwner::~LayerTreeOwner() {
   if (root_)

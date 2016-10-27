@@ -143,7 +143,7 @@ void Window::Init(ui::LayerType layer_type) {
     port_owner_ = Env::GetInstance()->CreateWindowPort(this);
     port_ = port_owner_.get();
   }
-  SetLayer(new ui::Layer(layer_type));
+  SetLayer(base::MakeUnique<ui::Layer>(layer_type));
   std::unique_ptr<WindowPortInitData> init_data = port_->OnPreInit(this);
   layer()->SetVisible(false);
   layer()->set_delegate(this);

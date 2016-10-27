@@ -11,58 +11,8 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
-#include "ui/compositor/paint_context.h"
 
 namespace wm {
-namespace {
-
-// Used to check if the delegate for recreated layer is created for
-// the correct delegate.
-class TestLayerDelegate : public ui::LayerDelegate {
- public:
-  explicit TestLayerDelegate(ui::Layer* original_layer)
-      : original_layer_(original_layer) {}
-  ~TestLayerDelegate() override = default;
-
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {}
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-
-  ui::Layer* original_layer() { return original_layer_; }
-
- private:
-  ui::Layer* original_layer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
-};
-
-// Used to create a TestLayerDelegate for recreated layers.
-class TestLayerDelegateFactory : public ::wm::LayerDelegateFactory {
- public:
-  TestLayerDelegateFactory() = default;
-  ~TestLayerDelegateFactory() override = default;
-
-  // ::wm::LayerDelegateFactory:
-  ui::LayerDelegate* CreateDelegate(ui::Layer* new_layer,
-                                    ui::Layer* original_layer) override {
-    delegates_.push_back(base::MakeUnique<TestLayerDelegate>(original_layer));
-    return delegates_.back().get();
-  }
-
-  size_t delegate_count() const { return delegates_.size(); }
-
-  TestLayerDelegate* GetDelegateAt(int index) {
-    return delegates_[index].get();
-  }
-
- private:
-  std::vector<std::unique_ptr<TestLayerDelegate>> delegates_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLayerDelegateFactory);
-};
-
-}  // namespace
 
 typedef aura::test::AuraTestBase WindowUtilTest;
 
@@ -82,8 +32,7 @@ TEST_F(WindowUtilTest, RecreateLayers) {
   EXPECT_TRUE(acquired.get());
   EXPECT_EQ(acquired.get(), window11->layer());
 
-  std::unique_ptr<ui::LayerTreeOwner> tree =
-      wm::RecreateLayers(window1.get(), nullptr);
+  std::unique_ptr<ui::LayerTreeOwner> tree = wm::RecreateLayers(window1.get());
 
   // The detached layer should not have the layer that has
   // already been detached.
@@ -99,37 +48,6 @@ TEST_F(WindowUtilTest, RecreateLayers) {
 
   // Delete the window before the acquired layer is deleted.
   window11.reset();
-}
-
-// Test if the LayerDelegateFactory creates new delegates for
-// recreated layers correctly.
-TEST_F(WindowUtilTest, RecreateLayersWithDelegate) {
-  TestLayerDelegateFactory factory;
-  std::unique_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
-  std::unique_ptr<aura::Window> window11(
-      aura::test::CreateTestWindowWithId(1, window1.get()));
-  std::unique_ptr<aura::Window> window12(
-      aura::test::CreateTestWindowWithId(2, window1.get()));
-
-  std::unique_ptr<ui::LayerTreeOwner> tree =
-      wm::RecreateLayers(window1.get(), &factory);
-
-  ASSERT_EQ(3u, factory.delegate_count());
-
-  TestLayerDelegate* new_delegate_1 = factory.GetDelegateAt(0);
-  TestLayerDelegate* new_delegate_11 = factory.GetDelegateAt(1);
-  TestLayerDelegate* new_delegate_12 = factory.GetDelegateAt(2);
-
-  EXPECT_EQ(window1->layer(), new_delegate_1->original_layer());
-  EXPECT_EQ(window11->layer(),
-            new_delegate_11->original_layer());
-  EXPECT_EQ(window12->layer(),
-            new_delegate_12->original_layer());
-
-  EXPECT_EQ(tree->root()->delegate(), new_delegate_1);
-  EXPECT_EQ(tree->root()->children()[0]->delegate(), new_delegate_11);
-  EXPECT_EQ(tree->root()->children()[1]->delegate(), new_delegate_12);
 }
 
 }  // namespace wm

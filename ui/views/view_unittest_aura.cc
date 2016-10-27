@@ -122,7 +122,7 @@ TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
 
   {
     std::unique_ptr<ui::LayerTreeOwner> cloned_owner(
-        wm::RecreateLayers(w1->GetNativeView(), nullptr));
+        wm::RecreateLayers(w1->GetNativeView()));
     EXPECT_EQ(w1_layer, cloned_owner->root());
     EXPECT_NE(w1_layer, w1->GetNativeView()->layer());
 

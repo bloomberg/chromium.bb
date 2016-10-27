@@ -23,7 +23,6 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_owner_delegate.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -84,7 +83,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
 class CONTENT_EXPORT DelegatedFrameHost
     : public ui::CompositorObserver,
       public ui::CompositorVSyncManager::Observer,
-      public ui::LayerOwnerDelegate,
       public ui::ContextFactoryObserver,
       public DelegatedFrameEvictorClient,
       public cc::SurfaceFactoryClient,
@@ -105,9 +103,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // ui::CompositorVSyncManager::Observer implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval) override;
-
-  // ui::LayerOwnerObserver implementation.
-  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
 
   // ImageTransportFactoryObserver implementation.
   void OnLostResources() override;

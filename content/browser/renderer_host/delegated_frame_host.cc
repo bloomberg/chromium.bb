@@ -892,24 +892,4 @@ void DelegatedFrameHost::UnlockResources() {
   delegated_frame_evictor_->UnlockFrame();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// DelegatedFrameHost, ui::LayerOwnerDelegate implementation:
-
-void DelegatedFrameHost::OnLayerRecreated(ui::Layer* old_layer,
-                                          ui::Layer* new_layer) {
-  // The new_layer is the one that will be used by our Window, so that's the one
-  // that should keep our frame. old_layer will be returned to the
-  // RecreateLayer caller, and should have a copy.
-  if (!local_frame_id_.is_null()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager = factory->GetSurfaceManager();
-    new_layer->SetShowSurface(
-        cc::SurfaceId(frame_sink_id_, local_frame_id_),
-        base::Bind(&SatisfyCallback, base::Unretained(manager)),
-        base::Bind(&RequireCallback, base::Unretained(manager)),
-        current_surface_size_, current_scale_factor_,
-        current_frame_size_in_dip_);
-  }
-}
-
 }  // namespace content
