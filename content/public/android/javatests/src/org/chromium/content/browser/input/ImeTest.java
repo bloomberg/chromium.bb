@@ -1463,6 +1463,7 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     @RetryOnFailure
     public void testGetCursorCapsMode() throws Throwable {
+        focusElementAndWaitForStateUpdate("contenteditable_event");
         commitText("Hello World", 1);
         waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
         assertEquals(0,
