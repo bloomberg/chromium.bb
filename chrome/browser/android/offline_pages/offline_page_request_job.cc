@@ -434,7 +434,7 @@ void SelectPage(
 // static
 void OfflinePageRequestJob::ReportAggregatedRequestResult(
     AggregatedRequestResult result) {
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.AggregatedRequestResult",
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.AggregatedRequestResult2",
       static_cast<int>(result),
       static_cast<int>(AggregatedRequestResult::AGGREGATED_REQUEST_RESULT_MAX));
 }

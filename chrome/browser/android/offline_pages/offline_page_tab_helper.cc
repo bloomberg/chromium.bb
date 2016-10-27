@@ -92,6 +92,11 @@ void OfflinePageTabHelper::DidFinishNavigation(
   }
   provisional_offline_info_.Clear();
 
+  // If the offline page has been loaded successfully, nothing more to do.
+  net::Error error_code = navigation_handle->GetNetErrorCode();
+  if (error_code == net::OK)
+    return;
+
   // We might be reloading the URL in order to fetch the offline page.
   // * If successful, nothing to do.
   // * Otherwise, we're hitting error again. Bail out to avoid loop.
@@ -105,7 +110,6 @@ void OfflinePageTabHelper::DidFinishNavigation(
   // eventually fail. To handle this, we will reload the page to force the
   // offline interception if the error code matches the following list.
   // Otherwise, the error page will be shown.
-  net::Error error_code = navigation_handle->GetNetErrorCode();
   if (error_code != net::ERR_INTERNET_DISCONNECTED &&
       error_code != net::ERR_NAME_NOT_RESOLVED &&
       error_code != net::ERR_ADDRESS_UNREACHABLE &&

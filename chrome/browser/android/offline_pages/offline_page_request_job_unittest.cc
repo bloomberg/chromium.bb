@@ -56,7 +56,7 @@ const int kTestFileSize3 = 450;
 const int kTabId = 1;
 const int kBufSize = 1024;
 const char kAggregatedRequestResultHistogram[] =
-    "OfflinePages.AggregatedRequestResult";
+    "OfflinePages.AggregatedRequestResult2";
 
 class OfflinePageRequestJobTestDelegate :
     public OfflinePageRequestJob::Delegate {
