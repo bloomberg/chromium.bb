@@ -103,12 +103,6 @@ const base::Feature kMemoryCoordinator {
 const base::Feature kNonValidatingReloadOnNormalReload{
     "NonValidatingReloadOnNormalReload", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
-// See https://crbug.com/591245
-const base::Feature kNonValidatingReloadOnRefreshContent{
-    "NonValidatingReloadOnRefreshContentV2",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // An experiment to optimize resource loading IPC for small resources.
 // http://crbug.com/580928
 const base::Feature kOptimizeLoadingIPCForSmallResources{

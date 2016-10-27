@@ -1071,21 +1071,6 @@
             ]
         }
     ],
-    "NonValidatingReloadOnRefreshContentV2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NonValidatingReloadOnRefreshContentV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "OfferUploadCreditCards": [
         {
             "platforms": [

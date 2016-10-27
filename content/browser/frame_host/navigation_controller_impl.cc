@@ -273,12 +273,7 @@ void NavigationControllerImpl::Reload(bool check_for_repost) {
   ReloadInternal(check_for_repost, type);
 }
 void NavigationControllerImpl::ReloadToRefreshContent(bool check_for_repost) {
-  ReloadType type = ReloadType::NORMAL;
-  if (base::FeatureList::IsEnabled(
-        features::kNonValidatingReloadOnRefreshContent)) {
-    type = ReloadType::MAIN_RESOURCE;
-  }
-  ReloadInternal(check_for_repost, type);
+  ReloadInternal(check_for_repost, ReloadType::MAIN_RESOURCE);
 }
 void NavigationControllerImpl::ReloadBypassingCache(bool check_for_repost) {
   ReloadInternal(check_for_repost, ReloadType::BYPASSING_CACHE);

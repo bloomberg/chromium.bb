@@ -33,7 +33,6 @@ CONTENT_EXPORT extern const base::Feature kGenericSensor;
 CONTENT_EXPORT extern const base::Feature kMediaDocumentDownloadButton;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
 CONTENT_EXPORT extern const base::Feature kNonValidatingReloadOnNormalReload;
-CONTENT_EXPORT extern const base::Feature kNonValidatingReloadOnRefreshContent;
 CONTENT_EXPORT extern const base::Feature kOptimizeLoadingIPCForSmallResources;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
 CONTENT_EXPORT extern const base::Feature kParseHTMLOnMainThread;
