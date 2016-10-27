@@ -492,7 +492,12 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
     std::string source("delegate");
     request_->net_log().AddEvent(NetLogEventType::CANCELLED,
                                  NetLog::StringCallback("source", &source));
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    // Don't call back synchronously to the delegate.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&URLRequestHttpJob::NotifyStartError,
+                   weak_factory_.GetWeakPtr(),
+                   URLRequestStatus(URLRequestStatus::FAILED, result)));
   }
 }
 

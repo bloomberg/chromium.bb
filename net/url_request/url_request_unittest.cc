@@ -7846,6 +7846,22 @@ TEST_F(URLRequestTestHTTP, RawBodyBytesGzipEncoding) {
   EXPECT_EQ(30, req->GetRawBodyBytes());
 }
 
+// Check that if NetworkDelegate::OnBeforeStartTransaction returns an error,
+// the delegate isn't called back synchronously.
+TEST_F(URLRequestTestHTTP, TesBeforeStartTransactionFails) {
+  ASSERT_TRUE(http_test_server()->Start());
+  default_network_delegate_.set_before_start_transaction_fails();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      http_test_server()->GetURL("/"), DEFAULT_PRIORITY, &d));
+  req->Start();
+  DCHECK(!d.response_completed());
+  base::RunLoop().Run();
+  DCHECK(d.response_completed());
+  EXPECT_EQ(ERR_FAILED, d.request_status());
+}
+
 class URLRequestInterceptorTestHTTP : public URLRequestTestHTTP {
  public:
   // TODO(bengr): Merge this with the URLRequestInterceptorHTTPTest fixture,

@@ -312,6 +312,10 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
     will_be_intercepted_on_next_error_ = can_be_intercepted_on_error;
   }
 
+  void set_before_start_transaction_fails() {
+    before_start_transaction_fails_ = true;
+  }
+
  protected:
   // NetworkDelegate:
   int OnBeforeURLRequest(URLRequest* request,
@@ -403,6 +407,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   bool experimental_cookie_features_enabled_;           // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool will_be_intercepted_on_next_error_;
+  bool before_start_transaction_fails_;
 };
 
 //-----------------------------------------------------------------------------
