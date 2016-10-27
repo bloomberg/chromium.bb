@@ -59,6 +59,7 @@ enum ScrollDirectionPhysical { ScrollUp, ScrollDown, ScrollLeft, ScrollRight };
 enum ScrollType {
   UserScroll,
   ProgrammaticScroll,
+  ClampingScroll,
   CompositorScroll,
   AnchoringScroll
 };

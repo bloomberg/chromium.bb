@@ -459,7 +459,7 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
 
   // Clear the scroll anchor, unless it is the reason for this scroll.
   if (RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
-      scrollType != AnchoringScroll)
+      scrollType != AnchoringScroll && scrollType != ClampingScroll)
     scrollAnchor()->clear();
 }
 
@@ -786,14 +786,10 @@ void PaintLayerScrollableArea::clampScrollOffsetsAfterLayout() {
     return;
   }
 
-  // Restore before clamping because clamping clears the scroll anchor.
-  if (shouldPerformScrollAnchoring())
-    m_scrollAnchor.restore();
-
   if (scrollOriginChanged())
     setScrollOffsetUnconditionally(clampScrollOffset(scrollOffset()));
   else
-    ScrollableArea::setScrollOffset(scrollOffset(), ProgrammaticScroll);
+    ScrollableArea::setScrollOffset(scrollOffset(), ClampingScroll);
 
   setNeedsScrollOffsetClamp(false);
   resetScrollOriginChanged();

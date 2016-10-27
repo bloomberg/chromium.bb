@@ -21,7 +21,7 @@ ScrollAnchor::ScrollAnchor()
     : m_anchorObject(nullptr),
       m_corner(Corner::TopLeft),
       m_scrollAnchorDisablingStyleChanged(false),
-      m_saved(false) {}
+      m_queued(false) {}
 
 ScrollAnchor::ScrollAnchor(ScrollableArea* scroller) : ScrollAnchor() {
   setScroller(scroller);
@@ -107,7 +107,7 @@ static LayoutRect relativeBounds(const LayoutObject* layoutObject,
   // offset (since scrolling is handled by the FrameView) so
   // localToAncestorQuad returns document coords, so we must subtract scroll
   // offset to get viewport coords. We discard the fractional part of the
-  // scroll offset so that the rounding in restore() matches the snapping of
+  // scroll offset so that the rounding in adjust() matches the snapping of
   // the anchor node to the pixel grid of the layer it paints into. For
   // non-FrameView scrollers, we rely on the flooring behavior of
   // LayoutBox::scrolledContentOffset.
@@ -212,10 +212,12 @@ bool ScrollAnchor::computeScrollAnchorDisablingStyleChanged() {
   }
 }
 
-void ScrollAnchor::save() {
-  if (m_saved)
+void ScrollAnchor::notifyBeforeLayout() {
+  if (m_queued) {
+    m_scrollAnchorDisablingStyleChanged |=
+        computeScrollAnchorDisablingStyleChanged();
     return;
-  m_saved = true;
+  }
   DCHECK(m_scroller);
   ScrollOffset scrollOffset = m_scroller->scrollOffset();
   float blockDirectionScrollOffset =
@@ -237,11 +239,16 @@ void ScrollAnchor::save() {
         computeRelativeOffset(m_anchorObject, m_scroller, m_corner);
   }
 
-  // Note that we must compute this during save() since the scroller's
-  // descendants have finished layout (and had the bit cleared) by the
-  // time restore() is called.
   m_scrollAnchorDisablingStyleChanged =
       computeScrollAnchorDisablingStyleChanged();
+
+  FrameView* frameView = scrollerLayoutBox(m_scroller)->frameView();
+  ScrollableArea* owningScroller =
+      m_scroller->isRootFrameViewport()
+          ? &toRootFrameViewport(m_scroller)->layoutViewport()
+          : m_scroller.get();
+  frameView->enqueueScrollAnchoringAdjustment(owningScroller);
+  m_queued = true;
 }
 
 IntSize ScrollAnchor::computeAdjustment() const {
@@ -264,10 +271,10 @@ IntSize ScrollAnchor::computeAdjustment() const {
   return delta;
 }
 
-void ScrollAnchor::restore() {
-  if (!m_saved)
+void ScrollAnchor::adjust() {
+  if (!m_queued)
     return;
-  m_saved = false;
+  m_queued = false;
   DCHECK(m_scroller);
   if (!m_anchorObject)
     return;

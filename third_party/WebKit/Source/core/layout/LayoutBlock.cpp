@@ -400,7 +400,7 @@ void LayoutBlock::layout() {
   bool needsScrollAnchoring =
       hasOverflowClip() && getScrollableArea()->shouldPerformScrollAnchoring();
   if (needsScrollAnchoring)
-    getScrollableArea()->scrollAnchor()->save();
+    getScrollableArea()->scrollAnchor()->notifyBeforeLayout();
 
   // Table cells call layoutBlock directly, so don't add any logic here.  Put
   // code into layoutBlock().
@@ -413,16 +413,6 @@ void LayoutBlock::layout() {
     clearLayoutOverflow();
 
   invalidateBackgroundObscurationStatus();
-
-  // If clamping is delayed, we will restore in
-  // PaintLayerScrollableArea::clampScrollPositionsAfterLayout.
-  // Restoring during the intermediate layout may clamp the scroller to the
-  // wrong bounds.
-  bool clampingDelayed = PaintLayerScrollableArea::DelayScrollOffsetClampScope::
-      clampingIsDelayed();
-  if (needsScrollAnchoring && !clampingDelayed)
-    getScrollableArea()->scrollAnchor()->restore();
-
   m_heightAvailableToChildrenChanged = false;
 }
 

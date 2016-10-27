@@ -728,6 +728,8 @@ class CORE_EXPORT FrameView final
   ScrollAnchor* scrollAnchor() override { return &m_scrollAnchor; }
   void clearScrollAnchor();
   bool shouldPerformScrollAnchoring() const override;
+  void enqueueScrollAnchoringAdjustment(ScrollableArea*);
+  void performScrollAnchoringAdjustments();
 
   // For PaintInvalidator temporarily. TODO(wangxianzhu): Move into
   // PaintInvalidator.
@@ -1076,6 +1078,9 @@ class CORE_EXPORT FrameView final
   DocumentLifecycle::LifecycleState m_currentUpdateLifecyclePhasesTargetState;
 
   ScrollAnchor m_scrollAnchor;
+  using AnchoringAdjustmentQueue =
+      HeapLinkedHashSet<WeakMember<ScrollableArea>>;
+  AnchoringAdjustmentQueue m_anchoringAdjustmentQueue;
 
   // ScrollbarManager holds the Scrollbar instances.
   ScrollbarManager m_scrollbarManager;

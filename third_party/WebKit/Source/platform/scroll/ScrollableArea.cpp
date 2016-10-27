@@ -184,6 +184,7 @@ void ScrollableArea::setScrollOffset(const ScrollOffset& offset,
 
   switch (scrollType) {
     case CompositorScroll:
+    case ClampingScroll:
       scrollOffsetChanged(clampedOffset, scrollType);
       break;
     case AnchoringScroll:

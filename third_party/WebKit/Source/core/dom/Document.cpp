@@ -2067,6 +2067,9 @@ void Document::updateStyleAndLayout() {
 
   if (lifecycle().state() < DocumentLifecycle::LayoutClean)
     lifecycle().advanceTo(DocumentLifecycle::LayoutClean);
+
+  if (FrameView* frameView = view())
+    frameView->performScrollAnchoringAdjustments();
 }
 
 void Document::layoutUpdated() {

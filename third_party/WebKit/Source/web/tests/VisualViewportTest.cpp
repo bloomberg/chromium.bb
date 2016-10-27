@@ -2002,6 +2002,7 @@ TEST_P(ParameterizedVisualViewportTest, ResizeWithScrollAnchoring) {
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
   frameView.layoutViewportScrollableArea()->setScrollOffset(
       ScrollOffset(700, 500), ProgrammaticScroll);
+  webViewImpl()->updateAllLifecyclePhases();
 
   webViewImpl()->resize(IntSize(800, 300));
   EXPECT_SIZE_EQ(ScrollOffset(700, 200),

@@ -223,6 +223,7 @@ DEFINE_TRACE(FrameView) {
   visitor->trace(m_children);
   visitor->trace(m_viewportScrollableArea);
   visitor->trace(m_scrollAnchor);
+  visitor->trace(m_anchoringAdjustmentQueue);
   visitor->trace(m_scrollbarManager);
   Widget::trace(visitor);
   ScrollableArea::trace(visitor);
@@ -909,7 +910,7 @@ void FrameView::performPreLayoutTasks() {
   lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 
   if (shouldPerformScrollAnchoring())
-    m_scrollAnchor.save();
+    m_scrollAnchor.notifyBeforeLayout();
 }
 
 bool FrameView::shouldPerformScrollAnchoring() const {
@@ -2286,11 +2287,6 @@ void FrameView::performPostLayoutTasks() {
     scrollingCoordinator->notifyGeometryChanged();
 
   scrollToFragmentAnchor();
-  // TODO(skobes): Figure out interactions between scroll anchor, fragment
-  // anchor, and history restoration.
-  if (shouldPerformScrollAnchoring())
-    m_scrollAnchor.restore();
-
   sendResizeEventIfNeeded();
 }
 
@@ -2717,6 +2713,10 @@ void FrameView::updateLifecyclePhasesInternal(
     return;
   }
 
+  forAllNonThrottledFrameViews([](FrameView& frameView) {
+    frameView.performScrollAnchoringAdjustments();
+  });
+
   if (targetState == DocumentLifecycle::PaintClean) {
     forAllNonThrottledFrameViews(
         [](FrameView& frameView) { frameView.notifyResizeObservers(); });
@@ -2782,6 +2782,21 @@ void FrameView::updateLifecyclePhasesInternal(
   }
 
   updateViewportIntersectionsForSubtree(targetState);
+}
+
+void FrameView::enqueueScrollAnchoringAdjustment(
+    ScrollableArea* scrollableArea) {
+  m_anchoringAdjustmentQueue.add(scrollableArea);
+}
+
+void FrameView::performScrollAnchoringAdjustments() {
+  for (WeakMember<ScrollableArea>& scroller : m_anchoringAdjustmentQueue) {
+    if (scroller) {
+      DCHECK(scroller->scrollAnchor());
+      scroller->scrollAnchor()->adjust();
+    }
+  }
+  m_anchoringAdjustmentQueue.clear();
 }
 
 void FrameView::updatePaintProperties() {
@@ -3630,7 +3645,7 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
       documentLoader->initialScrollState().wasScrolledByUser = true;
   }
 
-  if (scrollType != AnchoringScroll)
+  if (scrollType != AnchoringScroll && scrollType != ClampingScroll)
     clearScrollAnchor();
 }
 
@@ -3858,15 +3873,8 @@ void FrameView::updateScrollbars() {
 
 void FrameView::adjustScrollOffsetFromUpdateScrollbars() {
   ScrollOffset clamped = clampScrollOffset(scrollOffset());
-  // Restore before clamping because clamping clears the scroll anchor.
-  // TODO(ymalik): This same logic exists in PaintLayerScrollableArea.
-  // Remove when root-layer-scrolls is enabled.
-  if (clamped != scrollOffset() && shouldPerformScrollAnchoring()) {
-    m_scrollAnchor.restore();
-    clamped = clampScrollOffset(scrollOffset());
-  }
   if (clamped != scrollOffset() || scrollOriginChanged()) {
-    ScrollableArea::setScrollOffset(clamped, ProgrammaticScroll);
+    ScrollableArea::setScrollOffset(clamped, ClampingScroll);
     resetScrollOriginChanged();
   }
 }
