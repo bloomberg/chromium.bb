@@ -1177,6 +1177,9 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
         case MD_EXCEPTION_CODE_WIN_STACK_OVERFLOW:
           reason = "EXCEPTION_STACK_OVERFLOW";
           break;
+        case MD_EXCEPTION_CODE_WIN_BAD_FUNCTION_TABLE:
+          reason = "EXCEPTION_BAD_FUNCTION_TABLE";
+          break;
         case MD_EXCEPTION_CODE_WIN_POSSIBLE_DEADLOCK:
           reason = "EXCEPTION_POSSIBLE_DEADLOCK";
           break;
