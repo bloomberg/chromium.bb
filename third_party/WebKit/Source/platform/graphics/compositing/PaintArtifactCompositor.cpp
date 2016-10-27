@@ -453,18 +453,8 @@ class PropertyTreeManager {
 };
 
 void PropertyTreeManager::setDeviceScaleFactor(float deviceScaleFactor) {
-  auto& rootTransformNode = *transformTree().Node(kRealRootNodeId);
-  // TODO(jaydasika) : We shouldn't set ToScreen and FromScreen of root
-  // transform node here. They should be set while updating transform tree in
-  // cc.
-  gfx::Transform toScreen;
-  toScreen.Scale(deviceScaleFactor, deviceScaleFactor);
-  transformTree().SetToScreen(rootTransformNode.id, toScreen);
-  gfx::Transform fromScreen;
-  if (!toScreen.GetInverse(&fromScreen))
-    rootTransformNode.ancestors_are_invertible = false;
-  transformTree().SetFromScreen(rootTransformNode.id, fromScreen);
-  transformTree().set_needs_update(true);
+  auto& rootTransformNode = *transformTree().Node(kSecondaryRootNodeId);
+  rootTransformNode.local.Scale(deviceScaleFactor, deviceScaleFactor);
 }
 
 int PropertyTreeManager::compositorIdForTransformNode(

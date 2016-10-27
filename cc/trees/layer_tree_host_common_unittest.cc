@@ -1291,8 +1291,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     gfx::Transform device_scaled_translate = translate;
-    device_scaled_translate.matrix().postScale(device_scale_factor,
-                                               device_scale_factor, 1.f);
+    device_scaled_translate.Scale(device_scale_factor, device_scale_factor);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         device_scaled_translate,
         root->draw_properties().target_space_transform);
@@ -1315,8 +1314,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     gfx::Transform page_scaled_translate = translate;
-    page_scaled_translate.matrix().postScale(page_scale_factor,
-                                             page_scale_factor, 1.f);
+    page_scaled_translate.Scale(page_scale_factor, page_scale_factor);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         page_scaled_translate, root->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -9738,39 +9736,6 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(translation,
                                   test_layer->ScreenSpaceTransform());
-}
-
-TEST_F(LayerTreeHostCommonTest, ClipParentDrawsIntoScaledRootSurface) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* clip_layer = AddChild<LayerImpl>(root);
-  LayerImpl* clip_parent = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface);
-
-  root->SetBounds(gfx::Size(100, 100));
-  clip_layer->SetBounds(gfx::Size(20, 20));
-  clip_layer->SetMasksToBounds(true);
-  clip_parent->SetBounds(gfx::Size(50, 50));
-  unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
-  unclipped_desc_surface->SetDrawsContent(true);
-  unclipped_desc_surface->test_properties()->force_render_surface = true;
-  clip_child->SetBounds(gfx::Size(100, 100));
-  clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      base::MakeUnique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
-
-  float device_scale_factor = 1.f;
-  ExecuteCalculateDrawProperties(root, device_scale_factor);
-  EXPECT_EQ(gfx::Rect(20, 20), clip_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(20, 20), clip_child->visible_layer_rect());
-
-  device_scale_factor = 2.f;
-  ExecuteCalculateDrawProperties(root, device_scale_factor);
-  EXPECT_EQ(gfx::Rect(40, 40), clip_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(20, 20), clip_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {

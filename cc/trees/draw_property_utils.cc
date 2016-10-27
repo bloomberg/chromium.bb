@@ -171,9 +171,7 @@ static ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
   gfx::RectF current_clip = clip_node->clip;
   gfx::Vector2dF surface_contents_scale =
       effect_tree.Node(target_effect_id)->surface_contents_scale;
-  // The viewport clip should not be scaled
-  if (surface_contents_scale.x() > 0 && surface_contents_scale.y() > 0 &&
-      clip_node->transform_id != TransformTree::kRootNodeId)
+  if (surface_contents_scale.x() > 0 && surface_contents_scale.y() > 0)
     current_clip.Scale(surface_contents_scale.x(), surface_contents_scale.y());
   return ConditionalClip{true /* is_clipped */, current_clip};
 }
@@ -491,7 +489,8 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
       }
-      ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
+      if (target_effect_node->id > EffectTree::kContentsRootNodeId)
+        ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
     }
     gfx::Transform target_to_content;
     target_to_content.Translate(-layer->offset_to_transform_parent().x(),
@@ -779,13 +778,19 @@ void ComputeClips(PropertyTrees* property_trees,
       success &= property_trees->ComputeTransformFromTarget(
           clip_node->target_transform_id, parent_clip_node->target_effect_id,
           &parent_to_current);
-      const EffectNode* target_effect_node =
-          effect_tree.Node(clip_node->target_effect_id);
-      PostConcatSurfaceContentsScale(target_effect_node, &parent_to_current);
-      const EffectNode* parent_target_effect_node =
-          effect_tree.Node(parent_clip_node->target_effect_id);
-      ConcatInverseSurfaceContentsScale(parent_target_effect_node,
-                                        &parent_to_current);
+      // We don't have to apply surface contents scale when target is root.
+      if (clip_node->target_effect_id != EffectTree::kContentsRootNodeId) {
+        const EffectNode* target_effect_node =
+            effect_tree.Node(clip_node->target_effect_id);
+        PostConcatSurfaceContentsScale(target_effect_node, &parent_to_current);
+      }
+      if (parent_clip_node->target_effect_id !=
+          EffectTree::kContentsRootNodeId) {
+        const EffectNode* parent_target_effect_node =
+            effect_tree.Node(parent_clip_node->target_effect_id);
+        ConcatInverseSurfaceContentsScale(parent_target_effect_node,
+                                          &parent_to_current);
+      }
       // If we can't compute a transform, it's because we had to use the inverse
       // of a singular transform. We won't draw in this case, so there's no need
       // to compute clips.
@@ -894,8 +899,8 @@ void UpdateRenderTarget(EffectTree* effect_tree,
   for (int i = 1; i < static_cast<int>(effect_tree->size()); ++i) {
     EffectNode* node = effect_tree->Node(i);
     if (i == 1) {
-      // Render target on the node corresponding to root is itself.
-      node->target_id = 1;
+      // Render target on the first effect node is root.
+      node->target_id = 0;
     } else if (!can_render_to_separate_surface) {
       node->target_id = 1;
     } else if (effect_tree->parent(node)->has_render_surface) {
