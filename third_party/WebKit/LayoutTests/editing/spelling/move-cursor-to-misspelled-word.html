@@ -1,26 +1,20 @@
-<html>
-<head>
-<script src=../../resources/js-test.js language="javascript" type="text/javascript"></script>
-<title>Testing moving cursor to a misspelled word</title> 
-</head> 
-<body>
-<div id="src" contenteditable="true" spellcheck="true"></div><br/>
-<script language="javascript">
-description('Test if Chrome WebKit does not remove a misspelled marker when moving a cursor on a misspelled word.' +
-            'To test manually, type a misspelled word "zz " and type a left-arrow key to move the cursor on it.' +
-            'This test succeeds when "zz" is marked as misspelled.');
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 
-jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
-
-var node = document.getElementById('src');
-node.focus();
-document.execCommand("InsertText", false, 'z');
-document.execCommand("InsertText", false, 'z');
-document.execCommand("InsertText", false, ' ');
-window.getSelection().modify('move', 'backward', 'character');
-shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 2)', 'true', finishJSTest);
+<script>
+spellcheck_test(
+    '<div contenteditable>zz&nbsp;|</div>',
+    '',
+    '<div contenteditable>_zz_ </div>',
+    {
+      title: 'Has marker on initially misspelled text',
+      callback: sample => spellcheck_test(
+          sample,
+          document => document.getSelection().modify('move', 'backward', 'character'),
+          '<div contenteditable>_zz_ </div>',
+          'Moving cursor to misspelled word does not remove marker.')
+    });
 </script>
-</body>
-</html>
