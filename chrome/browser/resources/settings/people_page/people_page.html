@@ -84,42 +84,45 @@
     <settings-animated-pages id="pages" section="people">
       <neon-animatable route-path="default">
         <div id="picture-subpage-trigger" class="settings-box first two-line">
-          <div id="profile-icon" on-tap="onPictureTap_" actionable
-              style="background-image: [[getIconImageset_(profileIconUrl_)]]">
-          </div>
+          <template is="dom-if" if="[[syncStatus]]">
+            <div id="profile-icon" on-tap="onPictureTap_" actionable
+                style="background-image: [[getIconImageset_(profileIconUrl_)]]">
+            </div>
 <if expr="not chromeos">
-          <div class="middle two-line" on-tap="onProfileNameTap_" actionable>
+            <div class="middle two-line" on-tap="onProfileNameTap_" actionable>
 </if>
 <if expr="chromeos">
-          <div class="middle two-line" on-tap="onPictureTap_" actionable>
+            <div class="middle two-line" on-tap="onPictureTap_" actionable>
 </if>
-            <div class="flex">
-              <span id="profile-name">[[profileName_]]</span>
-              <div class="secondary" hidden="[[!syncStatus.signedIn]]">
-                [[syncStatus.signedInUsername]]
+              <div class="flex">
+                <span id="profile-name">[[profileName_]]</span>
+                <div class="secondary" hidden="[[!syncStatus.signedIn]]">
+                  [[syncStatus.signedInUsername]]
+                </div>
               </div>
+              <button class="subpage-arrow" is="paper-icon-button-light">
+              </button>
             </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"></button>
-          </div>
 <if expr="not chromeos">
-          <template is="dom-if" if="[[showSignin_(syncStatus)]]">
-            <span class="secondary-action">
-              <paper-button class="primary-button" on-tap="onSigninTap_"
-                  disabled="[[syncStatus.setupInProgress]]">
-                $i18n{syncSignin}
-              </paper-button>
-            </span>
-          </template>
-          <template is="dom-if" if="[[syncStatus.signedIn]]">
-            <span class="secondary-action">
-              <paper-button id="disconnectButton" class="secondary-button"
-                  on-tap="onDisconnectTap_"
-                  disabled="[[syncStatus.setupInProgress]]">
-                $i18n{syncDisconnect}
-              </paper-button>
-            </span>
-          </template>
+            <template is="dom-if" if="[[showSignin_(syncStatus)]]">
+              <span class="secondary-action">
+                <paper-button class="primary-button" on-tap="onSigninTap_"
+                    disabled="[[syncStatus.setupInProgress]]">
+                  $i18n{syncSignin}
+                </paper-button>
+              </span>
+            </template>
+            <template is="dom-if" if="[[syncStatus.signedIn]]">
+              <span class="secondary-action">
+                <paper-button id="disconnectButton" class="secondary-button"
+                    on-tap="onDisconnectTap_"
+                    disabled="[[syncStatus.setupInProgress]]">
+                  $i18n{syncDisconnect}
+                </paper-button>
+              </span>
+            </template>
 </if>
+          </template>
         </div>
         <div class="settings-box two-line"
             hidden="[[!showSignin_(syncStatus)]]">

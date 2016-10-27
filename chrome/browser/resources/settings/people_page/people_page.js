@@ -360,6 +360,7 @@ Polymer({
   },
 
   /**
+   * @param {!settings.SyncStatus} syncStatus
    * @return {boolean} Whether to show the "Sign in to Chrome" button.
    * @private
    */
