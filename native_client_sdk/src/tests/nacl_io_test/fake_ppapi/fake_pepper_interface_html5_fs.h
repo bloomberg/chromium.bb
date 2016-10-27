@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include <ppapi/c/pp_directory_entry.h>
-
 #include "fake_ppapi/fake_core_interface.h"
 #include "fake_ppapi/fake_file_io_interface.h"
 #include "fake_ppapi/fake_file_ref_interface.h"

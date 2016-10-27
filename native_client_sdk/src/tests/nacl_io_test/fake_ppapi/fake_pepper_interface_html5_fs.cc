@@ -13,7 +13,6 @@
 
 #include "gtest/gtest.h"
 
-#include "fake_ppapi/fake_file_io_interface.h"
 #include "fake_ppapi/fake_util.h"
 
 namespace {
