@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/values.h"
@@ -354,8 +355,14 @@ void PolicyProvider::UpdateManagedDefaultSetting(
   DCHECK(!prefs_->HasPrefPath(entry.pref_name) ||
          prefs_->IsManagedPreference(entry.pref_name));
   base::AutoLock auto_lock(lock_);
-
   int setting = prefs_->GetInteger(entry.pref_name);
+  // TODO(wfh): Remove once HDB is enabled by default.
+  if (entry.pref_name == prefs::kManagedDefaultPluginsSetting) {
+    static constexpr base::Feature kIgnoreDefaultPluginsSetting = {
+        "IgnoreDefaultPluginsSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+    if (base::FeatureList::IsEnabled(kIgnoreDefaultPluginsSetting))
+      setting = CONTENT_SETTING_DEFAULT;
+  }
   if (setting == CONTENT_SETTING_DEFAULT) {
     value_map_.DeleteValue(ContentSettingsPattern::Wildcard(),
                            ContentSettingsPattern::Wildcard(),

@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -77,6 +78,41 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   EXPECT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());
+
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.secondary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(rule.value.get()));
+
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PolicyProviderTest, ManagedDefaultPluginSettingsExperiment) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("IgnoreDefaultPluginsSetting",
+                                          std::string());
+
+  TestingProfile profile;
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
+  PolicyProvider provider(prefs);
+
+  // ForceDefaultPluginsSettingAsk overrides this to ASK.
+  prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
+                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
+                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+
+  std::unique_ptr<RuleIterator> plugin_rule_iterator(provider.GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), false));
+  // Policy should be removed when running under experiment.
+  EXPECT_FALSE(plugin_rule_iterator);
+
+  std::unique_ptr<RuleIterator> js_rule_iterator(provider.GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(), false));
+  // Other policies should be left alone.
+  EXPECT_TRUE(js_rule_iterator->HasNext());
+  Rule rule = js_rule_iterator->Next();
+  EXPECT_FALSE(js_rule_iterator->HasNext());
 
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.primary_pattern);
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.secondary_pattern);
