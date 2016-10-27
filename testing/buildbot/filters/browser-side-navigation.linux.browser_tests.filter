@@ -1,4 +1,4 @@
--ChromeServiceWorker*
+-ChromeServiceWorkerTest.FallbackMainResourceRequestWhenJSDisabled
 -ErrorPageTest.IFrameDNSError_JavaScript
 -ExecuteScriptApiTest.FrameWithHttp204
 -ExtensionApiTest.Incognito
@@ -6,7 +6,6 @@
 -ExtensionApiTest.JavasScriptEncodedURL
 -ExtensionBindingsApiTest.ModuleSystem
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
--FindInPageControllerTest.SearchWithinSpecialURL
 -LogWebUIUrlTest.TestUberPage
 -MediaGalleriesPlatformAppBrowserTest.MediaGalleriesRead
 -MediaGalleriesPlatformAppBrowserTest.Scan
@@ -39,11 +38,6 @@
 # Errors related to forms submission.
 -PhishingDOMFeatureExtractorTest.SubFrames
 -PhishingDOMFeatureExtractorTest.SubframeRemoval
-
-# Fail in Debug.
--BookmarkBubbleSignInDelegateTest.*
-# See https://luci-logdog.appspot.com/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests__dbg__1_%2F58307%2F%2B%2Frecipes%2Fsteps%2Fbrowser_side_navigation_browser_tests_on_Ubuntu-12.04%2F0%2Flogs%2FWebNavigationApiTest.ServerRedirect%2F0
--WebNavigationApiTest.ServerRedirect
 
 # https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
 # returns null for browser-side navigations
