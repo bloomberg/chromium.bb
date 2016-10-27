@@ -479,6 +479,7 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
 
       // Merge with existing forced policy, giving precedence to the existing
       // forced policy.
+      // TODO(ljusten): Same problem as below.
       new_forced_policy.Merge(forced_policy);
       forced_policy.Swap(&new_forced_policy);
     } else {
@@ -488,6 +489,11 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
   }
 
   // Merge, give precedence to forced policy.
+  // TODO(ljusten): This doesn't work properly if policies are explicitly
+  // disabled or string list policies have less entries in the forced_policy.
+  // The merged dictionary still has excessive policies and strings. To fix
+  // this, use only one dict and call ReadPRegFile in the proper order (forced
+  // last). See crbug.com/659979.
   parsed_policy.Merge(forced_policy);
   policy->Swap(&parsed_policy);
 
