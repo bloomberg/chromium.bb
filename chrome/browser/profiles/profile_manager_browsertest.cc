@@ -418,7 +418,15 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
 
 // The test makes sense on those platforms where the keychain exists.
 #if !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeletePasswords) {
+
+// Suddenly started failing on Linux, see http://crbug.com/660488.
+#if defined(OS_LINUX)
+#define MAYBE_DeletePasswords DISABLED_DeletePasswords
+#else
+#define MAYBE_DeletePasswords DeletePasswords
+#endif
+
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeletePasswords) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_TRUE(profile);
 
