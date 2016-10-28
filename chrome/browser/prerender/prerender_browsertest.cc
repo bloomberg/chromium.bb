@@ -3217,7 +3217,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, HttpPost) {
 
 // Prerenders a page that tries to automatically sign user in via the Credential
 // Manager API. The page should be killed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
+//
+// Disabled. See http://crbug.com/660278
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_AutosigninInPrerenderer) {
   // Set up a credential in the password store.
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       current_browser()->profile(),
