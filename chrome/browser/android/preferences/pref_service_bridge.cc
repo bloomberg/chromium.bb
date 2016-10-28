@@ -64,6 +64,7 @@
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/PrefServiceBridge_jni.h"
+#include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;
@@ -1147,10 +1148,9 @@ bool PrefServiceBridge::RegisterPrefServiceBridge(JNIEnv* env) {
 // This logic should be kept in sync with prependToAcceptLanguagesIfNecessary in
 // chrome/android/java/src/org/chromium/chrome/browser/
 //     physicalweb/PwsClientImpl.java
-// Input |locales| is a comma separated locale representaion. Each locale
-// representation should be xx_XX style, where xx is a 2-letter
-// ISO 639-1 compliant language code and XX is a 2-letter
-// ISO 3166-1 compliant country code.
+// Input |locales| is a comma separated locale representation that consists of
+// language tags (BCP47 compliant format). Each language tag contains a language
+// code and a country code or a language code only.
 void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
     const std::string& locales,
     std::string* accept_languages) {
@@ -1161,30 +1161,43 @@ void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
   std::set<std::string> seen_tags;
   std::vector<std::pair<std::string, std::string>> unique_locale_list;
   for (const std::string& locale_str : locale_list) {
-    // TODO(yirui): Support BCP47 compliant format including 3-letter
-    // country code, '-' separator and missing country case.
-    if (locale_str.size() != 5u ||
-        (locale_str[2] != '_' && locale_str[2] != '-'))
-      continue;  // Skip not well formed locale.
+    char locale_ID[ULOC_FULLNAME_CAPACITY] = {};
+    char language_code_buffer[ULOC_LANG_CAPACITY] = {};
+    char country_code_buffer[ULOC_COUNTRY_CAPACITY] = {};
 
-    std::string lang_code(locale_str.substr(0, 2));
-    std::string country_code(locale_str.substr(3, 2));
+    UErrorCode error = U_ZERO_ERROR;
+    uloc_forLanguageTag(locale_str.c_str(), locale_ID, ULOC_FULLNAME_CAPACITY,
+                        nullptr, &error);
+    if (U_FAILURE(error)) {
+      LOG(ERROR) << "Ignoring invalid locale representation " << locale_str;
+      continue;
+    }
 
-    // Java mostly follows ISO-639-1 and ICU, except for the following three.
-    // See documentation on java.util.Locale constructor for more.
-    if (lang_code == "iw")
-      lang_code = "he";
-    else if (lang_code == "ji")
-      lang_code = "yi";
-    else if (lang_code == "in")
-      lang_code = "id";
+    error = U_ZERO_ERROR;
+    uloc_getLanguage(locale_ID, language_code_buffer, ULOC_LANG_CAPACITY,
+                     &error);
+    if (U_FAILURE(error)) {
+      LOG(ERROR) << "Ignoring invalid locale representation " << locale_str;
+      continue;
+    }
 
-    std::string language_tag(lang_code + "-" + country_code);
+    error = U_ZERO_ERROR;
+    uloc_getCountry(locale_ID, country_code_buffer, ULOC_COUNTRY_CAPACITY,
+                    &error);
+    if (U_FAILURE(error)) {
+      LOG(ERROR) << "Ignoring invalid locale representation " << locale_str;
+      continue;
+    }
+
+    std::string language_code(language_code_buffer);
+    std::string country_code(country_code_buffer);
+    std::string language_tag(language_code + "-" + country_code);
 
     if (seen_tags.find(language_tag) != seen_tags.end())
       continue;
-    unique_locale_list.push_back(std::make_pair(lang_code, country_code));
+
     seen_tags.insert(language_tag);
+    unique_locale_list.push_back(std::make_pair(language_code, country_code));
   }
 
   // If language is not in the accept languages list, also add language
@@ -1201,7 +1214,8 @@ void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
       output_list.push_back(it->first);
       seen_languages.insert(it->first);
     }
-    output_list.push_back(it->first + "-" + it->second);
+    if (!it->second.empty())
+      output_list.push_back(it->first + "-" + it->second);
   }
 
   std::reverse(output_list.begin(), output_list.end());

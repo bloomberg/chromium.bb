@@ -2406,6 +2406,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/BaseChromiumApplicationTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
       "android/junit/src/org/chromium/base/PromiseTest.java",
+      "android/junit/src/org/chromium/base/LocaleUtilsTest.java",
       "test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java",
       "test/android/junit/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/RestrictionSkipCheckTest.java",

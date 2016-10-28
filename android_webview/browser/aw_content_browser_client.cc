@@ -270,7 +270,7 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string AwContentBrowserClient::GetApplicationLocale() {
-  return base::android::GetDefaultLocale();
+  return base::android::GetDefaultLocaleString();
 }
 
 std::string AwContentBrowserClient::GetAcceptLangs(

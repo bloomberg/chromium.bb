@@ -268,7 +268,7 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
   AwAutofillClient::CreateForWebContents(web_contents);
   ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents, AwAutofillClient::FromWebContents(web_contents),
-      base::android::GetDefaultLocale(),
+      base::android::GetDefaultLocaleString(),
       AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 

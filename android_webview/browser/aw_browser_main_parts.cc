@@ -96,8 +96,7 @@ void AwBrowserMainParts::PreEarlyInitialization() {
 int AwBrowserMainParts::PreCreateThreads() {
   ui::SetLocalePaksStoredInApk(true);
   std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
-      base::android::GetDefaultLocale(),
-      NULL,
+      base::android::GetDefaultLocaleString(), NULL,
       ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   if (locale.empty()) {
     LOG(WARNING) << "Failed to load locale .pak from the apk. "

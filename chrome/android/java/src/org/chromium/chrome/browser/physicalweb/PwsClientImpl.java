@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -143,8 +144,8 @@ class PwsClientImpl implements PwsClient {
         try {
             JSONObject payload = createResolveScanPayload(broadcastUrls);
             String url = ENDPOINT_URL + "?key=" + getApiKey();
-            request = new JsonObjectHttpRequest(url, getUserAgent(), getAcceptLanguage(), payload,
-                    requestCallback);
+            request = new JsonObjectHttpRequest(
+                    url, getUserAgent(), updateAcceptLanguage(), payload, requestCallback);
         } catch (MalformedURLException e) {
             Log.e(TAG, "Error creating PWS HTTP request", e);
             return;
@@ -186,8 +187,8 @@ class PwsClientImpl implements PwsClient {
         // Create the request.
         BitmapHttpRequest request = null;
         try {
-            request = new BitmapHttpRequest(iconUrl, getUserAgent(), getAcceptLanguage(),
-                    requestCallback);
+            request = new BitmapHttpRequest(
+                    iconUrl, getUserAgent(), updateAcceptLanguage(), requestCallback);
         } catch (MalformedURLException e) {
             Log.e(TAG, "Error creating icon request", e);
             return;
@@ -222,78 +223,42 @@ class PwsClientImpl implements PwsClient {
     }
 
     /**
-     * Construct the Accept-Language string based on the current locale.
-     * @return An Accept-Language string.
+     * Update an Accept-Language string based on the current default locales and make a string of
+     * an Accept-Language header with q-values.
+     * @return An Accept-Language string made of an Accept-Language header with q-values.
      */
     @VisibleForTesting
-    String getAcceptLanguage() {
-        String defaultLocale = Locale.getDefault().toString();
-        if (sDefaultLocale == null || !sDefaultLocale.equals(defaultLocale)) {
+    String updateAcceptLanguage() {
+        String localeString = LocaleUtils.getDefaultLocaleString();
+        if (sDefaultLocale == null || !sDefaultLocale.equals(localeString)) {
             String acceptLanguages = mContext.getResources().getString(R.string.accept_languages);
-            acceptLanguages = prependToAcceptLanguagesIfNecessary(defaultLocale, acceptLanguages);
+            acceptLanguages = prependToAcceptLanguagesIfNecessary(localeString, acceptLanguages);
             sAcceptLanguage = generateAcceptLanguageHeader(acceptLanguages);
-            sDefaultLocale = defaultLocale;
+            sDefaultLocale = localeString;
         }
         return sAcceptLanguage;
     }
 
     /**
-     * Handle the special cases in converting a language code/region code pair into an ISO-639-1
-     * language tag.
-     * @param language The 2-character language code
-     * @param region The 2-character country code
-     * @return A language tag.
-     */
-    @VisibleForTesting
-    static String makeLanguageTag(String language, String region) {
-        // Java mostly follows ISO-639-1 and ICU, except for the following three.
-        // See documentation on java.util.Locale constructor for more.
-        String isoLanguage;
-        if ("iw".equals(language)) {
-            isoLanguage = "he";
-        } else if ("ji".equals(language)) {
-            isoLanguage = "yi";
-        } else if ("in".equals(language)) {
-            isoLanguage = "id";
-        } else {
-            isoLanguage = language;
-        }
-
-        return isoLanguage + "-" + region;
-    }
-
-    /**
-     * Get the language code for the default locale and prepend it to the Accept-Language string if
-     * it isn't already present. The logic should match PrependToAcceptLanguagesIfNecessary in
+     * Get the language code for the default locales and prepend it to the Accept-Language string
+     * if it isn't already present. The logic should match PrependToAcceptLanguagesIfNecessary in
      * chrome/browser/android/preferences/pref_service_bridge.cc
-     * @param locales A string representing a default locale or a list of default locales.
-     * @param acceptLanguages The default language list for the language of the user's locale.
+     * @param locales A comma separated string that represents a list of default locales.
+     * @param acceptLanguages The default language list for the language of the user's locales.
      * @return An updated language list.
      */
     @VisibleForTesting
     static String prependToAcceptLanguagesIfNecessary(String locales, String acceptLanguages) {
-        String localeString = locales + "," + acceptLanguages;
-        String[] localeList = localeString.split(",");
+        String localeStrings = locales + "," + acceptLanguages;
+        String[] localeList = localeStrings.split(",");
 
-        HashSet<String> seenLocales = new HashSet<>();
-        ArrayList<String> uniqueList = new ArrayList<>();
-        for (String locale : localeList) {
-            // TODO(yirui): Support BCP47 compliant format including 3-letter country code,
-            // '-' separator and missing country case.
-            if (locale.length() != 5 || (locale.charAt(2) != '_' && locale.charAt(2) != '-')) {
-                // Skip checking not well formed locales.
+        ArrayList<Locale> uniqueList = new ArrayList<>();
+        for (String localeString : localeList) {
+            Locale locale = LocaleUtils.forLanguageTag(localeString);
+            if (uniqueList.contains(locale) || locale.getLanguage().isEmpty()) {
                 continue;
             }
-
-            String language = locale.substring(0, 2);
-            String country = locale.substring(3);
-            String languageTag = makeLanguageTag(language, country);
-
-            if (seenLocales.contains(languageTag)) {
-                continue;
-            }
-            uniqueList.add(languageTag);
-            seenLocales.add(languageTag);
+            uniqueList.add(locale);
         }
 
         // If language is not in the accept languages list, also add language code.
@@ -305,13 +270,17 @@ class PwsClientImpl implements PwsClient {
         HashSet<String> seenLanguages = new HashSet<>();
         ArrayList<String> outputList = new ArrayList<>();
         for (int i = uniqueList.size() - 1; i >= 0; i--) {
-            String localeAdd = uniqueList.get(i);
-            String languageAdd = localeAdd.substring(0, 2);
+            Locale localeAdd = uniqueList.get(i);
+            String languageAdd = localeAdd.getLanguage();
+            String countryAdd = localeAdd.getCountry();
+
             if (!seenLanguages.contains(languageAdd)) {
                 seenLanguages.add(languageAdd);
                 outputList.add(languageAdd);
             }
-            outputList.add(localeAdd);
+            if (!countryAdd.isEmpty()) {
+                outputList.add(LocaleUtils.toLanguageTag(localeAdd));
+            }
         }
         Collections.reverse(outputList);
         return TextUtils.join(",", outputList);

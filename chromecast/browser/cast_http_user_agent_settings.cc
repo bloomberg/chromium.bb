@@ -33,7 +33,7 @@ std::string CastHttpUserAgentSettings::GetAcceptLanguage() const {
   std::string new_locale(
 #if defined(OS_ANDROID)
       // TODO(byungchul): Use transient locale set when new app starts.
-      base::android::GetDefaultLocale()
+      base::android::GetDefaultLocaleString()
 #else
       base::i18n::GetConfiguredLocale()
 #endif

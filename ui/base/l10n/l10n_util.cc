@@ -459,7 +459,7 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
 #elif defined(OS_ANDROID)
 
   // On Android, query java.util.Locale for the default locale.
-  candidates.push_back(base::android::GetDefaultLocale());
+  candidates.push_back(base::android::GetDefaultLocaleString());
 
 #elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
 

@@ -693,7 +693,7 @@ public class AwContents implements SmartClipProvider,
 
         @Override
         public void onConfigurationChanged(Configuration configuration) {
-            setLocale(LocaleUtils.getLocale(configuration.locale));
+            setLocale(LocaleUtils.toLanguageTag(configuration.locale));
             mSettings.updateAcceptLanguages();
         }
     };
@@ -729,7 +729,7 @@ public class AwContents implements SmartClipProvider,
             InternalAccessDelegate internalAccessAdapter,
             NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
             AwSettings settings, DependencyFactory dependencyFactory) {
-        setLocale(LocaleUtils.getDefaultLocale());
+        setLocale(LocaleUtils.getDefaultLocaleString());
         settings.updateAcceptLanguages();
 
         mBrowserContext = browserContext;
@@ -3138,7 +3138,7 @@ public class AwContents implements SmartClipProvider,
             postUpdateContentViewCoreVisibility();
             mCurrentFunctor.onAttachedToWindow();
 
-            setLocale(LocaleUtils.getDefaultLocale());
+            setLocale(LocaleUtils.getDefaultLocaleString());
             mSettings.updateAcceptLanguages();
 
             if (mComponentCallbacks != null) return;

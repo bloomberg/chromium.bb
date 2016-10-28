@@ -21,42 +21,40 @@ class PrefServiceBridgeTest : public testing::Test {
 };
 
 TEST_F(PrefServiceBridgeTest, PrependToAcceptLanguagesAsNecessary) {
-  EXPECT_EQ("ms-MY,ms,en-US,en", GetAcceptLanguages("ms_MY", "en-US,en"));
+  EXPECT_EQ("ms-MY,ms,en-US,en", GetAcceptLanguages("ms-MY", "en-US,en"));
   EXPECT_EQ("de-CH,de,zh-TW,zh,en-US,en",
-            GetAcceptLanguages("de_CH,zh_TW", "en-US,en"));
+            GetAcceptLanguages("de-CH,zh-TW", "en-US,en"));
   EXPECT_EQ("de-CH,de,zh-TW,zh,fr-FR,fr,en-US,en",
-            GetAcceptLanguages("de_CH,zh_TW,fr_FR", "en-US,en"));
+            GetAcceptLanguages("de-CH,zh-TW,fr-FR", "en-US,en"));
+
+  // Make sure a country code in number format is inserted.
+  EXPECT_EQ("es-419,es-005,es,en-US,en",
+            GetAcceptLanguages("es-419,es-005", "en-US,en"));
 
   // Make sure we do not prepend language code even when a language code already
   // exists.
-  EXPECT_EQ("zh-TW,zh-CN,zh", GetAcceptLanguages("zh_TW", "zh-CN,zh"));
+  EXPECT_EQ("zh-TW,zh-CN,zh", GetAcceptLanguages("zh-TW", "zh-CN,zh"));
   EXPECT_EQ("de-CH,de-DE,de,en-US,en",
-            GetAcceptLanguages("de_CH", "de-DE,de,en-US,en"));
+            GetAcceptLanguages("de-CH", "de-DE,de,en-US,en"));
   EXPECT_EQ("en-GB,de-DE,de,en-US,en",
-            GetAcceptLanguages("en_GB,de_DE", "en-US,en"));
+            GetAcceptLanguages("en-GB,de-DE", "en-US,en"));
 
   // Make sure a language code is only inserted after the last languageTag that
   // contains that language.
   EXPECT_EQ("fr-CA,fr-FR,fr,en-US,en",
-            GetAcceptLanguages("fr_CA,fr_FR", "en-US,en"));
+            GetAcceptLanguages("fr-CA,fr-FR", "en-US,en"));
+
+  // If a country code is missing, then only the language code is inserted.
+  EXPECT_EQ("ms,en-US,en", GetAcceptLanguages("ms", "en-US,en"));
+  EXPECT_EQ("mas,en-US,en", GetAcceptLanguages("mas", "en-US,en"));
 }
 
 TEST_F(PrefServiceBridgeTest,
        ShouldNotPrependToAcceptLanguagesWhenNotNecessary) {
-  // Java has some deprecated two letter language code. For instance, "iw" is
-  // an old code that needs to be replaced by "he" which is the new code for
-  // Hebrew.
-  EXPECT_EQ("he-IL,he,en-US,en",
-      GetAcceptLanguages("iw_IL", "he-IL,he,en-US,en"));
-  EXPECT_EQ("he-IL,he,fr-FR,fr,en-US,en",
-            GetAcceptLanguages("iw_IL,fr_FR", "en-US,en"));
-
   // This logic should not affect cases where original accept language already
   // reflects the language code in the locale.
-  EXPECT_EQ("en-US,en", GetAcceptLanguages("en_US", "en-US,en"));
-  EXPECT_EQ("zh-CN,zh", GetAcceptLanguages("zh_CN", "zh-CN,zh"));
-  EXPECT_EQ("ms-MY,ms,en-US,en", GetAcceptLanguages("ms_MY,en_US", "en-US,en"));
-
-  // "ms" is not expected. No replacement takes place.
-  EXPECT_EQ("en-US,en", GetAcceptLanguages("ms", "en-US,en"));
+  EXPECT_EQ("mas,en-US,en", GetAcceptLanguages("mas", "en-US,en"));
+  EXPECT_EQ("en-US,en", GetAcceptLanguages("en-US", "en-US,en"));
+  EXPECT_EQ("zh-CN,zh", GetAcceptLanguages("zh-CN", "zh-CN,zh"));
+  EXPECT_EQ("ms-MY,ms,en-US,en", GetAcceptLanguages("ms-MY,en-US", "en-US,en"));
 }
