@@ -39,8 +39,7 @@ class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
  public:
   static CSSDefaultStyleSheets& instance();
 
-  void ensureDefaultStyleSheetsForElement(const Element&,
-                                          bool& changedDefaultStyle);
+  bool ensureDefaultStyleSheetsForElement(const Element&);
   void ensureDefaultStyleSheetForFullscreen();
 
   RuleSet* defaultStyle() { return m_defaultStyle.get(); }

@@ -596,7 +596,7 @@ void Fullscreen::didEnterFullscreenForElement(Element* element) {
   m_currentFullScreenElement
       ->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
-  document()->styleEngine().ensureFullscreenUAStyle();
+  document()->styleEngine().ensureUAStyleForFullscreen();
   m_currentFullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
 
   // FIXME: This should not call updateStyleAndLayoutTree.
@@ -628,7 +628,7 @@ void Fullscreen::didExitFullscreen() {
   if (m_fullScreenLayoutObject)
     LayoutFullScreenItem(m_fullScreenLayoutObject).unwrapLayoutObject();
 
-  document()->styleEngine().ensureFullscreenUAStyle();
+  document()->styleEngine().ensureUAStyleForFullscreen();
   m_currentFullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
   m_currentFullScreenElement = nullptr;
 

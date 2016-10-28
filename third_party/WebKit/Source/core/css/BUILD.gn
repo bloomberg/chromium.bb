@@ -55,6 +55,8 @@ blink_core_sources("css") {
     "CSSFontSelectorClient.h",
     "CSSFunctionValue.cpp",
     "CSSFunctionValue.h",
+    "CSSGlobalRuleSet.cpp",
+    "CSSGlobalRuleSet.h",
     "CSSGradientValue.cpp",
     "CSSGradientValue.h",
     "CSSGridAutoRepeatValue.cpp",

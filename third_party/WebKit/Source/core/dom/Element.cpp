@@ -3361,7 +3361,7 @@ void Element::setFloatingPointAttribute(const QualifiedName& attributeName,
 
 void Element::setContainsFullScreenElement(bool flag) {
   setElementFlag(ContainsFullScreenElement, flag);
-  document().styleEngine().ensureFullscreenUAStyle();
+  document().styleEngine().ensureUAStyleForFullscreen();
   pseudoStateChanged(CSSSelector::PseudoFullScreenAncestor);
 }
 
@@ -3991,8 +3991,7 @@ bool Element::supportsStyleSharing() const {
   if (isSVGElement() && toSVGElement(this)->animatedSMILStyleProperties())
     return false;
   // Ids stop style sharing if they show up in the stylesheets.
-  if (hasID() &&
-      document().ensureStyleResolver().hasRulesForId(idForStyleResolution()))
+  if (hasID() && document().styleEngine().hasRulesForId(idForStyleResolution()))
     return false;
   // :active and :hover elements always make a chain towards the document node
   // and no siblings or cousins will have the same state. There's also only one
