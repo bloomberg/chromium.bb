@@ -1008,9 +1008,9 @@ if (is_linux || is_mac) {
   executable("content_decoder_tool") {
     testonly = true
     sources = [
-      "filter/mock_filter_context.cc",
-      "filter/mock_filter_context.h",
       "tools/content_decoder_tool/content_decoder_tool.cc",
+      "tools/content_decoder_tool/content_decoder_tool.h",
+      "tools/content_decoder_tool/content_decoder_tool_bin.cc",
     ]
     deps = [
       ":net",
