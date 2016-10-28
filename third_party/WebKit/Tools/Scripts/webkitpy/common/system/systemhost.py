@@ -29,6 +29,7 @@
 import os
 import platform
 import sys
+import time
 
 from webkitpy.common.system import executive, filesystem, platforminfo, user, workspace
 
@@ -55,3 +56,6 @@ class SystemHost(object):
 
     def exit(self, returncode):
         sys.exit(returncode)
+
+    def time(self):
+        return time.time()

@@ -37,8 +37,8 @@ from webkitpy.common.system.workspace_mock import MockWorkspace
 
 class MockSystemHost(object):
 
-    def __init__(self, log_executive=False, executive_throws_when_run=None,
-                 os_name=None, os_version=None, executive=None, filesystem=None):
+    def __init__(self, log_executive=False, executive_throws_when_run=None, os_name=None,
+                 os_version=None, executive=None, filesystem=None, time_return_val=123):
         self.executable = 'python'
         self.executive = executive or MockExecutive(should_log=log_executive, should_throw_when_run=executive_throws_when_run)
         self.filesystem = filesystem or MockFileSystem()
@@ -59,6 +59,10 @@ class MockSystemHost(object):
             'MOCK_ENVIRON_COPY': '1',
             'PATH': '/bin:/mock/bin'
         }
+        self.time_return_val = time_return_val
+
+    def time(self):
+        return self.time_return_val
 
     def print_(self, *args, **kwargs):
         sep = kwargs.get('sep', ' ')

@@ -365,6 +365,21 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         ]
         self.assertEqual(tests_run, expected_order)
 
+    def test_random_order_with_timestamp_seed(self):
+        tests_to_run = sorted([
+            'failures/expected/missing_text.html',
+            'failures/expected/text.html',
+            'passes/args.html',
+            'passes/audio.html',
+        ])
+
+        run_1 = get_tests_run(['--order=random'] + tests_to_run, host=MockHost(time_return_val=10))
+        run_2 = get_tests_run(['--order=random'] + tests_to_run, host=MockHost(time_return_val=10))
+        self.assertEqual(run_1, run_2)
+
+        run_3 = get_tests_run(['--order=random'] + tests_to_run, host=MockHost(time_return_val=20))
+        self.assertNotEqual(run_1, run_3)
+
     def test_random_order_test_specified_multiple_times(self):
         tests_to_run = ['passes/args.html', 'passes/audio.html', 'passes/audio.html', 'passes/args.html']
         tests_run = get_tests_run(['--order=random'] + tests_to_run)

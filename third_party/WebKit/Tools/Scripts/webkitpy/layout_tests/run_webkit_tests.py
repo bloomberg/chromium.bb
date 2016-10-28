@@ -333,7 +333,7 @@ def parse_args(args):
                       "either in arguments or test list, "
                       "'natural' == use the natural order (default), "
                       "'random' == pseudo-random order. Seed can be specified "
-                      "via --seed, otherwise a default seed will be used.")),
+                      "via --seed, otherwise it will default to the current unix timestamp.")),
             optparse.make_option(
                 "--profile",
                 action="store_true",
@@ -379,7 +379,6 @@ def parse_args(args):
             optparse.make_option(
                 "--seed",
                 type="int",
-                default=4,  # http://xkcd.com/221/
                 help=("Seed to use for random test order (default: %default). "
                       "Only applicable in combination with --order=random.")),
             optparse.make_option(
@@ -543,6 +542,8 @@ def _set_up_derived_options(port, options, args):
         total_shards = int(port.host.environ['GTEST_TOTAL_SHARDS']) + 1
         options.run_part = '{0}:{1}'.format(shard_index, total_shards)
 
+    if not options.seed:
+        options.seed = port.host.time()
 
 def _run_tests(port, options, args, printer):
     _set_up_derived_options(port, options, args)
