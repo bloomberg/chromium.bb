@@ -252,14 +252,19 @@
     set_focus,
     set_scroll_offset,
     set_selection,
+
+    // Don't focus this node, but set it as the sequential focus navigation
+    // starting point, so that pressing Tab moves to the next element
+    // following this one, for example.
+    set_sequential_focus_navigation_starting_point,
+
     set_value,
     show_context_menu
   };
 
   enum AXActionFlags {
     request_images,
-    request_inline_text_boxes,
-    set_sequential_focus_navigation_point
+    request_inline_text_boxes
   };
 
   // A change to the accessibility tree.

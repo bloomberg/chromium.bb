@@ -216,20 +216,6 @@
     visited
   };
 
-  // Actions that can be taken on an $(ref:automation.AutomationNode).
-  enum ActionType {
-    doDefault,
-    hitTest,
-    scrollToMakeVisible,
-    scrollToPoint,
-    setAccessibilityFocus,
-    setFocus,
-    setScrollOffset,
-    setSelection,
-    setValue,
-    showContextMenu
-  };
-
   // Possible changes to the automation tree. For any given atomic change
   // to the tree, each node that's added, removed, or changed, will appear
   // in exactly one TreeChange, with one of these types.
@@ -591,6 +577,10 @@
 
     // Sets selection within a text field.
     static void setSelection(long startIndex, long endIndex);
+
+    // Clears focus and sets this node as the starting point for the next
+    // time the user presses Tab or Shift+Tab.
+    static void setSequentialFocusNavigationStartingPoint();
 
     // Adds a listener for the given event type and event phase.
     static void addEventListener(

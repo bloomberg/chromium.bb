@@ -573,7 +573,7 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
   }.bind(this));
 });
 
-TEST_F('BackgroundTest', 'FocusIframe', function() {
+TEST_F('BackgroundTest', 'ShouldNotFocusIframe', function() {
   this.runWithLoadedTree(  function() {/*!
     <iframe tabindex=0 src="data:text/html,<p>Inside</p>"></iframe>
     <button>outside</button>
@@ -585,14 +585,35 @@ TEST_F('BackgroundTest', 'FocusIframe', function() {
     assertEquals('button', button.role);
 
     var didFocus = false;
-    iframe.focus = function() {
+    iframe.addEventListener('focus', function() {
       didFocus = true;
-    };
+    });
     var b = ChromeVoxState.instance;
     b.currentRange_ = cursors.Range.fromNode(button);
     doCmd('previousElement');
     assertFalse(didFocus);
   }.bind(this));
+});
+
+TEST_F('BackgroundTest', 'ShouldFocusLink', function() {
+  this.runWithLoadedTree(  function() {/*!
+    <div><a href="#">mylink</a></div>
+    <button>after</button>
+  */}, function(root) {
+    var link = root.find({role: RoleType.link});
+    var button = root.find({role: RoleType.button});
+
+    assertEquals('link', link.role);
+    assertEquals('button', button.role);
+
+    var didFocus = false;
+    link.addEventListener('focus', this.newCallback(function() {
+      // Success
+    }));
+    var b = ChromeVoxState.instance;
+    b.currentRange_ = cursors.Range.fromNode(button);
+    doCmd('previousElement');
+  });
 });
 
 TEST_F('BackgroundTest', 'NoisySlider', function() {

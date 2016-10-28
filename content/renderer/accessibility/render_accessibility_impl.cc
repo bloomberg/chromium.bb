@@ -484,6 +484,9 @@ void RenderAccessibilityImpl::OnPerformAction(
       anchor.setSelection(anchor, data.anchor_offset, focus, data.focus_offset);
       HandleAXEvent(root, ui::AX_EVENT_LAYOUT_COMPLETE);
       break;
+    case ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT:
+      target.setSequentialFocusNavigationStartingPoint();
+      break;
     case ui::AX_ACTION_SET_VALUE:
       target.setValue(data.value);
       HandleAXEvent(target, ui::AX_EVENT_VALUE_CHANGED);

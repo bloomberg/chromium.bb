@@ -100,10 +100,37 @@ AutomationPredicate.formField = AutomationPredicate.match({
   ],
   anyRole: [
     Role.checkBox,
+    Role.colorWell,
     Role.listBox,
     Role.slider,
-    Role.tab,
+    Role.switch,
     Role.tree
+  ]
+});
+
+/** @type {AutomationPredicate.Unary} */
+AutomationPredicate.control = AutomationPredicate.match({
+  anyPredicate: [
+    AutomationPredicate.formField,
+  ],
+  anyRole: [
+    Role.disclosureTriangle,
+    Role.menuItem,
+    Role.menuItemCheckBox,
+    Role.menuItemRadio,
+    Role.menuListOption,
+    Role.scrollBar,
+    Role.tab
+  ]
+});
+
+/** @type {AutomationPredicate.Unary} */
+AutomationPredicate.linkOrControl = AutomationPredicate.match({
+  anyPredicate: [
+    AutomationPredicate.control
+  ],
+  anyRole: [
+    Role.link
   ]
 });
 

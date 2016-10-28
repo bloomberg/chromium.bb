@@ -368,6 +368,10 @@ AutomationNodeImpl.prototype = {
     }
   },
 
+  setSequentialFocusNavigationStartingPoint: function() {
+    this.performAction_('setSequentialFocusNavigationStartingPoint');
+  },
+
   showContextMenu: function() {
     this.performAction_('showContextMenu');
   },
@@ -1033,6 +1037,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'makeVisible',
     'matches',
     'setSelection',
+    'setSequentialFocusNavigationStartingPoint',
     'showContextMenu',
     'addEventListener',
     'removeEventListener',

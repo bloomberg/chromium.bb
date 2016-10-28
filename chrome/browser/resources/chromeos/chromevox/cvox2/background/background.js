@@ -766,25 +766,37 @@ Background.prototype = {
     if (start.state.focused || end.state.focused)
       return;
 
-    // Iframes, when focused, causes the child webArea to fire focus
-    // event.  This can result in getting stuck when navigating
-    // backward.
-    var isFocusable = function(node) {
-      return node.role != RoleType.iframe &&
-          node.state.focusable &&
-          !node.state.focused &&
-          !AutomationPredicate.structuralContainer(node);
+    var isFocusableLinkOrControl = function(node) {
+      return node.state.focusable &&
+          AutomationPredicate.linkOrControl(node);
     };
-    if (isFocusable(start)) {
-      start.focus();
+
+    // First, try to focus the start or end node.
+    if (isFocusableLinkOrControl(start)) {
+      if (!start.state.focused)
+        start.focus();
       return;
-    }
-    if (isFocusable(end)) {
-      end.focus();
+    } else if (isFocusableLinkOrControl(end)) {
+      if (!end.state.focused)
+        end.focus();
       return;
     }
 
-    // TODO(dmazzoni): Set sequential focus.
+    // If a common ancestor of |start| and |end| is a link, focus that.
+    var ancestor = AutomationUtil.getLeastCommonAncestor(start, end);
+    while (ancestor && ancestor.root == start.root) {
+      if (isFocusableLinkOrControl(ancestor)) {
+        if (!ancestor.state.focused)
+          ancestor.focus();
+        return;
+      }
+      ancestor = ancestor.parent;
+    }
+
+    // If nothing is focusable, set the sequential focus navigation starting
+    // point, which ensures that the next time you press Tab, you'll reach
+    // the next or previous focusable node from |start|.
+    start.setSequentialFocusNavigationStartingPoint();
   }
 };
 

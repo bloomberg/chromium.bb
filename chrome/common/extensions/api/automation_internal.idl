@@ -29,6 +29,7 @@ namespace automationInternal {
     doDefault,
     makeVisible,
     setAccessibilityFocus,
+    setSequentialFocusNavigationStartingPoint,
     setSelection,
     showContextMenu
   };

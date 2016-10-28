@@ -387,6 +387,13 @@ AutomationInternalPerformActionFunction::RouteActionToAdapter(
       adapter->PerformAction(action);
       break;
     }
+    case api::automation_internal::
+        ACTION_TYPE_SETSEQUENTIALFOCUSNAVIGATIONSTARTINGPOINT: {
+      action.action =
+          ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT;
+      adapter->PerformAction(action);
+      break;
+    }
     default:
       NOTREACHED();
   }

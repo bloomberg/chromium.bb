@@ -111,6 +111,9 @@ void AutomationManagerAura::PerformAction(
     case ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS:
       // Sent by ChromeVox but doesn't need to be handled by aura.
       break;
+    case ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT:
+      // Sent by ChromeVox but doesn't need to be handled by aura.
+      break;
     case ui::AX_ACTION_HIT_TEST:
     case ui::AX_ACTION_SCROLL_TO_POINT:
     case ui::AX_ACTION_SET_SCROLL_OFFSET:

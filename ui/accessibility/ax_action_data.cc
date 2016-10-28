@@ -44,9 +44,6 @@ std::string AXActionData::ToString() const {
   if (flags & (1 << ui::AX_ACTION_FLAGS_REQUEST_INLINE_TEXT_BOXES))
     result += " flag_request_inline_text_boxes";
 
-  if (flags & (1 << ui::AX_ACTION_FLAGS_SET_SEQUENTIAL_FOCUS_NAVIGATION_POINT))
-    result += " flag_set_sequential_focus_navigation_point";
-
   if (anchor_node_id != -1) {
     result += " anchor_node_id=" + IntToString(anchor_node_id);
     result += " anchor_offset=" + IntToString(anchor_offset);

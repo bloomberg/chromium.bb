@@ -622,6 +622,48 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextTabRecovery) {
+  EnableChromeVox();
+
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html;charset=utf-8,"
+                      "<button id='b1' autofocus>11</button>"
+                      "<button>22</button>"
+                      "<button>33</button>"
+                      "<h1>Middle</h1>"
+                      "<button>44</button>"
+                      "<button>55</button>"
+                      "<div id=console aria-live=polite></div>"
+                      "<script>"
+                      "var b1 = document.getElementById('b1');"
+                      "b1.addEventListener('blur', function() {"
+                      "  document.getElementById('console').innerText = "
+                      "'button lost focus';"
+                      "});"
+                      "</script>"));
+  while ("Button" != speech_monitor_.GetNextUtterance()) {
+  }
+
+  // Press Search+H to go to the next heading
+  SendKeyPressWithSearch(ui::VKEY_H);
+  while ("Middle" != speech_monitor_.GetNextUtterance()) {
+  }
+
+  // To ensure that the setSequentialFocusNavigationStartingPoint has
+  // executed before pressing Tab, the page has an event handler waiting
+  // for the 'blur' event on the button, and when it loses focus it
+  // triggers a live region announcement that we wait for, here.
+  while ("button lost focus" != speech_monitor_.GetNextUtterance()) {
+  }
+
+  // Now we know that focus has left the button, so the sequential focus
+  // navigation starting point must be on the heading. Press Tab and
+  // ensure that we land on the first link past the heading.
+  SendKeyPress(ui::VKEY_TAB);
+  while ("44" != speech_monitor_.GetNextUtterance()) {
+  }
+}
+
 //
 // Spoken feedback tests that run only in guest mode.
 //
