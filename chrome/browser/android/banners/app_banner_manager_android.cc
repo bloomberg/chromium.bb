@@ -299,12 +299,6 @@ ScopedJavaLocalRef<jobject> GetJavaBannerManagerForWebContents(
 }
 
 // static
-void DisableSecureSchemeCheckForTesting(JNIEnv* env,
-                                        const JavaParamRef<jclass>& clazz) {
-  AppBannerManager::DisableSecureSchemeCheckForTesting();
-}
-
-// static
 void SetEngagementWeights(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
                           jdouble direct_engagement,

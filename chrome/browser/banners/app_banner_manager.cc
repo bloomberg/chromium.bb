@@ -30,7 +30,6 @@
 
 namespace {
 
-bool gDisableSecureCheckForTesting = false;
 int gCurrentRequestID = -1;
 base::LazyInstance<base::TimeDelta> gTimeDeltaForTesting =
     LAZY_INSTANCE_INITIALIZER;
@@ -61,11 +60,6 @@ InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_dp,
 }  // anonymous namespace
 
 namespace banners {
-
-// static
-void AppBannerManager::DisableSecureSchemeCheckForTesting() {
-  gDisableSecureCheckForTesting = true;
-}
 
 // static
 base::Time AppBannerManager::GetCurrentTime() {
@@ -119,8 +113,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
 
   // A secure origin is required to show banners, so exit early if we see the
   // URL is invalid.
-  if (!content::IsOriginSecure(validated_url) &&
-      !gDisableSecureCheckForTesting) {
+  if (!content::IsOriginSecure(validated_url)) {
     ReportStatus(contents, NOT_FROM_SECURE_ORIGIN);
     Stop();
     return;

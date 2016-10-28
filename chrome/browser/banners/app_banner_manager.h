@@ -50,8 +50,6 @@ namespace banners {
 class AppBannerManager : public content::WebContentsObserver,
                          public SiteEngagementObserver {
  public:
-  static void DisableSecureSchemeCheckForTesting();
-
   // Returns the current time.
   static base::Time GetCurrentTime();
 

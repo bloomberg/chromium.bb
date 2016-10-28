@@ -140,12 +140,6 @@ public class AppBannerManager {
         nativeSetTimeDeltaForTesting(days);
     }
 
-    /** Disables the HTTPS scheme requirement for testing. */
-    @VisibleForTesting
-    static void disableSecureSchemeCheckForTesting() {
-        nativeDisableSecureSchemeCheckForTesting();
-    }
-
     /** Sets the weights of direct and indirect page navigations for testing. */
     @VisibleForTesting
     static void setEngagementWeights(double directEngagement, double indirectEngagement) {
@@ -170,7 +164,6 @@ public class AppBannerManager {
 
     // Testing methods.
     private static native void nativeSetTimeDeltaForTesting(int days);
-    private static native void nativeDisableSecureSchemeCheckForTesting();
     private static native void nativeSetEngagementWeights(double directEngagement,
             double indirectEngagement);
     private native boolean nativeIsActiveForTesting(long nativeAppBannerManagerAndroid);

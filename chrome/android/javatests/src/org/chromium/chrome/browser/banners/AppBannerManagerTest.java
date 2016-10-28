@@ -193,8 +193,6 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        AppBannerManager.disableSecureSchemeCheckForTesting();
-
         // Navigations in this test are all of type ui::PAGE_TRANSITION_LINK, i.e. indirect.
         // Force indirect navigations to be worth the same as direct for testing.
         AppBannerManager.setEngagementWeights(1, 1);
