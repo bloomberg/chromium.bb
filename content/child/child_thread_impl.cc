@@ -736,6 +736,7 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnProcessBackgrounded)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_PurgeAndSuspend,
                         OnProcessPurgeAndSuspend)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_Resume, OnProcessResume)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -767,6 +768,8 @@ void ChildThreadImpl::OnProcessBackgrounded(bool backgrounded) {
 
 void ChildThreadImpl::OnProcessPurgeAndSuspend() {
 }
+
+void ChildThreadImpl::OnProcessResume() {}
 
 void ChildThreadImpl::OnShutdown() {
   base::MessageLoop::current()->QuitWhenIdle();

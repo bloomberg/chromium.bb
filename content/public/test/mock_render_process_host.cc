@@ -300,6 +300,8 @@ bool MockRenderProcessHost::IsWorkerRefCountDisabled() {
 
 void MockRenderProcessHost::PurgeAndSuspend() {}
 
+void MockRenderProcessHost::Resume() {}
+
 mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   if (!renderer_interface_) {
     renderer_interface_.reset(new mojom::RendererAssociatedPtr);

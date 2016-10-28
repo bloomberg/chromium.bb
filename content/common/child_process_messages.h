@@ -126,6 +126,9 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
 // Sent to child processes to tell them to purge and suspend.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_PurgeAndSuspend)
 
+// Sent to child processes to tell them to resume from suspended mode.
+IPC_MESSAGE_CONTROL0(ChildProcessMsg_Resume)
+
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 

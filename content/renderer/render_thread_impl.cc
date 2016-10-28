@@ -1766,7 +1766,7 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
 
 void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   ChildThreadImpl::OnProcessPurgeAndSuspend();
-  if (is_renderer_suspended_)
+  if (is_renderer_suspended_ || !RendererIsHidden())
     return;
   // TODO(hajimehoshi): Implement purging e.g. cache (crbug/607077)
   is_renderer_suspended_ = true;
@@ -1875,6 +1875,14 @@ void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
                            blink_stats.blinkGCTotalAllocatedBytes +
                            malloc_usage + v8_usage + discardable_usage) /
                               1024 / 1024);
+}
+
+void RenderThreadImpl::OnProcessResume() {
+  ChildThreadImpl::OnProcessResume();
+
+  DCHECK(is_renderer_suspended_);
+  is_renderer_suspended_ = false;
+  renderer_scheduler_->ResumeRenderer();
 }
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {

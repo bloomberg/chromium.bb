@@ -326,6 +326,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Purges and suspends the renderer process.
   virtual void PurgeAndSuspend() = 0;
 
+  // Resumes the renderer process.
+  virtual void Resume() = 0;
+
   // Acquires the |mojom::Renderer| interface to the render process. This is for
   // internal use only, and is only exposed here to support
   // MockRenderProcessHost usage in tests.

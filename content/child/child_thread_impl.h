@@ -214,6 +214,7 @@ class CONTENT_EXPORT ChildThreadImpl
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
   virtual void OnProcessBackgrounded(bool backgrounded);
   virtual void OnProcessPurgeAndSuspend();
+  virtual void OnProcessResume();
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;

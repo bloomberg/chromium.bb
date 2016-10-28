@@ -106,6 +106,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void ForceReleaseWorkerRefCounts() override;
   bool IsWorkerRefCountDisabled() override;
   void PurgeAndSuspend() override;
+  void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
 
   // IPC::Sender via RenderProcessHost.

@@ -1405,6 +1405,10 @@ void RenderProcessHostImpl::PurgeAndSuspend() {
   Send(new ChildProcessMsg_PurgeAndSuspend());
 }
 
+void RenderProcessHostImpl::Resume() {
+  Send(new ChildProcessMsg_Resume());
+}
+
 mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
   return renderer_interface_.get();
 }
