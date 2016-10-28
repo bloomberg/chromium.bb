@@ -32,6 +32,10 @@ void CustomElementReactionQueue::invokeReactions(Element* element) {
   // inserted by steps which bump the global element queue. This
   // means we do not need queue "owner" guards.
   // https://html.spec.whatwg.org/multipage/scripting.html#custom-element-reactions
+  clear();
+}
+
+void CustomElementReactionQueue::clear() {
   m_index = 0;
   m_reactions.resize(0);
 }

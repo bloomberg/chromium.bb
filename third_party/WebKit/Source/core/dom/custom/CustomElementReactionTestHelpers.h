@@ -5,9 +5,13 @@
 #include "core/dom/custom/CustomElementReaction.h"
 
 #include "core/dom/custom/CustomElementReactionQueue.h"
+#include "core/dom/custom/CustomElementReactionStack.h"
 #include "platform/heap/Handle.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include <initializer_list>
+#include <memory>
 #include <vector>
 
 namespace blink {
@@ -22,6 +26,31 @@ class Command : public GarbageCollectedFinalized<Command> {
   virtual ~Command() = default;
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual void run(Element*) = 0;
+};
+
+class Call : public Command {
+  WTF_MAKE_NONCOPYABLE(Call);
+
+ public:
+  using Callback = WTF::Function<void(Element*)>;
+  Call(std::unique_ptr<Callback> callback) : m_callback(std::move(callback)) {}
+  ~Call() override = default;
+  void run(Element* element) override { m_callback->operator()(element); }
+
+ private:
+  std::unique_ptr<Callback> m_callback;
+};
+
+class Unreached : public Command {
+  WTF_MAKE_NONCOPYABLE(Unreached);
+
+ public:
+  Unreached(const char* message) : m_message(message) {}
+  ~Unreached() override = default;
+  void run(Element*) override { EXPECT_TRUE(false) << m_message; }
+
+ private:
+  const char* m_message;
 };
 
 class Log : public Command {
@@ -95,6 +124,28 @@ class TestReaction : public CustomElementReaction {
 
  private:
   HeapVector<Member<Command>> m_commands;
+};
+
+class ResetCustomElementReactionStackForTest final {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ResetCustomElementReactionStackForTest);
+
+ public:
+  ResetCustomElementReactionStackForTest()
+      : m_stack(new CustomElementReactionStack),
+        m_oldStack(
+            CustomElementReactionStackTestSupport::setCurrentForTest(m_stack)) {
+  }
+
+  ~ResetCustomElementReactionStackForTest() {
+    CustomElementReactionStackTestSupport::setCurrentForTest(m_oldStack);
+  }
+
+  CustomElementReactionStack& stack() { return *m_stack; }
+
+ private:
+  Member<CustomElementReactionStack> m_stack;
+  Member<CustomElementReactionStack> m_oldStack;
 };
 
 }  // namespace blink

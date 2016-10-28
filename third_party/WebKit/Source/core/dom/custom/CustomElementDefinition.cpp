@@ -12,6 +12,7 @@
 #include "core/dom/custom/CustomElementConnectedCallbackReaction.h"
 #include "core/dom/custom/CustomElementDisconnectedCallbackReaction.h"
 #include "core/dom/custom/CustomElementReaction.h"
+#include "core/dom/custom/CustomElementReactionStack.h"
 #include "core/dom/custom/CustomElementUpgradeReaction.h"
 #include "core/html/HTMLElement.h"
 
@@ -154,6 +155,7 @@ void CustomElementDefinition::upgrade(Element* element) {
   }
   if (!succeeded) {
     element->setCustomElementState(CustomElementState::Failed);
+    CustomElementReactionStack::current().clearQueue(element);
     return;
   }
 

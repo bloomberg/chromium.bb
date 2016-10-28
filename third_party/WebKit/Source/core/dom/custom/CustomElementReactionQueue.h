@@ -27,6 +27,7 @@ class CORE_EXPORT CustomElementReactionQueue final
   void add(CustomElementReaction*);
   void invokeReactions(Element*);
   bool isEmpty() { return m_reactions.isEmpty(); }
+  void clear();
 
  private:
   HeapVector<Member<CustomElementReaction>, 1> m_reactions;

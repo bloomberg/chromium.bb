@@ -13,16 +13,15 @@
 test_with_window(w => {
   let document = w.document;
   let element = document.createElement('a-a');
+  let error = new Error('expected');
 
   let constructorCount = 0;
   w.customElements.define('a-a', class extends w.HTMLElement {
     constructor() {
       constructorCount++;
-      throw new Error();
+      throw error;
     }
     connectedCallback() {
-      // TODO(davaajav): remove the failure expectation when this issue is closed
-      // https://github.com/w3c/webcomponents/issues/563
       assert_unreached('connectedCallback should not be invoked if constructor threw');
     }
   });
@@ -32,7 +31,7 @@ test_with_window(w => {
   // Set element's custom element state to "failed".
   // https://html.spec.whatwg.org/multipage/scripting.html#upgrades
   let container = document.body;
-  container.appendChild(element);
+  assert_reports(w, error, () => container.appendChild(element));
   assert_equals(constructorCount, 1, 'constructor should be invoked once');
 
   // "failed" is not "defined"

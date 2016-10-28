@@ -355,19 +355,21 @@ test_with_window((w) => {
   element.setAttribute('a', '1');
   element.setAttribute('b', '2');
   element.setAttribute('c', '3');
-  let constructor = function () {};
-  constructor.prototype.attributeChangedCallback = function () { 
-    invocations.push(arguments[0]); 
+  let constructor = function () {
+    return Reflect.construct(w.HTMLElement, [], constructor);
+  };
+  constructor.prototype.attributeChangedCallback = function () {
+    invocations.push(arguments[0]);
   };
   constructor.observedAttributes = {[Symbol.iterator]:
-    function* () { 
+    function* () {
       yield 'a';
-      yield 'c'; 
+      yield 'c';
     }
   };
   w.customElements.define('a-a', constructor);
   w.document.body.appendChild(element);
-  assert_array_equals(invocations, ['a', 'c'], 'attributeChangedCallback should be invoked twice for "a" and "c"'); 
+  assert_array_equals(invocations, ['a', 'c'], 'attributeChangedCallback should be invoked twice: once for "a" and once for "c"');
 }, 'ObservedAttributes are retrieved from iterators');
 
 test_with_window((w) => {

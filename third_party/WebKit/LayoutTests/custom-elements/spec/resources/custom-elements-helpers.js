@@ -65,7 +65,7 @@ function assert_reports(w, expected_error, func, description) {
   } finally {
     w.onerror = old_onerror;
   }
-  assert_equals(1, errors.length);
+  assert_equals(errors.length, 1, 'only one error should have been reported');
   // assert_throws has an error expectation matcher that can only be
   // accessed by throwing the error
   assert_throws(expected_error, () => { throw errors[0]; });

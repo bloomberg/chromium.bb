@@ -7,6 +7,7 @@
 #include "core/dom/custom/CustomElementReaction.h"
 #include "core/dom/custom/CustomElementReactionTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/Functional.h"
 #include <initializer_list>
 #include <vector>
 
@@ -51,6 +52,21 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
   queue->invokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
       << "the reactions should have been invoked";
+}
+
+TEST(CustomElementReactionQueueTest, clear_duringInvoke) {
+  std::vector<char> log;
+  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+
+  queue->add(new TestReaction({new Log('a', log)}));
+  queue->add(new TestReaction({new Call(WTF::bind(
+      [](CustomElementReactionQueue* queue, Element*) { queue->clear(); },
+      wrapPersistent(queue)))}));
+  queue->add(new TestReaction({new Log('b', log)}));
+
+  queue->invokeReactions(nullptr);
+  EXPECT_EQ(log, std::vector<char>({'a'}))
+      << "only 'a' should be logged; the second log should have been cleared";
 }
 
 }  // namespace blink

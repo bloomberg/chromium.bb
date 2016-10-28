@@ -29,10 +29,13 @@ class CORE_EXPORT CustomElementReactionStack final
   void popInvokingReactions();
   void enqueueToCurrentQueue(Element*, CustomElementReaction*);
   void enqueueToBackupQueue(Element*, CustomElementReaction*);
+  void clearQueue(Element*);
 
   static CustomElementReactionStack& current();
 
  private:
+  friend class CustomElementReactionStackTestSupport;
+
   using ElementReactionQueueMap =
       HeapHashMap<Member<Element>, Member<CustomElementReactionQueue>>;
   ElementReactionQueueMap m_map;
@@ -44,6 +47,15 @@ class CORE_EXPORT CustomElementReactionStack final
   void invokeBackupQueue();
   void invokeReactions(ElementQueue&);
   void enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
+};
+
+class CORE_EXPORT CustomElementReactionStackTestSupport final {
+ private:
+  friend class ResetCustomElementReactionStackForTest;
+
+  CustomElementReactionStackTestSupport() = delete;
+  static CustomElementReactionStack* setCurrentForTest(
+      CustomElementReactionStack*);
 };
 
 }  // namespace blink
