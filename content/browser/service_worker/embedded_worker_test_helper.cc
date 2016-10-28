@@ -530,9 +530,11 @@ void EmbeddedWorkerTestHelper::OnSetupMojoStub(
     int thread_id,
     service_manager::mojom::InterfaceProviderRequest request,
     service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
-  auto local = base::MakeUnique<service_manager::InterfaceRegistry>(
-      service_manager::Identity(), service_manager::InterfaceProviderSpec());
+  auto local =
+      base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
   local->Bind(std::move(request), service_manager::Identity(),
+              service_manager::InterfaceProviderSpec(),
+              service_manager::Identity(),
               service_manager::InterfaceProviderSpec());
 
   std::unique_ptr<service_manager::InterfaceProvider> remote(
@@ -559,8 +561,8 @@ EmbeddedWorkerTestHelper::NewMessagePortMessageFilter() {
 
 std::unique_ptr<service_manager::InterfaceRegistry>
 EmbeddedWorkerTestHelper::CreateInterfaceRegistry(MockRenderProcessHost* rph) {
-  auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-      service_manager::Identity(), service_manager::InterfaceProviderSpec());
+  auto registry =
+      base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
   registry->AddInterface(
       base::Bind(&MockEmbeddedWorkerSetup::Create, AsWeakPtr()));
   registry->AddInterface(
@@ -568,6 +570,8 @@ EmbeddedWorkerTestHelper::CreateInterfaceRegistry(MockRenderProcessHost* rph) {
 
   service_manager::mojom::InterfaceProviderPtr interfaces;
   registry->Bind(mojo::GetProxy(&interfaces), service_manager::Identity(),
+                 service_manager::InterfaceProviderSpec(),
+                 service_manager::Identity(),
                  service_manager::InterfaceProviderSpec());
 
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces(

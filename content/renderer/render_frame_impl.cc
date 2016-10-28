@@ -79,6 +79,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
@@ -1126,7 +1127,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   // TODO(beng): We should fix this, so we can apply policy about which
   //             interfaces get exposed.
   interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
-      service_manager::Identity(), service_manager::InterfaceProviderSpec());
+      mojom::kNavigation_FrameSpec);
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
@@ -2642,9 +2643,21 @@ bool RenderFrameImpl::IsPasting() const {
 
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
-  interface_registry_->Bind(std::move(request),
-                            service_manager::Identity(),
-                            service_manager::InterfaceProviderSpec());
+  service_manager::ServiceInfo child_info =
+      ChildThreadImpl::current()->GetChildServiceInfo();
+  service_manager::ServiceInfo browser_info =
+      ChildThreadImpl::current()->GetBrowserServiceInfo();
+
+  service_manager::InterfaceProviderSpec child_spec, browser_spec;
+  // TODO(beng): CHECK these return true.
+  service_manager::GetInterfaceProviderSpec(
+      mojom::kNavigation_FrameSpec, child_info.interface_provider_specs,
+      &child_spec);
+  service_manager::GetInterfaceProviderSpec(
+      mojom::kNavigation_FrameSpec, browser_info.interface_provider_specs,
+      &browser_spec);
+  interface_registry_->Bind(std::move(request), child_info.identity, child_spec,
+                            browser_info.identity, browser_spec);
 }
 
 // mojom::HostZoom implementation ----------------------------------------------

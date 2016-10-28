@@ -22,6 +22,17 @@
         "service:content_browser": [ "renderer" ],
         "service:ui": [ "ui:gpu_client" ]
       }
+    },
+    "navigation:frame": {
+      "provides": {
+        "browser": [
+          "blink::mojom::AppBannerController",
+          "content::mojom::ImageDownloader"
+        ]
+      },
+      "requires": {
+        "service:content_browser": [ "renderer" ]
+      }
     }
   }
 }

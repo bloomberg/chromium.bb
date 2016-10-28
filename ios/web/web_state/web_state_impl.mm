@@ -544,8 +544,8 @@ int WebStateImpl::DownloadImage(
 
 service_manager::InterfaceRegistry* WebStateImpl::GetMojoInterfaceRegistry() {
   if (!mojo_interface_registry_) {
-    mojo_interface_registry_.reset(new service_manager::InterfaceRegistry(
-        service_manager::Identity(), service_manager::InterfaceProviderSpec()));
+    mojo_interface_registry_.reset(
+        new service_manager::InterfaceRegistry(std::string()));
   }
   return mojo_interface_registry_.get();
 }

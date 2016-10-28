@@ -6,6 +6,8 @@
 
 #include <tuple>
 
+#include "base/logging.h"
+
 namespace service_manager {
 
 InterfaceProviderSpec::InterfaceProviderSpec() {}
@@ -22,6 +24,18 @@ bool InterfaceProviderSpec::operator<(
     const InterfaceProviderSpec& other) const {
   return std::tie(provides, requires) <
       std::tie(other.provides, other.requires);
+}
+
+bool GetInterfaceProviderSpec(const std::string& spec_name,
+                              const InterfaceProviderSpecMap& map,
+                              InterfaceProviderSpec* spec) {
+  DCHECK(spec);
+  auto it = map.find(spec_name);
+  if (it != map.end()) {
+    *spec = it->second;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace service_manager

@@ -24,10 +24,30 @@
           "ash::mojom::SystemTrayClient",
           "ash::mojom::WallpaperController",
           "ash::mojom::WallpaperManager",
-          "ash::mojom::VolumeController"
+          "ash::mojom::VolumeController",
+          "keyboard::mojom::Keyboard"
         ],
         "mash:launchable": [
           "mash::mojom::Launchable"
+        ]
+      },
+      "requires": {
+        "service:ash": [ "ash" ]
+      }
+    },
+    "navigation:frame": {
+      "provides": {
+        "renderer": [
+          "autofill::mojom::AutofillDriver",
+          "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::ShareService",
+          "dom_distiller::mojom::DistillabilityService",
+          "dom_distiller::mojom::DistillerJavaScriptService",
+          "extensions::KeepAlive",
+          "extensions::mime_handler::MimeHandlerService",
+          "mojom::OmniboxPageHandler",
+          "password_manager::mojom::CredentialManager",
+          "translate::mojom::ContentTranslateDriver"
         ]
       }
     }

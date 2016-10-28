@@ -3,7 +3,6 @@
   "display_name": "Content (browser process)",
   "interface_provider_specs": {
     "service_manager:connector": {
-      // Remove this once http://crbug.com/632818 is fixed.
       "provides": {
         "gpu": [
           "device::mojom::PowerMonitor"
@@ -56,6 +55,39 @@
         ],
         "service:file": [ "file:filesystem", "file:leveldb" ],
         "service:media": [ "media:media" ]
+      }
+    },
+    "navigation:frame": {
+      "provides": {
+        "renderer": [
+          // TODO(beng): these belong in //chrome's overlay, but there are some
+          // issues with mash browser_tests's manifest config that make this
+          // impossible this week. Remove once sky/ken fix this.
+          "autofill::mojom::AutofillDriver",
+          "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::MediaSessionService",
+          "blink::mojom::PaymentRequest",
+          "blink::mojom::PermissionService",
+          "blink::mojom::PresentationService",
+          "blink::mojom::SensitiveInputVisibilityService",
+          "blink::mojom::ShapeDetection",
+          "blink::mojom::WebBluetoothService",
+          "blink::mojom::WebSocket",
+          // TODO(beng): figure out how to overlay test interfaces like this.
+          "content::mojom::BrowserTarget",
+          "device::VibrationManager",
+          "device::mojom::GeolocationService",
+          "device::mojom::SensorProvider",
+          "device::mojom::WakeLockService",
+          "device::nfc::mojom::NFC",
+          "device::usb::DeviceManager",
+          "media::mojom::InterfaceFactory",
+          "media::mojom::RemoterFactory",
+          "mojom::MediaDevicesDispatcherHost"
+        ]
+      },
+      "requires": {
+        "service:content_renderer": [ "browser" ]
       }
     }
   }

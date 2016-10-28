@@ -644,7 +644,7 @@ ServiceManagerConnection* ChildThreadImpl::GetServiceManagerConnection() {
 service_manager::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
   if (!interface_registry_.get()) {
     interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
-        service_manager::Identity(), service_manager::InterfaceProviderSpec());
+        service_manager::mojom::kServiceManager_ConnectorSpec);
   }
   return interface_registry_.get();
 }
@@ -656,6 +656,22 @@ service_manager::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
   if (!remote_interfaces_.get())
     remote_interfaces_.reset(new service_manager::InterfaceProvider);
   return remote_interfaces_.get();
+}
+
+const service_manager::ServiceInfo&
+    ChildThreadImpl::GetChildServiceInfo() const {
+  DCHECK(IsConnectedToBrowser());
+  return child_info_;
+}
+
+const service_manager::ServiceInfo&
+    ChildThreadImpl::GetBrowserServiceInfo() const {
+  DCHECK(IsConnectedToBrowser());
+  return browser_info_;
+}
+
+bool ChildThreadImpl::IsConnectedToBrowser() const {
+  return connected_to_browser_;
 }
 
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
@@ -752,6 +768,10 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
 void ChildThreadImpl::StartServiceManagerConnection() {
   DCHECK(service_manager_connection_);
   service_manager_connection_->Start();
+  // We don't care about storing the id, since if this pipe closes we're toast.
+  service_manager_connection_->AddOnConnectHandler(
+      base::Bind(&ChildThreadImpl::OnServiceConnect,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
@@ -855,6 +875,17 @@ void ChildThreadImpl::GetAssociatedInterface(
   Listener* route = router_.GetRoute(routing_id);
   if (route)
     route->OnAssociatedInterfaceRequest(name, request.PassHandle());
+}
+
+void ChildThreadImpl::OnServiceConnect(
+    const service_manager::ServiceInfo& local_info,
+    const service_manager::ServiceInfo& remote_info) {
+  if (remote_info.identity.name() != kBrowserServiceName)
+    return;
+  DCHECK(!connected_to_browser_);
+  connected_to_browser_ = true;
+  child_info_ = local_info;
+  browser_info_ = remote_info;
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {

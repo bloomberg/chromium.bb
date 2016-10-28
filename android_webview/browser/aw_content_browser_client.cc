@@ -25,10 +25,12 @@
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
+#include "android_webview/grit/aw_resources.h"
 #include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
@@ -45,6 +47,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "device/geolocation/access_token_store.h"
@@ -520,6 +523,20 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
 content::DevToolsManagerDelegate*
 AwContentBrowserClient::GetDevToolsManagerDelegate() {
   return new AwDevToolsManagerDelegate();
+}
+
+std::unique_ptr<base::Value>
+AwContentBrowserClient::GetServiceManifestOverlay(const std::string& name) {
+  int id = -1;
+  if (name == content::kBrowserServiceName)
+    id = IDR_AW_BROWSER_MANIFEST_OVERLAY;
+  if (id == -1)
+    return nullptr;
+
+  base::StringPiece manifest_contents =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+          id, ui::ScaleFactor::SCALE_FACTOR_NONE);
+  return base::JSONReader::Read(manifest_contents);
 }
 
 }  // namespace android_webview

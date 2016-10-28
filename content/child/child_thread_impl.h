@@ -106,6 +106,12 @@ class CONTENT_EXPORT ChildThreadImpl
   service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
 
+  // Returns the service_manager::ServiceInfo for the child process & the
+  // browser process, once available.
+  const service_manager::ServiceInfo& GetChildServiceInfo() const;
+  const service_manager::ServiceInfo& GetBrowserServiceInfo() const;
+  bool IsConnectedToBrowser() const;
+
   IPC::SyncChannel* channel() { return channel_.get(); }
 
   IPC::MessageRouter* GetRouter();
@@ -267,11 +273,20 @@ class CONTENT_EXPORT ChildThreadImpl
       const std::string& name,
       mojom::AssociatedInterfaceAssociatedRequest request) override;
 
+  // Called when a connection is received from another service. When that other
+  // service is the browser process, stores the remote's info.
+  void OnServiceConnect(const service_manager::ServiceInfo& local_info,
+                        const service_manager::ServiceInfo& remote_info);
+
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
   std::unique_ptr<service_manager::Connection> browser_connection_;
+
+  bool connected_to_browser_ = false;
+  service_manager::ServiceInfo child_info_;
+  service_manager::ServiceInfo browser_info_;
 
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
   mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider>

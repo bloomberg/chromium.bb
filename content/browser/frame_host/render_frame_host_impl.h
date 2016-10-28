@@ -817,6 +817,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // happen before it fires (to avoid flakiness).
   void DisableSwapOutTimerForTesting();
 
+  void OnRendererConnect(const service_manager::ServiceInfo& local_info,
+                         const service_manager::ServiceInfo& remote_info);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -959,6 +962,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
+
+  service_manager::ServiceInfo browser_info_;
+  service_manager::ServiceInfo renderer_info_;
+
+  int on_connect_handler_id_ = 0;
 
 #if defined(OS_ANDROID)
   // The filter for MessagePort messages between an Android apps and web.

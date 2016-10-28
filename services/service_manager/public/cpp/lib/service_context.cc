@@ -63,20 +63,15 @@ void ServiceContext::OnStart(const ServiceInfo& info,
 void ServiceContext::OnConnect(
     const ServiceInfo& source_info,
     mojom::InterfaceProviderRequest interfaces) {
-  auto target_it = local_info_.interface_provider_specs.find(
-      mojom::kServiceManager_ConnectorSpec);
-  InterfaceProviderSpec target_spec;
-  if (target_it != local_info_.interface_provider_specs.end())
-    target_spec = target_it->second;
-  auto source_it = source_info.interface_provider_specs.find(
-      mojom::kServiceManager_ConnectorSpec);
-  InterfaceProviderSpec source_spec;
-  if (source_it != source_info.interface_provider_specs.end())
-    source_spec = source_it->second;
-
-  auto registry = base::MakeUnique<InterfaceRegistry>(local_info_.identity,
-                                                      target_spec);
-  registry->Bind(std::move(interfaces), source_info.identity, source_spec);
+  InterfaceProviderSpec source_spec, target_spec;
+  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
+                           local_info_.interface_provider_specs, &target_spec);
+  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
+                           source_info.interface_provider_specs, &source_spec);
+  auto registry =
+      base::MakeUnique<InterfaceRegistry>(mojom::kServiceManager_ConnectorSpec);
+  registry->Bind(std::move(interfaces), local_info_.identity, target_spec,
+                 source_info.identity, source_spec);
 
   if (!service_->OnConnect(source_info, registry.get()))
     return;

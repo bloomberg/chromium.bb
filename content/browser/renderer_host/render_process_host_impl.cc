@@ -1192,7 +1192,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
   auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-      service_manager::Identity(), service_manager::InterfaceProviderSpec());
+      service_manager::mojom::kServiceManager_ConnectorSpec);
 
   channel_->AddAssociatedInterface(
       base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,

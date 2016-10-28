@@ -14,7 +14,7 @@ class TestBinder : public InterfaceBinder {
  public:
   explicit TestBinder(int* delete_count) : delete_count_(delete_count) {}
   ~TestBinder() override { (*delete_count_)++; }
-  void BindInterface(const service_manager::Identity& remote_identity,
+  void BindInterface(const Identity& remote_identity,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle client_handle) override {}
 
@@ -28,8 +28,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Destruction.
   {
-    auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-        Identity(), InterfaceProviderSpec());
+    auto registry = base::MakeUnique<InterfaceRegistry>(std::string());
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
   }
@@ -37,8 +36,8 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Removal.
   {
-    auto registry = base::MakeUnique<InterfaceRegistry>(
-        Identity(), InterfaceProviderSpec());
+    auto registry =
+        base::MakeUnique<InterfaceRegistry>(std::string());
     InterfaceBinder* b = new TestBinder(&delete_count);
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(b, "TC1");
@@ -49,8 +48,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Multiple.
   {
-    auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-        Identity(), InterfaceProviderSpec());
+    auto registry = base::MakeUnique<InterfaceRegistry>(std::string());
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC2");
@@ -59,8 +57,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Re-addition.
   {
-    auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-        Identity(), InterfaceProviderSpec());
+    auto registry = base::MakeUnique<InterfaceRegistry>(std::string());
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");

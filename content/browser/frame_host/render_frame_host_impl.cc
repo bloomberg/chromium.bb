@@ -88,6 +88,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/generic_sensor/sensor_provider_impl.h"
@@ -812,7 +813,7 @@ void RenderFrameHostImpl::Create(
     const service_manager::Identity& remote_identity,
     media::mojom::InterfaceFactoryRequest request) {
   auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-      service_manager::Identity(), service_manager::InterfaceProviderSpec());
+      std::string());
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
   registry->AddInterface(
       base::Bind(&ProvisionFetcherImpl::Create, this));
@@ -821,6 +822,8 @@ void RenderFrameHostImpl::Create(
                                                                 this);
   service_manager::mojom::InterfaceProviderPtr interfaces;
   registry->Bind(GetProxy(&interfaces),
+                 service_manager::Identity(),
+                 service_manager::InterfaceProviderSpec(),
                  service_manager::Identity(),
                  service_manager::InterfaceProviderSpec());
   media_registries_.push_back(std::move(registry));
@@ -1534,6 +1537,15 @@ void RenderFrameHostImpl::OnSwappedOut() {
 
 void RenderFrameHostImpl::DisableSwapOutTimerForTesting() {
   swapout_event_monitor_timeout_.reset();
+}
+
+void RenderFrameHostImpl::OnRendererConnect(
+    const service_manager::ServiceInfo& local_info,
+    const service_manager::ServiceInfo& remote_info) {
+  if (remote_info.identity.name() != kRendererServiceName)
+    return;
+  browser_info_ = local_info;
+  renderer_info_ = remote_info;
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
@@ -2579,7 +2591,19 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
     return;
 
   interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
-      service_manager::Identity(), service_manager::InterfaceProviderSpec());
+      mojom::kNavigation_FrameSpec);
+
+  ServiceManagerConnection* service_manager_connection =
+      BrowserContext::GetServiceManagerConnectionFor(
+          GetProcess()->GetBrowserContext());
+  // |service_manager_connection| may not be set in unit tests using
+  // TestBrowserContext.
+  if (service_manager_connection) {
+    on_connect_handler_id_ = service_manager_connection->AddOnConnectHandler(
+        base::Bind(&RenderFrameHostImpl::OnRendererConnect,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
+
   if (!GetProcess()->GetRemoteInterfaces())
     return;
 
@@ -2599,6 +2623,16 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
   interface_registry_.reset();
+
+  ServiceManagerConnection* service_manager_connection =
+      BrowserContext::GetServiceManagerConnectionFor(
+          GetProcess()->GetBrowserContext());
+  // |service_manager_connection| may be null in tests using TestBrowserContext.
+  if (service_manager_connection) {
+    service_manager_connection->RemoveOnConnectHandler(on_connect_handler_id_);
+    on_connect_handler_id_ = 0;
+  }
+
   frame_.reset();
   frame_host_binding_.Close();
 
@@ -2867,9 +2901,17 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
 
 void RenderFrameHostImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest interfaces) {
+  service_manager::InterfaceProviderSpec browser_spec, renderer_spec;
+  // TODO(beng): CHECK these return true.
+  service_manager::GetInterfaceProviderSpec(
+      mojom::kNavigation_FrameSpec, browser_info_.interface_provider_specs,
+      &browser_spec);
+  service_manager::GetInterfaceProviderSpec(
+      mojom::kNavigation_FrameSpec, renderer_info_.interface_provider_specs,
+      &renderer_spec);
   interface_registry_->Bind(std::move(interfaces),
-                            service_manager::Identity(),
-                            service_manager::InterfaceProviderSpec());
+                            browser_info_.identity, browser_spec,
+                            renderer_info_.identity, renderer_spec);
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)

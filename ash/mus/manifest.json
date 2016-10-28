@@ -14,7 +14,7 @@
       },
       "requires": {
         "*": [ "accessibility", "app" ],
-        "service:content_browser": [ "content_browser:ash" ],
+        "service:content_browser": [ "ash" ],
         "service:mash_session": [ "mash_session:session" ],
         "service:ui": [ "ui:window_manager" ],
         "service:touch_hud": [ "mash:launchable" ]

@@ -39,6 +39,9 @@ class CONTENT_EXPORT ServiceManagerConnection {
  public:
   using ServiceRequestHandler =
       base::Callback<void(service_manager::mojom::ServiceRequest)>;
+  using OnConnectHandler =
+      base::Callback<void(const service_manager::ServiceInfo&,
+                          const service_manager::ServiceInfo&)>;
   using Factory =
       base::Callback<std::unique_ptr<ServiceManagerConnection>(void)>;
 
@@ -144,6 +147,12 @@ class CONTENT_EXPORT ServiceManagerConnection {
   virtual void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) = 0;
+
+  // Registers a callback to be run when the service_manager::Service
+  // implementation on the IO thread receives OnConnect(). Returns an id that
+  // can be passed to RemoveOnConnectHandler(), starting at 1.
+  virtual int AddOnConnectHandler(const OnConnectHandler& handler) = 0;
+  virtual void RemoveOnConnectHandler(int id) = 0;
 };
 
 }  // namespace content

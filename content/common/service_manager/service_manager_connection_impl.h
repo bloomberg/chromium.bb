@@ -51,9 +51,13 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
   void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) override;
+  int AddOnConnectHandler(const OnConnectHandler& handler) override;
+  void RemoveOnConnectHandler(int id) override;
 
   void OnContextInitialized(const service_manager::Identity& identity);
   void OnConnectionLost();
+  void OnConnect(const service_manager::ServiceInfo& local_info,
+                 const service_manager::ServiceInfo& remote_info);
   void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name);
   void GetInterface(service_manager::mojom::InterfaceProvider* provider,
@@ -61,6 +65,8 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
                     mojo::ScopedMessagePipeHandle request_handle);
 
   service_manager::Identity identity_;
+  service_manager::ServiceInfo local_info_;
+  service_manager::ServiceInfo last_remote_info_;
 
   std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<IOThreadContext> context_;
@@ -71,6 +77,8 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
   std::unordered_map<std::string, std::unique_ptr<EmbeddedServiceRunner>>
       embedded_services_;
   std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
+  int next_on_connect_handler_id_ = 0;
+  std::map<int, OnConnectHandler> on_connect_handlers_;
 
   base::WeakPtrFactory<ServiceManagerConnectionImpl> weak_factory_;
 

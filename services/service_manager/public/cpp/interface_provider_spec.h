@@ -35,6 +35,13 @@ struct InterfaceProviderSpec {
 using InterfaceProviderSpecMap =
     std::unordered_map<std::string, InterfaceProviderSpec>;
 
+// Convenience for reading a spec named |spec_name| out of |map|. If such a spec
+// is found, |spec| is modified and this function returns true. If a spec is not
+// found, |spec| is unmodified and this function returns false.
+bool GetInterfaceProviderSpec(const std::string& spec_name,
+                              const InterfaceProviderSpecMap& map,
+                              InterfaceProviderSpec* spec);
+
 }  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_PROVIDER_SPEC_H_

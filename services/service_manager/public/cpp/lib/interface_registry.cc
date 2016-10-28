@@ -60,21 +60,21 @@ InterfaceSet GetAllowedInterfaces(
 
 }  // namespace
 
-InterfaceRegistry::InterfaceRegistry(
-    const Identity& identity,
-    const InterfaceProviderSpec& interface_provider_spec)
+InterfaceRegistry::InterfaceRegistry(const std::string& name)
     : binding_(this),
-      identity_(identity),
-      interface_provider_spec_(interface_provider_spec),
+      name_(name),
       weak_factory_(this) {}
-
 InterfaceRegistry::~InterfaceRegistry() {}
 
 void InterfaceRegistry::Bind(
     mojom::InterfaceProviderRequest local_interfaces_request,
+    const Identity& local_identity,
+    const InterfaceProviderSpec& local_interface_provider_spec,
     const Identity& remote_identity,
     const InterfaceProviderSpec& remote_interface_provider_spec) {
   DCHECK(!binding_.is_bound());
+  identity_ = local_identity;
+  interface_provider_spec_ = local_interface_provider_spec;
   remote_identity_ = remote_identity;
   allowed_interfaces_ = GetAllowedInterfaces(remote_interface_provider_spec,
                                              identity_,
@@ -82,9 +82,11 @@ void InterfaceRegistry::Bind(
   allow_all_interfaces_ =
       allowed_interfaces_.size() == 1 && allowed_interfaces_.count("*") == 1;
   if (!allow_all_interfaces_) {
-    for (auto it = name_to_binder_.begin(); it != name_to_binder_.end(); ++it) {
+    for (auto it = name_to_binder_.begin(); it != name_to_binder_.end();) {
       if (allowed_interfaces_.count(it->first) == 0)
-        name_to_binder_.erase(it);
+        it = name_to_binder_.erase(it);
+      else
+        ++it;
     }
   }
   binding_.Bind(std::move(local_interfaces_request));
@@ -152,9 +154,9 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
                                 std::move(handle));
   } else if (!CanBindRequestForInterface(interface_name)) {
     std::stringstream ss;
-    ss << "Capability spec prevented service " << remote_identity_.name()
-       << " from binding interface: " << interface_name
-       << " exposed by: " << identity_.name();
+    ss << "InterfaceProviderSpec \"" << name_ << "\" prevented service: "
+       << remote_identity_.name() << " from binding interface: "
+       << interface_name << " exposed by: " << identity_.name();
     LOG(ERROR) << ss.str();
     mojo::ReportBadMessage(ss.str());
   } else if (!default_binder_.is_null()) {

@@ -1251,6 +1251,9 @@ class CONTENT_EXPORT RenderFrameImpl
   service_manager::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
 
+  service_manager::ServiceInfo local_info_;
+  service_manager::ServiceInfo remote_info_;
+
   // The Connector proxy used to connect to services.
   service_manager::mojom::ConnectorPtr connector_;
 

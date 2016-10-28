@@ -76,11 +76,9 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  // Construct an unbound InterfaceRegistry for the service |identity| that
-  // exposes interfaces in accordance to |interface_provider_spec|. This object
-  // will not bind requests for interfaces until Bind() is called.
-  InterfaceRegistry(const Identity& identity,
-                    const InterfaceProviderSpec& interface_provider_spec);
+  // Construct an unbound InterfaceRegistry. This object will not bind requests
+  // for interfaces until Bind() is called.
+  explicit InterfaceRegistry(const std::string& name);
   ~InterfaceRegistry() override;
 
   // Sets a default handler for incoming interface requests which are allowed by
@@ -92,6 +90,8 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // InterfaceProviderSpec, which will be intersected with the local's exports
   // to determine what interfaces may be bound.
   void Bind(mojom::InterfaceProviderRequest request,
+            const Identity& local_identity,
+            const InterfaceProviderSpec& local_interface_provider_spec,
             const Identity& remote_identity,
             const InterfaceProviderSpec& remote_interface_provider_spec);
 
@@ -166,8 +166,9 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   mojom::InterfaceProviderRequest pending_request_;
 
   mojo::Binding<mojom::InterfaceProvider> binding_;
-  const Identity identity_;
-  const InterfaceProviderSpec interface_provider_spec_;
+  Identity identity_;
+  InterfaceProviderSpec interface_provider_spec_;
+  std::string name_;
 
   // Metadata computed when Bind() is called:
   Identity remote_identity_;

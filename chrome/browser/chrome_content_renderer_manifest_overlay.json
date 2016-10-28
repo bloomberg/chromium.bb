@@ -1,4 +1,15 @@
 {
   "display_name": "Chrome Render Process",
-  "interface_provider_specs": {}
+  "interface_provider_specs": {
+    "navigation:frame": {
+      "provides": {
+        "browser": [
+          "autofill::mojom::AutofillAgent",
+          "autofill::mojom::PasswordAutofillAgent",
+          "autofill::mojom::PasswordGenerationAgent",
+          "dom_distiller::mojom::DistillerPageNotifierService"
+        ]
+      }
+    }
+  }
 }
