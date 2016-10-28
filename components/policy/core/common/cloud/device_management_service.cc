@@ -472,6 +472,11 @@ void DeviceManagementRequestJob::SetClientID(const std::string& client_id) {
   AddParameter(dm_protocol::kParamDeviceID, client_id);
 }
 
+void DeviceManagementRequestJob::SetCritical(bool critical) {
+  if (critical)
+    AddParameter(dm_protocol::kParamCritical, "true");
+}
+
 em::DeviceManagementRequest* DeviceManagementRequestJob::GetRequest() {
   return &request_;
 }

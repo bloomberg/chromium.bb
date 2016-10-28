@@ -72,6 +72,12 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   void SetOAuthToken(const std::string& oauth_token);
   void SetDMToken(const std::string& dm_token);
   void SetClientID(const std::string& client_id);
+  // Sets the critical request parameter, which is used to differentiate regular
+  // DMServer requests (like scheduled policy fetches) from time-sensitive ones
+  // (like policy fetch during device enrollment). Should only be called before
+  // Start()ing the job, at most once.
+  void SetCritical(bool critical);
+
   enterprise_management::DeviceManagementRequest* GetRequest();
 
   // A job may automatically retry if it fails due to a temporary condition, or

@@ -153,6 +153,23 @@ class DeviceManagementServiceTestBase : public testing::Test {
     return job;
   }
 
+  DeviceManagementRequestJob* StartCriticalPolicyFetchJob() {
+    DeviceManagementRequestJob* job = service_->CreateJob(
+        DeviceManagementRequestJob::TYPE_POLICY_FETCH, request_context_.get());
+    job->SetGaiaToken(kGaiaAuthToken);
+    job->SetOAuthToken(kOAuthToken);
+    job->SetClientID(kClientID);
+    job->SetCritical(true);
+    em::PolicyFetchRequest* fetch_request =
+        job->GetRequest()->mutable_policy_request()->add_request();
+    fetch_request->set_policy_type(dm_protocol::kChromeUserPolicyType);
+    job->SetRetryCallback(base::Bind(
+        &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
+    job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
+                          base::Unretained(this)));
+    return job;
+  }
+
   DeviceManagementRequestJob* StartAutoEnrollmentJob() {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT,
@@ -403,7 +420,8 @@ class DeviceManagementServiceTest
   void CheckURLAndQueryParams(const GURL& request_url,
                               const std::string& request_type,
                               const std::string& device_id,
-                              const std::string& last_error) {
+                              const std::string& last_error,
+                              bool critical = false) {
     const GURL service_url(kServiceUrl);
     EXPECT_EQ(service_url.scheme(), request_url.scheme());
     EXPECT_EQ(service_url.host(), request_url.host());
@@ -417,6 +435,8 @@ class DeviceManagementServiceTest
                                    dm_protocol::kValueDeviceType));
     EXPECT_TRUE(query_params.Check(dm_protocol::kParamAppType,
                                    dm_protocol::kValueAppType));
+    EXPECT_EQ(critical,
+              query_params.Check(dm_protocol::kParamCritical, "true"));
     if (last_error == "") {
       EXPECT_TRUE(query_params.Check(dm_protocol::kParamRetry, "false"));
     } else {
@@ -457,6 +477,16 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   std::string response_data;
   ASSERT_TRUE(expected_response.SerializeToString(&response_data));
   SendResponse(fetcher, net::OK, 200, response_data);
+}
+
+TEST_F(DeviceManagementServiceTest, CriticalRequest) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartCriticalPolicyFetchJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  CheckURLAndQueryParams(fetcher->GetOriginalURL(),
+                         dm_protocol::kValueRequestPolicy, kClientID, "", true);
 }
 
 TEST_F(DeviceManagementServiceTest, CertBasedRegisterRequest) {

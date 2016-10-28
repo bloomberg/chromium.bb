@@ -214,6 +214,8 @@ void CloudPolicyClient::FetchPolicy() {
                           GetRequestContext()));
   policy_fetch_request_job_->SetDMToken(dm_token_);
   policy_fetch_request_job_->SetClientID(client_id_);
+  if (!public_key_version_valid_)
+    policy_fetch_request_job_->SetCritical(true);
 
   em::DeviceManagementRequest* request =
       policy_fetch_request_job_->GetRequest();

@@ -21,6 +21,7 @@ namespace dm_protocol {
 // Name extern constants for URL query parameters.
 POLICY_EXPORT extern const char kParamAgent[];
 POLICY_EXPORT extern const char kParamAppType[];
+POLICY_EXPORT extern const char kParamCritical[];
 POLICY_EXPORT extern const char kParamDeviceID[];
 POLICY_EXPORT extern const char kParamDeviceType[];
 POLICY_EXPORT extern const char kParamLastError[];
