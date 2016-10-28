@@ -201,6 +201,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_XFERMODE_PARAM
+#   define SK_SUPPORT_LEGACY_XFERMODE_PARAM
+#endif
+
 #ifndef SK_SUPPORT_LEGACY_CLIP_REGIONOPS
 #define SK_SUPPORT_LEGACY_CLIP_REGIONOPS
 #endif
