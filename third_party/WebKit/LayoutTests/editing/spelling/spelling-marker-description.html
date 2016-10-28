@@ -1,34 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<div id="container">
-  <div id="destination" contentEditable></div>
-</div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 
 <script>
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
-
-function test()
-{
-    jsTestIsAsync = true;
-
-    var sel = window.getSelection();
-    var destination = document.getElementById("destination");
-    destination.focus();
-    document.execCommand("InsertHTML", false, "wellcome");
-    document.execCommand("InsertText", false, ".");
-
-    shouldBecomeEqualToString('internals.markerDescriptionForNode(destination.firstChild, "spelling", 0)', 'welcome', finishJSTest);
-}
-
-description("The spellchecker should store replacement text in each marker.");
-if (window.internals)
-    test();
-
+spellcheck_test(
+    '<div contenteditable>|</div>',
+    'insertText wellcome.',
+    '<div contenteditable>#wellcome#.</div>',
+    {
+      title: 'Mark misspelled word "wellcome".',
+      callback: sample => test(() => {
+          const document = sample.document;
+          const textNode = document.querySelector('div').firstChild;
+          assert_equals(
+              internals.markerDescriptionForNode(textNode, 'spelling', 0),
+              'welcome');
+          sample.remove();
+      }, 'Spelling marker on "wellcome" stores replacement text "welcome".')
+    });
 </script>
-</body>
-</html>
