@@ -11,10 +11,12 @@
 
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "ui/aura/mus/mus_types.h"
 
 namespace aura {
 
 enum class WindowTreeChangeType {
+  ADD_TRANSIENT,
   BOUNDS,
   // Used for both set and release capture.
   CAPTURE,
@@ -23,10 +25,16 @@ enum class WindowTreeChangeType {
   NEW_TOP_LEVEL,
   NEW_WINDOW,
   PROPERTY,
+  REMOVE_TRANSIENT,
   VISIBLE,
 
   // This covers all cases that aren't used in tests.
   OTHER,
+};
+
+struct TransientData {
+  Id parent_id;
+  Id child_id;
 };
 
 // WindowTree implementation for tests. TestWindowTree maintains a list of all
@@ -68,6 +76,9 @@ class TestWindowTree : public ui::mojom::WindowTree {
                                      uint32_t* change_id);
 
   size_t GetChangeCountForType(WindowTreeChangeType type);
+
+  // Data from the most recently added/removed transient window.
+  const TransientData& transient_data() const { return transient_data_; }
 
  private:
   struct Change {
@@ -176,6 +187,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
   ui::mojom::WindowTreeClient* client_;
 
   mojo::Map<mojo::String, mojo::Array<uint8_t>> last_new_window_properties_;
+
+  TransientData transient_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

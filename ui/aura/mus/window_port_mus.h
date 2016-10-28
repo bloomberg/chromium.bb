@@ -93,16 +93,18 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   //     window_tree_client_->OnFooChanged(this, ...);
   enum ServerChangeType {
     ADD,
+    ADD_TRANSIENT,
     BOUNDS,
     PROPERTY,
     REMOVE,
+    REMOVE_TRANSIENT,
     REORDER,
     VISIBLE,
   };
 
   // Contains data needed to identify a change from the server.
   struct ServerChangeData {
-    // Applies to ADD, REMOVE and REORDER.
+    // Applies to ADD, ADD_TRANSIENT, REMOVE, REMOVE_TRANSIENT and REORDER.
     Id child_id;
     // Applies to BOUNDS.
     gfx::Rect bounds;
@@ -177,6 +179,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const std::vector<uint8_t>* property_data) override;
   void SetSurfaceIdFromServer(
       std::unique_ptr<SurfaceInfo> surface_info) override;
+  void AddTransientChildFromServer(WindowMus* child) override;
+  void RemoveTransientChildFromServer(WindowMus* child) override;
+  ChangeSource OnTransientChildAdded(WindowMus* child) override;
+  ChangeSource OnTransientChildRemoved(WindowMus* child) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
       const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(

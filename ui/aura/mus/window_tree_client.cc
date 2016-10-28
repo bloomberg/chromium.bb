@@ -18,6 +18,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/property_converter.h"
@@ -161,6 +162,7 @@ WindowTreeClient::WindowTreeClient(
     binding_.Bind(std::move(request));
   delegate_->GetFocusClient()->AddObserver(this);
   delegate_->GetCaptureClient()->AddObserver(this);
+  client::GetTransientWindowClient()->AddObserver(this);
   if (window_manager_delegate)
     window_manager_delegate->SetWindowManagerClient(this);
 }
@@ -194,8 +196,9 @@ WindowTreeClient::~WindowTreeClient() {
   for (WindowTreeClientObserver& observer : observers_)
     observer.OnDidDestroyClient(this);
 
-  delegate_->GetFocusClient()->RemoveObserver(this);
+  client::GetTransientWindowClient()->RemoveObserver(this);
   delegate_->GetCaptureClient()->RemoveObserver(this);
+  delegate_->GetFocusClient()->RemoveObserver(this);
 }
 
 void WindowTreeClient::ConnectViaWindowTreeFactory(
@@ -1120,28 +1123,22 @@ void WindowTreeClient::OnClientAreaChanged(
 
 void WindowTreeClient::OnTransientWindowAdded(uint32_t window_id,
                                               uint32_t transient_window_id) {
-  // TODO: needs to route to StackingClient.
-  /*
-  Window* window = GetWindowByServerId(window_id);
-  Window* transient_window = GetWindowByServerId(transient_window_id);
+  WindowMus* window = GetWindowByServerId(window_id);
+  WindowMus* transient_window = GetWindowByServerId(transient_window_id);
   // window or transient_window or both may be null if a local delete occurs
   // with an in flight add from the server.
   if (window && transient_window)
-    WindowPrivate(window).LocalAddTransientWindow(transient_window);
-  */
+    window->AddTransientChildFromServer(transient_window);
 }
 
 void WindowTreeClient::OnTransientWindowRemoved(uint32_t window_id,
                                                 uint32_t transient_window_id) {
-  // TODO: needs to route to StackingClient.
-  /*
-  Window* window = GetWindowByServerId(window_id);
-  Window* transient_window = GetWindowByServerId(transient_window_id);
+  WindowMus* window = GetWindowByServerId(window_id);
+  WindowMus* transient_window = GetWindowByServerId(transient_window_id);
   // window or transient_window or both may be null if a local delete occurs
   // with an in flight delete from the server.
   if (window && transient_window)
-    WindowPrivate(window).LocalRemoveTransientWindow(transient_window);
-  */
+    window->RemoveTransientChildFromServer(transient_window);
 }
 
 void WindowTreeClient::OnWindowHierarchyChanged(
@@ -1763,6 +1760,37 @@ void WindowTreeClient::SetRootWindowBounds(Window* window, gfx::Rect* bounds) {
   // We need the root window to always have an origin of 0x0 locally.
   window_tree_host->set_origin_offset(bounds->OffsetFromOrigin());
   bounds->set_origin(gfx::Point());
+}
+
+void WindowTreeClient::OnTransientChildWindowAdded(Window* parent,
+                                                   Window* transient_child) {
+  if (WindowMus::Get(parent)->OnTransientChildAdded(
+          WindowMus::Get(transient_child)) == WindowMus::ChangeSource::SERVER) {
+    return;
+  }
+  // The change originated from client code and needs to be sent to the server.
+  DCHECK(tree_);
+  WindowMus* parent_mus = WindowMus::Get(parent);
+  const uint32_t change_id =
+      ScheduleInFlightChange(base::MakeUnique<CrashInFlightChange>(
+          parent_mus, ChangeType::ADD_TRANSIENT_WINDOW));
+  tree_->AddTransientWindow(change_id, parent_mus->server_id(),
+                            WindowMus::Get(transient_child)->server_id());
+}
+
+void WindowTreeClient::OnTransientChildWindowRemoved(Window* parent,
+                                                     Window* transient_child) {
+  if (WindowMus::Get(parent)->OnTransientChildRemoved(
+          WindowMus::Get(transient_child)) == WindowMus::ChangeSource::SERVER) {
+    return;
+  }
+  // The change originated from client code and needs to be sent to the server.
+  DCHECK(tree_);
+  WindowMus* child_mus = WindowMus::Get(transient_child);
+  const uint32_t change_id =
+      ScheduleInFlightChange(base::MakeUnique<CrashInFlightChange>(
+          child_mus, ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT));
+  tree_->RemoveTransientWindowFromParent(change_id, child_mus->server_id());
 }
 
 }  // namespace aura

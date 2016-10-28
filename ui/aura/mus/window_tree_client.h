@@ -24,6 +24,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
@@ -74,9 +75,10 @@ class AURA_EXPORT WindowTreeClient
     : NON_EXPORTED_BASE(public ui::mojom::WindowTreeClient),
       NON_EXPORTED_BASE(public ui::mojom::WindowManager),
       public WindowManagerClient,
+      public WindowTreeHostMusDelegate,
       public client::CaptureClientObserver,
       public client::FocusChangeObserver,
-      public WindowTreeHostMusDelegate {
+      public client::TransientWindowClientObserver {
  public:
   explicit WindowTreeClient(
       WindowTreeClientDelegate* delegate,
@@ -444,6 +446,12 @@ class AURA_EXPORT WindowTreeClient
 
   // Overriden from WindowTreeHostMusDelegate:
   void SetRootWindowBounds(Window* window, gfx::Rect* bounds) override;
+
+  // Override from client::TransientWindowClientObserver:
+  void OnTransientChildWindowAdded(Window* parent,
+                                   Window* transient_child) override;
+  void OnTransientChildWindowRemoved(Window* parent,
+                                     Window* transient_child) override;
 
   // The one int in |cursor_location_mapping_|. When we read from this
   // location, we must always read from it atomically.

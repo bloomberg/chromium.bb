@@ -181,13 +181,17 @@ void TestWindowTree::RemoveWindowFromParent(uint32_t change_id,
 void TestWindowTree::AddTransientWindow(uint32_t change_id,
                                         uint32_t window_id,
                                         uint32_t transient_window_id) {
-  OnChangeReceived(change_id);
+  transient_data_.parent_id = window_id;
+  transient_data_.child_id = transient_window_id;
+  OnChangeReceived(change_id, WindowTreeChangeType::ADD_TRANSIENT);
 }
 
 void TestWindowTree::RemoveTransientWindowFromParent(
     uint32_t change_id,
     uint32_t transient_window_id) {
-  OnChangeReceived(change_id);
+  transient_data_.parent_id = kInvalidServerId;
+  transient_data_.child_id = transient_window_id;
+  OnChangeReceived(change_id, WindowTreeChangeType::REMOVE_TRANSIENT);
 }
 
 void TestWindowTree::SetModal(uint32_t change_id, uint32_t window_id) {

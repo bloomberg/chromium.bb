@@ -5,6 +5,7 @@
 #include "ui/aura/mus/window_port_mus.h"
 
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/surface_id_handler.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -84,7 +85,9 @@ bool WindowPortMus::RemoveChangeByTypeAndData(const ServerChangeType type,
 
     switch (type) {
       case ServerChangeType::ADD:
+      case ServerChangeType::ADD_TRANSIENT:
       case ServerChangeType::REMOVE:
+      case ServerChangeType::REMOVE_TRANSIENT:
       case ServerChangeType::REORDER:
         if (iter->data.child_id == data.child_id)
           break;
@@ -210,6 +213,49 @@ void WindowPortMus::SetSurfaceIdFromServer(
                                                              &surface_info);
   }
   surface_info_ = std::move(surface_info);
+}
+
+void WindowPortMus::AddTransientChildFromServer(WindowMus* child) {
+  DCHECK(has_server_window());
+  ServerChangeData data;
+  data.child_id = child->server_id();
+  ScopedServerChange change(this, ServerChangeType::ADD_TRANSIENT, data);
+  client::GetTransientWindowClient()->AddTransientChild(window_,
+                                                        child->GetWindow());
+}
+
+void WindowPortMus::RemoveTransientChildFromServer(WindowMus* child) {
+  DCHECK(has_server_window());
+  ServerChangeData data;
+  data.child_id = child->server_id();
+  ScopedServerChange change(this, ServerChangeType::REMOVE_TRANSIENT, data);
+  client::GetTransientWindowClient()->RemoveTransientChild(window_,
+                                                           child->GetWindow());
+}
+
+WindowPortMus::ChangeSource WindowPortMus::OnTransientChildAdded(
+    WindowMus* child) {
+  DCHECK(has_server_window());
+  ServerChangeData change_data;
+  change_data.child_id = child->server_id();
+  // If there was a change it means we scheduled the change by way of
+  // AddTransientChildFromServer(), which came from the server.
+  return RemoveChangeByTypeAndData(ServerChangeType::ADD_TRANSIENT, change_data)
+             ? ChangeSource::SERVER
+             : ChangeSource::LOCAL;
+}
+
+WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
+    WindowMus* child) {
+  DCHECK(has_server_window());
+  ServerChangeData change_data;
+  change_data.child_id = child->server_id();
+  // If there was a change it means we scheduled the change by way of
+  // RemoveTransientChildFromServer(), which came from the server.
+  return RemoveChangeByTypeAndData(ServerChangeType::REMOVE_TRANSIENT,
+                                   change_data)
+             ? ChangeSource::SERVER
+             : ChangeSource::LOCAL;
 }
 
 std::unique_ptr<WindowMusChangeData>

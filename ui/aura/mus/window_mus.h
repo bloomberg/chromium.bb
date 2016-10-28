@@ -45,6 +45,14 @@ struct AURA_EXPORT WindowMusChangeData {
 // change the bounds too. See WindowPortMus for details.
 class AURA_EXPORT WindowMus {
  public:
+
+  enum class ChangeSource {
+    // The change was made locally.
+    LOCAL,
+    // The change originated from the server.
+    SERVER,
+  };
+
   // |create_remote_window| indicates whether a window should be created on the
   // server. Generally |create_remote_window| should be true, only in rare
   // exceptions (such as the root of a WindowTreeHost) is it false.
@@ -85,6 +93,11 @@ class AURA_EXPORT WindowMus {
                                      const std::vector<uint8_t>* data) = 0;
   virtual void SetSurfaceIdFromServer(
       std::unique_ptr<SurfaceInfo> surface_info) = 0;
+  virtual void AddTransientChildFromServer(WindowMus* child) = 0;
+  virtual void RemoveTransientChildFromServer(WindowMus* child) = 0;
+  // Called when a window was added/removed as a transient child.
+  virtual ChangeSource OnTransientChildAdded(WindowMus* child) = 0;
+  virtual ChangeSource OnTransientChildRemoved(WindowMus* child) = 0;
 
   // Called in the rare case when WindowTreeClient needs to change state and
   // can't go through one of the SetFooFromServer() functions above. Generally

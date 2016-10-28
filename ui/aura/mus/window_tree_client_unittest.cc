@@ -13,6 +13,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
@@ -827,24 +828,40 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsProperties) {
   ASSERT_EQ(0u, properties.count(kTestPropertyServerKey2));
 }
 
-/*
-// Tests that if the client has multiple unowned windows, and one of them is a
-// transient child to another, the  teardown can happen cleanly.
-TEST_F(WindowTreeClientWmTest, MultipleUnOwnedWindowsDuringDestruction) {
-  std::unique_ptr<WindowTreeSetup> setup(new WindowTreeSetup());
-  Window* root1 = setup->GetFirstRoot();
-  ASSERT_TRUE(root1);
-  Window* root2 = setup->client()->NewTopLevelWindow(nullptr);
-  ASSERT_TRUE(root2);
-  root1->AddTransientWindow(root2);
+// Assertions around transient windows.
+TEST_F(WindowTreeClientClientTest, Transients) {
+  client::TransientWindowClient* transient_client =
+      client::GetTransientWindowClient();
+  Window parent(nullptr);
+  parent.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&parent);
+  Window transient(nullptr);
+  transient.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&transient);
+  window_tree()->AckAllChanges();
+  transient_client->AddTransientChild(&parent, &transient);
+  ASSERT_EQ(1u, window_tree()->GetChangeCountForType(
+                    WindowTreeChangeType::ADD_TRANSIENT));
+  EXPECT_EQ(server_id(&parent), window_tree()->transient_data().parent_id);
+  EXPECT_EQ(server_id(&transient), window_tree()->transient_data().child_id);
 
-  WindowTracker tracker;
-  tracker.Add(root1);
-  tracker.Add(root2);
-  reset();
-  EXPECT_TRUE(tracker.windows().empty());
+  // Remove from the server side.
+  window_tree_client()->OnTransientWindowRemoved(server_id(&parent),
+                                                 server_id(&transient));
+  EXPECT_EQ(nullptr, transient_client->GetTransientParent(&transient));
+  window_tree()->AckAllChanges();
+
+  // Add from the server.
+  window_tree_client()->OnTransientWindowAdded(server_id(&parent),
+                                               server_id(&transient));
+  EXPECT_EQ(&parent, transient_client->GetTransientParent(&transient));
+
+  // Remove locally.
+  transient_client->RemoveTransientChild(&parent, &transient);
+  ASSERT_EQ(1u, window_tree()->GetChangeCountForType(
+                    WindowTreeChangeType::REMOVE_TRANSIENT));
+  EXPECT_EQ(server_id(&transient), window_tree()->transient_data().child_id);
 }
-*/
 
 TEST_F(WindowTreeClientClientTest,
        TopLevelWindowDestroyedBeforeCreateComplete) {
@@ -951,37 +968,38 @@ TEST_F(WindowTreeClientWmTest, TwoWindowsRequestCapture) {
   EXPECT_FALSE(root_window()->HasCapture());
 }
 
-/*
 TEST_F(WindowTreeClientWmTest, WindowDestroyedWhileTransientChildHasCapture) {
-  WindowTreeSetup setup;
-  Window* root = GetFirstRoot();
-  Window* transient_parent = client()->NewWindow();
-  Window* transient_child = client()->NewWindow();
-  transient_parent->SetVisible(true);
-  transient_child->SetVisible(true);
-  root->AddChild(transient_parent);
-  root->AddChild(transient_child);
+  std::unique_ptr<Window> transient_parent(base::MakeUnique<Window>(nullptr));
+  transient_parent->Init(ui::LAYER_NOT_DRAWN);
+  // Owned by |transient_parent|.
+  Window* transient_child = new Window(nullptr);
+  transient_child->Init(ui::LAYER_NOT_DRAWN);
+  transient_parent->Show();
+  transient_child->Show();
+  root_window()->AddChild(transient_parent.get());
+  root_window()->AddChild(transient_child);
 
-  transient_parent->AddTransientWindow(transient_child);
+  client::GetTransientWindowClient()->AddTransientChild(transient_parent.get(),
+                                                        transient_child);
 
   WindowTracker tracker;
-  tracker.Add(transient_parent);
+  tracker.Add(transient_parent.get());
   tracker.Add(transient_child);
   // Request a capture on the transient child, then destroy the transient
   // parent. That will destroy both windows, and should reset the capture window
   // correctly.
   transient_child->SetCapture();
-  transient_parent->Destroy();
+  transient_parent.reset();
   EXPECT_TRUE(tracker.windows().empty());
 
   // Create a new Window, and attempt to place capture on that.
-  Window* child = client()->NewWindow();
-  child->SetVisible(true);
-  root->AddChild(child);
-  child->SetCapture();
-  EXPECT_TRUE(child->HasCapture());
+  Window child(nullptr);
+  child.Init(ui::LAYER_NOT_DRAWN);
+  child.Show();
+  root_window()->AddChild(&child);
+  child.SetCapture();
+  EXPECT_TRUE(child.HasCapture());
 }
-*/
 
 namespace {
 
