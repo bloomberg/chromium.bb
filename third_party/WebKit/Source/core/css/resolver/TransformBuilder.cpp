@@ -102,6 +102,30 @@ static TransformOperation::OperationType getTransformOperationType(
   }
 }
 
+bool TransformBuilder::hasRelativeLengths(const CSSValueList& valueList) {
+  for (auto& value : valueList) {
+    const CSSFunctionValue* transformValue = toCSSFunctionValue(value.get());
+
+    for (const CSSValue* item : *transformValue) {
+      const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*item);
+
+      // TODO(hs1217.lee) : to prevent relative unit like calc(10px + 1em).
+      // but when calc() not take parameter of ralative unit like calc(1px +1
+      // px),
+      // shoud be return false;
+      if (primitiveValue.isCalculated()) {
+        return true;
+      }
+
+      if (CSSPrimitiveValue::isRelativeUnit(
+              primitiveValue.typeWithCalcResolved())) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 TransformOperations TransformBuilder::createTransformOperations(
     const CSSValue& inValue,
     const CSSToLengthConversionData& conversionData) {

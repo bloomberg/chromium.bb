@@ -104,6 +104,8 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   DOMMatrix* skewYSelf(double sy = 0);
   DOMMatrix* invertSelf();
 
+  DOMMatrix* setMatrixValue(const String&, ExceptionState&);
+
  private:
   DOMMatrix(const TransformationMatrix&, bool is2D = true);
   template <typename T>

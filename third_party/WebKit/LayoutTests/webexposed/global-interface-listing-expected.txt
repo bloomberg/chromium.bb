@@ -993,6 +993,7 @@ interface DOMMatrix : DOMMatrixReadOnly
     method rotateSelf
     method scale3dSelf
     method scaleSelf
+    method setMatrixValue
     method skewXSelf
     method skewYSelf
     method translateSelf
