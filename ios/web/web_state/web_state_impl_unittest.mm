@@ -172,14 +172,10 @@ class TestWebStateDelegate : public WebStateDelegate {
 class TestJavaScriptDialogPresenter : public JavaScriptDialogPresenter {
  public:
   TestJavaScriptDialogPresenter()
-      : cancel_active_and_pending_dialogs_called_(false),
-        run_java_script_dialog_called_(false) {}
+      : cancel_dialogs_called_(false), run_java_script_dialog_called_(false) {}
 
-  // True if the JavaScriptDialogPresenter CancelActiveAndPendingDialogs method
-  // has been called.
-  bool cancel_active_and_pending_dialogs_called() const {
-    return cancel_active_and_pending_dialogs_called_;
-  }
+  // True if the JavaScriptDialogPresenter CancelDialogs method has been called.
+  bool cancel_dialogs_called() const { return cancel_dialogs_called_; }
 
   // True if the JavaScriptDialogPresenter RunJavaScriptDialog method has been
   // called.
@@ -199,11 +195,11 @@ class TestJavaScriptDialogPresenter : public JavaScriptDialogPresenter {
     callback.Run(false, nil);
   }
 
-  void CancelActiveAndPendingDialogs(WebState* web_state) override {
-    cancel_active_and_pending_dialogs_called_ = true;
+  void CancelDialogs(WebState* web_state) override {
+    cancel_dialogs_called_ = true;
   }
 
-  bool cancel_active_and_pending_dialogs_called_;
+  bool cancel_dialogs_called_;
   bool run_java_script_dialog_called_;
 };
 
@@ -515,7 +511,7 @@ TEST_F(WebStateTest, DelegateTest) {
 
   EXPECT_FALSE(delegate.get_java_script_dialog_presenter_called());
   EXPECT_FALSE(presenter.run_java_script_dialog_called());
-  EXPECT_FALSE(presenter.cancel_active_and_pending_dialogs_called());
+  EXPECT_FALSE(presenter.cancel_dialogs_called());
 
   __block bool callback_called = false;
   web_state_->RunJavaScriptDialog(GURL(), JAVASCRIPT_DIALOG_TYPE_ALERT, @"",
@@ -527,9 +523,9 @@ TEST_F(WebStateTest, DelegateTest) {
   EXPECT_TRUE(presenter.run_java_script_dialog_called());
   EXPECT_TRUE(callback_called);
 
-  EXPECT_FALSE(presenter.cancel_active_and_pending_dialogs_called());
-  web_state_->CancelActiveAndPendingDialogs();
-  EXPECT_TRUE(presenter.cancel_active_and_pending_dialogs_called());
+  EXPECT_FALSE(presenter.cancel_dialogs_called());
+  web_state_->CancelDialogs();
+  EXPECT_TRUE(presenter.cancel_dialogs_called());
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.

@@ -1279,7 +1279,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 // Caller must reset the delegate before calling.
 - (void)close {
-  _webStateImpl->CancelActiveAndPendingDialogs();
+  _webStateImpl->CancelDialogs();
 
   _SSLStatusUpdater.reset();
 
@@ -4771,7 +4771,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
   if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
     [self.UIDelegate cancelDialogsForWebController:self];
-  _webStateImpl->CancelActiveAndPendingDialogs();
+  _webStateImpl->CancelDialogs();
 
   if (allowCache)
     _expectedReconstructionURL = [self currentNavigationURL];
@@ -4790,7 +4790,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
   if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
     [self.UIDelegate cancelDialogsForWebController:self];
-  _webStateImpl->CancelActiveAndPendingDialogs();
+  _webStateImpl->CancelDialogs();
 
   SEL rendererCrashSelector = @selector(webControllerWebProcessDidCrash:);
   if ([self.delegate respondsToSelector:rendererCrashSelector])

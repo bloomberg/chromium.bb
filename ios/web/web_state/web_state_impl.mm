@@ -453,12 +453,12 @@ void WebStateImpl::RunJavaScriptDialog(
                                  message_text, default_prompt_text, callback);
 }
 
-void WebStateImpl::CancelActiveAndPendingDialogs() {
+void WebStateImpl::CancelDialogs() {
   if (delegate_) {
     JavaScriptDialogPresenter* presenter =
         delegate_->GetJavaScriptDialogPresenter(this);
     if (presenter) {
-      presenter->CancelActiveAndPendingDialogs(this);
+      presenter->CancelDialogs(this);
     }
   }
 }

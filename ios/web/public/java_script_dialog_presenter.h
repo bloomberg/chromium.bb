@@ -21,13 +21,13 @@ class JavaScriptDialogPresenter {
   // |callback| even if they choose not to present the dialog.
   virtual void RunJavaScriptDialog(WebState* web_state,
                                    const GURL& origin_url,
-                                   JavaScriptDialogType java_script_dialog_type,
+                                   JavaScriptDialogType dialog_type,
                                    NSString* message_text,
                                    NSString* default_prompt_text,
                                    const DialogClosedCallback& callback) = 0;
   // Informs clients that all requested dialogs associated with |web_state|
   // should be dismissed.
-  virtual void CancelActiveAndPendingDialogs(WebState* web_state) = 0;
+  virtual void CancelDialogs(WebState* web_state) = 0;
 };
 
 }  // namespace web
