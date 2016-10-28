@@ -26,10 +26,10 @@ const uint8_t GLTestHelper::kCheckClearValue;
 GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
   // clang-format off
   const char kFragmentShader[] = STRINGIZE(
-    uniform SamplerType a_texture;
+    uniform SamplerType u_texture;
     varying vec2 v_texCoord;
     void main() {
-      gl_FragColor = TextureLookup(a_texture, v_texCoord * TextureScale);
+      gl_FragColor = TextureLookup(u_texture, v_texCoord * TextureScale);
     }
   );
   const char kShaderFloatPrecision[] = STRINGIZE(
@@ -342,10 +342,15 @@ void GLTestHelper::DrawTextureQuad(GLenum target, const gfx::Size& size) {
   EXPECT_NE(program, 0u);
   glUseProgram(program);
 
-  GLint sampler_location = glGetUniformLocation(program, "a_texture");
+  GLint position_loc = glGetAttribLocation(program, "a_position");
+  GLint sampler_location = glGetUniformLocation(program, "u_texture");
+  ASSERT_NE(position_loc, -1);
   ASSERT_NE(sampler_location, -1);
 
-  GLuint vertex_buffer = GLTestHelper::SetupUnitQuad(sampler_location);
+  GLuint vertex_buffer = GLTestHelper::SetupUnitQuad(position_loc);
+  ASSERT_NE(vertex_buffer, 0u);
+  glUniform1i(sampler_location, 0);
+
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
   glDeleteShader(vertex_shader);
