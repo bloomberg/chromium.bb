@@ -404,10 +404,29 @@ class SimulatorTestRunner(TestRunner):
         # Ignore a 1 exit code (which means there were no simulators to kill).
         raise
 
+  def wipe_simulator(self):
+    """Wipes the simulator."""
+    subprocess.check_call([
+        self.iossim_path,
+        '-d', self.platform,
+        '-s', self.version,
+        '-w',
+    ])
+
+  def get_home_directory(self):
+    """Returns the simulator's home directory."""
+    return subprocess.check_output([
+        self.iossim_path,
+        '-d', self.platform,
+        '-p',
+        '-s', self.version,
+    ]).rstrip()
+
   def set_up(self):
     """Performs setup actions which must occur prior to every test launch."""
     self.kill_simulators()
-    self.homedir = tempfile.mkdtemp()
+    self.wipe_simulator()
+    self.homedir = self.get_home_directory()
     # Crash reports have a timestamp in their file name, formatted as
     # YYYY-MM-DD-HHMMSS. Save the current time in the same format so
     # we can compare and fetch crash reports from this run later on.
@@ -476,6 +495,7 @@ class SimulatorTestRunner(TestRunner):
     self.retrieve_crash_reports()
     self.screenshot_desktop()
     self.kill_simulators()
+    self.wipe_simulator()
     if os.path.exists(self.homedir):
       shutil.rmtree(self.homedir, ignore_errors=True)
       self.homedir = ''
@@ -495,8 +515,6 @@ class SimulatorTestRunner(TestRunner):
         self.iossim_path,
         '-d', self.platform,
         '-s', self.version,
-        '-t', '120',
-        '-u', self.homedir,
     ]
     args = []
 
