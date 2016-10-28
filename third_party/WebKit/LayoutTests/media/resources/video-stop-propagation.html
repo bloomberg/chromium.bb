@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<script src="../media-file.js"></script>
+<!--Padding ensures the overflow menu is visible for the tests. -->
+<body style="padding-top: 100px; padding-left: 100px">
+<video controls width=60></video>
+</body>
+<script>
+  // Set up video
+  var video = document.querySelector("video");
+  video.src = findMediaFile("video", "../content/test");
+  // Add captions
+  var track = video.addTextTrack("captions");
+
+  // Listener blocking propogation.
+  window.addEventListener('click', e => e.stopPropagation(), true);
+</script>
+</html>

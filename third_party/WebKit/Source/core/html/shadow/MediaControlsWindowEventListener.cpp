@@ -6,10 +6,22 @@
 
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControls.h"
 
 namespace blink {
+
+namespace {
+
+// Helper returning the top DOMWindow as a LocalDOMWindow. Returns nullptr if it
+// is not a LocalDOMWindow.
+// This does not work with OOPIF.
+LocalDOMWindow* getTopLocalDOMWindow(LocalDOMWindow* window) {
+  if (!window->top() || !window->top()->isLocalDOMWindow())
+    return nullptr;
+  return static_cast<LocalDOMWindow*>(window->top());
+}
+
+}  // anonymous namespace
 
 MediaControlsWindowEventListener* MediaControlsWindowEventListener::create(
     MediaControls* mediaControls,
@@ -37,40 +49,53 @@ void MediaControlsWindowEventListener::start() {
   if (m_isActive)
     return;
 
-  if (LocalDOMWindow* window = getLocalDOMWindow()) {
-    window->addEventListener(EventTypeNames::click, this, false);
-    window->addEventListener(EventTypeNames::resize, this, false);
+  if (LocalDOMWindow* window = m_mediaControls->document().domWindow()) {
+    window->addEventListener(EventTypeNames::click, this, true);
 
-    m_mediaControls->panelElement()->addEventListener(EventTypeNames::click,
-                                                      this, false);
-    m_mediaControls->timelineElement()->addEventListener(EventTypeNames::click,
-                                                         this, false);
-    m_mediaControls->castButtonElement()->addEventListener(
-        EventTypeNames::click, this, false);
-    m_mediaControls->volumeSliderElement()->addEventListener(
-        EventTypeNames::click, this, false);
-
-    m_isActive = true;
+    if (LocalDOMWindow* outerWindow = getTopLocalDOMWindow(window)) {
+      if (window != outerWindow)
+        outerWindow->addEventListener(EventTypeNames::click, this, true);
+      outerWindow->addEventListener(EventTypeNames::resize, this, true);
+    }
   }
+
+  m_mediaControls->panelElement()->addEventListener(EventTypeNames::click, this,
+                                                    false);
+  m_mediaControls->timelineElement()->addEventListener(EventTypeNames::click,
+                                                       this, false);
+  m_mediaControls->castButtonElement()->addEventListener(EventTypeNames::click,
+                                                         this, false);
+  m_mediaControls->volumeSliderElement()->addEventListener(
+      EventTypeNames::click, this, false);
+
+  m_isActive = true;
 }
 
 void MediaControlsWindowEventListener::stop() {
   if (!m_isActive)
     return;
 
-  if (LocalDOMWindow* window = getLocalDOMWindow()) {
-    window->removeEventListener(EventTypeNames::click, this, false);
-    window->removeEventListener(EventTypeNames::resize, this, false);
+  if (LocalDOMWindow* window = m_mediaControls->document().domWindow()) {
+    window->removeEventListener(EventTypeNames::click, this, true);
 
-    m_mediaControls->panelElement()->removeEventListener(EventTypeNames::click,
-                                                         this, false);
-    m_mediaControls->timelineElement()->removeEventListener(
-        EventTypeNames::click, this, false);
-    m_mediaControls->castButtonElement()->removeEventListener(
-        EventTypeNames::click, this, false);
-    m_mediaControls->volumeSliderElement()->removeEventListener(
-        EventTypeNames::click, this, false);
+    if (LocalDOMWindow* outerWindow = getTopLocalDOMWindow(window)) {
+      if (window != outerWindow)
+        outerWindow->removeEventListener(EventTypeNames::click, this, true);
+      outerWindow->removeEventListener(EventTypeNames::resize, this, true);
+    }
+
+    m_isActive = false;
   }
+
+  m_mediaControls->panelElement()->removeEventListener(EventTypeNames::click,
+                                                       this, false);
+  m_mediaControls->timelineElement()->removeEventListener(EventTypeNames::click,
+                                                          this, false);
+  m_mediaControls->castButtonElement()->removeEventListener(
+      EventTypeNames::click, this, false);
+  m_mediaControls->volumeSliderElement()->removeEventListener(
+      EventTypeNames::click, this, false);
+
   m_isActive = false;
 }
 
@@ -83,17 +108,6 @@ void MediaControlsWindowEventListener::handleEvent(
   if (!m_isActive)
     return;
   (*m_callback.get())();
-}
-
-LocalDOMWindow* MediaControlsWindowEventListener::getLocalDOMWindow() const {
-  LocalDOMWindow* window =
-      m_mediaControls->mediaElement().document().domWindow();
-
-  while (window && window != window->parent() && window->parent() &&
-         window->parent()->isLocalDOMWindow())
-    window = static_cast<LocalDOMWindow*>(window->parent());
-
-  return window;
 }
 
 DEFINE_TRACE(MediaControlsWindowEventListener) {

@@ -33,8 +33,6 @@ class MediaControlsWindowEventListener final : public EventListener {
 
   void handleEvent(ExecutionContext*, Event*) override;
 
-  LocalDOMWindow* getLocalDOMWindow() const;
-
   Member<MediaControls> m_mediaControls;
   std::unique_ptr<Callback> m_callback;
   bool m_isActive;
