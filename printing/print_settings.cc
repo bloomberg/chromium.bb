@@ -142,6 +142,7 @@ void PrintSettings::Clear() {
   requested_media_ = RequestedMedia();
   page_setup_device_units_.Clear();
   dpi_ = 0;
+  scale_factor_ = 1.0f;
   landscape_ = false;
   supports_alpha_blend_ = true;
   should_print_backgrounds_ = false;
