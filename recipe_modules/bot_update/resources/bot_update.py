@@ -299,7 +299,11 @@ def remove(target):
     os.makedirs(dead_folder)
   dest = path.join(dead_folder, uuid.uuid4().hex)
   print 'Marking for removal %s => %s' % (target, dest)
-  os.rename(target, dest)
+  try:
+    os.rename(target, dest)
+  except Exception as e:
+    print 'Error renaming %s to %s: %s' % (target, dest, str(e))
+    raise
 
 
 def ensure_no_checkout(dir_names):
