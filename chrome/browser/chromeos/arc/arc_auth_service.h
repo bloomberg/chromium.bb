@@ -65,7 +65,6 @@ class ArcAuthService : public ArcService,
 
   enum class UIPage {
     NO_PAGE,              // Hide everything.
-    TERMS_PROGRESS,       // Terms loading progress page.
     TERMS,                // Terms content page.
     LSO_PROGRESS,         // LSO loading progress page.
     LSO,                  // LSO page to enter user's credentials.

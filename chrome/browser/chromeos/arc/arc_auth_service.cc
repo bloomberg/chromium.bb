@@ -851,7 +851,7 @@ void ArcAuthService::StartUI() {
 
   if (initial_opt_in_) {
     initial_opt_in_ = false;
-    ShowUI(UIPage::TERMS_PROGRESS, base::string16());
+    ShowUI(UIPage::TERMS, base::string16());
   } else {
     context_->PrepareContext();
   }

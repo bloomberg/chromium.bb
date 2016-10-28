@@ -8,7 +8,6 @@
  * @type {Array<string>}
  */
 var UI_PAGES = ['none',
-                'terms-loading',
                 'terms',
                 'lso-loading',
                 'lso',
@@ -28,26 +27,8 @@ var appWindow = null;
  */
 var lsoView = null;
 
-/**
- * Contains Play Store terms, loaded externally.
- * @type {WebView}
- */
-var termsView = null;
-
-/**
- * @type {MetricsPreferenceCheckbox}
- */
-var metricsCheckbox = null;
-
-/**
- * @type {PreferenceCheckbox}
- */
-var backupRestoreCheckbox = null;
-
-/**
- * @type {PreferenceCheckbox}
- */
-var locationServiceCheckbox = null;
+/** @type {TermsOfServicePage} */
+var termsPage = null;
 
 /**
  * Used for bidirectional communication with native code.
@@ -64,14 +45,9 @@ var currentDeviceId = null;
 /**
  * Indicates that terms were accepted by user.
  * @type {boolean}
+ * TODO: This should be a part of TermsOfServicePage.
  */
 var termsAccepted = false;
-
-/**
- * Indicates that current user has managed Arc.
- * @type {boolean}
- */
-var arcManaged = false;
 
 /**
  * Host window inner default width.
@@ -219,9 +195,6 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     var settingsLink = this.label_.querySelector('#settings-link');
     settingsLink.addEventListener(
         'click', (event) => this.onSettingsLinkClicked(event));
-
-    // Applying metrics mode changes page layout, update terms height.
-    updateTermsHeight();
   }
 
   /** Called when "settings" link is clicked. */
@@ -231,6 +204,210 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
   }
 };
 
+/**
+ * Represents the page loading state.
+ * @enum {number}
+ */
+var LoadState = {
+  UNLOADED: 0,
+  LOADING: 1,
+  ABORTED: 2,
+  LOADED: 3,
+};
+
+/**
+ * Handles events for Terms-Of-Service page. Also this implements the async
+ * loading of Terms-Of-Service content.
+ */
+class TermsOfServicePage {
+
+  /**
+   * @param {Element} container The container of the page.
+   * @param {boolean} isManaged Set true if ARC is managed.
+   * @param {string} countryCode The country code for the terms of service.
+   * @param {MetricsPreferenceCheckbox} metricsCheckbox. The checkbox for the
+   *     metrics preference.
+   * @param {PreferenceCheckbox} backupRestoreCheckbox The checkbox for the
+   *     backup-restore preference.
+   * @param {PreferenceCheckbox} locationServiceCheckbox The checkbox for the
+   *     location service.
+   */
+  constructor(
+      container, isManaged, countryCode,
+      metricsCheckbox, backupRestoreCheckbox, locationServiceCheckbox) {
+    this.loadingContainer_ =
+        container.querySelector('#terms-of-service-loading');
+    this.contentContainer_ =
+        container.querySelector('#terms-of-service-content');
+
+    this.metricsCheckbox_ = metricsCheckbox;
+    this.backupRestoreCheckbox_ = backupRestoreCheckbox;
+    this.locationServiceCheckbox_ = locationServiceCheckbox;
+
+    this.isManaged_ = isManaged;
+
+    // Set event listener for webview loading.
+    this.termsView_ = container.querySelector('#terms-view');
+    this.termsView_.addEventListener(
+        'loadstart', () => this.onTermsViewLoadStarted_());
+    this.termsView_.addEventListener(
+        'contentload', () => this.onTermsViewLoaded_());
+    this.termsView_.addEventListener(
+        'loadabort', (event) => this.onTermsViewLoadAborted_(event.reason));
+
+    var scriptSetCountryCode =
+        'document.countryCode = \'' + countryCode.toLowerCase() + '\';';
+    this.termsView_.addContentScripts([
+      { name: 'preProcess',
+        matches: ['https://play.google.com/*'],
+        js: { code: scriptSetCountryCode },
+        run_at: 'document_start'
+      },
+      { name: 'postProcess',
+        matches: ['https://play.google.com/*'],
+        css: { files: ['playstore.css'] },
+        js: { files: ['playstore.js'] },
+        run_at: 'document_end'
+      }]);
+
+    // webview is not allowed to open links in the new window. Hook these
+    // events and open links in overlay dialog.
+    this.termsView_.addEventListener('newwindow', function(event) {
+      event.preventDefault();
+      showURLOverlay(event.targetUrl);
+    });
+    this.state_ = LoadState.UNLOADED;
+
+    // On managed case, do not show TermsOfService section. Note that the
+    // checkbox for the prefereces are still visible.
+    var visibility = isManaged ? 'hidden' : 'visible';
+    container.querySelector('#terms-title').style.visibility = visibility;
+    container.querySelector('#terms-container').style.visibility = visibility;
+
+    // Set event handler for buttons.
+    container.querySelector('#button-agree')
+        .addEventListener('click', () => this.onAgree());
+    container.querySelector('#button-cancel')
+        .addEventListener('click', () => this.onCancel_());
+  }
+
+  /** Called when the TermsOfService page is shown. */
+  onShow() {
+    termsAccepted = false;
+
+    if (this.isManaged_ || this.state_ == LoadState.LOADED) {
+      // Note: in managed case, because it does not show the contents of terms
+      // of service, it is ok to show the content container immediately.
+      this.showContent_();
+    } else {
+      this.startTermsViewLoading_();
+    }
+  }
+
+  /** Shows the loaded terms-of-service content. */
+  showContent_() {
+    this.loadingContainer_.hidden = true;
+    this.contentContainer_.hidden = false;
+    this.updateTermsHeight_();
+  }
+
+  /**
+   * Updates terms view height manually because webview is not automatically
+   * resized in case parent div element gets resized.
+   */
+  updateTermsHeight_() {
+    // Update the height in next cycle to prevent webview animation and
+    // wrong layout caused by whole-page layout change.
+    setTimeout(function() {
+      var doc = appWindow.contentWindow.document;
+      // Reset terms-view height in order to stabilize style computation. For
+      // some reason, child webview affects final result.
+      this.termsView_.style.height = '0px';
+      var termsContainer =
+          this.contentContainer_.querySelector('#terms-container');
+      var style = window.getComputedStyle(termsContainer, null);
+      this.termsView_.style.height = style.getPropertyValue('height');
+    }.bind(this), 0);
+  }
+
+  /** Starts to load the terms of service webview content. */
+  startTermsViewLoading_() {
+    if (this.state_ == LoadState.LOADING) {
+      // If there already is inflight loading task, do nothing.
+      return;
+    }
+    this.termsView_.src = 'https://play.google.com/about/play-terms.html';
+  }
+
+  /** Called when the terms-view starts to be loaded. */
+  onTermsViewLoadStarted_() {
+    // Note: Reloading can be triggered by user action. E.g., user may select
+    // their language by selection at the bottom of the Terms Of Service
+    // content.
+    this.state_ = LoadState.LOADING;
+    // Show loading page.
+    this.loadingContainer_.hidden = false;
+    this.contentContainer_.hidden = true;
+  }
+
+  /** Called when the terms-view is loaded. */
+  onTermsViewLoaded_() {
+    // This is called also when the loading is failed.
+    // In such a case, onTermsViewLoadAborted_() is called in advance, and
+    // state_ is set to ABORTED. Here, switch the view only for the
+    // successful loading case.
+    if (this.state_ == LoadState.LOADING) {
+      this.state_ = LoadState.LOADED;
+      this.showContent_();
+    }
+  }
+
+  /** Called when the terms-view loading is aborted. */
+  onTermsViewLoadAborted_(reason) {
+    console.error('TermsView loading is aborted: ' + reason);
+    // Mark ABORTED so that onTermsViewLoaded_() won't show the content view.
+    this.state_ = LoadState.ABORTED;
+    setErrorMessage(
+        appWindow.contentWindow.loadTimeData.getString('serverError'));
+    showPage('error');
+  }
+
+  /** Called when "AGREE" button is clicked. */
+  onAgree() {
+    termsAccepted = true;
+
+    sendNativeMessage('onAgreed', {
+      isMetricsEnabled: this.metricsCheckbox_.isChecked(),
+      isBackupRestoreEnabled: this.backupRestoreCheckbox_.isChecked(),
+      isLocationServiceEnabled: this.locationServiceCheckbox_.isChecked()
+    });
+  }
+
+  /** Called when "CANCEL" button is clicked. */
+  onCancel_() {
+    if (appWindow) {
+      appWindow.close();
+    }
+  }
+
+  /** Called when metrics preference is updated. */
+  onMetricxPreferenceChanged(isEnabled, isManaged) {
+    this.metricsCheckbox_.onPreferenceChanged(isEnabled, isManaged);
+
+    // Applying metrics mode may change page layout, update terms height.
+    this.updateTermsHeight_();
+  }
+
+  /** Called when backup-restore preference is updated. */
+  onBackupRestorePreferenceChanged(isEnabled, isManaged) {
+    this.backupRestoreCheckbox_.onPreferenceChanged(isEnabled, isManaged);
+  }
+
+  /** Called when location service preference is updated. */
+  onLocationServicePreferenceChanged(isEnabled, isManaged) {
+    this.locationServiceCheckbox_.onPreferenceChanged(isEnabled, isManaged);
+  }
+};
 
 /**
  * Applies localization for html content and sets terms webview.
@@ -245,72 +422,29 @@ function initialize(data, deviceId) {
   appWindow.contentWindow.i18nTemplate.process(doc, loadTimeData);
 
   // Initialize preference connected checkboxes in terms of service page.
-  metricsCheckbox = new MetricsPreferenceCheckbox(
-      doc.getElementById('metrics-preference'),
-      data.learnMoreStatistics,
-      '#learn-more-link-metrics',
-      data.isOwnerProfile,
-      data.textMetricsDisabled,
-      data.textMetricsEnabled,
-      data.textMetricsManagedDisabled,
-      data.textMetricsManagedEnabled);
-  backupRestoreCheckbox = new PreferenceCheckbox(
-      doc.getElementById('backup-restore-preference'),
-      data.learnMoreBackupAndRestore,
-      '#learn-more-link-backup-restore',
-      data.controlledByPolicy);
-  locationServiceCheckbox = new PreferenceCheckbox(
-      doc.getElementById('location-service-preference'),
-      data.learnMoreLocationServices,
-      '#learn-more-link-location-service',
-      data.controlledByPolicy);
-
-  // Initialize terms of service view.
-  var countryCode = data.countryCode.toLowerCase();
-  var scriptSetCountryCode = 'document.countryCode = \'' + countryCode + '\';';
-  termsView.addContentScripts([
-      { name: 'preProcess',
-        matches: ['https://play.google.com/*'],
-        js: { code: scriptSetCountryCode },
-        run_at: 'document_start'
-      },
-      { name: 'postProcess',
-        matches: ['https://play.google.com/*'],
-        css: { files: ['playstore.css'] },
-        js: { files: ['playstore.js'] },
-        run_at: 'document_end'
-      }]);
-  arcManaged = data.arcManaged;
-  setTermsVisible(!arcManaged);
-}
-
-/**
- * Sets visibility of Terms of Service.
- * @param {boolean} visible Whether the Terms of Service visible or not.
- */
-function setTermsVisible(visible) {
-  var doc = appWindow.contentWindow.document;
-  var styleVisibility = visible ? 'visible' : 'hidden';
-  doc.getElementById('terms-title').style.visibility = styleVisibility;
-  doc.getElementById('terms-container').style.visibility = styleVisibility;
-}
-
-/**
- * Updates terms view height manually because webview is not automatically
- * resized in case parent div element gets resized.
- */
-function updateTermsHeight() {
-  var setTermsHeight = function() {
-    var doc = appWindow.contentWindow.document;
-    var termsContainer = doc.getElementById('terms-container');
-    // Reset terms-view height in order to stabilize style computation. For
-    // some reason, child webview affects final result.
-    termsView.style.height = '0px';
-    var style = window.getComputedStyle(termsContainer, null);
-    var height = style.getPropertyValue('height');
-    termsView.style.height = height;
-  };
-  setTimeout(setTermsHeight, 0);
+  termsPage = new TermsOfServicePage(
+      doc.getElementById('terms'),
+      data.arcManaged,
+      data.countryCode,
+      new MetricsPreferenceCheckbox(
+          doc.getElementById('metrics-preference'),
+          data.learnMoreStatistics,
+          '#learn-more-link-metrics',
+          data.isOwnerProfile,
+          data.textMetricsDisabled,
+          data.textMetricsEnabled,
+          data.textMetricsManagedDisabled,
+          data.textMetricsManagedEnabled),
+      new PreferenceCheckbox(
+          doc.getElementById('backup-restore-preference'),
+          data.learnMoreBackupAndRestore,
+          '#learn-more-link-backup-restore',
+          data.controlledByPolicy),
+      new PreferenceCheckbox(
+          doc.getElementById('location-service-preference'),
+          data.learnMoreLocationServices,
+          '#learn-more-link-location-service',
+          data.controlledByPolicy));
 }
 
 /**
@@ -330,11 +464,12 @@ function onNativeMessage(message) {
   if (message.action == 'initialize') {
     initialize(message.data, message.deviceId);
   } else if (message.action == 'setMetricsMode') {
-    metricsCheckbox.onPreferenceChanged(message.enabled, message.managed);
+    termsPage.onMetricxPreferenceChanged(message.enabled, message.managed);
   } else if (message.action == 'setBackupAndRestoreMode') {
-    backupRestoreCheckbox.onPreferenceChanged(message.enabled, message.managed);
+    termsPage.onBackupRestorePreferenceChanged(
+        message.enabled, message.managed);
   } else if (message.action == 'setLocationServiceMode') {
-    locationServiceCheckbox.onPreferenceChanged(
+    termsPage.onLocationServicePreferenceChanged(
         message.enabled, message.managed);
   } else if (message.action == 'closeWindow') {
     if (appWindow) {
@@ -391,7 +526,7 @@ function showPage(pageDivId) {
   }
   appWindow.show();
   if (pageDivId == 'terms') {
-    updateTermsHeight();
+    termsPage.onShow();
   }
 }
 
@@ -478,16 +613,10 @@ function showPageWithStatus(pageId, status) {
     return;
   }
 
-  if (UI_PAGES[pageId] == 'terms-loading') {
-    termsAccepted = arcManaged;
-    if (termsAccepted) {
-      showPage('terms');
-      return;
-    }
-    loadInitialTerms();
-  } else {
+  if (UI_PAGES[pageId] != 'terms') {
     // Explicit request to start not from start page. Assume terms are
     // accepted in this case.
+    // TODO: this is only for controling "RETRY" button. Remove this.
     termsAccepted = true;
   }
 
@@ -496,13 +625,6 @@ function showPageWithStatus(pageId, status) {
     setErrorMessage(status);
   }
   showPage(UI_PAGES[pageId]);
-}
-
-/**
- * Loads initial Play Store terms.
- */
-function loadInitialTerms() {
-  termsView.src = 'https://play.google.com/about/play-terms.html';
 }
 
 function setWindowBounds() {
@@ -606,66 +728,15 @@ chrome.app.runtime.onLaunched.addListener(function() {
         onLsoViewErrorOccurred, requestFilter);
     lsoView.addEventListener('contentload', onLsoViewContentLoad);
 
-    termsView = doc.getElementById('terms-view');
-
-    var termsError = false;
-    var onTermsViewBeforeRequest = function(details) {
-      showPage('terms-loading');
-      termsError = false;
-    };
-
-    var onTermsViewErrorOccurred = function(details) {
-      termsAccepted = false;
-      setErrorMessage(appWindow.contentWindow.loadTimeData.getString(
-          'serverError'));
-      showPage('error');
-      termsError = true;
-    };
-
-    var onTermsViewContentLoad = function() {
-      if (termsError) {
-        return;
-      }
-      showPage('terms');
-    };
-
-    termsView.request.onBeforeRequest.addListener(onTermsViewBeforeRequest,
-                                                  requestFilter);
-    termsView.request.onErrorOccurred.addListener(onTermsViewErrorOccurred,
-                                                  requestFilter);
-    termsView.addEventListener('contentload', onTermsViewContentLoad);
-
-
-    // webview is not allowed to open links in the new window. Hook these events
-    // and open links in overlay dialog.
-    termsView.addEventListener('newwindow', function(event) {
-      event.preventDefault();
-      showURLOverlay(event.targetUrl);
-    });
-
-    var onAgree = function() {
-      termsAccepted = true;
-
-      sendNativeMessage('onAgreed', {
-        isMetricsEnabled: metricsCheckbox.isChecked(),
-        isBackupRestoreEnabled: backupRestoreCheckbox.isChecked(),
-        isLocationServiceEnabled: locationServiceCheckbox.isChecked()
-      });
-    };
-
-    var onCancel = function() {
-      if (appWindow) {
-        appWindow.close();
-      }
-    };
-
     var onRetry = function() {
       if (termsAccepted) {
         // Reuse the onAgree() in case that the user has already accepted
         // the ToS.
-        onAgree();
+        termsPage.onAgree();
       } else {
-        loadInitialTerms();
+        // Here 'error' page should be visible. So switch to 'terms' page
+        // to show the progress page, which triggers reloading.
+        showPage('terms');
       }
     };
 
@@ -673,8 +744,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
       sendNativeMessage('onSendFeedbackClicked');
     };
 
-    doc.getElementById('button-agree').addEventListener('click', onAgree);
-    doc.getElementById('button-cancel').addEventListener('click', onCancel);
     doc.getElementById('button-retry').addEventListener('click', onRetry);
     doc.getElementById('button-send-feedback')
         .addEventListener('click', onSendFeedback);

@@ -53,19 +53,16 @@
   <script src="chrome://resources/js/cr/ui/overlay.js"></script>
 </head>
 <body>
-  <div id="terms-loading" class="section">
+  <div id="terms" class="section">
     <img class="image-header" src="images/header.png">
-    <div class="scrollable">
+    <div class="scrollable" id="terms-of-service-loading">
       <div class="content">
         <p class="text-title" i18n-content="greetingHeader"></p>
         <p class="text-desc" i18n-content="greetingDescription"></p>
         <paper-progress class="blue" indeterminate></paper-progress>
       </div>
     </div>
-  </div>
-  <div id="terms" class="section" hidden>
-    <img class="image-header" src="images/header.png">
-    <div class="scrollable" >
+    <div class="scrollable" id="terms-of-service-content" hidden>
       <div class="content section-flex">
         <p class="text-title" i18n-content="greetingHeader"></p>
         <p class="text-desc" i18n-content="greetingDescription"></p>
