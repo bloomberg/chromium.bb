@@ -53,6 +53,12 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
     // Only Android, ChromeOS support NetInfo right now.
     WebRuntimeFeatures::enableNetworkInformation(false);
 #endif
+
+// Web Bluetooth is shipped on Android, ChromeOS & MacOS, experimental
+// otherwise.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
+  WebRuntimeFeatures::enableWebBluetooth(true);
+#endif
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
@@ -67,9 +73,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::enableFeaturePolicy(
       base::FeatureList::IsEnabled(features::kFeaturePolicy));
-
-  if (command_line.HasSwitch(switches::kEnableWebBluetooth))
-    WebRuntimeFeatures::enableWebBluetooth(true);
 
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     WebRuntimeFeatures::enableWebUsb(false);

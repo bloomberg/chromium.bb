@@ -114,7 +114,6 @@ CONTENT_EXPORT extern const char kEnableDistanceFieldText[];
 CONTENT_EXPORT extern const char kEnableExperimentalCanvasFeatures[];
 CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
 CONTENT_EXPORT extern const char kEnableFeatures[];
-CONTENT_EXPORT extern const char kEnableWebBluetooth[];
 CONTENT_EXPORT extern const char kEnableWebFontsInterventionV2[];
 CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[];

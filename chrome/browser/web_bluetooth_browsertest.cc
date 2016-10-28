@@ -31,9 +31,12 @@ namespace {
 class WebBluetoothTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // This is needed while Web Bluetooth is an Origin Trial, but can go away
-    // once it ships globally.
-    command_line->AppendSwitch(switches::kEnableWebBluetooth);
+    // TODO(juncai): Remove this switch once Web Bluetooth is supported on Linux
+    // and Windows.
+    // https://crbug.com/570344
+    // https://crbug.com/507419
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 

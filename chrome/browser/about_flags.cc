@@ -819,10 +819,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)},
-    {"enable-web-bluetooth", IDS_FLAGS_WEB_BLUETOOTH_NAME,
-     IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
-     kOsCrOS | kOsMac | kOsAndroid | kOsLinux,
-     SINGLE_VALUE_TYPE(switches::kEnableWebBluetooth)},
 #if defined(ENABLE_EXTENSIONS)
     {"enable-ble-advertising-in-apps",
      IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_NAME,

@@ -28,9 +28,6 @@ class Bluetooth : public GarbageCollected<Bluetooth>, public ScriptWrappable {
                               ExceptionState&);
 
   DEFINE_INLINE_TRACE() {}
-
- private:
-  bool promotedOriginTrial = false;
 };
 
 }  // namespace blink

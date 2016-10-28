@@ -2180,17 +2180,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&device::VibrationManagerImpl::Create));
 #endif  // defined(OS_ANDROID)
 
-  bool enable_web_bluetooth = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebBluetooth);
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
-  enable_web_bluetooth = true;
-#endif
-
-  if (enable_web_bluetooth) {
-    GetInterfaceRegistry()->AddInterface(base::Bind(
-        base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
-        base::Unretained(this)));
-  }
+  GetInterfaceRegistry()->AddInterface(base::Bind(
+      base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
+      base::Unretained(this)));
 
   GetInterfaceRegistry()->AddInterface<media::mojom::InterfaceFactory>(this);
 

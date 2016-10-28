@@ -229,63 +229,6 @@ interface BlobEvent : Event
     attribute @@toStringTag
     getter data
     method constructor
-interface BluetoothCharacteristicProperties
-    attribute @@toStringTag
-    getter authenticatedSignedWrites
-    getter broadcast
-    getter indicate
-    getter notify
-    getter read
-    getter reliableWrite
-    getter writableAuxiliaries
-    getter write
-    getter writeWithoutResponse
-    method constructor
-interface BluetoothDevice : EventTarget
-    attribute @@toStringTag
-    getter gatt
-    getter id
-    getter name
-    getter ongattserverdisconnected
-    method constructor
-    setter ongattserverdisconnected
-interface BluetoothRemoteGATTCharacteristic : EventTarget
-    attribute @@toStringTag
-    getter oncharacteristicvaluechanged
-    getter properties
-    getter service
-    getter uuid
-    getter value
-    method constructor
-    method readValue
-    method startNotifications
-    method stopNotifications
-    method writeValue
-    setter oncharacteristicvaluechanged
-interface BluetoothRemoteGATTServer
-    attribute @@toStringTag
-    getter connected
-    getter device
-    method connect
-    method constructor
-    method disconnect
-    method getPrimaryService
-    method getPrimaryServices
-interface BluetoothRemoteGATTService
-    attribute @@toStringTag
-    getter device
-    getter isPrimary
-    getter uuid
-    method constructor
-    method getCharacteristic
-    method getCharacteristics
-interface BluetoothUUID
-    static method canonicalUUID
-    static method getCharacteristic
-    static method getDescriptor
-    static method getService
-    attribute @@toStringTag
-    method constructor
 interface BroadcastChannel : EventTarget
     attribute @@toStringTag
     getter name
@@ -3505,7 +3448,6 @@ interface Navigator
     getter appCodeName
     getter appName
     getter appVersion
-    getter bluetooth
     getter cookieEnabled
     getter credentials
     getter doNotTrack

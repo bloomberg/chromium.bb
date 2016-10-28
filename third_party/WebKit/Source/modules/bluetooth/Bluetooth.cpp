@@ -9,15 +9,11 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/origin_trials/OriginTrials.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "modules/bluetooth/RequestDeviceOptions.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
@@ -141,40 +137,7 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options,
 ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
                                        const RequestDeviceOptions& options,
                                        ExceptionState& exceptionState) {
-// By adding the "OriginTrialEnabled" extended binding, we enable the
-// requestDevice function on all platforms for websites that contain an
-// origin trial token. Since we only support Chrome OS, Android and MacOS
-// for this experiment we reject any promises from other platforms unless
-// they have the enable-web-bluetooth flag on.
-#if !OS(CHROMEOS) && !OS(ANDROID) && !OS(MACOSX)
-  if (!RuntimeEnabledFeatures::webBluetoothEnabled()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(
-                         NotSupportedError,
-                         "Web Bluetooth is not enabled on this platform. To "
-                         "find out how to enable it and the current "
-                         "implementation status visit https://goo.gl/HKa2If"));
-  }
-#endif
-
-  // Promote use of Origin Trials
-  // * When not being run on an origin trial.
-  // * Only once for the lifetime of this Bluetooth object, to avoid being
-  //   a nuisance and too verbose in the console. Reloading a page will reset
-  //   and the message can be shown again.
   ExecutionContext* context = scriptState->getExecutionContext();
-  OriginTrialContext* originTrials = OriginTrialContext::from(
-      context, OriginTrialContext::DontCreateIfNotExists);
-  bool originTrialActiveForThisPage =
-      originTrials && originTrials->isTrialEnabled("WebBluetooth");
-
-  if (!originTrialActiveForThisPage && !promotedOriginTrial) {
-    promotedOriginTrial = true;
-    context->addConsoleMessage(
-        ConsoleMessage::create(JSMessageSource, InfoMessageLevel,
-                               "Web Bluetooth is available as an Origin Trial: "
-                               "https://bit.ly/WebBluetoothOriginTrial"));
-  }
 
   // 1. If the incumbent settings object is not a secure context, reject promise
   //    with a SecurityError and abort these steps.

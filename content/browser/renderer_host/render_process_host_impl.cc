@@ -1688,7 +1688,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableViewport,
     switches::kEnableVp9InMp4,
     switches::kEnableVtune,
-    switches::kEnableWebBluetooth,
     switches::kEnableWebFontsInterventionTrigger,
     switches::kEnableWebFontsInterventionV2,
     switches::kEnableWebGLDraftExtensions,

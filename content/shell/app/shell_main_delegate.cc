@@ -183,8 +183,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     if (!command_line.HasSwitch(switches::kStableReleaseMode)) {
       command_line.AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-      // Only enable WebBluetooth during Layout Tests in non release mode.
-      command_line.AppendSwitch(switches::kEnableWebBluetooth);
     }
 
     if (!command_line.HasSwitch(switches::kEnableThreadedCompositing)) {

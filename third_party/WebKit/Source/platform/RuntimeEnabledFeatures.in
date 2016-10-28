@@ -236,7 +236,8 @@ UserSelectAll status=stable
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
 WebAssemblySerialization status=test
-WebBluetooth origin_trial_feature_name=WebBluetooth
+// WebBluetooth is enabled by default on Android, ChromeOS and Mac.
+WebBluetooth status=experimental
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
 WebUSB status=experimental, origin_trial_feature_name=WebUSB

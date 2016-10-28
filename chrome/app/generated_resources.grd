@@ -6002,12 +6002,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ORIGIN_TRIALS_DESCRIPTION" desc="Description for the flag to enable origin trials.">
         Enables origin trials for controlling access to feature/API experiments.
       </message>
-      <message name="IDS_FLAGS_WEB_BLUETOOTH_NAME" desc="Name for the flag to enable Web Bluetooth.">
-        Web Bluetooth
-      </message>
-      <message name="IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION" desc="Description for the flag to enable Web Bluetooth.">
-        Enables Web Bluetooth which could allow websites to connect to and control Bluetooth devices around you.
-      </message>
       <message name="IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_NAME" desc="Name for the flag for BLE Advertising">
         BLE Advertising in Chrome Apps
       </message>

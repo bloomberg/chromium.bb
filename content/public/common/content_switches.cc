@@ -373,9 +373,6 @@ const char kEnableExperimentalWebPlatformFeatures[] =
 // Comma-separated list of feature names to enable. See also kDisableFeatures.
 const char kEnableFeatures[] = "enable-features";
 
-// Enable Web Bluetooth.
-const char kEnableWebBluetooth[] = "enable-web-bluetooth";
-
 // WebFonts intervention v2 flag and values.
 const char kEnableWebFontsInterventionV2[] = "enable-webfonts-intervention-v2";
 const char kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[] =

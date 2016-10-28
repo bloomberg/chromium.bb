@@ -1147,11 +1147,7 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame) {
   provideNavigatorContentUtilsTo(
       frame, NavigatorContentUtilsClientImpl::create(webFrame));
 
-  bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
-#if OS(CHROMEOS) || OS(ANDROID) || OS(MACOSX)
-  enableWebBluetooth = true;
-#endif
-  if (enableWebBluetooth)
+  if (RuntimeEnabledFeatures::webBluetoothEnabled())
     BluetoothSupplement::provideTo(frame, client->bluetooth());
 
   ScreenOrientationController::provideTo(frame,

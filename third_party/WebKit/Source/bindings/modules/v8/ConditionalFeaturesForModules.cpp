@@ -47,11 +47,6 @@ void installConditionalFeaturesForModules(
   const DOMWrapperWorld& world = scriptState->world();
   v8::Local<v8::Object> global = scriptState->context()->Global();
   if (wrapperTypeInfo == &V8Navigator::wrapperTypeInfo) {
-    if (OriginTrials::webBluetoothEnabled(executionContext)) {
-      V8NavigatorPartial::installWebBluetooth(isolate, world,
-                                              v8::Local<v8::Object>(),
-                                              prototypeObject, interfaceObject);
-    }
     if (OriginTrials::webShareEnabled(executionContext)) {
       V8NavigatorPartial::installWebShare(isolate, world,
                                           v8::Local<v8::Object>(),
@@ -66,10 +61,6 @@ void installConditionalFeaturesForModules(
                                        interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
-    if (OriginTrials::webBluetoothEnabled(executionContext)) {
-      V8WindowPartial::installWebBluetooth(isolate, world, global,
-                                           prototypeObject, interfaceObject);
-    }
     if (OriginTrials::webUSBEnabled(executionContext)) {
       V8WindowPartial::installWebUSB(isolate, world, global, prototypeObject,
                                      interfaceObject);
