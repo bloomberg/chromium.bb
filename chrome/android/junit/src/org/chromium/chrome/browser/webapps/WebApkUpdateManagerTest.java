@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.os.Bundle;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import static org.chromium.chrome.browser.webapps.ManifestUpgradeDetector.FetchedManifestData;
+
+import android.graphics.Bitmap;
+import android.os.Bundle;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +44,12 @@ public class WebApkUpdateManagerTest {
     /** WebAPK's start URL. */
     private static final String WEBAPK_START_URL = "https://www.unicode.party";
 
+    /** Value of the "name" <meta-data> tag in the Android Manifest. */
+    private static final String ANDROID_MANIFEST_NAME = "Android Manifest name";
+
+    /** Value of the "name" property in the Web Manifest. */
+    private static final String WEB_MANIFEST_NAME = "Web Manifest name";
+
     /** {@link WebappDataStorage#Clock} subclass which enables time to be manually advanced. */
     private static class MockClock extends WebappDataStorage.Clock {
         // 0 has a special meaning: {@link WebappDataStorage#LAST_USED_UNSET}.
@@ -60,9 +69,9 @@ public class WebApkUpdateManagerTest {
     private static class TestManifestUpgradeDetector extends ManifestUpgradeDetector {
         private boolean mStarted;
 
-        public TestManifestUpgradeDetector(Tab tab, WebappInfo info, Bundle metaData,
-                ManifestUpgradeDetector.Callback callback) {
-            super(tab, info, metaData, callback);
+        public TestManifestUpgradeDetector(
+                Tab tab, WebApkMetaData metaData, ManifestUpgradeDetector.Callback callback) {
+            super(tab, metaData, callback);
         }
 
         public boolean wasStarted() {
@@ -79,7 +88,9 @@ public class WebApkUpdateManagerTest {
     private static class TestWebApkUpdateManager extends WebApkUpdateManager {
         private WebappDataStorage.Clock mClock;
         private TestManifestUpgradeDetector mUpgradeDetector;
-        private boolean mUpdateRequested;
+        private int mNumUpdatesRequested;
+        private String mUpdateName;
+        private boolean mDestroyedManifestUpgradeDetector;
 
         public TestWebApkUpdateManager(WebappDataStorage.Clock clock) {
             mClock = clock;
@@ -96,20 +107,46 @@ public class WebApkUpdateManagerTest {
          * Returns whether an update has been requested.
          */
         public boolean updateRequested() {
-            return mUpdateRequested;
+            return mNumUpdatesRequested > 0;
+        }
+
+        /**
+         * Returns the number of updates which have been requested.
+         */
+        public int numUpdatesRequested() {
+            return mNumUpdatesRequested;
+        }
+
+        /**
+         * Returns the "name" from the requested update. Null if an update has not been requested.
+         */
+        public String requestedUpdateName() {
+            return mUpdateName;
+        }
+
+        public boolean destroyedManifestUpgradeDetector() {
+            return mDestroyedManifestUpgradeDetector;
         }
 
         @Override
         protected ManifestUpgradeDetector buildManifestUpgradeDetector(
-                Tab tab, WebappInfo info, Bundle metaData) {
-            mUpgradeDetector = new TestManifestUpgradeDetector(tab, info, metaData, this);
+                Tab tab, WebApkMetaData metaData) {
+            mUpgradeDetector = new TestManifestUpgradeDetector(tab, metaData, this);
             return mUpgradeDetector;
         }
 
         @Override
-        public void updateAsync(
-                String manifestUrl, ManifestUpgradeDetector.FetchedManifestData data) {
-            mUpdateRequested = true;
+        protected void updateAsync(String startUrl, String scopeUrl, String name, String shortName,
+                String iconUrl, String iconMurmur2Hash, Bitmap icon, int displayMode,
+                int orientation, long themeColor, long backgroundColor) {
+            ++mNumUpdatesRequested;
+            mUpdateName = name;
+        }
+
+        @Override
+        protected void destroyUpgradeDetector() {
+            mUpgradeDetector = null;
+            mDestroyedManifestUpgradeDetector = true;
         }
 
         @Override
@@ -119,6 +156,16 @@ public class WebApkUpdateManagerTest {
     }
 
     private MockClock mClock;
+
+    /** Registers WebAPK with default package name. Overwrites previous registrations. */
+    private void registerWebApk(int shellApkVersionCode) {
+        Bundle metaData = new Bundle();
+        metaData.putString(WebApkMetaDataKeys.START_URL, WEBAPK_START_URL);
+        metaData.putString(WebApkMetaDataKeys.NAME, ANDROID_MANIFEST_NAME);
+        metaData.putInt(
+                WebApkMetaDataKeys.SHELL_APK_VERSION, shellApkVersionCode);
+        WebApkTestHelper.registerWebApkWithMetaData(metaData);
+    }
 
     private WebappDataStorage getStorage() {
         return WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
@@ -131,6 +178,13 @@ public class WebApkUpdateManagerTest {
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false,
                 WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         updateManager.updateIfNeeded(null, info);
+    }
+
+    private void onGotWebApkCompatibleWebManifestForInitialUrl(
+            WebApkUpdateManager updateManager, boolean needsUpdate) {
+        FetchedManifestData fetchedManifestData = new FetchedManifestData();
+        fetchedManifestData.name = WEB_MANIFEST_NAME;
+        updateManager.onFinishedFetchingWebManifestForInitialUrl(needsUpdate, fetchedManifestData);
     }
 
     /**
@@ -151,10 +205,7 @@ public class WebApkUpdateManagerTest {
         mClock = new MockClock();
         WebappDataStorage.setClockForTests(mClock);
 
-        Bundle metaData = new Bundle();
-        metaData.putInt(
-                WebApkMetaDataKeys.SHELL_APK_VERSION, WebApkVersion.CURRENT_SHELL_APK_VERSION);
-        WebApkTestHelper.registerWebApkWithMetaData(metaData);
+        registerWebApk(WebApkVersion.CURRENT_SHELL_APK_VERSION);
 
         WebappRegistry.getInstance().register(
                 WEBAPK_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
@@ -235,7 +286,7 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
-        updateManager.onUpgradeNeededCheckFinished(false, null);
+        onGotWebApkCompatibleWebManifestForInitialUrl(updateManager, false);
         assertFalse(updateManager.updateRequested());
 
         WebappDataStorage storage = getStorage();
@@ -258,7 +309,7 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
-        updateManager.onUpgradeNeededCheckFinished(false, null);
+        onGotWebApkCompatibleWebManifestForInitialUrl(updateManager, false);
         assertFalse(updateManager.updateRequested());
 
         assertTrue(storage.getDidLastWebApkUpdateRequestSucceed());
@@ -277,7 +328,7 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
-        updateManager.onUpgradeNeededCheckFinished(true, null);
+        onGotWebApkCompatibleWebManifestForInitialUrl(updateManager, true);
         assertTrue(updateManager.updateRequested());
 
         // Chrome is killed. {@link WebApkUpdateManager#onBuiltWebApk} is never called.
@@ -287,5 +338,114 @@ public class WebApkUpdateManagerTest {
         assertFalse(storage.getDidLastWebApkUpdateRequestSucceed());
         assertEquals(
                 mClock.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
+    }
+
+    /**
+     * Test that an update with data from the WebAPK's Android manifest is done if:
+     * - WebAPK's code is out of date
+     * AND
+     * - WebAPK's start_url does not refer to a Web Manifest.
+     *
+     * It is good to minimize the number of users with out of date WebAPKs. We try to keep WebAPKs
+     * up to date even if the web developer has removed the Web Manifest from their site.
+     */
+    @Test
+    public void testShellApkOutOfDateNoWebManifest() {
+        registerWebApk(WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
+        mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+
+        updateManager.onFinishedFetchingWebManifestForInitialUrl(false, null);
+        assertTrue(updateManager.updateRequested());
+        assertEquals(ANDROID_MANIFEST_NAME, updateManager.requestedUpdateName());
+
+        // Check that the {@link ManifestUpgradeDetector} has been destroyed. This prevents
+        // {@link #onFinishedFetchingWebManifestForInitialUrl()} and {@link #onGotManifestData()}
+        // from getting called.
+        assertTrue(updateManager.destroyedManifestUpgradeDetector());
+    }
+
+    /**
+     * Test that an update with data from the fetched Web Manifest is done if the WebAPK's code is
+     * out of date and the WebAPK's start_url refers to a Web Manifest.
+     */
+    @Test
+    public void testShellApkOutOfDateStillHasWebManifest() {
+        registerWebApk(WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
+        mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+
+        FetchedManifestData fetchedManifestData = new FetchedManifestData();
+        fetchedManifestData.name = WEB_MANIFEST_NAME;
+        updateManager.onFinishedFetchingWebManifestForInitialUrl(false, fetchedManifestData);
+        assertTrue(updateManager.updateRequested());
+        assertEquals(WEB_MANIFEST_NAME, updateManager.requestedUpdateName());
+
+        assertTrue(updateManager.destroyedManifestUpgradeDetector());
+    }
+
+    /**
+     * Test that an update is requested if:
+     * - start_url does not refer to a Web Manifest.
+     * AND
+     * - The user eventually navigates to a page pointing to a Web Manifest with the correct URL.
+     * AND
+     * - The Web Manifest has changed.
+     *
+     * This scenario can occur if the WebAPK's start_url is a Javascript redirect.
+     */
+    @Test
+    public void testStartUrlRedirectsToPageWithUpdatedWebManifest() {
+        mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+
+        // start_url does not have a Web Manifest. No update should be requested.
+        updateManager.onFinishedFetchingWebManifestForInitialUrl(false, null);
+        assertFalse(updateManager.updateRequested());
+        // {@link ManifestUpgradeDetector} should still be alive so that it can get
+        // {@link #onGotManifestData} when page with the Web Manifest finishes loading.
+        assertFalse(updateManager.destroyedManifestUpgradeDetector());
+
+        // start_url redirects to page with Web Manifest.
+
+        FetchedManifestData fetchedManifestData = new FetchedManifestData();
+        fetchedManifestData.name = WEB_MANIFEST_NAME;
+        updateManager.onGotManifestData(true, fetchedManifestData);
+        assertTrue(updateManager.updateRequested());
+        assertEquals(WEB_MANIFEST_NAME, updateManager.requestedUpdateName());
+
+        assertTrue(updateManager.destroyedManifestUpgradeDetector());
+    }
+
+    /**
+     * Test than an update is not requested if:
+     * - start_url does not refer to a Web Manifest.
+     * AND
+     * - The user eventually navigates to a page pointing to a Web Manifest with the correct URL.
+     * AND
+     * - The Web Manifest has not changed.
+     */
+    @Test
+    public void testStartUrlRedirectsToPageWithUnchangedWebManifest() {
+        mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        updateIfNeeded(updateManager);
+        updateManager.onFinishedFetchingWebManifestForInitialUrl(false, null);
+        updateManager.onGotManifestData(false, new FetchedManifestData());
+        assertFalse(updateManager.updateRequested());
+
+        // We got the Web Manifest. The {@link ManifestUpgradeDetector} should be destroyed to stop
+        // it from fetching the Web Manifest for subsequent page loads.
+        assertTrue(updateManager.destroyedManifestUpgradeDetector());
     }
 }

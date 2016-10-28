@@ -25,13 +25,37 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
  */
 public class WebApkMetaDataUtils {
     /**
-     * Populates {@link WebappInfo} with meta data extracted from WebAPK.
+     * Populates {@link WebappInfo} with meta data extracted from WebAPK's Android Manifest.
      * @param webApkPackageName Package name of the WebAPK to extract meta data from.
      * @param url WebAPK start URL.
      * @param source {@link ShortcutSource} that the WebAPK was opened from.
      */
     public static WebappInfo extractWebappInfoFromWebApk(
             String webApkPackageName, String url, int source) {
+        WebApkMetaData metaData = extractMetaDataFromWebApk(webApkPackageName);
+        if (metaData == null) return null;
+
+        PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
+        Resources resources;
+        try {
+            resources = packageManager.getResourcesForApplication(webApkPackageName);
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
+        Bitmap icon = BitmapFactory.decodeResource(resources, metaData.iconId);
+        String encodedIcon = ShortcutHelper.encodeBitmapAsString(icon);
+
+        return WebappInfo.create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url,
+                metaData.scope, encodedIcon, metaData.name, metaData.shortName,
+                metaData.displayMode, metaData.orientation, source, metaData.themeColor,
+                metaData.backgroundColor, TextUtils.isEmpty(metaData.iconUrl), webApkPackageName);
+    }
+
+    /**
+     * Populates {@link WebApkMetaData} with meta data extracted from WebAPK's Android Manifest.
+     * @param webApkPackageName Package name of the WebAPK to extract meta data from.
+     */
+    public static WebApkMetaData extractMetaDataFromWebApk(String webApkPackageName) {
         PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
         ApplicationInfo appInfo;
         try {
@@ -40,34 +64,34 @@ public class WebApkMetaDataUtils {
         } catch (PackageManager.NameNotFoundException e) {
             return null;
         }
-        Bundle metaData = appInfo.metaData;
-        String scope = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SCOPE);
-        String name = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.NAME);
-        String shortName = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SHORT_NAME);
-        int displayMode = displayModeFromString(
-                IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.DISPLAY_MODE));
-        int orientation = orientationFromString(
-                IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.ORIENTATION));
-        long themeColor = getLongFromMetaData(metaData, WebApkMetaDataKeys.THEME_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        long backgroundColor = getLongFromMetaData(metaData, WebApkMetaDataKeys.BACKGROUND_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        boolean isIconGenerated =
-                TextUtils.isEmpty(IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.ICON_URL));
+        Bundle bundle = appInfo.metaData;
 
-        int iconId = IntentUtils.safeGetInt(metaData, WebApkMetaDataKeys.ICON_ID, 0);
-        Resources resources;
-        try {
-            resources = packageManager.getResourcesForApplication(webApkPackageName);
-        } catch (PackageManager.NameNotFoundException e) {
-            return null;
+        WebApkMetaData metaData = new WebApkMetaData();
+        metaData.shellApkVersion =
+                IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SHELL_APK_VERSION, 0);
+        metaData.manifestUrl =
+                IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.WEB_MANIFEST_URL);
+        metaData.startUrl = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.START_URL);
+        metaData.name = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.NAME);
+        metaData.shortName = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.SHORT_NAME);
+        metaData.scope = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.SCOPE);
+        metaData.displayMode = displayModeFromString(
+                IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.DISPLAY_MODE));
+        metaData.orientation = orientationFromString(
+                IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.ORIENTATION));
+        metaData.themeColor = getLongFromMetaData(bundle, WebApkMetaDataKeys.THEME_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+        metaData.backgroundColor = getLongFromMetaData(bundle, WebApkMetaDataKeys.BACKGROUND_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+        metaData.iconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
+        metaData.iconUrl = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.ICON_URL);
+        metaData.iconMurmur2Hash = getIconMurmur2HashFromMetaData(bundle);
+
+        if (TextUtils.isEmpty(metaData.scope)) {
+            metaData.scope = ShortcutHelper.getScopeFromUrl(metaData.startUrl);
         }
-        Bitmap icon = BitmapFactory.decodeResource(resources, iconId);
-        String encodedIcon = ShortcutHelper.encodeBitmapAsString(icon);
 
-        return WebappInfo.create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
-                encodedIcon, name, shortName, displayMode, orientation, source, themeColor,
-                backgroundColor, isIconGenerated, webApkPackageName);
+        return metaData;
     }
 
     /**

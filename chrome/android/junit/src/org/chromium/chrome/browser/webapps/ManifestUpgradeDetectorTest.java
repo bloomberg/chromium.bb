@@ -4,20 +4,12 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.chrome.browser.webapps.ManifestUpgradeDetector.FetchedManifestData;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.text.TextUtils;
-
-import org.chromium.base.ContextUtils;
-import org.chromium.blink_public.platform.WebDisplayMode;
-import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.ManifestUpgradeDetector.FetchedManifestData;
-import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +22,13 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowBitmap;
+
+import org.chromium.base.ContextUtils;
+import org.chromium.blink_public.platform.WebDisplayMode;
+import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests the ManifestUpgradeDetector.
@@ -57,7 +56,10 @@ public class ManifestUpgradeDetectorTest {
         public boolean mIsUpgraded;
         public boolean mWasCalled;
         @Override
-        public void onUpgradeNeededCheckFinished(boolean isUpgraded, FetchedManifestData data) {
+        public void onFinishedFetchingWebManifestForInitialUrl(
+                boolean needsUpgrade, ManifestUpgradeDetector.FetchedManifestData data) {}
+        @Override
+        public void onGotManifestData(boolean isUpgraded, FetchedManifestData data) {
             mIsUpgraded = isUpgraded;
             mWasCalled = true;
         }
@@ -79,9 +81,9 @@ public class ManifestUpgradeDetectorTest {
     private static class TestManifestUpgradeDetector extends ManifestUpgradeDetector {
         private FetchedManifestData mFetchedData;
 
-        public TestManifestUpgradeDetector(Tab tab, WebappInfo info, Bundle metadata,
+        public TestManifestUpgradeDetector(Tab tab, WebApkMetaData metaData,
                 FetchedManifestData fetchedData, ManifestUpgradeDetector.Callback callback) {
-            super(tab, info, metadata, callback);
+            super(tab, metaData, callback);
             mFetchedData = fetchedData;
         }
 
@@ -178,22 +180,19 @@ public class ManifestUpgradeDetectorTest {
      */
     private TestManifestUpgradeDetector createDetector(WebappInfoCreationData oldData,
             FetchedManifestData fetchedData, TestCallback callback) {
-        Bundle metadata = createBundleWithMetadata(
-                WEBAPK_MANIFEST_URL, oldData.startUrl, oldData.iconUrl, oldData.iconMurmur2Hash);
-        WebappInfo webappInfo = WebappInfo.create("", oldData.startUrl, oldData.scopeUrl, null,
-                oldData.name, oldData.shortName, oldData.displayMode, oldData.orientation, 0,
-                oldData.themeColor, oldData.backgroundColor, false, WEBAPK_PACKAGE_NAME);
-        return new TestManifestUpgradeDetector(null, webappInfo, metadata, fetchedData, callback);
-    }
-
-    private Bundle createBundleWithMetadata(
-            String manifestUrl, String startUrl, String iconUrl, String iconMurmur2Hash) {
-        Bundle bundle = new Bundle();
-        bundle.putString(WebApkMetaDataKeys.WEB_MANIFEST_URL, manifestUrl);
-        bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
-        bundle.putString(WebApkMetaDataKeys.ICON_URL, iconUrl);
-        bundle.putString(WebApkMetaDataKeys.ICON_MURMUR2_HASH, iconMurmur2Hash + "L");
-        return bundle;
+        WebApkMetaData metaData = new WebApkMetaData();
+        metaData.manifestUrl = WEBAPK_MANIFEST_URL;
+        metaData.startUrl = oldData.startUrl;
+        metaData.scope = oldData.scopeUrl;
+        metaData.name = oldData.name;
+        metaData.shortName = oldData.shortName;
+        metaData.displayMode = oldData.displayMode;
+        metaData.orientation = oldData.orientation;
+        metaData.themeColor = oldData.themeColor;
+        metaData.backgroundColor = oldData.backgroundColor;
+        metaData.iconUrl = oldData.iconUrl;
+        metaData.iconMurmur2Hash = oldData.iconMurmur2Hash;
+        return new TestManifestUpgradeDetector(null, metaData, fetchedData, callback);
     }
 
     @Test
