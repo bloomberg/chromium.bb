@@ -235,6 +235,13 @@ UINetworkQualityEstimatorService::GetEffectiveConnectionType() const {
   return type_;
 }
 
+void UINetworkQualityEstimatorService::ClearPrefs() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!prefs_manager_)
+    return;
+  prefs_manager_->ClearPrefs();
+}
+
 // static
 void UINetworkQualityEstimatorService::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {

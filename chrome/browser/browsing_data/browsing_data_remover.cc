@@ -29,6 +29,8 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -1033,6 +1035,20 @@ void BrowsingDataRemover::RemoveImpl(
         ContentSuggestionsServiceFactory::GetForProfileIfExists(profile_);
     if (content_suggestions_service)
       content_suggestions_service->ClearAllCachedSuggestions();
+
+    // |ui_nqe_service| may be null if |profile_| is not a regular profile.
+    UINetworkQualityEstimatorService* ui_nqe_service =
+        UINetworkQualityEstimatorServiceFactory::GetForProfile(profile_);
+    DCHECK(profile_->GetProfileType() !=
+               Profile::ProfileType::REGULAR_PROFILE ||
+           ui_nqe_service != nullptr);
+    if (ui_nqe_service) {
+      // Network Quality Estimator (NQE) stores the quality (RTT, bandwidth
+      // etc.) of different networks in prefs. The stored quality is not
+      // broken down by URLs or timestamps, so clearing the cache should
+      // completely clear the prefs.
+      ui_nqe_service->ClearPrefs();
+    }
   }
 
   if (remove_mask & REMOVE_COOKIES || remove_mask & REMOVE_PASSWORDS) {

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/net_export.h"
 #include "net/nqe/cached_network_quality.h"
@@ -70,6 +71,9 @@ class NET_EXPORT NetworkQualitiesPrefsManager
 
   // Prepare for shutdown. Must be called on the pref thread before destruction.
   void ShutdownOnPrefThread();
+
+  // Clear the network quality estimator prefs.
+  void ClearPrefs();
 
   // Reads the prefs again, parses them into a map of NetworkIDs and
   // CachedNetworkQualities, and returns the map.

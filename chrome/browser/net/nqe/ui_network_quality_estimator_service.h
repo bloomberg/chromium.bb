@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/nqe/cached_network_quality.h"
 #include "net/nqe/effective_connection_type.h"
@@ -47,6 +48,9 @@ class UINetworkQualityEstimatorService
 
   // Registers the profile-specific network quality estimator prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Clear the network quality estimator prefs.
+  void ClearPrefs();
 
   // Tests can manually set EffectiveConnectionType, but browser tests should
   // expect that the EffectiveConnectionType could change.

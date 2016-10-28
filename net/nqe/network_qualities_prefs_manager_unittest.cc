@@ -225,7 +225,46 @@ TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
         NOTREACHED();
     }
   }
+  manager.ShutdownOnPrefThread();
+}
 
+// Verifies that the prefs are cleared correctly.
+TEST(NetworkQualitiesPrefManager, ClearPrefs) {
+  std::map<std::string, std::string> variation_params;
+  TestNetworkQualityEstimator estimator(variation_params, nullptr);
+
+  std::unique_ptr<TestPrefDelegate> prefs_delegate(new TestPrefDelegate());
+
+  NetworkQualitiesPrefsManager manager(std::move(prefs_delegate));
+  manager.InitializeOnNetworkThread(&estimator);
+  base::RunLoop().RunUntilIdle();
+
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+
+  EXPECT_EQ(0u, manager.ForceReadPrefsForTesting().size());
+
+  estimator.set_recent_effective_connection_type(
+      EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  // Run a request so that effective connection type is recomputed, and
+  // observers are notified of change in the network quality.
+  estimator.RunOneRequest();
+  base::RunLoop().RunUntilIdle();
+  // Verify that the observer was notified, and the updated network quality was
+  // written to the prefs.
+  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
+
+  // Prefs must be completely cleared.
+  manager.ClearPrefs();
+  EXPECT_EQ(0u, manager.ForceReadPrefsForTesting().size());
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
+  // Run a request so that effective connection type is recomputed, and
+  // observers are notified of change in the network quality.
+  estimator.RunOneRequest();
+  base::RunLoop().RunUntilIdle();
+  // Verify that the observer was notified, and the updated network quality was
+  // written to the prefs.
+  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
   manager.ShutdownOnPrefThread();
 }
 

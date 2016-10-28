@@ -106,6 +106,13 @@ void NetworkQualitiesPrefsManager::ShutdownOnPrefThread() {
   pref_delegate_.reset();
 }
 
+void NetworkQualitiesPrefsManager::ClearPrefs() {
+  DCHECK(pref_task_runner_->RunsTasksOnCurrentThread());
+  prefs_->Clear();
+  DCHECK_EQ(0u, prefs_->size());
+  pref_delegate_->SetDictionaryValue(*prefs_);
+}
+
 void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQualityOnPrefThread(
     const nqe::internal::NetworkID& network_id,
     const nqe::internal::CachedNetworkQuality& cached_network_quality) {
@@ -127,7 +134,7 @@ void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQualityOnPrefThread(
   if (prefs_->size() > kMaxCacheSize) {
     // Delete one value that has key different than |network_id|.
     DCHECK_EQ(kMaxCacheSize + 1, prefs_->size());
-    for (base::DictionaryValue::Iterator it(*(prefs_.get())); !it.IsAtEnd();
+    for (base::DictionaryValue::Iterator it(*prefs_); !it.IsAtEnd();
          it.Advance()) {
       const nqe::internal::NetworkID it_network_id =
           nqe::internal::NetworkID::FromString(it.key());
@@ -140,7 +147,7 @@ void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQualityOnPrefThread(
   DCHECK_GE(kMaxCacheSize, prefs_->size());
 
   // Notify the pref delegate so that it updates the prefs on the disk.
-  pref_delegate_->SetDictionaryValue(*(prefs_.get()));
+  pref_delegate_->SetDictionaryValue(*prefs_);
 }
 
 ParsedPrefs NetworkQualitiesPrefsManager::ForceReadPrefsForTesting() const {
