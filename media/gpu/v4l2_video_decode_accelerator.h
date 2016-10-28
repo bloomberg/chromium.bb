@@ -129,6 +129,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     // limits::kMaxVideoFrames to fill up the GpuVideoDecode pipeline,
     // and +1 for a frame in transit.
     kDpbOutputBufferExtraCount = limits::kMaxVideoFrames + 1,
+    // Number of extra output buffers if image processor is used.
+    kDpbOutputBufferExtraCountForImageProcessor = 1,
   };
 
   // Internal state of the decoder.

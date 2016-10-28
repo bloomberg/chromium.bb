@@ -343,8 +343,9 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kAwaitingPictureBuffers);
 
-  const uint32_t req_buffer_count =
-      output_dpb_size_ + kDpbOutputBufferExtraCount;
+  uint32_t req_buffer_count = output_dpb_size_ + kDpbOutputBufferExtraCount;
+  if (image_processor_device_)
+    req_buffer_count += kDpbOutputBufferExtraCountForImageProcessor;
 
   if (buffers.size() < req_buffer_count) {
     LOGF(ERROR) << "Failed to provide requested picture buffers. (Got "
@@ -2422,7 +2423,10 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
 
   // Output format setup in Initialize().
 
-  const uint32_t buffer_count = output_dpb_size_ + kDpbOutputBufferExtraCount;
+  uint32_t buffer_count = output_dpb_size_ + kDpbOutputBufferExtraCount;
+  if (image_processor_device_)
+    buffer_count += kDpbOutputBufferExtraCountForImageProcessor;
+
   DVLOGF(3) << "buffer_count=" << buffer_count
             << ", coded_size=" << egl_image_size_.ToString();
 
