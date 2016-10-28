@@ -2,8 +2,8 @@ Name: ocmock
 URL: https://github.com/erikdoe/ocmock
 Version: unknown
 Revision: 8b8793cf29a5bac0541421ea06c7dff071afb25e
-License: NOT_SHIPPED
-License File: License.txt
+License: BSD with advertising clause
+License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
