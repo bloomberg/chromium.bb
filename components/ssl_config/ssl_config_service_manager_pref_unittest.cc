@@ -179,27 +179,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoSSL3) {
   EXPECT_LE(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
 }
 
-// Tests that DHE may be re-enabled via features.
-TEST_F(SSLConfigServiceManagerPrefTest, DHEFeature) {
-  // Toggle the feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("DHECiphers", std::string());
-
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(
-          &local_state, base::ThreadTaskRunnerHandle::Get()));
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
-
-  // The feature should have switched the default version_fallback_min value.
-  SSLConfig ssl_config;
-  config_service->GetSSLConfig(&ssl_config);
-  EXPECT_TRUE(ssl_config.dhe_enabled);
-}
-
 // Tests that TLS 1.3 may be enabled via features.
 TEST_F(SSLConfigServiceManagerPrefTest, TLS13Feature) {
   // Toggle the feature.
