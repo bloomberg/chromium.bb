@@ -22,7 +22,8 @@ const char kPngExtension[] = ".png";
 
 // This constant is the icon size on Android (48dp) multiplied by the scale
 // factor of a Nexus 5 device (3x). For mobile and desktop platforms, a 144px
-// icon is an approximate, appropriate lower bound.
+// icon is an approximate, appropriate lower bound. It is the currently
+// advertised minimum icon size for triggering banners.
 // TODO(dominickn): consolidate with minimum_icon_size_in_dp across platforms.
 const int kIconMinimumSizeInPx = 144;
 
