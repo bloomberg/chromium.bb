@@ -23,6 +23,8 @@ static_library("mus") {
     "//content/common",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
+    "//device/time_zone_monitor/public/interfaces",
+    "//media/mojo/interfaces:remoting",
     "//mojo/common",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
