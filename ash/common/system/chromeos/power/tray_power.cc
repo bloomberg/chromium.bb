@@ -15,6 +15,7 @@
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -90,9 +91,12 @@ void LogBatteryForNoCharger(TrayPower::NotificationState state,
 namespace tray {
 
 // This view is used only for the tray.
-class PowerTrayView : public views::ImageView {
+class PowerTrayView : public TrayItemView {
  public:
-  PowerTrayView() { UpdateImage(); }
+  explicit PowerTrayView(SystemTrayItem* owner) : TrayItemView(owner) {
+    CreateImageView();
+    UpdateImage();
+  }
 
   ~PowerTrayView() override {}
 
@@ -117,7 +121,7 @@ class PowerTrayView : public views::ImageView {
     const PowerStatus::BatteryImageInfo info =
         PowerStatus::Get()->GetBatteryImageInfo(PowerStatus::ICON_LIGHT);
     if (info != previous_image_info_) {
-      SetImage(PowerStatus::Get()->GetBatteryImage(info));
+      image_view()->SetImage(PowerStatus::Get()->GetBatteryImage(info));
       previous_image_info_ = info;
     }
   }
@@ -163,7 +167,7 @@ views::View* TrayPower::CreateTrayView(LoginStatus status) {
   // there is a battery or not. So always create this, and adjust visibility as
   // necessary.
   CHECK(power_tray_ == NULL);
-  power_tray_ = new tray::PowerTrayView();
+  power_tray_ = new tray::PowerTrayView(this);
   power_tray_->UpdateStatus(false);
   return power_tray_;
 }

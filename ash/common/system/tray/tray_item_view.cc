@@ -4,15 +4,17 @@
 
 #include "ash/common/system/tray/tray_item_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -30,8 +32,7 @@ TrayItemView::TrayItemView(SystemTrayItem* owner)
     : owner_(owner), label_(NULL), image_view_(NULL) {
   SetPaintToLayer(true);
   layer()->SetFillsBoundsOpaquely(false);
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  SetLayoutManager(new views::FillLayout());
 }
 
 TrayItemView::~TrayItemView() {}
@@ -44,11 +45,13 @@ void TrayItemView::DisableAnimationsForTest() {
 void TrayItemView::CreateLabel() {
   label_ = new views::Label;
   AddChildView(label_);
+  PreferredSizeChanged();
 }
 
 void TrayItemView::CreateImageView() {
   image_view_ = new views::ImageView;
   AddChildView(image_view_);
+  PreferredSizeChanged();
 }
 
 void TrayItemView::SetVisible(bool set_visible) {
@@ -74,20 +77,26 @@ void TrayItemView::SetVisible(bool set_visible) {
   }
 }
 
-gfx::Size TrayItemView::DesiredSize() const {
-  return views::View::GetPreferredSize();
-}
-
 int TrayItemView::GetAnimationDurationMS() {
   return kTrayItemAnimationDurationMS;
 }
 
 gfx::Size TrayItemView::GetPreferredSize() const {
-  gfx::Size size = DesiredSize();
-  if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment()))
-    size.set_height(kTrayIconHeight);
-  else
-    size.set_width(kTrayIconWidth);
+  gfx::Size size;
+  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+    gfx::Size inner_size = views::View::GetPreferredSize();
+    if (image_view_ && child_count() == 1)
+      inner_size = gfx::Size(kTrayIconSize, kTrayIconSize);
+    gfx::Rect rect(inner_size);
+    rect.Inset(gfx::Insets(-GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)));
+    size = rect.size();
+  } else {
+    size = views::View::GetPreferredSize();
+    if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment()))
+      size.set_height(kTrayIconHeight);
+    else
+      size.set_width(kTrayIconWidth);
+  }
   if (!animation_.get() || !animation_->is_animating())
     return size;
   if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment())) {

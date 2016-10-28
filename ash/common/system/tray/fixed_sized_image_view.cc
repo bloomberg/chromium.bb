@@ -7,10 +7,7 @@
 namespace ash {
 
 FixedSizedImageView::FixedSizedImageView(int width, int height)
-    : width_(width), height_(height) {
-  SetHorizontalAlignment(views::ImageView::CENTER);
-  SetVerticalAlignment(views::ImageView::CENTER);
-}
+    : width_(width), height_(height) {}
 
 FixedSizedImageView::~FixedSizedImageView() {}
 

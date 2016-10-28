@@ -53,12 +53,6 @@ class ASH_EXPORT TrayItemView : public views::View,
   // changes.
   void ApplyChange();
 
-  // This should return the desired size of the view. For most views, this
-  // returns GetPreferredSize. But since this class overrides GetPreferredSize
-  // for animation purposes, we allow a different way to get this size, and do
-  // not allow GetPreferredSize to be overridden.
-  virtual gfx::Size DesiredSize() const;
-
   // The default animation duration is 200ms. But each view can customize this.
   virtual int GetAnimationDurationMS();
 

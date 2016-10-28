@@ -37,10 +37,10 @@ void SetupLabelForTray(views::Label* label) {
   }
 }
 
-// TODO(yiyix): Instead of using a fixed padding beside each tray item, take
-// internal icon padding into account when adjusting tray icon spacing. See
-// crbug.com/653292.
 void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment) {
+  if (MaterialDesignController::IsShelfMaterial())
+    return;
+
   const int tray_image_item_padding = GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
   if (IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
@@ -55,6 +55,9 @@ void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment) {
 }
 
 void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment) {
+  if (MaterialDesignController::IsShelfMaterial())
+    return;
+
   if (IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,

@@ -182,6 +182,8 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
   SetContentsBackground();
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    tray_container()->SetMargin(GetTrayConstant(TRAY_IMAGE_ITEM_PADDING), 0);
 }
 
 SystemTray::~SystemTray() {

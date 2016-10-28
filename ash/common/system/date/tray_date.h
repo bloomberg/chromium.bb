@@ -68,8 +68,6 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
   void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
   void Refresh() override;
 
-  void SetupLabelForTimeTray(views::Label* label);
-
   tray::TimeView* time_tray_;
   DateDefaultView* default_view_;
   LoginStatus login_status_;

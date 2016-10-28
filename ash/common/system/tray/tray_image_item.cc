@@ -73,7 +73,6 @@ views::View* TrayImageItem::CreateTrayView(LoginStatus status) {
   tray_view_->CreateImageView();
   UpdateImageOnImageView();
   tray_view_->SetVisible(GetInitialVisibility());
-  SetItemAlignment(system_tray()->shelf_alignment());
   return tray_view_;
 }
 
@@ -89,7 +88,6 @@ void TrayImageItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayImageItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   SetTrayImageItemBorder(tray_view_, alignment);
-  SetItemAlignment(alignment);
 }
 
 void TrayImageItem::DestroyTrayView() {
@@ -108,15 +106,6 @@ void TrayImageItem::SetIconColor(SkColor color) {
 void TrayImageItem::SetImageFromResourceId(int resource_id) {
   resource_id_ = resource_id;
   UpdateImageOnImageView();
-}
-
-void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
-  // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
-                                             ? views::BoxLayout::kHorizontal
-                                             : views::BoxLayout::kVertical;
-  tray_view_->SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
-  tray_view_->Layout();
 }
 
 void TrayImageItem::UpdateImageOnImageView() {

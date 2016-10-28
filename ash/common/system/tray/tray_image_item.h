@@ -46,9 +46,6 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
   void SetImageFromResourceId(int resource_id);
 
  private:
-  // Set the alignment of the image depending on the shelf alignment.
-  void SetItemAlignment(ShelfAlignment alignment);
-
   // Sets the current icon on |tray_view_|'s ImageView.
   void UpdateImageOnImageView();
 

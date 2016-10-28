@@ -48,12 +48,7 @@ class NetworkTrayView : public TrayItemView,
  public:
   explicit NetworkTrayView(TrayNetwork* network_tray)
       : TrayItemView(network_tray) {
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-
-    image_view_ = new views::ImageView;
-    AddChildView(image_view_);
-
+    CreateImageView();
     UpdateNetworkStateHandlerIcon();
   }
 
@@ -88,14 +83,6 @@ class NetworkTrayView : public TrayItemView,
     }
   }
 
-  void UpdateAlignment(ShelfAlignment alignment) {
-    SetLayoutManager(new views::BoxLayout(IsHorizontalAlignment(alignment)
-                                              ? views::BoxLayout::kHorizontal
-                                              : views::BoxLayout::kVertical,
-                                          0, 0, 0));
-    Layout();
-  }
-
   // views::View:
   void GetAccessibleState(ui::AXViewState* state) override {
     state->name = connection_status_string_;
@@ -122,12 +109,11 @@ class NetworkTrayView : public TrayItemView,
   }
 
   void UpdateIcon(bool tray_icon_visible, const gfx::ImageSkia& image) {
-    image_view_->SetImage(image);
+    image_view()->SetImage(image);
     SetVisible(tray_icon_visible);
     SchedulePaint();
   }
 
-  views::ImageView* image_view_;
   base::string16 connection_status_string_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
@@ -308,10 +294,8 @@ void TrayNetwork::DestroyDetailedView() {
 void TrayNetwork::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  if (tray_) {
+  if (tray_)
     SetTrayImageItemBorder(tray_, alignment);
-    tray_->UpdateAlignment(alignment);
-  }
 }
 
 void TrayNetwork::RequestToggleWifi() {
