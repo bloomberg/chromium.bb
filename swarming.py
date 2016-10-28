@@ -176,6 +176,7 @@ TaskProperties = collections.namedtuple(
       'inputs_ref',
       'io_timeout_secs',
       'outputs',
+      'secret_bytes',
     ])
 
 
@@ -935,6 +936,10 @@ def add_trigger_options(parser):
       help='When set, the server will actively try to find a previous task '
            'with the same parameter and return this result instead if possible')
   parser.task_group.add_option(
+      '--secret_bytes_path',
+      help='The optional path to a file containing the secret_bytes to use with'
+           'this task.')
+  parser.task_group.add_option(
       '--expiration', type='int', default=6*60*60,
       help='Seconds to allow the task to be pending for a bot to run before '
            'this task request expires.')
@@ -1019,6 +1024,11 @@ def process_trigger_options(parser, options, args):
         packages=cipd_packages,
         server=None)
 
+  secret_bytes = None
+  if options.secret_bytes_path:
+    with open(options.secret_bytes_path, 'r') as f:
+      secret_bytes = f.read().encode('base64')
+
   # If inputs_ref.isolated is used, command is actually extra_args.
   # Otherwise it's an actual command to run.
   isolated_input = inputs_ref and inputs_ref.isolated
@@ -1033,7 +1043,8 @@ def process_trigger_options(parser, options, args):
       idempotent=options.idempotent,
       inputs_ref=inputs_ref,
       io_timeout_secs=options.io_timeout,
-      outputs=options.output)
+      outputs=options.output,
+      secret_bytes=secret_bytes)
   if not all(len(t.split(':', 1)) == 2 for t in options.tags):
     parser.error('--tags must be in the format key:value')
 

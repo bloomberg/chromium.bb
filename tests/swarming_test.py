@@ -104,6 +104,7 @@ def gen_request_data(properties=None, **kwargs):
       'inputs_ref': None,
       'io_timeout_secs': 60,
       'outputs': [],
+      'secret_bytes': None,
     },
     'tags': ['tag:a', 'tag:b'],
     'user': 'joe@localhost',
@@ -289,6 +290,7 @@ class TestIsolated(auto_stub.TestCase, Common):
             'isolated': isolated_hash,
           },
           'extra_args': ['foo'],
+          'secret_bytes': None,
         },
       }
       ret = main(
@@ -320,7 +322,8 @@ class TestSwarmingTrigger(NetTestCase):
             idempotent=False,
             inputs_ref=None,
             io_timeout_secs=60,
-            outputs=[]),
+            outputs=[],
+            secret_bytes=None),
         service_account_token=None,
         tags=['tag:a', 'tag:b'],
         user='joe@localhost')
@@ -389,7 +392,8 @@ class TestSwarmingTrigger(NetTestCase):
             idempotent=False,
             inputs_ref=None,
             io_timeout_secs=60,
-            outputs=[]),
+            outputs=[],
+            secret_bytes=None),
         service_account_token=None,
         tags=['tag:a', 'tag:b'],
         user='joe@localhost')
@@ -450,7 +454,8 @@ class TestSwarmingTrigger(NetTestCase):
             idempotent=False,
             inputs_ref=None,
             io_timeout_secs=60,
-            outputs=[]),
+            outputs=[],
+            secret_bytes=None),
         service_account_token=None,
         tags=['tag:a', 'tag:b'],
         user='joe@localhost')
@@ -851,6 +856,7 @@ class TestMain(NetTestCase):
         'inputs_ref': None,
         'io_timeout_secs': 1200,
         'outputs': [],
+        'secret_bytes': None,
       },
       'tags': [],
       'user': None,
@@ -905,6 +911,7 @@ class TestMain(NetTestCase):
         'inputs_ref': None,
         'io_timeout_secs': 1200,
         'outputs': [],
+        'secret_bytes': None,
       },
       'service_account_token': 'bot',
       'tags': [],
@@ -952,6 +959,7 @@ class TestMain(NetTestCase):
             'isolatedserver': 'https://localhost:2',
             'namespace': 'default-gzip',
           },
+          'secret_bytes': None,
         })
     result = gen_request_response(request)
     self.expected_requests(
@@ -1015,6 +1023,7 @@ class TestMain(NetTestCase):
             'isolatedserver': 'https://localhost:2',
             'namespace': 'default-gzip',
           },
+          'secret_bytes': None,
         })
     result = gen_request_response(request)
     self.expected_requests(
@@ -1093,6 +1102,7 @@ class TestMain(NetTestCase):
                 },
               'io_timeout_secs': 60,
               'outputs': [],
+              'secret_bytes': None,
             },
             'tags': ['tag:a', 'tag:b'],
             'user': 'joe@localhost',
@@ -1123,6 +1133,7 @@ class TestMain(NetTestCase):
             'isolatedserver': 'https://localhost:2',
             'namespace': 'default-gzip',
           },
+          'secret_bytes': None,
         })
     result = gen_request_response(request)
     self.expected_requests(
@@ -1259,6 +1270,7 @@ class TestMain(NetTestCase):
             'namespace': 'default-gzip',
             },
           'io_timeout_secs': 60,
+          'secret_bytes': None,
         },
         'tags': ['tag:a', 'tag:b'],
         'user': 'joe@localhost',
@@ -1369,6 +1381,7 @@ class TestMain(NetTestCase):
                   'env': [
                     {'key': 'aa', 'value': 'bb'},
                   ],
+                  'secret_bytes': None,
                 },
               },
             ),
