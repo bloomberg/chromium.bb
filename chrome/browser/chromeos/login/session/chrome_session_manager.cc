@@ -9,25 +9,41 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/session/kiosk_auto_launcher_session_manager_delegate.h"
-#include "chrome/browser/chromeos/login/session/login_oobe_session_manager_delegate.h"
-#include "chrome/browser/chromeos/login/session/restore_after_crash_session_manager_delegate.h"
-#include "chrome/browser/chromeos/login/session/stub_login_session_manager_delegate.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 
 namespace chromeos {
 
 namespace {
 
+// Whether kiosk auto launch should be started.
 bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
   return command_line.HasSwitch(switches::kLoginManager) &&
@@ -36,11 +52,122 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
          KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
 }
 
+// Starts kiosk app auto launch and shows the splash screen.
+void StartKioskSession() {
+  // Kiosk app launcher starts with login state.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+
+  ShowLoginWizard(chromeos::WizardController::kAppLaunchSplashScreenName);
+
+  // Login screen is skipped but 'login-prompt-visible' signal is still needed.
+  VLOG(1) << "Kiosk app auto launch >> login-prompt-visible";
+  DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptVisible();
+}
+
+// Starts the login/oobe screen.
+void StartLoginOobeSession() {
+  // State will be defined once out-of-box/login branching is complete.
+  ShowLoginWizard(std::string());
+
+  // Reset reboot after update flag when login screen is shown.
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector->IsEnterpriseManaged()) {
+    PrefService* local_state = g_browser_process->local_state();
+    local_state->ClearPref(prefs::kRebootAfterUpdate);
+  }
+}
+
+// Restores user sessions for a crash-and-restarted chrome.
+void StartRestoreAfterCrashSession(Profile* user_profile,
+                                   const std::string& login_user_id) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
+  // TODO(xiyuan): Identify tests that do not set this kLoginUser flag but
+  // still rely on "stub user" session. Keeping existing behavior to avoid
+  // breaking tests.
+  if (command_line->HasSwitch(chromeos::switches::kLoginUser)) {
+    // This is done in SessionManager::OnProfileCreated during normal login.
+    UserSessionManager* user_session_mgr = UserSessionManager::GetInstance();
+    user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+    const user_manager::User* user = user_manager->GetActiveUser();
+    if (!user) {
+      // This is possible if crash occured after profile removal
+      // (see crbug.com/178290 for some more info).
+      LOG(ERROR) << "Could not get active user after crash.";
+      return;
+    }
+    user_session_mgr->InitRlz(user_profile);
+    user_session_mgr->InitializeCerts(user_profile);
+    user_session_mgr->InitializeCRLSetFetcher(user);
+    user_session_mgr->InitializeCertificateTransparencyComponents(user);
+
+    if (arc::ArcBridgeService::GetEnabled(
+            base::CommandLine::ForCurrentProcess())) {
+      DCHECK(arc::ArcServiceManager::Get());
+      std::unique_ptr<BooleanPrefMember> arc_enabled_pref =
+          base::MakeUnique<BooleanPrefMember>();
+      arc_enabled_pref->Init(prefs::kArcEnabled, user_profile->GetPrefs());
+      arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
+          multi_user_util::GetAccountIdFromProfile(user_profile),
+          std::move(arc_enabled_pref));
+      DCHECK(arc::ArcAuthService::Get());
+      arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(user_profile);
+    }
+
+    // Send the PROFILE_PREPARED notification and call SessionStarted()
+    // so that the Launcher and other Profile dependent classes are created.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+        content::NotificationService::AllSources(),
+        content::Details<Profile>(user_profile));
+
+    // This call will set session state to SESSION_STATE_ACTIVE (same one).
+    session_manager::SessionManager::Get()->SessionStarted();
+
+    // Now is the good time to retrieve other logged in users for this session.
+    // First user has been already marked as logged in and active in
+    // PreProfileInit(). Restore sessions for other users in the background.
+    user_session_mgr->RestoreActiveSessions();
+  }
+
+  bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
+                         command_line->HasSwitch(::switches::kTestType);
+
+  if (!is_running_test) {
+    // Enable CrasAudioHandler logging when chrome restarts after crashing.
+    if (chromeos::CrasAudioHandler::IsInitialized())
+      chromeos::CrasAudioHandler::Get()->LogErrors();
+
+    // We did not log in (we crashed or are debugging), so we need to
+    // restore Sync.
+    UserSessionManager::GetInstance()->RestoreAuthenticationSession(
+        user_profile);
+  }
+}
+
+// Starts a user session with stub user.
+void StartStubLoginSession(Profile* user_profile,
+                           const std::string& login_user_id) {
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
+  // For dev machines and stub user emulate as if sync has been initialized.
+  SigninManagerFactory::GetForProfile(user_profile)
+      ->SetAuthenticatedAccountInfo(login_user_id, login_user_id);
+  StartRestoreAfterCrashSession(user_profile, login_user_id);
+}
+
 }  // namespace
 
-// static
-std::unique_ptr<session_manager::SessionManager>
-ChromeSessionManager::CreateSessionManager(
+ChromeSessionManager::ChromeSessionManager() {}
+ChromeSessionManager::~ChromeSessionManager() {}
+
+void ChromeSessionManager::Initialize(
     const base::CommandLine& parsed_command_line,
     Profile* profile,
     bool is_running_test) {
@@ -58,43 +185,34 @@ ChromeSessionManager::CreateSessionManager(
   KioskAppManager::RemoveObsoleteCryptohomes();
 
   if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
-    VLOG(1) << "Starting Chrome with KioskAutoLauncherSessionManagerDelegate";
-    return std::unique_ptr<session_manager::SessionManager>(
-        new ChromeSessionManager(
-            new KioskAutoLauncherSessionManagerDelegate()));
-  } else if (parsed_command_line.HasSwitch(switches::kLoginManager) &&
-             (!is_running_test || force_login_screen_in_test)) {
-    VLOG(1) << "Starting Chrome with LoginOobeSessionManagerDelegate";
-    return std::unique_ptr<session_manager::SessionManager>(
-        new ChromeSessionManager(new LoginOobeSessionManagerDelegate()));
-  } else if (!base::SysInfo::IsRunningOnChromeOS() &&
-             login_account_id == user_manager::StubAccountId()) {
-    VLOG(1) << "Starting Chrome with StubLoginSessionManagerDelegate";
-    return std::unique_ptr<session_manager::SessionManager>(
-        new ChromeSessionManager(new StubLoginSessionManagerDelegate(
-            profile, login_account_id.GetUserEmail())));
-  } else {
-    VLOG(1) << "Starting Chrome with  RestoreAfterCrashSessionManagerDelegate";
-    // Restarting Chrome inside existing user session. Possible cases:
-    // 1. Chrome is restarted after crash.
-    // 2. Chrome is restarted for Guest session.
-    // 3. Chrome is started in browser_tests skipping the login flow.
-    // 4. Chrome is started on dev machine i.e. not on Chrome OS device w/o
-    //    login flow. In that case
-    //    --login-user=[user_manager::kStubUser] is
-    //    added. See PreEarlyInitialization().
-    return std::unique_ptr<session_manager::SessionManager>(
-        new ChromeSessionManager(new RestoreAfterCrashSessionManagerDelegate(
-            profile, login_account_id.GetUserEmail())));
+    VLOG(1) << "Starting Chrome with kiosk auto launch.";
+    StartKioskSession();
+    return;
   }
-}
 
-ChromeSessionManager::ChromeSessionManager(
-    session_manager::SessionManagerDelegate* delegate) {
-  Initialize(delegate);
-}
+  if (parsed_command_line.HasSwitch(switches::kLoginManager) &&
+      (!is_running_test || force_login_screen_in_test)) {
+    VLOG(1) << "Starting Chrome with login/oobe screen.";
+    StartLoginOobeSession();
+    return;
+  }
 
-ChromeSessionManager::~ChromeSessionManager() {
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      login_account_id == user_manager::StubAccountId()) {
+    VLOG(1) << "Starting Chrome with stub login.";
+    StartStubLoginSession(profile, login_account_id.GetUserEmail());
+    return;
+  }
+
+  VLOG(1) << "Starting Chrome with  restart after crash session.";
+  // Restarting Chrome inside existing user session. Possible cases:
+  // 1. Chrome is restarted after crash.
+  // 2. Chrome is restarted for Guest session.
+  // 3. Chrome is started in browser_tests skipping the login flow.
+  // 4. Chrome is started on dev machine i.e. not on Chrome OS device w/o
+  //    login flow. In that case --login-user=[user_manager::kStubUser] is
+  //    added. See PreEarlyInitialization().
+  StartRestoreAfterCrashSession(profile, login_account_id.GetUserEmail());
 }
 
 void ChromeSessionManager::SessionStarted() {

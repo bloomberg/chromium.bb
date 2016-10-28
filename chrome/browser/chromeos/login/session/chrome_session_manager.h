@@ -18,19 +18,23 @@ namespace chromeos {
 
 class ChromeSessionManager : public session_manager::SessionManager {
  public:
-  static std::unique_ptr<session_manager::SessionManager> CreateSessionManager(
-      const base::CommandLine& parsed_command_line,
-      Profile* profile,
-      bool is_running_test);
-
- private:
-  explicit ChromeSessionManager(
-      session_manager::SessionManagerDelegate* delegate);
+  ChromeSessionManager();
   ~ChromeSessionManager() override;
+
+  // Initialize session manager on browser starts up. Runs different code
+  // path based on command line flags and policy. Possible scenarios include:
+  //   - Launches pre-session UI such as  out-of-box or login;
+  //   - Launches the auto launched kiosk app;
+  //   - Resumes user sessions on crash-and-restart;
+  //   - Starts a stub login session for dev or test;
+  void Initialize(const base::CommandLine& parsed_command_line,
+                  Profile* profile,
+                  bool is_running_test);
 
   // session_manager::SessionManager:
   void SessionStarted() override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManager);
 };
 

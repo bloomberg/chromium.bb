@@ -53,6 +53,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -436,6 +437,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- just before CreateProfile().
 
   g_browser_process->platform_part()->InitializeChromeUserManager();
+  g_browser_process->platform_part()->InitializeSessionManager();
 
   ScreenLocker::InitClass();
 
@@ -635,8 +637,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Initialize the network portal detector for Chrome OS. The network
   // portal detector starts to listen for notifications from
   // NetworkStateHandler and initiates captive portal detection for
-  // active networks. Should be called before call to CreateSessionManager,
-  // because it depends on NetworkPortalDetector.
+  // active networks. Should be called before call to initialize
+  // ChromeSessionManager because it depends on NetworkPortalDetector.
   InitializeNetworkPortalDetector();
   {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -660,9 +662,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   manager->SetState(session_manager->GetDefaultIMEState(profile()));
 
   bool is_running_test = parameters().ui_task != nullptr;
-  g_browser_process->platform_part()->InitializeSessionManager(
+  g_browser_process->platform_part()->session_manager()->Initialize(
       parsed_command_line(), profile(), is_running_test);
-  g_browser_process->platform_part()->SessionManager()->Start();
 
   // Guest user profile is never initialized with locale settings,
   // so we need special handling for Guest session.
@@ -877,9 +878,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // parts of WebUI depends on NetworkPortalDetector.
   network_portal_detector::Shutdown();
 
-  g_browser_process->platform_part()->DestroyChromeUserManager();
-
   g_browser_process->platform_part()->ShutdownSessionManager();
+  g_browser_process->platform_part()->DestroyChromeUserManager();
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {

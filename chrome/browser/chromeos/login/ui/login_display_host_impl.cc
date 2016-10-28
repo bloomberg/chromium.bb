@@ -1274,7 +1274,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
 
-  g_browser_process->platform_part()->SessionManager()->SetSessionState(
+  session_manager::SessionManager::Get()->SetSessionState(
       StartupUtils::IsOobeCompleted()
           ? session_manager::SessionState::LOGIN_PRIMARY
           : session_manager::SessionState::OOBE);

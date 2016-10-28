@@ -12,11 +12,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 
-namespace base {
-class CommandLine;
-}
-
 namespace chromeos {
+class ChromeSessionManager;
 class ChromeUserManager;
 class ProfileHelper;
 class TimeZoneResolver;
@@ -37,11 +34,6 @@ class BrowserPolicyConnector;
 class BrowserPolicyConnectorChromeOS;
 }
 
-namespace session_manager {
-class SessionManager;
-}
-
-class Profile;
 class ScopedKeepAlive;
 
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
@@ -59,19 +51,12 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   void InitializeDeviceDisablingManager();
   void ShutdownDeviceDisablingManager();
 
-  void InitializeSessionManager(const base::CommandLine& parsed_command_line,
-                                Profile* profile,
-                                bool is_running_test);
+  void InitializeSessionManager();
   void ShutdownSessionManager();
 
   // Disable the offline interstitial easter egg if the device is enterprise
   // enrolled.
   void DisableDinoEasterEggIfEnrolled();
-
-  // Returns the SessionManager instance that is used to initialize and
-  // start user sessions as well as responsible on launching pre-session UI like
-  // out-of-box or login.
-  virtual session_manager::SessionManager* SessionManager();
 
   // Used to register a KeepAlive when Ash is initialized, and release it
   // when until Chrome starts exiting. Ensure we stay running the whole time.
@@ -87,6 +72,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   }
 
   policy::BrowserPolicyConnectorChromeOS* browser_policy_connector_chromeos();
+
+  chromeos::ChromeSessionManager* session_manager() {
+    return session_manager_.get();
+  }
 
   chromeos::ChromeUserManager* user_manager() {
     return chrome_user_manager_.get();
@@ -112,7 +101,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
  private:
   void CreateProfileHelper();
 
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<chromeos::ChromeSessionManager> session_manager_;
 
   bool created_profile_helper_;
   std::unique_ptr<chromeos::ProfileHelper> profile_helper_;

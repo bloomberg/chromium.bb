@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h"
@@ -55,7 +54,7 @@ void UserAddingScreenImpl::Start() {
       base::Bind(&UserAddingScreenImpl::OnDisplayHostCompletion,
                  base::Unretained(this)));
 
-  g_browser_process->platform_part()->SessionManager()->SetSessionState(
+  session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGIN_SECONDARY);
   for (auto& observer : observers_)
     observer.OnUserAddingStarted();
@@ -91,7 +90,7 @@ void UserAddingScreenImpl::OnDisplayHostCompletion() {
   CHECK(IsRunning());
   display_host_ = NULL;
 
-  g_browser_process->platform_part()->SessionManager()->SetSessionState(
+  session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::ACTIVE);
   for (auto& observer : observers_)
     observer.OnUserAddingFinished();

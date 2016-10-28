@@ -46,30 +46,9 @@ void SessionManager::SessionStarted() {
   session_started_ = true;
 }
 
-void SessionManager::Initialize(SessionManagerDelegate* delegate) {
-  DCHECK(delegate);
-  delegate_.reset(delegate);
-  delegate_->SetSessionManager(this);
-}
-
 // static
 void SessionManager::SetInstance(SessionManager* session_manager) {
   SessionManager::instance = session_manager;
-}
-
-void SessionManager::Start() {
-  delegate_->Start();
-}
-
-SessionManagerDelegate::SessionManagerDelegate() {
-}
-
-SessionManagerDelegate::~SessionManagerDelegate() {
-}
-
-void SessionManagerDelegate::SetSessionManager(
-    session_manager::SessionManager* session_manager) {
-  session_manager_ = session_manager;
 }
 
 }  // namespace session_manager

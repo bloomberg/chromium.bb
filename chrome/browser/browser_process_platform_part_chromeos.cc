@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
@@ -74,22 +72,13 @@ void BrowserProcessPlatformPart::ShutdownDeviceDisablingManager() {
   device_disabling_manager_delegate_.reset();
 }
 
-void BrowserProcessPlatformPart::InitializeSessionManager(
-    const base::CommandLine& parsed_command_line,
-    Profile* profile,
-    bool is_running_test) {
+void BrowserProcessPlatformPart::InitializeSessionManager() {
   DCHECK(!session_manager_);
-  session_manager_ = chromeos::ChromeSessionManager::CreateSessionManager(
-      parsed_command_line, profile, is_running_test);
+  session_manager_ = base::MakeUnique<chromeos::ChromeSessionManager>();
 }
 
 void BrowserProcessPlatformPart::ShutdownSessionManager() {
   session_manager_.reset();
-}
-
-session_manager::SessionManager* BrowserProcessPlatformPart::SessionManager() {
-  DCHECK(CalledOnValidThread());
-  return session_manager_.get();
 }
 
 void BrowserProcessPlatformPart::RegisterKeepAlive() {

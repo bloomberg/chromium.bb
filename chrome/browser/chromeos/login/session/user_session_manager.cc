@@ -1136,7 +1136,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   profile->OnLogin();
 
-  g_browser_process->platform_part()->SessionManager()->SetSessionState(
+  session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
 
   // Send the notification before creating the browser so additional objects
@@ -1742,7 +1742,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // browser before it is dereferenced by the login host.
   if (login_host)
     login_host->Finalize();
-  g_browser_process->platform_part()->SessionManager()->SessionStarted();
+  session_manager::SessionManager::Get()->SessionStarted();
   chromeos::BootTimesRecorder::Get()->LoginDone(
       user_manager::UserManager::Get()->IsCurrentUserNew());
 
