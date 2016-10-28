@@ -11,37 +11,49 @@
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_transport.h"
 #include "blimp/net/message_port.h"
+#include "blimp/net/tcp_engine_transport.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 
 namespace blimp {
 
 EngineConnectionManager::EngineConnectionManager(
-    ConnectionHandler* connection_handler)
-    : connection_handler_(connection_handler) {
+    ConnectionHandler* connection_handler,
+    net::NetLog* net_log)
+    : connection_handler_(connection_handler), net_log_(net_log) {
   DCHECK(connection_handler_);
 }
 
 EngineConnectionManager::~EngineConnectionManager() {}
 
-void EngineConnectionManager::AddTransport(
-    std::unique_ptr<BlimpTransport> transport) {
-  BlimpTransport* transport_ptr = transport.get();
-  transports_.push_back(std::move(transport));
-  Connect(transport_ptr);
-}
+void EngineConnectionManager::ConnectTransport(
+    net::IPEndPoint* ip_endpoint,
+    EngineTransportType transport_type) {
+  switch (transport_type) {
+    case EngineTransportType::TCP: {
+      transport_ = base::MakeUnique<TCPEngineTransport>(*ip_endpoint, net_log_);
+      break;
+    }
 
-void EngineConnectionManager::Connect(BlimpTransport* transport) {
-  transport->Connect(base::Bind(&EngineConnectionManager::OnConnectResult,
-                                base::Unretained(this),
-                                base::Unretained(transport)));
+    case EngineTransportType::GRPC: {
+      NOTIMPLEMENTED();
+      // TODO(perumaal): Unimplemented as yet.
+      // transport_ =
+      //      base::MakeUnique<GrpcEngineTransport>(ip_endpoint.ToString());
+      break;
+    }
+  }
+
+  transport_->Connect(base::Bind(&EngineConnectionManager::OnConnectResult,
+                                 base::Unretained(this),
+                                 base::Unretained(transport_.get())));
+  transport_->GetLocalAddress(ip_endpoint);
 }
 
 void EngineConnectionManager::OnConnectResult(BlimpTransport* transport,
                                               int result) {
   CHECK_EQ(net::OK, result) << "Transport failure:" << transport->GetName();
-  connection_handler_->HandleConnection(
-      base::MakeUnique<BlimpConnection>(transport->TakeMessagePort()));
-  Connect(transport);
+  connection_handler_->HandleConnection(transport->MakeConnection());
 }
 
 }  // namespace blimp

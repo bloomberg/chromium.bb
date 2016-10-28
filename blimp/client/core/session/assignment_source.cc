@@ -51,6 +51,7 @@ const char kPortKey[] = "port";
 const char kCertificateKey[] = "certificate";
 
 // Possible arguments for the "--engine-transport" command line parameter.
+const char kGrpcTransportValue[] = "grpc";
 const char kSSLTransportValue[] = "ssl";
 const char kTCPTransportValue[] = "tcp";
 
@@ -138,6 +139,8 @@ Assignment GetAssignmentFromCommandLine() {
     assignment.transport_protocol = Assignment::TransportProtocol::SSL;
   } else if (transport_str == kTCPTransportValue) {
     assignment.transport_protocol = Assignment::TransportProtocol::TCP;
+  } else if (transport_str == kGrpcTransportValue) {
+    assignment.transport_protocol = Assignment::TransportProtocol::GRPC;
   } else {
     DLOG(FATAL) << "Invalid engine transport " << transport_str;
     return Assignment();

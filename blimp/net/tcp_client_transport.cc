@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "blimp/net/message_port.h"
-#include "blimp/net/stream_socket_connection.h"
+#include "blimp/net/tcp_connection.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/stream_socket.h"
@@ -56,6 +56,10 @@ std::unique_ptr<MessagePort> TCPClientTransport::TakeMessagePort() {
   DCHECK(connect_callback_.is_null());
   DCHECK(socket_);
   return MessagePort::CreateForStreamSocketWithCompression(std::move(socket_));
+}
+
+std::unique_ptr<BlimpConnection> TCPClientTransport::MakeConnection() {
+  return base::MakeUnique<TCPConnection>(TakeMessagePort());
 }
 
 const char* TCPClientTransport::GetName() const {

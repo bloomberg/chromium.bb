@@ -44,7 +44,7 @@ class TCPTransportTest : public testing::Test {
 
   net::IPEndPoint GetLocalEndpoint() const {
     net::IPEndPoint local_address;
-    CHECK_EQ(net::OK, engine_.GetLocalAddress(&local_address));
+    engine_.GetLocalAddress(&local_address);
     return local_address;
   }
 

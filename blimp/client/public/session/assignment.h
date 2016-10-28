@@ -41,6 +41,7 @@ struct Assignment {
     UNKNOWN = 0,
     SSL = 1,
     TCP = 2,
+    GRPC = 3,
   };
 
   Assignment();

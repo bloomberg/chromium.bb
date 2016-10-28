@@ -15,15 +15,11 @@
 namespace blimp {
 
 class BlimpMessageProcessor;
-class BlimpMessagePump;
-class BlimpMessageSender;
-class MessagePort;
 
 // Encapsulates the state and logic used to exchange BlimpMessages over
 // a network connection.
 class BLIMP_NET_EXPORT BlimpConnection : public ConnectionErrorObserver {
  public:
-  explicit BlimpConnection(std::unique_ptr<MessagePort> message_port);
   ~BlimpConnection() override;
 
   // Adds |observer| to the connection's error observer list.
@@ -35,10 +31,11 @@ class BLIMP_NET_EXPORT BlimpConnection : public ConnectionErrorObserver {
   // Sets the processor which will take incoming messages for this connection.
   // Can be set multiple times, but previously set processors are discarded.
   // Caller retains the ownership of |processor|.
-  virtual void SetIncomingMessageProcessor(BlimpMessageProcessor* processor);
+  virtual void SetIncomingMessageProcessor(
+      BlimpMessageProcessor* processor) = 0;
 
   // Gets a processor for BrowserSession->BlimpConnection message routing.
-  virtual BlimpMessageProcessor* GetOutgoingMessageProcessor();
+  virtual BlimpMessageProcessor* GetOutgoingMessageProcessor() = 0;
 
  protected:
   class EndConnectionFilter;
@@ -46,16 +43,16 @@ class BLIMP_NET_EXPORT BlimpConnection : public ConnectionErrorObserver {
 
   BlimpConnection();
 
+  void AddEndConnectionProcessor(BlimpMessageProcessor* processor);
+
   // ConnectionErrorObserver implementation.
   void OnConnectionError(int error) override;
 
- private:
-  std::unique_ptr<MessagePort> message_port_;
-  std::unique_ptr<BlimpMessagePump> message_pump_;
-  std::unique_ptr<BlimpMessageSender> outgoing_msg_processor_;
-  base::ObserverList<ConnectionErrorObserver> error_observers_;
-  std::unique_ptr<EndConnectionFilter> end_connection_filter_;
+  BlimpMessageProcessor* GetEndConnectionProcessor() const;
 
+ private:
+  std::unique_ptr<EndConnectionFilter> end_connection_filter_;
+  base::ObserverList<ConnectionErrorObserver> error_observers_;
   DISALLOW_COPY_AND_ASSIGN(BlimpConnection);
 };
 

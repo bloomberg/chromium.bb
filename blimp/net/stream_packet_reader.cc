@@ -38,7 +38,10 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 StreamPacketReader::StreamPacketReader(net::StreamSocket* socket)
-    : read_state_(ReadState::IDLE), socket_(socket), weak_factory_(this) {
+    : read_state_(ReadState::IDLE),
+      socket_(socket),
+      payload_size_(0),
+      weak_factory_(this) {
   DCHECK(socket_);
   header_buffer_ = new net::GrowableIOBuffer;
   header_buffer_->SetCapacity(kPacketHeaderSizeBytes);
@@ -153,7 +156,7 @@ void StreamPacketReader::OnReadComplete(int result) {
     return;
   }
 
-  // If the read was succesful, then process the result.
+  // If the read was successful, then process the result.
   if (result > 0) {
     result = DoReadLoop(result);
   }

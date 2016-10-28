@@ -135,6 +135,8 @@ class MockStreamSocket : public net::StreamSocket {
   MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
 };
 
+class MockBlimpConnection;
+
 class MockTransport : public BlimpTransport {
  public:
   MockTransport();
@@ -142,9 +144,14 @@ class MockTransport : public BlimpTransport {
 
   MOCK_METHOD1(Connect, void(const net::CompletionCallback& callback));
   MOCK_METHOD0(TakeMessagePortPtr, MessagePort*());
+  std::unique_ptr<BlimpConnection> MakeConnection() override;
 
-  std::unique_ptr<MessagePort> TakeMessagePort() override;
   const char* GetName() const override;
+
+  void SetMockConnection(std::unique_ptr<MockBlimpConnection> connection);
+
+ private:
+  std::unique_ptr<MockBlimpConnection> connection_;
 };
 
 class MockConnectionHandler : public ConnectionHandler {

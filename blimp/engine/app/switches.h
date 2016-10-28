@@ -14,6 +14,9 @@ extern const char kEnginePort[];
 // Flag enabling access by clients from non-localhost IP addresses.
 extern const char kAllowNonLocalhost[];
 
+// Transport type: tcp, grpc. If empty, tcp is assumed by default.
+extern const char kEngineTransport[];
+
 }  // namespace engine
 }  // namespace blimp
 

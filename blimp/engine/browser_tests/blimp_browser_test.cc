@@ -93,6 +93,8 @@ void BlimpBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
     command_line->AppendSwitchASCII(blimp::engine::kEnginePort, "0");
   }
 
+  // TODO(perumaal): Switch to gRPC when it's ready. See crbug.com/659279.
+
   base::FilePath src_root;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
   command_line->AppendSwitchASCII(

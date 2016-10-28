@@ -5,6 +5,7 @@
 #include "blimp/net/test_common.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
@@ -22,11 +23,16 @@ MockStreamSocket::~MockStreamSocket() {}
 
 MockTransport::MockTransport() {}
 
-MockTransport::~MockTransport() {}
-
-std::unique_ptr<MessagePort> MockTransport::TakeMessagePort() {
-  return base::WrapUnique(TakeMessagePortPtr());
+std::unique_ptr<BlimpConnection> MockTransport::MakeConnection() {
+  return std::move(connection_);
 }
+
+void MockTransport::SetMockConnection(
+    std::unique_ptr<MockBlimpConnection> connection) {
+  connection_ = std::move(connection);
+}
+
+MockTransport::~MockTransport() {}
 
 const char* MockTransport::GetName() const {
   return "mock";

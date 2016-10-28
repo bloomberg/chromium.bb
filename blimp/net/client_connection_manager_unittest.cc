@@ -18,6 +18,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "testing/gmock/include/gmock/gmock-more-actions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,11 +38,11 @@ class ClientConnectionManagerTest : public testing::Test {
       : manager_(new ClientConnectionManager(&connection_handler_)),
         transport1_(new testing::StrictMock<MockTransport>),
         transport2_(new testing::StrictMock<MockTransport>),
-        reader_(new testing::StrictMock<MockPacketReader>),
-        writer_(new testing::StrictMock<MockPacketWriter>),
+        connection_(new testing::StrictMock<MockBlimpConnection>),
         start_connection_message_(
             CreateStartConnectionMessage(kDummyClientAuthToken,
-                                         kProtocolVersion)) {
+                                         kProtocolVersion)),
+        message_capture_(new testing::StrictMock<MockBlimpMessageProcessor>) {
     manager_->set_client_auth_token(kDummyClientAuthToken);
   }
 
@@ -53,25 +54,27 @@ class ClientConnectionManagerTest : public testing::Test {
   std::unique_ptr<ClientConnectionManager> manager_;
   std::unique_ptr<testing::StrictMock<MockTransport>> transport1_;
   std::unique_ptr<testing::StrictMock<MockTransport>> transport2_;
-  std::unique_ptr<MockPacketReader> reader_;
-  std::unique_ptr<MockPacketWriter> writer_;
+  std::unique_ptr<testing::StrictMock<MockBlimpConnection>> connection_;
   std::unique_ptr<BlimpMessage> start_connection_message_;
+  std::unique_ptr<testing::StrictMock<MockBlimpMessageProcessor>>
+      message_capture_;
 };
 
-// The 1st transport connects, and the 2nd transport is not used.
+// Tests that the transport connection works.
 TEST_F(ClientConnectionManagerTest, FirstTransportConnects) {
   net::CompletionCallback write_cb;
   net::CompletionCallback connect_cb_1;
   EXPECT_CALL(*transport1_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_1));
   EXPECT_CALL(connection_handler_, HandleConnectionPtr(_));
-  EXPECT_CALL(*writer_,
-              WritePacket(BufferEqualsProto(*start_connection_message_), _))
+  EXPECT_CALL(
+      *message_capture_,
+      MockableProcessMessage(EqualsProto(*start_connection_message_), _))
       .WillOnce(SaveArg<1>(&write_cb));
+  EXPECT_CALL(*connection_, AddConnectionErrorObserver(_));
+  EXPECT_CALL(*connection_, GetOutgoingMessageProcessor())
+      .WillOnce(Return(message_capture_.get()));
 
-  EXPECT_CALL(*transport1_, TakeMessagePortPtr())
-      .WillOnce(
-          Return(new MessagePort(std::move(reader_), std::move(writer_))));
-
+  transport1_->SetMockConnection(std::move(connection_));
   EXPECT_TRUE(connect_cb_1.is_null());
   manager_->AddTransport(std::move(transport1_));
   manager_->AddTransport(std::move(transport2_));
@@ -88,13 +91,20 @@ TEST_F(ClientConnectionManagerTest, SecondTransportConnects) {
   EXPECT_CALL(*transport1_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_1));
   net::CompletionCallback connect_cb_2;
   EXPECT_CALL(*transport2_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_2));
-  EXPECT_CALL(*writer_,
-              WritePacket(BufferEqualsProto(*start_connection_message_), _))
+  EXPECT_CALL(
+      *message_capture_,
+      MockableProcessMessage(EqualsProto(*start_connection_message_), _))
       .WillOnce(SaveArg<1>(&write_cb));
-  EXPECT_CALL(connection_handler_, HandleConnectionPtr(_));
-  EXPECT_CALL(*transport2_, TakeMessagePortPtr())
-      .WillOnce(
-          Return(new MessagePort(std::move(reader_), std::move(writer_))));
+  EXPECT_CALL(*connection_, AddConnectionErrorObserver(_));
+  EXPECT_CALL(*connection_, GetOutgoingMessageProcessor())
+      .WillOnce(Return(message_capture_.get()));
+
+  BlimpConnection* actual_connection = nullptr;
+  BlimpConnection* expected_connection = connection_.get();
+  EXPECT_CALL(connection_handler_, HandleConnectionPtr(_))
+      .WillOnce(SaveArg<0>(&actual_connection));
+
+  transport2_->SetMockConnection(std::move(connection_));
 
   EXPECT_TRUE(connect_cb_1.is_null());
   EXPECT_TRUE(connect_cb_2.is_null());
@@ -106,6 +116,7 @@ TEST_F(ClientConnectionManagerTest, SecondTransportConnects) {
   EXPECT_FALSE(connect_cb_2.is_null());
   base::ResetAndReturn(&connect_cb_2).Run(net::OK);
   base::ResetAndReturn(&write_cb).Run(net::OK);
+  EXPECT_EQ(expected_connection, actual_connection);
 }
 
 // Both transports fail to connect.

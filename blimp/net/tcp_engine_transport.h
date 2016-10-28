@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "blimp/net/blimp_engine_transport.h"
 #include "blimp/net/blimp_net_export.h"
-#include "blimp/net/blimp_transport.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 
@@ -24,8 +24,8 @@ namespace blimp {
 
 class MessagePort;
 
-// BlimpTransport which listens for a TCP connection at |address|.
-class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
+// |BlimpTransport| which listens for a TCP connection at |address|.
+class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpEngineTransport {
  public:
   // Caller retains the ownership of |net_log|.
   TCPEngineTransport(const net::IPEndPoint& address,
@@ -34,10 +34,12 @@ class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
 
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
-  std::unique_ptr<MessagePort> TakeMessagePort() override;
+  std::unique_ptr<BlimpConnection> MakeConnection() override;
   const char* GetName() const override;
+  void GetLocalAddress(net::IPEndPoint* address) const override;
 
-  int GetLocalAddress(net::IPEndPoint* address) const;
+  // Internal use only except tests.
+  std::unique_ptr<MessagePort> TakeMessagePort();
 
  private:
   void OnTCPConnectAccepted(int result);

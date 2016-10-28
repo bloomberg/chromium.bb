@@ -72,6 +72,9 @@ const int kDefaultDisplayWidth = 800;
 const int kDefaultDisplayHeight = 600;
 const uint16_t kDefaultPort = 25467;
 
+const char kTcpTransport[] = "tcp";
+const char kGrpcTransport[] = "grpc";
+
 // Focus rules that support activating an child window.
 class FocusRulesImpl : public wm::BaseFocusRules {
  public:
@@ -97,6 +100,20 @@ void PostTask(const scoped_refptr<base::TaskRunner>& task_runner,
 base::Closure QuitCurrentMessageLoopClosure() {
   return base::Bind(&PostTask, base::ThreadTaskRunnerHandle::Get(),
                     base::MessageLoop::QuitWhenIdleClosure());
+}
+
+EngineConnectionManager::EngineTransportType GetTransportType() {
+  const std::string transport_parsed =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kEngineTransport);
+  if (transport_parsed == kTcpTransport || transport_parsed.empty()) {
+    return EngineConnectionManager::EngineTransportType::TCP;
+  } else if (transport_parsed == kGrpcTransport) {
+    return EngineConnectionManager::EngineTransportType::GRPC;
+  }
+  LOG(FATAL) << "--engine-transport must either be empty or one of "
+             << kGrpcTransport << ", " << kTcpTransport;
+  return EngineConnectionManager::EngineTransportType::TCP;
 }
 
 net::IPAddress GetListeningAddress() {
@@ -139,6 +156,8 @@ class EngineNetworkComponents : public ConnectionHandler,
                   base::WeakPtr<BlobChannelSender> blob_channel_sender,
                   const std::string& client_token);
 
+  // TODO(perumaal): Remove this once gRPC support is ready.
+  //                 See crbug.com/659279.
   uint16_t GetPortForTesting() { return port_; }
 
   BrowserConnectionHandler* connection_handler() {
@@ -189,20 +208,16 @@ void EngineNetworkComponents::Initialize(
       base::MakeUnique<EngineAuthenticationHandler>(this, client_token);
 
   // Plumb unauthenticated connections to |authentication_handler_|.
-  connection_manager_ =
-      base::MakeUnique<EngineConnectionManager>(authentication_handler_.get());
+  connection_manager_ = base::MakeUnique<EngineConnectionManager>(
+      authentication_handler_.get(), net_log_);
 
   blob_channel_service_ =
       base::MakeUnique<BlobChannelService>(blob_channel_sender, ui_task_runner);
 
   // Adds BlimpTransports to connection_manager_.
   net::IPEndPoint address(GetListeningAddress(), GetListeningPort());
-  TCPEngineTransport* transport = new TCPEngineTransport(address, net_log_);
-  connection_manager_->AddTransport(base::WrapUnique(transport));
-
-  transport->GetLocalAddress(&address);
+  connection_manager_->ConnectTransport(&address, GetTransportType());
   port_ = address.port();
-  DVLOG(1) << "Engine port #: " << port_;
 }
 
 void EngineNetworkComponents::HandleConnection(

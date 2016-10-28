@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "blimp/net/exact_match_cert_verifier.h"
-#include "blimp/net/stream_socket_connection.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/x509_certificate.h"
 #include "net/socket/client_socket_factory.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/blimp_connection.h"
+#include "blimp/net/tcp_connection.h"
 
 #include <stddef.h>
 
@@ -33,16 +33,15 @@ using testing::SaveArg;
 namespace blimp {
 namespace {
 
-class BlimpConnectionTest : public testing::Test {
+class TCPConnectionTest : public testing::Test {
  public:
-  BlimpConnectionTest() {
+  TCPConnectionTest() {
     std::unique_ptr<MockPacketReader> mock_reader(new MockPacketReader);
     std::unique_ptr<MockPacketWriter> mock_writer(new MockPacketWriter);
     mock_reader_ = mock_reader.get();
     mock_writer_ = mock_writer.get();
-    connection_ =
-        base::MakeUnique<BlimpConnection>(base::MakeUnique<MessagePort>(
-            std::move(mock_reader), std::move(mock_writer)));
+    connection_ = base::MakeUnique<TCPConnection>(base::MakeUnique<MessagePort>(
+        std::move(mock_reader), std::move(mock_writer)));
 
     connection_->AddConnectionErrorObserver(&error_observer1_);
     connection_->AddConnectionErrorObserver(&error_observer2_);
@@ -50,7 +49,7 @@ class BlimpConnectionTest : public testing::Test {
     connection_->RemoveConnectionErrorObserver(&error_observer3_);
   }
 
-  ~BlimpConnectionTest() override {}
+  ~TCPConnectionTest() override {}
 
   void DropConnection() { connection_.reset(); }
 
@@ -80,7 +79,7 @@ class BlimpConnectionTest : public testing::Test {
 };
 
 // Write completes writing two packets asynchronously.
-TEST_F(BlimpConnectionTest, AsyncTwoPacketsWrite) {
+TEST_F(TCPConnectionTest, AsyncTwoPacketsWrite) {
   net::CompletionCallback write_packet_cb;
 
   InSequence s;
@@ -99,16 +98,14 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWrite) {
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
   ASSERT_TRUE(write_packet_cb.is_null());
-  sender->ProcessMessage(CreateInputMessage(),
-                         complete_cb_1.callback());
+  sender->ProcessMessage(CreateInputMessage(), complete_cb_1.callback());
   ASSERT_FALSE(write_packet_cb.is_null());
   base::ResetAndReturn(&write_packet_cb).Run(net::OK);
   EXPECT_EQ(net::OK, complete_cb_1.WaitForResult());
 
   net::TestCompletionCallback complete_cb_2;
   ASSERT_TRUE(write_packet_cb.is_null());
-  sender->ProcessMessage(CreateControlMessage(),
-                         complete_cb_2.callback());
+  sender->ProcessMessage(CreateControlMessage(), complete_cb_2.callback());
   ASSERT_FALSE(write_packet_cb.is_null());
   base::ResetAndReturn(&write_packet_cb).Run(net::OK);
   EXPECT_EQ(net::OK, complete_cb_2.WaitForResult());
@@ -116,7 +113,7 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWrite) {
 
 // Writer completes writing two packets asynchronously.
 // First write succeeds, second fails.
-TEST_F(BlimpConnectionTest, AsyncTwoPacketsWriteWithError) {
+TEST_F(TCPConnectionTest, AsyncTwoPacketsWriteWithError) {
   net::CompletionCallback write_packet_cb;
 
   InSequence s;
@@ -134,19 +131,17 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWriteWithError) {
 
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
-  sender->ProcessMessage(CreateInputMessage(),
-                         complete_cb_1.callback());
+  sender->ProcessMessage(CreateInputMessage(), complete_cb_1.callback());
   base::ResetAndReturn(&write_packet_cb).Run(net::OK);
   EXPECT_EQ(net::OK, complete_cb_1.WaitForResult());
 
   net::TestCompletionCallback complete_cb_2;
-  sender->ProcessMessage(CreateControlMessage(),
-                         complete_cb_2.callback());
+  sender->ProcessMessage(CreateControlMessage(), complete_cb_2.callback());
   base::ResetAndReturn(&write_packet_cb).Run(net::ERR_FAILED);
   EXPECT_EQ(net::ERR_FAILED, complete_cb_2.WaitForResult());
 }
 
-TEST_F(BlimpConnectionTest, DeleteHappyObserversAreOK) {
+TEST_F(TCPConnectionTest, DeleteHappyObserversAreOK) {
   net::CompletionCallback write_packet_cb;
 
   InSequence s;
@@ -155,8 +150,8 @@ TEST_F(BlimpConnectionTest, DeleteHappyObserversAreOK) {
       .WillOnce(SaveArg<1>(&write_packet_cb))
       .RetiresOnSaturation();
   EXPECT_CALL(error_observer1_, OnConnectionError(net::ERR_FAILED))
-      .WillOnce(testing::InvokeWithoutArgs(
-          this, &BlimpConnectionTest::DropConnection));
+      .WillOnce(
+          testing::InvokeWithoutArgs(this, &TCPConnectionTest::DropConnection));
 
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
@@ -166,7 +161,7 @@ TEST_F(BlimpConnectionTest, DeleteHappyObserversAreOK) {
 }
 
 // Verifies that a ReadPacket error causes ErrorObservers to be notified.
-TEST_F(BlimpConnectionTest, ReadPacketErrorInvokesErrorObservers) {
+TEST_F(TCPConnectionTest, ReadPacketErrorInvokesErrorObservers) {
   scoped_refptr<net::GrowableIOBuffer> read_packet_buffer;
   net::CompletionCallback read_packet_cb;
 
@@ -192,7 +187,7 @@ TEST_F(BlimpConnectionTest, ReadPacketErrorInvokesErrorObservers) {
 
 // Verifies that EndConnection messages received from the peer are
 // routed through to registered ConnectionErrorObservers as errors.
-TEST_F(BlimpConnectionTest, EndConnectionInvokesErrorObservers) {
+TEST_F(TCPConnectionTest, EndConnectionInvokesErrorObservers) {
   scoped_refptr<net::GrowableIOBuffer> read_packet_buffer;
   net::CompletionCallback read_packet_cb;
 

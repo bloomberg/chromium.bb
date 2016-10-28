@@ -12,11 +12,14 @@
 #include "base/macros.h"
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/connection_handler.h"
+#include "net/base/ip_endpoint.h"
+#include "net/log/net_log.h"
 
 namespace blimp {
 
 class BlimpConnection;
 class BlimpTransport;
+class BlimpEngineTransport;
 
 // Coordinates the channel creation and authentication workflows for
 // incoming (Engine) network connections.
@@ -24,26 +27,29 @@ class BlimpTransport;
 // TODO(kmarshall): Add rate limiting and abuse handling logic.
 class BLIMP_NET_EXPORT EngineConnectionManager {
  public:
+  enum class EngineTransportType { TCP, GRPC };
+
   // Caller is responsible for ensuring that |connection_handler| outlives
   // |this|.
-  explicit EngineConnectionManager(ConnectionHandler* connection_handler);
+  explicit EngineConnectionManager(ConnectionHandler* connection_handler,
+                                   net::NetLog* net_log);
 
   ~EngineConnectionManager();
 
   // Adds a transport and accepts new BlimpConnections from it as fast as they
-  // arrive.
-  void AddTransport(std::unique_ptr<BlimpTransport> transport);
+  // arrive. The |ip_endpoint| will receive the actual port-number if the
+  // provided one is not available for listening.
+  void ConnectTransport(net::IPEndPoint* ip_endpoint,
+                        EngineTransportType transport_type);
 
  private:
-  // Invokes transport->Connect to listen for a connection.
-  void Connect(BlimpTransport* transport);
-
   // Callback invoked by |transport| to indicate that it has a connection
   // ready to be authenticated.
   void OnConnectResult(BlimpTransport* transport, int result);
 
   ConnectionHandler* connection_handler_;
-  std::vector<std::unique_ptr<BlimpTransport>> transports_;
+  net::NetLog* net_log_;
+  std::unique_ptr<BlimpEngineTransport> transport_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineConnectionManager);
 };

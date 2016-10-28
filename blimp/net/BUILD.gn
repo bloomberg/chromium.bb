@@ -7,6 +7,7 @@ component("net") {
   sources = [
     "blimp_connection.cc",
     "blimp_connection.h",
+    "blimp_engine_transport.h",
     "blimp_message_checkpoint_observer.h",
     "blimp_message_checkpointer.cc",
     "blimp_message_checkpointer.h",
@@ -68,6 +69,8 @@ component("net") {
     "stream_packet_writer.h",
     "tcp_client_transport.cc",
     "tcp_client_transport.h",
+    "tcp_connection.cc",
+    "tcp_connection.h",
     "tcp_engine_transport.cc",
     "tcp_engine_transport.h",
     "thread_pipe_manager.cc",
@@ -81,8 +84,10 @@ component("net") {
     "//base",
     "//blimp/common",
     "//blimp/helium",
+    "//content/public/browser",
     "//net",
     "//third_party/WebKit/public:blink_headers",
+    "//third_party/grpc:grpc++_unsecure",
     "//third_party/zlib",
     "//ui/base/ime:text_input_types",
   ]
@@ -125,7 +130,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "blimp_connection_unittest.cc",
     "blimp_message_checkpointer_unittest.cc",
     "blimp_message_demultiplexer_unittest.cc",
     "blimp_message_multiplexer_unittest.cc",
@@ -147,6 +151,7 @@ source_set("unit_tests") {
     "ssl_client_transport_unittest.cc",
     "stream_packet_reader_unittest.cc",
     "stream_packet_writer_unittest.cc",
+    "tcp_connection_unittest.cc",
     "tcp_transport_unittest.cc",
     "thread_pipe_manager_unittest.cc",
   ]
@@ -163,5 +168,6 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink_headers",
+    "//third_party/grpc:grpc++_unsecure",
   ]
 }

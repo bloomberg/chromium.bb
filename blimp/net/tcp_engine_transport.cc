@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/net/message_port.h"
+#include "blimp/net/tcp_connection.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
@@ -65,13 +66,17 @@ std::unique_ptr<MessagePort> TCPEngineTransport::TakeMessagePort() {
       std::move(accepted_socket_));
 }
 
+std::unique_ptr<BlimpConnection> TCPEngineTransport::MakeConnection() {
+  return base::MakeUnique<TCPConnection>(TakeMessagePort());
+}
+
 const char* TCPEngineTransport::GetName() const {
   return "TCP";
 }
 
-int TCPEngineTransport::GetLocalAddress(net::IPEndPoint* address) const {
+void TCPEngineTransport::GetLocalAddress(net::IPEndPoint* address) const {
   DCHECK(server_socket_);
-  return server_socket_->GetLocalAddress(address);
+  server_socket_->GetLocalAddress(address);
 }
 
 void TCPEngineTransport::OnTCPConnectAccepted(int result) {

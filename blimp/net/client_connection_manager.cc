@@ -57,9 +57,9 @@ void ClientConnectionManager::Connect(int transport_index) {
 void ClientConnectionManager::OnConnectResult(int transport_index, int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
   const auto& transport = transports_[transport_index];
+  DVLOG(1) << "OnConnectResult; result = " << result;
   if (result == net::OK) {
-    std::unique_ptr<BlimpConnection> connection =
-        base::MakeUnique<BlimpConnection>(transport->TakeMessagePort());
+    std::unique_ptr<BlimpConnection> connection = transport->MakeConnection();
     connection->AddConnectionErrorObserver(this);
     SendAuthenticationMessage(std::move(connection));
   } else {

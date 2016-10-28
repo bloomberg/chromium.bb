@@ -47,6 +47,13 @@ void ClientNetworkComponents::ConnectWithAssignment(
           assignment.engine_endpoint, nullptr));
       transport_type = "TCP";
       break;
+    case Assignment::GRPC:
+      // TODO(perumaal): Unimplemented as yet.
+      // connection_manager_->AddTransport(
+      // base::MakeUnique<GrpcClientTransport>(endpoint));
+      transport_type = "GRPC";
+      NOTIMPLEMENTED();
+      break;
     case Assignment::UNKNOWN:
       LOG(FATAL) << "Unknown transport type.";
       break;

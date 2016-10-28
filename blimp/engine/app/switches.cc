@@ -9,6 +9,7 @@ namespace engine {
 
 const char kEnginePort[] = "engine-port";
 const char kAllowNonLocalhost[] = "allow-non-localhost";
+const char kEngineTransport[] = "engine-transport";
 
 }  // namespace engine
 }  // namespace blimp
