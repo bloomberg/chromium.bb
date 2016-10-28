@@ -54,43 +54,39 @@ static_assert(
 
 namespace TestInterfaceDocumentV8Internal {
 
-static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceDocument* impl = V8TestInterfaceDocument::toImpl(holder);
+  TestInterfaceDocument* impl = V8TestInterfaceDocument::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
 }
 
-void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceDocumentV8Internal::locationAttributeGetter(info);
+void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceDocumentV8Internal::locationAttributeGetter(info);
 }
 
-static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceDocument* proxyImpl = V8TestInterfaceDocument::toImpl(holder);
-    Location* impl = WTF::getPtr(proxyImpl->location());
-    if (!impl)
-        return;
+static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceDocument* proxyImpl = V8TestInterfaceDocument::toImpl(holder);
+  Location* impl = WTF::getPtr(proxyImpl->location());
+  if (!impl)
+    return;
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceDocument", "location");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceDocument", "location");
 
-    // Prepare the value to be set.
-    V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare())
-        return;
+  // Prepare the value to be set.
+  V8StringResource<> cppValue = v8Value;
+  if (!cppValue.prepare())
+      return;
 
-    impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue, exceptionState);
+  impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue, exceptionState);
 }
 
-void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceDocumentV8Internal::locationAttributeSetter(v8Value, info);
+  TestInterfaceDocumentV8Internal::locationAttributeSetter(v8Value, info);
 }
 
 } // namespace TestInterfaceDocumentV8Internal

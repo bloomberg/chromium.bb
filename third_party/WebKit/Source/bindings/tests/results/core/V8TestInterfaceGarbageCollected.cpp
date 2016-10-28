@@ -53,44 +53,40 @@ static_assert(
 
 namespace TestInterfaceGarbageCollectedV8Internal {
 
-static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
-void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetter(info);
+void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetter(info);
 }
 
-static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceGarbageCollected", "attr1");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceGarbageCollected", "attr1");
 
-    // Prepare the value to be set.
-    TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  // Prepare the value to be set.
+  TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
-    // Type check per: http://heycam.github.io/webidl/#es-interface
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
-        return;
-    }
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
+    return;
+  }
 
-    impl->setAttr1(cppValue);
+  impl->setAttr1(cppValue);
 }
 
-void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
+  TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
 }
 
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

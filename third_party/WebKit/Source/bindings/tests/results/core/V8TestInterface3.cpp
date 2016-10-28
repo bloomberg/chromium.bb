@@ -54,18 +54,16 @@ static_assert(
 
 namespace TestInterface3V8Internal {
 
-static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterface3* impl = V8TestInterface3::toImpl(holder);
+  TestInterface3* impl = V8TestInterface3::toImpl(holder);
 
-    v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
+  v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
-void readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetter(info);
+void readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetter(info);
 }
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

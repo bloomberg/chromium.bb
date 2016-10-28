@@ -49,32 +49,28 @@ static_assert(
 
 namespace TestExceptionV8Internal {
 
-static void readonlyUnsignedShortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void readonlyUnsignedShortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestException* impl = V8TestException::toImpl(holder);
+  TestException* impl = V8TestException::toImpl(holder);
 
-    v8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
+  v8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
 }
 
-void readonlyUnsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestExceptionV8Internal::readonlyUnsignedShortAttributeAttributeGetter(info);
+void readonlyUnsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestExceptionV8Internal::readonlyUnsignedShortAttributeAttributeGetter(info);
 }
 
-static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestException* impl = V8TestException::toImpl(holder);
+  TestException* impl = V8TestException::toImpl(holder);
 
-    v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
+  v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
-void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestExceptionV8Internal::readonlyStringAttributeAttributeGetter(info);
+void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestExceptionV8Internal::readonlyStringAttributeAttributeGetter(info);
 }
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

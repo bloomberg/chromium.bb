@@ -54,80 +54,72 @@ static_assert(
 
 namespace TestTypedefsV8Internal {
 
-static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
+  TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
 
-    v8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
+  v8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
 
-void uLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::uLongLongAttributeAttributeGetter(info);
+void uLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::uLongLongAttributeAttributeGetter(info);
 }
 
-static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
+static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "uLongLongAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "uLongLongAttribute");
 
-    // Prepare the value to be set.
-    unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.hadException())
-        return;
+  // Prepare the value to be set.
+  unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    impl->setULongLongAttribute(cppValue);
+  impl->setULongLongAttribute(cppValue);
 }
 
-void uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestTypedefsV8Internal::uLongLongAttributeAttributeSetter(v8Value, info);
+  TestTypedefsV8Internal::uLongLongAttributeAttributeSetter(v8Value, info);
 }
 
-static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
+  TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
 
-    StringOrDouble result;
-    impl->domStringOrDoubleOrNullAttribute(result);
+  StringOrDouble result;
+  impl->domStringOrDoubleOrNullAttribute(result);
 
-    v8SetReturnValue(info, result);
+  v8SetReturnValue(info, result);
 }
 
-void domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetter(info);
+void domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetter(info);
 }
 
-static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
+static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "domStringOrDoubleOrNullAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "domStringOrDoubleOrNullAttribute");
 
-    // Prepare the value to be set.
-    StringOrDouble cppValue;
-    V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
-    if (exceptionState.hadException())
-        return;
+  // Prepare the value to be set.
+  StringOrDouble cppValue;
+  V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    impl->setDomStringOrDoubleOrNullAttribute(cppValue);
+  impl->setDomStringOrDoubleOrNullAttribute(cppValue);
 }
 
-void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
+  TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

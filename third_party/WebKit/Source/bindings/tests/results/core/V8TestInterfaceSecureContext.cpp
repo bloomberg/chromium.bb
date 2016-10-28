@@ -49,244 +49,220 @@ static_assert(
 
 namespace TestInterfaceSecureContextV8Internal {
 
-static void secureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void secureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextAttribute()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextAttribute()), impl);
 }
 
-void secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeGetter(info);
+void secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeGetter(info);
 }
 
-static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextAttribute");
 
-    // Prepare the value to be set.
-    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  // Prepare the value to be set.
+  bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
-    // Type check per: http://heycam.github.io/webidl/#es-interface
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        return;
-    }
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+    return;
+  }
 
-    impl->setSecureContextAttribute(cppValue);
+  impl->setSecureContextAttribute(cppValue);
 }
 
-void secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeSetter(v8Value, info);
+  TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeSetter(v8Value, info);
 }
 
-static void secureContextRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void secureContextRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextRuntimeEnabledAttribute()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeGetter(info);
+void secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeGetter(info);
 }
 
-static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextRuntimeEnabledAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextRuntimeEnabledAttribute");
 
-    // Prepare the value to be set.
-    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  // Prepare the value to be set.
+  bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
-    // Type check per: http://heycam.github.io/webidl/#es-interface
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        return;
-    }
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+    return;
+  }
 
-    impl->setSecureContextRuntimeEnabledAttribute(cppValue);
+  impl->setSecureContextRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
+  TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
-static void secureContextWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void secureContextWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedAttribute()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedAttribute()), impl);
 }
 
-void secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeGetter(info);
+void secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeGetter(info);
 }
 
-static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedAttribute");
 
-    // Prepare the value to be set.
-    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  // Prepare the value to be set.
+  bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
-    // Type check per: http://heycam.github.io/webidl/#es-interface
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        return;
-    }
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+    return;
+  }
 
-    impl->setSecureContextWindowExposedAttribute(cppValue);
+  impl->setSecureContextWindowExposedAttribute(cppValue);
 }
 
-void secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeSetter(v8Value, info);
+  TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeSetter(v8Value, info);
 }
 
-static void secureContextWorkerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void secureContextWorkerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedAttribute()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedAttribute()), impl);
 }
 
-void secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeGetter(info);
+void secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeGetter(info);
 }
 
-static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedAttribute");
 
-    // Prepare the value to be set.
-    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  // Prepare the value to be set.
+  bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
-    // Type check per: http://heycam.github.io/webidl/#es-interface
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        return;
-    }
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+    return;
+  }
 
-    impl->setSecureContextWorkerExposedAttribute(cppValue);
+  impl->setSecureContextWorkerExposedAttribute(cppValue);
 }
 
-void secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
+  TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
 }
 
-static void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedRuntimeEnabledAttribute()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
+void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
-static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedRuntimeEnabledAttribute");
 
-    // Prepare the value to be set.
-    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  // Prepare the value to be set.
+  bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
-    // Type check per: http://heycam.github.io/webidl/#es-interface
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        return;
-    }
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+    return;
+  }
 
-    impl->setSecureContextWindowExposedRuntimeEnabledAttribute(cppValue);
+  impl->setSecureContextWindowExposedRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
+  TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
-static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedRuntimeEnabledAttribute()), impl);
+  v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
+void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
-static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
+static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedRuntimeEnabledAttribute");
 
-    // Prepare the value to be set.
-    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  // Prepare the value to be set.
+  bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
-    // Type check per: http://heycam.github.io/webidl/#es-interface
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        return;
-    }
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+    return;
+  }
 
-    impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cppValue);
+  impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
+  TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

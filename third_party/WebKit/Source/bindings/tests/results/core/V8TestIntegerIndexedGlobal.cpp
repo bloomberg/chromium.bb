@@ -50,40 +50,36 @@ static_assert(
 
 namespace TestIntegerIndexedGlobalV8Internal {
 
-static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
+  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
 
-    v8SetReturnValue(info, static_cast<double>(impl->length()));
+  v8SetReturnValue(info, static_cast<double>(impl->length()));
 }
 
-void lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestIntegerIndexedGlobalV8Internal::lengthAttributeGetter(info);
+void lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestIntegerIndexedGlobalV8Internal::lengthAttributeGetter(info);
 }
 
-static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
+static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestIntegerIndexedGlobal", "length");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestIntegerIndexedGlobal", "length");
 
-    // Prepare the value to be set.
-    unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.hadException())
-        return;
+  // Prepare the value to be set.
+  unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    impl->setLength(cppValue);
+  impl->setLength(cppValue);
 }
 
-void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestIntegerIndexedGlobalV8Internal::lengthAttributeSetter(v8Value, info);
+  TestIntegerIndexedGlobalV8Internal::lengthAttributeSetter(v8Value, info);
 }
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

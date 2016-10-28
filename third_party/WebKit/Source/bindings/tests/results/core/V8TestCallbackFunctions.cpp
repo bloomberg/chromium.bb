@@ -52,82 +52,72 @@ static_assert(
 
 namespace TestCallbackFunctionsV8Internal {
 
-static void voidCallbackFunctionAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void voidCallbackFunctionAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
-    v8SetReturnValueFast(info, impl->voidCallbackFunctionAttribute(), impl);
+  v8SetReturnValueFast(info, impl->voidCallbackFunctionAttribute(), impl);
 }
 
-void voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeGetter(info);
+void voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeGetter(info);
 }
 
-static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
+static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
-    // Prepare the value to be set.
-    VoidCallbackFunction* cppValue = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
+  // Prepare the value to be set.
+  VoidCallbackFunction* cppValue = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
 
-    impl->setVoidCallbackFunctionAttribute(cppValue);
+  impl->setVoidCallbackFunctionAttribute(cppValue);
 }
 
-void voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeSetter(v8Value, info);
+  TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeSetter(v8Value, info);
 }
 
-static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
-    v8SetReturnValueFast(info, impl->anyCallbackFunctionOptionalAnyArgAttribute(), impl);
+  v8SetReturnValueFast(info, impl->anyCallbackFunctionOptionalAnyArgAttribute(), impl);
 }
 
-void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(info);
+void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(info);
 }
 
-static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
+static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
-    // Prepare the value to be set.
-    AnyCallbackFunctionOptionalAnyArg* cppValue = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
+  // Prepare the value to be set.
+  AnyCallbackFunctionOptionalAnyArg* cppValue = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
 
-    impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
+  impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
 }
 
-void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
+void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
 
-    TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8Value, info);
+  TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8Value, info);
 }
 
-static void customElementsCallbacksReadonlyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
+static void customElementsCallbacksReadonlyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
 
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
-    v8SetReturnValueInt(info, impl->customElementsCallbacksReadonlyAttribute());
+  v8SetReturnValueInt(info, impl->customElementsCallbacksReadonlyAttribute());
 }
 
-void customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetter(info);
+void customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetter(info);
 }
 
 static void returnCallbackFunctionMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
