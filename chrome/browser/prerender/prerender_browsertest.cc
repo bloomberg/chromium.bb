@@ -3217,9 +3217,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, HttpPost) {
 
 // Prerenders a page that tries to automatically sign user in via the Credential
 // Manager API. The page should be killed.
-//
-// Disabled. See http://crbug.com/660278
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_AutosigninInPrerenderer) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   // Set up a credential in the password store.
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       current_browser()->profile(),
@@ -3251,6 +3249,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_AutosigninInPrerenderer) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&CreateCountingInterceptorOnIO,
                  done_url, empty_file, done_counter.AsWeakPtr()));
+  // Loading may finish or be interrupted. The final result is important only.
+  // TODO(http://crbug.com/660278): TestPrrenderContents can be created after
+  // the JS code runs. The result would be a test timeout.
+  DisableLoadEventCheck();
   PrerenderTestURL("/password/autosignin.html",
                    FINAL_STATUS_CREDENTIAL_MANAGER_API, 0);
   EXPECT_EQ(0, done_counter.count());
