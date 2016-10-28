@@ -47,9 +47,11 @@ class PrefRegistrySyncable;
 
 @protocol AppRatingPrompt;
 @protocol InfoBarViewProtocol;
+@protocol LogoVendor;
 @protocol TextFieldStyling;
 @class UITextField;
 @class UIView;
+@protocol UrlLoader;
 typedef UIView<InfoBarViewProtocol>* InfoBarViewPlaceholder;
 
 namespace ios {
@@ -150,6 +152,12 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;
+
+  // Creates and returns an object that can fetch and vend search engine logos.
+  // The caller assumes ownership of the returned object.
+  virtual id<LogoVendor> CreateLogoVendor(
+      ios::ChromeBrowserState* browser_state,
+      id<UrlLoader> loader) const NS_RETURNS_RETAINED;
 
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>

@@ -27,6 +27,7 @@ source_set("browser") {
     "ui/default_ios_web_view_factory.mm",
     "ui/infobar_view_delegate.h",
     "ui/infobar_view_protocol.h",
+    "ui/logo_vendor.h",
     "ui/text_field_styling.h",
     "updatable_resource_provider.h",
     "updatable_resource_provider.mm",
