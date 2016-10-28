@@ -143,7 +143,6 @@ class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData,
 
   bool isClosing() const final { return m_closing; }
 
-  const KURL& url() const { return m_url; }
   WorkerThread* thread() const { return m_thread; }
   double timeOrigin() const { return m_timeOrigin; }
   WorkerSettings* workerSettings() const { return m_workerSettings.get(); }
