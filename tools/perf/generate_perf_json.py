@@ -255,11 +255,6 @@ def get_fyi_waterfall_config():
     'win-low-end-2-core', 'win',
     swarming=[
       {
-       'gpu': '8086:22b1',
-       'os': 'Windows-10-10586',
-       'device_ids': ['build187-b4']
-      },
-      {
        'gpu': '1002:9874',
        'os': 'Windows-10-10586',
        'device_ids': ['build171-b4', 'build186-b4']
