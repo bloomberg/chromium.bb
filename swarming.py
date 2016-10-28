@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.7'
+__version__ = '0.8.8'
 
 import collections
 import datetime
@@ -175,6 +175,7 @@ TaskProperties = collections.namedtuple(
       'idempotent',
       'inputs_ref',
       'io_timeout_secs',
+      'outputs',
     ])
 
 
@@ -960,6 +961,11 @@ def add_trigger_options(parser):
            'string can be specified currently (to run the task under bot\'s '
            'account). Don\'t use task service accounts if not given '
            '(default).')
+  parser.task_group.add_option(
+      '-o', '--output', action='append', default=[],
+      help='A list of files to return in addition to those written to'
+           '$(ISOLATED_OUTDIR). An error will occur if a file specified by'
+           'this option is also written directly to $(ISOLATED_OUTDIR).')
   parser.add_option_group(parser.task_group)
 
 
@@ -1026,7 +1032,8 @@ def process_trigger_options(parser, options, args):
       grace_period_secs=30,
       idempotent=options.idempotent,
       inputs_ref=inputs_ref,
-      io_timeout_secs=options.io_timeout)
+      io_timeout_secs=options.io_timeout,
+      outputs=options.output)
   if not all(len(t.split(':', 1)) == 2 for t in options.tags):
     parser.error('--tags must be in the format key:value')
 

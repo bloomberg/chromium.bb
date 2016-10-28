@@ -36,7 +36,7 @@ def parse_args(use_isolate_server, use_swarming):
     parser.add_option(
         '-I', '--isolate-server',
         metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
-        help='Isolate server to use')
+        help='Isolate server to use (default: ISOLATE_SERVER env var)')
   if use_swarming:
     task_name = '%s-%s-hello_world' % (
       getpass.getuser(),
@@ -47,7 +47,7 @@ def parse_args(use_isolate_server, use_swarming):
     parser.add_option(
         '-S', '--swarming',
         metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
-        help='Swarming server to use')
+        help='Swarming server to use (default: SWARMING_SERVER env var)')
     parser.add_option(
         '-o', '--os', default=sys.platform,
         help='Swarming slave OS to request. Should be one of the valid '
