@@ -7,6 +7,8 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_PREFS_H_
 #define COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_PREFS_H_
 
+#include "base/feature_list.h"
+
 class PrefService;
 
 namespace prefs {
@@ -24,6 +26,14 @@ extern const char kSafeBrowsingScoutGroupSelected[];
 }
 
 namespace safe_browsing {
+
+// When this feature is enabled, the Scout opt-in text will be displayed as of
+// the next security incident. Until then, the legacy SBER text will appear.
+extern const base::Feature kCanShowScoutOptIn;
+
+// When this feature is enabled, the Scout opt-in text will immediately be
+// displayed everywhere.
+extern const base::Feature kOnlyShowScoutOptIn;
 
 // Returns whether the currently active Safe Browsing Extended Reporting
 // preference exists (eg: has been set before).

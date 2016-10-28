@@ -17,14 +17,28 @@ const char kSafeBrowsingScoutGroupSelected[] =
 
 namespace safe_browsing {
 
+const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOnlyShowScoutOptIn{"OnlyShowScoutOptIn",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
   return prefs.HasPrefPath(GetExtendedReportingPrefName(prefs));
 }
 
 const char* GetExtendedReportingPrefName(const PrefService& prefs) {
-  return prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)
-             ? prefs::kSafeBrowsingScoutReportingEnabled
-             : prefs::kSafeBrowsingExtendedReportingEnabled;
+  // The Scout pref is active if either of the experiment features are on, and
+  // ScoutGroupSelected is on as well.
+  if ((base::FeatureList::IsEnabled(kCanShowScoutOptIn) ||
+       base::FeatureList::IsEnabled(kOnlyShowScoutOptIn)) &&
+      prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
+    return prefs::kSafeBrowsingScoutReportingEnabled;
+  }
+
+  // ..otherwise, either no experiment is on (ie: the Control group) or
+  // ScoutGroupSelected is off. So we use the SBER pref instead.
+  return prefs::kSafeBrowsingExtendedReportingEnabled;
 }
 
 bool IsExtendedReportingEnabled(const PrefService& prefs) {

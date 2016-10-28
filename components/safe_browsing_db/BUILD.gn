@@ -361,6 +361,7 @@ source_set("unit_tests") {
   sources = [
     "database_manager_unittest.cc",
     "prefix_set_unittest.cc",
+    "safe_browsing_prefs_unittest.cc",
     "util_unittest.cc",
     "v4_database_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
@@ -373,6 +374,7 @@ source_set("unit_tests") {
   deps = [
     ":database_manager",
     ":prefix_set",
+    ":safe_browsing_prefs",
     ":safebrowsing_proto",
     ":test_database_manager",
     ":util",
@@ -385,6 +387,7 @@ source_set("unit_tests") {
     ":v4_store_proto",
     ":v4_update_protocol_manager",
     "//base",
+    "//components/prefs:test_support",
     "//content/test:test_support",
     "//crypto",
     "//net",
