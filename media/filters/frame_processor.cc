@@ -263,18 +263,31 @@ bool FrameProcessor::AddTrack(StreamParser::TrackId id,
   return true;
 }
 
-bool FrameProcessor::UpdateTrack(StreamParser::TrackId old_id,
-                                 StreamParser::TrackId new_id) {
-  DVLOG(2) << __func__ << "() : old_id=" << old_id << ", new_id=" << new_id;
+bool FrameProcessor::UpdateTrackIds(const TrackIdChanges& track_id_changes) {
+  TrackBuffersMap& old_track_buffers = track_buffers_;
+  TrackBuffersMap new_track_buffers;
 
-  if (old_id == new_id || !FindTrack(old_id) || FindTrack(new_id)) {
-    MEDIA_LOG(ERROR, media_log_) << "Failure updating track id from " << old_id
-                                 << " to " << new_id;
-    return false;
+  for (const auto& ids : track_id_changes) {
+    if (old_track_buffers.find(ids.first) == old_track_buffers.end() ||
+        new_track_buffers.find(ids.second) != new_track_buffers.end()) {
+      MEDIA_LOG(ERROR, media_log_) << "Failure updating track id from "
+                                   << ids.first << " to " << ids.second;
+      return false;
+    }
+    new_track_buffers[ids.second] = std::move(old_track_buffers[ids.first]);
+    CHECK_EQ(1u, old_track_buffers.erase(ids.first));
   }
 
-  track_buffers_[new_id] = std::move(track_buffers_[old_id]);
-  CHECK_EQ(1u, track_buffers_.erase(old_id));
+  // Process remaining track buffers with unchanged ids.
+  for (const auto& t : old_track_buffers) {
+    if (new_track_buffers.find(t.first) != new_track_buffers.end()) {
+      MEDIA_LOG(ERROR, media_log_) << "Track id " << t.first << " conflict";
+      return false;
+    }
+    new_track_buffers[t.first] = std::move(old_track_buffers[t.first]);
+  }
+
+  std::swap(track_buffers_, new_track_buffers);
   return true;
 }
 

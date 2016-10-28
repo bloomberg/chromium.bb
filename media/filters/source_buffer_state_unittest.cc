@@ -309,4 +309,26 @@ TEST_F(SourceBufferStateTest, TrackIdChangeWithTwoVideoTracks) {
   EXPECT_FALSE(AppendDataAndReportTracks(sbs, std::move(tracks3)));
 }
 
+TEST_F(SourceBufferStateTest, TrackIdsSwappedInSecondInitSegment) {
+  std::unique_ptr<SourceBufferState> sbs =
+      CreateAndInitSourceBufferState("opus,vp9");
+
+  std::unique_ptr<MediaTracks> tracks(new MediaTracks());
+  AddAudioTrack(tracks, kCodecOpus, 1);
+  AddVideoTrack(tracks, kCodecVP9, 2);
+  EXPECT_MEDIA_LOG(FoundStream("audio"));
+  EXPECT_MEDIA_LOG(CodecName("audio", "opus"));
+  EXPECT_MEDIA_LOG(FoundStream("video"));
+  EXPECT_MEDIA_LOG(CodecName("video", "vp9"));
+  EXPECT_CALL(*this, MediaTracksUpdatedMock(_));
+  AppendDataAndReportTracks(sbs, std::move(tracks));
+
+  // Track ids are swapped in the second init segment.
+  std::unique_ptr<MediaTracks> tracks2(new MediaTracks());
+  AddAudioTrack(tracks2, kCodecOpus, 2);
+  AddVideoTrack(tracks2, kCodecVP9, 1);
+  EXPECT_CALL(*this, MediaTracksUpdatedMock(_));
+  AppendDataAndReportTracks(sbs, std::move(tracks2));
+}
+
 }  // namespace media

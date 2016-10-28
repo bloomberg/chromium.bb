@@ -545,6 +545,7 @@ bool SourceBufferState::OnNewConfigs(
   std::vector<AudioCodec> expected_acodecs = expected_audio_codecs_;
   std::vector<VideoCodec> expected_vcodecs = expected_video_codecs_;
 
+  FrameProcessor::TrackIdChanges track_id_changes;
   for (const auto& track : tracks->tracks()) {
     const auto& track_id = track->bytestream_track_id();
 
@@ -588,7 +589,7 @@ bool SourceBufferState::OnNewConfigs(
           if (it != audio_streams_.end()) {
             stream = it->second;
             if (it->first != track_id) {
-              frame_processor_->UpdateTrack(it->first, track_id);
+              track_id_changes[it->first] = track_id;
               audio_streams_[track_id] = stream;
               audio_streams_.erase(it->first);
             }
@@ -644,7 +645,7 @@ bool SourceBufferState::OnNewConfigs(
           if (it != video_streams_.end()) {
             stream = it->second;
             if (it->first != track_id) {
-              frame_processor_->UpdateTrack(it->first, track_id);
+              track_id_changes[it->first] = track_id;
               video_streams_[track_id] = stream;
               video_streams_.erase(it->first);
             }
@@ -714,14 +715,9 @@ bool SourceBufferState::OnNewConfigs(
         StreamParser::TrackId old_id = stream_itr->first;
         StreamParser::TrackId new_id = config_itr->first;
         if (new_id != old_id) {
-          if (frame_processor_->UpdateTrack(old_id, new_id)) {
-            text_streams_.clear();
-            text_streams_[config_itr->first] = text_stream;
-          } else {
-            success &= false;
-            MEDIA_LOG(ERROR, media_log_)
-                << "Error remapping single text track number";
-          }
+          track_id_changes[old_id] = new_id;
+          text_streams_.erase(old_id);
+          text_streams_[new_id] = text_stream;
         }
       }
     } else {
@@ -752,6 +748,11 @@ bool SourceBufferState::OnNewConfigs(
 
   if (audio_streams_.empty() && video_streams_.empty()) {
     DVLOG(1) << __func__ << ": couldn't find a valid audio or video stream";
+    return false;
+  }
+
+  if (!frame_processor_->UpdateTrackIds(track_id_changes)) {
+    DVLOG(1) << __func__ << ": failed to remap track ids in frame processor";
     return false;
   }
 
