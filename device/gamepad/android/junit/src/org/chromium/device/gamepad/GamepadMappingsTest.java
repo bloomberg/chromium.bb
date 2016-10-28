@@ -7,15 +7,15 @@ package org.chromium.device.gamepad;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
-import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.robolectric.annotation.Config;
+
+import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -141,6 +141,95 @@ public class GamepadMappingsTest {
         assertMappedXYAxes();
         assertMappedZAndRZAxesToRightStick();
 
+        assertMapping();
+    }
+
+    @Test
+    @Feature({"Gamepad"})
+    public void testXboxWirelessGamepadTriggerIdle() throws Exception {
+        GamepadMappings mappings = GamepadMappings.getMappings(
+                GamepadMappings.MICROSOFT_XBOX_WIRELESS_DEVICE_NAME, null);
+
+        // Both triggers are inactive, because they haven't seen input yet.
+        mRawAxes[MotionEvent.AXIS_Z] = 0.f;
+        mRawAxes[MotionEvent.AXIS_RZ] = 0.f;
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
+                0.f, ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                0.f, ERROR_TOLERANCE);
+
+        // This "activates" the left trigger, so it will begin reporting input.
+        // It will still be 0 because the triggers idle at -1.
+        mRawAxes[MotionEvent.AXIS_Z] = -1.f;
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
+                0.f, ERROR_TOLERANCE);
+
+        // Since the left trigger is active, 0 should be reported as 0.5.
+        mRawAxes[MotionEvent.AXIS_Z] = 0.f;
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
+                0.5f, ERROR_TOLERANCE);
+
+        // The right trigger should still read 0 because it's not active yet.
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                0.f, ERROR_TOLERANCE);
+
+        // Activate the right trigger
+        mRawAxes[MotionEvent.AXIS_RZ] = -1.f;
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                0.f, ERROR_TOLERANCE);
+
+        // Now the right trigger should also report 0 as 0.5.
+        mRawAxes[MotionEvent.AXIS_RZ] = 0.f;
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                0.5f, ERROR_TOLERANCE);
+    }
+
+    @Test
+    @Feature({"Gamepad"})
+    public void testXboxWirelessGamepadMappings() throws Exception {
+        GamepadMappings mappings = GamepadMappings.getMappings(
+                GamepadMappings.MICROSOFT_XBOX_WIRELESS_DEVICE_NAME, null);
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_C], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_Z], ERROR_TOLERANCE);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.BACK_SELECT],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_L1], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.START],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_R1], ERROR_TOLERANCE);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_THUMBSTICK],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_L2], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_R2], ERROR_TOLERANCE);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
+                (mRawAxes[MotionEvent.AXIS_Z] + 1) / 2, ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                (mRawAxes[MotionEvent.AXIS_RZ] + 1) / 2, ERROR_TOLERANCE);
+
+        assertMappedHatAxisToDpadButtons();
+        assertMappedXYAxes();
+        assertMappedRXAndRYAxesToRightStick();
+
+        expectNoMetaButton();
         assertMapping();
     }
 
@@ -275,6 +364,10 @@ public class GamepadMappingsTest {
     public void expectNoShoulderButtons() {
         mUnmappedButtons.set(CanonicalButtonIndex.LEFT_SHOULDER);
         mUnmappedButtons.set(CanonicalButtonIndex.RIGHT_SHOULDER);
+    }
+
+    public void expectNoMetaButton() {
+        mUnmappedButtons.set(CanonicalButtonIndex.META);
     }
 
     public void assertMapping() {

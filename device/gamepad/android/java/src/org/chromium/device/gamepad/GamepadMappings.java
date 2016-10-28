@@ -25,6 +25,8 @@ abstract class GamepadMappings {
     static final String SAMSUNG_EI_GP20_DEVICE_NAME = "Samsung Game Pad EI-GP20";
     @VisibleForTesting
     static final String AMAZON_FIRE_DEVICE_NAME = "Amazon Fire Game Controller";
+    @VisibleForTesting
+    static final String MICROSOFT_XBOX_WIRELESS_DEVICE_NAME = "Xbox Wireless Controller";
 
     public static GamepadMappings getMappings(String deviceName, int[] axes) {
         if (deviceName.startsWith(NVIDIA_SHIELD_DEVICE_NAME_PREFIX)
@@ -36,6 +38,8 @@ abstract class GamepadMappings {
             return new SamsungEIGP20GamepadMappings();
         } else if (deviceName.equals(AMAZON_FIRE_DEVICE_NAME)) {
             return new AmazonFireGamepadMappings();
+        } else if (deviceName.equals(MICROSOFT_XBOX_WIRELESS_DEVICE_NAME)) {
+            return new XboxWirelessGamepadMappings();
         }
 
         return new UnknownGamepadMappings(axes);
@@ -211,6 +215,74 @@ abstract class GamepadMappings {
 
             mapXYAxes(mappedAxes, rawAxes);
             mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+        }
+    }
+
+    private static class XboxWirelessGamepadMappings extends GamepadMappings {
+
+        private boolean mLeftTriggerActivated = false;
+        private boolean mRightTriggerActivated = false;
+
+        /**
+         * Method for mapping Xbox One S controller (in Bluetooth mode) to
+         * standard gamepad button and axes values.
+         */
+        @Override
+        public void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
+                float[] rawAxes, float[] rawButtons) {
+            mappedButtons[CanonicalButtonIndex.PRIMARY] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_A];
+            mappedButtons[CanonicalButtonIndex.SECONDARY] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_B];
+            mappedButtons[CanonicalButtonIndex.TERTIARY] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_C];
+            mappedButtons[CanonicalButtonIndex.QUATERNARY] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_X];
+
+            mappedButtons[CanonicalButtonIndex.LEFT_SHOULDER] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_Y];
+            mappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_Z];
+
+            mappedButtons[CanonicalButtonIndex.BACK_SELECT] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_L1];
+            mappedButtons[CanonicalButtonIndex.START] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_R1];
+
+            mappedButtons[CanonicalButtonIndex.LEFT_THUMBSTICK] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_L2];
+            mappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK] =
+                rawButtons[KeyEvent.KEYCODE_BUTTON_R2];
+
+            // The left and right triggers on the Xbox One S controller
+            // are exposed as AXIS_Z and AXIS_RZ respectively. However,
+            // these nominally idle at -1 rather than 0, like other triggers.
+            // Unfortunately, the -1 value is only reported upon the first
+            // activation of each trigger axis. In order to prevent idling at
+            // 0.5 before trigger activation, we only expose trigger values
+            // when we've seen them report a non-zero value at least once.
+            if (rawAxes[MotionEvent.AXIS_Z] != 0) {
+                mLeftTriggerActivated = true;
+            }
+            if (rawAxes[MotionEvent.AXIS_RZ] != 0) {
+                mRightTriggerActivated = true;
+            }
+            if (mLeftTriggerActivated) {
+                mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] =
+                    (rawAxes[MotionEvent.AXIS_Z] + 1) / 2;
+            } else {
+                mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] = 0.f;
+            }
+            if (mRightTriggerActivated) {
+                mappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER] =
+                    (rawAxes[MotionEvent.AXIS_RZ] + 1) / 2;
+            } else {
+                mappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER] = 0.f;
+            }
+
+            mapHatAxisToDpadButtons(mappedButtons, rawAxes);
+            mapXYAxes(mappedAxes, rawAxes);
+            mapRXAndRYAxesToRightStick(mappedAxes, rawAxes);
         }
     }
 
