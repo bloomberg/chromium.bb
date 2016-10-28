@@ -212,6 +212,6 @@ class CONTENT_EXPORT DocumentState
   bool can_load_local_resources_;
 };
 
-#endif  // CONTENT_PUBLIC_RENDERER_DOCUMENT_STATE_H_
-
 }  // namespace content
+
+#endif  // CONTENT_PUBLIC_RENDERER_DOCUMENT_STATE_H_
