@@ -1043,15 +1043,12 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"photoDiscardAccessibleText", IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
 #else   // !defined(OS_CHROMEOS)
     {"domainManagedProfile", IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE},
-    {"syncDisconnectManagedProfileExplanation",
-     IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION},
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
 #endif  // defined(OS_CHROMEOS)
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
     {"syncSignin", IDS_SETTINGS_SYNC_SIGNIN},
     {"syncDisconnect", IDS_SETTINGS_SYNC_DISCONNECT},
     {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
-    {"syncDisconnectExplanation", IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION},
     {"syncDisconnectDeleteProfile",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE},
     {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
@@ -1132,6 +1129,18 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
       "passphraseRecover",
       l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RECOVER,
                                 base::ASCIIToUTF16(sync_dashboard_url)));
+  html_source->AddString(
+      "syncDisconnectExplanation",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+#if !defined(OS_CHROMEOS)
+  html_source->AddString(
+      "syncDisconnectManagedProfileExplanation",
+      l10n_util::GetStringFUTF8(
+          IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION,
+          base::ASCIIToUTF16("$1"),
+          base::ASCIIToUTF16(sync_dashboard_url)));
+#endif
 
   html_source->AddString("syncErrorHelpUrl", chrome::kSyncErrorsHelpURL);
 
