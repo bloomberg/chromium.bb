@@ -90,6 +90,8 @@ public class PolicyUrlFilteringTest extends AwTestBase {
     @Policies.Add({
             @Policies.Item(key = sBlacklistPolicyName, stringArray = {"*"}),
             @Policies.Item(key = sWhitelistPolicyName, stringArray = {sFooWhitelistFilter})})
+    // Run in single process only. crbug.com/660517
+    @ParameterizedTest.Set
     public void testWhitelistedUrl() throws Throwable {
         navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
 
