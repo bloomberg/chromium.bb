@@ -951,6 +951,7 @@ if (is_win) {
   target(_dll_target_type, "chrome_dll") {
     visibility = [
       ":chrome_framework",
+      ":chrome_framework_create_bundle",
       ":chrome_framework_shared_library",
     ]
 
@@ -1000,6 +1001,10 @@ if (is_win) {
 
   mac_framework_bundle("chrome_framework") {
     output_name = chrome_framework_name
+
+    if (enable_xpc_notifications) {
+      framework_version = "A"
+    }
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
