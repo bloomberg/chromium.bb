@@ -1,5 +1,5 @@
 diff --git a/javascript/atoms/mouse.js b/javascript/atoms/mouse.js
-index 413586e..17b826a 100644
+index 6bab4b8..87e2210 100644
 --- a/javascript/atoms/mouse.js
 +++ b/javascript/atoms/mouse.js
 @@ -143,7 +143,7 @@ bot.Mouse.NO_BUTTON_VALUE_INDEX_ = 3;
@@ -23,10 +23,10 @@ index 413586e..17b826a 100644
      buttonValueMap[bot.events.EventType.CLICK] = [0, 1, 2, null];
      buttonValueMap[bot.events.EventType.CONTEXTMENU] = [null, null, 2, null];
 diff --git a/rake-tasks/crazy_fun/mappings/javascript.rb b/rake-tasks/crazy_fun/mappings/javascript.rb
-index a2f93bd..27a4292 100644
+index 3324593..3c7f8ca 100644
 --- a/rake-tasks/crazy_fun/mappings/javascript.rb
 +++ b/rake-tasks/crazy_fun/mappings/javascript.rb
-@@ -876,6 +876,8 @@ module Javascript
+@@ -852,6 +852,8 @@ module Javascript
              "--jscomp_error=undefinedVars " <<
              "--jscomp_error=uselessCode " <<
              "--jscomp_error=visibility " <<
