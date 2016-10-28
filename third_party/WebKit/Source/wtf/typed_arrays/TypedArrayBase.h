@@ -55,7 +55,7 @@ class TypedArrayBase : public ArrayBufferView {
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.
   T item(unsigned index) const {
-    ASSERT_WITH_SECURITY_IMPLICATION(index < TypedArrayBase<T>::m_length);
+    SECURITY_DCHECK(index < TypedArrayBase<T>::m_length);
     return TypedArrayBase<T>::data()[index];
   }
 

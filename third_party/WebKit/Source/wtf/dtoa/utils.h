@@ -196,7 +196,7 @@ class StringBuilder {
   // Set the current position in the builder.
   void SetPosition(int position) {
     ASSERT(!is_finalized());
-    ASSERT_WITH_SECURITY_IMPLICATION(position < size());
+    SECURITY_DCHECK(position < size());
     position_ = position;
   }
 
@@ -220,7 +220,7 @@ class StringBuilder {
   // builder. The input string must have enough characters.
   void AddSubstring(const char* s, int n) {
     ASSERT(!is_finalized() && position_ + n < buffer_.length());
-    ASSERT_WITH_SECURITY_IMPLICATION(static_cast<size_t>(n) <= strlen(s));
+    SECURITY_DCHECK(static_cast<size_t>(n) <= strlen(s));
     memcpy(&buffer_[position_], s, n * kCharSize);
     position_ += n;
   }

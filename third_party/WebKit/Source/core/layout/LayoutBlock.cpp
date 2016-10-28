@@ -575,7 +575,7 @@ void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren,
 
 void LayoutBlock::simplifiedNormalFlowLayout() {
   if (childrenInline()) {
-    ASSERT_WITH_SECURITY_IMPLICATION(isLayoutBlockFlow());
+    SECURITY_DCHECK(isLayoutBlockFlow());
     LayoutBlockFlow* blockFlow = toLayoutBlockFlow(this);
     blockFlow->simplifiedNormalFlowInlineLayout();
   } else {
@@ -1785,7 +1785,7 @@ const LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const {
         firstLineBlock->isFloatingOrOutOfFlowPositioned() || !parentBlock ||
         !parentBlock->behavesLikeBlockContainer())
       break;
-    ASSERT_WITH_SECURITY_IMPLICATION(parentBlock->isLayoutBlock());
+    SECURITY_DCHECK(parentBlock->isLayoutBlock());
     if (toLayoutBlock(parentBlock)->firstChild() != firstLineBlock)
       break;
     firstLineBlock = toLayoutBlock(parentBlock);
@@ -2022,7 +2022,7 @@ bool LayoutBlock::recalcChildOverflowAfterStyleChange() {
   bool childrenOverflowChanged = false;
 
   if (childrenInline()) {
-    ASSERT_WITH_SECURITY_IMPLICATION(isLayoutBlockFlow());
+    SECURITY_DCHECK(isLayoutBlockFlow());
     childrenOverflowChanged =
         toLayoutBlockFlow(this)->recalcInlineChildrenOverflowAfterStyleChange();
   } else {

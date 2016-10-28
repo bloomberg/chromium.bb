@@ -503,8 +503,7 @@ struct HashTableAddResult final {
     // Rehash after accessing storedValue is harmless but will assert if the
     // AddResult destructor takes place after a modification. You may need
     // to limit the scope of the AddResult.
-    ASSERT_WITH_SECURITY_IMPLICATION(m_containerModifications ==
-                                     m_container->modifications());
+    SECURITY_DCHECK(m_containerModifications == m_container->modifications());
   }
 
  private:

@@ -21,7 +21,7 @@ class LineLayoutBox : public LineLayoutBoxModel {
 
   explicit LineLayoutBox(const LineLayoutItem& item)
       : LineLayoutBoxModel(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isBox());
+    SECURITY_DCHECK(!item || item.isBox());
   }
 
   explicit LineLayoutBox(std::nullptr_t) : LineLayoutBoxModel(nullptr) {}

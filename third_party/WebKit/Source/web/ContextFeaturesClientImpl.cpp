@@ -75,7 +75,7 @@ class ContextFeaturesCache final
 
   Entry& entryFor(ContextFeatures::FeatureType type) {
     size_t index = static_cast<size_t>(type);
-    ASSERT_WITH_SECURITY_IMPLICATION(index < ContextFeatures::FeatureTypeSize);
+    SECURITY_DCHECK(index < ContextFeatures::FeatureTypeSize);
     return m_entries[index];
   }
 

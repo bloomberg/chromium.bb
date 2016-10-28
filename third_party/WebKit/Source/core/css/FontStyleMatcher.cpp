@@ -57,8 +57,8 @@ static inline unsigned styleScore(FontTraits desired, FontTraits candidate) {
       // highest.
       {0, 1, 2}};
 
-  ASSERT_WITH_SECURITY_IMPLICATION(desired.style() < FontStyleItalic + 1);
-  ASSERT_WITH_SECURITY_IMPLICATION(candidate.style() < FontStyleItalic + 1);
+  SECURITY_DCHECK(desired.style() < FontStyleItalic + 1);
+  SECURITY_DCHECK(candidate.style() < FontStyleItalic + 1);
 
   return styleScoreLookupTable[desired.style()][candidate.style()];
 }
@@ -96,8 +96,8 @@ static inline unsigned weightScore(FontTraits desired, FontTraits candidate) {
 
   unsigned desiredScoresLookup = static_cast<unsigned>(desired.weight());
   unsigned candidateScoreLookup = static_cast<unsigned>(candidate.weight());
-  ASSERT_WITH_SECURITY_IMPLICATION(desiredScoresLookup < scoreLookupSize);
-  ASSERT_WITH_SECURITY_IMPLICATION(candidateScoreLookup < scoreLookupSize);
+  SECURITY_DCHECK(desiredScoresLookup < scoreLookupSize);
+  SECURITY_DCHECK(candidateScoreLookup < scoreLookupSize);
 
   return weightScoreLookup[desiredScoresLookup][candidateScoreLookup];
 }

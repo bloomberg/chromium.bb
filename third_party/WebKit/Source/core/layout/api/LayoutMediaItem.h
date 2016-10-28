@@ -16,7 +16,7 @@ class LayoutMediaItem : public LayoutImageItem {
       : LayoutImageItem(layoutMedia) {}
 
   explicit LayoutMediaItem(const LayoutItem& item) : LayoutImageItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMedia());
+    SECURITY_DCHECK(!item || item.isMedia());
   }
 
   explicit LayoutMediaItem(std::nullptr_t) : LayoutImageItem(nullptr) {}

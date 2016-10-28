@@ -84,7 +84,7 @@ FloatRect FilterEffect::mapRect(const FloatRect& rect) const {
 }
 
 FilterEffect* FilterEffect::inputEffect(unsigned number) const {
-  ASSERT_WITH_SECURITY_IMPLICATION(number < m_inputEffects.size());
+  SECURITY_DCHECK(number < m_inputEffects.size());
   return m_inputEffects.at(number).get();
 }
 

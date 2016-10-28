@@ -16,7 +16,7 @@ class LayoutEmbeddedItem : public LayoutPartItem {
       : LayoutPartItem(layoutEmbeddedObject) {}
 
   explicit LayoutEmbeddedItem(const LayoutItem& item) : LayoutPartItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isEmbeddedObject());
+    SECURITY_DCHECK(!item || item.isEmbeddedObject());
   }
 
   explicit LayoutEmbeddedItem(std::nullptr_t) : LayoutPartItem(nullptr) {}

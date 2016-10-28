@@ -68,7 +68,7 @@ class RepeatEvent final : public Event {
 };
 
 inline RepeatEvent* toRepeatEvent(Event* event) {
-  ASSERT_WITH_SECURITY_IMPLICATION(!event || event->type() == "repeatn");
+  SECURITY_DCHECK(!event || event->type() == "repeatn");
   return static_cast<RepeatEvent*>(event);
 }
 

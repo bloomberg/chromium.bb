@@ -112,7 +112,6 @@ _DEPRECATED_MACROS = [
     ['ASSERT', 'DCHECK or its variants'],
     ['ASSERT_UNUSED', 'DCHECK or its variants'],
     ['ASSERT_NOT_REACHED', 'NOTREACHED'],
-    ['ASSERT_WITH_SECURITY_IMPLICATION', 'SECURITY_DCHECK'],
     ['WTF_LOG', 'DVLOG']
 ]
 

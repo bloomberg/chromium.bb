@@ -42,7 +42,7 @@ TextIteratorTextState::TextIteratorTextState(bool emitsOriginalText)
       m_emitsOriginalText(emitsOriginalText) {}
 
 UChar TextIteratorTextState::characterAt(unsigned index) const {
-  ASSERT_WITH_SECURITY_IMPLICATION(index < static_cast<unsigned>(length()));
+  SECURITY_DCHECK(index < static_cast<unsigned>(length()));
   if (!(index < static_cast<unsigned>(length())))
     return 0;
 
@@ -57,10 +57,8 @@ UChar TextIteratorTextState::characterAt(unsigned index) const {
 
 String TextIteratorTextState::substring(unsigned position,
                                         unsigned length) const {
-  ASSERT_WITH_SECURITY_IMPLICATION(position <=
-                                   static_cast<unsigned>(this->length()));
-  ASSERT_WITH_SECURITY_IMPLICATION(position + length <=
-                                   static_cast<unsigned>(this->length()));
+  SECURITY_DCHECK(position <= static_cast<unsigned>(this->length()));
+  SECURITY_DCHECK(position + length <= static_cast<unsigned>(this->length()));
   if (!length)
     return emptyString();
   if (m_singleCharacterBuffer) {
@@ -168,10 +166,9 @@ void TextIteratorTextState::emitText(Node* textNode,
 void TextIteratorTextState::appendTextTo(ForwardsTextBuffer* output,
                                          unsigned position,
                                          unsigned lengthToAppend) const {
-  ASSERT_WITH_SECURITY_IMPLICATION(position + lengthToAppend <=
-                                   static_cast<unsigned>(length()));
+  SECURITY_DCHECK(position + lengthToAppend <= static_cast<unsigned>(length()));
   // Make sure there's no integer overflow.
-  ASSERT_WITH_SECURITY_IMPLICATION(position + lengthToAppend >= position);
+  SECURITY_DCHECK(position + lengthToAppend >= position);
   if (!lengthToAppend)
     return;
   DCHECK(output);

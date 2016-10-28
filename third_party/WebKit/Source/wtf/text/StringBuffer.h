@@ -60,7 +60,7 @@ class StringBuffer {
   }
 
   CharType& operator[](unsigned i) {
-    ASSERT_WITH_SECURITY_IMPLICATION(i < length());
+    SECURITY_DCHECK(i < length());
     return characters()[i];
   }
 

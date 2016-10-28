@@ -2658,7 +2658,7 @@ bool ScriptValueDeserializer::doDeserialize() {
 }
 
 v8::Local<v8::Value> ScriptValueDeserializer::element(unsigned index) {
-  ASSERT_WITH_SECURITY_IMPLICATION(index < m_stack.size());
+  SECURITY_DCHECK(index < m_stack.size());
   return m_stack[index];
 }
 

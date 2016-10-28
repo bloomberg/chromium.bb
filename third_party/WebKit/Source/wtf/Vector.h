@@ -1531,7 +1531,7 @@ inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position) {
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position,
                                                          size_t length) {
-  ASSERT_WITH_SECURITY_IMPLICATION(position <= size());
+  SECURITY_DCHECK(position <= size());
   if (!length)
     return;
   RELEASE_ASSERT(position + length <= size());

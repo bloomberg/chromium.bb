@@ -333,7 +333,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     if (needsLayout())
       showLayoutTreeForThis();
 #endif
-    ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
+    SECURITY_DCHECK(!needsLayout());
   }
 
   void assertSubtreeIsLaidOut() const {

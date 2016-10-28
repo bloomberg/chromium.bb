@@ -139,20 +139,20 @@ class WebNode {
   BLINK_EXPORT const type WebNode::toConst<type>() const;
 
 #if BLINK_IMPLEMENTATION
-#define DEFINE_WEB_NODE_TYPE_CASTS(type, predicate)            \
-  template <>                                                  \
-  type WebNode::to<type>() {                                   \
-    ASSERT_WITH_SECURITY_IMPLICATION(isNull() || (predicate)); \
-    type result;                                               \
-    result.WebNode::assign(*this);                             \
-    return result;                                             \
-  }                                                            \
-  template <>                                                  \
-  const type WebNode::toConst<type>() const {                  \
-    ASSERT_WITH_SECURITY_IMPLICATION(isNull() || (predicate)); \
-    type result;                                               \
-    result.WebNode::assign(*this);                             \
-    return result;                                             \
+#define DEFINE_WEB_NODE_TYPE_CASTS(type, predicate) \
+  template <>                                       \
+  type WebNode::to<type>() {                        \
+    SECURITY_DCHECK(isNull() || (predicate));       \
+    type result;                                    \
+    result.WebNode::assign(*this);                  \
+    return result;                                  \
+  }                                                 \
+  template <>                                       \
+  const type WebNode::toConst<type>() const {       \
+    SECURITY_DCHECK(isNull() || (predicate));       \
+    type result;                                    \
+    result.WebNode::assign(*this);                  \
+    return result;                                  \
   }
 #endif
 

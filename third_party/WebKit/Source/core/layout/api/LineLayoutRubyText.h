@@ -17,7 +17,7 @@ class LineLayoutRubyText : public LineLayoutBlockFlow {
 
   explicit LineLayoutRubyText(const LineLayoutItem& item)
       : LineLayoutBlockFlow(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isRubyText());
+    SECURITY_DCHECK(!item || item.isRubyText());
   }
 
   explicit LineLayoutRubyText(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}

@@ -82,7 +82,7 @@ void ImageDecodingStore::unlockDecoder(const ImageFrameGenerator* generator,
   MutexLocker lock(m_mutex);
   DecoderCacheMap::iterator iter = m_decoderCacheMap.find(
       DecoderCacheEntry::makeCacheKey(generator, decoder));
-  ASSERT_WITH_SECURITY_IMPLICATION(iter != m_decoderCacheMap.end());
+  SECURITY_DCHECK(iter != m_decoderCacheMap.end());
 
   CacheEntry* cacheEntry = iter->value.get();
   cacheEntry->decrementUseCount();
@@ -113,7 +113,7 @@ void ImageDecodingStore::removeDecoder(const ImageFrameGenerator* generator,
     MutexLocker lock(m_mutex);
     DecoderCacheMap::iterator iter = m_decoderCacheMap.find(
         DecoderCacheEntry::makeCacheKey(generator, decoder));
-    ASSERT_WITH_SECURITY_IMPLICATION(iter != m_decoderCacheMap.end());
+    SECURITY_DCHECK(iter != m_decoderCacheMap.end());
 
     CacheEntry* cacheEntry = iter->value.get();
     ASSERT(cacheEntry->useCount());

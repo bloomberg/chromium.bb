@@ -186,7 +186,7 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(
 
   Node* node = object->node();
   ASSERT(node);
-  ASSERT_WITH_SECURITY_IMPLICATION(node->isSVGElement());
+  SECURITY_DCHECK(node->isSVGElement());
 
   SVGElement* element = toSVGElement(node);
   ASSERT(element);

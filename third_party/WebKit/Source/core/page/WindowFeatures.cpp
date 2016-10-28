@@ -92,7 +92,7 @@ WindowFeatures::WindowFeatures(const String& features)
       i++;
     keyEnd = i;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+    SECURITY_DCHECK(i <= length);
 
     // skip to first '=', but don't skip past a ',' or the end of the string
     while (i < length && buffer[i] != '=') {
@@ -101,7 +101,7 @@ WindowFeatures::WindowFeatures(const String& features)
       i++;
     }
 
-    ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+    SECURITY_DCHECK(i <= length);
 
     // Skip to first non-separator, but don't skip past a ',' or the end of the
     // string.
@@ -112,14 +112,14 @@ WindowFeatures::WindowFeatures(const String& features)
     }
     valueBegin = i;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+    SECURITY_DCHECK(i <= length);
 
     // skip to first separator
     while (i < length && !isWindowFeaturesSeparator(buffer[i]))
       i++;
     valueEnd = i;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+    SECURITY_DCHECK(i <= length);
 
     String keyString(buffer.substring(keyBegin, keyEnd - keyBegin));
     String valueString(buffer.substring(valueBegin, valueEnd - valueBegin));

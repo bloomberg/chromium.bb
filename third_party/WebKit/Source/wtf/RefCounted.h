@@ -46,12 +46,12 @@ class WTF_EXPORT RefCountedBase {
     m_verifier.onRef(m_refCount);
     ASSERT(!m_adoptionIsRequired);
 #endif
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
+    SECURITY_DCHECK(!m_deletionHasBegun);
     ++m_refCount;
   }
 
   bool hasOneRef() const {
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
+    SECURITY_DCHECK(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
     m_verifier.checkSafeToUse();
 #endif
@@ -80,7 +80,7 @@ class WTF_EXPORT RefCountedBase {
   }
 
   ~RefCountedBase() {
-    ASSERT_WITH_SECURITY_IMPLICATION(m_deletionHasBegun);
+    SECURITY_DCHECK(m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
     ASSERT(!m_adoptionIsRequired);
 #endif
@@ -88,7 +88,7 @@ class WTF_EXPORT RefCountedBase {
 
   // Returns whether the pointer should be freed or not.
   bool derefBase() const {
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
+    SECURITY_DCHECK(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
     m_verifier.onDeref(m_refCount);
     ASSERT(!m_adoptionIsRequired);
@@ -129,7 +129,7 @@ class WTF_EXPORT RefCountedBase {
 inline void adopted(RefCountedBase* object) {
   if (!object)
     return;
-  ASSERT_WITH_SECURITY_IMPLICATION(!object->m_deletionHasBegun);
+  SECURITY_DCHECK(!object->m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
   object->m_adoptionIsRequired = false;
 #endif

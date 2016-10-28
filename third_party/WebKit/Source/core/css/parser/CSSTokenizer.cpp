@@ -317,7 +317,7 @@ CSSParserToken CSSTokenizer::nextToken() {
   CodePoint codePointFunc = 0;
 
   if (isASCII(cc)) {
-    ASSERT_WITH_SECURITY_IMPLICATION(cc < codePointsNumber);
+    SECURITY_DCHECK(cc < codePointsNumber);
     codePointFunc = codePoints[cc];
   } else {
     codePointFunc = &CSSTokenizer::nameStart;

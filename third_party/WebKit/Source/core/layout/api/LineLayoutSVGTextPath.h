@@ -18,7 +18,7 @@ class LineLayoutSVGTextPath : public LineLayoutSVGInline {
 
   explicit LineLayoutSVGTextPath(const LineLayoutItem& item)
       : LineLayoutSVGInline(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGTextPath());
+    SECURITY_DCHECK(!item || item.isSVGTextPath());
   }
 
   explicit LineLayoutSVGTextPath(std::nullptr_t)

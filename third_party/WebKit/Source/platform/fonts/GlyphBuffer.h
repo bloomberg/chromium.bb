@@ -133,7 +133,7 @@ class GlyphBuffer {
     //        shaping, and adjust the initial advance accordingly -> should
     //        yield correctly positioned RTL glyphs without any post-shape
     //        munging).
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_offsets.isEmpty());
+    SECURITY_DCHECK(!m_offsets.isEmpty());
     for (unsigned i = 0; i + 1 < m_offsets.size(); ++i)
       m_offsets[i] = totalWidth - m_offsets[i + 1];
     m_offsets.last() = totalWidth - afterOffset;

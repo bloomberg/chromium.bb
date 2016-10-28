@@ -227,8 +227,8 @@ class PLATFORM_EXPORT DisplayItem {
   {
     // derivedSize must fit in m_derivedSize.
     // If it doesn't, enlarge m_derivedSize and fix this assert.
-    ASSERT_WITH_SECURITY_IMPLICATION(derivedSize < (1 << 8));
-    ASSERT_WITH_SECURITY_IMPLICATION(derivedSize >= sizeof(*this));
+    SECURITY_DCHECK(derivedSize < (1 << 8));
+    SECURITY_DCHECK(derivedSize >= sizeof(*this));
   }
 
   virtual ~DisplayItem() {}

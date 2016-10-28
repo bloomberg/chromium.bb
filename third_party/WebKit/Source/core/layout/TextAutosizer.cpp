@@ -1129,7 +1129,7 @@ bool TextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster) {
 }
 
 TextAutosizer::Cluster* TextAutosizer::currentCluster() const {
-  ASSERT_WITH_SECURITY_IMPLICATION(!m_clusterStack.isEmpty());
+  SECURITY_DCHECK(!m_clusterStack.isEmpty());
   return m_clusterStack.last().get();
 }
 

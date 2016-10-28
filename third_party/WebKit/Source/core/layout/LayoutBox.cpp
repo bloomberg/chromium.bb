@@ -3395,7 +3395,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(
 
       if (cb->isOutOfFlowPositioned() && cb->style()->height().isAuto() &&
           !(cb->style()->top().isAuto() || cb->style()->bottom().isAuto())) {
-        ASSERT_WITH_SECURITY_IMPLICATION(cb->isLayoutBlock());
+        SECURITY_DCHECK(cb->isLayoutBlock());
         LayoutBlock* block = toLayoutBlock(cb);
         LogicalExtentComputedValues computedValues;
         block->computeLogicalHeight(block->logicalHeight(), LayoutUnit(),

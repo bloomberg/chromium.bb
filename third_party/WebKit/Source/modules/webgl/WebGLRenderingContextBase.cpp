@@ -335,7 +335,7 @@ class StripComments {
   }
 
   UChar current() {
-    ASSERT_WITH_SECURITY_IMPLICATION(m_position < m_length);
+    SECURITY_DCHECK(m_position < m_length);
     return m_sourceString[m_position];
   }
 

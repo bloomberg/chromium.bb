@@ -99,8 +99,7 @@ void SQLTransactionCoordinator::releaseLock(
 
   CoordinationInfoHeapMap::iterator coordinationInfoIterator =
       m_coordinationInfoMap.find(dbIdentifier);
-  ASSERT_WITH_SECURITY_IMPLICATION(coordinationInfoIterator !=
-                                   m_coordinationInfoMap.end());
+  SECURITY_DCHECK(coordinationInfoIterator != m_coordinationInfoMap.end());
   CoordinationInfo& info = coordinationInfoIterator->value;
 
   if (transaction->isReadOnly()) {

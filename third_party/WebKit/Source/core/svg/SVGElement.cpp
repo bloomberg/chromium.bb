@@ -334,7 +334,7 @@ void SVGElement::removedFrom(ContainerNode* rootParent) {
     m_elementsWithRelativeLengths.clear();
   }
 
-  ASSERT_WITH_SECURITY_IMPLICATION(
+  SECURITY_DCHECK(
       !rootParent->isSVGElement() ||
       !toSVGElement(rootParent)->m_elementsWithRelativeLengths.contains(this));
 

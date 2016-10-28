@@ -189,7 +189,7 @@ bool ICOImageDecoder::decodeDirectory() {
 }
 
 bool ICOImageDecoder::decodeAtIndex(size_t index) {
-  ASSERT_WITH_SECURITY_IMPLICATION(index < m_dirEntries.size());
+  SECURITY_DCHECK(index < m_dirEntries.size());
   const IconDirectoryEntry& dirEntry = m_dirEntries[index];
   const ImageType imageType = imageTypeAtIndex(index);
   if (imageType == Unknown)
@@ -330,7 +330,7 @@ ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::readDirectoryEntry() {
 ICOImageDecoder::ImageType ICOImageDecoder::imageTypeAtIndex(size_t index) {
   // Check if this entry is a BMP or a PNG; we need 4 bytes to check the magic
   // number.
-  ASSERT_WITH_SECURITY_IMPLICATION(index < m_dirEntries.size());
+  SECURITY_DCHECK(index < m_dirEntries.size());
   const uint32_t imageOffset = m_dirEntries[index].m_imageOffset;
   if ((imageOffset > m_data->size()) || ((m_data->size() - imageOffset) < 4))
     return Unknown;

@@ -313,7 +313,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 };
 
 inline UChar LayoutText::uncheckedCharacterAt(unsigned i) const {
-  ASSERT_WITH_SECURITY_IMPLICATION(i < textLength());
+  SECURITY_DCHECK(i < textLength());
   return is8Bit() ? characters8()[i] : characters16()[i];
 }
 

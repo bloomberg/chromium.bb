@@ -182,7 +182,7 @@ void StyleSheetContents::setHasMediaQueries() {
 }
 
 StyleRuleBase* StyleSheetContents::ruleAt(unsigned index) const {
-  ASSERT_WITH_SECURITY_IMPLICATION(index < ruleCount());
+  SECURITY_DCHECK(index < ruleCount());
 
   if (index < m_importRules.size())
     return m_importRules[index].get();
@@ -214,7 +214,7 @@ void StyleSheetContents::clearRules() {
 bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule,
                                            unsigned index) {
   ASSERT(m_isMutable);
-  ASSERT_WITH_SECURITY_IMPLICATION(index <= ruleCount());
+  SECURITY_DCHECK(index <= ruleCount());
 
   if (index < m_importRules.size() ||
       (index == m_importRules.size() && rule->isImportRule())) {
@@ -274,7 +274,7 @@ bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule,
 
 bool StyleSheetContents::wrapperDeleteRule(unsigned index) {
   ASSERT(m_isMutable);
-  ASSERT_WITH_SECURITY_IMPLICATION(index < ruleCount());
+  SECURITY_DCHECK(index < ruleCount());
 
   if (index < m_importRules.size()) {
     m_importRules[index]->clearParentStyleSheet();

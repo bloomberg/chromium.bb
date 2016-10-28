@@ -159,7 +159,7 @@ class WTF_EXPORT StringBuilder {
   void resize(unsigned newSize);
 
   UChar operator[](unsigned i) const {
-    ASSERT_WITH_SECURITY_IMPLICATION(i < m_length);
+    SECURITY_DCHECK(i < m_length);
     if (m_is8Bit)
       return characters8()[i];
     return characters16()[i];

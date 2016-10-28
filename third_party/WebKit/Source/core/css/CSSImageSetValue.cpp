@@ -56,7 +56,7 @@ void CSSImageSetValue::fillImageSet() {
     String imageURL = imageValue.url();
 
     ++i;
-    ASSERT_WITH_SECURITY_IMPLICATION(i < length);
+    SECURITY_DCHECK(i < length);
     const CSSValue& scaleFactorValue = item(i);
     float scaleFactor = toCSSPrimitiveValue(scaleFactorValue).getFloatValue();
 
@@ -147,7 +147,7 @@ String CSSImageSetValue::customCSSText() const {
     result.append(' ');
 
     ++i;
-    ASSERT_WITH_SECURITY_IMPLICATION(i < length);
+    SECURITY_DCHECK(i < length);
     const CSSValue& scaleFactorValue = item(i);
     result.append(scaleFactorValue.cssText());
     // FIXME: Eventually the scale factor should contain it's own unit

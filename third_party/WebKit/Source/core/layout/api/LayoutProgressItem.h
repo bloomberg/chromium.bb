@@ -18,7 +18,7 @@ class LayoutProgressItem : public LayoutBlockItem {
 
   explicit LayoutProgressItem(const LayoutBlockItem& item)
       : LayoutBlockItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isProgress());
+    SECURITY_DCHECK(!item || item.isProgress());
   }
 
   explicit LayoutProgressItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}

@@ -319,7 +319,7 @@ class WTF_EXPORT StringImpl {
   PassRefPtr<StringImpl> substring(unsigned pos, unsigned len = UINT_MAX);
 
   UChar operator[](unsigned i) const {
-    ASSERT_WITH_SECURITY_IMPLICATION(i < m_length);
+    SECURITY_DCHECK(i < m_length);
     if (is8Bit())
       return characters8()[i];
     return characters16()[i];

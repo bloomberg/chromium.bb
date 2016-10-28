@@ -105,7 +105,7 @@ static void create{{namespace}}FunctionMap()
 
     if (document.registrationContext() && V0CustomElement::isValidName(localName)) {
         Element* element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
-        ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
+        SECURITY_DCHECK(element->is{{namespace}}Element());
         return to{{namespace}}Element(element);
     }
 

@@ -18,7 +18,7 @@ class LayoutTextItem : public LayoutItem {
   explicit LayoutTextItem(LayoutText* layoutText) : LayoutItem(layoutText) {}
 
   explicit LayoutTextItem(const LayoutItem& item) : LayoutItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isText());
+    SECURITY_DCHECK(!item || item.isText());
   }
 
   explicit LayoutTextItem(std::nullptr_t) : LayoutItem(nullptr) {}

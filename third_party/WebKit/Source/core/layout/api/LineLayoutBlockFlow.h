@@ -24,7 +24,7 @@ class LineLayoutBlockFlow : public LineLayoutBox {
 
   explicit LineLayoutBlockFlow(const LineLayoutItem& item)
       : LineLayoutBox(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutBlockFlow());
+    SECURITY_DCHECK(!item || item.isLayoutBlockFlow());
   }
 
   explicit LineLayoutBlockFlow(std::nullptr_t) : LineLayoutBox(nullptr) {}

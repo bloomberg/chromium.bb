@@ -185,8 +185,8 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
   InlineFlowBox* parentBox = nullptr;
   InlineFlowBox* result = nullptr;
   do {
-    ASSERT_WITH_SECURITY_IMPLICATION(lineLayoutItem.isLayoutInline() ||
-                                     lineLayoutItem.isEqual(this));
+    SECURITY_DCHECK(lineLayoutItem.isLayoutInline() ||
+                    lineLayoutItem.isEqual(this));
 
     LineLayoutInline inlineFlow(!lineLayoutItem.isEqual(this) ? lineLayoutItem
                                                               : nullptr);
@@ -211,7 +211,7 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
       // made, we need to place it at the end of the current line.
       InlineBox* newBox = createInlineBoxForLayoutObject(
           LineLayoutItem(lineLayoutItem), lineLayoutItem.isEqual(this));
-      ASSERT_WITH_SECURITY_IMPLICATION(newBox->isInlineFlowBox());
+      SECURITY_DCHECK(newBox->isInlineFlowBox());
       parentBox = toInlineFlowBox(newBox);
       parentBox->setFirstLineStyleBit(lineInfo.isFirstLine());
       parentBox->setIsHorizontal(isHorizontalWritingMode());

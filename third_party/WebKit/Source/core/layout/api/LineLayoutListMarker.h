@@ -17,7 +17,7 @@ class LineLayoutListMarker : public LineLayoutBox {
 
   explicit LineLayoutListMarker(const LineLayoutItem& item)
       : LineLayoutBox(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isListMarker());
+    SECURITY_DCHECK(!item || item.isListMarker());
   }
 
   explicit LineLayoutListMarker(std::nullptr_t) : LineLayoutBox(nullptr) {}

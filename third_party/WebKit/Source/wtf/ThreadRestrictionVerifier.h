@@ -51,7 +51,7 @@ class ThreadRestrictionVerifier {
   void checkSafeToUse() const {
     // If this assert fires, it either indicates a thread safety issue or
     // that the verification needs to change.
-    ASSERT_WITH_SECURITY_IMPLICATION(isSafeToUse());
+    SECURITY_DCHECK(isSafeToUse());
   }
 
   // Call onRef() before refCount is incremented in ref().

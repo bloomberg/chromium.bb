@@ -1175,7 +1175,7 @@ ScrollSnapPoints StyleBuilderConverter::convertSnapPoints(
     return points;
 
   const CSSFunctionValue& repeatFunction = toCSSFunctionValue(value);
-  ASSERT_WITH_SECURITY_IMPLICATION(repeatFunction.length() == 1);
+  SECURITY_DCHECK(repeatFunction.length() == 1);
   points.repeatOffset =
       convertLength(state, toCSSPrimitiveValue(repeatFunction.item(0)));
   points.hasRepeat = true;

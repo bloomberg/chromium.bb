@@ -45,7 +45,7 @@ std::unique_ptr<InspectorTaskRunner::Task> InspectorTaskRunner::takeNextTask(
   if (m_killed || timedOut)
     return nullptr;
 
-  ASSERT_WITH_SECURITY_IMPLICATION(!m_queue.isEmpty());
+  SECURITY_DCHECK(!m_queue.isEmpty());
   return m_queue.takeFirst();
 }
 

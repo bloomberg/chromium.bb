@@ -309,8 +309,7 @@ void WebSharedWorkerImpl::connectTask(WebMessagePortChannelUniquePtr channel,
   MessagePort* port = MessagePort::create(*context);
   port->entangle(std::move(channel));
   WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-  ASSERT_WITH_SECURITY_IMPLICATION(
-      workerGlobalScope->isSharedWorkerGlobalScope());
+  SECURITY_DCHECK(workerGlobalScope->isSharedWorkerGlobalScope());
   workerGlobalScope->dispatchEvent(createConnectEvent(port));
 }
 

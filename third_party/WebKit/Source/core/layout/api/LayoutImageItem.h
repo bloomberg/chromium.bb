@@ -16,7 +16,7 @@ class LayoutImageItem : public LayoutBoxItem {
       : LayoutBoxItem(layoutImage) {}
 
   explicit LayoutImageItem(const LayoutItem& item) : LayoutBoxItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isImage());
+    SECURITY_DCHECK(!item || item.isImage());
   }
 
   explicit LayoutImageItem(std::nullptr_t) : LayoutBoxItem(nullptr) {}

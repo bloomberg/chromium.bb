@@ -769,8 +769,8 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page) {
   ASSERT(!freelistHead || partitionPointerIsValid(freelistHead));
   SECURITY_CHECK(ptr != freelistHead);  // Catches an immediate double free.
   // Look for double free one level deeper in debug.
-  ASSERT_WITH_SECURITY_IMPLICATION(
-      !freelistHead || ptr != partitionFreelistMask(freelistHead->next));
+  SECURITY_DCHECK(!freelistHead ||
+                  ptr != partitionFreelistMask(freelistHead->next));
   PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
   entry->next = partitionFreelistMask(freelistHead);
   page->freelistHead = entry;

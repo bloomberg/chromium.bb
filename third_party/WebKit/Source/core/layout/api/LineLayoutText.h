@@ -20,7 +20,7 @@ class LineLayoutText : public LineLayoutItem {
       : LineLayoutItem(layoutObject) {}
 
   explicit LineLayoutText(const LineLayoutItem& item) : LineLayoutItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isText());
+    SECURITY_DCHECK(!item || item.isText());
   }
 
   explicit LineLayoutText(std::nullptr_t) : LineLayoutItem(nullptr) {}

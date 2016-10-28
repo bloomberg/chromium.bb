@@ -388,7 +388,7 @@ float SVGAnimationElement::calculatePercentForSpline(
     float percent,
     unsigned splineIndex) const {
   ASSERT(getCalcMode() == CalcModeSpline);
-  ASSERT_WITH_SECURITY_IMPLICATION(splineIndex < m_keySplines.size());
+  SECURITY_DCHECK(splineIndex < m_keySplines.size());
   gfx::CubicBezier bezier = m_keySplines[splineIndex];
   SMILTime duration = simpleDuration();
   if (!duration.isFinite())

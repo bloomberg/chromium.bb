@@ -114,7 +114,7 @@ void LocalFileSystem::deleteFileSystem(
     FileSystemType type,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   ASSERT(context);
-  ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
+  SECURITY_DCHECK(context->isDocument());
 
   CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
   requestFileSystemAccessInternal(

@@ -59,13 +59,13 @@ DOMStringList* IDBAny::domStringList() const {
 
 IDBCursor* IDBAny::idbCursor() const {
   ASSERT(m_type == IDBCursorType);
-  ASSERT_WITH_SECURITY_IMPLICATION(m_idbCursor->isKeyCursor());
+  SECURITY_DCHECK(m_idbCursor->isKeyCursor());
   return m_idbCursor.get();
 }
 
 IDBCursorWithValue* IDBAny::idbCursorWithValue() const {
   ASSERT(m_type == IDBCursorWithValueType);
-  ASSERT_WITH_SECURITY_IMPLICATION(m_idbCursor->isCursorWithValue());
+  SECURITY_DCHECK(m_idbCursor->isCursorWithValue());
   return toIDBCursorWithValue(m_idbCursor.get());
 }
 

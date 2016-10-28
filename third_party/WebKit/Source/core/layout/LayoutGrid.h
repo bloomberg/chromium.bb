@@ -74,17 +74,17 @@ class LayoutGrid final : public LayoutBlock {
 
   typedef Vector<LayoutBox*, 1> GridCell;
   const GridCell& gridCell(int row, int column) const {
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
+    SECURITY_DCHECK(!m_gridIsDirty);
     return m_grid[row][column];
   }
 
   const Vector<LayoutBox*>& itemsOverflowingGridArea() const {
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
+    SECURITY_DCHECK(!m_gridIsDirty);
     return m_gridItemsOverflowingGridArea;
   }
 
   int paintIndexForGridItem(const LayoutBox* layoutBox) const {
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
+    SECURITY_DCHECK(!m_gridIsDirty);
     return m_gridItemsIndexesMap.get(layoutBox);
   }
 

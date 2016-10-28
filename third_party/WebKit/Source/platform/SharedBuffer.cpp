@@ -180,7 +180,7 @@ size_t SharedBuffer::getSomeDataInternal(const char*& someData,
     return 0;
   }
 
-  ASSERT_WITH_SECURITY_IMPLICATION(position < m_size);
+  SECURITY_DCHECK(position < m_size);
   size_t consecutiveSize = m_buffer.size();
   if (position < consecutiveSize) {
     someData = m_buffer.data() + position;

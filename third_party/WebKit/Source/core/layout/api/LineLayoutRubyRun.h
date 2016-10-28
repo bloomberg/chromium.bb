@@ -19,7 +19,7 @@ class LineLayoutRubyRun : public LineLayoutBlockFlow {
 
   explicit LineLayoutRubyRun(const LineLayoutItem& item)
       : LineLayoutBlockFlow(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isRubyRun());
+    SECURITY_DCHECK(!item || item.isRubyRun());
   }
 
   explicit LineLayoutRubyRun(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}

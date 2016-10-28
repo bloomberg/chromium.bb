@@ -331,8 +331,8 @@ String TextCodecUTF8::decode(const char* bytes,
         character = nonCharacter;
       } else {
         if (count > end - source) {
-          ASSERT_WITH_SECURITY_IMPLICATION(
-              end - source < static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
+          SECURITY_DCHECK(end - source <
+                          static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
           ASSERT(!m_partialSequenceSize);
           m_partialSequenceSize = end - source;
           memcpy(m_partialSequence, source, m_partialSequenceSize);
@@ -412,8 +412,8 @@ upConvertTo16Bit:
         character = nonCharacter;
       } else {
         if (count > end - source) {
-          ASSERT_WITH_SECURITY_IMPLICATION(
-              end - source < static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
+          SECURITY_DCHECK(end - source <
+                          static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
           ASSERT(!m_partialSequenceSize);
           m_partialSequenceSize = end - source;
           memcpy(m_partialSequence, source, m_partialSequenceSize);

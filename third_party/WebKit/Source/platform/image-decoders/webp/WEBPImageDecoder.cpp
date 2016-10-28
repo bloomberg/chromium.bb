@@ -82,7 +82,7 @@ inline void findBlendRangeAtRow(const blink::IntRect& src,
                                 int& width1,
                                 int& left2,
                                 int& width2) {
-  ASSERT_WITH_SECURITY_IMPLICATION(canvasY >= src.y() && canvasY < src.maxY());
+  SECURITY_DCHECK(canvasY >= src.y() && canvasY < src.maxY());
   left1 = -1;
   width1 = 0;
   left2 = -1;
@@ -357,8 +357,8 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
     return;
 
   const IntRect& frameRect = buffer.originalFrameRect();
-  ASSERT_WITH_SECURITY_IMPLICATION(width == frameRect.width());
-  ASSERT_WITH_SECURITY_IMPLICATION(decodedHeight <= frameRect.height());
+  SECURITY_DCHECK(width == frameRect.width());
+  SECURITY_DCHECK(decodedHeight <= frameRect.height());
   const int left = frameRect.x();
   const int top = frameRect.y();
 

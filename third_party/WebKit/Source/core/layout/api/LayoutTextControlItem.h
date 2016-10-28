@@ -18,7 +18,7 @@ class LayoutTextControlItem : public LayoutBoxModel {
 
   explicit LayoutTextControlItem(const LayoutItem& item)
       : LayoutBoxModel(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isTextControl());
+    SECURITY_DCHECK(!item || item.isTextControl());
   }
 
   explicit LayoutTextControlItem(std::nullptr_t) : LayoutBoxModel(nullptr) {}

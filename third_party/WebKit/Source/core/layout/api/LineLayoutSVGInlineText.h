@@ -17,7 +17,7 @@ class LineLayoutSVGInlineText : public LineLayoutText {
 
   explicit LineLayoutSVGInlineText(const LineLayoutItem& item)
       : LineLayoutText(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGInlineText());
+    SECURITY_DCHECK(!item || item.isSVGInlineText());
   }
 
   explicit LineLayoutSVGInlineText(std::nullptr_t) : LineLayoutText(nullptr) {}

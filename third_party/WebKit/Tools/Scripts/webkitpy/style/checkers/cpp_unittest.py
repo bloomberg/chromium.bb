@@ -1580,9 +1580,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('ASSERT_NOT_REACHED()', 'ASSERT_NOT_REACHED is '
                          'deprecated. Use NOTREACHED instead.  '
                          '[build/deprecated] [5]')
-        self.assert_lint('ASSERT_WITH_SECURITY_IMPLICATION(foo)',
-                         'ASSERT_WITH_SECURITY_IMPLICATION is deprecated. Use '
-                         'SECURITY_DCHECK instead.  [build/deprecated] [5]')
         self.assert_lint('WTF_LOG(foo)', 'WTF_LOG is deprecated. Use DVLOG '
                          'instead.  [build/deprecated] [5]')
 

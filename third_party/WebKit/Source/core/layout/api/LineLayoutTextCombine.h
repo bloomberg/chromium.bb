@@ -17,7 +17,7 @@ class LineLayoutTextCombine : public LineLayoutText {
 
   explicit LineLayoutTextCombine(const LineLayoutItem& item)
       : LineLayoutText(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isCombineText());
+    SECURITY_DCHECK(!item || item.isCombineText());
   }
 
   explicit LineLayoutTextCombine(std::nullptr_t) : LineLayoutText(nullptr) {}

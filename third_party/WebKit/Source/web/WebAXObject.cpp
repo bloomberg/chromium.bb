@@ -884,7 +884,7 @@ void WebAXObject::showContextMenu() const {
     ContainerNode* parent = FlatTreeTraversal::parent(*node);
     if (!parent)
       return;
-    ASSERT_WITH_SECURITY_IMPLICATION(parent->isElementNode());
+    SECURITY_DCHECK(parent->isElementNode());
     element = toElement(parent);
   }
 

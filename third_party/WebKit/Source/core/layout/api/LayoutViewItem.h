@@ -19,7 +19,7 @@ class LayoutViewItem : public LayoutBlockItem {
       : LayoutBlockItem(layoutView) {}
 
   explicit LayoutViewItem(const LayoutBlockItem& item) : LayoutBlockItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutView());
+    SECURITY_DCHECK(!item || item.isLayoutView());
   }
 
   explicit LayoutViewItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}

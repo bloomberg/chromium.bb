@@ -67,7 +67,7 @@ CSSImageGeneratorValue* CSSImageGeneratorValue::valueWithURLsMadeAbsolute() {
 void CSSImageGeneratorValue::removeClient(const LayoutObject* layoutObject) {
   ASSERT(layoutObject);
   LayoutObjectSizeCountMap::iterator it = m_clients.find(layoutObject);
-  ASSERT_WITH_SECURITY_IMPLICATION(it != m_clients.end());
+  SECURITY_DCHECK(it != m_clients.end());
 
   IntSize removedImageSize;
   SizeAndCount& sizeCount = it->value;

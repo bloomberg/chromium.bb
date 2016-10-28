@@ -420,7 +420,7 @@ UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::characterAt(
     unsigned index) const {
   // TODO(xiaochengh): Mostly copied from TextIteratorTextState::characterAt.
   // Should try to improve the code quality by reusing the code.
-  ASSERT_WITH_SECURITY_IMPLICATION(index < static_cast<unsigned>(length()));
+  SECURITY_DCHECK(index < static_cast<unsigned>(length()));
   if (!(index < static_cast<unsigned>(length())))
     return 0;
   if (m_singleCharacterBuffer) {

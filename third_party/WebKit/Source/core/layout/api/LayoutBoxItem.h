@@ -20,7 +20,7 @@ class LayoutBoxItem : public LayoutBoxModel {
   explicit LayoutBoxItem(LayoutBox* layoutBox) : LayoutBoxModel(layoutBox) {}
 
   explicit LayoutBoxItem(const LayoutItem& item) : LayoutBoxModel(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isBox());
+    SECURITY_DCHECK(!item || item.isBox());
   }
 
   explicit LayoutBoxItem(std::nullptr_t) : LayoutBoxModel(nullptr) {}

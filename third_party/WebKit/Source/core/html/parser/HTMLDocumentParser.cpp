@@ -481,8 +481,8 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
       popChunk.get(), TRACE_EVENT_FLAG_FLOW_IN);
   AutoReset<bool> hasLineNumber(&m_isParsingAtLineNumber, true);
 
-  ASSERT_WITH_SECURITY_IMPLICATION(m_pumpSpeculationsSessionNestingLevel == 1);
-  ASSERT_WITH_SECURITY_IMPLICATION(!inPumpSession());
+  SECURITY_DCHECK(m_pumpSpeculationsSessionNestingLevel == 1);
+  SECURITY_DCHECK(!inPumpSession());
   ASSERT(!isParsingFragment());
   ASSERT(!isWaitingForScripts());
   ASSERT(!isStopped());

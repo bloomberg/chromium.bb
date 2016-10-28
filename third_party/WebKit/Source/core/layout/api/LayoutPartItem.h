@@ -15,7 +15,7 @@ class LayoutPartItem : public LayoutBoxItem {
   explicit LayoutPartItem(LayoutPart* layoutPart) : LayoutBoxItem(layoutPart) {}
 
   explicit LayoutPartItem(const LayoutItem& item) : LayoutBoxItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutPart());
+    SECURITY_DCHECK(!item || item.isLayoutPart());
   }
 
   explicit LayoutPartItem(std::nullptr_t) : LayoutBoxItem(nullptr) {}

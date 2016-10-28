@@ -18,7 +18,7 @@ class LayoutMenuListItem : public LayoutBlockItem {
 
   explicit LayoutMenuListItem(const LayoutBlockItem& item)
       : LayoutBlockItem(item) {
-    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMenuList());
+    SECURITY_DCHECK(!item || item.isMenuList());
   }
 
   explicit LayoutMenuListItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}

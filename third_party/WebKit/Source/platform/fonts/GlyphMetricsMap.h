@@ -72,7 +72,7 @@ class GlyphMetricsMap {
       setMetricsForIndex(glyph % size, metrics);
     }
     void setMetricsForIndex(unsigned index, const T& metrics) {
-      ASSERT_WITH_SECURITY_IMPLICATION(index < size);
+      SECURITY_DCHECK(index < size);
       m_metrics[index] = metrics;
     }
 
