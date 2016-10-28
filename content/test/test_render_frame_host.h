@@ -159,6 +159,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // See set_simulate_history_list_was_cleared() above.
   bool simulate_history_list_was_cleared_;
 
+  // The last commit was for an error page.
+  bool last_commit_was_error_page_;
+
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHost);
 };
 

@@ -66,9 +66,9 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
 
 void SupervisedUserNavigationObserver::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
-  // Only filter synchronous navigations (eg. pushState/popState); others will
+  // Only filter same page navigations (eg. pushState/popState); others will
   // have been filtered by the ResourceThrottle.
-  if (!navigation_handle->IsSynchronousNavigation())
+  if (!navigation_handle->IsSamePage())
     return;
 
   if (!navigation_handle->IsInMainFrame())

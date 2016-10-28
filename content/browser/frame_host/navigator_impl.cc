@@ -207,7 +207,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
       validated_url, render_frame_host->frame_tree_node(),
       is_renderer_initiated,
-      false,             // is_synchronous
+      false,             // is_same_page
       is_iframe_srcdoc,  // is_srcdoc
       navigation_start, pending_nav_entry_id, started_from_context_menu));
 }

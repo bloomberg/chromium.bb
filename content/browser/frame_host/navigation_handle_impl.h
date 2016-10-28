@@ -77,7 +77,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const GURL& url,
       FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
-      bool is_synchronous,
+      bool is_same_page,
       bool is_srcdoc,
       const base::TimeTicks& navigation_start,
       int pending_nav_entry_id,
@@ -90,7 +90,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsInMainFrame() override;
   bool IsParentMainFrame() override;
   bool IsRendererInitiated() override;
-  bool IsSynchronousNavigation() override;
   bool IsSrcdoc() override;
   bool WasServerRedirect() override;
   int GetFrameTreeNodeId() override;
@@ -300,7 +299,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   NavigationHandleImpl(const GURL& url,
                        FrameTreeNode* frame_tree_node,
                        bool is_renderer_initiated,
-                       bool is_synchronous,
+                       bool is_same_page,
                        bool is_srcdoc,
                        const base::TimeTicks& navigation_start,
                        int pending_nav_entry_id,
@@ -343,8 +342,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   net::Error net_error_code_;
   RenderFrameHostImpl* render_frame_host_;
   const bool is_renderer_initiated_;
-  bool is_same_page_;
-  const bool is_synchronous_;
+  const bool is_same_page_;
   const bool is_srcdoc_;
   bool was_redirected_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;

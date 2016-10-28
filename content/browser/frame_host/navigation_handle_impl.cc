@@ -46,13 +46,13 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const GURL& url,
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
-    bool is_synchronous,
+    bool is_same_page,
     bool is_srcdoc,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
-      url, frame_tree_node, is_renderer_initiated, is_synchronous, is_srcdoc,
+      url, frame_tree_node, is_renderer_initiated, is_same_page, is_srcdoc,
       navigation_start, pending_nav_entry_id, started_from_context_menu));
 }
 
@@ -60,7 +60,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     const GURL& url,
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
-    bool is_synchronous,
+    bool is_same_page,
     bool is_srcdoc,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
@@ -72,8 +72,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       net_error_code_(net::OK),
       render_frame_host_(nullptr),
       is_renderer_initiated_(is_renderer_initiated),
-      is_same_page_(false),
-      is_synchronous_(is_synchronous),
+      is_same_page_(is_same_page),
       is_srcdoc_(is_srcdoc),
       was_redirected_(false),
       original_url_(url),
@@ -151,10 +150,6 @@ bool NavigationHandleImpl::IsRendererInitiated() {
   return is_renderer_initiated_;
 }
 
-bool NavigationHandleImpl::IsSynchronousNavigation() {
-  return is_synchronous_;
-}
-
 bool NavigationHandleImpl::IsSrcdoc() {
   return is_srcdoc_;
 }
@@ -223,9 +218,6 @@ RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
 }
 
 bool NavigationHandleImpl::IsSamePage() {
-  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE)
-      << "This accessor should not be called before the navigation has "
-         "committed.";
   return is_same_page_;
 }
 
@@ -507,7 +499,6 @@ void NavigationHandleImpl::DidCommitNavigation(
   has_user_gesture_ = (params.gesture == NavigationGestureUser);
   transition_ = params.transition;
   render_frame_host_ = render_frame_host;
-  is_same_page_ = same_page;
 
   // If an error page reloads, net_error_code might be 200 but we still want to
   // count it as an error page.

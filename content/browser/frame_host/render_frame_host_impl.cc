@@ -1176,10 +1176,10 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     return;
   }
 
-  // If the URL does not match what the NavigationHandle expects, treat the
-  // commit as a new navigation. This can happen if an ongoing slow
-  // same-process navigation is interrupted by a synchronous renderer-initiated
-  // navigation.
+  // If the URL or |was_within_same_page| does not match what the
+  // NavigationHandle expects, treat the commit as a new navigation. This can
+  // happen if an ongoing slow same-process navigation is interwoven with a
+  // synchronous renderer-initiated navigation.
   // TODO(csharrison): Data navigations loaded with LoadDataWithBaseURL get
   // reset here, because the NavigationHandle tracks the URL but the
   // validated_params.url tracks the data. The trick of saving the old entry ids
@@ -1188,7 +1188,9 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   int entry_id_for_data_nav = 0;
   bool is_renderer_initiated = true;
   if (navigation_handle_ &&
-      (navigation_handle_->GetURL() != validated_params.url)) {
+      ((navigation_handle_->GetURL() != validated_params.url) ||
+       navigation_handle_->IsSamePage() !=
+           validated_params.was_within_same_page)) {
     // Make sure that the pending entry was really loaded via
     // LoadDataWithBaseURL and that it matches this handle.
     NavigationEntryImpl* pending_entry =
@@ -1212,16 +1214,16 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
 
   // Synchronous renderer-initiated navigations will send a
   // DidCommitProvisionalLoad IPC without a prior DidStartProvisionalLoad
-  // message.
+  // message. Or in addition, the if block above can reset the NavigationHandle
+  // in cases it doesn't match the expected commit.
   if (!navigation_handle_) {
     // There is no pending NavigationEntry in these cases, so pass 0 as the
     // nav_id. If the previous handle was a prematurely aborted navigation
     // loaded via LoadDataWithBaseURL, propogate the entry id.
     navigation_handle_ = NavigationHandleImpl::Create(
         validated_params.url, frame_tree_node_, is_renderer_initiated,
-        true,  // is_synchronous
-        validated_params.is_srcdoc, base::TimeTicks::Now(),
-        entry_id_for_data_nav,
+        validated_params.was_within_same_page, validated_params.is_srcdoc,
+        base::TimeTicks::Now(), entry_id_for_data_nav,
         false);  // started_from_context_menu
     // PlzNavigate
     if (IsBrowserSideNavigationEnabled()) {

@@ -64,7 +64,8 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                           flags),
       child_creation_observer_(delegate ? delegate->GetAsWebContents() : NULL),
       contents_mime_type_("text/html"),
-      simulate_history_list_was_cleared_(false) {}
+      simulate_history_list_was_cleared_(false),
+      last_commit_was_error_page_(false) {}
 
 TestRenderFrameHost::~TestRenderFrameHost() {
 }
@@ -156,9 +157,14 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
 
   url::Replacements<char> replacements;
   replacements.ClearRef();
+
+  // This approach to determining whether a navigation is to be treated as
+  // same page is not robust, as it will not handle pushState type navigation.
+  // Do not use elsewhere!
   params.was_within_same_page =
-      url.ReplaceComponents(replacements) ==
-      GetLastCommittedURL().ReplaceComponents(replacements);
+      (GetLastCommittedURL().is_valid() && !last_commit_was_error_page_ &&
+       url.ReplaceComponents(replacements) ==
+           GetLastCommittedURL().ReplaceComponents(replacements));
 
   params.page_state = PageState::CreateForTesting(url, false, nullptr, nullptr);
 
@@ -350,11 +356,16 @@ void TestRenderFrameHost::SendNavigateWithParameters(
 
   url::Replacements<char> replacements;
   replacements.ClearRef();
+
+  // This approach to determining whether a navigation is to be treated as
+  // same page is not robust, as it will not handle pushState type navigation.
+  // Do not use elsewhere!
   params.was_within_same_page =
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) &&
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
-      url_copy.ReplaceComponents(replacements) ==
-          GetLastCommittedURL().ReplaceComponents(replacements);
+      (GetLastCommittedURL().is_valid() && !last_commit_was_error_page_ &&
+       url_copy.ReplaceComponents(replacements) ==
+           GetLastCommittedURL().ReplaceComponents(replacements));
 
   params.page_state =
       PageState::CreateForTesting(url_copy, false, nullptr, nullptr);
@@ -369,6 +380,7 @@ void TestRenderFrameHost::SendNavigateWithParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
   FrameHostMsg_DidCommitProvisionalLoad msg(GetRoutingID(), *params);
   OnDidCommitProvisionalLoad(msg);
+  last_commit_was_error_page_ = params->url_is_unreachable;
 }
 
 void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(

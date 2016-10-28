@@ -70,12 +70,6 @@ class CONTENT_EXPORT NavigationHandle {
   //  * using window.history.pushState
   virtual bool IsRendererInitiated() = 0;
 
-  // Whether the navigation is synchronous or not. Examples of synchronous
-  // navigations are:
-  // * reference fragment navigations
-  // * pushState/popState
-  virtual bool IsSynchronousNavigation() = 0;
-
   // Whether the navigation is for an iframe with srcdoc attribute.
   virtual bool IsSrcdoc() = 0;
 
@@ -146,9 +140,10 @@ class CONTENT_EXPORT NavigationHandle {
   // called.
   virtual RenderFrameHost* GetRenderFrameHost() = 0;
 
-  // Whether the navigation happened in the same page. This is only known
-  // after the navigation has committed. It is an error to call this method
-  // before the navigation has committed.
+  // Whether the navigation happened in the same page. Examples of same page
+  // navigations are:
+  // * reference fragment navigations
+  // * pushState/replaceState
   virtual bool IsSamePage() = 0;
 
   // Whether the navigation has encountered a server redirect or not.

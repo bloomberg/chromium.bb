@@ -31,6 +31,7 @@ using content::ResourceType;
 
 namespace {
 
+const char* const kStartUrl = "http://whatever.com/index.html";
 const char* const kHttpUrl = "http://whatever.com/";
 const char* const kHttpsUrl = "https://whatever.com/";
 
@@ -74,11 +75,13 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    // Load kHttpUrl. This ensures that any subsequent navigation to kHttpsUrl2
-    // will be properly registered as cross-process.
+    // Load kStartUrl. This ensures that any subsequent navigation to kHttpsUrl2
+    // will be properly registered as cross-process. It should be different than
+    // the rest of the URLs used, otherwise unit tests will clasify navigations
+    // as same document ones, which would be incorrect.
     content::WebContentsTester* web_contents_tester =
         content::WebContentsTester::For(web_contents());
-    web_contents_tester->NavigateAndCommit(GURL(kHttpUrl));
+    web_contents_tester->NavigateAndCommit(GURL(kStartUrl));
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(main_rfh());
     rfh_tester->SimulateNavigationStop();

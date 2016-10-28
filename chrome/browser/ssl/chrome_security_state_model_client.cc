@@ -362,11 +362,9 @@ void ChromeSecurityStateModelClient::VisibleSecurityStateChanged() {
 
 void ChromeSecurityStateModelClient::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame() &&
-      !navigation_handle->IsSynchronousNavigation()) {
+  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage()) {
     // Only reset the console message flag for main-frame navigations,
-    // and not for synchronous navigations like reference fragments and
-    // pushState.
+    // and not for same-page navigations like reference fragments and pushState.
     logged_http_warning_on_current_navigation_ = false;
   }
 }

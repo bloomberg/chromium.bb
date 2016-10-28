@@ -35,7 +35,7 @@ class NavigationHandleObserver : public WebContentsObserver {
         is_main_frame_(false),
         is_parent_main_frame_(false),
         is_renderer_initiated_(true),
-        is_synchronous_(false),
+        is_same_page_(false),
         is_srcdoc_(false),
         was_redirected_(false),
         frame_tree_node_id_(-1),
@@ -55,7 +55,7 @@ class NavigationHandleObserver : public WebContentsObserver {
     is_main_frame_ = navigation_handle->IsInMainFrame();
     is_parent_main_frame_ = navigation_handle->IsParentMainFrame();
     is_renderer_initiated_ = navigation_handle->IsRendererInitiated();
-    is_synchronous_ = navigation_handle->IsSynchronousNavigation();
+    is_same_page_ = navigation_handle->IsSamePage();
     is_srcdoc_ = navigation_handle->IsSrcdoc();
     was_redirected_ = navigation_handle->WasServerRedirect();
     frame_tree_node_id_ = navigation_handle->GetFrameTreeNodeId();
@@ -67,7 +67,7 @@ class NavigationHandleObserver : public WebContentsObserver {
 
     DCHECK_EQ(is_main_frame_, navigation_handle->IsInMainFrame());
     DCHECK_EQ(is_parent_main_frame_, navigation_handle->IsParentMainFrame());
-    DCHECK_EQ(is_synchronous_, navigation_handle->IsSynchronousNavigation());
+    DCHECK_EQ(is_same_page_, navigation_handle->IsSamePage());
     DCHECK_EQ(is_renderer_initiated_, navigation_handle->IsRendererInitiated());
     DCHECK_EQ(is_srcdoc_, navigation_handle->IsSrcdoc());
     DCHECK_EQ(frame_tree_node_id_, navigation_handle->GetFrameTreeNodeId());
@@ -95,7 +95,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_main_frame() { return is_main_frame_; }
   bool is_parent_main_frame() { return is_parent_main_frame_; }
   bool is_renderer_initiated() { return is_renderer_initiated_; }
-  bool is_synchronous() { return is_synchronous_; }
+  bool is_same_page() { return is_same_page_; }
   bool is_srcdoc() { return is_srcdoc_; }
   bool was_redirected() { return was_redirected_; }
   int frame_tree_node_id() { return frame_tree_node_id_; }
@@ -114,7 +114,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_main_frame_;
   bool is_parent_main_frame_;
   bool is_renderer_initiated_;
-  bool is_synchronous_;
+  bool is_same_page_;
   bool is_srcdoc_;
   bool was_redirected_;
   int frame_tree_node_id_;
@@ -518,9 +518,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySrcdoc) {
   EXPECT_TRUE(observer.is_srcdoc());
 }
 
-// Ensure that the IsSynchronousNavigation() method on NavigationHandle behaves
-// correctly.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySynchronous) {
+// Ensure that the IsSamePage() method on NavigationHandle behaves correctly.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySamePage) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a())"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -528,15 +527,60 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySynchronous) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
+  {
+    NavigationHandleObserver observer(
+        shell()->web_contents(),
+        embedded_test_server()->GetURL("a.com", "/foo"));
+    EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                              "window.history.pushState({}, '', 'foo');"));
 
-  NavigationHandleObserver observer(
-      shell()->web_contents(), embedded_test_server()->GetURL("a.com", "/bar"));
-  EXPECT_TRUE(ExecuteScript(root->child_at(0),
-                            "window.history.pushState({}, '', 'bar');"));
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_TRUE(observer.is_same_page());
+  }
+  {
+    NavigationHandleObserver observer(
+        shell()->web_contents(),
+        embedded_test_server()->GetURL("a.com", "/bar"));
+    EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                              "window.history.replaceState({}, '', 'bar');"));
 
-  EXPECT_TRUE(observer.has_committed());
-  EXPECT_FALSE(observer.is_error());
-  EXPECT_TRUE(observer.is_synchronous());
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_TRUE(observer.is_same_page());
+  }
+  {
+    NavigationHandleObserver observer(
+        shell()->web_contents(),
+        embedded_test_server()->GetURL("a.com", "/bar#frag"));
+    EXPECT_TRUE(
+        ExecuteScript(root->child_at(0), "window.location.replace('#frag');"));
+
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_TRUE(observer.is_same_page());
+  }
+
+  GURL about_blank_url(url::kAboutBlankURL);
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), about_blank_url);
+    EXPECT_TRUE(ExecuteScript(
+        root, "document.body.appendChild(document.createElement('iframe'));"));
+
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_FALSE(observer.is_same_page());
+    EXPECT_EQ(about_blank_url, observer.last_committed_url());
+  }
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), about_blank_url);
+    NavigateFrameToURL(root->child_at(0), about_blank_url);
+
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_FALSE(observer.is_same_page());
+    EXPECT_EQ(about_blank_url, observer.last_committed_url());
+  }
 }
 
 // Ensure that a NavigationThrottle can cancel the navigation at navigation
