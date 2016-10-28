@@ -44,8 +44,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       return self._last_returned_properties
 
   # DO NOT USE.
-  # The below method will be removed after there are no more callers of
-  # tryserver.maybe_apply_issue (skbug.com/5588).
+  # TODO(tandrii): refactor this into tryserver.maybe_apply_patch
   def apply_gerrit_ref(self, root, gerrit_no_reset=False,
                        gerrit_no_rebase_patch_ref=False, **kwargs):
     apply_gerrit_path = self.resource('apply_gerrit.py')
