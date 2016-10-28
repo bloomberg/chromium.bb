@@ -690,8 +690,8 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(
   return cb;
 }
 
-bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(
-    bool checkingContainingBlock) const {
+bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight()
+    const {
   // TODO(rego): Check if we can somehow reuse LayoutBlock::
   // availableLogicalHeightForPercentageComputation() (see crbug.com/635655).
   const LayoutBox* thisBox = isBox() ? toLayoutBox(this) : nullptr;
@@ -705,13 +705,9 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(
         LayoutUnit(-1))
       return false;
   }
-  if (thisBox && thisBox->isGridItem()) {
-    if (checkingContainingBlock && thisBox->hasOverrideLogicalContentHeight())
-      return false;
-    if (!checkingContainingBlock &&
-        thisBox->hasOverrideContainingBlockLogicalHeight())
-      return false;
-  }
+  if (thisBox && thisBox->isGridItem() &&
+      thisBox->hasOverrideContainingBlockLogicalHeight())
+    return false;
   if (logicalHeightLength.isAuto() &&
       !isOutOfFlowPositionedWithImplicitHeight(this))
     return true;
@@ -719,16 +715,10 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(
   if (document().inQuirksMode())
     return false;
 
-  // If the height of the containing block computes to 'auto', then it hasn't
-  // been 'specified explicitly'.
   if (cb)
-    return cb->hasAutoHeightOrContainingBlockWithAutoHeight(true);
-  return false;
-}
+    return !cb->hasDefiniteLogicalHeight();
 
-bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight()
-    const {
-  return hasAutoHeightOrContainingBlockWithAutoHeight(false);
+  return false;
 }
 
 LayoutSize LayoutBoxModelObject::relativePositionOffset() const {

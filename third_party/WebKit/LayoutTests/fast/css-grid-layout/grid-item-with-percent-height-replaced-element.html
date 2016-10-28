@@ -18,6 +18,10 @@
         height: 100%;
         display: block;
     }
+
+    .height100 {
+        height: 100%;
+    }
 </style>
 
 <script src="../../resources/testharness.js"></script>
@@ -67,6 +71,16 @@ as it's not stretched the grid item's height is indefinite, so the percentage ca
     <div class="firstRowFirstColumn">
         <img src="../css/resources/greenbox-100px.png"
             data-expected-width="100" data-expected-height="100">
+    </div>
+</div>
+
+<p>5) 100% height on the image (grid item's child) should be resolved against the height of the grid item,
+which also has a 100% height that is resolved against the height of the grid area (200px).</p>
+
+<div class="grid red">
+    <div class="height100" data-expected-width="200" data-expected-height="200">
+        <img src="../css/resources/greenbox-100px.png"
+             data-expected-width="200" data-expected-height="200">
     </div>
 </div>
 

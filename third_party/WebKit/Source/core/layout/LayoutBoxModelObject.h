@@ -511,9 +511,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return *m_rareData.get();
   }
 
-  bool hasAutoHeightOrContainingBlockWithAutoHeight(
-      bool checkingContainingBlock) const;
-
   // The PaintLayer associated with this object. |m_layer| can be nullptr
   // depending on the return value of layerTypeRequired().
   std::unique_ptr<PaintLayer> m_layer;
