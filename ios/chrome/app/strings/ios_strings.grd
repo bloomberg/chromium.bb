@@ -251,6 +251,18 @@ brand. [Length: 70em]">
         http://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/
       </message>
 
+      <!-- Browser Task Scheduler -->
+      <message name="IDS_IOS_FLAGS_BROWSER_TASK_SCHEDULER_NAME"
+               desc="Name of about:flag option to control the availability of the browser task scheduler."
+               translateable="false">
+        Browser Task Scheduler
+      </message>
+      <message name="IDS_IOS_FLAGS_BROWSER_TASK_SCHEDULER_DESCRIPTION"
+               desc="Description of about:flag option to control the availability of the browser task scheduler."
+               translateable="false">
+        Enables the browser task scheduler to dispatch tasks instead of the existing worker pools. The browser task scheduler will only be used if variation parameters are available.
+      </message>
+
     </messages>
   </release>
 </grit>
