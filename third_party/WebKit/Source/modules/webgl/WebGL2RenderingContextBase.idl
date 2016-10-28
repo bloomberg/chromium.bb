@@ -289,7 +289,7 @@ typedef unsigned long long GLuint64;
     void framebufferTextureLayer(GLenum target, GLenum attachment, WebGLTexture? texture, GLint level, GLint layer);
     [CallWith=ScriptState] any getInternalformatParameter(GLenum target, GLenum internalformat, GLenum pname);
     void invalidateFramebuffer(GLenum target, sequence<GLenum> attachments);
-    void invalidateSubFramebuffer (GLenum target, sequence<GLenum> attachments, GLint x, GLint y, GLsizei width, GLsizei height);
+    void invalidateSubFramebuffer(GLenum target, sequence<GLenum> attachments, GLint x, GLint y, GLsizei width, GLsizei height);
     void readBuffer(GLenum mode);
 
     /* Renderbuffer objects */
@@ -423,7 +423,7 @@ typedef unsigned long long GLuint64;
     WebGLTransformFeedback createTransformFeedback();
     void deleteTransformFeedback(WebGLTransformFeedback? feedback);
     GLboolean isTransformFeedback(WebGLTransformFeedback? feedback);
-    void bindTransformFeedback (GLenum target, WebGLTransformFeedback? feedback);
+    void bindTransformFeedback(GLenum target, WebGLTransformFeedback? feedback);
     void beginTransformFeedback(GLenum primitiveMode);
     void endTransformFeedback();
     void transformFeedbackVaryings(WebGLProgram? program, sequence<DOMString> varyings, GLenum bufferMode);
