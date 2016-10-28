@@ -156,8 +156,4 @@ LayoutTests/imported/wpt. HTTPS tests are enabled by default.
 
 Example run:
 
-./Tools/Scripts/run-webkit-tests \
-    --debug \
-    --enable-wptserve \
-    --no-new-test-results \
-    imported/wpt
+./Tools/Scripts/run-webkit-tests --enable-wptserve imported/wpt

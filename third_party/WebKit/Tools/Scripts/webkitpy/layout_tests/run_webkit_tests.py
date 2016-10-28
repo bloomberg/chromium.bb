@@ -174,10 +174,6 @@ def parse_args(args):
                 help=("Save generated results as new baselines into the *most-specific-platform* "
                       "directory, overwriting whatever's already there. Equivalent to "
                       "--reset-results --add-platform-exceptions")),
-            # TODO(ojan): Remove once bots stop using it.
-            optparse.make_option(
-                "--no-new-test-results",
-                help="This doesn't do anything. TODO(ojan): Remove once bots stop using it."),
             optparse.make_option(
                 "--new-test-results",
                 action="store_true",
