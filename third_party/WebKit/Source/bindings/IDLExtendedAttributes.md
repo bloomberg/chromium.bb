@@ -304,7 +304,7 @@ Standard: [HTMLConstructor](https://html.spec.whatwg.org/multipage/dom.html#html
 
 Summary: HTML Elements have special constructor behavior. Interface object of given interface with the `[HTMLConstructor]` attribute will have specific behavior when called.
 
-Usage: Must take no arguments, and must not appear on anything other than an interface. It much appear once on an interface, and the interface cannot be annotated with `[Constructor]` or `[NoInterfaceObject]` extended attributes. It must not be used on a callback interface.
+Usage: Must take no arguments, and must not appear on anything other than an interface. It must appear once on an interface, and the interface cannot be annotated with `[Constructor]` or `[NoInterfaceObject]` extended attributes. It must not be used on a callback interface.
 
 ### [NamedConstructor] _(i)_
 

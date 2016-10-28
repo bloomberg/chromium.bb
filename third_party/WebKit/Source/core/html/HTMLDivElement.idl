@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-div-element
-
+[HTMLConstructor]
 interface HTMLDivElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLDivElement-partial

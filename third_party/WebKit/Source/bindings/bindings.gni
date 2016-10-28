@@ -164,6 +164,7 @@ bindings_core_v8_files =
                     "core/v8/V8HiddenValue.cpp",
                     "core/v8/V8HiddenValue.h",
                     "core/v8/V8HTMLConstructor.cpp",
+                    "core/v8/V8HTMLConstructor.h",
                     "core/v8/V8IdleTaskRunner.h",
                     "core/v8/V8Initializer.cpp",
                     "core/v8/V8Initializer.h",

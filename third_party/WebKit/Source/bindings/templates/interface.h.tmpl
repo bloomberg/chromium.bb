@@ -95,8 +95,6 @@ public:
     {% endif %}
     {% if has_custom_constructor %}
     static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-    {% elif has_html_constructor %}
-    static void HTMLConstructor(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}
     {% for attribute in attributes %}
     {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}

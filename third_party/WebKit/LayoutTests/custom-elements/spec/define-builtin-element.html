@@ -24,7 +24,7 @@ test_with_window((w) => {
     }, `having valid custon element name element interface (${val}) ` +
        'for extends should throw a NotSupportedError')
   });
-}, 'Element interface for extends is not valid custom element name');
+}, 'Element interface for extends is not valid custom element name should throw error');
 
 test_with_window((w) => {
   class A extends w.HTMLButtonElement {}
@@ -43,12 +43,12 @@ test_with_window((w) => {
     }, `having element interface for extends (${val}) undefined in specs` +
        ' should throw a NotSupportedError');
   });
-}, 'Element interface for extends defined in specification');
+}, 'Element interface for extends not defined in specification should throw error');
 
 test_with_window((w) => {
-  class A extends w.HTMLButtonElement {}
-  w.customElements.define('defined-name', A, { extends: 'button' });
-  assert_equals(new A().localName, 'button',
+  class A extends w.HTMLDivElement {}
+  w.customElements.define('defined-name', A, { extends: 'div' });
+  assert_equals(new A().localName, 'div',
                 'localName should be element interface for extends');
   assert_not_equals(new A().localName, 'defined-name',
                     'localName should not be defined-name');

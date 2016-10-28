@@ -299,11 +299,12 @@ def interface_context(interface, interfaces):
             raise Exception('[Constructor] and [NoInterfaceObject] MUST NOT be'
                             ' specified with [HTMLConstructor]: '
                             '%s' % interface.name)
+        includes.add('bindings/core/v8/V8HTMLConstructor.h')
 
     # [NamedConstructor]
     named_constructor = named_constructor_context(interface)
 
-    if constructors or custom_constructors or has_html_constructor or named_constructor:
+    if constructors or custom_constructors or named_constructor:
         if interface.is_partial:
             raise Exception('[Constructor] and [NamedConstructor] MUST NOT be'
                             ' specified on partial interface definitions: '

@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-p-element
-
+[HTMLConstructor]
 interface HTMLParagraphElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLParagraphElement-partial

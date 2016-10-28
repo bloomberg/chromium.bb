@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptCustomElementDefinitionBuilder.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementDefinitionOptions.h"
@@ -119,15 +120,25 @@ void CustomElementRegistry::define(const AtomicString& name,
   if (!builder.checkConstructorNotRegistered())
     return;
 
+  AtomicString localName = name;
+
   // Step 7. customized built-in elements definition
   // element interface extends option checks
   if (RuntimeEnabledFeatures::customElementsBuiltinEnabled() &&
       options.hasExtends()) {
-    // If element interface is valid custom element name, throw exception
+    // 7.1. If element interface is valid custom element name, throw exception
+    const AtomicString& extends = AtomicString(options.extends());
     if (throwIfValidName(AtomicString(options.extends()), exceptionState))
       return;
-    // If element interface is undefined element, throw exception
-    // Set localname to extends
+    // 7.2. If element interface is undefined element, throw exception
+    if (htmlElementTypeForTag(extends) ==
+        HTMLElementType::kHTMLUnknownElement) {
+      exceptionState.throwDOMException(
+          NotSupportedError, "\"" + extends + "\" is an HTMLUnknownElement");
+      return;
+    }
+    // 7.3. Set localName to extends
+    localName = extends;
   }
 
   // TODO(dominicc): Add a test where the prototype getter destroys
@@ -162,7 +173,7 @@ void CustomElementRegistry::define(const AtomicString& name,
     // (ElementDefinitionIsRunning destructor does this.)
   }
 
-  CustomElementDescriptor descriptor(name, name);
+  CustomElementDescriptor descriptor(name, localName);
   CustomElementDefinition* definition = builder.build(descriptor);
   CHECK(!exceptionState.hadException());
   CHECK(definition->descriptor() == descriptor);
