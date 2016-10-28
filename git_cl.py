@@ -341,14 +341,15 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
 
 
 def _get_bucket_map(changelist, options, option_parser):
-  """Returns a dict mapping bucket names (or master names) to
-  builders and tests, for triggering try jobs.
+  """Returns a dict mapping bucket names to builders and tests,
+  for triggering try jobs.
   """
+  # If no bots are listed, we try to get a set of builders and tests based
+  # on GetPreferredTryMasters functions in PRESUBMIT.py files.
   if not options.bot:
     change = changelist.GetChange(
         changelist.GetCommonAncestorWithUpstream(), None)
 
-    # Get try masters from PRESUBMIT.py files.
     masters = presubmit_support.DoGetTryMasters(
         change=change,
         changed_files=change.LocalPaths(),
@@ -376,42 +377,22 @@ def _get_bucket_map(changelist, options, option_parser):
     if not options.bot:
       return {}
 
+  # If a bucket or master is passed, then we assume all bots are under
+  # that one master.
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
+  if options.master:
+    return {_prefix_master(options.master): {b: [] for b in options.bot}}
 
-  if not options.master:
-    bucket_map, error_message = _get_bucket_map_for_builders(options.bot)
-    if error_message:
-      option_parser.error(
-          'Tryserver master cannot be found because: %s\n'
-          'Please manually specify the tryserver master, e.g. '
-          '"-m tryserver.chromium.linux".' % error_message)
-    return bucket_map
-
-  builders_and_tests = {}
-
-  # TODO(machenbach): The old style command-line options don't support
-  # multiple try masters yet.
-  # TODO(qyearsley): If options.bot is always a list of strings, then
-  # "new_style" never applies, and so we should remove support for Specifying
-  # test filters completely.
-  old_style = filter(lambda x: isinstance(x, basestring), options.bot)
-  new_style = filter(lambda x: isinstance(x, tuple), options.bot)
-
-  for bot in old_style:
-    if ':' in bot:
-      option_parser.error('Specifying testfilter is no longer supported')
-    elif ',' in bot:
-      option_parser.error('Specify one bot per --bot flag')
-    else:
-      builders_and_tests.setdefault(bot, [])
-
-  for bot, tests in new_style:
-    builders_and_tests.setdefault(bot, []).extend(tests)
-
-  # Add the "master." prefix to the master name to obtain the bucket name.
-  bucket = _prefix_master(options.master)
-  return {bucket: builders_and_tests}
+  # If bots are listed but no master or bucket, then we need to find out
+  # the corresponding master for each bot.
+  bucket_map, error_message = _get_bucket_map_for_builders(options.bot)
+  if error_message:
+    option_parser.error(
+        'Tryserver master cannot be found because: %s\n'
+        'Please manually specify the tryserver master, e.g. '
+        '"-m tryserver.chromium.linux".' % error_message)
+  return bucket_map
 
 
 def _get_bucket_map_for_builders(builders):
@@ -429,7 +410,6 @@ def _get_bucket_map_for_builders(builders):
 
   bucket_map = {}
   for builder in builders:
-    builder = builder.split(':', 1)[0]
     masters = builders_map.get(builder, [])
     if not masters:
       return None, ('No matching master for builder %s.' % builder)
@@ -4870,8 +4850,9 @@ def CMDtry(parser, args):
 
   buckets = _get_bucket_map(cl, options, parser)
 
+  # If no bots are listed and we couldn't get a list based on PRESUBMIT files,
+  # then we default to triggering a CQ dry run (see http://crbug.com/625697).
   if not buckets:
-    # Default to triggering Dry Run (see http://crbug.com/625697).
     if options.verbose:
       print('git cl try with no bots now defaults to CQ Dry Run.')
     return cl.TriggerDryRun()
