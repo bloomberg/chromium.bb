@@ -13,6 +13,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "courgette/courgette.h"
@@ -79,6 +80,9 @@ typedef NoThrowBuffer<Instruction*> InstructionVector;
 //
 class AssemblyProgram {
  public:
+  using LabelHandler = base::Callback<void(Label*)>;
+  using LabelHandlerMap = std::map<OP, LabelHandler>;
+
   explicit AssemblyProgram(ExecutableType kind);
   ~AssemblyProgram();
 
@@ -142,22 +146,11 @@ class AssemblyProgram {
 
   std::unique_ptr<EncodedProgram> Encode() const;
 
-  // Accessor for instruction list.
-  const InstructionVector& instructions() const {
-    return instructions_;
-  }
-
-  // Returns the label if the instruction contains an absolute 32-bit address,
-  // otherwise returns NULL.
-  Label* InstructionAbs32Label(const Instruction* instruction) const;
-
-  // Returns the label if the instruction contains an absolute 64-bit address,
-  // otherwise returns NULL.
-  Label* InstructionAbs64Label(const Instruction* instruction) const;
-
-  // Returns the label if the instruction contains a rel32 offset,
-  // otherwise returns NULL.
-  Label* InstructionRel32Label(const Instruction* instruction) const;
+  // For each |instruction| in |instructions_|, looks up its opcode from
+  // |handler_map| for a handler. If a handler exists, invoke it by passing the
+  // |instruction|'s label. We assume that |handler_map| has correct keys, i.e.,
+  // opcodes for an instruction that have label.
+  void HandleInstructionLabels(const LabelHandlerMap& handler_map) const;
 
  private:
   using ScopedInstruction =

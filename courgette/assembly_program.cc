@@ -217,28 +217,15 @@ Label* AssemblyProgram::FindRel32Label(RVA rva) {
   return rel32_label_manager_.Find(rva);
 }
 
-Label* AssemblyProgram::InstructionAbs32Label(
-    const Instruction* instruction) const {
-  if (instruction->op() == ABS32)
-    return static_cast<const InstructionWithLabel*>(instruction)->label();
-  return NULL;
-}
-
-Label* AssemblyProgram::InstructionAbs64Label(
-    const Instruction* instruction) const {
-  if (instruction->op() == ABS64)
-    return static_cast<const InstructionWithLabel*>(instruction)->label();
-  return NULL;
-}
-
-Label* AssemblyProgram::InstructionRel32Label(
-    const Instruction* instruction) const {
-  if (instruction->op() == REL32 || instruction->op() == REL32ARM) {
-    Label* label =
-        static_cast<const InstructionWithLabel*>(instruction)->label();
-    return label;
+void AssemblyProgram::HandleInstructionLabels(
+    const AssemblyProgram::LabelHandlerMap& handler_map) const {
+  for (const Instruction* instruction : instructions_) {
+    LabelHandlerMap::const_iterator it = handler_map.find(instruction->op());
+    if (it != handler_map.end()) {
+      it->second.Run(
+          static_cast<const InstructionWithLabel*>(instruction)->label());
+    }
   }
-  return NULL;
 }
 
 CheckBool AssemblyProgram::Emit(ScopedInstruction instruction) {

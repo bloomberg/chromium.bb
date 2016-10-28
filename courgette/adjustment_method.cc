@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -592,17 +593,19 @@ class GraphAdjuster : public AdjustmentMethod {
   }
 
  private:
-
   void CollectTraces(const AssemblyProgram* program, Trace* abs32, Trace* rel32,
                      bool is_model) {
-    const InstructionVector& instructions = program->instructions();
-    for (size_t i = 0;  i < instructions.size();  ++i) {
-      Instruction* instruction = instructions[i];
-      if (Label* label = program->InstructionAbs32Label(instruction))
-        ReferenceLabel(abs32, label, is_model);
-      if (Label* label = program->InstructionRel32Label(instruction))
-        ReferenceLabel(rel32, label, is_model);
-    }
+    AssemblyProgram::LabelHandler abs32_handler =
+        base::Bind(&GraphAdjuster::ReferenceLabel, base::Unretained(this),
+                   abs32, is_model);
+    AssemblyProgram::LabelHandler rel32_handler =
+        base::Bind(&GraphAdjuster::ReferenceLabel, base::Unretained(this),
+                   rel32, is_model);
+
+    program->HandleInstructionLabels({{ABS32, abs32_handler},
+                                      {REL32, rel32_handler},
+                                      {REL32ARM, rel32_handler}});
+
     // TODO(sra): we could simply append all the labels in index order to
     // incorporate some costing for entropy (bigger deltas) that will be
     // introduced into the label address table by non-monotonic ordering.  This
@@ -634,7 +637,7 @@ class GraphAdjuster : public AdjustmentMethod {
     }
   }
 
-  void ReferenceLabel(Trace* trace, Label* label, bool is_model) {
+  void ReferenceLabel(Trace* trace, bool is_model, Label* label) {
     trace->push_back(
         MakeLabelInfo(label, is_model, static_cast<uint32_t>(trace->size())));
   }
