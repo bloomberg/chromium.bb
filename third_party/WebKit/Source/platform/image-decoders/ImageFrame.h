@@ -121,9 +121,7 @@ class PLATFORM_EXPORT ImageFrame final {
   // Allocates space for the pixel data.  Must be called before any pixels
   // are written.  Must only be called once.  Returns whether allocation
   // succeeded.
-  bool setSizeAndColorProfile(int newWidth,
-                              int newHeight,
-                              const ICCProfile& newIccProfile);
+  bool setSizeAndColorSpace(int newWidth, int newHeight, sk_sp<SkColorSpace>);
 
   bool hasAlpha() const;
   const IntRect& originalFrameRect() const { return m_originalFrameRect; }

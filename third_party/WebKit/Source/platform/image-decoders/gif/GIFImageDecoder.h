@@ -41,9 +41,7 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(GIFImageDecoder);
 
  public:
-  GIFImageDecoder(AlphaOption,
-                  GammaAndColorProfileOption,
-                  size_t maxDecodedBytes);
+  GIFImageDecoder(AlphaOption, ColorSpaceOption, size_t maxDecodedBytes);
   ~GIFImageDecoder() override;
 
   enum GIFParseQuery { GIFSizeQuery, GIFFrameCountQuery };

@@ -53,7 +53,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
       PassRefPtr<SharedBuffer> data,
       bool dataComplete,
       ImageDecoder::AlphaOption,
-      ImageDecoder::GammaAndColorProfileOption);
+      ImageDecoder::ColorSpaceOption);
 
   static std::unique_ptr<DeferredImageDecoder> createForTesting(
       std::unique_ptr<ImageDecoder>);
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   void setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
 
   bool isSizeAvailable();
-  bool hasColorProfile() const;
+  bool hasColorSpace() const;
   IntSize size() const;
   IntSize frameSizeAtIndex(size_t index) const;
   size_t frameCount();
@@ -105,7 +105,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   String m_filenameExtension;
   IntSize m_size;
   int m_repetitionCount;
-  bool m_hasColorProfile;
+  bool m_hasColorSpace;
   bool m_canYUVDecode;
   bool m_hasHotSpot;
   IntPoint m_hotSpot;

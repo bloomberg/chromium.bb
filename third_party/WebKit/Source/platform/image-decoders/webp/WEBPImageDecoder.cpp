@@ -139,7 +139,7 @@ void alphaBlendNonPremultiplied(blink::ImageFrame& src,
 namespace blink {
 
 WEBPImageDecoder::WEBPImageDecoder(AlphaOption alphaOption,
-                                   GammaAndColorProfileOption colorOptions,
+                                   ColorSpaceOption colorOptions,
                                    size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
       m_decoder(0),
@@ -247,7 +247,7 @@ bool WEBPImageDecoder::updateDemuxer() {
       m_formatFlags &= ~ICCP_FLAG;
     }
 
-    if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
+    if ((m_formatFlags & ICCP_FLAG) && !ignoresColorSpace())
       readColorProfile();
   }
 
@@ -267,8 +267,8 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex) {
   const size_t requiredPreviousFrameIndex = buffer.requiredPreviousFrameIndex();
   if (requiredPreviousFrameIndex == kNotFound) {
     // This frame doesn't rely on any previous data.
-    if (!buffer.setSizeAndColorProfile(size().width(), size().height(),
-                                       colorProfile()))
+    if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
+                                     colorSpace()))
       return setFailed();
     m_frameBackgroundHasAlpha =
         !buffer.originalFrameRect().contains(IntRect(IntPoint(), size()));
@@ -342,8 +342,7 @@ void WEBPImageDecoder::readColorProfile() {
       reinterpret_cast<const char*>(chunkIterator.chunk.bytes);
   size_t profileSize = chunkIterator.chunk.size;
 
-  setColorSpaceAndComputeTransform(profileData, profileSize,
-                                   false /* useSRGB */);
+  setColorSpaceAndComputeTransform(profileData, profileSize);
 
   WebPDemuxReleaseChunkIterator(&chunkIterator);
 }
@@ -522,8 +521,8 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
   ASSERT(buffer.getStatus() != ImageFrame::FrameComplete);
 
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
-    if (!buffer.setSizeAndColorProfile(size().width(), size().height(),
-                                       colorProfile()))
+    if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
+                                     colorSpace()))
       return setFailed();
     buffer.setStatus(ImageFrame::FramePartial);
     // The buffer is transparent outside the decoded area while the image is

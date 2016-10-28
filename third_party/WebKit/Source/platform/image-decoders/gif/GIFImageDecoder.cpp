@@ -33,7 +33,7 @@
 namespace blink {
 
 GIFImageDecoder::GIFImageDecoder(AlphaOption alphaOption,
-                                 GammaAndColorProfileOption colorOptions,
+                                 ColorSpaceOption colorOptions,
                                  size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
       m_repetitionCount(cAnimationLoopOnce) {}
@@ -369,8 +369,7 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex) {
   size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();
   if (requiredPreviousFrameIndex == kNotFound) {
     // This frame doesn't rely on any previous data.
-    if (!buffer->setSizeAndColorProfile(size().width(), size().height(),
-                                        ImageFrame::ICCProfile()))
+    if (!buffer->setSizeAndColorSpace(size().width(), size().height(), nullptr))
       return setFailed();
   } else {
     ImageFrame* prevBuffer = &m_frameBufferCache[requiredPreviousFrameIndex];

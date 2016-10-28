@@ -47,10 +47,9 @@ const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
 const char layoutTestResourcesDir[] = "LayoutTests/fast/images/resources";
 
 std::unique_ptr<ImageDecoder> createDecoder() {
-  return wrapUnique(
-      new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                          ImageDecoder::GammaAndColorProfileApplied,
-                          ImageDecoder::noDecodedImageByteLimit));
+  return wrapUnique(new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
+                                        ImageDecoder::ColorSpaceApplied,
+                                        ImageDecoder::noDecodedImageByteLimit));
 }
 
 void testRandomFrameDecode(const char* dir, const char* gifFile) {
@@ -543,13 +542,12 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
   RefPtr<SharedBuffer> partialData =
       SharedBuffer::create(fullData->data(), kTruncateSize);
 
-  std::unique_ptr<ImageDecoder> premulDecoder =
-      wrapUnique(new GIFImageDecoder(ImageDecoder::AlphaPremultiplied,
-                                     ImageDecoder::GammaAndColorProfileApplied,
-                                     ImageDecoder::noDecodedImageByteLimit));
+  std::unique_ptr<ImageDecoder> premulDecoder = wrapUnique(new GIFImageDecoder(
+      ImageDecoder::AlphaPremultiplied, ImageDecoder::ColorSpaceApplied,
+      ImageDecoder::noDecodedImageByteLimit));
   std::unique_ptr<ImageDecoder> unpremulDecoder =
       wrapUnique(new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                                     ImageDecoder::GammaAndColorProfileApplied,
+                                     ImageDecoder::ColorSpaceApplied,
                                      ImageDecoder::noDecodedImageByteLimit));
 
   // Partially decoded frame => the frame alpha type is unknown and should

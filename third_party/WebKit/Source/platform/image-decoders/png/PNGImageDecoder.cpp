@@ -156,7 +156,7 @@ class PNGImageReader final {
 };
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
-                                 GammaAndColorProfileOption colorOptions,
+                                 ColorSpaceOption colorOptions,
                                  size_t maxDecodedBytes,
                                  size_t offset)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
@@ -208,7 +208,7 @@ void PNGImageDecoder::headerAvailable() {
       colorType == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png);
 
-  if ((colorType & PNG_COLOR_MASK_COLOR) && !m_ignoreGammaAndColorProfile) {
+  if ((colorType & PNG_COLOR_MASK_COLOR) && !m_ignoreColorSpace) {
     // We only support color profiles for color PALETTE and RGB[A] PNG.
     // Supporting color profiles for gray-scale images is slightly tricky, at
     // least using the CoreGraphics ICC library, because we expand gray-scale
@@ -217,7 +217,8 @@ void PNGImageDecoder::headerAvailable() {
     // gray-scale image buffer and hand that to CoreGraphics.
 #ifdef PNG_iCCP_SUPPORTED
     if (png_get_valid(png, info, PNG_INFO_sRGB)) {
-      setColorSpaceAndComputeTransform(nullptr, 0, true /* useSRGB */);
+      setColorSpaceAndComputeTransform(
+          SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named));
     } else {
       char* profileName = nullptr;
       int compressionType = 0;
@@ -230,13 +231,13 @@ void PNGImageDecoder::headerAvailable() {
       if (png_get_iCCP(png, info, &profileName, &compressionType, &profile,
                        &profileLength)) {
         setColorSpaceAndComputeTransform(reinterpret_cast<char*>(profile),
-                                         profileLength, false /* useSRGB */);
+                                         profileLength);
       }
     }
 #endif  // PNG_iCCP_SUPPORTED
   }
 
-  if (!hasColorProfile()) {
+  if (!hasColorSpace()) {
     // TODO (msarett):
     // Applying the transfer function (gamma) should be handled by
     // SkColorSpaceXform.  Here we always convert to a transfer function that
@@ -249,7 +250,7 @@ void PNGImageDecoder::headerAvailable() {
     const double inverseGamma = 0.45455;
     const double defaultGamma = 2.2;
     double gamma;
-    if (!m_ignoreGammaAndColorProfile && png_get_gAMA(png, info, &gamma)) {
+    if (!m_ignoreColorSpace && png_get_gAMA(png, info, &gamma)) {
       const double maxGamma = 21474.83;
       if ((gamma <= 0.0) || (gamma > maxGamma)) {
         gamma = inverseGamma;
@@ -296,8 +297,8 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
   ImageFrame& buffer = m_frameBufferCache[0];
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
     png_structp png = m_reader->pngPtr();
-    if (!buffer.setSizeAndColorProfile(size().width(), size().height(),
-                                       colorProfile())) {
+    if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
+                                     colorSpace())) {
       longjmp(JMPBUF(png), 1);
       return;
     }

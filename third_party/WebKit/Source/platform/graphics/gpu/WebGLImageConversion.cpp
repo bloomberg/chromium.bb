@@ -2689,15 +2689,14 @@ WebGLImageConversion::ImageExtractor::ImageExtractor(
     Image* image,
     ImageHtmlDomSource imageHtmlDomSource,
     bool premultiplyAlpha,
-    bool ignoreGammaAndColorProfile) {
+    bool ignoreColorSpace) {
   m_image = image;
   m_imageHtmlDomSource = imageHtmlDomSource;
-  extractImage(premultiplyAlpha, ignoreGammaAndColorProfile);
+  extractImage(premultiplyAlpha, ignoreColorSpace);
 }
 
-void WebGLImageConversion::ImageExtractor::extractImage(
-    bool premultiplyAlpha,
-    bool ignoreGammaAndColorProfile) {
+void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha,
+                                                        bool ignoreColorSpace) {
   ASSERT(!m_imagePixelLocker);
 
   if (!m_image)
@@ -2710,15 +2709,13 @@ void WebGLImageConversion::ImageExtractor::extractImage(
   m_alphaOp = AlphaDoNothing;
   bool hasAlpha = skiaImage ? !skiaImage->isOpaque() : true;
 
-  if ((!skiaImage || ignoreGammaAndColorProfile ||
-       (hasAlpha && !premultiplyAlpha)) &&
+  if ((!skiaImage || ignoreColorSpace || (hasAlpha && !premultiplyAlpha)) &&
       m_image->data()) {
     // Attempt to get raw unpremultiplied image data.
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
         m_image->data(), true, ImageDecoder::AlphaNotPremultiplied,
-        ignoreGammaAndColorProfile
-            ? ImageDecoder::GammaAndColorProfileIgnored
-            : ImageDecoder::GammaAndColorProfileApplied));
+        ignoreColorSpace ? ImageDecoder::ColorSpaceIgnored
+                         : ImageDecoder::ColorSpaceApplied));
     if (!decoder || !decoder->frameCount())
       return;
     ImageFrame* frame = decoder->frameBufferAtIndex(0);

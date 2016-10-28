@@ -276,8 +276,8 @@ static PassRefPtr<StaticBitmapImage> cropImage(
     Image* image,
     const ParsedOptions& parsedOptions,
     AlphaDisposition imageFormat = PremultiplyAlpha,
-    ImageDecoder::GammaAndColorProfileOption colorSpaceOp =
-        ImageDecoder::GammaAndColorProfileApplied) {
+    ImageDecoder::ColorSpaceOption colorSpaceOp =
+        ImageDecoder::ColorSpaceApplied) {
   ASSERT(image);
   IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
   const IntRect srcRect = intersection(imgRect, parsedOptions.cropRect);
@@ -307,7 +307,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(
   if ((((!parsedOptions.premultiplyAlpha && !skiaImage->isOpaque()) ||
         !skiaImage) &&
        image->data() && imageFormat == PremultiplyAlpha) ||
-      colorSpaceOp == ImageDecoder::GammaAndColorProfileIgnored) {
+      colorSpaceOp == ImageDecoder::ColorSpaceIgnored) {
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
         image->data(), true,
         parsedOptions.premultiplyAlpha ? ImageDecoder::AlphaPremultiplied
@@ -388,12 +388,13 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image,
   if (dstBufferSizeHasOverflow(parsedOptions))
     return;
 
-  if (options.colorSpaceConversion() == "none")
+  if (options.colorSpaceConversion() == "none") {
     m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha,
-                        ImageDecoder::GammaAndColorProfileIgnored);
-  else
+                        ImageDecoder::ColorSpaceIgnored);
+  } else {
     m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha,
-                        ImageDecoder::GammaAndColorProfileApplied);
+                        ImageDecoder::ColorSpaceApplied);
+  }
   if (!m_image)
     return;
   // In the case where the source image is lazy-decoded, m_image may not be in

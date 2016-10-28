@@ -44,9 +44,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(ICOImageDecoder);
 
  public:
-  ICOImageDecoder(AlphaOption,
-                  GammaAndColorProfileOption,
-                  size_t maxDecodedBytes);
+  ICOImageDecoder(AlphaOption, ColorSpaceOption, size_t maxDecodedBytes);
   ~ICOImageDecoder() override;
 
   // ImageDecoder:
@@ -180,7 +178,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   IntSize m_frameSize;
 
   // Used to pass on to an internally created PNG decoder.
-  const GammaAndColorProfileOption m_gammaAndColorProfileOption;
+  const ColorSpaceOption m_colorSpaceOption;
 };
 
 }  // namespace blink

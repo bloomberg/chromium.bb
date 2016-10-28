@@ -120,9 +120,8 @@ bool BMPImageReader::decodeBMP(bool onlySize) {
   // Initialize the framebuffer if needed.
   ASSERT(m_buffer);  // Parent should set this before asking us to decode!
   if (m_buffer->getStatus() == ImageFrame::FrameEmpty) {
-    if (!m_buffer->setSizeAndColorProfile(m_parent->size().width(),
-                                          m_parent->size().height(),
-                                          ImageFrame::ICCProfile()))
+    if (!m_buffer->setSizeAndColorSpace(m_parent->size().width(),
+                                        m_parent->size().height(), nullptr))
       return m_parent->setFailed();  // Unable to allocate.
     m_buffer->setStatus(ImageFrame::FramePartial);
     // setSize() calls eraseARGB(), which resets the alpha flag, so we force

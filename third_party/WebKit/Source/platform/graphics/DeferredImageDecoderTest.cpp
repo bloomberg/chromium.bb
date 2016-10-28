@@ -330,7 +330,7 @@ TEST_F(DeferredImageDecoderTest, smallerFrameCount) {
 TEST_F(DeferredImageDecoderTest, frameOpacity) {
   std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(
       m_data, true, ImageDecoder::AlphaPremultiplied,
-      ImageDecoder::GammaAndColorProfileApplied);
+      ImageDecoder::ColorSpaceApplied);
 
   SkImageInfo pixInfo = SkImageInfo::MakeN32Premul(1, 1);
 

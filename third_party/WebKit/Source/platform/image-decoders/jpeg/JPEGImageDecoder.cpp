@@ -444,13 +444,12 @@ class JPEGImageReader final {
         m_decoder->setOrientation(readImageOrientation(info()));
 
         // Allow color management of the decoded RGBA pixels if possible.
-        if (!m_decoder->ignoresGammaAndColorProfile()) {
+        if (!m_decoder->ignoresColorSpace()) {
           JOCTET* profile = nullptr;
           unsigned profileLength = 0;
           if (read_icc_profile(info(), &profile, &profileLength)) {
             decoder()->setColorSpaceAndComputeTransform(
-                reinterpret_cast<char*>(profile), profileLength,
-                false /* useSRGB */);
+                reinterpret_cast<char*>(profile), profileLength);
             free(profile);
           }
           if (decoder()->colorTransform()) {
@@ -706,7 +705,7 @@ void term_source(j_decompress_ptr jd) {
 }
 
 JPEGImageDecoder::JPEGImageDecoder(AlphaOption alphaOption,
-                                   GammaAndColorProfileOption colorOptions,
+                                   ColorSpaceOption colorOptions,
                                    size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes) {}
 
@@ -929,8 +928,8 @@ bool JPEGImageDecoder::outputScanlines() {
     ASSERT(info->output_height ==
            static_cast<JDIMENSION>(m_decodedSize.height()));
 
-    if (!buffer.setSizeAndColorProfile(info->output_width, info->output_height,
-                                       colorProfile()))
+    if (!buffer.setSizeAndColorSpace(info->output_width, info->output_height,
+                                     colorSpace()))
       return setFailed();
 
     // The buffer is transparent outside the decoded area while the image is

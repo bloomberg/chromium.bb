@@ -135,7 +135,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     ImageExtractor(Image*,
                    ImageHtmlDomSource,
                    bool premultiplyAlpha,
-                   bool ignoreGammaAndColorProfile);
+                   bool ignoreColorSpace);
 
     const void* imagePixelData() {
       return m_imagePixelLocker ? m_imagePixelLocker->pixels() : nullptr;
@@ -152,7 +152,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     // Extracts the image and keeps track of its status, such as width, height,
     // Source Alignment, format, AlphaOp, etc. This needs to lock the resources
     // or relevant data if needed.
-    void extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
+    void extractImage(bool premultiplyAlpha, bool ignoreColorSpace);
 
     Image* m_image;
     Optional<ImagePixelLocker> m_imagePixelLocker;

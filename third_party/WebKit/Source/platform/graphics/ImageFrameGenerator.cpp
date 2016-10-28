@@ -174,7 +174,7 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data,
 
   std::unique_ptr<ImageDecoder> decoder =
       ImageDecoder::create(data, true, ImageDecoder::AlphaPremultiplied,
-                           ImageDecoder::GammaAndColorProfileApplied);
+                           ImageDecoder::ColorSpaceApplied);
   // getYUVComponentSizes was already called and was successful, so
   // ImageDecoder::create must succeed.
   ASSERT(decoder);
@@ -296,7 +296,7 @@ bool ImageFrameGenerator::decode(SegmentReader* data,
     if (!*decoder) {
       *decoder = ImageDecoder::create(data, allDataReceived,
                                       ImageDecoder::AlphaPremultiplied,
-                                      ImageDecoder::GammaAndColorProfileApplied)
+                                      ImageDecoder::ColorSpaceApplied)
                      .release();
       // The newly created decoder just grabbed the data.  No need to reset it.
       shouldCallSetData = false;
@@ -366,7 +366,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SegmentReader* data,
 
   std::unique_ptr<ImageDecoder> decoder =
       ImageDecoder::create(data, true, ImageDecoder::AlphaPremultiplied,
-                           ImageDecoder::GammaAndColorProfileApplied);
+                           ImageDecoder::ColorSpaceApplied);
   if (!decoder)
     return false;
 

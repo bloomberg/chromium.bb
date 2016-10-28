@@ -61,7 +61,7 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(
     PassRefPtr<SharedBuffer> passData,
     bool dataComplete,
     ImageDecoder::AlphaOption alphaOption,
-    ImageDecoder::GammaAndColorProfileOption colorOptions) {
+    ImageDecoder::ColorSpaceOption colorOptions) {
   RefPtr<SharedBuffer> data = passData;
 
   std::unique_ptr<ImageDecoder> actualDecoder =
@@ -90,7 +90,7 @@ DeferredImageDecoder::DeferredImageDecoder(
     : m_allDataReceived(false),
       m_actualDecoder(std::move(actualDecoder)),
       m_repetitionCount(cAnimationNone),
-      m_hasColorProfile(false),
+      m_hasColorSpace(false),
       m_canYUVDecode(false),
       m_hasHotSpot(false) {}
 
@@ -179,9 +179,8 @@ bool DeferredImageDecoder::isSizeAvailable() {
   return m_actualDecoder ? m_actualDecoder->isSizeAvailable() : true;
 }
 
-bool DeferredImageDecoder::hasColorProfile() const {
-  return m_actualDecoder ? m_actualDecoder->hasColorProfile()
-                         : m_hasColorProfile;
+bool DeferredImageDecoder::hasColorSpace() const {
+  return m_actualDecoder ? m_actualDecoder->hasColorSpace() : m_hasColorSpace;
 }
 
 IntSize DeferredImageDecoder::size() const {
@@ -267,7 +266,7 @@ void DeferredImageDecoder::activateLazyDecoding() {
   // future.)
   m_canYUVDecode = RuntimeEnabledFeatures::decodeToYUVEnabled() &&
                    (m_filenameExtension == "jpg");
-  m_hasColorProfile = m_actualDecoder->hasColorProfile();
+  m_hasColorSpace = m_actualDecoder->hasColorSpace();
 
   const bool isSingleFrame =
       m_actualDecoder->repetitionCount() == cAnimationNone ||

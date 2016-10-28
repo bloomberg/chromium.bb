@@ -56,9 +56,9 @@ bool ImageSource::setData(PassRefPtr<SharedBuffer> passData,
     return true;
   }
 
-  m_decoder = DeferredImageDecoder::create(
-      data, allDataReceived, ImageDecoder::AlphaPremultiplied,
-      ImageDecoder::GammaAndColorProfileApplied);
+  m_decoder = DeferredImageDecoder::create(data, allDataReceived,
+                                           ImageDecoder::AlphaPremultiplied,
+                                           ImageDecoder::ColorSpaceApplied);
 
   // Insufficient data is not a failure.
   return m_decoder || !ImageDecoder::hasSufficientDataToSniffImageType(*data);
@@ -73,7 +73,7 @@ bool ImageSource::isSizeAvailable() {
 }
 
 bool ImageSource::hasColorProfile() const {
-  return m_decoder && m_decoder->hasColorProfile();
+  return m_decoder && m_decoder->hasColorSpace();
 }
 
 IntSize ImageSource::size(

@@ -142,7 +142,7 @@ SkImageGenerator* DecodingImageGenerator::create(SkData* data) {
   // don't really matter.
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
       segmentReader, true, ImageDecoder::AlphaPremultiplied,
-      ImageDecoder::GammaAndColorProfileApplied);
+      ImageDecoder::ColorSpaceApplied);
   if (!decoder || !decoder->isSizeAvailable())
     return nullptr;
 

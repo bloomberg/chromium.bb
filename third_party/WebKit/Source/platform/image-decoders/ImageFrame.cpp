@@ -103,27 +103,24 @@ bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other) {
   return true;
 }
 
-bool ImageFrame::setSizeAndColorProfile(int newWidth,
-                                        int newHeight,
-                                        const ICCProfile& newIccProfile) {
+bool ImageFrame::setSizeAndColorSpace(int newWidth,
+                                      int newHeight,
+                                      sk_sp<SkColorSpace> colorSpace) {
   // setSizeAndColorProfile() should only be called once, it leaks memory
   // otherwise.
   ASSERT(!width() && !height());
 
-  sk_sp<SkColorSpace> colorSpace;
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    if (newIccProfile.isEmpty())
+    if (!colorSpace)
       colorSpace = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
-    else
-      colorSpace =
-          SkColorSpace::NewICC(newIccProfile.data(), newIccProfile.size());
-    DCHECK(colorSpace);
+  } else {
+    colorSpace = nullptr;
   }
 
   m_bitmap.setInfo(SkImageInfo::MakeN32(
       newWidth, newHeight,
       m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
-      colorSpace));
+      std::move(colorSpace)));
   if (!m_bitmap.tryAllocPixels(m_allocator, 0))
     return false;
 

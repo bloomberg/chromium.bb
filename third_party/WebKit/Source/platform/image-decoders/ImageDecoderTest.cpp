@@ -42,7 +42,7 @@ class TestImageDecoder : public ImageDecoder {
  public:
   TestImageDecoder()
       : ImageDecoder(AlphaNotPremultiplied,
-                     GammaAndColorProfileApplied,
+                     ColorSpaceApplied,
                      noDecodedImageByteLimit) {}
 
   String filenameExtension() const override { return ""; }

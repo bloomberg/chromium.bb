@@ -45,13 +45,13 @@ static const size_t sizeOfDirectory = 6;
 static const size_t sizeOfDirEntry = 16;
 
 ICOImageDecoder::ICOImageDecoder(AlphaOption alphaOption,
-                                 GammaAndColorProfileOption colorOptions,
+                                 ColorSpaceOption colorOptions,
                                  size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
       m_fastReader(nullptr),
       m_decodedOffset(0),
       m_dirEntriesCount(0),
-      m_gammaAndColorProfileOption(colorOptions) {}
+      m_colorSpaceOption(colorOptions) {}
 
 ICOImageDecoder::~ICOImageDecoder() {}
 
@@ -214,8 +214,8 @@ bool ICOImageDecoder::decodeAtIndex(size_t index) {
     AlphaOption alphaOption =
         m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied;
     m_pngDecoders[index] = wrapUnique(
-        new PNGImageDecoder(alphaOption, m_gammaAndColorProfileOption,
-                            m_maxDecodedBytes, dirEntry.m_imageOffset));
+        new PNGImageDecoder(alphaOption, m_colorSpaceOption, m_maxDecodedBytes,
+                            dirEntry.m_imageOffset));
     setDataForPNGDecoderAtIndex(index);
   }
   // Fail if the size the PNGImageDecoder calculated does not match the size

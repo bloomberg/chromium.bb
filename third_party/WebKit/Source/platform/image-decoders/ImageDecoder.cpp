@@ -71,7 +71,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(
     PassRefPtr<SegmentReader> passData,
     bool dataComplete,
     AlphaOption alphaOption,
-    GammaAndColorProfileOption colorOptions) {
+    ColorSpaceOption colorOptions) {
   RefPtr<SegmentReader> data = passData;
 
   // We need at least kLongestSignatureLength bytes to run the signature
@@ -359,14 +359,16 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
 }
 
 void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
-                                                    unsigned iccLength,
-                                                    bool useSRGB) {
-  // Sub-classes should not call this if they were instructed to ignore embedded
-  // color profiles.
-  DCHECK(!m_ignoreGammaAndColorProfile);
+                                                    unsigned iccLength) {
+  setColorSpaceAndComputeTransform(SkColorSpace::NewICC(iccData, iccLength));
+}
 
-  m_colorProfile.assign(iccData, iccLength);
-  m_hasColorProfile = true;
+void ImageDecoder::setColorSpaceAndComputeTransform(
+    sk_sp<SkColorSpace> srcSpace) {
+  DCHECK(!m_ignoreColorSpace);
+
+  m_srcSpace = srcSpace;
+  m_sourceToOutputDeviceColorTransform = nullptr;
 
   // With color correct rendering, we do not transform to the output color space
   // at decode time.  Instead, we tag the raw image pixels and pass the tagged
@@ -374,17 +376,7 @@ void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
     return;
 
-  m_sourceToOutputDeviceColorTransform = nullptr;
-
-  // Create the input profile.
-  sk_sp<SkColorSpace> srcSpace = nullptr;
-  if (useSRGB) {
-    srcSpace = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
-  } else {
-    srcSpace = SkColorSpace::NewICC(iccData, iccLength);
-  }
-
-  if (!srcSpace)
+  if (!m_srcSpace)
     return;
 
   // Take a lock around initializing and accessing the global device color

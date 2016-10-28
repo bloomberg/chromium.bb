@@ -47,9 +47,9 @@ namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder(
     ImageDecoder::AlphaOption alphaOption) {
-  return wrapUnique(new WEBPImageDecoder(
-      alphaOption, ImageDecoder::GammaAndColorProfileApplied,
-      ImageDecoder::noDecodedImageByteLimit));
+  return wrapUnique(
+      new WEBPImageDecoder(alphaOption, ImageDecoder::ColorSpaceApplied,
+                           ImageDecoder::noDecodedImageByteLimit));
 }
 
 std::unique_ptr<ImageDecoder> createDecoder() {
@@ -135,7 +135,7 @@ void testDecodeAfterReallocatingData(const char* webpFile) {
 
 void testByteByByteSizeAvailable(const char* webpFile,
                                  size_t frameOffset,
-                                 bool hasColorProfile,
+                                 bool hasColorSpace,
                                  int expectedRepetitionCount) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
   RefPtr<SharedBuffer> data = readFile(webpFile);
@@ -152,17 +152,14 @@ void testByteByByteSizeAvailable(const char* webpFile,
     if (length < frameOffset) {
       EXPECT_FALSE(decoder->isSizeAvailable());
       EXPECT_TRUE(decoder->size().isEmpty());
-      EXPECT_FALSE(decoder->hasColorProfile());
+      EXPECT_FALSE(decoder->hasColorSpace());
       EXPECT_EQ(0u, decoder->frameCount());
       EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
       EXPECT_FALSE(decoder->frameBufferAtIndex(0));
     } else {
       EXPECT_TRUE(decoder->isSizeAvailable());
       EXPECT_FALSE(decoder->size().isEmpty());
-      if (hasColorProfile)
-        EXPECT_TRUE(decoder->hasColorProfile());
-      else
-        EXPECT_FALSE(decoder->hasColorProfile());
+      EXPECT_EQ(decoder->hasColorSpace(), hasColorSpace);
       EXPECT_EQ(1u, decoder->frameCount());
       EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount());
     }
