@@ -430,8 +430,9 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
 
   // Create a WebRTC video frame.
   webrtc::VideoFrame decoded_image(
-      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame), timestamp, 0,
-      webrtc::kVideoRotation_0);
+      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+          frame, WebRtcVideoFrameAdapter::CopyTextureFrameCallback()),
+      timestamp, 0, webrtc::kVideoRotation_0);
 
   // Invoke decode callback. WebRTC expects no callback after Release.
   {

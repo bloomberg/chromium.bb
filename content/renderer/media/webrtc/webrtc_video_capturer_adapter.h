@@ -51,6 +51,10 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
                             cricket::VideoFormat* best_format) override;
   bool IsScreencast() const override;
 
+  // Helper class used for copying texture backed frames.
+  class TextureFrameCopier;
+  const scoped_refptr<TextureFrameCopier> texture_copier_;
+
   // |thread_checker_| is bound to the libjingle worker thread.
   base::ThreadChecker thread_checker_;
 

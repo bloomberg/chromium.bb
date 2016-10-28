@@ -4,9 +4,17 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/run_loop.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+static void ReleaseMailboxCB(const gpu::SyncToken& sync_token) {}
+}  // anonymous namespace
 
 namespace content {
 
@@ -44,14 +52,43 @@ class WebRtcVideoCapturerAdapterTest
     EXPECT_EQ(natural_height, output_frame_height_);
   }
 
+  void TestSourceTextureFrame() {
+    EXPECT_TRUE(message_loop_.IsCurrent());
+    gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
+        gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 5)};
+    scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::WrapNativeTextures(
+            media::PIXEL_FORMAT_ARGB, holders, base::Bind(&ReleaseMailboxCB),
+            gfx::Size(10, 10), gfx::Rect(10, 10), gfx::Size(10, 10),
+            base::TimeDelta());
+    adapter_.OnFrameCaptured(frame);
+    rtc::scoped_refptr<webrtc::VideoFrameBuffer> texture_frame =
+        output_frame_.video_frame_buffer();
+    EXPECT_EQ(media::VideoFrame::STORAGE_OPAQUE,
+              static_cast<media::VideoFrame*>(texture_frame->native_handle())
+                  ->storage_type());
+
+    rtc::scoped_refptr<webrtc::VideoFrameBuffer> copied_frame =
+        texture_frame->NativeToI420Buffer();
+    EXPECT_TRUE(copied_frame);
+    EXPECT_TRUE(copied_frame->DataY());
+    EXPECT_TRUE(copied_frame->DataU());
+    EXPECT_TRUE(copied_frame->DataV());
+  }
+
   // rtc::VideoSinkInterface
   void OnFrame(const cricket::VideoFrame& frame) override {
+    output_frame_ = frame;
     output_frame_width_ = frame.width();
     output_frame_height_ = frame.height();
   }
 
  private:
+  const base::MessageLoopForIO message_loop_;
+  const ChildProcess child_process_;
+
   WebRtcVideoCapturerAdapter adapter_;
+  cricket::VideoFrame output_frame_;
   int output_frame_width_;
   int output_frame_height_;
 };
@@ -66,6 +103,10 @@ TEST_F(WebRtcVideoCapturerAdapterTest, CropFrameTo320320) {
 
 TEST_F(WebRtcVideoCapturerAdapterTest, Scale720To640360) {
   TestSourceCropFrame(1280, 720, 1280, 720, 640, 360);
+}
+
+TEST_F(WebRtcVideoCapturerAdapterTest, SendsWithCopyTextureFrameCallback) {
+  TestSourceTextureFrame();
 }
 
 }  // namespace content

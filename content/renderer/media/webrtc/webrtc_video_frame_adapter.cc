@@ -6,12 +6,32 @@
 
 #include "base/logging.h"
 
+namespace {
+
+void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
+  // Paranoia checks.
+  DCHECK(frame);
+  DCHECK(media::VideoFrame::IsValidConfig(
+      frame->format(), frame->storage_type(), frame->coded_size(),
+      frame->visible_rect(), frame->natural_size()));
+  DCHECK(media::PIXEL_FORMAT_I420 == frame->format() ||
+         media::PIXEL_FORMAT_YV12 == frame->format());
+  CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kYPlane)));
+  CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kUPlane)));
+  CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kVPlane)));
+  CHECK(frame->stride(media::VideoFrame::kYPlane));
+  CHECK(frame->stride(media::VideoFrame::kUPlane));
+  CHECK(frame->stride(media::VideoFrame::kVPlane));
+}
+
+}  // anonymous namespace
+
 namespace content {
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
-    const scoped_refptr<media::VideoFrame>& frame)
-    : frame_(frame) {
-}
+    const scoped_refptr<media::VideoFrame>& frame,
+    const CopyTextureFrameCallback& copy_texture_callback)
+    : frame_(frame), copy_texture_callback_(copy_texture_callback) {}
 
 WebRtcVideoFrameAdapter::~WebRtcVideoFrameAdapter() {
 }
@@ -45,6 +65,8 @@ int WebRtcVideoFrameAdapter::StrideV() const {
 }
 
 void* WebRtcVideoFrameAdapter::native_handle() const {
+  // Keep native handle for shared memory backed frames, so that we can use
+  // the existing handle to share for hw encode.
   if (frame_->HasTextures() ||
       frame_->storage_type() == media::VideoFrame::STORAGE_SHMEM)
     return frame_.get();
@@ -53,17 +75,28 @@ void* WebRtcVideoFrameAdapter::native_handle() const {
 
 rtc::scoped_refptr<webrtc::VideoFrameBuffer>
 WebRtcVideoFrameAdapter::NativeToI420Buffer() {
-  CHECK(media::VideoFrame::IsValidConfig(
-      frame_->format(), frame_->storage_type(), frame_->coded_size(),
-      frame_->visible_rect(), frame_->natural_size()));
-  CHECK_EQ(media::PIXEL_FORMAT_I420, frame_->format());
-  CHECK(reinterpret_cast<void*>(frame_->data(media::VideoFrame::kYPlane)));
-  CHECK(reinterpret_cast<void*>(frame_->data(media::VideoFrame::kUPlane)));
-  CHECK(reinterpret_cast<void*>(frame_->data(media::VideoFrame::kVPlane)));
-  CHECK(frame_->stride(media::VideoFrame::kYPlane));
-  CHECK(frame_->stride(media::VideoFrame::kUPlane));
-  CHECK(frame_->stride(media::VideoFrame::kVPlane));
-  return this;
+  if (frame_->storage_type() == media::VideoFrame::STORAGE_SHMEM) {
+    IsValidFrame(frame_);
+    return this;
+  }
+
+  if (frame_->HasTextures()) {
+    if (copy_texture_callback_.is_null()) {
+      DLOG(ERROR) << "Texture backed frame cannot be copied.";
+      return nullptr;
+    }
+
+    scoped_refptr<media::VideoFrame> new_frame;
+    copy_texture_callback_.Run(frame_, &new_frame);
+    if (!new_frame)
+      return nullptr;
+    frame_ = new_frame;
+    IsValidFrame(frame_);
+    return this;
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace content
