@@ -245,6 +245,22 @@ test(function() {
     new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo'], 'total': buildItem({'value': '0.0'})}]});
 }, 'Non-negative total value in PaymentDetailsModifier should not throw.');
 
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['foo', 'foo']}], buildDetails(), {});
+}, 'Duplicate supported payment method identifiers should not throw.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}], buildDetails(), {});
+}, 'Duplicate supported payment method identifiers should not throw.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo', 'foo']}]});
+}, 'Duplicate supported payment method identifiers in modifiers should not throw.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}]});
+}, 'Duplicate supported payment method identifiers in modifiers should not throw.');
+
 promise_test(function(t) {
     return promise_rejects(t, null, new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails()).abort());
 }, 'abort() without show() should reject with error');
@@ -265,23 +281,11 @@ generate_tests(assert_throws, [
     ['Empty supported payment method identifiers should throw TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': []}], buildDetails())
     }],
-    ['Duplicate supported payment method identifiers should throw TypeError.', null, function() {
-        new PaymentRequest([{'supportedMethods': ['foo', 'foo']}], buildDetails(), {})
-    }],
-    ['Duplicate supported payment method identifiers should throw TypeError.', null, function() {
-        new PaymentRequest([{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}], buildDetails(), {})
-    }],
     ['Absence of total should throw TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'displayItems': [buildItem()]})
     }],
     ['Negative total value should throw a TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails('total', {'value': '-0.01'}))
-    }],
-    ['Duplicate supported payment method identifiers in modifiers should throw TypeError.', null, function() {
-        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo', 'foo']}]})
-    }],
-    ['Duplicate supported payment method identifiers in modifiers should throw TypeError.', null, function() {
-        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}]})
     }],
     ['Negative total value in PaymentDetailsModifier should throw a TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo'], 'total': buildItem({'value': '-0.01'})}]})

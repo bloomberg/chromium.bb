@@ -96,8 +96,6 @@ struct TypeConverter<PaymentDetailsModifierPtr, blink::PaymentDetailsModifier> {
 
     if (input.hasTotal())
       output->total = PaymentItem::From(input.total());
-    else
-      output->total = PaymentItem::New();
 
     if (input.hasAdditionalDisplayItems()) {
       for (size_t i = 0; i < input.additionalDisplayItems().size(); ++i) {
@@ -273,21 +271,11 @@ void validatePaymentDetailsModifiers(
     return;
   }
 
-  HashSet<String> uniqueMethods;
   for (const auto& modifier : modifiers) {
     if (modifier.supportedMethods().isEmpty()) {
       exceptionState.throwTypeError(
           "Must specify at least one payment method identifier");
       return;
-    }
-
-    for (const auto& method : modifier.supportedMethods()) {
-      if (uniqueMethods.contains(method)) {
-        exceptionState.throwTypeError(
-            "Duplicate payment method identifiers are not allowed");
-        return;
-      }
-      uniqueMethods.add(method);
     }
 
     if (modifier.hasTotal()) {
@@ -368,21 +356,11 @@ void validateAndConvertPaymentMethodData(
     return;
   }
 
-  HashSet<String> uniqueMethods;
   for (const auto& pmd : paymentMethodData) {
     if (pmd.supportedMethods().isEmpty()) {
       exceptionState.throwTypeError(
           "Must specify at least one payment method identifier");
       return;
-    }
-
-    for (const auto& method : pmd.supportedMethods()) {
-      if (uniqueMethods.contains(method)) {
-        exceptionState.throwTypeError(
-            "Duplicate payment method identifiers are not allowed");
-        return;
-      }
-      uniqueMethods.add(method);
     }
 
     String stringifiedData = "";

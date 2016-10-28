@@ -95,7 +95,7 @@ struct PaymentShippingOption {
 
 struct PaymentDetailsModifier {
   array<string> supported_methods;
-  PaymentItem total;
+  PaymentItem? total;
   array<PaymentItem> additional_display_items;
 };
 
