@@ -642,11 +642,13 @@ void FeatureInfo::InitializeFeatures() {
   // that compatibility. So if EXT_texture_format_BGRA8888 (but not
   // APPLE_texture_format_BGRA8888) is present on an underlying ES3 context, we
   // have to choose which one of BGRA vs texture storage we expose.
-  // When creating ES2 contexts, we prefer support BGRA to texture storage, so
-  // we disable texture storage if only EXT_texture_format_BGRA8888 is present.
+  // When creating ES2 contexts, we prefer support BGRA to texture storage, in
+  // order to use BGRA as platform color in the compositor, so we disable
+  // texture storage if only EXT_texture_format_BGRA8888 is present.
   // If neither is present, we expose texture storage.
   // When creating ES3 contexts, we do need to expose texture storage, so we
   // disable BGRA if we have to.
+  // When WebGL contexts, BRGA is not needed, because WebGL doesn't expose it.
   bool has_apple_bgra = extensions.Contains("GL_APPLE_texture_format_BGRA8888");
   bool has_ext_bgra = extensions.Contains("GL_EXT_texture_format_BGRA8888");
   bool enable_texture_format_bgra8888 =
@@ -667,10 +669,10 @@ void FeatureInfo::InitializeFeatures() {
       enable_texture_format_bgra8888 && enable_texture_storage) {
     switch (context_type_) {
       case CONTEXT_TYPE_OPENGLES2:
-      case CONTEXT_TYPE_WEBGL1:
         enable_texture_storage = false;
         break;
       case CONTEXT_TYPE_OPENGLES3:
+      case CONTEXT_TYPE_WEBGL1:
       case CONTEXT_TYPE_WEBGL2:
         enable_texture_format_bgra8888 = false;
         break;
