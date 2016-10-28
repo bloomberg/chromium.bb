@@ -255,6 +255,10 @@ class RequestCoordinatorTest
     waiter_.Signal();
   }
 
+  net::NetworkChangeNotifier::ConnectionType GetConnectionType() {
+    return coordinator()->GetConnectionType();
+  }
+
   // Callback for Add requests.
   void AddRequestDone(RequestQueue::AddRequestResult result,
                       const SavePageRequest& request);
@@ -505,6 +509,10 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
   SetDeviceConditionsForTest(device_conditions);
+  // Set up the fake network conditions for the NetworkConnectionNotifier.
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  // Set up the fake network conditions for the network quality estimator.
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
   EnableOfflinerCallback(true);
@@ -1090,8 +1098,10 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForImmediateProcessing) {
   // If low end device, pretend it is not so that immediate start happens.
   SetIsLowEndDeviceForTest(false);
 
-  // Set good network connection so that adding request will trigger
-  // immediate processing.
+  // Set up the fake network conditions for the NetworkConnectionNotifier.
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  // Set up the fake network conditions for the network quality estimator.
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
 
@@ -1263,6 +1273,10 @@ TEST_F(RequestCoordinatorTest, RemoveRequest) {
 
 TEST_F(RequestCoordinatorTest,
        SavePageStartsProcessingWhenConnectedAndNotLowEndDevice) {
+  // Set up the fake network conditions for the NetworkConnectionNotifier.
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  // Set up the fake network conditions for the network quality estimator.
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
   EXPECT_NE(
@@ -1328,6 +1342,8 @@ TEST_F(RequestCoordinatorTest,
   PumpLoop();
 
   // Now simulate reasonable connection.
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
 

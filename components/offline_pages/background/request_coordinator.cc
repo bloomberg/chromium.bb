@@ -211,6 +211,7 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
   if (offliner_ && is_busy_) {
     DCHECK(active_request_.get());
     offliner_->Cancel();
+
     AbortRequestAttempt(active_request_.get());
   }
 
@@ -487,22 +488,23 @@ RequestCoordinator::TryImmediateStart() {
 
   // Make sure we are not on svelte device to start immediately.
   if (is_low_end_device_) {
+    DVLOG(2) << "low end device, returning";
     // Let the scheduler know we are done processing and failed due to svelte.
     immediate_schedule_callback_.Run(false);
     return OfflinerImmediateStartStatus::NOT_STARTED_ON_SVELTE;
   }
 
-  // Make sure we have reasonable network quality (or at least a connection).
   if (network_quality_estimator_) {
     // TODO(dougarnett): Add UMA for quality type experienced.
     net::EffectiveConnectionType quality =
         network_quality_estimator_->GetEffectiveConnectionType();
-    if (quality < net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G)
-      return OfflinerImmediateStartStatus::WEAK_CONNECTION;
-  } else if (GetConnectionType() ==
-             net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
-    return OfflinerImmediateStartStatus::NO_CONNECTION;
+    VLOG(2) << "TryImmediateStart:  Quality estimate "
+        << static_cast<int>(quality);
   }
+
+  if (GetConnectionType() ==
+             net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE)
+    return OfflinerImmediateStartStatus::NO_CONNECTION;
 
   // Start processing with manufactured conservative battery conditions
   // (i.e., assume no battery).
@@ -537,6 +539,7 @@ void RequestCoordinator::TryNextRequest() {
     // Let the scheduler know we are done processing.
     // TODO: Make sure the scheduler callback is valid before running it.
     scheduler_callback_.Run(true);
+    DVLOG(2) << " out of time, giving up. " << __func__;
 
     return;
   }
@@ -553,6 +556,7 @@ void RequestCoordinator::TryNextRequest() {
 
 // Called by the request picker when a request has been picked.
 void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
+  DVLOG(2) << request.url() << " " << __func__;
   is_starting_ = false;
 
   // Make sure we were not stopped while picking.
@@ -564,6 +568,7 @@ void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
 
 void RequestCoordinator::RequestNotPicked(
     bool non_user_requested_tasks_remaining) {
+  DVLOG(2) << __func__;
   is_starting_ = false;
 
   // Clear the outstanding "safety" task in the scheduler.

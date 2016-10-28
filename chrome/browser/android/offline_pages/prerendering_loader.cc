@@ -15,6 +15,12 @@
 #include "net/base/network_change_notifier.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace {
+long kOfflinePageDclDelayMs = 25000;
+long kOfflinePageOnloadDelayMs = 2000;
+}  // namespace
+
+
 namespace offline_pages {
 
 
@@ -82,7 +88,9 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
 
   DCHECK(adapter_->IsActive());
   snapshot_controller_.reset(
-      new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this));
+      new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this,
+                             kOfflinePageDclDelayMs,
+                             kOfflinePageOnloadDelayMs));
   callback_ = callback;
   session_contents_.swap(new_web_contents);
   state_ = State::LOADING;
