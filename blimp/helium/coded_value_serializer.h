@@ -43,6 +43,11 @@ class BLIMP_HELIUM_EXPORT CodedValueSerializer {
                         google::protobuf::io::CodedOutputStream* output_stream);
   static bool Deserialize(google::protobuf::io::CodedInputStream* input_stream,
                           VersionVector* value);
+
+  static void Serialize(const uint64_t& value,
+                        google::protobuf::io::CodedOutputStream* output_stream);
+  static bool Deserialize(google::protobuf::io::CodedInputStream* input_stream,
+                          uint64_t* value);
 };
 
 }  // namespace helium

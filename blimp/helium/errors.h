@@ -11,4 +11,3 @@ HELIUM_ERROR(DISCONNECTED, 1)
 
 // The remote end provided data which is not compliant with the protocol.
 HELIUM_ERROR(PROTOCOL_ERROR, 2)
-

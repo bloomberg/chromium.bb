@@ -79,5 +79,20 @@ bool CodedValueSerializer::Deserialize(
   return true;
 }
 
+// -----------------------------------
+// uint64_t serialization methods
+
+void CodedValueSerializer::Serialize(
+    const uint64_t& value,
+    google::protobuf::io::CodedOutputStream* output_stream) {
+  output_stream->WriteVarint64(value);
+}
+
+bool CodedValueSerializer::Deserialize(
+    google::protobuf::io::CodedInputStream* input_stream,
+    uint64_t* value) {
+  return input_stream->ReadVarint64(value);
+}
+
 }  // namespace helium
 }  // namespace blimp
