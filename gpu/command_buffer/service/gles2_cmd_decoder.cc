@@ -13422,7 +13422,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
 
 error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
                                                 const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
 
   const char* func_name = "glTexImage3D";
@@ -14264,7 +14264,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
 error::Error GLES2DecoderImpl::HandleTexSubImage3D(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
 
   const char* func_name = "glTexSubImage3D";
@@ -14480,7 +14480,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(
 error::Error GLES2DecoderImpl::HandleGetUniformuiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
 
   const volatile gles2::cmds::GetUniformuiv& c =
@@ -14657,7 +14657,7 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
 error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetActiveUniformBlockiv& c =
       *static_cast<const volatile gles2::cmds::GetActiveUniformBlockiv*>(
@@ -14678,7 +14678,11 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockiv(
         "glGetActiveActiveUniformBlockiv", "program not linked");
     return error::kNoError;
   }
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetActiveUniformBlockiv");
+  if (index >= program->uniform_block_size_info().size()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetActiveUniformBlockiv",
+                       "uniformBlockIndex >= active uniform blocks");
+    return error::kNoError;
+  }
   GLsizei num_values = 1;
   if (pname == GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES) {
     GLint num = 0;
@@ -14704,19 +14708,14 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockiv(
     return error::kInvalidArguments;
   }
   glGetActiveUniformBlockiv(service_id, index, pname, params);
-  GLenum error = glGetError();
-  if (error == GL_NO_ERROR) {
-    result->SetNumResults(num_values);
-  } else {
-    LOCAL_SET_GL_ERROR(error, "GetActiveUniformBlockiv", "");
-  }
+  result->SetNumResults(num_values);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockName(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetActiveUniformBlockName& c =
       *static_cast<const volatile gles2::cmds::GetActiveUniformBlockName*>(
@@ -14747,6 +14746,11 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockName(
         "glGetActiveActiveUniformBlockName", "program not linked");
     return error::kNoError;
   }
+  if (index >= program->uniform_block_size_info().size()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetActiveUniformBlockName",
+                       "uniformBlockIndex >= active uniform blocks");
+    return error::kNoError;
+  }
   GLint max_length = 0;
   glGetProgramiv(
       service_id, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &max_length);
@@ -14771,7 +14775,7 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockName(
 error::Error GLES2DecoderImpl::HandleGetActiveUniformsiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetActiveUniformsiv& c =
       *static_cast<const volatile gles2::cmds::GetActiveUniformsiv*>(cmd_data);
@@ -14803,6 +14807,15 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformsiv(
   if (!program) {
     return error::kNoError;
   }
+  GLint activeUniforms = 0;
+  program->GetProgramiv(GL_ACTIVE_UNIFORMS, &activeUniforms);
+  for (int i = 0; i < count; i++) {
+    if (indices[i] >= static_cast<GLuint>(activeUniforms)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+          "glGetActiveUniformsiv", "index >= active uniforms");
+      return error::kNoError;
+    }
+  }
   GLuint service_id = program->service_id();
   GLint link_status = GL_FALSE;
   glGetProgramiv(service_id, GL_LINK_STATUS, &link_status);
@@ -14811,14 +14824,8 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformsiv(
         "glGetActiveUniformsiv", "program not linked");
     return error::kNoError;
   }
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetActiveUniformsiv");
   glGetActiveUniformsiv(service_id, count, indices, pname, params);
-  GLenum error = glGetError();
-  if (error == GL_NO_ERROR) {
-    result->SetNumResults(count);
-  } else {
-    LOCAL_SET_GL_ERROR(error, "GetActiveUniformsiv", "");
-  }
+  result->SetNumResults(count);
   return error::kNoError;
 }
 

@@ -889,10 +889,6 @@ TEST_P(GLES3DecoderWithShaderTest, GetActiveUniformBlockivSucceeds) {
              kPname[ii],
              shared_memory_id_,
              shared_memory_offset_);
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
     EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
         .WillOnce(SetArgPointee<2>(GL_TRUE))
         .RetiresOnSaturation();
@@ -930,8 +926,6 @@ TEST_P(GLES3DecoderWithShaderTest,
            shared_memory_id_,
            shared_memory_offset_);
   EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
@@ -984,9 +978,6 @@ TEST_P(GLES3DecoderWithShaderTest,
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_TRUE))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -1011,10 +1002,6 @@ TEST_P(GLES3DecoderWithShaderTest,
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_TRUE))
       .WillOnce(SetArgPointee<2>(GL_TRUE))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   cmd.Init(client_program_id_,
            0,
@@ -1298,10 +1285,6 @@ TEST_P(GLES3DecoderWithShaderTest, GetActiveUniformsivSucceeds) {
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_TRUE))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
   result->size = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(kCount, static_cast<size_t>(result->GetNumResults()));
@@ -1346,8 +1329,7 @@ TEST_P(GLES3DecoderWithShaderTest, GetActiveUniformsivBadProgramFails) {
 
 TEST_P(GLES3DecoderWithShaderTest, GetActiveUniformsivBadParamsFails) {
   const uint32_t kBucketId = 123;
-  const GLuint kIndices[] = { 1, 2 };
-  const GLint kResults[] = { 1976, 321 };
+  const GLuint kIndices[] = { 1, 100 };
   const size_t kCount = arraysize(kIndices);
   SetBucketData(kBucketId, kIndices, sizeof(GLuint) * kCount);
   GetActiveUniformsiv::Result* result =
@@ -1358,18 +1340,6 @@ TEST_P(GLES3DecoderWithShaderTest, GetActiveUniformsivBadParamsFails) {
            GL_UNIFORM_TYPE,
            kSharedMemoryId,
            kSharedMemoryOffset);
-  EXPECT_CALL(*gl_,
-              GetActiveUniformsiv(
-                  kServiceProgramId, kCount, _, GL_UNIFORM_TYPE, _))
-      .WillOnce(SetArrayArgument<4>(kResults, kResults + kCount))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
-      .WillOnce(SetArgPointee<2>(GL_TRUE))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_INVALID_VALUE))
-      .RetiresOnSaturation();
   result->size = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, result->GetNumResults());
