@@ -304,7 +304,7 @@ TEST(SecurityStateModelTest, PrivateUserDataNotSet) {
 }
 
 // Tests that SSL.MarkHttpAsStatus histogram is updated when security state is
-// computed for a page containing a password field on HTTP.
+// computed for a page.
 TEST(SecurityStateModelTest, MarkHttpAsStatusHistogram) {
   const char* kHistogramName = "SSL.MarkHttpAsStatus";
   base::HistogramTester histograms;
@@ -314,11 +314,19 @@ TEST(SecurityStateModelTest, MarkHttpAsStatusHistogram) {
   client.UseHttpUrl();
   SecurityStateModel model;
   model.SetClient(&client);
+
+  // Ensure histogram recorded correctly when a non-secure password input is
+  // found on the page.
   client.set_displayed_password_field_on_http(true);
   SecurityStateModel::SecurityInfo security_info;
   histograms.ExpectTotalCount(kHistogramName, 0);
   model.GetSecurityInfo(&security_info);
   histograms.ExpectUniqueSample(kHistogramName, 2 /* HTTP_SHOW_WARNING */, 1);
+
+  // Ensure histogram recorded correctly even without a password input.
+  client.set_displayed_password_field_on_http(false);
+  model.GetSecurityInfo(&security_info);
+  histograms.ExpectUniqueSample(kHistogramName, 2 /* HTTP_SHOW_WARNING */, 2);
 }
 
 }  // namespace

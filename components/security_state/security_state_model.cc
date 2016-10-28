@@ -46,11 +46,10 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
       switches::kMarkHttpWithPasswordsOrCcWithChip) {
     if (displayed_sensitive_input_on_http) {
       *level = SecurityStateModel::HTTP_SHOW_WARNING;
-      *histogram_status = HTTP_SHOW_WARNING;
     } else {
       *level = SecurityStateModel::NONE;
-      *histogram_status = NEUTRAL;
     }
+    *histogram_status = HTTP_SHOW_WARNING;
     return true;
   }
 
