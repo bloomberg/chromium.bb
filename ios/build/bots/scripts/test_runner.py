@@ -397,7 +397,8 @@ class SimulatorTestRunner(TestRunner):
           # The simulator's name varies by Xcode version.
           'iPhone Simulator', # Xcode 5
           'iOS Simulator', # Xcode 6
-          'Simulator', # Xcode 7
+          'Simulator', # Xcode 7+
+          'simctl', # https://crbug.com/637429
       ])
     except subprocess.CalledProcessError as e:
       if e.returncode != 1:
