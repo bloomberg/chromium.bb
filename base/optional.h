@@ -120,7 +120,7 @@ class Optional {
  public:
   using value_type = T;
 
-  constexpr Optional() = default;
+  constexpr Optional() {}
 
   constexpr Optional(base::nullopt_t) {}
 
