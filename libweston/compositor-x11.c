@@ -917,6 +917,7 @@ x11_output_enable(struct weston_output *base)
 			weston_log("Failed to create pixman renderer for output\n");
 			x11_output_deinit_shm(b, output);
 			goto err;
+		output->base.repaint = x11_output_repaint_shm;
 		}
 	} else {
 		/* eglCreatePlatformWindowSurfaceEXT takes a Window*
@@ -932,7 +933,15 @@ x11_output_enable(struct weston_output *base)
 					0);
 		if (ret < 0)
 			goto err;
+
+		output->base.repaint = x11_output_repaint_gl;
 	}
+
+	output->base.start_repaint_loop = x11_output_start_repaint_loop;
+	output->base.assign_planes = NULL;
+	output->base.set_backlight = NULL;
+	output->base.set_dpms = NULL;
+	output->base.switch_mode = NULL;
 
 	loop = wl_display_get_event_loop(b->compositor->wl_display);
 	output->finish_frame_timer =
@@ -998,17 +1007,6 @@ x11_output_set_size(struct weston_output *base, int width, int height)
 		b->screen->width_in_pixels;
 	output->base.mm_height = height * b->screen->height_in_millimeters /
 		b->screen->height_in_pixels;
-
-	if (b->use_pixman)
-		output->base.repaint = x11_output_repaint_shm;
-	else
-		output->base.repaint = x11_output_repaint_gl;
-
-	output->base.start_repaint_loop = x11_output_start_repaint_loop;
-	output->base.assign_planes = NULL;
-	output->base.set_backlight = NULL;
-	output->base.set_dpms = NULL;
-	output->base.switch_mode = NULL;
 
 	return 0;
 }
