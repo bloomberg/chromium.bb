@@ -164,7 +164,9 @@ void RecentTabHelper::DidFinishNavigation(
 
   // Check for conditions that would cause us not to snapshot.
   bool can_save = !navigation_handle->IsErrorPage() &&
-                  OfflinePageModel::CanSaveURL(snapshot_url_);
+                  OfflinePageModel::CanSaveURL(snapshot_url_) &&
+                  OfflinePageUtils::GetOfflinePageFromWebContents(
+                      web_contents()) == nullptr;
 
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
 
