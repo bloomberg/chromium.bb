@@ -66,6 +66,7 @@ include_rules = [
   "+components/sync",
   "+components/sync_sessions",
   "+components/sync_preferences",
+  "+components/task_scheduler_util",
   "+components/translate/core",
   "+components/translate/ios",
   "+components/undo",

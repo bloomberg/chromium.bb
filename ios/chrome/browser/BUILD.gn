@@ -148,6 +148,7 @@ source_set("browser_impl") {
     "//components/physical_web/data_source",
     "//components/prefs",
     "//components/rappor",
+    "//components/task_scheduler_util",
     "//components/translate/core/browser",
     "//components/update_client",
     "//components/variations",

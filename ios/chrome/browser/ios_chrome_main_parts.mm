@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/switches.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/time/default_tick_clock.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -24,6 +26,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
+#include "components/task_scheduler_util/initialization_util.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -54,6 +57,43 @@
 #include "components/rlz/rlz_tracker.h"                        // nogncheck
 #include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"  // nogncheck
 #endif
+
+namespace {
+
+void MaybeInitializeTaskScheduler() {
+  static constexpr char kFieldTrialName[] = "BrowserScheduler";
+  std::map<std::string, std::string> variation_params;
+  bool used_default_config = false;
+  if (!variations::GetVariationParams(kFieldTrialName, &variation_params)) {
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserTaskScheduler)) {
+      return;
+    }
+
+    // TODO(robliao): Remove below once iOS uses fieldtrial_testing_config.json.
+    // Synchronize the below from fieldtrial_testing_config.json.
+    DCHECK(variation_params.empty());
+    variation_params["Background"] = "3;8;0.1;0;30000";
+    variation_params["BackgroundFileIO"] = "3;8;0.1;0;30000";
+    variation_params["Foreground"] = "8;32;0.3;0;30000";
+    variation_params["ForegroundFileIO"] = "8;32;0.3;0;30000";
+    used_default_config = true;
+  }
+
+  if (!task_scheduler_util::InitializeDefaultTaskScheduler(variation_params))
+    return;
+
+  // TODO(gab): Remove this when http://crbug.com/622400 concludes.
+  const auto sequenced_worker_pool_param =
+      variation_params.find("RedirectSequencedWorkerPools");
+  if (used_default_config ||
+      (sequenced_worker_pool_param != variation_params.end() &&
+       sequenced_worker_pool_param->second == "true")) {
+    base::SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
+  }
+}
+
+}  // namespace
 
 IOSChromeMainParts::IOSChromeMainParts(
     const base::CommandLine& parsed_command_line)
@@ -110,10 +150,28 @@ void IOSChromeMainParts::PreCreateThreads() {
       base::MakeUnique<base::DefaultTickClock>(),
       base::Bind(&metrics::IOSTrackingSynchronizerDelegate::Create));
 
-  // Now the command line has been mutated based on about:flags, we can setup
-  // metrics and initialize field trials that are needed by IOSChromeIOThread's
-  // initialization which happens in ApplicationContext:PreCreateThreads.
+  // IMPORTANT
+  // Do not add anything below this line until you've verified your new code
+  // does not interfere with the critical initialization order below. Some of
+  // the calls below end up implicitly creating threads and as such new calls
+  // typically either belong before them or in a later startup phase.
+
+  // Now that the command line has been mutated based on about:flags, we can
+  // initialize field trials and setup metrics. The field trials are needed by
+  // IOThread's initialization in ApplicationContext's PreCreateThreads.
   SetupFieldTrials();
+
+  // Task Scheduler initialization needs to be here for the following reasons:
+  //   * After |SetupFieldTrials()|: Initialization uses variations.
+  //   * Before |SetupMetrics()|: |SetupMetrics()| uses the blocking pool. The
+  //         Task Scheduler must do any necessary redirection before then.
+  //   * Near the end of |PreCreateThreads()|: The TaskScheduler needs to be
+  //         created before any other threads are (by contract) but it creates
+  //         threads itself so instantiating it earlier is also incorrect.
+  // To maintain scoping symmetry, if this line is moved, the corresponding
+  // shutdown call may also need to be moved.
+  MaybeInitializeTaskScheduler();
+
   SetupMetrics();
 
   // Initialize FieldTrialSynchronizer system.
@@ -187,6 +245,13 @@ void IOSChromeMainParts::PostMainMessageLoopRun() {
 
 void IOSChromeMainParts::PostDestroyThreads() {
   application_context_->PostDestroyThreads();
+
+  // The TaskScheduler was initialized before invoking
+  // |application_context_->PreCreateThreads()|. To maintain scoping symmetry,
+  // perform the shutdown after |application_context_->PostDestroyThreads()|.
+  base::TaskScheduler* task_scheduler = base::TaskScheduler::GetInstance();
+  if (task_scheduler)
+    task_scheduler->Shutdown();
 }
 
 // This will be called after the command-line has been mutated by about:flags
