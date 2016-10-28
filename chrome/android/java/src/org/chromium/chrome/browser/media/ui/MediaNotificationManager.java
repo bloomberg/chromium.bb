@@ -417,9 +417,7 @@ public class MediaNotificationManager {
     }
 
     private static boolean isRunningN() {
-        // TODO(zqzhang): Use Build.VERSION_CODES.N when Android SDK is rolled to level 24.
-        // See https://crbug.com/645059
-        return Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
     private final Context mContext;
