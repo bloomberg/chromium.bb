@@ -794,6 +794,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles2_tests': {
     'tester_configs': [
       {
+        'allow_on_android': True,
         'fyi_only': True,
         # Run this on the optional tryservers.
         'run_on_optional': True,
@@ -825,7 +826,8 @@ COMMON_GTESTS = {
     ],
     'desktop_swarming': {
       'shards': 4,
-    }
+    },
+    'android_args': ['--enable-xml-result-parsing']
   },
 
   'angle_deqp_gles3_tests': {
@@ -1372,6 +1374,13 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
       result['args'] += result['desktop_args']
     # Don't put the desktop args in the JSON.
     result.pop('desktop_args')
+  if 'android_args' in result:
+    if is_android(tester_config):
+      if not 'args' in result:
+        result['args'] = []
+      result['args'] += result['android_args']
+    # Don't put the android args in the JSON.
+    result.pop('android_args')
   if 'desktop_swarming' in result:
     if not is_android(tester_config):
       result['swarming'].update(result['desktop_swarming'])
@@ -1404,6 +1413,9 @@ def generate_telemetry_test(tester_name, tester_config,
   if 'desktop_args' in test_config and not is_android(tester_config):
     test_args.extend(substitute_args(tester_config,
                                      test_config['desktop_args']))
+  if 'android_args' in test_config and is_android(tester_config):
+    test_args.extend(substitute_args(tester_config,
+                                     test_config['android_args']))
   # The step name must end in 'test' or 'tests' in order for the
   # results to automatically show up on the flakiness dashboard.
   # (At least, this was true some time ago.) Continue to use this

@@ -330,6 +330,41 @@
   "Android Release (Nexus 5X)": {
     "gtest_tests": [
       {
+        "args": [
+          "--enable-xml-result-parsing"
+        ],
+        "override_isolate_target": "angle_deqp_gles2_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:3ff24775a900b675866fbcacf2a8f98a18b2a16a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "M",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      },
+      {
         "override_isolate_target": "angle_end2end_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
