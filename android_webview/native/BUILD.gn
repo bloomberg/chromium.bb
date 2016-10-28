@@ -40,8 +40,6 @@ source_set("native") {
     "android_webview_jni_registrar.h",
     "aw_autofill_client.cc",
     "aw_autofill_client.h",
-    "aw_browser_dependency_factory.cc",
-    "aw_browser_dependency_factory.h",
     "aw_contents.cc",
     "aw_contents.h",
     "aw_contents_background_thread_client.cc",

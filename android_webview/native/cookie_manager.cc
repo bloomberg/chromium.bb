@@ -12,7 +12,6 @@
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
-#include "android_webview/native/aw_browser_dependency_factory.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
