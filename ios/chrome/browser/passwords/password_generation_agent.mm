@@ -47,8 +47,7 @@ bool VectorContainsURL(const std::vector<GURL>& urls, const GURL& url) {
 
 // Returns whether |field| should be considered a text field. Implementation
 // mirrors that of password_controller.js.
-// TODO(dconnelly): Figure out how (and if) to determine if |field| is visible.
-// http://crbug.com/433856
+// TODO(crbug.com/433856): Figure out how to determine if |field| is visible.
 bool IsTextField(const autofill::FormFieldData& field) {
   return field.form_control_type == "text" ||
          field.form_control_type == "email" ||
@@ -85,9 +84,6 @@ bool IsTextField(const autofill::FormFieldData& field) {
 // when selected by the user. The resulting field is stored in
 // |_passwordGenerationField|. This logic is nearly identical to that of the
 // upstream autofill::PasswordGenerationAgent::DetermineGenerationElement.
-// TODO(dconnelly): Try to find a way to share this code with the upstream
-// implementation, even though it lives in the renderer.
-// http://crbug.com/434679.
 - (void)determinePasswordGenerationField;
 
 // Returns YES if the specified form and field should trigger the
@@ -266,8 +262,6 @@ bool IsTextField(const autofill::FormFieldData& field) {
 
 - (void)processParsedPasswordForms:
     (const std::vector<autofill::PasswordForm>&)forms {
-  // TODO(dconnelly): Find a way to share some of this logic with the desktop
-  // agent. http://crbug.com/434679.
   for (const auto& passwordForm : forms) {
     if ([self formHasGAIARealm:passwordForm])
       continue;
