@@ -266,7 +266,6 @@ bool MultibufferDataSource::DidPassCORSAccessCheck() const {
 
 void MultibufferDataSource::MediaPlaybackRateChanged(double playback_rate) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  DCHECK(reader_.get());
 
   if (playback_rate < 0.0)
     return;
