@@ -5,6 +5,7 @@
 #ifndef CSPDirective_h
 #define CSPDirective_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -12,7 +13,8 @@ namespace blink {
 
 class ContentSecurityPolicy;
 
-class CSPDirective : public GarbageCollectedFinalized<CSPDirective> {
+class CORE_EXPORT CSPDirective
+    : public GarbageCollectedFinalized<CSPDirective> {
   WTF_MAKE_NONCOPYABLE(CSPDirective);
 
  public:

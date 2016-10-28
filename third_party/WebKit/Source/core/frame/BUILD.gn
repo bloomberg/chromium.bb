@@ -101,7 +101,6 @@ blink_core_sources("frame") {
     "VisualViewport.h",
     "csp/CSPDirectiveList.cpp",
     "csp/CSPSource.cpp",
-    "csp/CSPSourceList.cpp",
     "csp/ContentSecurityPolicy.cpp",
     "csp/MediaListDirective.cpp",
     "csp/SourceListDirective.cpp",

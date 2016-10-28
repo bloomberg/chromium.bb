@@ -41,7 +41,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 #include "core/frame/csp/CSPSource.h"
-#include "core/frame/csp/CSPSourceList.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -622,7 +621,7 @@ bool checkDigest(const String& source,
                  const CSPDirectiveListVector& policies) {
   // Any additions or subtractions from this struct should also modify the
   // respective entries in the kSupportedPrefixes array in
-  // CSPSourceList::parseHash().
+  // SourceListDirective::parseHash().
   static const struct {
     ContentSecurityPolicyHashAlgorithm cspHashAlgorithm;
     HashAlgorithm algorithm;
