@@ -2174,8 +2174,8 @@ ShadowRoot* Element::attachShadow(const ScriptState* scriptState,
       tagName == HTMLNames::h3Tag || tagName == HTMLNames::h4Tag ||
       tagName == HTMLNames::h5Tag || tagName == HTMLNames::h6Tag ||
       tagName == HTMLNames::headerTag || tagName == HTMLNames::navTag ||
-      tagName == HTMLNames::pTag || tagName == HTMLNames::sectionTag ||
-      tagName == HTMLNames::spanTag;
+      tagName == HTMLNames::mainTag || tagName == HTMLNames::pTag ||
+      tagName == HTMLNames::sectionTag || tagName == HTMLNames::spanTag;
   if (!tagNameIsSupported) {
     exceptionState.throwDOMException(
         NotSupportedError, "This element does not support attachShadow");
