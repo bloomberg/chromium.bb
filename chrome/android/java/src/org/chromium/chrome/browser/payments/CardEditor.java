@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel;
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorFieldValidator;
-import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.payments.ui.EditorModel;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.content.browser.ContentViewCore;
@@ -114,7 +113,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
     private final Handler mHandler;
     private final EditorFieldValidator mCardNumberValidator;
-    private final EditorValueIconGenerator mCardIconGenerator;
     private final AsyncTask<Void, Void, Calendar> mCalendar;
 
     @Nullable private EditorFieldModel mIconHint;
@@ -185,22 +183,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         mCardNumberValidator = new EditorFieldValidator() {
             @Override
             public boolean isValid(@Nullable CharSequence value) {
-                return value != null
-                        && mAcceptedCardTypes.contains(
-                                   PersonalDataManager.getInstance().getBasicCardPaymentType(
-                                           value.toString(), true));
-            }
-        };
-
-        mCardIconGenerator = new EditorValueIconGenerator() {
-            @Override
-            public int getIconResourceId(@Nullable CharSequence value) {
-                if (value == null) return 0;
-                CardTypeInfo cardTypeInfo =
-                        mCardTypes.get(PersonalDataManager.getInstance().getBasicCardPaymentType(
-                                value.toString(), false));
-                if (cardTypeInfo == null) return 0;
-                return cardTypeInfo.icon;
+                return value != null && mAcceptedCardTypes.contains(
+                        PersonalDataManager.getInstance().getBasicCardPaymentTypeIfValid(
+                                value.toString()));
             }
         };
 
@@ -390,8 +375,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         if (mNumberField == null) {
             mNumberField = EditorFieldModel.createTextInput(
                     EditorFieldModel.INPUT_TYPE_HINT_CREDIT_CARD,
-                    mContext.getString(R.string.autofill_credit_card_editor_number), null,
-                    mCardNumberValidator, mCardIconGenerator,
+                    mContext.getString(R.string.autofill_credit_card_editor_number),
+                    null, mCardNumberValidator,
                     mContext.getString(R.string.payments_field_required_validation_message),
                     mContext.getString(R.string.payments_card_number_invalid_validation_message),
                     null);
@@ -414,9 +399,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         if (mNameField == null) {
             mNameField = EditorFieldModel.createTextInput(
                     EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME,
-                    mContext.getString(R.string.autofill_credit_card_editor_name), null, null, null,
-                    mContext.getString(R.string.payments_field_required_validation_message), null,
-                    null);
+                    mContext.getString(R.string.autofill_credit_card_editor_name), null, null,
+                    mContext.getString(R.string.payments_field_required_validation_message),
+                    null, null);
         }
         mNameField.setValue(card.getName());
         editor.addField(mNameField);

@@ -36,18 +36,6 @@ public class EditorFieldModel {
         boolean isValid(@Nullable CharSequence value);
     }
 
-    /**
-     * The interface to be implemented by the field value icon generator.
-     */
-    public interface EditorValueIconGenerator {
-        /**
-         * Called to get the field value icon resource Id.
-         * @param value The value of the field.
-         * @return The resouce Id of the value icon, 0 indicates no icon.
-         */
-        int getIconResourceId(@Nullable CharSequence value);
-    }
-
     private static final int INPUT_TYPE_HINT_MIN_INCLUSIVE = 0;
 
     /** Text input with no special formatting rules, e.g., a city, a suburb, or a company name. */
@@ -110,7 +98,6 @@ public class EditorFieldModel {
     @Nullable private Set<String> mDropdownKeys;
     @Nullable private List<CharSequence> mSuggestions;
     @Nullable private EditorFieldValidator mValidator;
-    @Nullable private EditorValueIconGenerator mValueIconGenerator;
     @Nullable private CharSequence mRequiredErrorMessage;
     @Nullable private CharSequence mInvalidErrorMessage;
     @Nullable private CharSequence mErrorMessage;
@@ -119,10 +106,10 @@ public class EditorFieldModel {
     @Nullable private CharSequence mBottomLabel;
     @Nullable private CharSequence mValue;
     @Nullable private Callback<Pair<String, Runnable>> mDropdownCallback;
-    @Nullable private Runnable mActionIconAction;
+    @Nullable private Runnable mIconAction;
     private int mLabelIconResourceId;
     private int mActionIconResourceId;
-    private int mActionIconDescriptionForAccessibility;
+    private int mActionDescriptionForAccessibility;
     private boolean mIsFullLine = true;
 
     /**
@@ -255,7 +242,6 @@ public class EditorFieldModel {
      *                             that should be entered into this field.
      * @param suggestions          Optional set of values to suggest to the user.
      * @param validator            Optional validator for the values in this field.
-     * @param valueIconGenerator   Optional icon generator for the values in this field.
      * @param requiredErrorMessage The optional error message that indicates to the user that they
      *                             cannot leave this field empty.
      * @param invalidErrorMessage  The optional error message that indicates to the user that the
@@ -264,7 +250,6 @@ public class EditorFieldModel {
      */
     public static EditorFieldModel createTextInput(int inputTypeHint, CharSequence label,
             @Nullable Set<CharSequence> suggestions, @Nullable EditorFieldValidator validator,
-            @Nullable EditorValueIconGenerator valueIconGenerator,
             @Nullable CharSequence requiredErrorMessage, @Nullable CharSequence invalidErrorMessage,
             @Nullable CharSequence value) {
         assert label != null;
@@ -272,7 +257,6 @@ public class EditorFieldModel {
         assert result.isTextField();
         result.mSuggestions = suggestions == null ? null : new ArrayList<CharSequence>(suggestions);
         result.mValidator = validator;
-        result.mValueIconGenerator = valueIconGenerator;
         result.mInvalidErrorMessage = invalidErrorMessage;
         result.mRequiredErrorMessage = requiredErrorMessage;
         result.mLabel = label;
@@ -291,8 +275,8 @@ public class EditorFieldModel {
     public void addActionIcon(int icon, int description, Runnable action) {
         assert isTextField();
         mActionIconResourceId = icon;
-        mActionIconDescriptionForAccessibility = description;
-        mActionIconAction = action;
+        mActionDescriptionForAccessibility = description;
+        mIconAction = action;
     }
 
     private EditorFieldModel(int inputTypeHint) {
@@ -306,22 +290,16 @@ public class EditorFieldModel {
         return mActionIconResourceId;
     }
 
-    /** @return The string resource for the human readable description of the action icon. */
-    public int getActionIconDescriptionForAccessibility() {
+    /** @return The string resource for the human readable description of the action. */
+    public int getActionDescriptionForAccessibility() {
         assert isTextField();
-        return mActionIconDescriptionForAccessibility;
+        return mActionDescriptionForAccessibility;
     }
 
-    /** @return The action to invoke when the action icon has been tapped. */
-    public Runnable getActionIconAction() {
+    /** @return The action to invoke when the icon has been tapped. */
+    public Runnable getIconAction() {
         assert isTextField();
-        return mActionIconAction;
-    }
-
-    /** @return The value icon generator or null if not exist. */
-    public EditorValueIconGenerator getValueIconGenerator() {
-        assert mInputTypeHint == INPUT_TYPE_HINT_CREDIT_CARD;
-        return mValueIconGenerator;
+        return mIconAction;
     }
 
     private boolean isTextField() {

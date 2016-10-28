@@ -34,10 +34,7 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
     private EditorFieldModel mEditorFieldModel;
     private CompatibilityTextInputLayout mInputLayout;
     private AutoCompleteTextView mInput;
-    private View mIconsLayer;
     private ImageView mActionIcon;
-    private ImageView mValueIcon;
-    private int mValueIconId;
     private boolean mHasFocusedAtLeastOnce;
     @Nullable private PaymentRequestObserverForTest mObserverForTest;
 
@@ -62,33 +59,15 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         mInput.setContentDescription(label);
         mInput.setOnEditorActionListener(actionlistener);
 
-        mIconsLayer = findViewById(R.id.icons_layer);
-        mIconsLayer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                // Padding at the end of mInput to preserve space for mIconsLayer.
-                ApiCompatibilityUtils.setPaddingRelative(mInput,
-                        ApiCompatibilityUtils.getPaddingStart(mInput), mInput.getPaddingTop(),
-                        mIconsLayer.getWidth(), mInput.getPaddingBottom());
-            }
-        });
-
-        if (fieldModel.getActionIconAction() != null) {
-            mActionIcon = (ImageView) mIconsLayer.findViewById(R.id.action_icon);
+        if (fieldModel.getIconAction() != null) {
+            mActionIcon = (ImageView) findViewById(R.id.action_icon);
             mActionIcon.setImageDrawable(
                     TintedDrawable.constructTintedDrawable(context.getResources(),
                             fieldModel.getActionIconResourceId(), R.color.light_active_color));
             mActionIcon.setContentDescription(context.getResources().getString(
-                    fieldModel.getActionIconDescriptionForAccessibility()));
+                    fieldModel.getActionDescriptionForAccessibility()));
             mActionIcon.setOnClickListener(this);
             mActionIcon.setVisibility(VISIBLE);
-        }
-
-        if (fieldModel.getValueIconGenerator() != null) {
-            mValueIcon = (ImageView) mIconsLayer.findViewById(R.id.value_icon);
-            mValueIcon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
-            mValueIcon.setVisibility(VISIBLE);
         }
 
         // Validate the field when the user de-focuses it.
@@ -110,7 +89,6 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
             public void afterTextChanged(Editable s) {
                 fieldModel.setValue(s.toString());
                 updateDisplayedError(false);
-                updateFieldValueIcon(false);
                 if (mObserverForTest != null) {
                     mObserverForTest.onPaymentRequestEditorTextUpdate();
                 }
@@ -187,34 +165,43 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
     }
 
     @Override
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (mActionIcon != null) {
+            if (mActionIcon.getMeasuredWidth() == 0) {
+                mActionIcon.measure(widthMeasureSpec, heightMeasureSpec);
+            }
+
+            // Padding at the end of mInput to preserve space for mActionIcon.
+            ApiCompatibilityUtils.setPaddingRelative(mInput,
+                    ApiCompatibilityUtils.getPaddingStart(mInput), mInput.getPaddingTop(),
+                    mActionIcon.getWidth(), mInput.getPaddingBottom());
+        }
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
     public void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
 
-        if (changed) {
-            // Align the bottom of mIconsLayer to the bottom of mInput (mIconsLayer overlaps
+        if (changed && mActionIcon != null) {
+            // Align the bottom of mActionIcon to the bottom of mInput (mActionIcon overlaps
             // mInput).
-            // Note one:   mIconsLayer can not be put inside mInputLayout to display on top of
+            // Note one:   mActionIcon can not be put inside mInputLayout to display on top of
             // mInput since mInputLayout is LinearLayout in essential.
-            // Note two:   mIconsLayer and mInput can not be put in ViewGroup to display over each
+            // Note two:   mActionIcon and mInput can not be put in ViewGroup to display over each
             // other inside mInputLayout since mInputLayout must contain an instance of EditText
             // child view.
             // Note three: mInputLayout's bottom changes when displaying error.
             float offset = mInputLayout.getY() + mInput.getY() + (float) mInput.getHeight()
-                    - (float) mIconsLayer.getHeight() - mIconsLayer.getTop();
-            mIconsLayer.setTranslationY(offset);
+                    - (float) mActionIcon.getHeight() - mActionIcon.getTop();
+            mActionIcon.setTranslationY(offset);
         }
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-        super.onWindowFocusChanged(hasWindowFocus);
-
-        if (hasWindowFocus) updateFieldValueIcon(true);
-    }
-
-    @Override
     public void onClick(View v) {
-        mEditorFieldModel.getActionIconAction().run();
+        mEditorFieldModel.getIconAction().run();
     }
 
     /** @return The EditorFieldModel that the TextView represents. */
@@ -248,19 +235,5 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
     @Override
     public void update() {
         mInput.setText(mEditorFieldModel.getValue());
-    }
-
-    private void updateFieldValueIcon(boolean force) {
-        if (mValueIcon == null) return;
-
-        int iconId = mEditorFieldModel.getValueIconGenerator().getIconResourceId(mInput.getText());
-        if (mValueIconId == iconId && !force) return;
-        mValueIconId = iconId;
-        if (mValueIconId == 0) {
-            mValueIcon.setVisibility(GONE);
-        } else {
-            mValueIcon.setImageResource(mValueIconId);
-            mValueIcon.setVisibility(VISIBLE);
-        }
     }
 }

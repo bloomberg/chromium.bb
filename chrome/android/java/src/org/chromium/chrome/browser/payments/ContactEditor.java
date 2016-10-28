@@ -105,7 +105,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         final EditorFieldModel nameField = mRequestPayerName
                 ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME,
                           mContext.getString(R.string.payments_name_field_in_contact_details),
-                          mPayerNames, null, null,
+                          mPayerNames, null,
                           mContext.getString(R.string.payments_field_required_validation_message),
                           null, contact.getPayerName())
                 : null;
@@ -113,7 +113,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         final EditorFieldModel phoneField = mRequestPayerPhone
                 ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
                           mContext.getString(R.string.autofill_profile_editor_phone_number),
-                          mPhoneNumbers, getPhoneValidator(), null,
+                          mPhoneNumbers, getPhoneValidator(),
                           mContext.getString(R.string.payments_field_required_validation_message),
                           mContext.getString(R.string.payments_phone_invalid_validation_message),
                           contact.getPayerPhone())
@@ -122,7 +122,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         final EditorFieldModel emailField = mRequestPayerEmail
                 ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
                           mContext.getString(R.string.autofill_profile_editor_email_address),
-                          mEmailAddresses, getEmailValidator(), null,
+                          mEmailAddresses, getEmailValidator(),
                           mContext.getString(R.string.payments_field_required_validation_message),
                           mContext.getString(R.string.payments_email_invalid_validation_message),
                           contact.getPayerEmail())

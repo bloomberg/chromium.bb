@@ -496,21 +496,18 @@ void PersonalDataManagerAndroid::UpdateServerCardBillingAddress(
   personal_data_manager_->UpdateServerCardBillingAddress(card);
 }
 
-ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::GetBasicCardPaymentType(
+ScopedJavaLocalRef<jstring>
+PersonalDataManagerAndroid::GetBasicCardPaymentTypeIfValid(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jstring>& jcard_number,
-    const jboolean jempty_if_invalid) {
+    const JavaParamRef<jstring>& jcard_number) {
   base::string16 card_number = ConvertJavaStringToUTF16(env, jcard_number);
-
-  if (static_cast<bool>(jempty_if_invalid) &&
-      !IsValidCreditCardNumber(card_number)) {
-    return ConvertUTF8ToJavaString(env, "");
-  }
-  return ConvertUTF8ToJavaString(env,
-                                 data_util::GetPaymentRequestData(
-                                     CreditCard::GetCreditCardType(card_number))
-                                     .basic_card_payment_type);
+  return ConvertUTF8ToJavaString(
+      env, IsValidCreditCardNumber(card_number)
+               ? data_util::GetPaymentRequestData(
+                     CreditCard::GetCreditCardType(card_number))
+                     .basic_card_payment_type
+               : "");
 }
 
 void PersonalDataManagerAndroid::AddServerCreditCardForTest(
