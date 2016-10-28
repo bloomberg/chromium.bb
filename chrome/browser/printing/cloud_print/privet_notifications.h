@@ -14,6 +14,7 @@
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
+#include "net/net_features.h"
 
 class NotificationUIManager;
 class Profile;
@@ -34,7 +35,7 @@ class PrivetHTTPResolution;
 class PrivetNotificationDelegate;
 struct DeviceDescription;
 
-#if defined(ENABLE_MDNS)
+#if BUILDFLAG(ENABLE_MDNS)
 class PrivetTrafficDetector;
 #endif  // ENABLE_MDNS
 
@@ -132,7 +133,7 @@ class PrivetNotificationService
   std::unique_ptr<PrivetNotificationsListener> privet_notifications_listener_;
   BooleanPrefMember enable_privet_notification_member_;
 
-#if defined(ENABLE_MDNS)
+#if BUILDFLAG(ENABLE_MDNS)
   scoped_refptr<PrivetTrafficDetector> traffic_detector_;
 #endif  // ENABLE_MDNS
 };

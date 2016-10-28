@@ -46,6 +46,7 @@ buildflag_header("features") {
     "POSIX_AVOID_MMAP=$posix_avoid_mmap",
     "DISABLE_FILE_SUPPORT=$disable_file_support",
     "DISABLE_FTP_SUPPORT=$disable_ftp_support",
+    "ENABLE_MDNS=$enable_mdns",
     "ENABLE_WEBSOCKETS=$enable_websockets",
   ]
 }

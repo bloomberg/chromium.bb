@@ -10,6 +10,7 @@ import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//components/os_crypt/features.gni")
 import("//media/media_options.gni")
+import("//net/features.gni")
 import("//ppapi/features/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 

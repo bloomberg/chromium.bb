@@ -5,6 +5,7 @@
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 
 #include "build/build_config.h"
+#include "net/net_features.h"
 
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
@@ -19,7 +20,7 @@
 #include "chrome/browser/local_discovery/service_discovery_client_mac_factory.h"
 #endif
 
-#if defined(ENABLE_MDNS)
+#if BUILDFLAG(ENABLE_MDNS)
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 #endif  // ENABLE_MDNS
 
@@ -72,7 +73,7 @@ ServiceDiscoverySharedClient::~ServiceDiscoverySharedClient() {
   g_service_discovery_client = NULL;
 }
 
-#if defined(ENABLE_MDNS) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_MDNS) || defined(OS_MACOSX)
 
 scoped_refptr<ServiceDiscoverySharedClient>
     ServiceDiscoverySharedClient::GetInstance() {
