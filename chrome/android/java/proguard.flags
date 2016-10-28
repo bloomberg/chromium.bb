@@ -29,3 +29,11 @@
 
 # Google Play Services warnings are about its resources.
 -dontwarn com.google.android.gms.R**
+
+# The Google Play services library depends on the legacy Apache HTTP library,
+# and just adding it as proguard time dependency causes the following warnings:
+# `library class org.apache.http.params.HttpConnectionParams depends on program
+# class org.apache.http.params.HttpParams`. The library has its own
+# implementation of org.apache.http.params.HttpParams so it can safely be
+# ignored.
+-dontwarn org.apache.http.params.HttpParams
