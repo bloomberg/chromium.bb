@@ -40,7 +40,7 @@ source_set("net") {
     "//components/prefs",
     "//components/proxy_config",
     "//components/update_client",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/webp_transcode",
@@ -51,7 +51,7 @@ source_set("net") {
     "//url",
   ]
   allow_circular_includes_from = [
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
   ]
 }

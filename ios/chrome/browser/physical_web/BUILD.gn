@@ -14,7 +14,7 @@ source_set("physical_web") {
     "//base",
     "//components/physical_web/data_source",
     "//components/prefs",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/common/physical_web",
     "//url",

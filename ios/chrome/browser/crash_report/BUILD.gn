@@ -22,7 +22,7 @@ source_set("crash_report") {
     "//breakpad:client",
     "//components/crash/core/common",
     "//components/upload_list",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/web",
   ]
 }

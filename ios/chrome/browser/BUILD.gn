@@ -19,82 +19,7 @@ declare_args() {
   google_test_sync_url = ""
 }
 
-# TODO(crbug.com/658242): this target is there to avoid breaking downstream
-# when this CL rolls. It should be removed in favor of browser_no_public_deps
-# (which should be renamed to browser).
-group("browser") {
-  public_deps = [
-    ":browser_no_public_deps",
-    "//ios/chrome/browser:browser_impl",
-    "//ios/chrome/browser/autocomplete",
-    "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/bookmarks",
-    "//ios/chrome/browser/bookmarks:bookmarks_utils",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/browser_state:browser_state_impl",
-    "//ios/chrome/browser/browser_state_metrics",
-    "//ios/chrome/browser/browsing_data",
-    "//ios/chrome/browser/component_updater",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/crash_report",
-    "//ios/chrome/browser/dom_distiller",
-    "//ios/chrome/browser/favicon",
-    "//ios/chrome/browser/find_in_page",
-    "//ios/chrome/browser/first_run",
-    "//ios/chrome/browser/geolocation",
-    "//ios/chrome/browser/google",
-    "//ios/chrome/browser/google:google_logo",
-    "//ios/chrome/browser/history",
-    "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/interstitials",
-    "//ios/chrome/browser/invalidation",
-    "//ios/chrome/browser/itunes_links",
-    "//ios/chrome/browser/memory",
-    "//ios/chrome/browser/metrics",
-    "//ios/chrome/browser/net",
-    "//ios/chrome/browser/ntp_snippets",
-    "//ios/chrome/browser/ntp_tiles",
-    "//ios/chrome/browser/open_from_clipboard",
-    "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/physical_web",
-    "//ios/chrome/browser/prefs",
-    "//ios/chrome/browser/reading_list",
-    "//ios/chrome/browser/search_engines",
-    "//ios/chrome/browser/services/gcm",
-    "//ios/chrome/browser/sessions",
-    "//ios/chrome/browser/share_extension",
-    "//ios/chrome/browser/snapshots",
-    "//ios/chrome/browser/ssl",
-    "//ios/chrome/browser/suggestions",
-    "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/sync/glue",
-    "//ios/chrome/browser/sync/sessions",
-    "//ios/chrome/browser/translate",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/autofill",
-    "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/context_menu",
-    "//ios/chrome/browser/ui/elements",
-    "//ios/chrome/browser/ui/keyboard",
-    "//ios/chrome/browser/ui/webui",
-    "//ios/chrome/browser/ui/webui/gcm",
-    "//ios/chrome/browser/ui/webui/history",
-    "//ios/chrome/browser/ui/webui/net_export",
-    "//ios/chrome/browser/ui/webui/sync_internals",
-    "//ios/chrome/browser/undo",
-    "//ios/chrome/browser/updatable_config",
-    "//ios/chrome/browser/update_client",
-    "//ios/chrome/browser/variations",
-    "//ios/chrome/browser/web",
-    "//ios/chrome/browser/web_resource",
-    "//ios/chrome/browser/webp_transcode",
-  ]
-}
-
-# TODO(crbug.com/658242): this target is there to avoid breaking downstream
-# when this CL rolls. It should renamed to browser.
-source_set("browser_no_public_deps") {
+source_set("browser") {
   sources = [
     "app_startup_parameters.h",
     "app_startup_parameters.mm",
@@ -189,6 +114,14 @@ source_set("browser_no_public_deps") {
   libs = [ "UIKit.framework" ]
 }
 
+# TODO(crbug.com/658242): this target is there to avoid breaking downstream
+# when this CL rolls. It should be removed in favor of browser.
+group("browser_no_public_deps") {
+  public_deps = [
+    ":browser",
+  ]
+}
+
 source_set("browser_impl") {
   sources = [
     "application_context_impl.cc",
@@ -198,7 +131,7 @@ source_set("browser_impl") {
   ]
   deps = [
     ":about_flags",
-    ":browser_no_public_deps",
+    ":browser",
     "//base",
     "//components/component_updater",
     "//components/content_settings/core/browser",
@@ -256,7 +189,7 @@ source_set("about_flags") {
   ]
 
   deps = [
-    ":browser_no_public_deps",
+    ":browser",
     "//base",
     "//components/autofill/core/common",
     "//components/dom_distiller/core",
@@ -289,23 +222,11 @@ source_set("about_flags") {
 # TODO(crbug.com/658242): this target should be split in individual targets
 # and the correct dependency used.
 js_compile_unchecked("injected_js") {
-  visibility = [ ":browser_no_public_deps" ]
+  visibility = [ ":browser" ]
   sources = [
     "find_in_page/resources/find_in_page.js",
     "passwords/resources/credential_manager.js",
     "passwords/resources/password_controller.js",
-  ]
-}
-
-# TODO(crbug.com/658242): this target is there to avoid breaking downstream
-# when this CL rolls.
-source_set("test_support") {
-  testonly = true
-  public_deps = [
-    "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/geolocation:test_support",
-    "//ios/chrome/browser/net:test_support",
-    "//ios/chrome/browser/sync:test_support",
   ]
 }
 

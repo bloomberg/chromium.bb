@@ -12,7 +12,7 @@ source_set("net_export") {
     "//components/net_log",
     "//components/resources",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui",
     "//ios/web",

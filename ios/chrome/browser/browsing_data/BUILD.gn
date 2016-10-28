@@ -28,7 +28,7 @@ source_set("browsing_data") {
     "//components/prefs",
     "//components/search_engines",
     "//components/sessions",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/history",

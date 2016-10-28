@@ -24,7 +24,7 @@ source_set("autocomplete") {
     "//components/omnibox/browser",
     "//components/prefs",
     "//components/sync",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/history",

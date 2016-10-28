@@ -41,7 +41,7 @@ source_set("prefs") {
     "//components/update_client",
     "//components/variations/service",
     "//components/web_resource",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/geolocation",

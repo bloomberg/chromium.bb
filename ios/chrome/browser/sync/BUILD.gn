@@ -37,7 +37,7 @@ source_set("sync") {
     "//components/sync_sessions",
     "//components/syncable_prefs",
     "//google_apis",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",

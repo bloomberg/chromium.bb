@@ -10,7 +10,7 @@ source_set("open_from_clipboard") {
   deps = [
     "//base",
     "//components/open_from_clipboard",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/common/app_group",
   ]
 }

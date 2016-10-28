@@ -21,7 +21,7 @@ source_set("bookmarks") {
     "//components/keyed_service/ios",
     "//components/prefs",
     "//components/undo",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
@@ -46,7 +46,7 @@ source_set("bookmarks_utils") {
     "//base",
     "//components/bookmarks/browser",
     "//components/prefs",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
   ]
 }

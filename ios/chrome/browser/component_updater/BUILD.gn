@@ -11,7 +11,7 @@ source_set("component_updater") {
     "//base",
     "//components/component_updater",
     "//components/update_client",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/google",
     "//ios/chrome/common",
     "//ios/web",

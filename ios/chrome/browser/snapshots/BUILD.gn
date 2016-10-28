@@ -18,7 +18,7 @@ source_set("snapshots") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/web",
   ]
@@ -35,7 +35,6 @@ source_set("unit_tests") {
   deps = [
     ":snapshots",
     "//base",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/web",
     "//ios/web:test_support",

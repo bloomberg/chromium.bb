@@ -29,7 +29,7 @@ source_set("reading_list") {
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/web",
     "//net",

@@ -33,7 +33,7 @@ source_set("translate") {
     "//components/web_resource",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
     "//ios/public/provider/chrome/browser",

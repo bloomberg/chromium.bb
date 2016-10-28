@@ -14,7 +14,7 @@ source_set("elements") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
   ]
 }
 

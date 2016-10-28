@@ -30,7 +30,7 @@ source_set("history") {
     "//components/prefs",
     "//components/signin/core/browser",
     "//components/sync",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/web",

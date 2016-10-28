@@ -32,7 +32,7 @@ source_set("history") {
     "//components/sync_sessions",
     "//components/url_formatter",
     "//ios/chrome/app/resources",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",

@@ -2,15 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(crbug.com/658242): Temporary target to help transition until all the
-# targets have been modified to depends on :test_support instead.
-group("test") {
-  testonly = true
-  public_deps = [
-    ":test_support",
-  ]
-}
-
 source_set("test_support") {
   testonly = true
   sources = [
@@ -33,6 +24,8 @@ source_set("test_support") {
     "//components/prefs",
     "//components/prefs:test_support",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:browser_state_impl",
+    "//ios/chrome/browser/prefs",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/web",
@@ -50,7 +43,7 @@ source_set("run_all_unittests") {
     "run_all_unittests.cc",
   ]
   deps = [
-    ":test",
+    ":test_support",
     "//base",
     "//base/test:test_support",
   ]

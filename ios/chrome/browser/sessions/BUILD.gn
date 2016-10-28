@@ -15,7 +15,7 @@ source_set("sessions") {
     "//base",
     "//components/keyed_service/ios",
     "//components/sessions",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/public/provider/chrome/browser",
     "//ios/web",

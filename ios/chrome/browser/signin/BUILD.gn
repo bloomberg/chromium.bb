@@ -50,7 +50,7 @@ source_set("signin") {
   deps = [
     "//components/browser_sync",
     "//components/sync",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
@@ -89,7 +89,8 @@ source_set("test_support") {
   deps = [
     "//components/signin/core/browser:test_support",
     "//components/signin/ios/browser",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/sync",
   ]
   public_deps = [
     ":signin",
@@ -120,7 +121,10 @@ source_set("unit_tests") {
     "//components/syncable_prefs:test_support",
     "//google_apis",
     "//ios/chrome/browser",
-    "//ios/chrome/browser:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",

@@ -68,7 +68,7 @@ source_set("browser_state_impl") {
     "//components/syncable_prefs",
     "//components/user_prefs",
     "//google_apis",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/bookmarks",
@@ -99,7 +99,7 @@ source_set("browser_state_impl") {
     "//net:extras",
   ]
   allow_circular_includes_from = [
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state_metrics",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/prefs",
@@ -121,6 +121,7 @@ source_set("test_support") {
   ]
   deps = [
     ":browser_state",
+    ":browser_state_impl",
     "//base",
     "//components/bookmarks/browser",
     "//components/bookmarks/common",

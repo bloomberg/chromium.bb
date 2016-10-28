@@ -20,7 +20,7 @@ source_set("voice") {
 
   public_deps = [
     "//base",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/updatable_config",
     "//ios/public/provider/chrome/browser",
   ]
 }
@@ -54,6 +54,7 @@ source_set("tts") {
     "//components/google/core/browser",
     "//components/prefs",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//net",

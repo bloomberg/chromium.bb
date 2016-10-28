@@ -14,7 +14,7 @@ source_set("content_settings") {
     "//components/content_settings/core/browser",
     "//components/keyed_service/ios",
     "//components/prefs",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
   ]
 }

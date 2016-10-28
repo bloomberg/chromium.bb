@@ -13,7 +13,7 @@ source_set("variations") {
     "//base",
     "//components/variations/service",
     "//components/version_info",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/common",
     "//ios/web",
   ]

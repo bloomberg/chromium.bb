@@ -11,7 +11,7 @@ source_set("gcm") {
     "//base",
     "//components/gcm_driver",
     "//components/resources",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/services/gcm",
     "//ios/web",

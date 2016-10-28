@@ -14,7 +14,7 @@ source_set("ntp_tiles") {
     "//components/history/core/browser",
     "//components/image_fetcher",
     "//components/ntp_tiles",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",

@@ -13,7 +13,7 @@ source_set("alert_coordinator") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ui/base",
     "//ui/strings",
   ]

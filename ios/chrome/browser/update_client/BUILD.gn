@@ -11,7 +11,7 @@ source_set("update_client") {
     "//base",
     "//components/update_client",
     "//components/version_info",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/common",
   ]
 }

@@ -44,7 +44,7 @@ source_set("ui") {
   deps = [
     "//base",
     "//base:i18n",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/ui/commands",
     "//ios/public/provider/chrome/browser",

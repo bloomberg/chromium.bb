@@ -29,7 +29,7 @@ source_set("autofill") {
     "//components/keyed_service/ios",
     "//components/signin/core/browser",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/passwords:passwords_generation_utils",
     "//ios/chrome/browser/signin",

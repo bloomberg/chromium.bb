@@ -19,7 +19,7 @@ source_set("interstitials") {
     "//components/rappor",
     "//components/resources",
     "//components/security_interstitials/core",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/history",
     "//ios/web",

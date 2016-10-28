@@ -23,7 +23,7 @@ source_set("geolocation") {
     "//components/prefs",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser:browser_no_public_deps",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/updatable_config",
     "//ios/public/provider/chrome/browser",
     "//third_party/google_toolbox_for_mac",
