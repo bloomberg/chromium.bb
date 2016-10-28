@@ -104,6 +104,10 @@ void NotificationManager::onPermissionRequestComplete(
 }
 
 void NotificationManager::onPermissionServiceConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
   m_permissionService.reset();
 }
 

@@ -17,6 +17,7 @@
 #include "modules/nfc/NFCPushOptions.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 
 namespace mojom = device::nfc::mojom::blink;
 
@@ -561,6 +562,11 @@ void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
 }
 
 void NFC::OnConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   m_nfc.reset();
 
   // If NFCService is not available or disappears when NFC hardware is

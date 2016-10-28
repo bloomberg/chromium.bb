@@ -150,6 +150,11 @@ PermissionService* StorageManager::getPermissionService(
 }
 
 void StorageManager::permissionServiceConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   m_permissionService.reset();
 }
 

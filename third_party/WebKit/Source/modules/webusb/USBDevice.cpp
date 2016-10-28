@@ -19,6 +19,7 @@
 #include "modules/webusb/USBIsochronousOutTransferResult.h"
 #include "modules/webusb/USBOutTransferResult.h"
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 
 namespace usb = device::usb::blink;
@@ -102,9 +103,10 @@ USBDevice::USBDevice(usb::DeviceInfoPtr deviceInfo,
       m_opened(false),
       m_deviceStateChangeInProgress(false),
       m_configurationIndex(-1) {
-  if (m_device)
+  if (m_device) {
     m_device.set_connection_error_handler(convertToBaseCallback(
         WTF::bind(&USBDevice::onConnectionError, wrapWeakPersistent(this))));
+  }
   int configurationIndex = findConfigurationIndex(info().active_configuration);
   if (configurationIndex != -1)
     onConfigurationSelected(true /* success */, configurationIndex);
@@ -937,6 +939,11 @@ void USBDevice::asyncReset(ScriptPromiseResolver* resolver, bool success) {
 }
 
 void USBDevice::onConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   m_device.reset();
   m_opened = false;
   for (ScriptPromiseResolver* resolver : m_deviceRequests)

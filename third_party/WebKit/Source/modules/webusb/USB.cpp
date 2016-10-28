@@ -19,6 +19,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 #include "wtf/Functional.h"
 
 namespace usb = device::usb::blink;
@@ -221,6 +222,11 @@ void USB::OnDeviceRemoved(usb::DeviceInfoPtr deviceInfo) {
 }
 
 void USB::onDeviceManagerConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   m_deviceManager.reset();
   for (ScriptPromiseResolver* resolver : m_deviceManagerRequests)
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
@@ -228,6 +234,11 @@ void USB::onDeviceManagerConnectionError() {
 }
 
 void USB::onChooserServiceConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   m_chooserService.reset();
   for (ScriptPromiseResolver* resolver : m_chooserServiceRequests)
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));

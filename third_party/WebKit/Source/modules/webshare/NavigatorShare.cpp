@@ -127,6 +127,11 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState,
 }
 
 void NavigatorShare::onConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   for (auto& client : m_clients) {
     client->onConnectionError();
   }

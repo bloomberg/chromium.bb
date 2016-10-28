@@ -7,6 +7,7 @@
 #include "modules/sensor/SensorProxy.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -55,6 +56,11 @@ SensorProxy* SensorProviderProxy::getOrCreateSensor(
 }
 
 void SensorProviderProxy::onSensorProviderConnectionError() {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   m_sensorProvider.reset();
   for (SensorProxy* sensor : m_sensors)
     sensor->handleSensorError();

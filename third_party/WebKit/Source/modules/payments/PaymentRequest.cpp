@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/HashSet.h"
 #include <utility>
@@ -770,6 +771,11 @@ void PaymentRequest::OnPaymentResponse(
 }
 
 void PaymentRequest::OnError(mojo::PaymentErrorReason error) {
+  if (!Platform::current()) {
+    // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
+    return;
+  }
+
   bool isError = false;
   ExceptionCode ec = UnknownError;
   String message;
