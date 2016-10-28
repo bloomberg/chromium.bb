@@ -405,7 +405,12 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ClientRedirect) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
+#if defined(OS_LINUX)  // http://crbug.com/660288
+#define MAYBE_ServerRedirect DISABLED_ServerRedirect
+#else
+#define MAYBE_ServerRedirect ServerRedirect
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_ServerRedirect) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/serverRedirect"))
       << message_;
