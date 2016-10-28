@@ -57,8 +57,7 @@ class PRINTING_EXPORT Emf : public Metafile {
 
   // Metafile methods.
   bool Init() override;
-  bool InitFromData(const void* src_buffer,
-                    uint32_t src_buffer_size) override;
+  bool InitFromData(const void* src_buffer, size_t src_buffer_size) override;
 
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid

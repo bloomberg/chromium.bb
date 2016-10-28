@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -87,13 +88,15 @@ bool PdfMetafileCg::Init() {
 }
 
 bool PdfMetafileCg::InitFromData(const void* src_buffer,
-                                 uint32_t src_buffer_size) {
+                                 size_t src_buffer_size) {
   DCHECK(!context_.get());
   DCHECK(!pdf_data_.get());
 
-  if (!src_buffer || src_buffer_size == 0) {
+  if (!src_buffer || !src_buffer_size)
     return false;
-  }
+
+  if (!base::IsValueInRangeForNumericType<CFIndex>(src_buffer_size))
+    return false;
 
   pdf_data_.reset(CFDataCreateMutable(kCFAllocatorDefault, src_buffer_size));
   CFDataAppendBytes(pdf_data_, static_cast<const UInt8*>(src_buffer),

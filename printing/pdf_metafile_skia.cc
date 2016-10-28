@@ -4,7 +4,13 @@
 
 #include "printing/pdf_metafile_skia.h"
 
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/files/file.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "printing/print_settings.h"
 #include "third_party/skia/include/core/SkDocument.h"
@@ -112,8 +118,9 @@ bool PdfMetafileSkia::Init() {
 // Metafile::InitFromData is orthogonal to what the rest of
 // PdfMetafileSkia does.
 bool PdfMetafileSkia::InitFromData(const void* src_buffer,
-                                   uint32_t src_buffer_size) {
-  data_->pdf_data_.reset(new SkMemoryStream(src_buffer, src_buffer_size, true));
+                                   size_t src_buffer_size) {
+  data_->pdf_data_ = base::MakeUnique<SkMemoryStream>(
+      src_buffer, src_buffer_size, true /* copy_data? */);
   return true;
 }
 
@@ -265,8 +272,7 @@ bool PdfMetafileSkia::RenderPage(unsigned int page_number,
     size_t length = data_->pdf_data_->getLength();
     std::vector<uint8_t> buffer(length);
     (void)WriteAssetToBuffer(data_->pdf_data_.get(), &buffer[0], length);
-    data_->pdf_cg_.InitFromData(&buffer[0],
-                                base::checked_cast<uint32_t>(length));
+    data_->pdf_cg_.InitFromData(&buffer[0], length);
   }
   return data_->pdf_cg_.RenderPage(page_number, context, rect, params);
 }

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -186,9 +187,12 @@ bool Emf::Init() {
   return !!hdc_;
 }
 
-bool Emf::InitFromData(const void* src_buffer, uint32_t src_buffer_size) {
+bool Emf::InitFromData(const void* src_buffer, size_t src_buffer_size) {
   DCHECK(!emf_ && !hdc_);
-  emf_ = SetEnhMetaFileBits(src_buffer_size,
+  if (!base::IsValueInRangeForNumericType<UINT>(src_buffer_size))
+    return false;
+
+  emf_ = SetEnhMetaFileBits(static_cast<UINT>(src_buffer_size),
                             reinterpret_cast<const BYTE*>(src_buffer));
   return !!emf_;
 }

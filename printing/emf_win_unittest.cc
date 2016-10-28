@@ -98,11 +98,13 @@ TEST_F(EmfPrintingTest, Enumerate) {
                      .Append(FILE_PATH_LITERAL("test"))
                      .Append(FILE_PATH_LITERAL("data"))
                      .Append(FILE_PATH_LITERAL("test4.emf"));
+
   // Load any EMF with an image.
-  Emf emf;
   std::string emf_data;
   base::ReadFileToString(emf_file, &emf_data);
   ASSERT_TRUE(emf_data.size());
+
+  Emf emf;
   EXPECT_TRUE(emf.InitFromData(&emf_data[0], emf_data.size()));
 
   // This will print to file. The reason is that when running inside a
