@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -59,11 +59,12 @@ class DownloadQueryTest : public testing::Test {
 
   ~DownloadQueryTest() override {}
 
-  void TearDown() override { base::STLDeleteElements(&mocks_); }
+  void TearDown() override {}
 
   void CreateMocks(int count) {
     for (int i = 0; i < count; ++i) {
-      mocks_.push_back(new content::MockDownloadItem());
+      owned_mocks_.push_back(base::MakeUnique<content::MockDownloadItem>());
+      mocks_.push_back(owned_mocks_.back().get());
       EXPECT_CALL(mock(mocks_.size() - 1), GetId()).WillRepeatedly(Return(
           mocks_.size() - 1));
     }
@@ -101,7 +102,11 @@ class DownloadQueryTest : public testing::Test {
   }
 
  private:
+  // These two vectors hold the MockDownloadItems. |mocks_| contains just the
+  // pointers, but is necessary because DownloadQuery processes vectors of
+  // unowned pointers. |owned_mocks_| holds the ownership of the mock objects.
   std::vector<content::MockDownloadItem*> mocks_;
+  std::vector<std::unique_ptr<content::MockDownloadItem>> owned_mocks_;
   DownloadQuery query_;
   DownloadVector results_;
 

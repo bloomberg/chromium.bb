@@ -4,11 +4,12 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_vector.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -27,9 +28,8 @@ using testing::_;
 
 class TestDownloadStatusUpdater : public DownloadStatusUpdater {
  public:
-  TestDownloadStatusUpdater() : notification_count_(0),
-                                acceptable_notification_item_(NULL) {
-  }
+  TestDownloadStatusUpdater()
+      : notification_count_(0), acceptable_notification_item_(nullptr) {}
   void SetAcceptableNotificationItem(content::DownloadItem* item) {
     acceptable_notification_item_ = item;
   }
@@ -59,13 +59,12 @@ class DownloadStatusUpdaterTest : public testing::Test {
     }
 
     delete updater_;
-    updater_ = NULL;
+    updater_ = nullptr;
     VerifyAndClearExpectations();
 
     managers_.clear();
-    for (std::vector<Items>::iterator it = manager_items_.begin();
-         it != manager_items_.end(); ++it)
-      base::STLDeleteContainerPointers(it->begin(), it->end());
+    manager_items_.clear();
+    all_owned_items_.clear();
 
     base::RunLoop().RunUntilIdle();  // Allow DownloadManager destruction.
   }
@@ -75,9 +74,8 @@ class DownloadStatusUpdaterTest : public testing::Test {
   void SetupManagers(int manager_count) {
     DCHECK_EQ(0U, managers_.size());
     for (int i = 0; i < manager_count; ++i) {
-      content::MockDownloadManager* mgr =
-          new StrictMock<content::MockDownloadManager>;
-      managers_.push_back(mgr);
+      managers_.push_back(
+          base::MakeUnique<StrictMock<content::MockDownloadManager>>());
     }
   }
 
@@ -87,10 +85,10 @@ class DownloadStatusUpdaterTest : public testing::Test {
 
   // Hook the specified manager into the updater.
   void LinkManager(int i) {
-    content::MockDownloadManager* mgr = managers_[i];
+    content::MockDownloadManager* mgr = managers_[i].get();
     manager_observer_index_ = i;
     while (manager_observers_.size() <= static_cast<size_t>(i)) {
-      manager_observers_.push_back(NULL);
+      manager_observers_.push_back(nullptr);
     }
     EXPECT_CALL(*mgr, AddObserver(_))
         .WillOnce(WithArg<0>(Invoke(
@@ -101,20 +99,21 @@ class DownloadStatusUpdaterTest : public testing::Test {
   // Add some number of Download items to a particular manager.
   void AddItems(int manager_index, int item_count, int in_progress_count) {
     DCHECK_GT(managers_.size(), static_cast<size_t>(manager_index));
-    content::MockDownloadManager* manager = managers_[manager_index];
+    content::MockDownloadManager* manager = managers_[manager_index].get();
 
     if (manager_items_.size() <= static_cast<size_t>(manager_index))
       manager_items_.resize(manager_index+1);
 
     std::vector<content::DownloadItem*> item_list;
     for (int i = 0; i < item_count; ++i) {
-      content::MockDownloadItem* item =
-          new StrictMock<content::MockDownloadItem>;
+      std::unique_ptr<content::MockDownloadItem> item =
+          base::MakeUnique<StrictMock<content::MockDownloadItem>>();
       content::DownloadItem::DownloadState state =
           i < in_progress_count ? content::DownloadItem::IN_PROGRESS
               : content::DownloadItem::CANCELLED;
       EXPECT_CALL(*item, GetState()).WillRepeatedly(Return(state));
-      manager_items_[manager_index].push_back(item);
+      manager_items_[manager_index].push_back(item.get());
+      all_owned_items_.push_back(std::move(item));
     }
     EXPECT_CALL(*manager, GetAllDownloads(_))
         .WillRepeatedly(SetArgPointee<0>(manager_items_[manager_index]));
@@ -123,7 +122,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
   // Return the specified manager.
   content::MockDownloadManager* Manager(int manager_index) {
     DCHECK_GT(managers_.size(), static_cast<size_t>(manager_index));
-    return managers_[manager_index];
+    return managers_[manager_index].get();
   }
 
   // Return the specified item.
@@ -146,7 +145,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
     EXPECT_CALL(*item, GetTotalBytes())
         .WillRepeatedly(Return(total_bytes));
     if (notify)
-      updater_->OnDownloadUpdated(managers_[manager_index], item);
+      updater_->OnDownloadUpdated(managers_[manager_index].get(), item);
   }
 
   // Transition specified item to completed.
@@ -154,31 +153,34 @@ class DownloadStatusUpdaterTest : public testing::Test {
     content::MockDownloadItem* item(Item(manager_index, item_index));
     EXPECT_CALL(*item, GetState())
         .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
-    updater_->OnDownloadUpdated(managers_[manager_index], item);
+    updater_->OnDownloadUpdated(managers_[manager_index].get(), item);
   }
 
   // Verify and clear all mocks expectations.
   void VerifyAndClearExpectations() {
-    for (ScopedVector<content::MockDownloadManager>::iterator it
-             = managers_.begin(); it != managers_.end(); ++it)
-      Mock::VerifyAndClearExpectations(*it);
-    for (std::vector<Items>::iterator it = manager_items_.begin();
-         it != manager_items_.end(); ++it)
-      for (Items::iterator sit = it->begin(); sit != it->end(); ++sit)
+    for (const auto& manager : managers_)
+      Mock::VerifyAndClearExpectations(manager.get());
+    for (auto it = manager_items_.begin(); it != manager_items_.end(); ++it)
+      for (auto sit = it->begin(); sit != it->end(); ++sit)
         Mock::VerifyAndClearExpectations(*sit);
   }
 
-  ScopedVector<content::MockDownloadManager> managers_;
-  // DownloadItem so that it can be assigned to the result of SearchDownloads.
-  typedef std::vector<content::DownloadItem*> Items;
-  std::vector<Items> manager_items_;
+  // The mocked download managers.
+  std::vector<std::unique_ptr<content::MockDownloadManager>> managers_;
+  // The download items being downloaded by those managers in |managers_|. The
+  // top-level vector is the manager index, and the inner vector is the list of
+  // items of that manager. The inner vector is a vector<DownloadItem*> for
+  // compatibility with the return value of DownloadManager::GetAllDownloads().
+  std::vector<std::vector<content::DownloadItem*>> manager_items_;
+  // An owning container for items in |manager_items_|.
+  std::vector<std::unique_ptr<content::DownloadItem>> all_owned_items_;
   int manager_observer_index_;
 
   std::vector<content::DownloadManager::Observer*> manager_observers_;
 
   // Pointer so we can verify that destruction triggers appropriate
   // changes.
-  TestDownloadStatusUpdater *updater_;
+  TestDownloadStatusUpdater* updater_;
 
   // Thread so that the DownloadManager (which is a DeleteOnUIThread
   // object) can be deleted.
@@ -242,7 +244,7 @@ TEST_F(DownloadStatusUpdaterTest, OneManagerManyItems) {
   AddItems(0, 1, 1);
   SetItemValues(0, 3, 150, 200, false);
   manager_observers_[0]->OnDownloadCreated(
-      managers_[0], manager_items_[0][manager_items_[0].size()-1]);
+      managers_[0].get(), manager_items_[0][manager_items_[0].size() - 1]);
 
   EXPECT_TRUE(updater_->GetProgress(&progress, &download_count));
   EXPECT_FLOAT_EQ((50+150)/(60+200.0f), progress);
@@ -279,7 +281,7 @@ TEST_F(DownloadStatusUpdaterTest, ProgressNotification) {
   ++expected_notifications;
   ASSERT_EQ(expected_notifications, updater_->NotificationCount());
 
-  updater_->SetAcceptableNotificationItem(NULL);
+  updater_->SetAcceptableNotificationItem(nullptr);
 }
 
 // Confirm we recognize the situation where we have an unknown size.

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATUS_UPDATER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATUS_UPDATER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
@@ -46,7 +47,7 @@ class DownloadStatusUpdater
   virtual void UpdateAppIconDownloadProgress(content::DownloadItem* download);
 
  private:
-  std::vector<AllDownloadItemNotifier*> notifiers_;
+  std::vector<std::unique_ptr<AllDownloadItemNotifier>> notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStatusUpdater);
 };

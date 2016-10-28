@@ -11,6 +11,7 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -191,7 +192,7 @@ class DownloadHistoryTest : public testing::Test {
         history_(NULL),
         manager_observer_(NULL),
         download_created_index_(0) {}
-  ~DownloadHistoryTest() override { base::STLDeleteElements(&items_); }
+  ~DownloadHistoryTest() override {}
 
  protected:
   void TearDown() override { download_history_.reset(); }
@@ -366,8 +367,7 @@ class DownloadHistoryTest : public testing::Test {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     size_t index = items_.size();
-    StrictMockDownloadItem* mock_item = new StrictMockDownloadItem();
-    items_.push_back(mock_item);
+    items_.push_back(base::MakeUnique<StrictMockDownloadItem>());
 
     info->current_path = current_path;
     info->target_path = target_path;
@@ -459,7 +459,7 @@ class DownloadHistoryTest : public testing::Test {
 
   base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
-  std::vector<StrictMockDownloadItem*> items_;
+  std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
   std::unique_ptr<content::MockDownloadManager> manager_;
   FakeHistoryAdapter* history_;
   std::unique_ptr<DownloadHistory> download_history_;
