@@ -309,7 +309,8 @@ void WtsSessionProcessDelegate::Core::OnIOCompleted(
     case JOB_OBJECT_MSG_NEW_PROCESS: {
       caller_task_runner_->PostTask(
           FROM_HERE, base::Bind(&Core::OnProcessLaunchDetected, this,
-                                reinterpret_cast<base::ProcessId>(context)));
+                                static_cast<base::ProcessId>(
+                                    reinterpret_cast<uintptr_t>(context))));
       break;
     }
   }
