@@ -290,7 +290,7 @@ function verifyMarkers(
 
   /** @type {!MarkerSerializer} */
   const serializer = new MarkerSerializer({
-    spelling: '_',
+    spelling: '#',
     grammar: '~'});
 
   try {

@@ -23,8 +23,8 @@ steps.push(
           document.execCommand('insertText', false, 'zz.');
         },
         [
-          '<textarea id="textarea">_zz_.</textarea>',
-          '<input value="_zz_.">',
+          '<textarea id="textarea">#zz#.</textarea>',
+          '<input value="#zz#.">',
           '<textarea id="aux"></textarea>'
         ].join(''),
         {
@@ -37,7 +37,7 @@ steps.push(
         sample,
         document => document.getElementById('aux').focus(),
         [
-          '<textarea id="textarea">_zz_.</textarea>',
+          '<textarea id="textarea">#zz#.</textarea>',
           '<input value="zz.">',
           '<textarea id="aux"></textarea>'
         ].join(''),
@@ -51,8 +51,8 @@ steps.push(
         sample,
         document => document.querySelector('input').focus(),
         [
-          '<textarea id="textarea">_zz_.</textarea>',
-          '<input value="_zz_.">',
+          '<textarea id="textarea">#zz#.</textarea>',
+          '<input value="#zz#.">',
           '<textarea id="aux"></textarea>'
         ].join(''),
         'Focusing INPUT preserves markers in TEXTAREA.'));

@@ -11,12 +11,12 @@ spellcheck_test(
           '<img src="../resources/abe.png"> zz zz.');
       document.execCommand('paste');
     },
-    '<div contenteditable><img src="../resources/abe.png"> _zz_ _zz_.</div>',
+    '<div contenteditable><img src="../resources/abe.png"> #zz# #zz#.</div>',
     'Mark misspelled words after pasting mixed content of image and text.');
 
 // Create HTML longer than the spellchecker's chunk size 16384.
 const longHTML = `<img src="../resources/abe.png"> zz${' ah'.repeat(5461)}`;
-const expectedHTML = `<img src="../resources/abe.png"> _zz_${' ah'.repeat(5461)}`;
+const expectedHTML = `<img src="../resources/abe.png"> #zz#${' ah'.repeat(5461)}`;
 spellcheck_test(
     '<div contenteditable>|</div>',
     document => {

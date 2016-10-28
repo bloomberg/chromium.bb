@@ -12,7 +12,7 @@ spellcheck_test(
     document.execCommand('insertParagraph');
     document.execCommand('insertText', false, 'zz ');
   },
-  '<div contenteditable>x<div>_zz_ a</div></div>',
+  '<div contenteditable>x<div>#zz# a</div></div>',
   'Mark misspelling in new line.'
 );
 </script>

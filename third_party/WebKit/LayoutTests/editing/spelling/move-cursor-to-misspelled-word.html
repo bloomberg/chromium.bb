@@ -8,13 +8,13 @@
 spellcheck_test(
     '<div contenteditable>zz&nbsp;|</div>',
     '',
-    '<div contenteditable>_zz_ </div>',
+    '<div contenteditable>#zz# </div>',
     {
       title: 'Has marker on initially misspelled text',
       callback: sample => spellcheck_test(
           sample,
           document => document.getSelection().modify('move', 'backward', 'character'),
-          '<div contenteditable>_zz_ </div>',
+          '<div contenteditable>#zz# </div>',
           'Moving cursor to misspelled word does not remove marker.')
     });
 </script>

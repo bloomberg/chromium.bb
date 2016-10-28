@@ -45,7 +45,7 @@ function assertContextMenuSuggestion(sample, expected) {
 spellcheck_test(
     '<div contenteditable>^wellcome| home.</div>',
     '',
-    '<div contenteditable>_wellcome_ home.</div>',
+    '<div contenteditable>#wellcome# home.</div>',
     {
       title: 'Has marker on initial misspelling.',
       callback: sample => assertContextMenuSuggestion(sample, 'welcome')
@@ -54,7 +54,7 @@ spellcheck_test(
 spellcheck_test(
     '<div contenteditable>It should be ^upper case|.</div>',
     '',
-    '<div contenteditable>It should be _upper case_.</div>',
+    '<div contenteditable>It should be #upper case#.</div>',
     {
       title: 'Has marker on initial multi-word misspelling.',
       callback: sample => assertContextMenuSuggestion(sample, 'uppercase')

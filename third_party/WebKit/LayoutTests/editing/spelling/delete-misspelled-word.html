@@ -10,7 +10,7 @@
 spellcheck_test(
     '<div contenteditable>zz&nbsp;|</div>',
     '',
-    '<div contenteditable>_zz_ </div>',
+    '<div contenteditable>#zz# </div>',
     {
       title: 'Has marker on initially misspelled word.',
       callback: sample => spellcheck_test(

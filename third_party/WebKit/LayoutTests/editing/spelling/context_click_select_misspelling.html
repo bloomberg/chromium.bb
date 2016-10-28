@@ -60,7 +60,7 @@ function contextClickSelectionTests(input) {
 spellcheck_test(
     '<input type="text" value="wellcome home.">',
     document => document.querySelector('input').focus(),
-    '<input type="text" value="_wellcome_ home.">',
+    '<input type="text" value="#wellcome# home.">',
     {
       title: 'Mark misspelling in the initial text of an input field.',
       callback: sample => contextClickSelectionTests(
