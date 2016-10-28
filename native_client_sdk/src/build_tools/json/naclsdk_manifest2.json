@@ -35,26 +35,6 @@
     },
     {
       "archives": [],
-      "description": "Chrome 44 bundle, revision xxxxx",
-      "name": "pepper_44",
-      "recommended": "no",
-      "repath": "pepper_44",
-      "revision": 0,
-      "stability": "post_stable",
-      "version": 44
-    },
-    {
-      "archives": [],
-      "description": "Chrome 45 bundle, revision xxxxx",
-      "name": "pepper_45",
-      "recommended": "no",
-      "repath": "pepper_45",
-      "revision": 0,
-      "stability": "post_stable",
-      "version": 45
-    },
-    {
-      "archives": [],
       "description": "Chrome 46 bundle, revision xxxxx",
       "name": "pepper_46",
       "recommended": "no",
@@ -94,38 +74,13 @@
       "version": 50
     },
     {
-      "archives": [
-        {
-          "checksum": {
-            "sha1": "8fa21433d946fb30666d29d9898ab91b6f0fb708"
-          },
-          "host_os": "linux",
-          "size": 332591654,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/55.0.2879.2/naclsdk_linux.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "6db864b3372ad98a46d6c6166f59c5cfa13f7a57"
-          },
-          "host_os": "mac",
-          "size": 322946452,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/55.0.2879.2/naclsdk_mac.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "0f562a6288c18459f4132c0a7dada147c588e8e9"
-          },
-          "host_os": "win",
-          "size": 318999883,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/55.0.2879.2/naclsdk_win.tar.bz2"
-        }
-      ],
-      "description": "Chrome 55 bundle. Chrome revision: 2. NaCl revision: fe5bd51f9b79d27b2a3884181d4004cfccf70759",
+      "archives": [],
+      "description": "Chrome 55 bundle, revision xxxxx",
       "name": "pepper_55",
       "recommended": "no",
       "repath": "pepper_55",
-      "revision": 2,
-      "stability": "dev",
+      "revision": 0,
+      "stability": "post_stable",
       "version": 55
     },
     {
