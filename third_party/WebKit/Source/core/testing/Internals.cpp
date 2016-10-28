@@ -2293,14 +2293,16 @@ void Internals::stopTrackingRepaints(Document* document,
 void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
     Node* node,
     ExceptionState& exceptionState) {
-  Document* document;
+  Document* document = nullptr;
   if (!node) {
     document = contextDocument();
   } else if (node->isDocumentNode()) {
     document = toDocument(node);
   } else if (isHTMLIFrameElement(*node)) {
     document = toHTMLIFrameElement(*node).contentDocument();
-  } else {
+  }
+
+  if (!document) {
     exceptionState.throwTypeError(
         "The node provided is neither a document nor an IFrame.");
     return;
