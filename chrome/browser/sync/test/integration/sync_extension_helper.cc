@@ -188,7 +188,7 @@ void SyncExtensionHelper::InstallExtensionsPendingForSync(Profile* profile) {
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
 
   std::list<std::string>::const_iterator iter;
-  const extensions::PendingExtensionInfo* info = NULL;
+  const extensions::PendingExtensionInfo* info = nullptr;
   for (iter = pending_crx_ids.begin(); iter != pending_crx_ids.end(); ++iter) {
     ASSERT_TRUE(info = pending_extension_manager->GetById(*iter));
     if (!info->is_from_sync())
@@ -359,19 +359,19 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
     }
     default:
       ADD_FAILURE();
-      return NULL;
+      return nullptr;
   }
   const base::FilePath sub_dir = base::FilePath().AppendASCII(name);
   base::FilePath extension_dir;
   if (!base::PathExists(base_dir) &&
       !base::CreateDirectory(base_dir)) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   if (!base::CreateTemporaryDirInDir(base_dir, sub_dir.value(),
                                      &extension_dir)) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   std::string error;
   scoped_refptr<Extension> extension =
@@ -379,19 +379,19 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
                         Extension::NO_FLAGS, &error);
   if (!error.empty()) {
     ADD_FAILURE() << error;
-    return NULL;
+    return nullptr;
   }
   if (!extension.get()) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   if (extension->name() != name) {
     EXPECT_EQ(name, extension->name());
-    return NULL;
+    return nullptr;
   }
   if (extension->GetType() != type) {
     EXPECT_EQ(type, extension->GetType());
-    return NULL;
+    return nullptr;
   }
   return extension;
 }
@@ -402,12 +402,12 @@ scoped_refptr<Extension> SyncExtensionHelper::GetExtension(
     Profile* profile, const std::string& name, Manifest::Type type) {
   if (name.empty()) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   ProfileExtensionNameMap::iterator it = profile_extensions_.find(profile);
   if (it == profile_extensions_.end()) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   ExtensionNameMap::const_iterator it2 = it->second.find(name);
   if (it2 != it->second.end()) {
@@ -422,12 +422,12 @@ scoped_refptr<Extension> SyncExtensionHelper::GetExtension(
                       type);
   if (!extension.get()) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   const std::string& expected_id = crx_file::id_util::GenerateId(name);
   if (extension->id() != expected_id) {
     EXPECT_EQ(expected_id, extension->id());
-    return NULL;
+    return nullptr;
   }
   DVLOG(2) << "created extension with name = "
            << name << ", id = " << expected_id;

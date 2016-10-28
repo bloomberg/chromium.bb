@@ -32,7 +32,7 @@ namespace {
 
 class FakeLoginUIService: public LoginUIService {
  public:
-  FakeLoginUIService() : LoginUIService(NULL) {}
+  FakeLoginUIService() : LoginUIService(nullptr) {}
 };
 
 class FakeLoginUI : public LoginUIService::LoginUI {

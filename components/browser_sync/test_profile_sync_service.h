@@ -38,7 +38,7 @@ class TestProfileSyncService : public ProfileSyncService {
   syncer::SyncPrefs* sync_prefs() { return &sync_prefs_; }
 
  protected:
-  // Return NULL handle to use in backend initialization to avoid receiving
+  // Return null handle to use in backend initialization to avoid receiving
   // js messages on UI loop when it's being destroyed, which are not deleted
   // and cause memory leak in test.
   syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler() override;

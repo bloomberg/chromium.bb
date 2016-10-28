@@ -29,7 +29,8 @@ SyncAppListHelper* SyncAppListHelper::GetInstance() {
   return instance;
 }
 
-SyncAppListHelper::SyncAppListHelper() : test_(NULL), setup_completed_(false) {}
+SyncAppListHelper::SyncAppListHelper()
+    : test_(nullptr), setup_completed_(false) {}
 
 SyncAppListHelper::~SyncAppListHelper() {}
 

@@ -20,7 +20,7 @@ namespace sync_sessions {
 // static
 void SyncSessionsMetrics::RecordYoungestForeignTabAgeOnNTP(
     SessionsSyncManager* sessions_sync_manager) {
-  if (sessions_sync_manager != NULL) {
+  if (sessions_sync_manager != nullptr) {
     std::vector<const SyncedSession*> foreign_sessions;
     sessions_sync_manager->GetAllForeignSessions(&foreign_sessions);
     base::Time best(MaxTabTimestamp(foreign_sessions));

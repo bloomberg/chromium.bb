@@ -61,7 +61,7 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
     Profile* profile,
     SyncSessionsClient* sessions_client,
     const syncer::SyncableService::StartSyncFlare& flare)
-    : handler_(NULL),
+    : handler_(nullptr),
       profile_(profile),
       sessions_client_(sessions_client),
       flare_(flare),
@@ -207,7 +207,7 @@ void NotificationServiceSessionsRouter::StartRoutingTo(
 
 void NotificationServiceSessionsRouter::Stop() {
   weak_ptr_factory_.InvalidateWeakPtrs();
-  handler_ = NULL;
+  handler_ = nullptr;
 }
 
 }  // namespace sync_sessions

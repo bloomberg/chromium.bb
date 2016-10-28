@@ -44,7 +44,7 @@ KeyedService* SyncGlobalErrorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance())
-    return NULL;
+    return nullptr;
 #endif
 
   Profile* profile = static_cast<Profile*>(context);
@@ -52,12 +52,12 @@ KeyedService* SyncGlobalErrorFactory::BuildServiceInstanceFor(
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   if (!profile_sync_service)
-    return NULL;
+    return nullptr;
 
   syncer::SyncErrorController* sync_error_controller =
       profile_sync_service->sync_error_controller();
   if (!sync_error_controller)
-    return NULL;
+    return nullptr;
 
   return new SyncGlobalError(GlobalErrorServiceFactory::GetForProfile(profile),
                              LoginUIServiceFactory::GetForProfile(profile),

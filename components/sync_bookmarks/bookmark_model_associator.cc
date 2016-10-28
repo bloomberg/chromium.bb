@@ -74,7 +74,7 @@ class BookmarkNodeFinder {
   explicit BookmarkNodeFinder(const BookmarkNode* parent_node);
 
   // Finds the bookmark node that matches the given url, title and folder
-  // attribute. Returns the matching node if one exists; NULL otherwise.
+  // attribute. Returns the matching node if one exists; null otherwise.
   // If there are multiple matches then a node with ID matching |preferred_id|
   // is returned; otherwise the first matching node is returned.
   // If a matching node is found, it's removed for further matches.
@@ -340,7 +340,7 @@ int64_t BookmarkModelAssociator::GetSyncIdFromChromeId(const int64_t& node_id) {
 const BookmarkNode* BookmarkModelAssociator::GetChromeNodeFromSyncId(
     int64_t sync_id) {
   SyncIdToBookmarkNodeMap::const_iterator iter = id_map_inverse_.find(sync_id);
-  return iter == id_map_inverse_.end() ? NULL : iter->second;
+  return iter == id_map_inverse_.end() ? nullptr : iter->second;
 }
 
 bool BookmarkModelAssociator::InitSyncNodeFromChromeId(

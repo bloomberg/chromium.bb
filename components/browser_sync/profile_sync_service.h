@@ -468,7 +468,7 @@ class ProfileSyncService : public syncer::SyncService,
   // server.
   bool HasUnsyncedItems() const;
 
-  // Used by ProfileSyncServiceHarness.  May return NULL.
+  // Used by ProfileSyncServiceHarness.  May return null.
   syncer::BackendMigrator* GetBackendMigratorForTest();
 
   // Used by tests to inspect interaction with OAuth2TokenService.

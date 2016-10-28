@@ -9,7 +9,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 
 MigrationWatcher::MigrationWatcher(ProfileSyncServiceHarness* harness)
-    : harness_(harness), migration_waiter_(NULL) {
+    : harness_(harness), migration_waiter_(nullptr) {
   syncer::BackendMigrator* migrator =
       harness_->service()->GetBackendMigratorForTest();
   // PSS must have a migrator after sync is setup and initial data type
@@ -62,5 +62,5 @@ void MigrationWatcher::set_migration_waiter(MigrationWaiter* waiter) {
 
 void MigrationWatcher::clear_migration_waiter() {
   DCHECK(migration_waiter_);
-  migration_waiter_ = NULL;
+  migration_waiter_ = nullptr;
 }

@@ -243,7 +243,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
 
   base::ThreadChecker thread_checker_;
 
-  // The bookmark model we are processing changes from.  Non-NULL when
+  // The bookmark model we are processing changes from.  Non-null when
   // |running_| is true.
   bookmarks::BookmarkModel* bookmark_model_;
 

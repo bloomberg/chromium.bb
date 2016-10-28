@@ -190,7 +190,7 @@ class FakeSigninManagerForSyncUIUtilTest : public FakeSigninManagerBase {
             ChromeSigninClientFactory::GetForProfile(profile),
             AccountTrackerServiceFactory::GetForProfile(profile)),
         auth_in_progress_(false) {
-    Initialize(NULL);
+    Initialize(nullptr);
   }
 
   ~FakeSigninManagerForSyncUIUtilTest() override {}

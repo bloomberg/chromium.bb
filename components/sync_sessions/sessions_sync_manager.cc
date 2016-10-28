@@ -230,7 +230,7 @@ void SessionsSyncManager::AssociateWindows(
     // check is necessary because, for example, when a browser is closed the
     // destructor is not necessarily run immediately. This means its possible
     // for us to get a handle to a browser that is about to be removed. If
-    // the tab count is 0 or the window is NULL, the browser is about to be
+    // the tab count is 0 or the window is null, the browser is about to be
     // deleted, so we ignore it.
     if ((*i)->ShouldSync() && (*i)->GetTabCount() && (*i)->HasWindow()) {
       sync_pb::SessionWindow window_s;
@@ -283,7 +283,7 @@ void SessionsSyncManager::AssociateWindows(
         // change processor calling AssociateTab for all modified tabs.
         // Therefore, we can key whether this window has valid tabs based on
         // the tab's presence in the tracker.
-        const sessions::SessionTab* tab = NULL;
+        const sessions::SessionTab* tab = nullptr;
         if (session_tracker_.LookupSessionTab(local_tag, tab_id, &tab)) {
           found_tabs = true;
           window_s.add_tab(tab_id);
@@ -336,7 +336,7 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
     return;
 
   TabLinksMap::iterator local_tab_map_iter = local_tab_map_.find(tab_id);
-  TabLink* tab_link = NULL;
+  TabLink* tab_link = nullptr;
 
   if (local_tab_map_iter == local_tab_map_.end()) {
     int tab_node_id = tab->GetSyncId();
@@ -464,7 +464,7 @@ void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
         lost_navigations_recorder_.get());
     lost_navigations_recorder_.reset();
   }
-  sync_processor_.reset(NULL);
+  sync_processor_.reset(nullptr);
   error_handler_.reset();
   session_tracker_.Clear();
   local_tab_map_.clear();
@@ -477,7 +477,7 @@ void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
 syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
     syncer::ModelType type) const {
   syncer::SyncDataList list;
-  const SyncedSession* session = NULL;
+  const SyncedSession* session = nullptr;
   if (!session_tracker_.LookupLocalSession(&session))
     return syncer::SyncDataList();
 
@@ -947,7 +947,7 @@ bool SessionsSyncManager::GetForeignSessionTabs(
 bool SessionsSyncManager::GetForeignTab(const std::string& tag,
                                         const SessionID::id_type tab_id,
                                         const sessions::SessionTab** tab) {
-  const sessions::SessionTab* synced_tab = NULL;
+  const sessions::SessionTab* synced_tab = nullptr;
   bool success = session_tracker_.LookupSessionTab(tag, tab_id, &synced_tab);
   if (success)
     *tab = synced_tab;
@@ -957,7 +957,7 @@ bool SessionsSyncManager::GetForeignTab(const std::string& tag,
 void SessionsSyncManager::LocalTabDelegateToSpecifics(
     const SyncedTabDelegate& tab_delegate,
     sync_pb::SessionSpecifics* specifics) {
-  sessions::SessionTab* session_tab = NULL;
+  sessions::SessionTab* session_tab = nullptr;
   session_tab = session_tracker_.GetTab(current_machine_tag(),
                                         tab_delegate.GetSessionId(),
                                         tab_delegate.GetSyncId());

@@ -88,7 +88,7 @@ class BookmarkModelAssociator
   int64_t GetSyncIdFromChromeId(const int64_t& node_id) override;
 
   // Returns the bookmark node for the given sync id.
-  // Returns NULL if no bookmark node is found for the given sync id.
+  // Returns null if no bookmark node is found for the given sync id.
   const bookmarks::BookmarkNode* GetChromeNodeFromSyncId(
       int64_t sync_id) override;
 

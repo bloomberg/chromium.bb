@@ -54,8 +54,8 @@ class BookmarksSyncPerfTest : public SyncTest {
 
 void BookmarksSyncPerfTest::AddURLs(int profile, int num_urls) {
   for (int i = 0; i < num_urls; ++i) {
-    ASSERT_TRUE(AddURL(
-        profile, 0, NextIndexedURLTitle(), GURL(NextIndexedURL())) != NULL);
+    ASSERT_TRUE(AddURL(profile, 0, NextIndexedURLTitle(),
+                       GURL(NextIndexedURL())) != nullptr);
   }
 }
 

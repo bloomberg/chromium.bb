@@ -118,7 +118,7 @@ class FakeServerChange {
     EXPECT_EQ(BaseNode::INIT_OK, parent.InitByIdLookup(parent_id));
     syncer::WriteNode node(trans_);
     if (predecessor_id == 0) {
-      EXPECT_TRUE(node.InitBookmarkByCreation(parent, NULL));
+      EXPECT_TRUE(node.InitBookmarkByCreation(parent, nullptr));
     } else {
       syncer::ReadNode predecessor(trans_);
       EXPECT_EQ(BaseNode::INIT_OK, predecessor.InitByIdLookup(predecessor_id));
@@ -151,7 +151,7 @@ class FakeServerChange {
               bool is_folder,
               int64_t parent_id,
               int64_t predecessor_id) {
-    return AddWithMetaInfo(title, url, NULL, is_folder, parent_id,
+    return AddWithMetaInfo(title, url, nullptr, is_folder, parent_id,
                            predecessor_id);
   }
 
@@ -235,7 +235,7 @@ class FakeServerChange {
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
     int64_t old_parent_id = node.GetParentId();
     if (predecessor_id == 0) {
-      EXPECT_TRUE(node.SetPosition(parent, NULL));
+      EXPECT_TRUE(node.SetPosition(parent, nullptr));
     } else {
       syncer::ReadNode predecessor(trans_);
       EXPECT_EQ(BaseNode::INIT_OK, predecessor.InitByIdLookup(predecessor_id));
@@ -399,7 +399,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
               bookmark_bar.InitByTagLookupForBookmarks("bookmark_bar"));
 
     syncer::WriteNode node(trans);
-    EXPECT_TRUE(node.InitBookmarkByCreation(bookmark_bar, NULL));
+    EXPECT_TRUE(node.InitBookmarkByCreation(bookmark_bar, nullptr));
     node.SetIsFolder(true);
     node.SetTitle(title);
 
@@ -428,7 +428,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     specifics.set_title(title);
 
     syncer::WriteNode node(trans);
-    EXPECT_TRUE(node.InitBookmarkByCreation(parent, NULL));
+    EXPECT_TRUE(node.InitBookmarkByCreation(parent, nullptr));
     node.SetIsFolder(false);
     node.SetTitle(title);
     node.SetBookmarkSpecifics(specifics);
@@ -524,7 +524,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       // If it doesn't exist, create the permanent node at the end of the
       // ordering.
       syncer::ReadNode predecessor_node(&trans);
-      syncer::ReadNode* predecessor = NULL;
+      syncer::ReadNode* predecessor = nullptr;
       if (last_child_id != syncer::kInvalidId) {
         EXPECT_EQ(BaseNode::INIT_OK,
                   predecessor_node.InitByIdLookup(last_child_id));
@@ -662,7 +662,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     }
     // Note: the managed node is the last child of the root_node but isn't
     // synced; if CanSyncNode() is false then there is no next node to sync.
-    const BookmarkNode* bnext = NULL;
+    const BookmarkNode* bnext = nullptr;
     if (browser_index + 1 < bnode->parent()->child_count())
       bnext = bnode->parent()->GetChild(browser_index + 1);
     if (!bnext || !CanSyncNode(bnext)) {
@@ -994,7 +994,7 @@ TEST_F(ProfileSyncServiceBookmarkTest,
     // Create sync folders matching native folders above.
     int64_t parent_id = 0;
     syncer::WriteTransaction trans(FROM_HERE, test_user_share()->user_share());
-    // Create in reverse order because AddFolderToShare passes NULL for
+    // Create in reverse order because AddFolderToShare passes null for
     // |predecessor| argument.
     for (int i = kNumFolders - 1; i >= 0; i--) {
       int64_t id = AddFolderToShare(&trans, "folder");
@@ -1014,7 +1014,7 @@ TEST_F(ProfileSyncServiceBookmarkTest,
     }
 
     // Create sync bookmark matching native bookmarks above in reverse order
-    // because AddBookmarkToShare passes NULL for |predecessor| argument.
+    // because AddBookmarkToShare passes null for |predecessor| argument.
     for (int i = kNumBookmarks - 1; i >= 0; i--) {
       int id = AddBookmarkToShare(&trans, parent_id, "bookmark",
                                   "http://www.google.com/");
@@ -1694,9 +1694,9 @@ namespace {
 
 static TestData kBookmarkBarChildren[] = {
     {"u2", "http://www.u2.com/"},
-    {"f1", NULL},
+    {"f1", nullptr},
     {"u1", "http://www.u1.com/"},
-    {"f2", NULL},
+    {"f2", nullptr},
 };
 static TestData kF1Children[] = {
     {"f1u4", "http://www.f1u4.com/"},
@@ -1711,12 +1711,12 @@ static TestData kF2Children[] = {
     {"f2u1", "http://www.f2u1.com/"},
 };
 
-static TestData kOtherBookmarkChildren[] = {{"f3", NULL},
+static TestData kOtherBookmarkChildren[] = {{"f3", nullptr},
                                             {"u4", "http://www.u4.com/"},
                                             {"u3", "http://www.u3.com/"},
-                                            {"f4", NULL},
-                                            {"dup", NULL},
-                                            {"dup", NULL},
+                                            {"f4", nullptr},
+                                            {"dup", nullptr},
+                                            {"dup", nullptr},
                                             {"  ls  ", "http://www.ls.com/"}};
 static TestData kF3Children[] = {
     {"f3u4", "http://www.f3u4.com/"},
@@ -1738,8 +1738,8 @@ static TestData kDup2Children[] = {
 };
 
 static TestData kMobileBookmarkChildren[] = {
-    {"f5", NULL},
-    {"f6", NULL},
+    {"f5", nullptr},
+    {"f6", nullptr},
     {"u5", "http://www.u5.com/"},
 };
 static TestData kF5Children[] = {
@@ -1771,7 +1771,7 @@ void ProfileSyncServiceBookmarkTestWithData::PopulateFromTestData(
           start_time_ + base::TimeDelta::FromMinutes(*running_count);
       model()->AddURLWithCreationTimeAndMetaInfo(
           node, i, base::UTF8ToUTF16(item.title), GURL(item.url), add_time,
-          NULL);
+          nullptr);
     } else {
       model()->AddFolder(node, i, base::UTF8ToUTF16(item.title));
     }
@@ -1791,7 +1791,7 @@ void ProfileSyncServiceBookmarkTestWithData::CompareWithTestData(
   for (int i = 0; i < size; ++i) {
     const BookmarkNode* child_node = node->GetChild(i);
     const TestData& item = data[i];
-    GURL url = GURL(item.url == NULL ? "" : item.url);
+    GURL url = GURL(item.url == nullptr ? "" : item.url);
     BookmarkNode test_node(url);
     test_node.SetTitle(base::UTF8ToUTF16(item.title));
     EXPECT_EQ(child_node->GetTitle(), test_node.GetTitle());

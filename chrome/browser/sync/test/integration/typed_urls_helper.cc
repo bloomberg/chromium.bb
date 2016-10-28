@@ -164,9 +164,9 @@ void AddToHistory(history::HistoryService* service,
                   history::VisitSource source,
                   const base::Time& timestamp) {
   service->AddPage(url, timestamp,
-                   NULL,    // scope
-                   1234,    // nav_entry_id
-                   GURL(),  // referrer
+                   nullptr,  // scope
+                   1234,     // nav_entry_id
+                   GURL(),   // referrer
                    history::RedirectList(), transition, source, false);
 }
 
@@ -226,7 +226,7 @@ void RemoveVisitsFromHistoryService(history::HistoryService* service,
   wait_event.Wait();
 }
 
-static base::Time* timestamp = NULL;
+static base::Time* timestamp = nullptr;
 
 }  // namespace
 

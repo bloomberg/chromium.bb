@@ -188,7 +188,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
   void NotifyLocalChangeObservers() {
     const syncer::SyncChange empty_change;
     for (syncer::LocalChangeObserver& observer : local_change_observers_)
-      observer.OnLocalChange(NULL, empty_change);
+      observer.OnLocalChange(nullptr, empty_change);
   }
 
   void FailProcessSyncChangesWith(const syncer::SyncError& error) {
@@ -308,8 +308,7 @@ class SyncSessionsClientShim : public SyncSessionsClient {
 class SessionsSyncManagerTest
     : public BrowserWithTestWindowTest {
  protected:
-  SessionsSyncManagerTest()
-      : test_processor_(NULL) {
+  SessionsSyncManagerTest() : test_processor_(nullptr) {
     local_device_ = base::MakeUnique<LocalDeviceInfoProviderMock>(
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
         "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
@@ -335,7 +334,7 @@ class SessionsSyncManagerTest
   }
 
   void TearDown() override {
-    test_processor_ = NULL;
+    test_processor_ = nullptr;
     helper()->Reset();
     sync_prefs_.reset();
     manager_.reset();
@@ -363,7 +362,7 @@ class SessionsSyncManagerTest
   }
 
   void InitWithNoSyncData() {
-    InitWithSyncDataTakeOutput(syncer::SyncDataList(), NULL);
+    InitWithSyncDataTakeOutput(syncer::SyncDataList(), nullptr);
   }
 
   void TriggerProcessSyncChangesError() {
@@ -818,7 +817,7 @@ TEST_F(SessionsSyncManagerTest, SetVariationIds) {
   const variations::VariationID kVariationId2 = 3300300;
   const variations::VariationID kVariationId3 = 3300400;
 
-  base::FieldTrialList field_trial_list(NULL);
+  base::FieldTrialList field_trial_list(nullptr);
   CreateAndActivateFieldTrial("trial name 1", "group name", kVariationId1,
                               variations::CHROME_SYNC_SERVICE);
   CreateAndActivateFieldTrial("trial name 2", "group name", kVariationId2,

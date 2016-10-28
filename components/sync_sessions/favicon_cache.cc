@@ -58,7 +58,7 @@ struct LocalFaviconUpdateInfo {
       : new_image(false),
         new_tracking(false),
         image_needs_rewrite(false),
-        favicon_info(NULL) {}
+        favicon_info(nullptr) {}
 
   bool new_image;
   bool new_tracking;

@@ -42,7 +42,7 @@ void SyncGlobalError::Shutdown() {
   if (!switches::IsMaterialDesignUserMenu())
     global_error_service_->RemoveGlobalError(this);
   error_controller_->RemoveObserver(this);
-  error_controller_ = NULL;
+  error_controller_ = nullptr;
 }
 
 bool SyncGlobalError::HasMenuItem() {

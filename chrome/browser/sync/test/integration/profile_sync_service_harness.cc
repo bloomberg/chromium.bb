@@ -147,7 +147,7 @@ bool ProfileSyncServiceHarness::SetupSync(
       << "SetupSync should not be used for legacy supervised users.";
 
   // Initialize the sync client's profile sync service object.
-  if (service() == NULL) {
+  if (service() == nullptr) {
     LOG(ERROR) << "SetupSync(): service() is null.";
     return false;
   }
@@ -308,7 +308,7 @@ void ProfileSyncServiceHarness::FinishSyncSetup() {
 }
 
 SyncCycleSnapshot ProfileSyncServiceHarness::GetLastCycleSnapshot() const {
-  DCHECK(service() != NULL) << "Sync service has not yet been set up.";
+  DCHECK(service() != nullptr) << "Sync service has not yet been set up.";
   if (service()->IsSyncActive()) {
     return service()->GetLastCycleSnapshot();
   }
@@ -324,7 +324,7 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
   if (IsSyncDisabled())
     return SetupSync(syncer::ModelTypeSet(datatype));
 
-  if (service() == NULL) {
+  if (service() == nullptr) {
     LOG(ERROR) << "EnableSyncForDatatype(): service() is null.";
     return false;
   }
@@ -357,7 +357,7 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
       "DisableSyncForDatatype("
       + std::string(syncer::ModelTypeToString(datatype)) + ")");
 
-  if (service() == NULL) {
+  if (service() == nullptr) {
     LOG(ERROR) << "DisableSyncForDatatype(): service() is null.";
     return false;
   }
@@ -390,7 +390,7 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
   if (IsSyncDisabled())
     return SetupSync();
 
-  if (service() == NULL) {
+  if (service() == nullptr) {
     LOG(ERROR) << "EnableSyncForAllDatatypes(): service() is null.";
     return false;
   }
@@ -409,7 +409,7 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
 bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
   DVLOG(1) << GetClientInfoString("DisableSyncForAllDatatypes");
 
-  if (service() == NULL) {
+  if (service() == nullptr) {
     LOG(ERROR) << "DisableSyncForAllDatatypes(): service() is null.";
     return false;
   }

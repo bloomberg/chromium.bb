@@ -240,7 +240,7 @@ class TokenWebDataServiceFake : public TokenWebData {
       WebDataServiceConsumer* consumer) override {
     // TODO(tim): It would be nice if WebDataService was injected on
     // construction of ProfileOAuth2TokenService rather than fetched by
-    // Initialize so that this isn't necessary (we could pass a NULL service).
+    // Initialize so that this isn't necessary (we could pass a null service).
     // We currently do return it via EXPECT_CALLs, but without depending on
     // order-of-initialization (which seems way more fragile) we can't tell
     // which component is asking at what time, and some components in these
@@ -260,9 +260,9 @@ class WebDataServiceFake : public AutofillWebDataService {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread)
       : AutofillWebDataService(ui_thread, db_thread),
-        web_database_(NULL),
-        autocomplete_syncable_service_(NULL),
-        autofill_profile_syncable_service_(NULL),
+        web_database_(nullptr),
+        autocomplete_syncable_service_(nullptr),
+        autofill_profile_syncable_service_(nullptr),
         syncable_service_created_or_destroyed_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -350,8 +350,8 @@ class WebDataServiceFake : public AutofillWebDataService {
 
   void DestroySyncableService() {
     ASSERT_TRUE(db_thread_->RunsTasksOnCurrentThread());
-    autocomplete_syncable_service_ = NULL;
-    autofill_profile_syncable_service_ = NULL;
+    autocomplete_syncable_service_ = nullptr;
+    autofill_profile_syncable_service_ = nullptr;
     backend_.reset();
     syncable_service_created_or_destroyed_.Signal();
   }
@@ -1439,7 +1439,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   ASSERT_TRUE(add_autofill.success());
 
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
-                               sync_profile.guid(), NULL);
+                               sync_profile.guid(), nullptr);
   web_data_service()->OnAutofillProfileChanged(change);
 
   std::vector<AutofillProfile> new_sync_profiles;

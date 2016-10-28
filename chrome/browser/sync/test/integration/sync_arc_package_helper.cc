@@ -57,7 +57,7 @@ SyncArcPackageHelper* SyncArcPackageHelper::GetInstance() {
 }
 
 SyncArcPackageHelper::SyncArcPackageHelper()
-    : test_(NULL), setup_completed_(false), user_manager_enabler_(nullptr) {}
+    : test_(nullptr), setup_completed_(false), user_manager_enabler_(nullptr) {}
 
 SyncArcPackageHelper::~SyncArcPackageHelper() {}
 

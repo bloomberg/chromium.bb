@@ -93,7 +93,7 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
           base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -126,14 +126,14 @@ void GetStatusForActionableError(
 
 // TODO(akalin): Write unit tests for these three functions below.
 
-// status_label and link_label must either be both NULL or both non-NULL.
+// status_label and link_label must either be both null or both non-null.
 MessageType GetStatusInfo(Profile* profile,
                           ProfileSyncService* service,
                           const SigninManagerBase& signin,
                           StatusLabelStyle style,
                           base::string16* status_label,
                           base::string16* link_label) {
-  DCHECK_EQ(status_label == NULL, link_label == NULL);
+  DCHECK_EQ(status_label == nullptr, link_label == nullptr);
 
   MessageType result_type(SYNCED);
 

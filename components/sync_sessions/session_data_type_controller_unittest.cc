@@ -47,7 +47,7 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
   bool IsTabPinned(const SyncedTabDelegate* tab) const override {
     return false;
   }
-  SyncedTabDelegate* GetTabAt(int index) const override { return NULL; }
+  SyncedTabDelegate* GetTabAt(int index) const override { return nullptr; }
   SessionID::id_type GetTabIdAt(int index) const override { return 0; }
 
   bool IsSessionRestoreInProgress() const override {

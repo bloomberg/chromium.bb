@@ -464,7 +464,7 @@ std::vector<ProfileSyncService*> SyncTest::GetSyncServices() {
 Profile* SyncTest::verifier() {
   if (!use_verifier_)
     LOG(FATAL) << "Verifier account is disabled.";
-  if (verifier_ == NULL)
+  if (verifier_ == nullptr)
     LOG(FATAL) << "SetupClients() has not yet been called.";
   return verifier_;
 }
@@ -527,8 +527,8 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   // CheckInitialState() assumes that no windows are open at startup.
   browsers_[index] = new Browser(Browser::CreateParams(GetProfile(index)));
 
-  EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
-                                          << index << ".";
+  EXPECT_FALSE(GetBrowser(index) == nullptr) << "Could not create Browser "
+                                             << index << ".";
 
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
@@ -553,8 +553,8 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
                                         username_,
                                         password_,
                                         singin_type);
-  EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
-                                         << index << ".";
+  EXPECT_FALSE(GetClient(index) == nullptr) << "Could not create Client "
+                                            << index << ".";
   InitializeInvalidations(index);
 }
 
@@ -793,7 +793,7 @@ void SyncTest::SetupMockGaiaResponses() {
 void SyncTest::SetOAuth2TokenResponse(const std::string& response_data,
                                       net::HttpStatusCode response_code,
                                       net::URLRequestStatus::Status status) {
-  ASSERT_TRUE(NULL != fake_factory_.get());
+  ASSERT_TRUE(nullptr != fake_factory_.get());
   fake_factory_->SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                                  response_data, response_code, status);
 }

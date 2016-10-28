@@ -165,10 +165,9 @@ const std::string AutofillSyncPerfTest::IntToValue(int n) {
 void ForceSync(int profile) {
   static int id = 0;
   ++id;
-  EXPECT_TRUE(
-      bookmarks_helper::AddURL(profile, 0,
-                               bookmarks_helper::IndexedURLTitle(id),
-                               GURL(bookmarks_helper::IndexedURL(id))) != NULL);
+  EXPECT_TRUE(bookmarks_helper::AddURL(
+                  profile, 0, bookmarks_helper::IndexedURLTitle(id),
+                  GURL(bookmarks_helper::IndexedURL(id))) != nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, AutofillProfiles_P0) {

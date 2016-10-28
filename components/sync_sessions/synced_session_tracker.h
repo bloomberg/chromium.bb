@@ -67,7 +67,7 @@ class SyncedSessionTracker {
   // If lookup succeeds:
   // - Sets tab to point to the SessionTab, and returns true.
   // Else
-  // - Returns false, tab is set to NULL.
+  // - Returns false, tab is set to null.
   bool LookupSessionTab(const std::string& session_tag,
                         SessionID::id_type tab_id,
                         const sessions::SessionTab** tab) const;

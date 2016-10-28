@@ -54,7 +54,7 @@ const char kNotificationId[] = "chrome://settings/sync/testuser@test.com";
 
 class FakeLoginUIService: public LoginUIService {
  public:
-  FakeLoginUIService() : LoginUIService(NULL) {}
+  FakeLoginUIService() : LoginUIService(nullptr) {}
   ~FakeLoginUIService() override {}
 };
 

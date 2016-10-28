@@ -124,7 +124,7 @@ class HistoryServiceMock : public history::HistoryService {
 
  private:
   void RunTaskOnDBThread(history::HistoryDBTask* task) {
-    EXPECT_TRUE(task->RunOnDBThread(backend_.get(), NULL));
+    EXPECT_TRUE(task->RunOnDBThread(backend_.get(), nullptr));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

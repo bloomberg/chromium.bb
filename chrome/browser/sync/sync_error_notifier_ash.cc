@@ -114,14 +114,14 @@ SyncErrorNotifier::~SyncErrorNotifier() {
 
 void SyncErrorNotifier::Shutdown() {
   error_controller_->RemoveObserver(this);
-  error_controller_ = NULL;
+  error_controller_ = nullptr;
 }
 
 void SyncErrorNotifier::OnErrorChanged() {
   NotificationUIManager* notification_ui_manager =
       g_browser_process->notification_ui_manager();
 
-  // notification_ui_manager() may return NULL when shutting down.
+  // notification_ui_manager() may return null when shutting down.
   if (!notification_ui_manager)
     return;
 

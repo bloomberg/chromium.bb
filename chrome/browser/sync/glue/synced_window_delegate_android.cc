@@ -59,7 +59,7 @@ bool SyncedWindowDelegateAndroid::IsTabPinned(
 SyncedTabDelegate* SyncedWindowDelegateAndroid::GetTabAt(int index) const {
   // After a restart, it is possible for the Tab to be null during startup.
   TabAndroid* tab = tab_model_->GetTabAt(index);
-  return tab ? tab->GetSyncedTabDelegate() : NULL;
+  return tab ? tab->GetSyncedTabDelegate() : nullptr;
 }
 
 SessionID::id_type SyncedWindowDelegateAndroid::GetTabIdAt(int index) const {

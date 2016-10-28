@@ -18,7 +18,7 @@ class Profile;
 class SyncGlobalErrorFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the instance of SyncGlobalError associated with this profile,
-  // creating one if none exists. In Ash, this will return NULL.
+  // creating one if none exists. In Ash, this will return null.
   static SyncGlobalError* GetForProfile(Profile* profile);
 
   // Returns an instance of the SyncGlobalErrorFactory singleton.
