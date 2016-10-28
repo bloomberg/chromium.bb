@@ -1884,9 +1884,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enable2",
+                    "name": "Enable3",
                     "params": {
-                        "dismissal_threshold": "2"
+                        "dismissal_threshold": "3"
                     }
                 }
             ]
