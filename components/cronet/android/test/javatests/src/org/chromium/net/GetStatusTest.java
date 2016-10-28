@@ -11,13 +11,16 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.UrlRequest.Status;
 import org.chromium.net.UrlRequest.StatusListener;
+import org.chromium.net.impl.LoadState;
+import org.chromium.net.impl.UrlRequestBase;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Tests that {@link CronetUrlRequest#getStatus} works as expected.
+ * Tests that {@link org.chromium.net.impl.CronetUrlRequest#getStatus(StatusListener)} works as
+ * expected.
  */
 public class GetStatusTest extends CronetTestBase {
     private CronetTestFramework mTestFramework;
@@ -59,8 +62,8 @@ public class GetStatusTest extends CronetTestBase {
         String url = NativeTestServer.getEchoMethodURL();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
-        UrlRequest.Builder builder = new UrlRequest.Builder(
-                url, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                url, callback, callback.getExecutor());
         UrlRequest urlRequest = builder.build();
         // Calling before request is started should give Status.INVALID,
         // since the native adapter is not created.
@@ -115,14 +118,14 @@ public class GetStatusTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testInvalidLoadState() throws Exception {
         try {
-            Status.convertLoadState(LoadState.WAITING_FOR_APPCACHE);
+            UrlRequestBase.convertLoadState(LoadState.WAITING_FOR_APPCACHE);
             fail();
         } catch (IllegalArgumentException e) {
             // Expected because LoadState.WAITING_FOR_APPCACHE is not mapped.
         }
 
         try {
-            Status.convertLoadState(-1);
+            UrlRequestBase.convertLoadState(-1);
             fail();
         } catch (AssertionError e) {
             // Expected.
@@ -132,7 +135,7 @@ public class GetStatusTest extends CronetTestBase {
         }
 
         try {
-            Status.convertLoadState(16);
+            UrlRequestBase.convertLoadState(16);
             fail();
         } catch (AssertionError e) {
             // Expected.
@@ -148,8 +151,8 @@ public class GetStatusTest extends CronetTestBase {
     @OnlyRunNativeCronet
     public void testGetStatusForUpload() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
-                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                NativeTestServer.getEchoBodyURL(), callback, callback.getExecutor());
 
         final ConditionVariable block = new ConditionVariable();
         // Use a separate executor for UploadDataProvider so the upload can be

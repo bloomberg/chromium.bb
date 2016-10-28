@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -15,14 +15,13 @@ import java.util.Locale;
 /**
  * Constructs a User-Agent string.
  */
-final class UserAgent {
+public final class UserAgent {
     private static final Object sLock = new Object();
 
     private static final int VERSION_CODE_UNINITIALIZED = 0;
     private static int sVersionCode = VERSION_CODE_UNINITIALIZED;
 
-    private UserAgent() {
-    }
+    private UserAgent() {}
 
     /**
      * Constructs a User-Agent string including application name and version,
@@ -87,12 +86,10 @@ final class UserAgent {
                 PackageManager packageManager = context.getPackageManager();
                 String packageName = context.getPackageName();
                 try {
-                    PackageInfo packageInfo = packageManager.getPackageInfo(
-                            packageName, 0);
+                    PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
                     sVersionCode = packageInfo.versionCode;
                 } catch (NameNotFoundException e) {
-                    throw new IllegalStateException(
-                            "Cannot determine package version");
+                    throw new IllegalStateException("Cannot determine package version");
                 }
             }
             return sVersionCode;
@@ -101,11 +98,6 @@ final class UserAgent {
 
     private static void appendCronetVersion(StringBuilder builder) {
         builder.append(" Cronet/");
-        // TODO(pauljensen): This is the API version not the implementation
-        // version. The implementation version may be more appropriate for the
-        // UserAgent but is not available until after the CronetEngine is
-        // instantiated. Down the road, if the implementation is loaded via
-        // other means, this should be replaced with the implementation version.
-        builder.append(ApiVersion.CRONET_VERSION);
+        builder.append(ImplVersion.CRONET_VERSION);
     }
 }

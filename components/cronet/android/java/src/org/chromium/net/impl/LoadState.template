@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 // A simple auto-generated interface used to list load states as used by
 // org.chromium.net.RequestStatus.
-interface LoadState {
+public interface LoadState {
 #define LOAD_STATE(x, y) public static int x = y;
 #include "net/base/load_states_list.h"
 #undef LOAD_STATE

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import java.nio.ByteBuffer;
 
 /**
- * {@hide only used by internal implementation.}
+ * Utility class to check preconditions.
  */
 public final class Preconditions {
     private Preconditions() {}
 
-    public static void checkDirect(ByteBuffer buffer) {
+    static void checkDirect(ByteBuffer buffer) {
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("byteBuffer must be a direct ByteBuffer.");
         }
     }
 
-    public static void checkHasRemaining(ByteBuffer buffer) {
+    static void checkHasRemaining(ByteBuffer buffer) {
         if (!buffer.hasRemaining()) {
             throw new IllegalArgumentException("ByteBuffer is already full.");
         }

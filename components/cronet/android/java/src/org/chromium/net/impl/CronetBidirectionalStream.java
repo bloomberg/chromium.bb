@@ -11,7 +11,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.net.BidirectionalStream;
 import org.chromium.net.CronetException;
-import org.chromium.net.Preconditions;
+import org.chromium.net.ExperimentalBidirectionalStream;
 import org.chromium.net.QuicException;
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestPriority;
@@ -39,7 +39,7 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("cronet")
 @VisibleForTesting
-public class CronetBidirectionalStream extends BidirectionalStream {
+public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     /**
      * States of BidirectionalStream are tracked in mReadState and mWriteState.
      * The write state is separated out as it changes independently of the read state.
@@ -224,8 +224,8 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     }
 
     CronetBidirectionalStream(CronetUrlRequestContext requestContext, String url,
-            @BidirectionalStream.Builder.StreamPriority int priority, Callback callback,
-            Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
+            @CronetEngineBase.StreamPriority int priority, Callback callback, Executor executor,
+            String httpMethod, List<Map.Entry<String, String>> requestHeaders,
             boolean delayRequestHeadersUntilNextFlush, Collection<Object> requestAnnotations) {
         mRequestContext = requestContext;
         mInitialUrl = url;
@@ -684,8 +684,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
         return headersArray;
     }
 
-    private static int convertStreamPriority(
-            @BidirectionalStream.Builder.StreamPriority int priority) {
+    private static int convertStreamPriority(@CronetEngineBase.StreamPriority int priority) {
         switch (priority) {
             case Builder.STREAM_PRIORITY_IDLE:
                 return RequestPriority.IDLE;

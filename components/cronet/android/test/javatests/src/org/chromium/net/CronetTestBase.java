@@ -8,6 +8,9 @@ import android.test.AndroidTestCase;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.net.impl.CronetEngineBase;
+import org.chromium.net.impl.JavaCronetEngine;
+import org.chromium.net.impl.UserAgent;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -56,7 +59,7 @@ public class CronetTestBase extends AndroidTestCase {
      * and loads the given URL. The URL can be null.
      */
     protected CronetTestFramework startCronetTestFrameworkWithUrlAndCronetEngineBuilder(
-            String url, CronetEngine.Builder builder) {
+            String url, ExperimentalCronetEngine.Builder builder) {
         mCronetTestFramework = new CronetTestFramework(url, null, getContext(), builder);
         return mCronetTestFramework;
     }
@@ -127,8 +130,14 @@ public class CronetTestBase extends AndroidTestCase {
                 super.runTest();
                 if (!method.isAnnotationPresent(OnlyRunNativeCronet.class)) {
                     if (mCronetTestFramework != null) {
-                        mCronetTestFramework.mCronetEngine =
-                                new JavaCronetEngine(UserAgent.from(getContext()));
+                        ExperimentalCronetEngine.Builder builder =
+                                new ExperimentalCronetEngine.Builder(getContext());
+                        builder.setUserAgent(UserAgent.from(getContext()));
+                        builder.enableLegacyMode(true);
+                        mCronetTestFramework.mCronetEngine = (CronetEngineBase) builder.build();
+                        // Make sure that the instantiated engine is JavaCronetEngine.
+                        assert mCronetTestFramework.mCronetEngine.getClass()
+                                == JavaCronetEngine.class;
                     }
                     mTestingJavaImpl = true;
                     super.runTest();

@@ -2,10 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
+
+import org.chromium.net.BidirectionalStream;
+import org.chromium.net.EffectiveConnectionType;
+import org.chromium.net.ExperimentalBidirectionalStream;
+import org.chromium.net.NetworkQualityRttListener;
+import org.chromium.net.NetworkQualityThroughputListener;
+import org.chromium.net.RequestFinishedInfo;
+import org.chromium.net.RttThroughputValues;
+import org.chromium.net.UrlRequest;
 
 import java.io.IOException;
 import java.net.Proxy;
@@ -26,7 +35,7 @@ import java.util.concurrent.ThreadFactory;
  *
  * <p>Does not support netlogs, transferred data measurement, bidistream, cache, or priority.
  */
-final class JavaCronetEngine extends CronetEngine {
+public final class JavaCronetEngine extends CronetEngineBase {
     private final String mUserAgent;
 
     private final ExecutorService mExecutorService =
@@ -51,12 +60,12 @@ final class JavaCronetEngine extends CronetEngine {
                 }
             });
 
-    JavaCronetEngine(String userAgent) {
+    public JavaCronetEngine(String userAgent) {
         this.mUserAgent = userAgent;
     }
 
     @Override
-    public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor,
+    public UrlRequestBase createRequest(String url, UrlRequest.Callback callback, Executor executor,
             int priority, Collection<Object> connectionAnnotations, boolean disableCache,
             boolean disableConnectionMigration, boolean allowDirectExecutor) {
         return new JavaUrlRequest(
@@ -64,23 +73,25 @@ final class JavaCronetEngine extends CronetEngine {
     }
 
     @Override
-    public BidirectionalStream createBidirectionalStream(String url,
+    protected ExperimentalBidirectionalStream createBidirectionalStream(String url,
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
-            List<Map.Entry<String, String>> requestHeaders,
-            @BidirectionalStream.Builder.StreamPriority int priority,
+            List<Map.Entry<String, String>> requestHeaders, @StreamPriority int priority,
             boolean delayRequestHeadersUntilFirstFlush, Collection<Object> connectionAnnotations) {
         throw new UnsupportedOperationException(
                 "Can't create a bidi stream - httpurlconnection doesn't have those APIs");
     }
 
     @Override
-    public boolean isEnabled() {
-        return true;
+    public ExperimentalBidirectionalStream.Builder newBidirectionalStreamBuilder(
+            String url, BidirectionalStream.Callback callback, Executor executor) {
+        throw new UnsupportedOperationException(
+                "The bidirectional stream API is not supported by the Java implementation "
+                + "of Cronet Engine");
     }
 
     @Override
     public String getVersionString() {
-        return "CronetHttpURLConnection/" + ApiVersion.getVersion();
+        return "CronetHttpURLConnection/" + ImplVersion.getVersion();
     }
 
     @Override

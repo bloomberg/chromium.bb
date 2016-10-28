@@ -6,13 +6,14 @@ package org.chromium.net.urlconnection;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.json.JSONObject;
+
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
 import org.chromium.net.CronetTestUtil;
+import org.chromium.net.ExperimentalCronetEngine;
 import org.chromium.net.QuicTestServer;
-import org.json.JSONObject;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -31,7 +32,8 @@ public class QuicUploadTest extends CronetTestBase {
         super.setUp();
         // Load library first to create MockCertVerifier.
         System.loadLibrary("cronet_tests");
-        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        ExperimentalCronetEngine.Builder builder =
+                new ExperimentalCronetEngine.Builder(getContext());
 
         QuicTestServer.startQuicTestServer(getContext());
 
@@ -47,7 +49,8 @@ public class QuicUploadTest extends CronetTestBase {
         builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
 
-        builder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
+        CronetTestUtil.setMockCertVerifierForTesting(
+                builder, QuicTestServer.createMockCertVerifier());
 
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
     }

@@ -13,6 +13,7 @@ import static junit.framework.Assert.assertTrue;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.net.impl.CronetEngineBase;
 
 import java.io.File;
 import java.net.URLStreamHandlerFactory;
@@ -43,8 +44,8 @@ public class CronetTestFramework {
     public static final String SDCH_ENABLE = "enable";
 
     /**
-     * Library init type strings to use along with {@link LIBRARY_INIT_KEY}.
-     * If unspecified, {@link LibraryInitType.CRONET} will be used.
+     * Library init type strings to use along with {@link #LIBRARY_INIT_KEY}.
+     * If unspecified, {@link LibraryInitType#CRONET} will be used.
      */
     public static final class LibraryInitType {
         // Initializes Cronet Async API.
@@ -58,18 +59,18 @@ public class CronetTestFramework {
     }
 
     public URLStreamHandlerFactory mStreamHandlerFactory;
-    public CronetEngine mCronetEngine;
+    public CronetEngineBase mCronetEngine;
 
     private final String[] mCommandLine;
     private final Context mContext;
 
     // CronetEngine.Builder used for this activity.
-    private CronetEngine.Builder mCronetEngineBuilder;
+    private ExperimentalCronetEngine.Builder mCronetEngineBuilder;
 
     // TODO(crbug.com/547160): Fix this findbugs error and remove the suppression.
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public CronetTestFramework(
-            String appUrl, String[] commandLine, Context context, CronetEngine.Builder builder) {
+    public CronetTestFramework(String appUrl, String[] commandLine, Context context,
+            ExperimentalCronetEngine.Builder builder) {
         mCommandLine = commandLine;
         mContext = context;
 
@@ -156,23 +157,23 @@ public class CronetTestFramework {
         return path.delete();
     }
 
-    CronetEngine.Builder getCronetEngineBuilder() {
+    ExperimentalCronetEngine.Builder getCronetEngineBuilder() {
         return mCronetEngineBuilder;
     }
 
-    private CronetEngine.Builder initializeCronetEngineBuilderWithPresuppliedBuilder(
-            CronetEngine.Builder builder) {
+    private ExperimentalCronetEngine.Builder initializeCronetEngineBuilderWithPresuppliedBuilder(
+            ExperimentalCronetEngine.Builder builder) {
         return createCronetEngineBuilderWithPresuppliedBuilder(mContext, builder);
     }
 
-    CronetEngine.Builder createCronetEngineBuilder(Context context) {
+    ExperimentalCronetEngine.Builder createCronetEngineBuilder(Context context) {
         return createCronetEngineBuilderWithPresuppliedBuilder(context, null);
     }
 
-    private CronetEngine.Builder createCronetEngineBuilderWithPresuppliedBuilder(
-            Context context, CronetEngine.Builder cronetEngineBuilder) {
+    private ExperimentalCronetEngine.Builder createCronetEngineBuilderWithPresuppliedBuilder(
+            Context context, ExperimentalCronetEngine.Builder cronetEngineBuilder) {
         if (cronetEngineBuilder == null) {
-            cronetEngineBuilder = new CronetEngine.Builder(context);
+            cronetEngineBuilder = new ExperimentalCronetEngine.Builder(context);
             cronetEngineBuilder.enableHttp2(true).enableQuic(true);
         }
 
@@ -195,13 +196,13 @@ public class CronetTestFramework {
         }
 
         // Setting this here so it isn't overridden on the command line
-        cronetEngineBuilder.setLibraryName("cronet_tests");
+        CronetTestUtil.setLibraryName(cronetEngineBuilder, "cronet_tests");
         return cronetEngineBuilder;
     }
 
     // Helper function to initialize Cronet engine. Also used in testing.
-    public CronetEngine initCronetEngine() {
-        return mCronetEngineBuilder.build();
+    public CronetEngineBase initCronetEngine() {
+        return (CronetEngineBase) mCronetEngineBuilder.build();
     }
 
     private String getCommandLineArg(String key) {

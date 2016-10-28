@@ -16,7 +16,7 @@
             android:label="Cronet Sample">
         <activity android:name="CronetSampleActivity"
                   android:launchMode="singleTask"
-                  android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+                  android:theme="@style/Theme.AppCompat.Light"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
                   android:hardwareAccelerated="true">
             <intent-filter>

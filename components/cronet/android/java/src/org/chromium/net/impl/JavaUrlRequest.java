@@ -2,13 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.net.TrafficStats;
 import android.os.Build;
+
 import android.util.Log;
+
+import org.chromium.net.InlineExecutionProhibitedException;
+import org.chromium.net.UploadDataProvider;
+import org.chromium.net.UploadDataSink;
+import org.chromium.net.UrlRequestException;
+import org.chromium.net.UrlResponseInfo;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -35,7 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Pure java UrlRequest, backed by {@link HttpURLConnection}.
  */
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) // TrafficStats only available on ICS
-final class JavaUrlRequest implements UrlRequest {
+final class JavaUrlRequest extends UrlRequestBase {
     private static final String X_ANDROID = "X-Android";
     private static final String X_ANDROID_SELECTED_TRANSPORT = "X-Android-Selected-Transport";
     private static final String TAG = "JavaUrlConnection";
@@ -83,7 +90,8 @@ final class JavaUrlRequest implements UrlRequest {
      * risk that we'd get an inconsistent snapshot of both - however, it also happens that this
      * value is only used with the STARTED state, so it's inconsequential.
      */
-    @Status.StatusValues private volatile int mAdditionalStatusDetails = Status.INVALID;
+    @StatusValues
+    private volatile int mAdditionalStatusDetails = Status.INVALID;
 
     /* These change with redirects. */
     private String mCurrentUrl;
@@ -256,7 +264,7 @@ final class JavaUrlRequest implements UrlRequest {
         NOT_STARTED,
     }
 
-    private final class OutputStreamDataSink implements UploadDataSink {
+    private final class OutputStreamDataSink extends UploadDataSink {
         final AtomicReference<SinkState> mSinkState = new AtomicReference<>(SinkState.NOT_STARTED);
         final Executor mUserUploadExecutor;
         final Executor mExecutor;
@@ -758,7 +766,8 @@ final class JavaUrlRequest implements UrlRequest {
         State state = mState.get();
         int extraStatus = this.mAdditionalStatusDetails;
 
-        @Status.StatusValues final int status;
+        @StatusValues
+        final int status;
         switch (state) {
             case ERROR:
             case COMPLETE:
@@ -786,7 +795,7 @@ final class JavaUrlRequest implements UrlRequest {
 
     /** This wrapper ensures that callbacks are always called on the correct executor */
     private final class AsyncUrlRequestCallback {
-        final UrlRequest.Callback mCallback;
+        final Callback mCallback;
         final Executor mUserExecutor;
         final Executor mFallbackExecutor;
 

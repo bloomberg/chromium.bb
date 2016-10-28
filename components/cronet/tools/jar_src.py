@@ -115,6 +115,7 @@ def main():
       raise Exception(
           'Unable to find file %s in %s' % (src_file, src_search_dirs))
 
+  # Delete the old output file if any.
   if os.path.isfile(options.jar_path):
     os.remove(options.jar_path)
 

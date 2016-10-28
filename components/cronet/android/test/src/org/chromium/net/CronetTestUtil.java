@@ -6,10 +6,12 @@ package org.chromium.net;
 
 import android.os.ConditionVariable;
 
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.net.impl.CronetUrlRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.net.impl.CronetEngineBuilderImpl;
+import org.chromium.net.impl.CronetUrlRequest;
 
 /**
  * Utilities for Cronet testing
@@ -63,6 +65,20 @@ public class CronetTestUtil {
      */
     public static int getLoadFlags(UrlRequest urlRequest) {
         return nativeGetLoadFlags(((CronetUrlRequest) urlRequest).getUrlRequestAdapterForTesting());
+    }
+
+    public static void setMockCertVerifierForTesting(
+            ExperimentalCronetEngine.Builder builder, long mockCertVerifier) {
+        getCronetEngineBuilderImpl(builder).setMockCertVerifierForTesting(mockCertVerifier);
+    }
+
+    public static void setLibraryName(ExperimentalCronetEngine.Builder builder, String libName) {
+        getCronetEngineBuilderImpl(builder).setLibraryName(libName);
+    }
+
+    public static CronetEngineBuilderImpl getCronetEngineBuilderImpl(
+            ExperimentalCronetEngine.Builder builder) {
+        return (CronetEngineBuilderImpl) builder.getBuilderDelegate();
     }
 
     private static native int nativeGetLoadFlags(long urlRequest);

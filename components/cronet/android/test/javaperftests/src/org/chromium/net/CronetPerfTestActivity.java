@@ -187,13 +187,13 @@ public class CronetPerfTestActivity extends Activity {
                 throw new IllegalArgumentException(
                         "Bad URL: " + host + ":" + port + "/" + resource);
             }
-            final CronetEngine.Builder cronetEngineBuilder =
-                    new CronetEngine.Builder(CronetPerfTestActivity.this);
-            cronetEngineBuilder.setLibraryName("cronet_tests");
+            final ExperimentalCronetEngine.Builder cronetEngineBuilder =
+                    new ExperimentalCronetEngine.Builder(CronetPerfTestActivity.this);
+            CronetTestUtil.setLibraryName(cronetEngineBuilder, "cronet_tests");
             if (mProtocol == Protocol.QUIC) {
                 cronetEngineBuilder.enableQuic(true);
                 cronetEngineBuilder.addQuicHint(host, port, port);
-                cronetEngineBuilder.setMockCertVerifierForTesting(
+                CronetTestUtil.setMockCertVerifierForTesting(cronetEngineBuilder,
                         MockCertVerifier.createMockCertVerifier(
                                 new String[] {getConfigString("QUIC_CERT_FILE")}, true));
             }
@@ -264,7 +264,7 @@ public class CronetPerfTestActivity extends Activity {
 
         /**
          * Transfer {@code mLength} bytes through HttpURLConnection in {@code mDirection} direction.
-         * @param connection The HttpURLConnection to use for transfer.
+         * @param urlConnection The HttpURLConnection to use for transfer.
          * @param buffer A buffer of length |mBufferSize| to use for transfer.
          * @return {@code true} if transfer completed successfully.
          */
@@ -364,9 +364,9 @@ public class CronetPerfTestActivity extends Activity {
                         initiateRequest(buffer);
                     }
                 };
-                final UrlRequest.Builder builder = new UrlRequest.Builder(mUrl.toString(),
-                        new Callback(buffer, completionCallback), mWorkQueueExecutor,
-                        mCronetEngine);
+                final UrlRequest.Builder builder =
+                        mCronetEngine.newUrlRequestBuilder(mUrl.toString(),
+                                new Callback(buffer, completionCallback), mWorkQueueExecutor);
                 if (mDirection == Direction.UP) {
                     builder.setUploadDataProvider(new Uploader(buffer), mWorkQueueExecutor);
                     builder.addHeader("Content-Type", "application/octet-stream");

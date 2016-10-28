@@ -25,57 +25,56 @@ public class UrlRequestException extends IOException {
      * {@link UploadDataProvider}. Wrapped exception can be retrieved using
      * {@link IOException#getCause}.
      */
-    public static final int ERROR_LISTENER_EXCEPTION_THROWN =
-            UrlRequestError.LISTENER_EXCEPTION_THROWN;
+    public static final int ERROR_LISTENER_EXCEPTION_THROWN = 0;
     /**
      * Error code indicating the host being sent the request could not be resolved to an IP address.
      */
-    public static final int ERROR_HOSTNAME_NOT_RESOLVED = UrlRequestError.HOSTNAME_NOT_RESOLVED;
+    public static final int ERROR_HOSTNAME_NOT_RESOLVED = 1;
     /**
      * Error code indicating the device was not connected to any network.
      */
-    public static final int ERROR_INTERNET_DISCONNECTED = UrlRequestError.INTERNET_DISCONNECTED;
+    public static final int ERROR_INTERNET_DISCONNECTED = 2;
     /**
      * Error code indicating that as the request was processed the network configuration changed.
      */
-    public static final int ERROR_NETWORK_CHANGED = UrlRequestError.NETWORK_CHANGED;
+    public static final int ERROR_NETWORK_CHANGED = 3;
     /**
      * Error code indicating a timeout expired. Timeouts expiring while attempting to connect will
      * be reported as the more specific {@link #ERROR_CONNECTION_TIMED_OUT}.
      */
-    public static final int ERROR_TIMED_OUT = UrlRequestError.TIMED_OUT;
+    public static final int ERROR_TIMED_OUT = 4;
     /**
      * Error code indicating the connection was closed unexpectedly.
      */
-    public static final int ERROR_CONNECTION_CLOSED = UrlRequestError.CONNECTION_CLOSED;
+    public static final int ERROR_CONNECTION_CLOSED = 5;
     /**
      * Error code indicating the connection attempt timed out.
      */
-    public static final int ERROR_CONNECTION_TIMED_OUT = UrlRequestError.CONNECTION_TIMED_OUT;
+    public static final int ERROR_CONNECTION_TIMED_OUT = 6;
     /**
      * Error code indicating the connection attempt was refused.
      */
-    public static final int ERROR_CONNECTION_REFUSED = UrlRequestError.CONNECTION_REFUSED;
+    public static final int ERROR_CONNECTION_REFUSED = 7;
     /**
      * Error code indicating the connection was unexpectedly reset.
      */
-    public static final int ERROR_CONNECTION_RESET = UrlRequestError.CONNECTION_RESET;
+    public static final int ERROR_CONNECTION_RESET = 8;
     /**
      * Error code indicating the IP address being contacted is unreachable, meaning there is no
      * route to the specified host or network.
      */
-    public static final int ERROR_ADDRESS_UNREACHABLE = UrlRequestError.ADDRESS_UNREACHABLE;
+    public static final int ERROR_ADDRESS_UNREACHABLE = 9;
     /**
      * Error code indicating an error related to the <a href="https://www.chromium.org/quic">
      * QUIC</a> protocol. When {@link #getErrorCode} returns this code, this exception can be cast
      * to {@link QuicException} for more information.
      */
-    public static final int ERROR_QUIC_PROTOCOL_FAILED = UrlRequestError.QUIC_PROTOCOL_FAILED;
+    public static final int ERROR_QUIC_PROTOCOL_FAILED = 10;
     /**
      * Error code indicating another type of error was encountered.
      * {@link #getCronetInternalErrorCode} can be consulted to get a more specific cause.
      */
-    public static final int ERROR_OTHER = UrlRequestError.OTHER;
+    public static final int ERROR_OTHER = 11;
 
     // Error code, one of ERROR_*
     private final int mErrorCode;

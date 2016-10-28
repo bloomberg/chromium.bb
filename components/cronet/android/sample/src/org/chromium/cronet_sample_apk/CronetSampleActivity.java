@@ -5,9 +5,9 @@
 package org.chromium.cronet_sample_apk;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -169,7 +169,7 @@ public class CronetSampleActivity extends Activity {
 
         Executor executor = Executors.newSingleThreadExecutor();
         UrlRequest.Callback callback = new SimpleUrlRequestCallback();
-        UrlRequest.Builder builder = new UrlRequest.Builder(url, callback, executor, mCronetEngine);
+        UrlRequest.Builder builder = mCronetEngine.newUrlRequestBuilder(url, callback, executor);
         applyPostDataToUrlRequestBuilder(builder, executor, postData);
         builder.build().start();
     }

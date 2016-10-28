@@ -82,8 +82,9 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        ExperimentalUrlRequest.Builder urlRequestBuilder =
+                (ExperimentalUrlRequest.Builder) mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                        mUrl, callback, callback.getExecutor());
         Date startTime = new Date();
         urlRequestBuilder.addRequestAnnotation("request annotation")
                 .addRequestAnnotation(this)
@@ -113,8 +114,9 @@ public class RequestFinishedInfoTest extends CronetTestBase {
                 new TestRequestFinishedListener(testExecutor);
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        ExperimentalUrlRequest.Builder urlRequestBuilder =
+                (ExperimentalUrlRequest.Builder) mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                        mUrl, callback, callback.getExecutor());
         Date startTime = new Date();
         urlRequestBuilder.addRequestAnnotation("request annotation")
                 .addRequestAnnotation(this)
@@ -146,8 +148,9 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         mTestFramework.mCronetEngine.addRequestFinishedListener(firstListener);
         mTestFramework.mCronetEngine.addRequestFinishedListener(secondListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        ExperimentalUrlRequest.Builder urlRequestBuilder =
+                (ExperimentalUrlRequest.Builder) mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                        mUrl, callback, callback.getExecutor());
         Date startTime = new Date();
         urlRequestBuilder.addRequestAnnotation("request annotation")
                 .addRequestAnnotation(this)
@@ -188,8 +191,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(connectionRefusedUrl,
-                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        UrlRequest.Builder urlRequestBuilder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                connectionRefusedUrl, callback, callback.getExecutor());
         Date startTime = new Date();
         urlRequestBuilder.build().start();
         callback.blockForDone();
@@ -240,8 +243,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
                 new TestRequestFinishedListener(testExecutor);
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        UrlRequest.Builder urlRequestBuilder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                mUrl, callback, callback.getExecutor());
         UrlRequest request = urlRequestBuilder.build();
         mTestFramework.mCronetEngine.removeRequestFinishedListener(requestFinishedListener);
         request.start();
@@ -267,8 +270,9 @@ public class RequestFinishedInfoTest extends CronetTestBase {
                 request.cancel();
             }
         };
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        ExperimentalUrlRequest.Builder urlRequestBuilder =
+                mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                        mUrl, callback, callback.getExecutor());
         Date startTime = new Date();
         urlRequestBuilder.addRequestAnnotation("request annotation")
                 .addRequestAnnotation(this)

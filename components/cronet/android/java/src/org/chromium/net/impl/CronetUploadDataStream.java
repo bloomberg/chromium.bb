@@ -32,7 +32,7 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("cronet")
 @VisibleForTesting
-public final class CronetUploadDataStream implements UploadDataSink {
+public final class CronetUploadDataStream extends UploadDataSink {
     private static final String TAG = "CronetUploadDataStream";
     // These are never changed, once a request starts.
     private final Executor mExecutor;

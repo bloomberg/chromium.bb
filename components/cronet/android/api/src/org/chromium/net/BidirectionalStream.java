@@ -5,101 +5,33 @@
 package org.chromium.net;
 
 import android.annotation.SuppressLint;
-import android.support.annotation.IntDef;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
  * Class for bidirectional sending and receiving of data over HTTP/2 or QUIC connections.
- * Created using {@link BidirectionalStream.Builder}.
+ * Created by {@link Builder}.
  *
  * Note: There are ordering restrictions on methods of {@link BidirectionalStream};
  * please see individual methods for description of restrictions.
+ *
+ * {@hide experimental}
  */
 public abstract class BidirectionalStream {
     /**
      * Builder for {@link BidirectionalStream}s. Allows configuring stream before constructing
-     * it via {@link Builder#build}.
+     * it via {@link Builder#build}. Created by
+     * {@link ExperimentalCronetEngine#newBidirectionalStreamBuilder}.
      */
-    public static class Builder {
-        // All fields are temporary storage of BidirectionalStream configuration to be
-        // copied to BidirectionalStream.
-
-        // CronetEngine to create the stream.
-        private final CronetEngine mCronetEngine;
-        // URL to request.
-        private final String mUrl;
-        // Callback to receive progress callbacks.
-        private final Callback mCallback;
-        // Executor on which callbacks will be invoked.
-        private final Executor mExecutor;
-        // List of request headers, stored as header field name and value pairs.
-        private final ArrayList<Map.Entry<String, String>> mRequestHeaders =
-                new ArrayList<Map.Entry<String, String>>();
-
-        // HTTP method for the request. Default to POST.
-        private String mHttpMethod = "POST";
-        // Priority of the stream. Default is medium.
-        @StreamPriority private int mPriority = STREAM_PRIORITY_MEDIUM;
-
-        private boolean mDelayRequestHeadersUntilFirstFlush;
-
-        // Request reporting annotations.
-        private Collection<Object> mRequestAnnotations;
-
-        /**
-         * Creates a builder for {@link BidirectionalStream} objects. All callbacks for
-         * generated {@code BidirectionalStream} objects will be invoked on
-         * {@code executor}. {@code executor} must not run tasks on the
-         * current thread, otherwise the networking operations may block and exceptions
-         * may be thrown at shutdown time.
-         *
-         * @param url the URL for the generated stream
-         * @param callback the {@link Callback} object that gets invoked upon different events
-         *     occuring
-         * @param executor the {@link Executor} on which {@code callback} methods will be invoked
-         * @param cronetEngine the {@link CronetEngine} used to create the stream
-         */
-        public Builder(
-                String url, Callback callback, Executor executor, CronetEngine cronetEngine) {
-            if (url == null) {
-                throw new NullPointerException("URL is required.");
-            }
-            if (callback == null) {
-                throw new NullPointerException("Callback is required.");
-            }
-            if (executor == null) {
-                throw new NullPointerException("Executor is required.");
-            }
-            if (cronetEngine == null) {
-                throw new NullPointerException("CronetEngine is required.");
-            }
-            mUrl = url;
-            mCallback = callback;
-            mExecutor = executor;
-            mCronetEngine = cronetEngine;
-        }
-
+    public abstract static class Builder {
         /**
          * Sets the HTTP method for the request. Returns builder to facilitate chaining.
          *
          * @param method the method to use for request. Default is 'POST'
          * @return the builder to facilitate chaining
          */
-        public Builder setHttpMethod(String method) {
-            if (method == null) {
-                throw new NullPointerException("Method is required.");
-            }
-            mHttpMethod = method;
-            return this;
-        }
+        public abstract Builder setHttpMethod(String method);
 
         /**
          * Adds a request header. Returns builder to facilitate chaining.
@@ -108,25 +40,7 @@ public abstract class BidirectionalStream {
          * @param value the header value
          * @return the builder to facilitate chaining
          */
-        public Builder addHeader(String header, String value) {
-            if (header == null) {
-                throw new NullPointerException("Invalid header name.");
-            }
-            if (value == null) {
-                throw new NullPointerException("Invalid header value.");
-            }
-            mRequestHeaders.add(
-                    new AbstractMap.SimpleImmutableEntry<String, String>(header, value));
-            return this;
-        }
-
-        /** @hide */
-        @IntDef({
-                STREAM_PRIORITY_IDLE, STREAM_PRIORITY_LOWEST, STREAM_PRIORITY_LOW,
-                STREAM_PRIORITY_MEDIUM, STREAM_PRIORITY_HIGHEST,
-        })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface StreamPriority {}
+        public abstract Builder addHeader(String header, String value);
 
         /**
          * Lowest stream priority. Passed to {@link #setPriority}.
@@ -153,17 +67,14 @@ public abstract class BidirectionalStream {
         /**
          * Sets priority of the stream which should be one of the
          * {@link #STREAM_PRIORITY_IDLE STREAM_PRIORITY_*} values.
-         * The stream is given {@link #STREAM_PRIORITY_MEDIUM} priority if {@link
-         * #setPriority} is not called.
+         * The stream is given {@link #STREAM_PRIORITY_MEDIUM} priority if
+         * this method is not called.
          *
          * @param priority priority of the stream which should be one of the
          *         {@link #STREAM_PRIORITY_IDLE STREAM_PRIORITY_*} values.
          * @return the builder to facilitate chaining.
          */
-        public Builder setPriority(@StreamPriority int priority) {
-            mPriority = priority;
-            return this;
-        }
+        public abstract Builder setPriority(int priority);
 
         /**
          * Delays sending request headers until {@link BidirectionalStream#flush()}
@@ -175,33 +86,8 @@ public abstract class BidirectionalStream {
          *         be delayed until flush() is called.
          * @return the builder to facilitate chaining.
          */
-        public Builder delayRequestHeadersUntilFirstFlush(
-                boolean delayRequestHeadersUntilFirstFlush) {
-            mDelayRequestHeadersUntilFirstFlush = delayRequestHeadersUntilFirstFlush;
-            return this;
-        }
-
-        /**
-         * Associates the annotation object with this request. May add more than one.
-         * Passed through to a {@link RequestFinishedInfo.Listener},
-         * see {@link RequestFinishedInfo#getAnnotations}.
-         *
-         * @param annotation an object to pass on to the {@link RequestFinishedInfo.Listener} with a
-         * {@link RequestFinishedInfo}.
-         * @return the builder to facilitate chaining.
-         *
-         * @hide as it's a prototype.
-         */
-        public Builder addRequestAnnotation(Object annotation) {
-            if (annotation == null) {
-                throw new NullPointerException("Invalid metrics annotation.");
-            }
-            if (mRequestAnnotations == null) {
-                mRequestAnnotations = new ArrayList<Object>();
-            }
-            mRequestAnnotations.add(annotation);
-            return this;
-        }
+        public abstract Builder delayRequestHeadersUntilFirstFlush(
+                boolean delayRequestHeadersUntilFirstFlush);
 
         /**
          * Creates a {@link BidirectionalStream} using configuration from this
@@ -212,11 +98,7 @@ public abstract class BidirectionalStream {
          *         this {@link Builder}
          */
         @SuppressLint("WrongConstant") // TODO(jbudorick): Remove this after rolling to the N SDK.
-        public BidirectionalStream build() {
-            return mCronetEngine.createBidirectionalStream(mUrl, mCallback, mExecutor, mHttpMethod,
-                    mRequestHeaders, mPriority, mDelayRequestHeadersUntilFirstFlush,
-                    mRequestAnnotations);
-        }
+        public abstract BidirectionalStream build();
     }
 
     /**
