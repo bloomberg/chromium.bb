@@ -868,6 +868,7 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass ]
+crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Timeout ]
 
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
