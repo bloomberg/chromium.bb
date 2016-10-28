@@ -2249,6 +2249,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
       // We should restore window position if problem occurs.
       const bool incorrect_maximized_bounds =
           IsMaximized() &&
+          !(window_pos->flags & SWP_NOMOVE) &&
+          !(window_pos->flags & SWP_NOSIZE) &&
           (expected_maximized_bounds.x() != window_pos->x ||
            expected_maximized_bounds.y() != window_pos->y ||
            expected_maximized_bounds.width() != window_pos->cx ||
