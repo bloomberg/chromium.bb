@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -171,6 +172,14 @@ void ChromeSessionManager::Initialize(
     const base::CommandLine& parsed_command_line,
     Profile* profile,
     bool is_running_test) {
+  // Keep Chrome alive for mash.
+  // TODO(xiyuan): Remove this when session manager is moved out of Chrome.
+  if (chrome::IsRunningInMash() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableZeroBrowsersOpenForTests)) {
+    g_browser_process->platform_part()->RegisterKeepAlive();
+  }
+
   // Tests should be able to tune login manager before showing it. Thus only
   // show login UI (login and out-of-box) in normal (non-testing) mode with
   // --login-manager switch and if test passed --force-login-manager-in-tests.
