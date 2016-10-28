@@ -142,6 +142,20 @@ class DepsUpdater(object):
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
 
+    def _generate_manifest(self, original_repo_path, dest_path):
+        """Generate MANIFEST.json for imported tests.
+
+        Run 'manifest' command if it exists in original_repo_path, and
+        add generated MANIFEST.json to dest_path.
+        """
+        manifest_command = self.fs.join(original_repo_path, 'manifest')
+        if not self.fs.exists(manifest_command):
+            # Do nothing for csswg-test.
+            return
+        self.print_('## Generating MANIFEST.json')
+        self.run([manifest_command, '--tests-root', dest_path])
+        self.run(['git', 'add', self.fs.join(dest_path, 'MANIFEST.json')])
+
     def update(self, dest_dir_name, url, keep_w3c_repos_around, revision):
         """Updates an imported repository.
 
@@ -191,6 +205,7 @@ class DepsUpdater(object):
             if self.fs.glob(full_path.replace('-expected.txt', '*')) == [full_path]:
                 self.fs.remove(full_path)
 
+        self._generate_manifest(temp_repo_path, dest_path)
         if not keep_w3c_repos_around:
             self.print_('## Deleting temp repo directory %s.' % temp_repo_path)
             self.rmtree(temp_repo_path)
