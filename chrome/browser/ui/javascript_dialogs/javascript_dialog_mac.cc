@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_cocoa.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
 
 JavaScriptDialog::~JavaScriptDialog() = default;
@@ -17,7 +19,13 @@ base::WeakPtr<JavaScriptDialog> JavaScriptDialog::Create(
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback&
         dialog_callback) {
-  return JavaScriptDialogViews::Create(
-      parent_web_contents, alerting_web_contents, title, message_type,
-      message_text, default_prompt_text, dialog_callback);
+  if (chrome::ToolkitViewsWebUIDialogsEnabled()) {
+    return JavaScriptDialogViews::Create(
+        parent_web_contents, alerting_web_contents, title, message_type,
+        message_text, default_prompt_text, dialog_callback);
+  } else {
+    return JavaScriptDialogCocoa::Create(
+        parent_web_contents, alerting_web_contents, title, message_type,
+        message_text, default_prompt_text, dialog_callback);
+  }
 }

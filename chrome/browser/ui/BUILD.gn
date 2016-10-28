@@ -727,10 +727,7 @@ split_static_library("ui") {
       "global_error/global_error_service_factory.h",
       "infobar_container_delegate.cc",
       "infobar_container_delegate.h",
-      "javascript_dialogs/javascript_dialog.cc",
       "javascript_dialogs/javascript_dialog.h",
-      "javascript_dialogs/javascript_dialog_cocoa.h",
-      "javascript_dialogs/javascript_dialog_cocoa.mm",
       "javascript_dialogs/javascript_dialog_tab_helper.cc",
       "javascript_dialogs/javascript_dialog_tab_helper.h",
       "javascript_dialogs/javascript_dialog_views.cc",
@@ -1574,6 +1571,8 @@ split_static_library("ui") {
     }
     if (!is_mac || mac_views_browser) {
       sources += [
+        "javascript_dialogs/javascript_dialog.cc",
+
         # This test header is included because it contains forward declarations
         # needed for "friend" statements for use in tests.
         "translate/translate_bubble_test_utils.h",
@@ -2918,6 +2917,9 @@ split_static_library("ui") {
         # See crbug.com/590850
         "content_settings/content_setting_media_menu_model.cc",
         "content_settings/content_setting_media_menu_model.h",
+        "javascript_dialogs/javascript_dialog_cocoa.h",
+        "javascript_dialogs/javascript_dialog_cocoa.mm",
+        "javascript_dialogs/javascript_dialog_mac.cc",
         "proximity_auth/proximity_auth_error_bubble_stub.cc",
       ]
     }
