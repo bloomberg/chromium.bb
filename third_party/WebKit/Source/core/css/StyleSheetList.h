@@ -33,8 +33,9 @@ namespace blink {
 class HTMLStyleElement;
 class StyleSheet;
 
-class StyleSheetList final : public GarbageCollected<StyleSheetList>,
-                             public ScriptWrappable {
+class CORE_EXPORT StyleSheetList final
+    : public GarbageCollected<StyleSheetList>,
+      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

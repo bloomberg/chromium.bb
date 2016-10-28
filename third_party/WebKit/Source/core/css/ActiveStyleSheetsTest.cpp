@@ -7,7 +7,9 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/StyleSheetList.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/ShadowRootInit.h"
 #include "core/frame/FrameView.h"
@@ -401,6 +403,33 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
                       newStyleSheets);
 
   EXPECT_FALSE(document().needsLayoutTreeUpdate());
+}
+
+TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
+  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  Element* host = document().getElementById("host");
+  ASSERT_TRUE(host);
+
+  ShadowRoot& shadowRoot = attachShadow(*host);
+  shadowRoot.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>",
+                          ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_EQ(1u, styleEngine().treeBoundaryCrossingScopes().size());
+  ASSERT_EQ(1u, shadowRoot.styleSheets().length());
+
+  StyleSheet* sheet = shadowRoot.styleSheets().item(0);
+  ASSERT_TRUE(sheet);
+  ASSERT_TRUE(sheet->isCSSStyleSheet());
+
+  CSSStyleSheet* cssSheet = toCSSStyleSheet(sheet);
+  ActiveStyleSheetVector oldStyleSheets;
+  oldStyleSheets.append(
+      std::make_pair(cssSheet, &cssSheet->contents()->ruleSet()));
+  applyRuleSetChanges(styleEngine(), shadowRoot, oldStyleSheets,
+                      ActiveStyleSheetVector());
+
+  EXPECT_TRUE(styleEngine().treeBoundaryCrossingScopes().isEmpty());
 }
 
 }  // namespace blink

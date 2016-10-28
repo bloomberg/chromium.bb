@@ -156,7 +156,7 @@ void applyRuleSetChanges(StyleEngine& engine,
   //   TreeScope.
   if (treeScope.scopedStyleResolver()) {
     if (newStyleSheets.isEmpty())
-      treeScope.clearScopedStyleResolver();
+      engine.resetAuthorStyle(treeScope);
     else if (change == ActiveSheetsAppended)
       appendStartIndex = oldStyleSheets.size();
     else
