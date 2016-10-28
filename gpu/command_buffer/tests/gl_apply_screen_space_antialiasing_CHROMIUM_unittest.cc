@@ -94,8 +94,15 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMTest : public testing::Test {
   bool available_ = false;
 };
 
+// TODO(dongseong.hwang): This test fails on the Nexus 9 GPU fyi bot.
+// crbug.com/659638
+#if defined(OS_ANDROID)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
 // Test to ensure that the basic functionality of the extension works.
-TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, Basic) {
+TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, MAYBE_Basic) {
   if (!available_)
     return;
 
