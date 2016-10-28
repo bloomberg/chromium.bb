@@ -23,7 +23,6 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
-class RunLoop;
 class TickClock;
 }  // namespace base
 
@@ -106,6 +105,16 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   NetworkTimeResult GetNetworkTime(base::Time* network_time,
                                    base::TimeDelta* uncertainty) const;
 
+  // Starts a network time query if network time isn't already available
+  // and if there isn't already a time query in progress. If a new query
+  // is started or if there is one already in progress, |callback| will
+  // run when the query completes.
+  //
+  // Returns true if a time query is started or was already in progress,
+  // and false otherwise. For example, this method may return false if
+  // time queries are disabled or if network time is already available.
+  bool StartTimeFetch(const base::Closure& callback);
+
   // Calculates corresponding time ticks according to the given parameters.
   // The provided |network_time| is precise at the given |resolution| and
   // represent the time between now and up to |latency| + (now - |post_time|)
@@ -161,9 +170,6 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   base::TimeTicks fetch_started_;
   std::unique_ptr<client_update_protocol::Ecdsa> query_signer_;
 
-  // Run by WaitForFetchForTesting() and quit by OnURLFetchComplete().
-  base::RunLoop* run_loop_for_testing_ = nullptr;
-
   // The |Clock| and |TickClock| are used to sanity-check one another, allowing
   // the NetworkTimeTracker to notice e.g. suspend/resume events and clock
   // resets.
@@ -190,6 +196,9 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   // True if any time query has completed (but not necessarily succeeded) in
   // this NetworkTimeTracker's lifetime.
   bool time_query_completed_;
+
+  // Callbacks to run when the in-progress time fetch completes.
+  std::vector<base::Closure> fetch_completion_callbacks_;
 
   base::ThreadChecker thread_checker_;
 

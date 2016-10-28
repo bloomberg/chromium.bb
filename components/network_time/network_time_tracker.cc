@@ -100,6 +100,9 @@ const char kVariationsServiceCheckTimeIntervalSeconds[] =
     "CheckTimeIntervalSeconds";
 const char kVariationsServiceRandomQueryProbability[] =
     "RandomQueryProbability";
+// This parameter must have the value "true" in order for
+// StartTimeFetch() to start time queries on demand.
+const char kVariationsServiceEnableFetchesOnDemand[] = "EnableFetchesOnDemand";
 
 // This is an ECDSA prime256v1 named-curve key.
 const int kKeyVersion = 1;
@@ -295,9 +298,8 @@ bool NetworkTimeTracker::QueryTimeServiceForTesting() {
 void NetworkTimeTracker::WaitForFetchForTesting(uint32_t nonce) {
   query_signer_->OverrideNonceForTesting(kKeyVersion, nonce);
   base::RunLoop run_loop;
-  run_loop_for_testing_ = &run_loop;
+  fetch_completion_callbacks_.push_back(run_loop.QuitClosure());
   run_loop.Run();
-  run_loop_for_testing_ = nullptr;
 }
 
 base::TimeDelta NetworkTimeTracker::GetTimerDelayForTesting() const {
@@ -316,18 +318,16 @@ NetworkTimeTracker::NetworkTimeResult NetworkTimeTracker::GetNetworkTime(
       if (time_fetcher_) {
         // A fetch (not the first attempt) is in progress.
         return NETWORK_TIME_SUBSEQUENT_SYNC_PENDING;
-      } else {
-        return NETWORK_TIME_NO_SUCCESSFUL_SYNC;
       }
-    } else {
-      // No time queries have happened yet.
-      if (time_fetcher_) {
-        return NETWORK_TIME_FIRST_SYNC_PENDING;
-      } else {
-        return NETWORK_TIME_NO_SYNC_ATTEMPT;
-      }
+      return NETWORK_TIME_NO_SUCCESSFUL_SYNC;
     }
+    // No time queries have happened yet.
+    if (time_fetcher_) {
+      return NETWORK_TIME_FIRST_SYNC_PENDING;
+    }
+    return NETWORK_TIME_NO_SYNC_ATTEMPT;
   }
+
   DCHECK(!ticks_at_last_measurement_.is_null());
   DCHECK(!time_at_last_measurement_.is_null());
   base::TimeDelta tick_delta =
@@ -370,6 +370,40 @@ NetworkTimeTracker::NetworkTimeResult NetworkTimeTracker::GetNetworkTime(
     *uncertainty = network_time_uncertainty_ + divergence;
   }
   return NETWORK_TIME_AVAILABLE;
+}
+
+bool NetworkTimeTracker::StartTimeFetch(const base::Closure& closure) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Check if the user is opted in to on-demand time fetches.
+  const std::string param = variations::GetVariationParamValueByFeature(
+      kNetworkTimeServiceQuerying, kVariationsServiceEnableFetchesOnDemand);
+  if (param != "true") {
+    return false;
+  }
+
+  // Enqueue the callback before calling CheckTime(), so that if
+  // CheckTime() completes synchronously, the callback gets called.
+  fetch_completion_callbacks_.push_back(closure);
+
+  // If a time query is already in progress, do not start another one.
+  if (time_fetcher_) {
+    return true;
+  }
+
+  // Cancel any fetches that are scheduled for the future, and try to
+  // start one now.
+  timer_.Stop();
+  CheckTime();
+
+  // CheckTime() does not necessarily start a fetch; for example, time
+  // queries might be disabled or network time might already be
+  // available.
+  if (!time_fetcher_) {
+    // If no query is in progress, no callbacks need to be called.
+    fetch_completion_callbacks_.clear();
+    return false;
+  }
+  return true;
 }
 
 void NetworkTimeTracker::CheckTime() {
@@ -490,8 +524,15 @@ void NetworkTimeTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   }
   QueueCheckTime(backoff_);
   time_fetcher_.reset();
-  if (run_loop_for_testing_ != nullptr)
-    run_loop_for_testing_->QuitWhenIdle();
+
+  // Clear |fetch_completion_callbacks_| before running any of them,
+  // because a callback could call StartTimeFetch() to enqueue another
+  // callback.
+  std::vector<base::Closure> callbacks = fetch_completion_callbacks_;
+  fetch_completion_callbacks_.clear();
+  for (const auto& callback : callbacks) {
+    callback.Run();
+  }
 }
 
 void NetworkTimeTracker::QueueCheckTime(base::TimeDelta delay) {

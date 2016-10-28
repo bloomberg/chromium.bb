@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
@@ -480,6 +481,91 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetwork) {
   histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
   histograms.ExpectTotalCount(kFetchValidHistogram, 1);
   histograms.ExpectBucketCount(kFetchValidHistogram, true, 1);
+}
+
+TEST_F(NetworkTimeTrackerTest, StartTimeFetch) {
+  test_server_->RegisterRequestHandler(base::Bind(&GoodTimeResponseHandler));
+  EXPECT_TRUE(test_server_->Start());
+  tracker_->SetTimeServerURLForTesting(test_server_->GetURL("/"));
+
+  base::Time out_network_time;
+  EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT,
+            tracker_->GetNetworkTime(&out_network_time, nullptr));
+
+  base::RunLoop run_loop;
+  EXPECT_TRUE(tracker_->StartTimeFetch(run_loop.QuitClosure()));
+  tracker_->WaitForFetchForTesting(123123123);
+  run_loop.Run();
+
+  EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_AVAILABLE,
+            tracker_->GetNetworkTime(&out_network_time, nullptr));
+  EXPECT_EQ(base::Time::UnixEpoch() +
+                base::TimeDelta::FromMilliseconds(1461621971825),
+            out_network_time);
+  // Should see no backoff in the success case.
+  EXPECT_EQ(base::TimeDelta::FromMinutes(60),
+            tracker_->GetTimerDelayForTesting());
+}
+
+// Tests that when StartTimeFetch() is called with a query already in
+// progress, it calls the callback when that query completes.
+TEST_F(NetworkTimeTrackerTest, StartTimeFetchWithQueryInProgress) {
+  test_server_->RegisterRequestHandler(base::Bind(&GoodTimeResponseHandler));
+  EXPECT_TRUE(test_server_->Start());
+  tracker_->SetTimeServerURLForTesting(test_server_->GetURL("/"));
+
+  base::Time out_network_time;
+  EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT,
+            tracker_->GetNetworkTime(&out_network_time, nullptr));
+
+  EXPECT_TRUE(tracker_->QueryTimeServiceForTesting());
+
+  base::RunLoop run_loop;
+  EXPECT_TRUE(tracker_->StartTimeFetch(run_loop.QuitClosure()));
+  tracker_->WaitForFetchForTesting(123123123);
+  run_loop.Run();
+
+  EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_AVAILABLE,
+            tracker_->GetNetworkTime(&out_network_time, nullptr));
+  EXPECT_EQ(base::Time::UnixEpoch() +
+                base::TimeDelta::FromMilliseconds(1461621971825),
+            out_network_time);
+  // Should see no backoff in the success case.
+  EXPECT_EQ(base::TimeDelta::FromMinutes(60),
+            tracker_->GetTimerDelayForTesting());
+}
+
+// Tests that StartTimeFetch() returns false if called while network
+// time is available.
+TEST_F(NetworkTimeTrackerTest, StartTimeFetchWhileSynced) {
+  test_server_->RegisterRequestHandler(base::Bind(&GoodTimeResponseHandler));
+  EXPECT_TRUE(test_server_->Start());
+  tracker_->SetTimeServerURLForTesting(test_server_->GetURL("/"));
+
+  base::Time in_network_time = clock_->Now();
+  UpdateNetworkTime(in_network_time, resolution_, latency_,
+                    tick_clock_->NowTicks());
+
+  // No query should be started so long as NetworkTimeTracker is synced.
+  base::RunLoop run_loop;
+  EXPECT_FALSE(tracker_->StartTimeFetch(run_loop.QuitClosure()));
+}
+
+// Tests that StartTimeFetch() returns false if the field trial
+// is not configured to allow on-demand time fetches.
+TEST_F(NetworkTimeTrackerTest, StartTimeFetchWithoutVariationsParam) {
+  field_trial_test_->SetNetworkQueriesWithVariationsService(
+      true, 0.0, FieldTrialTest::DISABLE_FETCHES_ON_DEMAND);
+  test_server_->RegisterRequestHandler(base::Bind(&GoodTimeResponseHandler));
+  EXPECT_TRUE(test_server_->Start());
+  tracker_->SetTimeServerURLForTesting(test_server_->GetURL("/"));
+
+  base::Time out_network_time;
+  EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT,
+            tracker_->GetNetworkTime(&out_network_time, nullptr));
+
+  base::RunLoop run_loop;
+  EXPECT_FALSE(tracker_->StartTimeFetch(run_loop.QuitClosure()));
 }
 
 TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileSynced) {
