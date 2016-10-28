@@ -414,6 +414,8 @@ class GenerateEntitlementsAction(Action):
 
 def Main():
   parser = argparse.ArgumentParser('codesign iOS bundles')
+  parser.add_argument('--developer_dir', required=False,
+                      help='Path to Xcode.')
   subparsers = parser.add_subparsers()
 
   actions = [
@@ -426,6 +428,8 @@ def Main():
     action.Register(subparsers)
 
   args = parser.parse_args()
+  if args.developer_dir:
+    os.environ['DEVELOPER_DIR'] = args.developer_dir
   args.func(args)
 
 

@@ -5,6 +5,7 @@
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/config/mac/symbols.gni")
+import("//build/toolchain/toolchain.gni")
 
 # Invokes lipo on multiple arch-specific binaries to create a fat binary.
 #
@@ -75,13 +76,20 @@ template("lipo_binary") {
       deps += [ "$_arch_binary_target($_toolchain)" ]
     }
 
-    args = [
-             "xcrun",
-             "lipo",
-             "-create",
-             "-output",
-             rebase_path("$target_out_dir/$_output_name", root_build_dir),
-           ] + rebase_path(inputs, root_build_dir)
+    args = []
+    if (!use_system_xcode) {
+      args += [
+        "--developer_dir",
+        hermetic_xcode_path,
+      ]
+    }
+    args += [
+              "xcrun",
+              "lipo",
+              "-create",
+              "-output",
+              rebase_path("$target_out_dir/$_output_name", root_build_dir),
+            ] + rebase_path(inputs, root_build_dir)
 
     if (enable_dsyms) {
       _dsyms_output_dir = "$root_out_dir/$_output_name.dSYM"
@@ -234,7 +242,14 @@ template("create_signed_bundle") {
       }
     }
 
-    code_signing_args = [
+    code_signing_args = []
+    if (!use_system_xcode) {
+      code_signing_args += [
+        "--developer_dir",
+        hermetic_xcode_path,
+      ]
+    }
+    code_signing_args += [
       "code-sign-bundle",
       "-t=" + ios_sdk_name,
       "-i=" + ios_code_signing_identity,
@@ -544,11 +559,19 @@ template("ios_app_bundle") {
         outputs = [
           _generate_entitlements_output,
         ]
-        args = [
-                 "generate-entitlements",
-                 "-e=" + rebase_path(_entitlements_path, root_build_dir),
-                 "-p=" + rebase_path(_info_plist_path, root_build_dir),
-               ] + rebase_path(outputs, root_build_dir)
+
+        args = []
+        if (!use_system_xcode) {
+          args += [
+            "--developer_dir",
+            hermetic_xcode_path,
+          ]
+        }
+        args += [
+                  "generate-entitlements",
+                  "-e=" + rebase_path(_entitlements_path, root_build_dir),
+                  "-p=" + rebase_path(_info_plist_path, root_build_dir),
+                ] + rebase_path(outputs, root_build_dir)
       }
     }
 
