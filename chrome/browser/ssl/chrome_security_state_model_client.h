@@ -32,8 +32,9 @@ class ChromeSecurityStateModelClient
   void GetSecurityInfo(
       security_state::SecurityStateModel::SecurityInfo* result) const;
 
-  // Called when the NavigationEntry's SSLStatus changes.
-  void VisibleSSLStateChanged();
+  // Called when the NavigationEntry's SSLStatus or other security
+  // information changes.
+  void VisibleSecurityStateChanged();
 
   // content::WebContentsObserver:
   void DidFinishNavigation(

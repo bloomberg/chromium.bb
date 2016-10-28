@@ -389,6 +389,9 @@ void SafeBrowsingUIManager::AddToWhitelistUrlSet(const UnsafeResource& resource,
   } else {
     site_list->Insert(whitelisted_url);
   }
+
+  // Notify security UI that security state has changed.
+  web_contents->DidChangeVisibleSecurityState();
 }
 
 bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {

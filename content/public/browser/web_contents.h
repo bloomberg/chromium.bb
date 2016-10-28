@@ -430,6 +430,9 @@ class WebContents : public PageNavigator,
       WebContents* outer_web_contents,
       RenderFrameHost* outer_contents_frame) = 0;
 
+  // Invoked when visible security state changes.
+  virtual void DidChangeVisibleSecurityState() = 0;
+
   // Commands ------------------------------------------------------------------
 
   // Stop any pending navigation.

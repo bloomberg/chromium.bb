@@ -1457,6 +1457,20 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   text_input_manager_.reset(nullptr);
 }
 
+void WebContentsImpl::DidChangeVisibleSecurityState() {
+  if (delegate_) {
+    delegate_->VisibleSecurityStateChanged(this);
+
+    SecurityStyleExplanations security_style_explanations;
+    blink::WebSecurityStyle security_style =
+        delegate_->GetSecurityStyle(this, &security_style_explanations);
+    for (auto& observer : observers_) {
+      observer.SecurityStyleChanged(security_style,
+                                    security_style_explanations);
+    }
+  }
+}
+
 void WebContentsImpl::Stop() {
   for (FrameTreeNode* node : frame_tree_.Nodes())
     node->StopLoading();
@@ -3839,20 +3853,6 @@ void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
     for (auto& observer : observers_)
       observer.DidChangeThemeColor(theme_color_);
     last_sent_theme_color_ = theme_color_;
-  }
-}
-
-void WebContentsImpl::DidChangeVisibleSSLState() {
-  if (delegate_) {
-    delegate_->VisibleSSLStateChanged(this);
-
-    SecurityStyleExplanations security_style_explanations;
-    blink::WebSecurityStyle security_style =
-        delegate_->GetSecurityStyle(this, &security_style_explanations);
-    for (auto& observer : observers_) {
-      observer.SecurityStyleChanged(security_style,
-                                    security_style_explanations);
-    }
   }
 }
 
