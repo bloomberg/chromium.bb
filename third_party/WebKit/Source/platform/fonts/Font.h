@@ -183,18 +183,6 @@ class PLATFORM_EXPORT Font {
 
   bool getEmphasisMarkGlyphData(const AtomicString&, GlyphData&) const;
 
-  float floatWidthForComplexText(const TextRun&,
-                                 HashSet<const SimpleFontData*>* fallbackFonts,
-                                 FloatRect* glyphBounds) const;
-  int offsetForPositionForComplexText(const TextRun&,
-                                      float position,
-                                      bool includePartialGlyphs) const;
-  FloatRect selectionRectForComplexText(const TextRun&,
-                                        const FloatPoint&,
-                                        int h,
-                                        int from,
-                                        int to) const;
-
   bool computeCanShapeWordByWord() const;
 
   friend struct SimpleShaper;

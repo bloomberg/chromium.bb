@@ -44,8 +44,8 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
   virtual PassRefPtr<FontData> getFontData(const FontDescription&,
                                            const AtomicString& familyName) = 0;
 
-  // TODO crbug.com/542629 - The UChar32 variant of this method should go away
-  // after switching to complex text.
+  // TODO crbug.com/542629 - The String variant of this method shouldbe replaced
+  // with a better approach, now that we only have complex text.
   virtual void willUseFontData(const FontDescription&,
                                const AtomicString& familyName,
                                const String& text) = 0;

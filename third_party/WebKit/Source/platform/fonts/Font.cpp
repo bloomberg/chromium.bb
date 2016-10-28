@@ -234,8 +234,9 @@ float Font::width(const TextRun& run,
                   HashSet<const SimpleFontData*>* fallbackFonts,
                   FloatRect* glyphBounds) const {
   FontCachePurgePreventer purgePreventer;
-
-  return floatWidthForComplexText(run, fallbackFonts, glyphBounds);
+  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
+  float width = shaper.width(this, run, fallbackFonts, glyphBounds);
+  return width;
 }
 
 namespace {
@@ -465,7 +466,7 @@ static inline FloatRect pixelSnappedSelectionRect(FloatRect rect) {
 
 FloatRect Font::selectionRectForText(const TextRun& run,
                                      const FloatPoint& point,
-                                     int h,
+                                     int height,
                                      int from,
                                      int to,
                                      bool accountForGlyphBounds) const {
@@ -477,15 +478,19 @@ FloatRect Font::selectionRectForText(const TextRun& run,
 
   FontCachePurgePreventer purgePreventer;
 
+  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
+  CharacterRange range = shaper.getCharacterRange(this, run, from, to);
+
   return pixelSnappedSelectionRect(
-      selectionRectForComplexText(run, point, h, from, to));
+      FloatRect(point.x() + range.start, point.y(), range.width(), height));
 }
 
 int Font::offsetForPosition(const TextRun& run,
-                            float x,
+                            float xFloat,
                             bool includePartialGlyphs) const {
   FontCachePurgePreventer purgePreventer;
-  return offsetForPositionForComplexText(run, x, includePartialGlyphs);
+  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
+  return shaper.offsetForPosition(this, run, xFloat, includePartialGlyphs);
 }
 
 bool Font::canShapeWordByWord() const {
@@ -588,35 +593,6 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const {
   return markFontData->getFontMetrics().height();
 }
 
-float Font::floatWidthForComplexText(
-    const TextRun& run,
-    HashSet<const SimpleFontData*>* fallbackFonts,
-    FloatRect* glyphBounds) const {
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  float width = shaper.width(this, run, fallbackFonts, glyphBounds);
-  return width;
-}
-
-// Return the code point index for the given |x| offset into the text run.
-int Font::offsetForPositionForComplexText(const TextRun& run,
-                                          float xFloat,
-                                          bool includePartialGlyphs) const {
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  return shaper.offsetForPosition(this, run, xFloat, includePartialGlyphs);
-}
-
-// Return the rectangle for selecting the given range of code-points in the
-// TextRun.
-FloatRect Font::selectionRectForComplexText(const TextRun& run,
-                                            const FloatPoint& point,
-                                            int height,
-                                            int from,
-                                            int to) const {
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  CharacterRange range = shaper.getCharacterRange(this, run, from, to);
-  return FloatRect(point.x() + range.start, point.y(), range.width(), height);
-}
-
 CharacterRange Font::getCharacterRange(const TextRun& run,
                                        unsigned from,
                                        unsigned to) const {
@@ -627,11 +603,6 @@ CharacterRange Font::getCharacterRange(const TextRun& run,
 
 Vector<CharacterRange> Font::individualCharacterRanges(
     const TextRun& run) const {
-  // TODO(pdr): Android is temporarily (crbug.com/577306) using the old simple
-  // shaper and using the complex shaper here can show differences between
-  // the two shapers. This function is currently only called through SVG
-  // which now exclusively uses the complex shaper, so the primary difference
-  // will be improved shaping in SVG when compared to HTML.
   FontCachePurgePreventer purgePreventer;
   CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
   auto ranges = shaper.individualCharacterRanges(this, run);
