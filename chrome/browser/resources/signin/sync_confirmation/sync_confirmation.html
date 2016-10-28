@@ -20,7 +20,7 @@
   <body>
     <div class="container">
       <div class="top-title-bar">$i18n{syncConfirmationTitle}</div>
-      <div class="details">
+      <div class="details" id="syncConfirmationDetails">
         <div id="picture-container">
           <div id="illustration">
             <div id="icons">
@@ -72,6 +72,9 @@
               i18n-values=".innerHTML:syncConfirmationSyncSettingsLinkBody">
           </div>
         </div>
+      </div>
+      <div class="details" id="syncDisabledDetails">
+        <div class="body text">$i18n{syncDisabledConfirmationDetails}</div>
       </div>
       <div class="action-container">
         <paper-button class="primary-action" id="confirmButton">

@@ -21,8 +21,13 @@ cr.define('sync.confirmation', function() {
     document.addEventListener('keydown', onKeyDown);
     $('confirmButton').addEventListener('click', onConfirm);
     $('undoButton').addEventListener('click', onUndo);
-    $('settingsLink').addEventListener('click', onGoToSettings);
-    $('profile-picture').addEventListener('load', onPictureLoaded);
+    if (loadTimeData.getBoolean('isSyncAllowed')) {
+      $('settingsLink').addEventListener('click', onGoToSettings);
+      $('profile-picture').addEventListener('load', onPictureLoaded);
+      $('syncDisabledDetails').hidden = true;
+    } else {
+      $('syncConfirmationDetails').hidden = true;
+    }
     chrome.send('initializedWithSize', [document.body.scrollHeight]);
   }
 
@@ -31,11 +36,15 @@ cr.define('sync.confirmation', function() {
   }
 
   function setUserImageURL(url) {
-    $('profile-picture').src = url;
+    if (loadTimeData.getBoolean('isSyncAllowed')) {
+      $('profile-picture').src = url;
+    }
   }
 
   function onPictureLoaded(e) {
-    $('picture-container').classList.add('loaded');
+    if (loadTimeData.getBoolean('isSyncAllowed')) {
+      $('picture-container').classList.add('loaded');
+    }
   }
 
   function onKeyDown(e) {

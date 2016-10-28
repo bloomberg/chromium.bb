@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -21,6 +22,8 @@ SyncConfirmationUI::SyncConfirmationUI(
     content::WebUI* web_ui, SyncConfirmationHandler* handler)
     : WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
+  bool is_sync_allowed = profile->IsSyncAllowed();
+
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
   source->SetJsonPath("strings.js");
@@ -28,9 +31,8 @@ SyncConfirmationUI::SyncConfirmationUI(
   source->AddResourcePath("sync_confirmation.css", IDR_SYNC_CONFIRMATION_CSS);
   source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
   source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);
+  source->AddBoolean("isSyncAllowed", is_sync_allowed);
 
-  source->AddLocalizedString("syncConfirmationTitle",
-      IDS_SYNC_CONFIRMATION_TITLE);
   source->AddLocalizedString("syncConfirmationChromeSyncTitle",
       IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE);
   source->AddLocalizedString("syncConfirmationChromeSyncBody",
@@ -41,10 +43,21 @@ SyncConfirmationUI::SyncConfirmationUI(
       IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY);
   source->AddLocalizedString("syncConfirmationSyncSettingsLinkBody",
       IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY);
+  source->AddLocalizedString("syncDisabledConfirmationDetails",
+                             IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
+
+  int title_ids = IDS_SYNC_CONFIRMATION_TITLE;
+  int confirm_button_ids = IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL;
+  int undo_button_ids = IDS_SYNC_CONFIRMATION_UNDO_BUTTON_LABEL;
+  if (!is_sync_allowed) {
+    title_ids = IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE;
+    confirm_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_CONFIRM_BUTTON_LABEL;
+    undo_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL;
+  }
+  source->AddLocalizedString("syncConfirmationTitle", title_ids);
   source->AddLocalizedString("syncConfirmationConfirmLabel",
-      IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL);
-  source->AddLocalizedString("syncConfirmationUndoLabel",
-      IDS_SYNC_CONFIRMATION_UNDO_BUTTON_LABEL);
+                             confirm_button_ids);
+  source->AddLocalizedString("syncConfirmationUndoLabel", undo_button_ids);
 
   base::DictionaryValue strings;
   webui::SetLoadTimeDataDefaults(

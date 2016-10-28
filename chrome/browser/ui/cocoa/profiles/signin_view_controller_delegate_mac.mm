@@ -41,6 +41,13 @@ const int kSyncConfirmationDialogHeight = 351;
 // Initial height of the signin error modal dialog.
 const int kSigninErrorDialogHeight = 164;
 
+CGFloat GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
+  // If sync is disabled, then the sync confirmation dialog looks like an error
+  // dialog and thus it has the same preferred size.
+  return profile->IsSyncAllowed() ? kSyncConfirmationDialogHeight
+                                  : kSigninErrorDialogHeight;
+}
+
 }  // namespace
 
 SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
@@ -112,8 +119,9 @@ SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   NSView* webview = web_contents->GetNativeView();
-  [webview setFrameSize:NSMakeSize(kModalDialogWidth,
-                                   kSyncConfirmationDialogHeight)];
+  [webview setFrameSize:NSMakeSize(
+                            kModalDialogWidth,
+                            GetSyncConfirmationDialogPreferredHeight(profile))];
 
   return web_contents;
 }
@@ -203,7 +211,7 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
           browser->profile()),
       browser->tab_strip_model()->GetActiveWebContents(),
       NSMakeRect(0, 0, kModalDialogWidth,
-                 kSyncConfirmationDialogHeight),
+                 GetSyncConfirmationDialogPreferredHeight(browser->profile())),
       true);
 }
 

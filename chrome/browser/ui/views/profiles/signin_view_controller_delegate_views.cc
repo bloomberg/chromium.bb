@@ -20,12 +20,23 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
 const int kPasswordCombinedFixedGaiaViewHeight = 440;
 const int kPasswordCombinedFixedGaiaViewWidth = 360;
 const int kFixedGaiaViewHeight = 612;
 const int kModalDialogWidth = 448;
 const int kSyncConfirmationDialogHeight = 487;
 const int kSigninErrorDialogHeight = 164;
+
+int GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
+  // If sync is disabled, then the sync confirmation dialog looks like an error
+  // dialog and thus it has the same preferred size.
+  return profile->IsSyncAllowed() ? kSyncConfirmationDialogHeight
+                                  : kSigninErrorDialogHeight;
+}
+
+}  // namespace
 
 SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     SigninViewController* signin_view_controller,
@@ -144,13 +155,14 @@ SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
   views::WebView* web_view = new views::WebView(browser->profile());
   web_view->LoadInitialURL(GURL(chrome::kChromeUISyncConfirmationURL));
 
+  int dialog_preferred_height =
+      GetSyncConfirmationDialogPreferredHeight(browser->profile());
   int max_height = browser
       ->window()
       ->GetWebContentsModalDialogHost()
       ->GetMaximumDialogSize().height();
-  web_view->SetPreferredSize(
-      gfx::Size(kModalDialogWidth,
-                std::min(kSyncConfirmationDialogHeight, max_height)));
+  web_view->SetPreferredSize(gfx::Size(
+      kModalDialogWidth, std::min(dialog_preferred_height, max_height)));
 
   return std::unique_ptr<views::WebView>(web_view);
 }

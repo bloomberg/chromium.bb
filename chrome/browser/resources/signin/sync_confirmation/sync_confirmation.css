@@ -80,6 +80,13 @@
   -webkit-margin-start: 8px;
 }
 
+#syncDisabledDetails {
+  line-height: 20px;
+  margin-bottom: 8px;
+  margin-top: 16px;
+  padding: 0 24px;
+}
+
 #illustration {
   height: 96px;
   margin: 0 auto;

@@ -11217,6 +11217,7 @@ I don't think this site should be blocked!
       <message name="IDS_SYNC_CONFIRMATION_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow">
         You're now signed in to Chrome
       </message>
+
       <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE" desc="Title of the chrome sync section of the sync confirmation dialog in the tab modal signin flow" formatter_data="android_java">
         Chrome Sync
       </message>
@@ -11241,6 +11242,21 @@ I don't think this site should be blocked!
       <message name="IDS_SYNC_CONFIRMATION_UNDO_BUTTON_LABEL" desc="Label of the undo button in the sync confirmation dialog of the tab modal signin flow">
         Undo
       </message>
+
+      <!--- Sync Confirmation section of the tab modal signin flow when sync is disabled by policy -->
+      <message name="IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE" desc="Title of the chrome sync section of the sync confirmation dialog in the tab modal signin flow when sync is disabled by policy" formatter_data="android_java">
+        Sync is disabled by your administrator
+      </message>
+      <message name="IDS_SYNC_DISABLED_CONFIRMATION_DETAILS" desc="Body of the sync confirmation dialog in the tab modal signin flow when sync is disabled by policy">
+        Your administrator has disabled syncing of your bookmarks, history, passwords, and other settings.
+       </message>
+      <message name="IDS_SYNC_DISABLED_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
+        Sign in anyway
+      </message>
+      <message name="IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL" desc="Label of the undo button in the sync confirmation dialog of the tab modal signin flow">
+        Cancel sign in
+      </message>
+
 
       <!-- Signin Error tab modal dialogue -->
       <message name="IDS_SIGNIN_ERROR_TITLE" desc="Title of the signin error tab modal dialog.">
