@@ -1207,19 +1207,19 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Bucket">
-    <flag>Bit 0: 0_2_SECONDS</flag>
-    <flag>Bit 1: 2_4_SECONDS</flag>
-    <flag>Bit 2: 4_8_SECONDS</flag>
-    <flag>Bit 3: 8_16_SECONDS</flag>
-    <flag>Bit 4: 16_32_SECONDS</flag>
-    <flag>Bit 5: 32_INF_SECONDS</flag>
+    <flag bit="0" label="0_2_SECONDS"/>
+    <flag bit="1" label="2_4_SECONDS"/>
+    <flag bit="2" label="4_8_SECONDS"/>
+    <flag bit="3" label="8_16_SECONDS"/>
+    <flag bit="4" label="16_32_SECONDS"/>
+    <flag bit="5" label="32_INF_SECONDS"/>
     <summary>
       Bitfield representing the bucket when the time to first contentful paint
       occurred.
     </summary>
   </flags-field>
   <flags-field name="IsSlow">
-    <flag>Bit 0</flag>
+    <flag bit="0" label="OVER_10_SECONDS"/>
     <summary>
       Whether or not the navigation to first contentful paint took over ten
       seconds. We send this over to ease in analysis. The Bucket field has many
@@ -1270,13 +1270,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1311,13 +1311,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1352,13 +1352,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1393,13 +1393,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1434,13 +1434,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1475,13 +1475,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1516,13 +1516,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1558,13 +1558,13 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="Actions">
-    <flag>Bit 0: GRANTED</flag>
-    <flag>Bit 1: DENIED</flag>
-    <flag>Bit 2: DISMISSED</flag>
-    <flag>Bit 3: IGNORED</flag>
-    <flag>Bit 4: REVOKED</flag>
-    <flag>Bit 5: REENABLED</flag>
-    <flag>Bit 6: REQUESTED</flag>
+    <flag bit="0" label="GRANTED"/>
+    <flag bit="1" label="DENIED"/>
+    <flag bit="2" label="DISMISSED"/>
+    <flag bit="3" label="IGNORED"/>
+    <flag bit="4" label="REVOKED"/>
+    <flag bit="5" label="REENABLED"/>
+    <flag bit="6" label="REQUESTED"/>
     <summary>
       Bitfield of the permission actions taken for this permission.
     </summary>
@@ -1755,27 +1755,27 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="priority">
-    <flag>Bit 0: BACKGROUND</flag>
+    <flag bit="0" label="BACKGROUND"/>
     <summary>
       Bitfield for the task's process priority (whether it's foregrounded or
       backgrounded).
     </summary>
   </flags-field>
   <flags-field name="num_cores_range">
-    <flag>Bit 0: RANGE_CORES_1_CORE</flag>
-    <flag>Bit 1: RANGE_CORES_2_CORES</flag>
-    <flag>Bit 2: RANGE_CORES_3_TO_4_CORES</flag>
-    <flag>Bit 3: RANGE_CORES_5_TO_8_CORES</flag>
-    <flag>Bit 4: RANGE_CORES_9_TO_16_CORES</flag>
-    <flag>Bit 5: RANGE_CORES_ABOVE_16_CORES</flag>
+    <flag bit="0" label="RANGE_CORES_1_CORE"/>
+    <flag bit="1" label="RANGE_CORES_2_CORES"/>
+    <flag bit="2" label="RANGE_CORES_3_TO_4_CORES"/>
+    <flag bit="3" label="RANGE_CORES_5_TO_8_CORES"/>
+    <flag bit="4" label="RANGE_CORES_9_TO_16_CORES"/>
+    <flag bit="5" label="RANGE_CORES_ABOVE_16_CORES"/>
     <summary>
       Bitfield for the current system's number or cores range.
     </summary>
   </flags-field>
   <flags-field name="usage_range">
-    <flag>Bit 0: RANGE_10_TO_30_PERCENT</flag>
-    <flag>Bit 1: RANGE_30_TO_60_PERCENT</flag>
-    <flag>Bit 2: RANGE_ABOVE_60_PERCENT</flag>
+    <flag bit="0" label="RANGE_10_TO_30_PERCENT"/>
+    <flag bit="1" label="RANGE_30_TO_60_PERCENT"/>
+    <flag bit="2" label="RANGE_ABOVE_60_PERCENT"/>
     <summary>
       Bitfield for the tasks CPU usage range.
     </summary>
@@ -1794,18 +1794,18 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="priority">
-    <flag>Bit 0: BACKGROUND</flag>
+    <flag bit="0" label="BACKGROUND"/>
     <summary>
       Bitfield for the task's process priority (whether it's foregrounded or
       backgrounded).
     </summary>
   </flags-field>
   <flags-field name="usage_range">
-    <flag>Bit 0: RANGE_200_TO_400_MB</flag>
-    <flag>Bit 1: RANGE_400_TO_600_MB</flag>
-    <flag>Bit 2: RANGE_600_TO_800_MB</flag>
-    <flag>Bit 3: RANGE_800_TO_1_GB</flag>
-    <flag>Bit 4: RANGE_ABOVE_1_GB</flag>
+    <flag bit="0" label="RANGE_200_TO_400_MB"/>
+    <flag bit="1" label="RANGE_400_TO_600_MB"/>
+    <flag bit="2" label="RANGE_600_TO_800_MB"/>
+    <flag bit="3" label="RANGE_800_TO_1_GB"/>
+    <flag bit="4" label="RANGE_ABOVE_1_GB"/>
     <summary>
       Bitfield for the tasks memory usage range.
     </summary>
@@ -1958,8 +1958,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from a safe-browsing UWS warning interstitial.
     </summary>
@@ -1981,8 +1981,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from a safe-browsing UWS warning interstitial.
     </summary>
@@ -2003,8 +2003,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from a safe-browsing malware warning interstitial.
     </summary>
@@ -2026,8 +2026,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from a safe-browsing malware warning interstitial.
     </summary>
@@ -2048,8 +2048,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from a safe-browsing phishing warning interstitial.
     </summary>
@@ -2071,8 +2071,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from a safe-browsing phishing warning interstitial.
     </summary>
@@ -2100,8 +2100,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from an SSL warning interstitial.
     </summary>
@@ -2120,8 +2120,8 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="flags">
-    <flag>Bit 0: DID_PROCEED</flag>
-    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <flag bit="0" label="DID_PROCEED"/>
+    <flag bit="1" label="IS_REPEAT_VISIT"/>
     <summary>
       Bitfield of the state from an SSL warning interstitial.
     </summary>

@@ -172,6 +172,7 @@ class ObjectNodeType(NodeType):
     attributes: A list of (name, type) pairs, e.g. [('foo', unicode)].  The
         order of the attributes determines the ordering of attributes, when
         serializing objects to XML.
+    text_attribute: An attribute stored in the text content of the node.
     children: A list of ChildTypes describing the objects children.
 
   Raises:
@@ -181,10 +182,12 @@ class ObjectNodeType(NodeType):
   def __init__(self, tag,
                attributes=None,
                children=None,
+               text_attribute=None,
                **kwargs):
     NodeType.__init__(self, tag, **kwargs)
     self.attributes = attributes or []
     self.children = children or []
+    self.text_attribute = text_attribute
     if len(self.attributes) != len(dict(self.attributes)):
       raise ValueError('Duplicate attribute definition.')
 
@@ -211,13 +214,14 @@ class ObjectNodeType(NodeType):
       if node.hasAttribute(attr):
         obj[attr] = attr_type(node.getAttribute(attr))
 
+    if self.text_attribute and node.firstChild:
+      obj[self.text_attribute] = node.firstChild.nodeValue.strip()
+
     for child in self.children:
       nodes = node.getElementsByTagName(child.node_type.tag)
       if child.multiple:
         obj[child.attr] = [child.node_type.Unmarshall(n) for n in nodes]
-      else:
-        if not nodes:
-          raise ValueError("Missing required tag '%s'" % child.node_type.tag)
+      elif nodes:
         obj[child.attr] = child.node_type.Unmarshall(nodes[0])
     return obj
 
@@ -238,11 +242,14 @@ class ObjectNodeType(NodeType):
 
     PutComments(node, obj[COMMENT_KEY])
 
+    if self.text_attribute and self.text_attribute in obj:
+      node.appendChild(doc.createTextNode(obj[self.text_attribute]))
+
     for child in self.children:
       if child.multiple:
         for child_obj in obj[child.attr]:
           node.appendChild(child.node_type.Marshall(doc, child_obj))
-      else:
+      elif child.attr in obj:
         node.appendChild(child.node_type.Marshall(doc, obj[child.attr]))
     return node
 
