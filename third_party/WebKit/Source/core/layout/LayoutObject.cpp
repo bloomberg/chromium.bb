@@ -2100,9 +2100,8 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     // doesn't need viewport-adjusting.
     if (ancestor->style()->position() != FixedPosition &&
         container->isLayoutView() && styleRef().position() == FixedPosition) {
-      LayoutRect rect;
-      toLayoutView(container)->adjustOffsetForFixedPosition(rect);
-      transformState.move(rect.x(), rect.y());
+      LayoutSize adjustment = toLayoutView(container)->offsetForFixedPosition();
+      transformState.move(adjustment.width(), adjustment.height());
     }
     return;
   }
@@ -2180,9 +2179,8 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     // doesn't need viewport-adjusting.
     if (ancestor->style()->position() != FixedPosition &&
         container->isLayoutView() && styleRef().position() == FixedPosition) {
-      LayoutRect rect;
-      toLayoutView(container)->adjustOffsetForFixedPosition(rect);
-      transformState.move(rect.x(), rect.y());
+      LayoutSize adjustment = toLayoutView(container)->offsetForFixedPosition();
+      transformState.move(adjustment.width(), adjustment.height());
     }
   }
 }

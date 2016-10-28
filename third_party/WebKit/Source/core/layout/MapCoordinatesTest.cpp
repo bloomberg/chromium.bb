@@ -6,14 +6,20 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class MapCoordinatesTest : public RenderingTest {
+typedef bool TestParamRootLayerScrolling;
+class MapCoordinatesTest
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
+      private ScopedRootLayerScrollingForTest,
+      public RenderingTest {
  public:
   MapCoordinatesTest()
-      : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+      : ScopedRootLayerScrollingForTest(GetParam()),
+        RenderingTest(SingleChildFrameLoaderClient::create()) {}
   FloatPoint mapLocalToAncestor(const LayoutObject*,
                                 const LayoutBoxModelObject* ancestor,
                                 FloatPoint,
@@ -30,6 +36,14 @@ class MapCoordinatesTest : public RenderingTest {
                                const LayoutBoxModelObject* ancestor,
                                FloatQuad,
                                MapCoordinatesFlags = 0) const;
+
+  // Adjust point by the scroll offset of the LayoutView.  This only has an
+  // effect if root layer scrolling is enabled.  The only reason for doing
+  // this here is so the test expected values can be the same whether or not
+  // root layer scrolling is enabled.  This is analogous to what
+  // LayoutGeometryMapTest does; for more context, see:
+  // https://codereview.chromium.org/2417103002/#msg11
+  FloatPoint adjustForFrameScroll(const FloatPoint&) const;
 };
 
 // One note about tests here that operate on LayoutInline and LayoutText
@@ -40,6 +54,15 @@ class MapCoordinatesTest : public RenderingTest {
 // container-specific characteristics (such as writing mode roots, multicol),
 // and so on. This in contrast to LayoutBox objects, where the TransformState
 // passed is relative to the box itself, not the container.
+
+FloatPoint MapCoordinatesTest::adjustForFrameScroll(
+    const FloatPoint& point) const {
+  FloatPoint result(point);
+  LayoutView* layoutView = document().layoutView();
+  if (layoutView->hasOverflowClip())
+    result.move(-layoutView->scrolledContentOffset());
+  return result;
+}
 
 FloatPoint MapCoordinatesTest::mapLocalToAncestor(
     const LayoutObject* object,
@@ -89,7 +112,9 @@ FloatQuad MapCoordinatesTest::mapAncestorToLocal(
   return transformState.lastPlanarQuad();
 }
 
-TEST_F(MapCoordinatesTest, SimpleText) {
+INSTANTIATE_TEST_CASE_P(All, MapCoordinatesTest, ::testing::Bool());
+
+TEST_P(MapCoordinatesTest, SimpleText) {
   setBodyInnerHTML("<div id='container'><br>text</div>");
 
   LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
@@ -102,7 +127,7 @@ TEST_F(MapCoordinatesTest, SimpleText) {
   EXPECT_EQ(FloatPoint(10, 30), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SimpleInline) {
+TEST_P(MapCoordinatesTest, SimpleInline) {
   setBodyInnerHTML("<div><span id='target'>text</span></div>");
 
   LayoutObject* target = getLayoutObjectByElementId("target");
@@ -114,7 +139,7 @@ TEST_F(MapCoordinatesTest, SimpleInline) {
   EXPECT_EQ(FloatPoint(10, 10), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SimpleBlock) {
+TEST_P(MapCoordinatesTest, SimpleBlock) {
   setBodyInnerHTML(
       "<div style='margin:666px; border:8px solid; padding:7px;'>"
       "    <div id='target' style='margin:10px; border:666px; "
@@ -130,7 +155,7 @@ TEST_F(MapCoordinatesTest, SimpleBlock) {
   EXPECT_EQ(FloatPoint(100, 100), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, OverflowClip) {
+TEST_P(MapCoordinatesTest, OverflowClip) {
   setBodyInnerHTML(
       "<div id='overflow' style='height: 100px; width: 100px; border:8px "
       "solid; padding:7px; overflow:scroll'>"
@@ -151,7 +176,7 @@ TEST_F(MapCoordinatesTest, OverflowClip) {
   EXPECT_EQ(FloatPoint(100, 100), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, TextInRelPosInline) {
+TEST_P(MapCoordinatesTest, TextInRelPosInline) {
   setBodyInnerHTML(
       "<div><span style='position:relative; left:7px; top:4px;'><br "
       "id='sibling'>text</span></div>");
@@ -166,7 +191,7 @@ TEST_F(MapCoordinatesTest, TextInRelPosInline) {
   EXPECT_EQ(FloatPoint(10, 30), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, RelposInline) {
+TEST_P(MapCoordinatesTest, RelposInline) {
   setBodyInnerHTML(
       "<span id='target' style='position:relative; left:50px; "
       "top:100px;'>text</span>");
@@ -180,7 +205,7 @@ TEST_F(MapCoordinatesTest, RelposInline) {
   EXPECT_EQ(FloatPoint(10, 10), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, RelposInlineInRelposInline) {
+TEST_P(MapCoordinatesTest, RelposInlineInRelposInline) {
   setBodyInnerHTML(
       "<div style='padding-left:10px;'>"
       "    <span style='position:relative; left:5px; top:6px;'>"
@@ -213,7 +238,7 @@ TEST_F(MapCoordinatesTest, RelposInlineInRelposInline) {
   EXPECT_EQ(FloatPoint(20, 10), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, RelPosBlock) {
+TEST_P(MapCoordinatesTest, RelPosBlock) {
   setBodyInnerHTML(
       "<div id='container' style='margin:666px; border:8px solid; "
       "padding:7px;'>"
@@ -247,7 +272,7 @@ TEST_F(MapCoordinatesTest, RelPosBlock) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, AbsPos) {
+TEST_P(MapCoordinatesTest, AbsPos) {
   setBodyInnerHTML(
       "<div id='container' style='position:relative; margin:666px; border:8px "
       "solid; padding:7px;'>"
@@ -283,7 +308,7 @@ TEST_F(MapCoordinatesTest, AbsPos) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, AbsPosAuto) {
+TEST_P(MapCoordinatesTest, AbsPosAuto) {
   setBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:666px; border:8px "
       "solid; padding:7px;'>"
@@ -319,7 +344,7 @@ TEST_F(MapCoordinatesTest, AbsPosAuto) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPos) {
+TEST_P(MapCoordinatesTest, FixedPos) {
   // Assuming BODY margin of 8px.
   setBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:4px; border:5px "
@@ -377,7 +402,7 @@ TEST_F(MapCoordinatesTest, FixedPos) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPosAuto) {
+TEST_P(MapCoordinatesTest, FixedPosAuto) {
   // Assuming BODY margin of 8px.
   setBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:3px; border:8px "
@@ -437,7 +462,7 @@ TEST_F(MapCoordinatesTest, FixedPosAuto) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPosInFixedPos) {
+TEST_P(MapCoordinatesTest, FixedPosInFixedPos) {
   // Assuming BODY margin of 8px.
   setBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:4px; border:5px "
@@ -505,7 +530,7 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPos) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
+TEST_P(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
   setBodyInnerHTML(
       "<div style='height: 4000px'></div>"
       "<div id='container' style='position:fixed; top: 100px; left: 100px'>"
@@ -520,13 +545,18 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
   LayoutBox* view = html->parentBox();
   ASSERT_TRUE(view->isLayoutView());
 
-  document().view()->setScrollOffset(ScrollOffset(0.0, 50), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 50), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document().view()->scrollOffsetInt().height());
+  EXPECT_EQ(50, document()
+                    .view()
+                    ->layoutViewportScrollableArea()
+                    ->scrollOffsetInt()
+                    .height());
 
   FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(200, 250), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(200, 250));
+  EXPECT_EQ(adjustForFrameScroll(FloatPoint(200, 250)), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
   EXPECT_EQ(FloatPoint(), mappedPoint);
 
   mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
@@ -535,7 +565,7 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
+TEST_P(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
   setBodyInnerHTML(
       "<div style='height: 4000px'></div>"
       "<div id='container' style='position:absolute; top: 100px; left: 100px'>"
@@ -550,13 +580,18 @@ TEST_F(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
   LayoutBox* view = html->parentBox();
   ASSERT_TRUE(view->isLayoutView());
 
-  document().view()->setScrollOffset(ScrollOffset(0.0, 50), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 50), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document().view()->scrollOffsetInt().height());
+  EXPECT_EQ(50, document()
+                    .view()
+                    ->layoutViewportScrollableArea()
+                    ->scrollOffsetInt()
+                    .height());
 
   FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(200, 250), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(200, 250));
+  EXPECT_EQ(adjustForFrameScroll(FloatPoint(200, 250)), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
   EXPECT_EQ(FloatPoint(), mappedPoint);
 
   mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
@@ -565,7 +600,7 @@ TEST_F(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPosInTransform) {
+TEST_P(MapCoordinatesTest, FixedPosInTransform) {
   setBodyInnerHTML(
       "<style>#container { transform: translateY(100px); position: absolute; "
       "left: 0; top: 100px; }"
@@ -574,9 +609,14 @@ TEST_F(MapCoordinatesTest, FixedPosInTransform) {
       "<div id='container'><div class='fixed' id='target'></div></div>"
       "<div class='spacer'></div>");
 
-  document().view()->setScrollOffset(ScrollOffset(0.0, 50), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 50), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document().view()->scrollOffsetInt().height());
+  EXPECT_EQ(50, document()
+                    .view()
+                    ->layoutViewportScrollableArea()
+                    ->scrollOffsetInt()
+                    .height());
 
   LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
   LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
@@ -586,8 +626,8 @@ TEST_F(MapCoordinatesTest, FixedPosInTransform) {
   ASSERT_TRUE(view->isLayoutView());
 
   FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(0, 100));
+  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
   EXPECT_EQ(FloatPoint(), mappedPoint);
 
   mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
@@ -596,12 +636,12 @@ TEST_F(MapCoordinatesTest, FixedPosInTransform) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 
   mappedPoint = mapLocalToAncestor(container, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
-  mappedPoint = mapAncestorToLocal(container, view, FloatPoint(0, 100));
+  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
+  mappedPoint = mapAncestorToLocal(container, view, mappedPoint);
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPosInContainPaint) {
+TEST_P(MapCoordinatesTest, FixedPosInContainPaint) {
   setBodyInnerHTML(
       "<style>#container { contain: paint; position: absolute; left: 0; top: "
       "100px; }"
@@ -610,9 +650,14 @@ TEST_F(MapCoordinatesTest, FixedPosInContainPaint) {
       "<div id='container'><div class='fixed' id='target'></div></div>"
       "<div class='spacer'></div>");
 
-  document().view()->setScrollOffset(ScrollOffset(0.0, 50), ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 50), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document().view()->scrollOffsetInt().height());
+  EXPECT_EQ(50, document()
+                    .view()
+                    ->layoutViewportScrollableArea()
+                    ->scrollOffsetInt()
+                    .height());
 
   LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
   LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
@@ -622,8 +667,8 @@ TEST_F(MapCoordinatesTest, FixedPosInContainPaint) {
   ASSERT_TRUE(view->isLayoutView());
 
   FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(0, 100));
+  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
   EXPECT_EQ(FloatPoint(), mappedPoint);
 
   mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
@@ -632,13 +677,13 @@ TEST_F(MapCoordinatesTest, FixedPosInContainPaint) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 
   mappedPoint = mapLocalToAncestor(container, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
-  mappedPoint = mapAncestorToLocal(container, view, FloatPoint(0, 100));
+  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
+  mappedPoint = mapAncestorToLocal(container, view, mappedPoint);
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
 // TODO(chrishtr): add more multi-frame tests.
-TEST_F(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
+TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
@@ -652,8 +697,8 @@ TEST_F(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
       "<style>body { margin: 0; } #target { width: 200px; height: 200px; "
       "position:fixed}</style><div id=target></div>");
 
-  document().view()->setScrollOffset(ScrollOffset(0.0, 1000),
-                                     ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 1000), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   Element* target = frameDocument.getElementById("target");
@@ -666,10 +711,10 @@ TEST_F(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
   // The scroll is not taken into account because the element is not fixed to
   // the root LayoutView, and the space of the root LayoutView does not include
   // scroll.
-  EXPECT_EQ(FloatPoint(10, -7930), mappedPoint);
+  EXPECT_EQ(FloatPoint(10, -7930), adjustForFrameScroll(mappedPoint));
 }
 
-TEST_F(MapCoordinatesTest, IFrameTransformed) {
+TEST_P(MapCoordinatesTest, IFrameTransformed) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
@@ -684,8 +729,8 @@ TEST_F(MapCoordinatesTest, IFrameTransformed) {
 
   document().view()->updateAllLifecyclePhases();
 
-  frameDocument.view()->setScrollOffset(ScrollOffset(0.0, 1000),
-                                        ProgrammaticScroll);
+  frameDocument.view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 1000), ProgrammaticScroll);
   frameDocument.view()->updateAllLifecyclePhases();
 
   Element* target = frameDocument.getElementById("target");
@@ -703,7 +748,7 @@ TEST_F(MapCoordinatesTest, IFrameTransformed) {
   EXPECT_EQ(FloatPoint(225, 1225), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
+TEST_P(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   setBodyInnerHTML(
       "<style>* { margin: 0; }</style>"
@@ -721,8 +766,9 @@ TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
       "<div style='width: 200; height: 8000px'></div>");
 
   document().view()->updateAllLifecyclePhases();
-  frameDocument.view()->setScrollOffset(ScrollOffset(0.0, 1000),
-                                        ProgrammaticScroll);
+  frameDocument.view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 1000), ProgrammaticScroll);
+  document().view()->updateAllLifecyclePhases();
 
   Element* target = frameDocument.getElementById("target");
   ASSERT_TRUE(target);
@@ -733,7 +779,7 @@ TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
   EXPECT_EQ(FloatPoint(0, 0), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, MulticolWithText) {
+TEST_P(MapCoordinatesTest, MulticolWithText) {
   setBodyInnerHTML(
       "<div id='multicol' style='columns:2; column-gap:20px; width:400px; "
       "line-height:50px; padding:5px; orphans:1; widows:1;'>"
@@ -759,7 +805,7 @@ TEST_F(MapCoordinatesTest, MulticolWithText) {
   EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, MulticolWithInline) {
+TEST_P(MapCoordinatesTest, MulticolWithInline) {
   setBodyInnerHTML(
       "<div id='multicol' style='columns:2; column-gap:20px; width:400px; "
       "line-height:50px; padding:5px; orphans:1; widows:1;'>"
@@ -783,7 +829,7 @@ TEST_F(MapCoordinatesTest, MulticolWithInline) {
   EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, MulticolWithBlock) {
+TEST_P(MapCoordinatesTest, MulticolWithBlock) {
   setBodyInnerHTML(
       "<div id='container' style='-webkit-columns:3; -webkit-column-gap:0; "
       "column-fill:auto; width:300px; height:100px; border:8px solid; "
@@ -816,7 +862,7 @@ TEST_F(MapCoordinatesTest, MulticolWithBlock) {
   EXPECT_EQ(FloatPoint(10, 120), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, NestedMulticolWithBlock) {
+TEST_P(MapCoordinatesTest, NestedMulticolWithBlock) {
   setBodyInnerHTML(
       "<div id='outerMulticol' style='columns:2; column-gap:0; "
       "column-fill:auto; width:560px; height:215px; border:8px solid; "
@@ -870,7 +916,7 @@ TEST_F(MapCoordinatesTest, NestedMulticolWithBlock) {
   EXPECT_EQ(FloatPoint(140, 315), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, MulticolWithAbsPosInRelPos) {
+TEST_P(MapCoordinatesTest, MulticolWithAbsPosInRelPos) {
   setBodyInnerHTML(
       "<div id='multicol' style='-webkit-columns:3; -webkit-column-gap:0; "
       "column-fill:auto; width:300px; height:100px; border:8px solid; "
@@ -911,7 +957,7 @@ TEST_F(MapCoordinatesTest, MulticolWithAbsPosInRelPos) {
   EXPECT_EQ(FloatPoint(29, 139), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, MulticolWithAbsPosNotContained) {
+TEST_P(MapCoordinatesTest, MulticolWithAbsPosNotContained) {
   setBodyInnerHTML(
       "<div id='container' style='position:relative; margin:666px; border:7px "
       "solid; padding:3px;'>"
@@ -958,7 +1004,7 @@ TEST_F(MapCoordinatesTest, MulticolWithAbsPosNotContained) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FlippedBlocksWritingModeWithText) {
+TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithText) {
   setBodyInnerHTML(
       "<div style='-webkit-writing-mode:vertical-rl;'>"
       "    <div style='width:13px;'></div>"
@@ -1003,7 +1049,7 @@ TEST_F(MapCoordinatesTest, FlippedBlocksWritingModeWithText) {
   EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FlippedBlocksWritingModeWithInline) {
+TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithInline) {
   setBodyInnerHTML(
       "<div style='-webkit-writing-mode:vertical-rl;'>"
       "    <div style='width:13px;'></div>"
@@ -1068,7 +1114,7 @@ TEST_F(MapCoordinatesTest, FlippedBlocksWritingModeWithInline) {
   EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, FlippedBlocksWritingModeWithBlock) {
+TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithBlock) {
   setBodyInnerHTML(
       "<div id='container' style='-webkit-writing-mode:vertical-rl; border:8px "
       "solid; padding:7px; width:200px; height:200px;'>"
@@ -1100,7 +1146,7 @@ TEST_F(MapCoordinatesTest, FlippedBlocksWritingModeWithBlock) {
   EXPECT_EQ(FloatPoint(7, 7), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, Table) {
+TEST_P(MapCoordinatesTest, Table) {
   setBodyInnerHTML(
       "<style>td { padding: 2px; }</style>"
       "<div id='container' style='border:3px solid;'>"
@@ -1199,7 +1245,7 @@ static bool floatQuadsAlmostEqual(const FloatQuad& expected,
     }                                               \
   } while (false)
 
-TEST_F(MapCoordinatesTest, Transforms) {
+TEST_P(MapCoordinatesTest, Transforms) {
   setBodyInnerHTML(
       "<div id='container'>"
       "    <div id='outerTransform' style='transform:rotate(45deg); "
@@ -1265,7 +1311,7 @@ TEST_F(MapCoordinatesTest, Transforms) {
   EXPECT_FLOAT_QUAD_EQ(initialQuad, mappedQuad);
 }
 
-TEST_F(MapCoordinatesTest, SVGShape) {
+TEST_P(MapCoordinatesTest, SVGShape) {
   setBodyInnerHTML(
       "<svg id='container'>"
       "    <g transform='translate(100 200)'>"
@@ -1282,7 +1328,7 @@ TEST_F(MapCoordinatesTest, SVGShape) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SVGShapeScale) {
+TEST_P(MapCoordinatesTest, SVGShapeScale) {
   setBodyInnerHTML(
       "<svg id='container'>"
       "    <g transform='scale(2) translate(50 40)'>"
@@ -1300,7 +1346,7 @@ TEST_F(MapCoordinatesTest, SVGShapeScale) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithoutScale) {
+TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithoutScale) {
   setBodyInnerHTML(
       "<svg id='container' viewBox='0 0 200 200' width='400' height='200'>"
       "    <g transform='translate(100 50)'>"
@@ -1317,7 +1363,7 @@ TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithoutScale) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithScale) {
+TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithScale) {
   setBodyInnerHTML(
       "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
       "    <g transform='translate(50 50)'>"
@@ -1334,7 +1380,7 @@ TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithScale) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset) {
+TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset) {
   setBodyInnerHTML(
       "<svg id='container' viewBox='100 100 200 200' width='400' height='200'>"
       "    <g transform='translate(100 50)'>"
@@ -1352,7 +1398,7 @@ TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale) {
+TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale) {
   setBodyInnerHTML(
       "<svg id='container' viewBox='100 100 100 100' width='400' height='200'>"
       "    <g transform='translate(50 50)'>"
@@ -1370,7 +1416,7 @@ TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, SVGForeignObject) {
+TEST_P(MapCoordinatesTest, SVGForeignObject) {
   setBodyInnerHTML(
       "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
       "    <g transform='translate(50 50)'>"
@@ -1405,7 +1451,7 @@ TEST_F(MapCoordinatesTest, SVGForeignObject) {
   EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
-TEST_F(MapCoordinatesTest, LocalToAbsoluteTransform) {
+TEST_P(MapCoordinatesTest, LocalToAbsoluteTransform) {
   setBodyInnerHTML(
       "<div id='container' style='position: absolute; left: 0; top: 0;'>"
       "  <div id='scale' style='transform: scale(2.0); transform-origin: left "
@@ -1428,7 +1474,7 @@ TEST_F(MapCoordinatesTest, LocalToAbsoluteTransform) {
   EXPECT_EQ(40.0, childMatrix.projectPoint(FloatPoint(10.0, 20.0)).y());
 }
 
-TEST_F(MapCoordinatesTest, LocalToAncestorTransform) {
+TEST_P(MapCoordinatesTest, LocalToAncestorTransform) {
   setBodyInnerHTML(
       "<div id='container'>"
       "  <div id='rotate1' style='transform: rotate(45deg); transform-origin: "
@@ -1472,7 +1518,7 @@ TEST_F(MapCoordinatesTest, LocalToAncestorTransform) {
               LayoutUnit::epsilon());
 }
 
-TEST_F(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
+TEST_P(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
   document().frame()->settings()->setAcceleratedCompositingEnabled(true);
   setBodyInnerHTML(
       "<div style='position: absolute; left: 0; top: 0;'>"

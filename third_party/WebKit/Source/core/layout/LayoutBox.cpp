@@ -2388,7 +2388,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
     // doesn't need viewport-adjusting.
     if (ancestor->style()->position() != FixedPosition &&
         container->isLayoutView() && position == FixedPosition)
-      toLayoutView(container)->adjustOffsetForFixedPosition(rect);
+      rect.move(toLayoutView(container)->offsetForFixedPosition(true));
     return true;
   }
 

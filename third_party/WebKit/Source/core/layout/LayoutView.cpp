@@ -335,9 +335,7 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   }
 
   if ((mode & IsFixed) && m_frameView) {
-    transformState.move(LayoutSize(m_frameView->scrollOffset()));
-    if (hasOverflowClip())
-      transformState.move(scrolledContentOffset());
+    transformState.move(offsetForFixedPosition());
     // IsFixed flag is only applicable within this LayoutView.
     mode &= ~IsFixed;
   }
@@ -365,15 +363,8 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
 const LayoutObject* LayoutView::pushMappingToContainer(
     const LayoutBoxModelObject* ancestorToStopAt,
     LayoutGeometryMap& geometryMap) const {
-  LayoutSize offsetForFixedPosition;
   LayoutSize offset;
   LayoutObject* container = nullptr;
-
-  if (m_frameView) {
-    offsetForFixedPosition = LayoutSize(m_frameView->scrollOffset());
-    if (hasOverflowClip())
-      offsetForFixedPosition = LayoutSize(scrolledContentOffset());
-  }
 
   if (geometryMap.getMapCoordinatesFlags() & TraverseDocumentBoundaries) {
     if (LayoutPart* parentDocLayoutObject = toLayoutPart(
@@ -392,9 +383,9 @@ const LayoutObject* LayoutView::pushMappingToContainer(
       shouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     getTransformFromContainer(container, LayoutSize(), t);
-    geometryMap.push(this, t, ContainsFixedPosition, offsetForFixedPosition);
+    geometryMap.push(this, t, ContainsFixedPosition, offsetForFixedPosition());
   } else {
-    geometryMap.push(this, offset, 0, offsetForFixedPosition);
+    geometryMap.push(this, offset, 0, offsetForFixedPosition());
   }
 
   return container;
@@ -419,7 +410,7 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   }
 
   if (mode & IsFixed)
-    transformState.move(LayoutSize(frame()->view()->scrollOffset()));
+    transformState.move(offsetForFixedPosition());
 }
 
 void LayoutView::computeSelfHitTestRects(Vector<LayoutRect>& rects,
@@ -479,7 +470,7 @@ bool LayoutView::mapToVisualRectInAncestorSpace(
     MapCoordinatesFlags mode,
     VisualRectFlags visualRectFlags) const {
   if (mode & IsFixed)
-    adjustOffsetForFixedPosition(rect);
+    rect.move(offsetForFixedPosition(true));
 
   // Apply our transform if we have one (because of full page zooming).
   if (!ancestor && layer() && layer()->transform())
@@ -523,11 +514,10 @@ bool LayoutView::mapToVisualRectInAncestorSpace(
   return false;
 }
 
-void LayoutView::adjustOffsetForFixedPosition(LayoutRect& rect) const {
+LayoutSize LayoutView::offsetForFixedPosition(bool includePendingScroll) const {
+  FloatSize adjustment;
   if (m_frameView) {
-    rect.move(LayoutSize(m_frameView->scrollOffset()));
-    if (hasOverflowClip())
-      rect.move(scrolledContentOffset());
+    adjustment += m_frameView->scrollOffset();
 
     // FIXME: Paint invalidation should happen after scroll updates, so there
     // should be no pending scroll delta.
@@ -535,9 +525,14 @@ void LayoutView::adjustOffsetForFixedPosition(LayoutRect& rect) const {
     // ASSERT for now. crbug.com/434950.
     // ASSERT(m_frameView->pendingScrollDelta().isZero());
     // If we have a pending scroll, invalidate the previous scroll position.
-    if (!m_frameView->pendingScrollDelta().isZero())
-      rect.move(-LayoutSize(m_frameView->pendingScrollDelta()));
+    if (includePendingScroll && !m_frameView->pendingScrollDelta().isZero())
+      adjustment -= m_frameView->pendingScrollDelta();
   }
+
+  if (hasOverflowClip())
+    adjustment += FloatSize(scrolledContentOffset());
+
+  return roundedLayoutSize(adjustment);
 }
 
 void LayoutView::absoluteRects(Vector<IntRect>& rects,

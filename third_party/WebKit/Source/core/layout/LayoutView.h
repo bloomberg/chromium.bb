@@ -123,7 +123,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
       const LayoutBoxModelObject* ancestor,
       LayoutRect&,
       VisualRectFlags = DefaultVisualRectFlags) const override;
-  void adjustOffsetForFixedPosition(LayoutRect&) const;
+  LayoutSize offsetForFixedPosition(bool includePendingScroll = false) const;
 
   void invalidatePaintForViewAndCompositedLayers();
 
