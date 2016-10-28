@@ -882,12 +882,6 @@ public class NewTabPageView extends FrameLayout
         }
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        setUrlFocusChangeAnimationPercent(0f);
-    }
-
     /**
      * Update the visibility of the voice search button based on whether the feature is currently
      * enabled.

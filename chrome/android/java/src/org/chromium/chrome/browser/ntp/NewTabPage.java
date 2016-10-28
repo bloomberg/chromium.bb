@@ -843,9 +843,8 @@ public class NewTabPage
             // The toolbar can't get the reference to the native page until its initialization is
             // finished, so we can't cache it here and transfer it to the view later. We pull that
             // state from the location bar when we get a reference to it as a workaround.
-            if (fakeboxDelegate.isUrlBarFocused()) {
-                mNewTabPageView.setUrlFocusChangeAnimationPercent(1f);
-            }
+            mNewTabPageView.setUrlFocusChangeAnimationPercent(
+                    fakeboxDelegate.isUrlBarFocused() ? 1f : 0f);
         }
     }
 
