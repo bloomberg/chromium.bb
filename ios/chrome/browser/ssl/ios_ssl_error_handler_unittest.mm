@@ -67,7 +67,8 @@ TEST_F(IOSSSLErrorHandlerTest, NonOverridable) {
 }
 
 // Tests proceed with overridable error.
-TEST_F(IOSSSLErrorHandlerTest, OverridableProceed) {
+// Flaky: http://crbug.com/660343.
+TEST_F(IOSSSLErrorHandlerTest, DISABLED_OverridableProceed) {
   net::SSLInfo ssl_info;
   ssl_info.cert = cert();
   GURL url(kTestHostName);
