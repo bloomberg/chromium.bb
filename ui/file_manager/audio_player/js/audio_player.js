@@ -47,6 +47,15 @@ function AudioPlayer(container) {
     /** @type {AudioPlayerElement} */ (document.querySelector('audio-player'));
   this.player_.tracks = [];
 
+  /**
+   * Queue to throttle concurrent reading of audio file metadata.
+   * Here we loads up to 25 songs concurrently to cover the number of songs in
+   * an album in most cases. This number should not be too large so that the
+   * number of open file descriptors will not hit the system limit.
+   * @private {AsyncUtil.ConcurrentQueue}
+   */
+  this.loadMetadataQueue_ = new AsyncUtil.ConcurrentQueue(25);
+
   // Restore the saved state from local storage, and update the local storage
   // if the states are changed.
   var STORAGE_PREFIX = 'audioplayer-';
@@ -216,8 +225,12 @@ AudioPlayer.prototype.load = function(playlist) {
  * @private
  */
 AudioPlayer.prototype.loadMetadata_ = function(track) {
-  this.fetchMetadata_(
-      this.entries_[track], this.displayMetadata_.bind(this, track));
+  this.loadMetadataQueue_.run(function(callback) {
+    this.fetchMetadata_(this.entries_[track], function(metadata) {
+      this.displayMetadata_(track, metadata);
+      callback();
+    }.bind(this));
+  }.bind(this));
 };
 
 /**
