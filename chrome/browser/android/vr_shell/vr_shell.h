@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
@@ -49,7 +50,7 @@ enum UiAction {
   RELOAD_UI
 };
 
-class VrShell : public device::GvrDelegate {
+class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  public:
   VrShell(JNIEnv* env, jobject obj,
           content::WebContents* main_contents,
@@ -115,7 +116,7 @@ class VrShell : public device::GvrDelegate {
   void DoUiAction(const UiAction action);
 
  private:
-  virtual ~VrShell();
+  ~VrShell() override;
   void LoadUIContent();
   void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
   void DrawUiView(const gvr::Mat4f* head_pose,
@@ -128,6 +129,10 @@ class VrShell : public device::GvrDelegate {
   void UpdateController(const gvr::Vec3f& forward_vector);
 
   void HandleQueuedTasks();
+
+  // content::WebContentsObserver implementation.
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
 
   // samplerExternalOES texture data for UI content image.
   jint ui_texture_id_ = 0;

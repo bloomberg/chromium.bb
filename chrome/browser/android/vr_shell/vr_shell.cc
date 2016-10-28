@@ -15,6 +15,7 @@
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -131,7 +132,8 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
                  ui::WindowAndroid* content_window,
                  content::WebContents* ui_contents,
                  ui::WindowAndroid* ui_window)
-    : main_contents_(main_contents),
+    : WebContentsObserver(ui_contents),
+      main_contents_(main_contents),
       ui_contents_(ui_contents),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
@@ -688,15 +690,6 @@ base::WeakPtr<VrShell> VrShell::GetWeakPtr(
 }
 
 void VrShell::OnDomContentsLoaded() {
-  // TODO(mthiesse): Setting the background to transparent after the DOM content
-  // has loaded is a hack to work around the background not updating when we set
-  // it to transparent unless we perform a very specific sequence of events.
-  // First the page background must load as not transparent, then we set the
-  // background of the renderer to transparent, then we update the page
-  // background to be transparent. This is probably a bug in blink that we
-  // should fix.
-  ui_contents_->GetRenderWidgetHostView()->SetBackgroundColor(
-      SK_ColorTRANSPARENT);
   html_interface_->OnDomContentsLoaded();
 }
 
@@ -811,6 +804,11 @@ void VrShell::DoUiAction(const UiAction action) {
     default:
       NOTREACHED();
   }
+}
+
+void VrShell::RenderViewHostChanged(content::RenderViewHost* old_host,
+                                    content::RenderViewHost* new_host) {
+  new_host->GetWidget()->GetView()->SetBackgroundColor(SK_ColorTRANSPARENT);
 }
 
 // ----------------------------------------------------------------------------

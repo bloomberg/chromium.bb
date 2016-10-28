@@ -266,12 +266,6 @@ var vrShellUi = (function() {
   };
 
   function initialize() {
-
-    // Change the body background so that the transparency applies.
-    window.setTimeout(function() {
-      document.body.parentNode.style.backgroundColor = 'rgba(255,255,255,0)';
-    }, 100);
-
     sceneManager = new SceneManager();
     scene.flush();
 
