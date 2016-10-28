@@ -19,11 +19,13 @@
 namespace blink {
 
 class V8TestInterface2Partial {
-    STATIC_ONLY(V8TestInterface2Partial);
-public:
-    static void initialize();
-private:
-    static void installV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+  STATIC_ONLY(V8TestInterface2Partial);
+ public:
+  static void initialize();
+ private:
+  static void installV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 };
-}
-#endif // V8TestInterface2Partial_h
+
+}  // namespace blink
+
+#endif  // V8TestInterface2Partial_h

@@ -21,35 +21,32 @@
 namespace blink {
 
 class V8TestInterfaceEventInitConstructor {
-    STATIC_ONLY(V8TestInterfaceEventInitConstructor);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestInterfaceEventInitConstructor* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestInterfaceEventInitConstructor>();
-    }
-    CORE_EXPORT static TestInterfaceEventInitConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestInterfaceEventInitConstructor>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceEventInitConstructor>());
-    }
-    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8TestInterfaceEventInitConstructor);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestInterfaceEventInitConstructor* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestInterfaceEventInitConstructor>();
+  }
+  CORE_EXPORT static TestInterfaceEventInitConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestInterfaceEventInitConstructor>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceEventInitConstructor>());
+  }
+  static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestInterfaceEventInitConstructor> {
-    typedef V8TestInterfaceEventInitConstructor Type;
+  typedef V8TestInterfaceEventInitConstructor Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestInterfaceEventInitConstructor_h
+#endif  // V8TestInterfaceEventInitConstructor_h

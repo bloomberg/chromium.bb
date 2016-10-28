@@ -48,31 +48,29 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
-{
-    ASSERT(object->IsArrayBuffer());
-    v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
-    if (v8buffer->IsExternal()) {
-        const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
-        RELEASE_ASSERT(wrapperTypeInfo);
-        RELEASE_ASSERT(wrapperTypeInfo->ginEmbedder == gin::kEmbedderBlink);
-        return toScriptWrappable(object)->toImpl<TestArrayBuffer>();
-    }
+TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object) {
+  DCHECK(object->IsArrayBuffer());
+  v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
+  if (v8buffer->IsExternal()) {
+    const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
+    CHECK(wrapperTypeInfo);
+    CHECK_EQ(wrapperTypeInfo->ginEmbedder, gin::kEmbedderBlink);
+    return toScriptWrappable(object)->toImpl<TestArrayBuffer>();
+  }
 
-    // Transfer the ownership of the allocated memory to an ArrayBuffer without
-    // copying.
-    v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::NotShared);
-    TestArrayBuffer* buffer = TestArrayBuffer::create(contents);
-    v8::Local<v8::Object> associatedWrapper = buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
-    DCHECK(associatedWrapper == object);
+  // Transfer the ownership of the allocated memory to an ArrayBuffer without
+  // copying.
+  v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
+  WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::NotShared);
+  TestArrayBuffer* buffer = TestArrayBuffer::create(contents);
+  v8::Local<v8::Object> associatedWrapper = buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
+  DCHECK(associatedWrapper == object);
 
-    return buffer;
+  return buffer;
 }
 
-TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    return value->IsArrayBuffer() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return value->IsArrayBuffer() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

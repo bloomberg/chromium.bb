@@ -22,35 +22,32 @@
 namespace blink {
 
 class V8TestTypedefs {
-    STATIC_ONLY(V8TestTypedefs);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestTypedefs* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestTypedefs>();
-    }
-    CORE_EXPORT static TestTypedefs* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestTypedefs>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestTypedefs>());
-    }
-    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8TestTypedefs);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestTypedefs* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestTypedefs>();
+  }
+  CORE_EXPORT static TestTypedefs* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestTypedefs>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestTypedefs>());
+  }
+  static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestTypedefs> {
-    typedef V8TestTypedefs Type;
+  typedef V8TestTypedefs Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestTypedefs_h
+#endif  // V8TestTypedefs_h

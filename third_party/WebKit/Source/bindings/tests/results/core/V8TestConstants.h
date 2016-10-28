@@ -20,42 +20,39 @@
 namespace blink {
 
 class V8TestConstants {
-    STATIC_ONLY(V8TestConstants);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestConstants* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestConstants>();
-    }
-    CORE_EXPORT static TestConstants* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestConstants>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestConstants>());
-    }
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8TestConstants);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestConstants* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestConstants>();
+  }
+  CORE_EXPORT static TestConstants* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestConstants>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestConstants>());
+  }
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 
-    static void installFeatureName1(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-    static void installFeatureName1(ScriptState*, v8::Local<v8::Object> instance);
-    static void installFeatureName1(ScriptState*);
+  static void installFeatureName1(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void installFeatureName1(ScriptState*, v8::Local<v8::Object> instance);
+  static void installFeatureName1(ScriptState*);
 
-    static void installFeatureName2(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-    static void installFeatureName2(ScriptState*, v8::Local<v8::Object> instance);
-    static void installFeatureName2(ScriptState*);
+  static void installFeatureName2(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void installFeatureName2(ScriptState*, v8::Local<v8::Object> instance);
+  static void installFeatureName2(ScriptState*);
 };
 
 template <>
 struct V8TypeOf<TestConstants> {
-    typedef V8TestConstants Type;
+  typedef V8TestConstants Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestConstants_h
+#endif  // V8TestConstants_h

@@ -402,85 +402,77 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"unscopableVoidMethod", TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
 };
 
-void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
-{
-    // Initialize the interface object's template.
-    V8TestInterface::installV8TestInterfaceTemplate(isolate, world, interfaceTemplate);
-    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
-    ALLOW_UNUSED_LOCAL(signature);
-    v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-    ALLOW_UNUSED_LOCAL(instanceTemplate);
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-    ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    // Register DOM constants, attributes and operations.
-    if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-            {"PARTIAL3_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        };
-        V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
-        V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
-    }
+void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  // Initialize the interface object's template.
+  V8TestInterface::installV8TestInterfaceTemplate(isolate, world, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ALLOW_UNUSED_LOCAL(signature);
+  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instanceTemplate);
+  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  // Register DOM constants, attributes and operations.
+  if (RuntimeEnabledFeatures::featureNameEnabled()) {
+      const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+          {"PARTIAL3_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+      };
+      V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+      V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+  }
 }
 
-void V8TestInterfacePartial::installOriginTrialPartialFeature(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
-{
-    v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestInterface::wrapperTypeInfo.domTemplate(isolate, world);
-    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
-    ALLOW_UNUSED_LOCAL(signature);
-    const V8DOMConfiguration::AccessorConfiguration accessorpartial4LongAttributeConfiguration = \
-        {"partial4LongAttribute", TestInterfaceImplementationPartialV8Internal::partial4LongAttributeAttributeGetterCallback, TestInterfaceImplementationPartialV8Internal::partial4LongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-    V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorpartial4LongAttributeConfiguration);
-    const V8DOMConfiguration::AccessorConfiguration accessorpartial4StaticLongAttributeConfiguration = \
-        {"partial4StaticLongAttribute", TestInterfaceImplementationPartialV8Internal::partial4StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationPartialV8Internal::partial4StaticLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
-    V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorpartial4StaticLongAttributeConfiguration);
-    const V8DOMConfiguration::ConstantConfiguration constantPartial4UnsignedShortConfiguration = {"PARTIAL4_UNSIGNED_SHORT", 4, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
-    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantPartial4UnsignedShortConfiguration);
-    const V8DOMConfiguration::MethodConfiguration methodPartial4StaticvoidmethodConfiguration = {"partial4StaticVoidMethod", TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
-    V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPartial4StaticvoidmethodConfiguration);
-    const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration = {"partial4VoidMethod", TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-    V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPartial4VoidmethodConfiguration);
+void V8TestInterfacePartial::installOriginTrialPartialFeature(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
+  v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestInterface::wrapperTypeInfo.domTemplate(isolate, world);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ALLOW_UNUSED_LOCAL(signature);
+  const V8DOMConfiguration::AccessorConfiguration accessorpartial4LongAttributeConfiguration = {"partial4LongAttribute", TestInterfaceImplementationPartialV8Internal::partial4LongAttributeAttributeGetterCallback, TestInterfaceImplementationPartialV8Internal::partial4LongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+  V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorpartial4LongAttributeConfiguration);
+  const V8DOMConfiguration::AccessorConfiguration accessorpartial4StaticLongAttributeConfiguration = {"partial4StaticLongAttribute", TestInterfaceImplementationPartialV8Internal::partial4StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationPartialV8Internal::partial4StaticLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
+  V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorpartial4StaticLongAttributeConfiguration);
+  const V8DOMConfiguration::ConstantConfiguration constantPartial4UnsignedShortConfiguration = {"PARTIAL4_UNSIGNED_SHORT", 4, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
+  V8DOMConfiguration::installConstant(isolate, interface, prototype, constantPartial4UnsignedShortConfiguration);
+  const V8DOMConfiguration::MethodConfiguration methodPartial4StaticvoidmethodConfiguration = {"partial4StaticVoidMethod", TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
+  V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPartial4StaticvoidmethodConfiguration);
+  const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration = {"partial4VoidMethod", TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+  V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPartial4VoidmethodConfiguration);
 }
 
-void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState, v8::Local<v8::Object> instance)
-{
-    V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
-    v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestInterface::wrapperTypeInfo);
-    v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestInterface::wrapperTypeInfo);
-    ALLOW_UNUSED_LOCAL(interface);
-    installOriginTrialPartialFeature(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
+void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState, v8::Local<v8::Object> instance) {
+  V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
+  v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestInterface::wrapperTypeInfo);
+  v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestInterface::wrapperTypeInfo);
+  ALLOW_UNUSED_LOCAL(interface);
+  installOriginTrialPartialFeature(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
 }
 
-void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState)
-{
-    installOriginTrialPartialFeature(scriptState, v8::Local<v8::Object>());
+void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState) {
+  installOriginTrialPartialFeature(scriptState, v8::Local<v8::Object>());
 }
-void V8TestInterfacePartial::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
-{
+void V8TestInterfacePartial::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
 #error No one is currently using a partial interface with context-dependent properties.  If you\'re planning to use it, please consult with the binding team: <blink-reviews-bindings@chromium.org>
-    V8TestInterface::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
-    v8::Isolate* isolate = context->GetIsolate();
-    v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
-    v8::Local<v8::Object> unscopables;
-    if (v8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
-        unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
-    else
-        unscopables = v8::Object::New(isolate);
-    unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate)).FromJust();
-    prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
+  V8TestInterface::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
+  v8::Local<v8::Object> unscopables;
+  if (v8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
+    unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+  else
+    unscopables = v8::Object::New(isolate);
+  unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate)).FromJust();
+  prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
 }
 
-void V8TestInterfacePartial::initialize()
-{
-    // Should be invoked from ModulesInitializer.
-    V8TestInterface::updateWrapperTypeInfo(
-        &V8TestInterfacePartial::installV8TestInterfaceTemplate,
-        V8TestInterfacePartial::preparePrototypeAndInterfaceObject);
-    V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::voidMethodPartialOverloadMethod);
-    V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticVoidMethodPartialOverloadMethod);
-    V8TestInterface::registerPromiseMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::promiseMethodPartialOverloadMethod);
-    V8TestInterface::registerStaticPromiseMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticPromiseMethodPartialOverloadMethod);
-    V8TestInterface::registerPartial2VoidMethodMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::partial2VoidMethodMethod);
-    V8TestInterface::registerPartial2StaticVoidMethodMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::partial2StaticVoidMethodMethod);
+void V8TestInterfacePartial::initialize() {
+  // Should be invoked from ModulesInitializer.
+  V8TestInterface::updateWrapperTypeInfo(
+      &V8TestInterfacePartial::installV8TestInterfaceTemplate,
+      V8TestInterfacePartial::preparePrototypeAndInterfaceObject);
+  V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::voidMethodPartialOverloadMethod);
+  V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticVoidMethodPartialOverloadMethod);
+  V8TestInterface::registerPromiseMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::promiseMethodPartialOverloadMethod);
+  V8TestInterface::registerStaticPromiseMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticPromiseMethodPartialOverloadMethod);
+  V8TestInterface::registerPartial2VoidMethodMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::partial2VoidMethodMethod);
+  V8TestInterface::registerPartial2StaticVoidMethodMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::partial2StaticVoidMethodMethod);
 }
 
-} // namespace blink
+}  // namespace blink

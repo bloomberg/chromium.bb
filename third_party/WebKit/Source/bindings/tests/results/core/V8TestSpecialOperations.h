@@ -21,34 +21,31 @@
 namespace blink {
 
 class V8TestSpecialOperations {
-    STATIC_ONLY(V8TestSpecialOperations);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestSpecialOperations* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestSpecialOperations>();
-    }
-    CORE_EXPORT static TestSpecialOperations* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestSpecialOperations>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestSpecialOperations>());
-    }
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8TestSpecialOperations);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestSpecialOperations* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestSpecialOperations>();
+  }
+  CORE_EXPORT static TestSpecialOperations* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestSpecialOperations>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestSpecialOperations>());
+  }
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestSpecialOperations> {
-    typedef V8TestSpecialOperations Type;
+  typedef V8TestSpecialOperations Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestSpecialOperations_h
+#endif  // V8TestSpecialOperations_h

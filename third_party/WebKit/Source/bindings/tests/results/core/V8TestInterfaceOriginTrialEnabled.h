@@ -20,34 +20,31 @@
 namespace blink {
 
 class V8TestInterfaceOriginTrialEnabled {
-    STATIC_ONLY(V8TestInterfaceOriginTrialEnabled);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestInterfaceOriginTrialEnabled* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestInterfaceOriginTrialEnabled>();
-    }
-    CORE_EXPORT static TestInterfaceOriginTrialEnabled* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestInterfaceOriginTrialEnabled>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceOriginTrialEnabled>());
-    }
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8TestInterfaceOriginTrialEnabled);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestInterfaceOriginTrialEnabled* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestInterfaceOriginTrialEnabled>();
+  }
+  CORE_EXPORT static TestInterfaceOriginTrialEnabled* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestInterfaceOriginTrialEnabled>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceOriginTrialEnabled>());
+  }
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestInterfaceOriginTrialEnabled> {
-    typedef V8TestInterfaceOriginTrialEnabled Type;
+  typedef V8TestInterfaceOriginTrialEnabled Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestInterfaceOriginTrialEnabled_h
+#endif  // V8TestInterfaceOriginTrialEnabled_h

@@ -420,196 +420,179 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, wrapper);
 }
 
-static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    const CString& nameInUtf8 = name.utf8();
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::GetterContext, "TestInterface2", nameInUtf8.data());
+static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  const CString& nameInUtf8 = name.utf8();
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::GetterContext, "TestInterface2", nameInUtf8.data());
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    TestInterfaceEmpty* result = impl->namedItem(name, exceptionState);
-    if (!result)
-        return;
-    v8SetReturnValueFast(info, result, impl);
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterfaceEmpty* result = impl->namedItem(name, exceptionState);
+  if (!result)
+    return;
+  v8SetReturnValueFast(info, result, impl);
 }
 
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    TestInterface2V8Internal::namedPropertyGetter(propertyName, info);
+  TestInterface2V8Internal::namedPropertyGetter(propertyName, info);
 }
 
-static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    const CString& nameInUtf8 = name.utf8();
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface2", nameInUtf8.data());
+static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  const CString& nameInUtf8 = name.utf8();
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface2", nameInUtf8.data());
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!propertyValue && !isUndefinedOrNull(v8Value)) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
-        return;
-    }
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  if (!propertyValue && !isUndefinedOrNull(v8Value)) {
+    exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
+    return;
+  }
 
-    bool result = impl->setNamedItem(name, propertyValue, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    if (!result)
-        return;
-    v8SetReturnValue(info, v8Value);
+  bool result = impl->setNamedItem(name, propertyValue, exceptionState);
+  if (exceptionState.hadException())
+    return;
+  if (!result)
+    return;
+  v8SetReturnValue(info, v8Value);
 }
 
-void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    TestInterface2V8Internal::namedPropertySetter(propertyName, v8Value, info);
+  TestInterface2V8Internal::namedPropertySetter(propertyName, v8Value, info);
 }
 
-static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    const CString& nameInUtf8 = name.utf8();
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::DeletionContext, "TestInterface2", nameInUtf8.data());
+static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  const CString& nameInUtf8 = name.utf8();
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::DeletionContext, "TestInterface2", nameInUtf8.data());
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
-    DeleteResult result = impl->deleteNamedItem(name, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    if (result == DeleteUnknownProperty)
-        return;
-    v8SetReturnValue(info, result == DeleteSuccess);
+  DeleteResult result = impl->deleteNamedItem(name, exceptionState);
+  if (exceptionState.hadException())
+    return;
+  if (result == DeleteUnknownProperty)
+    return;
+  v8SetReturnValue(info, result == DeleteSuccess);
 }
 
-void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    TestInterface2V8Internal::namedPropertyDeleter(propertyName, info);
+  TestInterface2V8Internal::namedPropertyDeleter(propertyName, info);
 }
 
-static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    const CString& nameInUtf8 = name.utf8();
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::GetterContext, "TestInterface2", nameInUtf8.data());
+static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  const CString& nameInUtf8 = name.utf8();
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::GetterContext, "TestInterface2", nameInUtf8.data());
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
-    bool result = impl->namedPropertyQuery(name, exceptionState);
-    if (!result)
-        return;
-    v8SetReturnValueInt(info, v8::None);
+  bool result = impl->namedPropertyQuery(name, exceptionState);
+  if (!result)
+    return;
+  v8SetReturnValueInt(info, v8::None);
 }
 
-void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    TestInterface2V8Internal::namedPropertyQuery(propertyName, info);
+  TestInterface2V8Internal::namedPropertyQuery(propertyName, info);
 }
 
-static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::EnumerationContext, "TestInterface2");
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::EnumerationContext, "TestInterface2");
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
-    Vector<String> names;
-    impl->namedPropertyEnumerator(names, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    v8SetReturnValue(info, toV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+  Vector<String> names;
+  impl->namedPropertyEnumerator(names, exceptionState);
+  if (exceptionState.hadException())
+    return;
+  v8SetReturnValue(info, toV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
 }
 
-void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    TestInterface2V8Internal::namedPropertyEnumerator(info);
+void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  TestInterface2V8Internal::namedPropertyEnumerator(info);
 }
 
-static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::IndexedGetterContext, "TestInterface2");
+static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::IndexedGetterContext, "TestInterface2");
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
-    // We assume that all the implementations support length() method, although
-    // the spec doesn't require that length() must exist.  It's okay that
-    // the interface does not have length attribute as long as the
-    // implementation supports length() member function.
-    if (index >= impl->length())
-        return;  // Returns undefined due to out-of-range.
+  // We assume that all the implementations support length() method, although
+  // the spec doesn't require that length() must exist.  It's okay that
+  // the interface does not have length attribute as long as the
+  // implementation supports length() member function.
+  if (index >= impl->length())
+    return;  // Returns undefined due to out-of-range.
 
-    TestInterfaceEmpty* result = impl->item(index, exceptionState);
-    v8SetReturnValueFast(info, result, impl);
+  TestInterfaceEmpty* result = impl->item(index, exceptionState);
+  v8SetReturnValueFast(info, result, impl);
 }
 
-void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestInterface2V8Internal::indexedPropertyGetter(index, info);
+void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  TestInterface2V8Internal::indexedPropertyGetter(index, info);
 }
 
-static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::IndexedSetterContext, "TestInterface2");
+static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::IndexedSetterContext, "TestInterface2");
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!propertyValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
-        return;
-    }
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  if (!propertyValue) {
+    exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
+    return;
+  }
 
-    bool result = impl->setItem(index, propertyValue, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    if (!result)
-        return;
-    v8SetReturnValue(info, v8Value);
+  bool result = impl->setItem(index, propertyValue, exceptionState);
+  if (exceptionState.hadException())
+    return;
+  if (!result)
+    return;
+  v8SetReturnValue(info, v8Value);
 }
 
-void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestInterface2V8Internal::indexedPropertySetter(index, v8Value, info);
+void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  TestInterface2V8Internal::indexedPropertySetter(index, v8Value, info);
 }
 
-static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::IndexedDeletionContext, "TestInterface2");
+static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::IndexedDeletionContext, "TestInterface2");
 
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
-    DeleteResult result = impl->deleteItem(index, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    if (result == DeleteUnknownProperty)
-        return;
-    v8SetReturnValue(info, result == DeleteSuccess);
+  DeleteResult result = impl->deleteItem(index, exceptionState);
+  if (exceptionState.hadException())
+    return;
+  if (result == DeleteUnknownProperty)
+    return;
+  v8SetReturnValue(info, result == DeleteSuccess);
 }
 
-void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    TestInterface2V8Internal::indexedPropertyDeleter(index, info);
+void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  TestInterface2V8Internal::indexedPropertyDeleter(index, info);
 }
 
 } // namespace TestInterface2V8Internal
 
-void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
-{
-    TestInterface2* impl = scriptWrappable->toImpl<TestInterface2>();
-    // The ownerNode() method may return a reference or a pointer.
-    if (Node* owner = WTF::getPtr(impl->ownerNode())) {
-        Node* root = V8GCController::opaqueRootForGC(isolate, owner);
-        isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
-        return;
-    }
+void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper) {
+  TestInterface2* impl = scriptWrappable->toImpl<TestInterface2>();
+  // The ownerNode() method may return a reference or a pointer.
+  if (Node* owner = WTF::getPtr(impl->ownerNode())) {
+    Node* root = V8GCController::opaqueRootForGC(isolate, owner);
+    isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
+    return;
+  }
 }
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
@@ -628,80 +611,73 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
     {"toString", TestInterface2V8Internal::toStringMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
 };
 
-void V8TestInterface2::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterface2"));
-        return;
-    }
+void V8TestInterface2::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (!info.IsConstructCall()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterface2"));
+    return;
+  }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
-    }
+  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    v8SetReturnValue(info, info.Holder());
+    return;
+  }
 
-    TestInterface2V8Internal::constructor(info);
+  TestInterface2V8Internal::constructor(info);
 }
 
-void V8TestInterface2::installV8TestInterface2Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
-{
-    // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface2::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount);
-    interfaceTemplate->SetCallHandler(V8TestInterface2::constructorCallback);
-    interfaceTemplate->SetLength(0);
-    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
-    ALLOW_UNUSED_LOCAL(signature);
-    v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-    ALLOW_UNUSED_LOCAL(instanceTemplate);
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-    ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    // Register DOM constants, attributes and operations.
-    if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        const V8DOMConfiguration::ConstantConfiguration constantConstValue1Configuration = {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
-        V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantConstValue1Configuration);
-    }
-    static_assert(1 == TestInterface2::kConstValue1, "the value of TestInterface2_kConstValue1 does not match with implementation");
-    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
+void V8TestInterface2::installV8TestInterface2Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  // Initialize the interface object's template.
+  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface2::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount);
+  interfaceTemplate->SetCallHandler(V8TestInterface2::constructorCallback);
+  interfaceTemplate->SetLength(0);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ALLOW_UNUSED_LOCAL(signature);
+  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instanceTemplate);
+  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  // Register DOM constants, attributes and operations.
+  if (RuntimeEnabledFeatures::featureNameEnabled()) {
+      const V8DOMConfiguration::ConstantConfiguration constantConstValue1Configuration = {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
+      V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantConstValue1Configuration);
+  }
+  static_assert(1 == TestInterface2::kConstValue1, "the value of TestInterface2_kConstValue1 does not match with implementation");
+  V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
 
-    // Indexed properties
-    v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterface2V8Internal::indexedPropertyGetterCallback, TestInterface2V8Internal::indexedPropertySetterCallback, 0, TestInterface2V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface2>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
-    instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
-    // Named properties
-    v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestInterface2V8Internal::namedPropertyGetterCallback, TestInterface2V8Internal::namedPropertySetterCallback, TestInterface2V8Internal::namedPropertyQueryCallback, TestInterface2V8Internal::namedPropertyDeleterCallback, TestInterface2V8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
-    instanceTemplate->SetHandler(namedPropertyHandlerConfig);
+  // Indexed properties
+  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterface2V8Internal::indexedPropertyGetterCallback, TestInterface2V8Internal::indexedPropertySetterCallback, 0, TestInterface2V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface2>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+  instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+  // Named properties
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestInterface2V8Internal::namedPropertyGetterCallback, TestInterface2V8Internal::namedPropertySetterCallback, TestInterface2V8Internal::namedPropertyQueryCallback, TestInterface2V8Internal::namedPropertyDeleterCallback, TestInterface2V8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
-    // Iterator (@@iterator)
-    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface2V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
-    V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
+  // Iterator (@@iterator)
+  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface2V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
+  V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterface2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
-{
-    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface2::installV8TestInterface2TemplateFunction);
+v8::Local<v8::FunctionTemplate> V8TestInterface2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface2::installV8TestInterface2TemplateFunction);
 }
 
-bool V8TestInterface2::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestInterface2::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterface2::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestInterface2::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterface2* V8TestInterface2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterface2* V8TestInterface2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 InstallTemplateFunction V8TestInterface2::installV8TestInterface2TemplateFunction = (InstallTemplateFunction)&V8TestInterface2::installV8TestInterface2Template;
 
-void V8TestInterface2::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction)
-{
-    V8TestInterface2::installV8TestInterface2TemplateFunction = installTemplateFunction;
-    if (preparePrototypeAndInterfaceObjectFunction)
-        V8TestInterface2::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction = preparePrototypeAndInterfaceObjectFunction;
+void V8TestInterface2::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
+  V8TestInterface2::installV8TestInterface2TemplateFunction = installTemplateFunction;
+  if (preparePrototypeAndInterfaceObjectFunction)
+    V8TestInterface2::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction = preparePrototypeAndInterfaceObjectFunction;
 }
 
-} // namespace blink
+}  // namespace blink

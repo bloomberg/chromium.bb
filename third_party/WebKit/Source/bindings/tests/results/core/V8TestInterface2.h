@@ -20,41 +20,38 @@
 namespace blink {
 
 class V8TestInterface2 {
-    STATIC_ONLY(V8TestInterface2);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestInterface2* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestInterface2>();
-    }
-    CORE_EXPORT static TestInterface2* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestInterface2>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestInterface2>());
-    }
-    static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
-    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    CORE_EXPORT static void updateWrapperTypeInfo(InstallTemplateFunction, PreparePrototypeAndInterfaceObjectFunction);
-    CORE_EXPORT static void installV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+  STATIC_ONLY(V8TestInterface2);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestInterface2* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestInterface2>();
+  }
+  CORE_EXPORT static TestInterface2* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestInterface2>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestInterface2>());
+  }
+  static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
+  static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  CORE_EXPORT static void updateWrapperTypeInfo(InstallTemplateFunction, PreparePrototypeAndInterfaceObjectFunction);
+  CORE_EXPORT static void installV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 
-private:
-    static InstallTemplateFunction installV8TestInterface2TemplateFunction;
+ private:
+  static InstallTemplateFunction installV8TestInterface2TemplateFunction;
 };
 
 template <>
 struct V8TypeOf<TestInterface2> {
-    typedef V8TestInterface2 Type;
+  typedef V8TestInterface2 Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestInterface2_h
+#endif  // V8TestInterface2_h

@@ -20,41 +20,38 @@
 namespace blink {
 
 class V8TestInterfaceNamedConstructorConstructor {
-    STATIC_ONLY(V8TestInterfaceNamedConstructorConstructor);
-public:
-    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static const WrapperTypeInfo wrapperTypeInfo;
+  STATIC_ONLY(V8TestInterfaceNamedConstructorConstructor);
+ public:
+  static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static const WrapperTypeInfo wrapperTypeInfo;
 };
 
 class V8TestInterfaceNamedConstructor {
-    STATIC_ONLY(V8TestInterfaceNamedConstructor);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestInterfaceNamedConstructor* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestInterfaceNamedConstructor>();
-    }
-    CORE_EXPORT static TestInterfaceNamedConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestInterfaceNamedConstructor>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceNamedConstructor>());
-    }
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8TestInterfaceNamedConstructor);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestInterfaceNamedConstructor* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestInterfaceNamedConstructor>();
+  }
+  CORE_EXPORT static TestInterfaceNamedConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestInterfaceNamedConstructor>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceNamedConstructor>());
+  }
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestInterfaceNamedConstructor> {
-    typedef V8TestInterfaceNamedConstructor Type;
+  typedef V8TestInterfaceNamedConstructor Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestInterfaceNamedConstructor_h
+#endif  // V8TestInterfaceNamedConstructor_h

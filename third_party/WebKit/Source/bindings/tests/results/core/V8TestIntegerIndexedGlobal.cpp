@@ -111,60 +111,52 @@ void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
     TestIntegerIndexedGlobalV8Internal::voidMethodDocumentMethod(info);
 }
 
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    V8TestIntegerIndexedGlobal::namedPropertyGetterCustom(propertyName, info);
+  V8TestIntegerIndexedGlobal::namedPropertyGetterCustom(propertyName, info);
 }
 
-void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    V8TestIntegerIndexedGlobal::namedPropertySetterCustom(propertyName, v8Value, info);
+  V8TestIntegerIndexedGlobal::namedPropertySetterCustom(propertyName, v8Value, info);
 }
 
-void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    V8TestIntegerIndexedGlobal::namedPropertyDeleterCustom(propertyName, info);
+  V8TestIntegerIndexedGlobal::namedPropertyDeleterCustom(propertyName, info);
 }
 
-void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    if (!name->IsString())
-        return;
-    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
 
-    V8TestIntegerIndexedGlobal::namedPropertyQueryCustom(propertyName, info);
+  V8TestIntegerIndexedGlobal::namedPropertyQueryCustom(propertyName, info);
 }
 
-void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    V8TestIntegerIndexedGlobal::namedPropertyEnumeratorCustom(info);
+void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  V8TestIntegerIndexedGlobal::namedPropertyEnumeratorCustom(info);
 }
 
-void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    V8TestIntegerIndexedGlobal::indexedPropertyGetterCustom(index, info);
+void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  V8TestIntegerIndexedGlobal::indexedPropertyGetterCustom(index, info);
 }
 
-void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    V8TestIntegerIndexedGlobal::indexedPropertySetterCustom(index, v8Value, info);
+void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  V8TestIntegerIndexedGlobal::indexedPropertySetterCustom(index, v8Value, info);
 }
 
-void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    V8TestIntegerIndexedGlobal::indexedPropertyDeleterCustom(index, info);
+void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+  V8TestIntegerIndexedGlobal::indexedPropertyDeleterCustom(index, info);
 }
 
 } // namespace TestIntegerIndexedGlobalV8Internal
@@ -177,63 +169,57 @@ const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedGlobalMethods[
     {"voidMethodDocument", TestIntegerIndexedGlobalV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
 };
 
-static void installV8TestIntegerIndexedGlobalTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
-{
-    // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestIntegerIndexedGlobal::wrapperTypeInfo.interfaceName, V8TestIntegerIndexedGlobal::domTemplateForNamedPropertiesObject(isolate, world), V8TestIntegerIndexedGlobal::internalFieldCount);
-    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
-    ALLOW_UNUSED_LOCAL(signature);
-    v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-    ALLOW_UNUSED_LOCAL(instanceTemplate);
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-    ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedGlobalAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalAccessors));
-    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalMethods));
+static void installV8TestIntegerIndexedGlobalTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  // Initialize the interface object's template.
+  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestIntegerIndexedGlobal::wrapperTypeInfo.interfaceName, V8TestIntegerIndexedGlobal::domTemplateForNamedPropertiesObject(isolate, world), V8TestIntegerIndexedGlobal::internalFieldCount);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ALLOW_UNUSED_LOCAL(signature);
+  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instanceTemplate);
+  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  // Register DOM constants, attributes and operations.
+  V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedGlobalAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalAccessors));
+  V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalMethods));
 
-    // Indexed properties
-    v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::indexedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::indexedPropertySetterCallback, 0, TestIntegerIndexedGlobalV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestIntegerIndexedGlobal>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
-    instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+  // Indexed properties
+  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::indexedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::indexedPropertySetterCallback, 0, TestIntegerIndexedGlobalV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestIntegerIndexedGlobal>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+  instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
 
-    // Array iterator (@@iterator)
-    instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
+  // Array iterator (@@iterator)
+  instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
-{
-    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestIntegerIndexedGlobalTemplate);
+v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestIntegerIndexedGlobalTemplate);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplateForNamedPropertiesObject(v8::Isolate* isolate, const DOMWrapperWorld& world)
-{
-    v8::Local<v8::FunctionTemplate> parentTemplate = V8None::domTemplate(isolate, world);
+v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplateForNamedPropertiesObject(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  v8::Local<v8::FunctionTemplate> parentTemplate = V8None::domTemplate(isolate, world);
 
-    v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
-    namedPropertiesObjectFunctionTemplate->SetClassName(v8AtomicString(isolate, "TestIntegerIndexedGlobalProperties"));
-    namedPropertiesObjectFunctionTemplate->Inherit(parentTemplate);
+  v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+  namedPropertiesObjectFunctionTemplate->SetClassName(v8AtomicString(isolate, "TestIntegerIndexedGlobalProperties"));
+  namedPropertiesObjectFunctionTemplate->Inherit(parentTemplate);
 
-    v8::Local<v8::ObjectTemplate> namedPropertiesObjectTemplate = namedPropertiesObjectFunctionTemplate->PrototypeTemplate();
-    namedPropertiesObjectTemplate->SetInternalFieldCount(V8TestIntegerIndexedGlobal::internalFieldCount);
-    V8DOMConfiguration::setClassString(isolate, namedPropertiesObjectTemplate, "TestIntegerIndexedGlobalProperties");
-    v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::namedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertySetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyQueryCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyDeleterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
-    namedPropertiesObjectTemplate->SetHandler(namedPropertyHandlerConfig);
+  v8::Local<v8::ObjectTemplate> namedPropertiesObjectTemplate = namedPropertiesObjectFunctionTemplate->PrototypeTemplate();
+  namedPropertiesObjectTemplate->SetInternalFieldCount(V8TestIntegerIndexedGlobal::internalFieldCount);
+  V8DOMConfiguration::setClassString(isolate, namedPropertiesObjectTemplate, "TestIntegerIndexedGlobalProperties");
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::namedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertySetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyQueryCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyDeleterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  namedPropertiesObjectTemplate->SetHandler(namedPropertyHandlerConfig);
 
-    return namedPropertiesObjectFunctionTemplate;
+  return namedPropertiesObjectFunctionTemplate;
 }
 
-bool V8TestIntegerIndexedGlobal::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestIntegerIndexedGlobal::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestIntegerIndexedGlobal::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestIntegerIndexedGlobal::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestIntegerIndexedGlobal* V8TestIntegerIndexedGlobal::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestIntegerIndexedGlobal* V8TestIntegerIndexedGlobal::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

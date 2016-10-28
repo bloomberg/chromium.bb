@@ -21,42 +21,39 @@
 namespace blink {
 
 class V8TestInterfaceEventTargetConstructor {
-    STATIC_ONLY(V8TestInterfaceEventTargetConstructor);
-public:
-    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static const WrapperTypeInfo wrapperTypeInfo;
+  STATIC_ONLY(V8TestInterfaceEventTargetConstructor);
+ public:
+  static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static const WrapperTypeInfo wrapperTypeInfo;
 };
 
 class V8TestInterfaceEventTarget {
-    STATIC_ONLY(V8TestInterfaceEventTarget);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestInterfaceEventTarget* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestInterfaceEventTarget>();
-    }
-    CORE_EXPORT static TestInterfaceEventTarget* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestInterfaceEventTarget>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceEventTarget>());
-    }
-    static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
+  STATIC_ONLY(V8TestInterfaceEventTarget);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestInterfaceEventTarget* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestInterfaceEventTarget>();
+  }
+  CORE_EXPORT static TestInterfaceEventTarget* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestInterfaceEventTarget>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceEventTarget>());
+  }
+  static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
 };
 
 template <>
 struct V8TypeOf<TestInterfaceEventTarget> {
-    typedef V8TestInterfaceEventTarget Type;
+  typedef V8TestInterfaceEventTarget Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestInterfaceEventTarget_h
+#endif  // V8TestInterfaceEventTarget_h

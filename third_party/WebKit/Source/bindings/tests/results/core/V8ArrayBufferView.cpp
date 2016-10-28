@@ -59,41 +59,39 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-TestArrayBufferView* V8ArrayBufferView::toImpl(v8::Local<v8::Object> object)
-{
-    ASSERT(object->IsArrayBufferView());
-    ScriptWrappable* scriptWrappable = toScriptWrappable(object);
-    if (scriptWrappable)
-        return scriptWrappable->toImpl<TestArrayBufferView>();
+TestArrayBufferView* V8ArrayBufferView::toImpl(v8::Local<v8::Object> object) {
+  DCHECK(object->IsArrayBufferView());
+  ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+  if (scriptWrappable)
+    return scriptWrappable->toImpl<TestArrayBufferView>();
 
-    if (object->IsInt8Array())
-        return V8Int8Array::toImpl(object);
-    if (object->IsInt16Array())
-        return V8Int16Array::toImpl(object);
-    if (object->IsInt32Array())
-        return V8Int32Array::toImpl(object);
-    if (object->IsUint8Array())
-        return V8Uint8Array::toImpl(object);
-    if (object->IsUint8ClampedArray())
-        return V8Uint8ClampedArray::toImpl(object);
-    if (object->IsUint16Array())
-        return V8Uint16Array::toImpl(object);
-    if (object->IsUint32Array())
-        return V8Uint32Array::toImpl(object);
-    if (object->IsFloat32Array())
-        return V8Float32Array::toImpl(object);
-    if (object->IsFloat64Array())
-        return V8Float64Array::toImpl(object);
-    if (object->IsDataView())
-        return V8DataView::toImpl(object);
+  if (object->IsInt8Array())
+    return V8Int8Array::toImpl(object);
+  if (object->IsInt16Array())
+    return V8Int16Array::toImpl(object);
+  if (object->IsInt32Array())
+    return V8Int32Array::toImpl(object);
+  if (object->IsUint8Array())
+    return V8Uint8Array::toImpl(object);
+  if (object->IsUint8ClampedArray())
+    return V8Uint8ClampedArray::toImpl(object);
+  if (object->IsUint16Array())
+    return V8Uint16Array::toImpl(object);
+  if (object->IsUint32Array())
+    return V8Uint32Array::toImpl(object);
+  if (object->IsFloat32Array())
+    return V8Float32Array::toImpl(object);
+  if (object->IsFloat64Array())
+    return V8Float64Array::toImpl(object);
+  if (object->IsDataView())
+    return V8DataView::toImpl(object);
 
-    ASSERT_NOT_REACHED();
-    return 0;
+  NOTREACHED();
+  return 0;
 }
 
-TestArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    return value->IsArrayBufferView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return value->IsArrayBufferView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

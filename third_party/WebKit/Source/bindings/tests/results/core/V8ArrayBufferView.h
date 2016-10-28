@@ -20,28 +20,26 @@
 namespace blink {
 
 class V8ArrayBufferView {
-    STATIC_ONLY(V8ArrayBufferView);
-public:
-    CORE_EXPORT static TestArrayBufferView* toImpl(v8::Local<v8::Object> object);
-    CORE_EXPORT static TestArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestArrayBufferView>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestArrayBufferView>());
-    }
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8ArrayBufferView);
+ public:
+  CORE_EXPORT static TestArrayBufferView* toImpl(v8::Local<v8::Object> object);
+  CORE_EXPORT static TestArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestArrayBufferView>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestArrayBufferView>());
+  }
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestArrayBufferView> {
-    typedef V8ArrayBufferView Type;
+  typedef V8ArrayBufferView Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ArrayBufferView_h
+#endif  // V8ArrayBufferView_h

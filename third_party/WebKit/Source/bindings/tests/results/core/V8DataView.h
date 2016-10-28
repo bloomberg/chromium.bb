@@ -22,28 +22,26 @@
 namespace blink {
 
 class V8DataView {
-    STATIC_ONLY(V8DataView);
-public:
-    CORE_EXPORT static TestDataView* toImpl(v8::Local<v8::Object> object);
-    CORE_EXPORT static TestDataView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestDataView>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestDataView>());
-    }
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8DataView);
+ public:
+  CORE_EXPORT static TestDataView* toImpl(v8::Local<v8::Object> object);
+  CORE_EXPORT static TestDataView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestDataView>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestDataView>());
+  }
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestDataView> {
-    typedef V8DataView Type;
+  typedef V8DataView Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8DataView_h
+#endif  // V8DataView_h

@@ -20,34 +20,31 @@
 namespace blink {
 
 class V8TestSpecialOperationsNotEnumerable {
-    STATIC_ONLY(V8TestSpecialOperationsNotEnumerable);
-public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-    static TestSpecialOperationsNotEnumerable* toImpl(v8::Local<v8::Object> object)
-    {
-        return toScriptWrappable(object)->toImpl<TestSpecialOperationsNotEnumerable>();
-    }
-    CORE_EXPORT static TestSpecialOperationsNotEnumerable* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->trace(scriptWrappable->toImpl<TestSpecialOperationsNotEnumerable>());
-    }
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
-    {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestSpecialOperationsNotEnumerable>());
-    }
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  STATIC_ONLY(V8TestSpecialOperationsNotEnumerable);
+ public:
+  CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+  static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
+  CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static TestSpecialOperationsNotEnumerable* toImpl(v8::Local<v8::Object> object) {
+    return toScriptWrappable(object)->toImpl<TestSpecialOperationsNotEnumerable>();
+  }
+  CORE_EXPORT static TestSpecialOperationsNotEnumerable* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  template<typename VisitorDispatcher>
+  static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable) {
+    visitor->trace(scriptWrappable->toImpl<TestSpecialOperationsNotEnumerable>());
+  }
+  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->traceWrappers(scriptWrappable->toImpl<TestSpecialOperationsNotEnumerable>());
+  }
+  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 };
 
 template <>
 struct V8TypeOf<TestSpecialOperationsNotEnumerable> {
-    typedef V8TestSpecialOperationsNotEnumerable Type;
+  typedef V8TestSpecialOperationsNotEnumerable Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestSpecialOperationsNotEnumerable_h
+#endif  // V8TestSpecialOperationsNotEnumerable_h

@@ -48,32 +48,30 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object)
-{
-    ASSERT(object->IsDataView());
-    ScriptWrappable* scriptWrappable = toScriptWrappable(object);
-    if (scriptWrappable)
-        return scriptWrappable->toImpl<TestDataView>();
+TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object) {
+  DCHECK(object->IsDataView());
+  ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+  if (scriptWrappable)
+    return scriptWrappable->toImpl<TestDataView>();
 
-    v8::Local<v8::DataView> v8View = object.As<v8::DataView>();
-    v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
-    TestDataView* typedArray = nullptr;
-    if (arrayBuffer->IsArrayBuffer()) {
-        typedArray = TestDataView::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
-    } else if (arrayBuffer->IsSharedArrayBuffer()) {
-        typedArray = TestDataView::create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
-    } else {
-        ASSERT_NOT_REACHED();
-    }
-    v8::Local<v8::Object> associatedWrapper = typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
-    DCHECK(associatedWrapper == object);
+  v8::Local<v8::DataView> v8View = object.As<v8::DataView>();
+  v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
+  TestDataView* typedArray = nullptr;
+  if (arrayBuffer->IsArrayBuffer()) {
+    typedArray = TestDataView::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+  } else if (arrayBuffer->IsSharedArrayBuffer()) {
+    typedArray = TestDataView::create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+  } else {
+    NOTREACHED();
+  }
+  v8::Local<v8::Object> associatedWrapper = typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
+  DCHECK(associatedWrapper == object);
 
-    return typedArray->toImpl<TestDataView>();
+  return typedArray->toImpl<TestDataView>();
 }
 
-TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    return value->IsDataView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return value->IsDataView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

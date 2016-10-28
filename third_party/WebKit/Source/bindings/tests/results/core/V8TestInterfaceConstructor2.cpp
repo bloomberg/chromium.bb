@@ -163,111 +163,104 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, wrapper);
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
-    switch (std::min(6, info.Length())) {
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
+  switch (std::min(6, info.Length())) {
     case 1:
-        if (info[0]->IsArray()) {
-            TestInterfaceConstructor2V8Internal::constructor3(info);
-            return;
-        }
-        if (info[0]->IsObject()) {
-            TestInterfaceConstructor2V8Internal::constructor2(info);
-            return;
-        }
-        if (true) {
-            TestInterfaceConstructor2V8Internal::constructor1(info);
-            return;
-        }
-        break;
-    case 2:
-        if (true) {
-            TestInterfaceConstructor2V8Internal::constructor4(info);
-            return;
-        }
-        break;
-    case 3:
-        if (true) {
-            TestInterfaceConstructor2V8Internal::constructor4(info);
-            return;
-        }
-        break;
-    case 4:
-        if (true) {
-            TestInterfaceConstructor2V8Internal::constructor4(info);
-            return;
-        }
-        break;
-    case 5:
-        if (true) {
-            TestInterfaceConstructor2V8Internal::constructor4(info);
-            return;
-        }
-        break;
-    case 6:
-        if (true) {
-            TestInterfaceConstructor2V8Internal::constructor4(info);
-            return;
-        }
-        break;
-    default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+      if (info[0]->IsArray()) {
+        TestInterfaceConstructor2V8Internal::constructor3(info);
         return;
-    }
-    exceptionState.throwTypeError("No matching constructor signature.");
+      }
+      if (info[0]->IsObject()) {
+        TestInterfaceConstructor2V8Internal::constructor2(info);
+        return;
+      }
+      if (true) {
+        TestInterfaceConstructor2V8Internal::constructor1(info);
+        return;
+      }
+      break;
+    case 2:
+      if (true) {
+        TestInterfaceConstructor2V8Internal::constructor4(info);
+        return;
+      }
+      break;
+    case 3:
+      if (true) {
+        TestInterfaceConstructor2V8Internal::constructor4(info);
+        return;
+      }
+      break;
+    case 4:
+      if (true) {
+        TestInterfaceConstructor2V8Internal::constructor4(info);
+        return;
+      }
+      break;
+    case 5:
+      if (true) {
+        TestInterfaceConstructor2V8Internal::constructor4(info);
+        return;
+      }
+      break;
+    case 6:
+      if (true) {
+        TestInterfaceConstructor2V8Internal::constructor4(info);
+        return;
+      }
+      break;
+    default:
+      exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+      return;
+  }
+  exceptionState.throwTypeError("No matching constructor signature.");
 }
 
 } // namespace TestInterfaceConstructor2V8Internal
 
-void V8TestInterfaceConstructor2::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor2"));
-        return;
-    }
+void V8TestInterfaceConstructor2::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (!info.IsConstructCall()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor2"));
+    return;
+  }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
-    }
+  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    v8SetReturnValue(info, info.Holder());
+    return;
+  }
 
-    TestInterfaceConstructor2V8Internal::constructor(info);
+  TestInterfaceConstructor2V8Internal::constructor(info);
 }
 
-static void installV8TestInterfaceConstructor2Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
-{
-    // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor2::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor2::internalFieldCount);
-    interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor2::constructorCallback);
-    interfaceTemplate->SetLength(1);
-    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
-    ALLOW_UNUSED_LOCAL(signature);
-    v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-    ALLOW_UNUSED_LOCAL(instanceTemplate);
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-    ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    // Register DOM constants, attributes and operations.
+static void installV8TestInterfaceConstructor2Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  // Initialize the interface object's template.
+  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor2::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor2::internalFieldCount);
+  interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor2::constructorCallback);
+  interfaceTemplate->SetLength(1);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ALLOW_UNUSED_LOCAL(signature);
+  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instanceTemplate);
+  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  // Register DOM constants, attributes and operations.
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructor2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
-{
-    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceConstructor2Template);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructor2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceConstructor2Template);
 }
 
-bool V8TestInterfaceConstructor2::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestInterfaceConstructor2::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceConstructor2::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestInterfaceConstructor2::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
+  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceConstructor2* V8TestInterfaceConstructor2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterfaceConstructor2* V8TestInterfaceConstructor2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

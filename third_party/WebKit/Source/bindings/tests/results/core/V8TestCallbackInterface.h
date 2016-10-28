@@ -17,31 +17,30 @@
 namespace blink {
 
 class V8TestCallbackInterface final : public TestCallbackInterface, public ActiveDOMCallback {
-    USING_GARBAGE_COLLECTED_MIXIN(V8TestCallbackInterface);
-public:
-    static V8TestCallbackInterface* create(v8::Local<v8::Function> callback, ScriptState* scriptState)
-    {
-        return new V8TestCallbackInterface(callback, scriptState);
-    }
+  USING_GARBAGE_COLLECTED_MIXIN(V8TestCallbackInterface);
+ public:
+  static V8TestCallbackInterface* create(v8::Local<v8::Function> callback, ScriptState* scriptState) {
+    return new V8TestCallbackInterface(callback, scriptState);
+  }
 
-    ~V8TestCallbackInterface() override;
+  ~V8TestCallbackInterface() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    void voidMethod() override;
-    bool booleanMethod() override;
-    void voidMethodBooleanArg(bool boolArg) override;
-    void voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) override;
-    void voidMethodFloatArg(float floatArg) override;
-    void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
-    void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
-    void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
-    void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
-private:
-    CORE_EXPORT V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
+  void voidMethod() override;
+  bool booleanMethod() override;
+  void voidMethodBooleanArg(bool boolArg) override;
+  void voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) override;
+  void voidMethodFloatArg(float floatArg) override;
+  void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+  void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
+  void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
+  void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+ private:
+  CORE_EXPORT V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
 
-    ScopedPersistent<v8::Function> m_callback;
-    RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Function> m_callback;
+  RefPtr<ScriptState> m_scriptState;
 };
 }
-#endif // V8TestCallbackInterface_h
+#endif  // V8TestCallbackInterface_h
