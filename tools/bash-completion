@@ -80,7 +80,7 @@ fi
 
 for gtest_test_executable in $(
   cd $chrome_source;
-  git ls-files '*/BUILD.gn' | xargs sed -ne 's/^test("\([^"]\+\)").*$/\1/p'
+  git ls-files '*/BUILD.gn' | xargs sed -ne 's/^.*test("\([^"]\+\)").*$/\1/p'
 ); do
   complete -F _gtest_flag $gtest_test_executable
 done
