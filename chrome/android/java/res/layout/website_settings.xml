@@ -22,33 +22,16 @@
         android:paddingEnd="@dimen/website_settings_popup_padding_sides"
         android:paddingStart="@dimen/website_settings_popup_padding_sides" >
 
-        <LinearLayout
+        <view class="org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup$ElidedUrlTextView"
+            android:id="@+id/website_settings_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="16dp" >
-
-            <ImageView android:id="@+id/offline_icon"
-                style="@style/LocationBarButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start|top"
-                android:paddingEnd="8dp"
-                android:src="@drawable/offline_pin"
-                android:visibility="gone"
-                android:contentDescription="@string/page_info_offline_icon" />
-                
-            <view class="org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup$ElidedUrlTextView"
-                android:id="@+id/website_settings_url"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:lineSpacingExtra="6dp"
-                android:textAlignment="viewStart"
-                android:textColor="@color/url_emphasis_default_text"
-                android:textSize="16sp"/>
-
-        </LinearLayout>
+            android:ellipsize="end"
+            android:lineSpacingExtra="6dp"
+            android:paddingTop="16dp"
+            android:textAlignment="viewStart"
+            android:textColor="@color/url_emphasis_default_text"
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/website_settings_connection_message"

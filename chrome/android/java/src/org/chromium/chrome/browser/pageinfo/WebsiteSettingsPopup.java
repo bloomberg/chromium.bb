@@ -454,9 +454,6 @@ public class WebsiteSettingsPopup implements OnClickListener {
             mFullUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
         }
 
-        int statusIconVisibility = isShowingOfflinePage() ? View.VISIBLE : View.GONE;
-        mContainer.findViewById(R.id.offline_icon).setVisibility(statusIconVisibility);
-
         try {
             mParsedUrl = new URI(mFullUrl);
             mIsInternalPage = UrlUtilities.isInternalScheme(mParsedUrl);
