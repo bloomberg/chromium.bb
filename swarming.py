@@ -936,7 +936,7 @@ def add_trigger_options(parser):
       help='When set, the server will actively try to find a previous task '
            'with the same parameter and return this result instead if possible')
   parser.task_group.add_option(
-      '--secret_bytes_path',
+      '--secret-bytes-path',
       help='The optional path to a file containing the secret_bytes to use with'
            'this task.')
   parser.task_group.add_option(
