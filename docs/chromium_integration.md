@@ -8,10 +8,10 @@
 ## Build system
 
 Most of NaCl, including the trusted runtime and tests, is built using Scons.
-However, Chromium ignores NaCl's Scons build system and uses Gyp to build NaCl
+However, Chromium ignores NaCl's Scons build system and uses gn to build NaCl
 (in the same way as it ignores Webkit's own build system). This is why there are
-`*.gyp` and `*.gypi` files in the NaCl tree, though the NaCl standalone build
-doesn't use them. These Gyp files cover NaCl's trusted code but not tests.
+`*.gn` and `*.gni` files in the NaCl tree, though the NaCl standalone build
+doesn't use them. These gn files cover NaCl's trusted code but not tests.
 
 ## sel\_ldr
 

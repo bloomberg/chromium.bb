@@ -1,4 +1,4 @@
-<font color='red'>This page is deprecated.  Its contents have been moved to <a href='http://sites.google.com/a/chromium.org/dev/nativeclient/native-client-documentation-index/build-tcb'>http://sites.google.com/a/chromium.org/dev/nativeclient/native-client-documentation-index/build-tcb</a></font>
+**This page is deprecated.  Its contents have been [moved](https://www.chromium.org/nativeclient/how-tos/build-tcb).**
 
 ## What build system(s) is Native Client using?
 
@@ -7,7 +7,7 @@ The primary build system used by Native Client is [Scons]
 an extension call Hammer.
 
 The parts of the system shared with Chrome are also built using Chrome's build
-system, Gyp.
+system, gn.
 
 We also have some Makefiles and some shell scripts for certain build tasks.
 
@@ -26,21 +26,26 @@ For SCons it is: SConstruct, `**/build.scons`, `**/nacl.scons` There are also
 relevant configuration files in `site_scons/site_tools/*`, and random Python
 scripts located here and there.
 
-For Gyp it is: `**/*.gyp` and `**/*.gypi`
+For gn it is: `**/*.gn` and `**/*.gni`
 
 ## What is the difference between trusted and untrusted code?
 
-"trusted code" encompasses components like: * the browser plugin * service
-runtime (sel\_ldr) It is compiled using regular compilers. Bugs in trusted code
-can compromise system security, hence the name. As far as the build system is
-concerned trusted code is described in `**/build.scons` files. The Gyp system
-only code trusted code. "trusted code" lives in `src/trusted/**`
+"trusted code" encompasses components like:
+* the browser plugin
+* service runtime (`sel_ldr`)
 
-"untrusted code" encompasses components like: * quake and other examples of
-Native Client executables * libraries necessary to build quake It is compiled
-using special sandboxing compilers. As far as the build system is concerned
-trusted code is described in `**/nacl.scons` files. "untrusted code" lives in
-`src/untrusted/**` and also in `tests/**`
+It is compiled using regular compilers. Bugs in trusted code can compromise
+system security, hence the name. As far as the build system is concerned
+trusted code is described in `**/build.scons` files. The gn system only code
+trusted code. "trusted code" lives in `src/trusted/**`
+
+"untrusted code" encompasses components like:
+* quake and other examples of Native Client executables
+* libraries necessary to build quake
+
+It is compiled using special sandboxing compilers. As far as the build system is
+concerned trusted code is described in `**/nacl.scons` files. "untrusted code"
+lives in `src/untrusted/**` and also in `tests/**`
 
 Some code can be compiled either as trusted or shared code, e.g. libraries that
 facilitate communication between trusted and untrusted code. Such code typically
