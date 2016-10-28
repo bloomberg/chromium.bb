@@ -1011,6 +1011,7 @@ crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap.html [ Failure ]
 
 crbug.com/654999 [ Win Linux ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
+crbug.com/660185 [ Mac ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 
 crbug.com/658304 [ Win Linux ] fast/forms/select/input-select-after-resize.html [ Crash Timeout Pass ]
 
