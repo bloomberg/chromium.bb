@@ -65,6 +65,8 @@ class CORE_EXPORT StyleSheetCollection
   void swapSheetsForSheetList(HeapVector<Member<StyleSheet>>&);
   void appendActiveStyleSheet(CSSStyleSheet*);
   void appendActiveStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
+  void appendActiveStyleSheets(
+      const HeapVector<TraceWrapperMember<CSSStyleSheet>>&);
   void appendSheetForList(StyleSheet*);
 
   DECLARE_VIRTUAL_TRACE();

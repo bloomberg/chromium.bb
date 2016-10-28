@@ -45,7 +45,7 @@ class DeathAwareScriptWrappable
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->traceWrappers(m_rawDependency);
+    visitor->traceWrappersWithManualWriteBarrier(m_rawDependency);
     visitor->traceWrappers(m_wrappedDependency);
     for (auto dep : m_wrappedVectorDependency) {
       visitor->traceWrappers(dep);

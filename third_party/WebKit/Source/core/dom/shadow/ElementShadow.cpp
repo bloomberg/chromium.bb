@@ -40,7 +40,10 @@ ElementShadow* ElementShadow::create() {
   return new ElementShadow();
 }
 
-ElementShadow::ElementShadow() : m_needsDistributionRecalc(false) {}
+ElementShadow::ElementShadow()
+    : m_elementShadowV0(this, nullptr),
+      m_shadowRoot(this, nullptr),
+      m_needsDistributionRecalc(false) {}
 
 ElementShadow::~ElementShadow() {}
 

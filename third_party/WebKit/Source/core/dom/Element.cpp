@@ -2336,10 +2336,6 @@ AttrNodeList* Element::attrNodeList() {
   return hasRareData() ? elementRareData()->attrNodeList() : nullptr;
 }
 
-AttrNodeList& Element::ensureAttrNodeList() {
-  return ensureElementRareData().ensureAttrNodeList();
-}
-
 void Element::removeAttrNodeList() {
   DCHECK(attrNodeList());
   if (hasRareData())
@@ -2404,7 +2400,7 @@ Attr* Element::setAttributeNode(Attr* attrNode,
 
   attrNode->attachToElement(this, localName);
   treeScope().adoptIfNeeded(*attrNode);
-  ensureAttrNodeList().append(attrNode);
+  ensureElementRareData().addAttr(attrNode);
 
   return oldAttrNode;
 }
@@ -3654,7 +3650,7 @@ Attr* Element::ensureAttr(const QualifiedName& name) {
   if (!attrNode) {
     attrNode = Attr::create(*this, name);
     treeScope().adoptIfNeeded(*attrNode);
-    ensureAttrNodeList().append(attrNode);
+    ensureElementRareData().addAttr(attrNode);
   }
   return attrNode;
 }

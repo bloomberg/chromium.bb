@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -95,7 +96,7 @@ class MODULES_EXPORT RemotePlayback final
   RefPtr<ScriptState> m_scriptState;
   WebRemotePlaybackState m_state;
   bool m_availability;
-  HeapHashMap<int, Member<RemotePlaybackAvailabilityCallback>>
+  HeapHashMap<int, TraceWrapperMember<RemotePlaybackAvailabilityCallback>>
       m_availabilityCallbacks;
   Member<HTMLMediaElement> m_mediaElement;
   Member<ScriptPromiseResolver> m_promptPromiseResolver;

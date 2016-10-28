@@ -61,6 +61,13 @@ void StyleSheetCollection::appendActiveStyleSheets(
   m_activeAuthorStyleSheets.appendVector(sheets);
 }
 
+void StyleSheetCollection::appendActiveStyleSheets(
+    const HeapVector<TraceWrapperMember<CSSStyleSheet>>& sheets) {
+  for (CSSStyleSheet* sheet : sheets) {
+    m_activeAuthorStyleSheets.append(sheet);
+  }
+}
+
 void StyleSheetCollection::appendSheetForList(StyleSheet* sheet) {
   m_styleSheetsForStyleSheetList.append(
       TraceWrapperMember<StyleSheet>(this, sheet));

@@ -50,7 +50,7 @@ DEFINE_TRACE(NodeListsNodeData) {
 }
 
 DEFINE_TRACE_WRAPPERS(NodeListsNodeData) {
-  visitor->traceWrappers(m_childNodeList);
+  visitor->traceWrappersWithManualWriteBarrier(m_childNodeList);
 }
 
 }  // namespace blink

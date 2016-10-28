@@ -67,6 +67,7 @@ StyleEngine::StyleEngine(Document& document)
       m_isMaster(!document.importsController() ||
                  document.importsController()->master() == &document),
       m_documentStyleSheetCollection(
+          this,
           DocumentStyleSheetCollection::create(document)) {
   if (document.frame()) {
     // We don't need to create CSSFontSelector for imported document or
@@ -129,8 +130,8 @@ StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope) {
 }
 
 void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet) {
-  m_injectedAuthorStyleSheets.append(
-      CSSStyleSheet::create(authorSheet, *m_document));
+  m_injectedAuthorStyleSheets.append(TraceWrapperMember<CSSStyleSheet>(
+      this, CSSStyleSheet::create(authorSheet, *m_document)));
   markDocumentDirty();
   resolverChanged(AnalyzedStyleUpdate);
 }

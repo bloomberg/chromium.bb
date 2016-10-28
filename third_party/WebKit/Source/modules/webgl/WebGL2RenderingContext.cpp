@@ -147,20 +147,7 @@ DEFINE_TRACE(WebGL2RenderingContext) {
 }
 
 DEFINE_TRACE_WRAPPERS(WebGL2RenderingContext) {
-  visitor->traceWrappers(m_extColorBufferFloat);
-  visitor->traceWrappers(m_extDisjointTimerQueryWebGL2);
-  visitor->traceWrappers(m_extTextureFilterAnisotropic);
-  visitor->traceWrappers(m_oesTextureFloatLinear);
-  visitor->traceWrappers(m_webglCompressedTextureASTC);
-  visitor->traceWrappers(m_webglCompressedTextureATC);
-  visitor->traceWrappers(m_webglCompressedTextureETC);
-  visitor->traceWrappers(m_webglCompressedTextureETC1);
-  visitor->traceWrappers(m_webglCompressedTexturePVRTC);
-  visitor->traceWrappers(m_webglCompressedTextureS3TC);
-  visitor->traceWrappers(m_webglCompressedTextureS3TCsRGB);
-  visitor->traceWrappers(m_webglDebugRendererInfo);
-  visitor->traceWrappers(m_webglDebugShaders);
-  visitor->traceWrappers(m_webglLoseContext);
+  // Extensions are managed by WebGL2RenderingContextBase.
   WebGL2RenderingContextBase::traceWrappers(visitor);
 }
 

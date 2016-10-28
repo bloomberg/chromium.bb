@@ -6431,7 +6431,7 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->traceWrappers(m_styleEngine);
   for (int i = 0; i < numNodeListInvalidationTypes; ++i) {
     for (auto list : m_nodeLists[i]) {
-      visitor->traceWrappers(list);
+      visitor->traceWrappersWithManualWriteBarrier(list);
     }
   }
   // Cannot trace in Supplementable<Document> as it is part of platform/ and

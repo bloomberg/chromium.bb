@@ -355,8 +355,14 @@ class CORE_EXPORT Node : public EventTarget {
 
   // These low-level calls give the caller responsibility for maintaining the
   // integrity of the tree.
-  void setPreviousSibling(Node* previous) { m_previous = previous; }
-  void setNextSibling(Node* next) { m_next = next; }
+  void setPreviousSibling(Node* previous) {
+    m_previous = previous;
+    ScriptWrappableVisitor::writeBarrier(this, m_previous);
+  }
+  void setNextSibling(Node* next) {
+    m_next = next;
+    ScriptWrappableVisitor::writeBarrier(this, m_next);
+  }
 
   virtual bool canContainRangeEndPoint() const { return false; }
 
@@ -948,9 +954,9 @@ class CORE_EXPORT Node : public EventTarget {
 
   void trackForDebugging();
 
-  HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
   mutationObserverRegistry();
-  HeapHashSet<Member<MutationObserverRegistration>>*
+  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
   transientMutationObserverRegistry();
 
   uint32_t m_nodeFlags;
@@ -971,6 +977,8 @@ class CORE_EXPORT Node : public EventTarget {
 inline void Node::setParentOrShadowHostNode(ContainerNode* parent) {
   DCHECK(isMainThread());
   m_parentOrShadowHostNode = parent;
+  ScriptWrappableVisitor::writeBarrier(
+      this, reinterpret_cast<Node*>(m_parentOrShadowHostNode.get()));
 }
 
 inline ContainerNode* Node::parentOrShadowHostNode() const {

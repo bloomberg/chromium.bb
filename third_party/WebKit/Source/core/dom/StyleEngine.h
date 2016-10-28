@@ -91,7 +91,8 @@ class CORE_EXPORT StyleEngine final
   const HeapVector<TraceWrapperMember<StyleSheet>>&
   styleSheetsForStyleSheetList(TreeScope&);
 
-  const HeapVector<Member<CSSStyleSheet>>& injectedAuthorStyleSheets() const {
+  const HeapVector<TraceWrapperMember<CSSStyleSheet>>&
+  injectedAuthorStyleSheets() const {
     return m_injectedAuthorStyleSheets;
   }
   CSSStyleSheet* inspectorStyleSheet() const { return m_inspectorStyleSheet; }
@@ -312,10 +313,11 @@ class CORE_EXPORT StyleEngine final
   int m_pendingScriptBlockingStylesheets = 0;
   int m_pendingRenderBlockingStylesheets = 0;
 
-  HeapVector<Member<CSSStyleSheet>> m_injectedAuthorStyleSheets;
+  HeapVector<TraceWrapperMember<CSSStyleSheet>> m_injectedAuthorStyleSheets;
   Member<CSSStyleSheet> m_inspectorStyleSheet;
 
-  Member<DocumentStyleSheetCollection> m_documentStyleSheetCollection;
+  TraceWrapperMember<DocumentStyleSheetCollection>
+      m_documentStyleSheetCollection;
 
   typedef HeapHashMap<WeakMember<TreeScope>,
                       Member<ShadowTreeStyleSheetCollection>>

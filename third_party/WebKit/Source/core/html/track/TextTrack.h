@@ -148,8 +148,8 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   CueTimeline* cueTimeline() const;
 
   TextTrackCueList* ensureTextTrackCueList();
-  Member<TextTrackCueList> m_cues;
-  TraceWrapperMember<TextTrackCueList> m_activeCues;
+  TraceWrapperMember<TextTrackCueList> m_cues;
+  Member<TextTrackCueList> m_activeCues;
 
   VTTRegionList* ensureVTTRegionList();
   Member<VTTRegionList> m_regions;

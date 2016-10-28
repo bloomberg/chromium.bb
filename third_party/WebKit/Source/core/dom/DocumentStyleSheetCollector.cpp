@@ -45,7 +45,7 @@ DocumentStyleSheetCollector::DocumentStyleSheetCollector(
 DocumentStyleSheetCollector::~DocumentStyleSheetCollector() {}
 
 void DocumentStyleSheetCollector::appendActiveStyleSheets(
-    const HeapVector<Member<CSSStyleSheet>>& sheets) {
+    const HeapVector<TraceWrapperMember<CSSStyleSheet>>& sheets) {
   DCHECK(m_collection);
   m_collection->appendActiveStyleSheets(sheets);
 }

@@ -24,6 +24,7 @@
 #ifndef HTMLLinkElement_h
 #define HTMLLinkElement_h
 
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
@@ -151,7 +152,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String m_media;
   Member<DOMTokenList> m_sizes;
   Vector<IntSize> m_iconSizes;
-  Member<RelList> m_relList;
+  TraceWrapperMember<RelList> m_relList;
   LinkRelAttribute m_relAttribute;
   String m_scope;
 

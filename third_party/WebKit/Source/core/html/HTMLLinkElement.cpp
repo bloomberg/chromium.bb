@@ -51,7 +51,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document,
     : HTMLElement(linkTag, document),
       m_linkLoader(LinkLoader::create(this)),
       m_sizes(DOMTokenList::create(this)),
-      m_relList(RelList::create(this)),
+      m_relList(this, RelList::create(this)),
       m_createdByParser(createdByParser) {}
 
 HTMLLinkElement* HTMLLinkElement::create(Document& document,

@@ -32,7 +32,7 @@
 namespace blink {
 
 TreeWalker::TreeWalker(Node* rootNode, unsigned whatToShow, NodeFilter* filter)
-    : NodeIteratorBase(rootNode, whatToShow, filter), m_current(root()) {}
+    : NodeIteratorBase(this, rootNode, whatToShow, filter), m_current(root()) {}
 
 void TreeWalker::setCurrentNode(Node* node) {
   DCHECK(node);

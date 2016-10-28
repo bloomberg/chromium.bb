@@ -65,7 +65,7 @@ bool NodeIterator::NodePointer::moveToPrevious(Node* root) {
 NodeIterator::NodeIterator(Node* rootNode,
                            unsigned whatToShow,
                            NodeFilter* filter)
-    : NodeIteratorBase(rootNode, whatToShow, filter),
+    : NodeIteratorBase(this, rootNode, whatToShow, filter),
       m_referenceNode(root(), true) {
   // If NodeIterator target is Attr node, don't subscribe for nodeWillBeRemoved,
   // as it would never have child nodes.

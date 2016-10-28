@@ -30,10 +30,13 @@
 
 namespace blink {
 
-NodeIteratorBase::NodeIteratorBase(Node* rootNode,
+NodeIteratorBase::NodeIteratorBase(void* childThis,
+                                   Node* rootNode,
                                    unsigned whatToShow,
                                    NodeFilter* nodeFilter)
-    : m_root(rootNode), m_whatToShow(whatToShow), m_filter(nodeFilter) {}
+    : m_root(rootNode),
+      m_whatToShow(whatToShow),
+      m_filter(childThis, nodeFilter) {}
 
 unsigned NodeIteratorBase::acceptNode(Node* node,
                                       ExceptionState& exceptionState) const {

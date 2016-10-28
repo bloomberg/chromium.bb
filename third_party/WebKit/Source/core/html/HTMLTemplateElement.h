@@ -31,6 +31,7 @@
 #ifndef HTMLTemplateElement_h
 #define HTMLTemplateElement_h
 
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -56,7 +57,7 @@ class HTMLTemplateElement final : public HTMLElement {
 
   explicit HTMLTemplateElement(Document&);
 
-  mutable Member<TemplateContentDocumentFragment> m_content;
+  mutable TraceWrapperMember<TemplateContentDocumentFragment> m_content;
 };
 
 }  // namespace blink

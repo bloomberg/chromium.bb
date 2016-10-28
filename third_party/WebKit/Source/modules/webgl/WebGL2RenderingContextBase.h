@@ -6,6 +6,7 @@
 #define WebGL2RenderingContextBase_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "modules/webgl/WebGLExtension.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include <memory>
@@ -885,7 +886,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   TraceWrapperMember<WebGLQuery>
       m_currentTransformFeedbackPrimitivesWrittenQuery;
   TraceWrapperMember<WebGLQuery> m_currentElapsedQuery;
-  HeapVector<Member<WebGLSampler>> m_samplerUnits;
+  HeapVector<TraceWrapperMember<WebGLSampler>> m_samplerUnits;
 
   GLint m_packRowLength;
   GLint m_packSkipPixels;

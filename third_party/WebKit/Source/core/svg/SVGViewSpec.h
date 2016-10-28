@@ -20,7 +20,7 @@
 #ifndef SVGViewSpec_h
 #define SVGViewSpec_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGZoomAndPan.h"
@@ -63,7 +63,6 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
   void setZoomAndPan(unsigned short value, ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();
-
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   SVGSVGElement* contextElement() { return m_contextElement.get(); }
@@ -74,7 +73,7 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
   template <typename CharType>
   bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-  Member<SVGSVGElement> m_contextElement;
+  TraceWrapperMember<SVGSVGElement> m_contextElement;
   Member<SVGAnimatedTransformList> m_transform;
   String m_viewTargetString;
 };

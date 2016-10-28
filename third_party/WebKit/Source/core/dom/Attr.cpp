@@ -40,14 +40,14 @@ using namespace HTMLNames;
 
 Attr::Attr(Element& element, const QualifiedName& name)
     : Node(&element.document(), CreateOther),
-      m_element(&element),
+      m_element(this, &element),
       m_name(name) {}
 
 Attr::Attr(Document& document,
            const QualifiedName& name,
            const AtomicString& standaloneValue)
     : Node(&document, CreateOther),
-      m_element(nullptr),
+      m_element(this, nullptr),
       m_name(name),
       m_standaloneValueOrAttachedLocalName(standaloneValue) {}
 

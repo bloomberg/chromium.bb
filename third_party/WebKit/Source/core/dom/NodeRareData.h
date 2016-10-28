@@ -35,29 +35,60 @@ class NodeMutationObserverData final
   WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
 
  public:
-  HeapVector<TraceWrapperMember<MutationObserverRegistration>> registry;
-  HeapHashSet<Member<MutationObserverRegistration>> transientRegistry;
-
   static NodeMutationObserverData* create() {
     return new NodeMutationObserverData;
   }
 
+  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>&
+  registry() {
+    return m_registry;
+  }
+
+  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>&
+  transientRegistry() {
+    return m_transientRegistry;
+  }
+
+  void addTransientRegistration(MutationObserverRegistration* registration) {
+    m_transientRegistry.add(
+        TraceWrapperMember<MutationObserverRegistration>(this, registration));
+  }
+
+  void removeTransientRegistration(MutationObserverRegistration* registration) {
+    DCHECK(m_transientRegistry.contains(registration));
+    m_transientRegistry.remove(registration);
+  }
+
+  void addRegistration(MutationObserverRegistration* registration) {
+    m_registry.append(
+        TraceWrapperMember<MutationObserverRegistration>(this, registration));
+  }
+
+  void removeRegistration(MutationObserverRegistration* registration) {
+    DCHECK(m_registry.contains(registration));
+    m_registry.remove(m_registry.find(registration));
+  }
+
   DEFINE_INLINE_TRACE() {
-    visitor->trace(registry);
-    visitor->trace(transientRegistry);
+    visitor->trace(m_registry);
+    visitor->trace(m_transientRegistry);
   }
 
   DECLARE_TRACE_WRAPPERS() {
-    for (auto registration : registry) {
+    for (auto registration : m_registry) {
       visitor->traceWrappers(registration);
     }
-    for (auto registration : transientRegistry) {
+    for (auto registration : m_transientRegistry) {
       visitor->traceWrappers(registration);
     }
   }
 
  private:
   NodeMutationObserverData() {}
+
+  HeapVector<TraceWrapperMember<MutationObserverRegistration>> m_registry;
+  HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>
+      m_transientRegistry;
 };
 
 class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,

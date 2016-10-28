@@ -1837,8 +1837,8 @@ void Node::didMoveToNewDocument(Document& oldDocument) {
     EventHandlerRegistry::didMoveBetweenFrameHosts(
         *this, oldDocument.frameHost(), document().frameHost());
 
-  if (HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
-          mutationObserverRegistry()) {
+  if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+          registry = mutationObserverRegistry()) {
     for (size_t i = 0; i < registry->size(); ++i) {
       document().addMutationObserverTypes(registry->at(i)->mutationTypes());
     }
@@ -1910,24 +1910,24 @@ EventTargetData& Node::ensureEventTargetData() {
   return *data;
 }
 
-HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
 Node::mutationObserverRegistry() {
   if (!hasRareData())
     return nullptr;
   NodeMutationObserverData* data = rareData()->mutationObserverData();
   if (!data)
     return nullptr;
-  return &data->registry;
+  return &data->registry();
 }
 
-HeapHashSet<Member<MutationObserverRegistration>>*
+const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
 Node::transientMutationObserverRegistry() {
   if (!hasRareData())
     return nullptr;
   NodeMutationObserverData* data = rareData()->mutationObserverData();
   if (!data)
     return nullptr;
-  return &data->transientRegistry;
+  return &data->transientRegistry();
 }
 
 template <typename Registry>
@@ -1982,8 +1982,8 @@ void Node::registerMutationObserver(
     MutationObserverOptions options,
     const HashSet<AtomicString>& attributeFilter) {
   MutationObserverRegistration* registration = nullptr;
-  HeapVector<TraceWrapperMember<MutationObserverRegistration>>& registry =
-      ensureRareData().ensureMutationObserverData().registry;
+  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>& registry =
+      ensureRareData().ensureMutationObserverData().registry();
   for (size_t i = 0; i < registry.size(); ++i) {
     if (&registry[i]->observer() == &observer) {
       registration = registry[i].get();
@@ -1994,8 +1994,7 @@ void Node::registerMutationObserver(
   if (!registration) {
     registration = MutationObserverRegistration::create(observer, this, options,
                                                         attributeFilter);
-    registry.append(
-        TraceWrapperMember<MutationObserverRegistration>(this, registration));
+    ensureRareData().ensureMutationObserverData().addRegistration(registration);
   }
 
   document().addMutationObserverTypes(registration->mutationTypes());
@@ -2003,40 +2002,36 @@ void Node::registerMutationObserver(
 
 void Node::unregisterMutationObserver(
     MutationObserverRegistration* registration) {
-  HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
+  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
       mutationObserverRegistry();
   DCHECK(registry);
   if (!registry)
-    return;
-
-  size_t index = registry->find(registration);
-  DCHECK_NE(index, kNotFound);
-  if (index == kNotFound)
     return;
 
   // FIXME: Simplify the registration/transient registration logic to make this
   // understandable by humans.  The explicit dispose() is needed to have the
   // registration object unregister itself promptly.
   registration->dispose();
-  registry->remove(index);
+  ensureRareData().ensureMutationObserverData().removeRegistration(
+      registration);
 }
 
 void Node::registerTransientMutationObserver(
     MutationObserverRegistration* registration) {
-  ensureRareData().ensureMutationObserverData().transientRegistry.add(
+  ensureRareData().ensureMutationObserverData().addTransientRegistration(
       registration);
 }
 
 void Node::unregisterTransientMutationObserver(
     MutationObserverRegistration* registration) {
-  HeapHashSet<Member<MutationObserverRegistration>>* transientRegistry =
-      transientMutationObserverRegistry();
+  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+      transientRegistry = transientMutationObserverRegistry();
   DCHECK(transientRegistry);
   if (!transientRegistry)
     return;
 
-  DCHECK(transientRegistry->contains(registration));
-  transientRegistry->remove(registration);
+  ensureRareData().ensureMutationObserverData().removeTransientRegistration(
+      registration);
 }
 
 void Node::notifyMutationObserversNodeWillDetach() {
@@ -2045,15 +2040,15 @@ void Node::notifyMutationObserversNodeWillDetach() {
 
   ScriptForbiddenScope forbidScriptDuringRawIteration;
   for (Node* node = parentNode(); node; node = node->parentNode()) {
-    if (HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
-            node->mutationObserverRegistry()) {
+    if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+            registry = node->mutationObserverRegistry()) {
       const size_t size = registry->size();
       for (size_t i = 0; i < size; ++i)
         registry->at(i)->observedSubtreeNodeWillDetach(*this);
     }
 
-    if (HeapHashSet<Member<MutationObserverRegistration>>* transientRegistry =
-            node->transientMutationObserverRegistry()) {
+    if (const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+            transientRegistry = node->transientMutationObserverRegistry()) {
       for (auto& registration : *transientRegistry)
         registration->observedSubtreeNodeWillDetach(*this);
     }
@@ -2418,9 +2413,9 @@ DEFINE_TRACE(Node) {
 }
 
 DEFINE_TRACE_WRAPPERS(Node) {
-  visitor->traceWrappers(parentOrShadowHostOrTemplateHostNode());
-  visitor->traceWrappers(m_previous);
-  visitor->traceWrappers(m_next);
+  visitor->traceWrappersWithManualWriteBarrier(m_parentOrShadowHostNode);
+  visitor->traceWrappersWithManualWriteBarrier(m_previous);
+  visitor->traceWrappersWithManualWriteBarrier(m_next);
   if (hasRareData())
     visitor->traceWrappers(rareData());
   EventTarget::traceWrappers(visitor);

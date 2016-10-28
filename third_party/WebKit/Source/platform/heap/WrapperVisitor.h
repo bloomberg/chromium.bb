@@ -25,6 +25,8 @@ class ScriptWrappable;
 template <typename T>
 class ScopedPersistent;
 class TraceWrapperBase;
+template <typename T>
+class TraceWrapperMember;
 
 // Only add a special class here if the class cannot derive from
 // TraceWrapperBase.
@@ -105,13 +107,31 @@ class PLATFORM_EXPORT WrapperVisitor {
                        TraceTrait<T>::heapObjectHeader, traceable);
   }
 
+  /**
+   * Trace all wrappers of |t|.
+   *
+   * If you cannot use TraceWrapperMember & the corresponding traceWrappers()
+   * for some reason (e.g., due to sizeof(TraceWrapperMember)), you can use
+   * Member and |traceWrappersWithManualWriteBarrier()|. See below.
+   */
   template <typename T>
-  void traceWrappers(const Member<T>& t) const {
+  void traceWrappers(const TraceWrapperMember<T>& t) const {
     traceWrappers(t.get());
   }
 
+  /**
+   * Require all users of manual write barriers to make this explicit in their
+   * |traceWrappers| definition. Be sure to add
+   * |ScriptWrappableVisitor::writeBarrier(this, new_value)| after all
+   * assignments to the field. Otherwise, the objects may be collected
+   * prematurely.
+   */
   template <typename T>
-  void traceWrappers(const WeakMember<T>& t) const {
+  void traceWrappersWithManualWriteBarrier(const Member<T>& t) const {
+    traceWrappers(t.get());
+  }
+  template <typename T>
+  void traceWrappersWithManualWriteBarrier(const WeakMember<T>& t) const {
     traceWrappers(t.get());
   }
 

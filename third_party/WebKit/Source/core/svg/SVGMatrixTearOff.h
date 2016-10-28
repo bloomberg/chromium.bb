@@ -32,6 +32,7 @@
 #define SVGMatrixTearOff_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
@@ -90,7 +91,6 @@ class CORE_EXPORT SVGMatrixTearOff final
   const AffineTransform& value() const;
 
   DECLARE_VIRTUAL_TRACE();
-
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
@@ -102,7 +102,7 @@ class CORE_EXPORT SVGMatrixTearOff final
 
   AffineTransform m_staticValue;
 
-  Member<SVGTransformTearOff> m_contextTransform;
+  TraceWrapperMember<SVGTransformTearOff> m_contextTransform;
 };
 
 }  // namespace blink

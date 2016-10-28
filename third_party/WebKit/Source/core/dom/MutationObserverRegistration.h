@@ -32,6 +32,7 @@
 #define MutationObserverRegistration_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/MutationObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -90,7 +91,7 @@ class MutationObserverRegistration final
                                MutationObserverOptions,
                                const HashSet<AtomicString>& attributeFilter);
 
-  Member<MutationObserver> m_observer;
+  TraceWrapperMember<MutationObserver> m_observer;
   WeakMember<Node> m_registrationNode;
   Member<Node> m_registrationNodeKeepAlive;
   typedef HeapHashSet<Member<Node>> NodeHashSet;

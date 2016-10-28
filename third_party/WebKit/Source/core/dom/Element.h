@@ -914,7 +914,6 @@ class CORE_EXPORT Element : public ContainerNode {
   ElementRareData* elementRareData() const;
   ElementRareData& ensureElementRareData();
 
-  AttrNodeList& ensureAttrNodeList();
   void removeAttrNodeList();
   void detachAllAttrNodesFromElement();
   void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);

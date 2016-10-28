@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionCode.h"
 #include "media/midi/midi_service.mojom-blink.h"
@@ -117,7 +118,7 @@ class MIDIPort : public EventTargetWithInlineData,
   String m_name;
   TypeCode m_type;
   String m_version;
-  Member<MIDIAccess> m_access;
+  TraceWrapperMember<MIDIAccess> m_access;
   midi::mojom::PortState m_state;
   ConnectionState m_connection;
 };

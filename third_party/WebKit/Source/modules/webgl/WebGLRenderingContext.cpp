@@ -242,32 +242,7 @@ DEFINE_TRACE(WebGLRenderingContext) {
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLRenderingContext) {
-  visitor->traceWrappers(m_angleInstancedArrays);
-  visitor->traceWrappers(m_extBlendMinMax);
-  visitor->traceWrappers(m_extDisjointTimerQuery);
-  visitor->traceWrappers(m_extFragDepth);
-  visitor->traceWrappers(m_extShaderTextureLOD);
-  visitor->traceWrappers(m_extsRGB);
-  visitor->traceWrappers(m_extTextureFilterAnisotropic);
-  visitor->traceWrappers(m_oesTextureFloat);
-  visitor->traceWrappers(m_oesTextureFloatLinear);
-  visitor->traceWrappers(m_oesTextureHalfFloat);
-  visitor->traceWrappers(m_oesTextureHalfFloatLinear);
-  visitor->traceWrappers(m_oesStandardDerivatives);
-  visitor->traceWrappers(m_oesVertexArrayObject);
-  visitor->traceWrappers(m_oesElementIndexUint);
-  visitor->traceWrappers(m_webglLoseContext);
-  visitor->traceWrappers(m_webglDebugRendererInfo);
-  visitor->traceWrappers(m_webglDebugShaders);
-  visitor->traceWrappers(m_webglDrawBuffers);
-  visitor->traceWrappers(m_webglCompressedTextureASTC);
-  visitor->traceWrappers(m_webglCompressedTextureATC);
-  visitor->traceWrappers(m_webglCompressedTextureETC);
-  visitor->traceWrappers(m_webglCompressedTextureETC1);
-  visitor->traceWrappers(m_webglCompressedTexturePVRTC);
-  visitor->traceWrappers(m_webglCompressedTextureS3TC);
-  visitor->traceWrappers(m_webglCompressedTextureS3TCsRGB);
-  visitor->traceWrappers(m_webglDepthTexture);
+  // Extensions are managed base WebGLRenderingContextBase.
   WebGLRenderingContextBase::traceWrappers(visitor);
 }
 

@@ -148,7 +148,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   }
 
   DECLARE_VIRTUAL_TRACE();
-
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:

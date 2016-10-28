@@ -38,7 +38,7 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)->
     //    SVGViewSpec.
     : SVGFitToViewBox(contextElement, PropertyMapPolicySkip),
-      m_contextElement(contextElement),
+      m_contextElement(this, contextElement),
       m_transform(SVGAnimatedTransformList::create(contextElement,
                                                    SVGNames::transformAttr)) {
   ASSERT(m_contextElement);

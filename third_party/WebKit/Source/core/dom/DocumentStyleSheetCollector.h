@@ -27,6 +27,7 @@
 #ifndef DocumentStyleSheetCollector_h
 #define DocumentStyleSheetCollector_h
 
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -52,7 +53,8 @@ class DocumentStyleSheetCollector {
                               HeapHashSet<Member<Document>>*);
   ~DocumentStyleSheetCollector();
 
-  void appendActiveStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
+  void appendActiveStyleSheets(
+      const HeapVector<TraceWrapperMember<CSSStyleSheet>>&);
   void appendActiveStyleSheet(CSSStyleSheet*);
   void appendSheetForList(StyleSheet*);
 

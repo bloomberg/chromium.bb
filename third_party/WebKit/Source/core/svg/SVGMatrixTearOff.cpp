@@ -38,15 +38,19 @@
 namespace blink {
 
 SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& staticValue)
-    : m_staticValue(staticValue), m_contextTransform(nullptr) {}
+    : m_staticValue(staticValue), m_contextTransform(this, nullptr) {}
 
 SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
-    : m_contextTransform(transform) {
+    : m_contextTransform(this, transform) {
   ASSERT(transform);
 }
 
 DEFINE_TRACE(SVGMatrixTearOff) {
   visitor->trace(m_contextTransform);
+}
+
+DEFINE_TRACE_WRAPPERS(SVGMatrixTearOff) {
+  visitor->traceWrappers(m_contextTransform);
 }
 
 const AffineTransform& SVGMatrixTearOff::value() const {
@@ -162,10 +166,6 @@ SVGMatrixTearOff* SVGMatrixTearOff::rotateFromVector(
   AffineTransform copy = value();
   copy.rotateFromVector(x, y);
   return create(copy);
-}
-
-DEFINE_TRACE_WRAPPERS(SVGMatrixTearOff) {
-  visitor->traceWrappers(m_contextTransform);
 }
 
 }  // namespace blink

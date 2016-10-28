@@ -162,6 +162,10 @@ class ElementRareData : public NodeRareData {
   AttrNodeList& ensureAttrNodeList();
   AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
   void removeAttrNodeList() { m_attrNodeList.clear(); }
+  void addAttr(Attr* attr) {
+    ensureAttrNodeList().append(attr);
+    ScriptWrappableVisitor::writeBarrier(this, attr);
+  }
 
   NodeIntersectionObserverData* intersectionObserverData() const {
     return m_intersectionObserverData.get();
@@ -183,7 +187,6 @@ class ElementRareData : public NodeRareData {
   ResizeObserverDataMap& ensureResizeObserverData();
 
   DECLARE_TRACE_AFTER_DISPATCH();
-
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
  private:

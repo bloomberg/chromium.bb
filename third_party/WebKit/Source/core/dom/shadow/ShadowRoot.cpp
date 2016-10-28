@@ -56,6 +56,7 @@ static_assert(sizeof(ShadowRoot) == sizeof(SameSizeAsShadowRoot),
 ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     : DocumentFragment(0, CreateShadowRoot),
       TreeScope(*this, document),
+      m_styleSheetList(nullptr),
       m_numberOfStyles(0),
       m_childShadowRootCount(0),
       m_type(static_cast<unsigned>(type)),
@@ -309,7 +310,7 @@ DEFINE_TRACE(ShadowRoot) {
 }
 
 DEFINE_TRACE_WRAPPERS(ShadowRoot) {
-  visitor->traceWrappers(m_styleSheetList);
+  visitor->traceWrappersWithManualWriteBarrier(m_styleSheetList);
   DocumentFragment::traceWrappers(visitor);
 }
 
