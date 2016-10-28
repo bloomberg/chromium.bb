@@ -9,21 +9,10 @@
 Polymer({
   is: 'settings-search-engines-list',
 
-  behaviors: [CrScrollableBehavior],
+  behaviors: [settings.GlobalScrollTargetBehavior],
 
   properties: {
     /** @type {!Array<!SearchEngine>} */
-    engines: {
-      type: Array,
-      value: function() {
-        return [];
-      },
-      observer: 'enginesChanged_',
-    }
-  },
-
-  /** @private */
-  enginesChanged_: function() {
-    this.updateScrollableContents();
+    engines: Array,
   },
 });
