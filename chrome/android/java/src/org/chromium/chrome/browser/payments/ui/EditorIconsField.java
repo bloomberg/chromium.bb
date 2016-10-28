@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -39,15 +40,21 @@ class EditorIconsField {
         LinearLayout container = (LinearLayout) mLayout.findViewById(R.id.icons_container);
         int size = context.getResources().getDimensionPixelSize(
                 R.dimen.payments_editor_icon_list_size);
+        int margin = context.getResources().getDimensionPixelSize(
+                R.dimen.payments_section_small_spacing);
+        LinearLayout.LayoutParams layoutParams =
+                new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        ApiCompatibilityUtils.setMarginEnd(layoutParams, margin);
         for (int i = 0; i < fieldModel.getIconResourceIds().size(); i++) {
             ImageView icon = new ImageView(context);
             icon.setImageResource(fieldModel.getIconResourceIds().get(i));
+            icon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
             icon.setContentDescription(context.getString(
                     fieldModel.getIconDescriptionsForAccessibility().get(i)));
             icon.setAdjustViewBounds(true);
             icon.setMaxWidth(size);
             icon.setMaxHeight(size);
-            container.addView(icon, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            container.addView(icon, layoutParams);
         }
     }
 

@@ -32,7 +32,6 @@
             android:id="@+id/contents"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/payments_section_large_spacing"
             android:paddingStart="@dimen/pref_autofill_content_spacing"
             android:paddingEnd="@dimen/pref_autofill_content_spacing"
             android:orientation="vertical" />

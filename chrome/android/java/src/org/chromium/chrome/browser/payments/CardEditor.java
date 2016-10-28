@@ -273,9 +273,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // The title of the editor depends on whether we're adding a new card or editing an existing
         // card.
-        final EditorModel editor = new EditorModel(mContext.getString(isNewCard
-                ? R.string.autofill_create_credit_card
-                : R.string.autofill_edit_credit_card));
+        final EditorModel editor = new EditorModel(mContext.getString(
+                isNewCard ? R.string.payments_create_card : R.string.payments_edit_card));
 
         if (card.getIsLocal()) {
             Calendar calendar = null;
