@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewRefusedDataShouldFail) {
           "app_view/apitest/skeleton");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_TestAppViewWithUndefinedDataShouldSucceed \
   DISABLED_TestAppViewWithUndefinedDataShouldSucceed
 #else
