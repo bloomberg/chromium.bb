@@ -68,156 +68,142 @@ void readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallb
     TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetter(info);
 }
 
-static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    Document* document;
-    document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-    if (!document) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", "parameter 1 is not of type 'Document'."));
+  Document* document;
+  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  if (!document) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", "parameter 1 is not of type 'Document'."));
 
-        return;
-    }
+    return;
+  }
 
-    impl->voidMethodDocument(document);
+  impl->voidMethodDocument(document);
 }
 
-void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::voidMethodDocumentMethod(info);
+void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::voidMethodDocumentMethod(info);
 }
 
-static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "keys");
+static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "keys");
 
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
 
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::forReceiverObject(info);
 
-    Iterator* result = impl->iterableKeys(scriptState, exceptionState);
-    if (exceptionState.hadException()) {
-        return;
-    }
-    v8SetReturnValue(info, result);
+  Iterator* result = impl->iterableKeys(scriptState, exceptionState);
+  if (exceptionState.hadException()) {
+    return;
+  }
+  v8SetReturnValue(info, result);
 }
 
-void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::keysMethod(info);
+void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::keysMethod(info);
 }
 
-static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "values");
+static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "values");
 
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
 
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::forReceiverObject(info);
 
-    Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
-    if (exceptionState.hadException()) {
-        return;
-    }
-    v8SetReturnValue(info, result);
+  Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
+  if (exceptionState.hadException()) {
+    return;
+  }
+  v8SetReturnValue(info, result);
 }
 
-void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::valuesMethod(info);
+void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::valuesMethod(info);
 }
 
-static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "entries");
+static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "entries");
 
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
 
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::forReceiverObject(info);
 
-    Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
-    if (exceptionState.hadException()) {
-        return;
-    }
-    v8SetReturnValue(info, result);
+  Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
+  if (exceptionState.hadException()) {
+    return;
+  }
+  v8SetReturnValue(info, result);
 }
 
-void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::entriesMethod(info);
+void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::entriesMethod(info);
 }
 
-static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "forEach");
+static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "forEach");
 
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
 
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::forReceiverObject(info);
 
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
 
-    ScriptValue callback;
-    ScriptValue thisArg;
-    if (!info[0]->IsFunction()) {
-        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+  ScriptValue callback;
+  ScriptValue thisArg;
+  if (!info[0]->IsFunction()) {
+    exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
 
-        return;
-    }
-    callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+    return;
+  }
+  callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
 
-    thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+  thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
 
-    impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
-    if (exceptionState.hadException()) {
-        return;
-    }
+  impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
+  if (exceptionState.hadException()) {
+    return;
+  }
 }
 
-void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::forEachMethod(info);
+void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::forEachMethod(info);
 }
 
-static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
 
-    v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
+  v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
-void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::toStringMethod(info);
+void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::toStringMethod(info);
 }
 
-static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "iterator");
+static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "iterator");
 
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
 
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::forReceiverObject(info);
 
-    Iterator* result = impl->iterator(scriptState, exceptionState);
-    if (exceptionState.hadException()) {
-        return;
-    }
-    v8SetReturnValue(info, result);
+  Iterator* result = impl->iterator(scriptState, exceptionState);
+  if (exceptionState.hadException()) {
+    return;
+  }
+  v8SetReturnValue(info, result);
 }
 
-void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface3V8Internal::iteratorMethod(info);
+void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface3V8Internal::iteratorMethod(info);
 }
 
 void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {

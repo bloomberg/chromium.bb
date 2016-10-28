@@ -96,303 +96,282 @@ void partial4StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallba
     TestInterfaceImplementationPartialV8Internal::partial4StaticLongAttributeAttributeSetter(v8Value, info);
 }
 
-static void voidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+static void voidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-    V8StringResource<> value;
-    value = info[0];
-    if (!value.prepare())
-        return;
+  V8StringResource<> value;
+  value = info[0];
+  if (!value.prepare())
+      return;
 
-    TestInterfacePartial3Implementation::voidMethodPartialOverload(*impl, value);
+  TestInterfacePartial3Implementation::voidMethodPartialOverload(*impl, value);
 }
 
-static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    bool isArityError = false;
-    switch (std::min(1, info.Length())) {
+static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
     case 0:
-        break;
+      break;
     case 1:
-        if (true) {
-            voidMethodPartialOverload3Method(info);
-            return;
-        }
-        break;
-    default:
-        isArityError = true;
-    }
-
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "voidMethodPartialOverload");
-
-    if (isArityError) {
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-}
-
-static void staticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8StringResource<> value;
-    value = info[0];
-    if (!value.prepare())
+      if (true) {
+        voidMethodPartialOverload3Method(info);
         return;
+      }
+      break;
+    default:
+      isArityError = true;
+  }
 
-    TestInterfacePartial3Implementation::staticVoidMethodPartialOverload(value);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "voidMethodPartialOverload");
+
+  if (isArityError) {
+  }
+  exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    bool isArityError = false;
-    switch (std::min(1, info.Length())) {
+static void staticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  V8StringResource<> value;
+  value = info[0];
+  if (!value.prepare())
+      return;
+
+  TestInterfacePartial3Implementation::staticVoidMethodPartialOverload(value);
+}
+
+static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
     case 0:
-        break;
+      break;
     case 1:
-        if (true) {
-            staticVoidMethodPartialOverload2Method(info);
-            return;
-        }
-        break;
-    default:
-        isArityError = true;
-    }
-
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "staticVoidMethodPartialOverload");
-
-    if (isArityError) {
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-}
-
-static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
-    ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
-
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-
-    Document* document;
-    document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-    if (!document) {
-        exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
-
+      if (true) {
+        staticVoidMethodPartialOverload2Method(info);
         return;
-    }
+      }
+      break;
+    default:
+      isArityError = true;
+  }
 
-    v8SetReturnValue(info, TestInterfacePartial3Implementation::promiseMethodPartialOverload(*impl, document).v8Value());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "staticVoidMethodPartialOverload");
+
+  if (isArityError) {
+  }
+  exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    bool isArityError = false;
-    switch (std::min(1, info.Length())) {
+static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+
+  Document* document;
+  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  if (!document) {
+    exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
+
+    return;
+  }
+
+  v8SetReturnValue(info, TestInterfacePartial3Implementation::promiseMethodPartialOverload(*impl, document).v8Value());
+}
+
+static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
     case 0:
-        break;
+      break;
     case 1:
-        if (V8Document::hasInstance(info[0], info.GetIsolate())) {
-            promiseMethodPartialOverload3Method(info);
-            return;
-        }
-        break;
-    default:
-        isArityError = true;
-    }
-
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
-    ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
-
-    if (isArityError) {
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-}
-
-static void staticPromiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
-    ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
-
-    V8StringResource<> value;
-    value = info[0];
-    if (!value.prepare(exceptionState))
+      if (V8Document::hasInstance(info[0], info.GetIsolate())) {
+        promiseMethodPartialOverload3Method(info);
         return;
+      }
+      break;
+    default:
+      isArityError = true;
+  }
 
-    v8SetReturnValue(info, TestInterfacePartial3Implementation::staticPromiseMethodPartialOverload(value).v8Value());
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+
+  if (isArityError) {
+  }
+  exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    bool isArityError = false;
-    switch (std::min(1, info.Length())) {
+static void staticPromiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+
+  V8StringResource<> value;
+  value = info[0];
+  if (!value.prepare(exceptionState))
+      return;
+
+  v8SetReturnValue(info, TestInterfacePartial3Implementation::staticPromiseMethodPartialOverload(value).v8Value());
+}
+
+static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
     case 0:
-        break;
+      break;
     case 1:
-        if (true) {
-            staticPromiseMethodPartialOverload2Method(info);
-            return;
-        }
-        break;
+      if (true) {
+        staticPromiseMethodPartialOverload2Method(info);
+        return;
+      }
+      break;
     default:
-        isArityError = true;
-    }
+      isArityError = true;
+  }
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
-    ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
 
-    if (isArityError) {
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+  if (isArityError) {
+  }
+  exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-    V8StringResource<> value;
-    value = info[0];
-    if (!value.prepare())
-        return;
+  V8StringResource<> value;
+  value = info[0];
+  if (!value.prepare())
+      return;
 
-    TestInterfacePartial3Implementation::partial2VoidMethod(*impl, value);
+  TestInterfacePartial3Implementation::partial2VoidMethod(*impl, value);
 }
 
-static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-    Node* node;
-    node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-    if (!node) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partial2VoidMethod", "TestInterface", "parameter 1 is not of type 'Node'."));
+  Node* node;
+  node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  if (!node) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partial2VoidMethod", "TestInterface", "parameter 1 is not of type 'Node'."));
 
-        return;
-    }
+    return;
+  }
 
-    TestInterfacePartial3Implementation::partial2VoidMethod(*impl, node);
+  TestInterfacePartial3Implementation::partial2VoidMethod(*impl, node);
 }
 
-static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    bool isArityError = false;
-    switch (std::min(1, info.Length())) {
+static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
     case 0:
-        break;
+      break;
     case 1:
-        if (V8Node::hasInstance(info[0], info.GetIsolate())) {
-            partial2VoidMethod3Method(info);
-            return;
-        }
-        if (true) {
-            partial2VoidMethod2Method(info);
-            return;
-        }
-        break;
+      if (V8Node::hasInstance(info[0], info.GetIsolate())) {
+        partial2VoidMethod3Method(info);
+        return;
+      }
+      if (true) {
+        partial2VoidMethod2Method(info);
+        return;
+      }
+      break;
     default:
-        isArityError = true;
-    }
+      isArityError = true;
+  }
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "partial2VoidMethod");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "partial2VoidMethod");
 
-    if (isArityError) {
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+  if (isArityError) {
+  }
+  exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "partialVoidTestEnumModulesArgMethod");
+static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "partialVoidTestEnumModulesArgMethod");
 
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
 
-    V8StringResource<> arg;
-    arg = info[0];
-    if (!arg.prepare())
-        return;
-    const char* validArgValues[] = {
-        "EnumModulesValue1",
-        "EnumModulesValue2",
-    };
-    if (!isValidEnum(arg, validArgValues, WTF_ARRAY_LENGTH(validArgValues), "TestEnumModules", exceptionState)) {
-        return;
-    }
+  V8StringResource<> arg;
+  arg = info[0];
+  if (!arg.prepare())
+      return;
+  const char* validArgValues[] = {
+      "EnumModulesValue1",
+      "EnumModulesValue2",
+  };
+  if (!isValidEnum(arg, validArgValues, WTF_ARRAY_LENGTH(validArgValues), "TestEnumModules", exceptionState)) {
+    return;
+  }
 
-    TestInterfacePartial3Implementation::partialVoidTestEnumModulesArgMethod(*impl, arg);
+  TestInterfacePartial3Implementation::partialVoidTestEnumModulesArgMethod(*impl, arg);
 }
 
-void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
+void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
 }
 
-static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8StringResource<> value;
-    value = info[0];
-    if (!value.prepare())
-        return;
+static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  V8StringResource<> value;
+  value = info[0];
+  if (!value.prepare())
+      return;
 
-    TestInterfacePartial3Implementation::partial2StaticVoidMethod(value);
+  TestInterfacePartial3Implementation::partial2StaticVoidMethod(value);
 }
 
-static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    bool isArityError = false;
-    switch (std::min(1, info.Length())) {
+static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
     case 0:
-        break;
+      break;
     case 1:
-        if (true) {
-            partial2StaticVoidMethod2Method(info);
-            return;
-        }
-        break;
+      if (true) {
+        partial2StaticVoidMethod2Method(info);
+        return;
+      }
+      break;
     default:
-        isArityError = true;
-    }
+      isArityError = true;
+  }
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "partial2StaticVoidMethod");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "partial2StaticVoidMethod");
 
-    if (isArityError) {
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+  if (isArityError) {
+  }
+  exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-    TestInterfacePartial3Implementation::unscopableVoidMethod(*impl);
+  TestInterfacePartial3Implementation::unscopableVoidMethod(*impl);
 }
 
-void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethod(info);
+void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethod(info);
 }
 
-static void partial4VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+static void partial4VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-    TestInterfacePartial4::partial4VoidMethod(*impl);
+  TestInterfacePartial4::partial4VoidMethod(*impl);
 }
 
-void partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethod(info);
+void partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethod(info);
 }
 
-static void partial4StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfacePartial4::partial4StaticVoidMethod();
+static void partial4StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfacePartial4::partial4StaticVoidMethod();
 }
 
-void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethod(info);
+void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethod(info);
 }
 
 } // namespace TestInterfaceImplementationPartialV8Internal

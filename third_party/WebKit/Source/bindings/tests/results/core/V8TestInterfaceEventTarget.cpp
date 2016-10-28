@@ -62,23 +62,22 @@ const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = {
 #pragma clang diagnostic pop
 #endif
 
-static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Name"));
-        return;
-    }
+static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (!info.IsConstructCall()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Name"));
+    return;
+  }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
-    }
+  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    v8SetReturnValue(info, info.Holder());
+    return;
+  }
 
-    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    TestInterfaceEventTarget* impl = TestInterfaceEventTarget::createForJSConstructor(document);
-    v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+  Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+  TestInterfaceEventTarget* impl = TestInterfaceEventTarget::createForJSConstructor(document);
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {

@@ -25,48 +25,44 @@ namespace blink {
 
 namespace TestInterface2PartialV8Internal {
 
-static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial1", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial1", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    V8StringResource<> value;
-    value = info[0];
-    if (!value.prepare())
-        return;
+  V8StringResource<> value;
+  value = info[0];
+  if (!value.prepare())
+      return;
 
-    TestInterface2Partial::voidMethodPartial1(*impl, value);
+  TestInterface2Partial::voidMethodPartial1(*impl, value);
 }
 
-void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface2PartialV8Internal::voidMethodPartial1Method(info);
+void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface2PartialV8Internal::voidMethodPartial1Method(info);
 }
 
-static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial2", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial2", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    V8StringResource<> value;
-    value = info[0];
-    if (!value.prepare())
-        return;
+  V8StringResource<> value;
+  value = info[0];
+  if (!value.prepare())
+      return;
 
-    TestInterface2Partial2::voidMethodPartial2(*impl, value);
+  TestInterface2Partial2::voidMethodPartial2(*impl, value);
 }
 
-void voidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterface2PartialV8Internal::voidMethodPartial2Method(info);
+void voidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface2PartialV8Internal::voidMethodPartial2Method(info);
 }
 
 } // namespace TestInterface2PartialV8Internal

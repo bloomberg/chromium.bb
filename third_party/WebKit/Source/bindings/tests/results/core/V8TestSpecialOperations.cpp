@@ -55,28 +55,26 @@ static_assert(
 
 namespace TestSpecialOperationsV8Internal {
 
-static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
+static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("namedItem", "TestSpecialOperations", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("namedItem", "TestSpecialOperations", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    V8StringResource<> name;
-    name = info[0];
-    if (!name.prepare())
-        return;
+  V8StringResource<> name;
+  name = info[0];
+  if (!name.prepare())
+      return;
 
-    NodeOrNodeList result;
-    impl->getItem(name, result);
-    v8SetReturnValue(info, result);
+  NodeOrNodeList result;
+  impl->getItem(name, result);
+  v8SetReturnValue(info, result);
 }
 
-void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestSpecialOperationsV8Internal::namedItemMethod(info);
+void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestSpecialOperationsV8Internal::namedItemMethod(info);
 }
 
 static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {

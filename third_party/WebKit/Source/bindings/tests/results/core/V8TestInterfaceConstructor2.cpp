@@ -51,116 +51,112 @@ static_assert(
 
 namespace TestInterfaceConstructor2V8Internal {
 
-static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8StringResource<> stringArg;
-    stringArg = info[0];
-    if (!stringArg.prepare())
-        return;
+static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  V8StringResource<> stringArg;
+  stringArg = info[0];
+  if (!stringArg.prepare())
+      return;
 
-    TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(stringArg);
-    v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(stringArg);
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
-static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
+static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
 
-    Dictionary dictionaryArg;
-    if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-        exceptionState.throwTypeError("parameter 1 ('dictionaryArg') is not an object.");
+  Dictionary dictionaryArg;
+  if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+    exceptionState.throwTypeError("parameter 1 ('dictionaryArg') is not an object.");
 
-        return;
-    }
-    dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
-    if (exceptionState.hadException())
-        return;
+    return;
+  }
+  dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(dictionaryArg);
-    v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(dictionaryArg);
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
-static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
+static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
 
-    Vector<Vector<String>> stringSequenceSequenceArg;
-    stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
-    if (exceptionState.hadException())
-        return;
+  Vector<Vector<String>> stringSequenceSequenceArg;
+  stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(stringSequenceSequenceArg);
-    v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(stringSequenceSequenceArg);
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
-static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
+static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
 
-    TestInterfaceEmpty* testInterfaceEmptyArg;
-    int longArg;
-    V8StringResource<> defaultUndefinedOptionalStringArg;
-    V8StringResource<> defaultNullStringOptionalStringArg;
-    Dictionary defaultUndefinedOptionalDictionaryArg;
-    V8StringResource<> optionalStringArg;
-    int numArgsPassed = info.Length();
-    while (numArgsPassed > 0) {
-        if (!info[numArgsPassed - 1]->IsUndefined())
-            break;
-        --numArgsPassed;
-    }
-    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-    if (!testInterfaceEmptyArg) {
-        exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+  TestInterfaceEmpty* testInterfaceEmptyArg;
+  int longArg;
+  V8StringResource<> defaultUndefinedOptionalStringArg;
+  V8StringResource<> defaultNullStringOptionalStringArg;
+  Dictionary defaultUndefinedOptionalDictionaryArg;
+  V8StringResource<> optionalStringArg;
+  int numArgsPassed = info.Length();
+  while (numArgsPassed > 0) {
+    if (!info[numArgsPassed - 1]->IsUndefined())
+      break;
+    --numArgsPassed;
+  }
+  testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  if (!testInterfaceEmptyArg) {
+    exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
 
+    return;
+  }
+
+  longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  if (exceptionState.hadException())
+      return;
+
+  defaultUndefinedOptionalStringArg = info[2];
+  if (!defaultUndefinedOptionalStringArg.prepare())
+      return;
+
+  if (!info[3]->IsUndefined()) {
+    defaultNullStringOptionalStringArg = info[3];
+    if (!defaultNullStringOptionalStringArg.prepare())
         return;
-    }
+  } else {
+    defaultNullStringOptionalStringArg = nullptr;
+  }
+  if (!isUndefinedOrNull(info[4]) && !info[4]->IsObject()) {
+    exceptionState.throwTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
 
-    longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-    if (exceptionState.hadException())
-        return;
+    return;
+  }
+  defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate(), exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    defaultUndefinedOptionalStringArg = info[2];
-    if (!defaultUndefinedOptionalStringArg.prepare())
-        return;
-
-    if (!info[3]->IsUndefined()) {
-        defaultNullStringOptionalStringArg = info[3];
-        if (!defaultNullStringOptionalStringArg.prepare())
-            return;
-    } else {
-        defaultNullStringOptionalStringArg = nullptr;
-    }
-    if (!isUndefinedOrNull(info[4]) && !info[4]->IsObject()) {
-        exceptionState.throwTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
-
-        return;
-    }
-    defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate(), exceptionState);
-    if (exceptionState.hadException())
-        return;
-
-    if (UNLIKELY(numArgsPassed <= 5)) {
-        TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
-        v8::Local<v8::Object> wrapper = info.Holder();
-        wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
-        v8SetReturnValue(info, wrapper);
-        return;
-    }
-    optionalStringArg = info[5];
-    if (!optionalStringArg.prepare())
-        return;
-
-    TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg, optionalStringArg);
+  if (UNLIKELY(numArgsPassed <= 5)) {
+    TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
+    return;
+  }
+  optionalStringArg = info[5];
+  if (!optionalStringArg.prepare())
+      return;
+
+  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg, optionalStringArg);
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {

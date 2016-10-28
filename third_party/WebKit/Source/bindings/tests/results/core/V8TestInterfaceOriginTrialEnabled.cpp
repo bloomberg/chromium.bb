@@ -172,86 +172,80 @@ void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::Fun
     TestInterfaceOriginTrialEnabledV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
-static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodDoubleArgFloatArg");
+static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodDoubleArgFloatArg");
 
-    TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
+  TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 2)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 2)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+    return;
+  }
 
-    double doubleArg;
-    float floatArg;
-    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-    if (exceptionState.hadException())
-        return;
+  double doubleArg;
+  float floatArg;
+  doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
-    if (exceptionState.hadException())
-        return;
+  floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
+  impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
 
-void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceOriginTrialEnabledV8Internal::voidMethodDoubleArgFloatArgMethod(info);
+void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceOriginTrialEnabledV8Internal::voidMethodDoubleArgFloatArgMethod(info);
 }
 
-static void voidMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
+static void voidMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
 
-    impl->voidMethodPartialOverload();
+  impl->voidMethodPartialOverload();
 }
 
-static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
+static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
 
-    TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
+  TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
 
-    double doubleArg;
-    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-    if (exceptionState.hadException())
-        return;
+  double doubleArg;
+  doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    impl->voidMethodPartialOverload(doubleArg);
+  impl->voidMethodPartialOverload(doubleArg);
 }
 
-static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    bool isArityError = false;
-    switch (std::min(1, info.Length())) {
+static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
     case 0:
-        if (true) {
-            voidMethodPartialOverload1Method(info);
-            return;
-        }
-        break;
+      if (true) {
+        voidMethodPartialOverload1Method(info);
+        return;
+      }
+      break;
     case 1:
-        if (true) {
-            voidMethodPartialOverload2Method(info);
-            return;
-        }
-        break;
+      if (true) {
+        voidMethodPartialOverload2Method(info);
+        return;
+      }
+      break;
     default:
-        isArityError = true;
-    }
+      isArityError = true;
+  }
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
 
-    if (isArityError) {
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+  if (isArityError) {
+  }
+  exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceOriginTrialEnabledV8Internal::voidMethodPartialOverloadMethod(info);
+void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceOriginTrialEnabledV8Internal::voidMethodPartialOverloadMethod(info);
 }
 
 } // namespace TestInterfaceOriginTrialEnabledV8Internal

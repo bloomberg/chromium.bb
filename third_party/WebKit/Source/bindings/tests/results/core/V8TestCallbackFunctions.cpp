@@ -130,172 +130,156 @@ void customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::F
     TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetter(info);
 }
 
-static void returnCallbackFunctionMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void returnCallbackFunctionMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    v8SetReturnValue(info, impl->returnCallbackFunctionMethod());
+  v8SetReturnValue(info, impl->returnCallbackFunctionMethod());
 }
 
-void returnCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::returnCallbackFunctionMethodMethod(info);
+void returnCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::returnCallbackFunctionMethodMethod(info);
 }
 
-static void returnCallbackFunctionMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void returnCallbackFunctionMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    v8SetReturnValue(info, impl->returnCallbackFunctionMethod2());
+  v8SetReturnValue(info, impl->returnCallbackFunctionMethod2());
 }
 
-void returnCallbackFunctionMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::returnCallbackFunctionMethod2Method(info);
+void returnCallbackFunctionMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::returnCallbackFunctionMethod2Method(info);
 }
 
-static void voidMethodCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void voidMethodCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    VoidCallbackFunction* voidCallbackFunctionArg;
-    if (!info[0]->IsFunction()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
+  VoidCallbackFunction* voidCallbackFunctionArg;
+  if (!info[0]->IsFunction()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
-        return;
-    }
-    voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+    return;
+  }
+  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
-    impl->voidMethodCallbackFunctionInArg(voidCallbackFunctionArg);
+  impl->voidMethodCallbackFunctionInArg(voidCallbackFunctionArg);
 }
 
-void voidMethodCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArgMethod(info);
+void voidMethodCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArgMethod(info);
 }
 
-static void voidMethodCallbackFunctionInArg2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void voidMethodCallbackFunctionInArg2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg2", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg2", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    AnyCallbackFunctionOptionalAnyArg* anyCallbackFunctionOptionalAnyArgArg;
-    if (!info[0]->IsFunction()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg2", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
+  AnyCallbackFunctionOptionalAnyArg* anyCallbackFunctionOptionalAnyArgArg;
+  if (!info[0]->IsFunction()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg2", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
-        return;
-    }
-    anyCallbackFunctionOptionalAnyArgArg = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+    return;
+  }
+  anyCallbackFunctionOptionalAnyArgArg = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
-    impl->voidMethodCallbackFunctionInArg2(anyCallbackFunctionOptionalAnyArgArg);
+  impl->voidMethodCallbackFunctionInArg2(anyCallbackFunctionOptionalAnyArgArg);
 }
 
-void voidMethodCallbackFunctionInArg2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArg2Method(info);
+void voidMethodCallbackFunctionInArg2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArg2Method(info);
 }
 
-static void voidMethodCallbackFunctionWithReturnValueInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void voidMethodCallbackFunctionWithReturnValueInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionWithReturnValueInArg", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionWithReturnValueInArg", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    LongCallbackFunction* longCallbackFunctionArg;
-    if (!info[0]->IsFunction()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionWithReturnValueInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
+  LongCallbackFunction* longCallbackFunctionArg;
+  if (!info[0]->IsFunction()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionWithReturnValueInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
-        return;
-    }
-    longCallbackFunctionArg = LongCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+    return;
+  }
+  longCallbackFunctionArg = LongCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
-    impl->voidMethodCallbackFunctionWithReturnValueInArg(longCallbackFunctionArg);
+  impl->voidMethodCallbackFunctionWithReturnValueInArg(longCallbackFunctionArg);
 }
 
-void voidMethodCallbackFunctionWithReturnValueInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionWithReturnValueInArgMethod(info);
+void voidMethodCallbackFunctionWithReturnValueInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionWithReturnValueInArgMethod(info);
 }
 
-static void voidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void voidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    VoidCallbackFunction* voidCallbackFunctionArg;
-    int numArgsPassed = info.Length();
-    while (numArgsPassed > 0) {
-        if (!info[numArgsPassed - 1]->IsUndefined())
-            break;
-        --numArgsPassed;
-    }
-    if (UNLIKELY(numArgsPassed <= 0)) {
-        impl->voidMethodOptionalCallbackFunctionInArg();
-        return;
-    }
-    if (!info[0]->IsFunction()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
+  VoidCallbackFunction* voidCallbackFunctionArg;
+  int numArgsPassed = info.Length();
+  while (numArgsPassed > 0) {
+    if (!info[numArgsPassed - 1]->IsUndefined())
+      break;
+    --numArgsPassed;
+  }
+  if (UNLIKELY(numArgsPassed <= 0)) {
+    impl->voidMethodOptionalCallbackFunctionInArg();
+    return;
+  }
+  if (!info[0]->IsFunction()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
-        return;
-    }
-    voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+    return;
+  }
+  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
-    impl->voidMethodOptionalCallbackFunctionInArg(voidCallbackFunctionArg);
+  impl->voidMethodOptionalCallbackFunctionInArg(voidCallbackFunctionArg);
 }
 
-void voidMethodOptionalCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::voidMethodOptionalCallbackFunctionInArgMethod(info);
+void voidMethodOptionalCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::voidMethodOptionalCallbackFunctionInArgMethod(info);
 }
 
-static void voidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void voidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    Nullable<VoidCallbackFunction*> voidCallbackFunctionArg;
-    if (!info[0]->IsFunction() && !info[0]->IsNull()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
+  Nullable<VoidCallbackFunction*> voidCallbackFunctionArg;
+  if (!info[0]->IsFunction() && !info[0]->IsNull()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
-        return;
-    }
-    voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+    return;
+  }
+  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
 
-    impl->voidMethodNullableCallbackFunctionInArg(voidCallbackFunctionArg);
+  impl->voidMethodNullableCallbackFunctionInArg(voidCallbackFunctionArg);
 }
 
-void voidMethodNullableCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::voidMethodNullableCallbackFunctionInArgMethod(info);
+void voidMethodNullableCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::voidMethodNullableCallbackFunctionInArgMethod(info);
 }
 
-static void customElementCallbacksMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
+static void customElementCallbacksMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(info.Holder());
 
-    V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
-    impl->customElementCallbacksMethod();
+  impl->customElementCallbacksMethod();
 }
 
-void customElementCallbacksMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestCallbackFunctionsV8Internal::customElementCallbacksMethodMethod(info);
+void customElementCallbacksMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestCallbackFunctionsV8Internal::customElementCallbacksMethodMethod(info);
 }
 
 } // namespace TestCallbackFunctionsV8Internal

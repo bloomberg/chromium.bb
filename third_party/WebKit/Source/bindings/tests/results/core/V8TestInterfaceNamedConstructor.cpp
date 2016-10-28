@@ -75,83 +75,82 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInf
 #pragma clang diagnostic pop
 #endif
 
-static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Audio"));
-        return;
-    }
+static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (!info.IsConstructCall()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Audio"));
+    return;
+  }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
-    }
+  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    v8SetReturnValue(info, info.Holder());
+    return;
+  }
 
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor");
 
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
 
-    V8StringResource<> stringArg;
-    bool defaultUndefinedOptionalBooleanArg;
-    int defaultUndefinedOptionalLongArg;
-    V8StringResource<> defaultUndefinedOptionalStringArg;
-    V8StringResource<> defaultNullStringOptionalstringArg;
-    V8StringResource<> optionalStringArg;
-    int numArgsPassed = info.Length();
-    while (numArgsPassed > 0) {
-        if (!info[numArgsPassed - 1]->IsUndefined())
-            break;
-        --numArgsPassed;
-    }
-    stringArg = info[0];
-    if (!stringArg.prepare())
-        return;
+  V8StringResource<> stringArg;
+  bool defaultUndefinedOptionalBooleanArg;
+  int defaultUndefinedOptionalLongArg;
+  V8StringResource<> defaultUndefinedOptionalStringArg;
+  V8StringResource<> defaultNullStringOptionalstringArg;
+  V8StringResource<> optionalStringArg;
+  int numArgsPassed = info.Length();
+  while (numArgsPassed > 0) {
+    if (!info[numArgsPassed - 1]->IsUndefined())
+      break;
+    --numArgsPassed;
+  }
+  stringArg = info[0];
+  if (!stringArg.prepare())
+      return;
 
-    defaultUndefinedOptionalBooleanArg = toBoolean(info.GetIsolate(), info[1], exceptionState);
-    if (exceptionState.hadException())
-        return;
+  defaultUndefinedOptionalBooleanArg = toBoolean(info.GetIsolate(), info[1], exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    defaultUndefinedOptionalLongArg = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
-    if (exceptionState.hadException())
-        return;
+  defaultUndefinedOptionalLongArg = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    defaultUndefinedOptionalStringArg = info[3];
-    if (!defaultUndefinedOptionalStringArg.prepare())
-        return;
+  defaultUndefinedOptionalStringArg = info[3];
+  if (!defaultUndefinedOptionalStringArg.prepare())
+      return;
 
-    if (!info[4]->IsUndefined()) {
-        defaultNullStringOptionalstringArg = info[4];
-        if (!defaultNullStringOptionalstringArg.prepare())
-            return;
-    } else {
-        defaultNullStringOptionalstringArg = nullptr;
-    }
-    if (UNLIKELY(numArgsPassed <= 5)) {
-        Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-        TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
-        if (exceptionState.hadException()) {
-            return;
-        }
-        v8::Local<v8::Object> wrapper = info.Holder();
-        wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper);
-        v8SetReturnValue(info, wrapper);
+  if (!info[4]->IsUndefined()) {
+    defaultNullStringOptionalstringArg = info[4];
+    if (!defaultNullStringOptionalstringArg.prepare())
         return;
-    }
-    optionalStringArg = info[5];
-    if (!optionalStringArg.prepare())
-        return;
-
+  } else {
+    defaultNullStringOptionalstringArg = nullptr;
+  }
+  if (UNLIKELY(numArgsPassed <= 5)) {
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
+    TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
     if (exceptionState.hadException()) {
-        return;
+      return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
+    return;
+  }
+  optionalStringArg = info[5];
+  if (!optionalStringArg.prepare())
+      return;
+
+  Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+  TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
+  if (exceptionState.hadException()) {
+    return;
+  }
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {

@@ -130,205 +130,188 @@ void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionC
     TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
 }
 
-static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "voidMethodArrayOfLongsArg");
+static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "voidMethodArrayOfLongsArg");
 
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    Vector<int> arrayOfLongsArg;
-    int numArgsPassed = info.Length();
-    while (numArgsPassed > 0) {
-        if (!info[numArgsPassed - 1]->IsUndefined())
-            break;
-        --numArgsPassed;
-    }
-    if (UNLIKELY(numArgsPassed <= 0)) {
-        impl->voidMethodArrayOfLongsArg();
-        return;
-    }
-    arrayOfLongsArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
-    if (exceptionState.hadException())
-        return;
+  Vector<int> arrayOfLongsArg;
+  int numArgsPassed = info.Length();
+  while (numArgsPassed > 0) {
+    if (!info[numArgsPassed - 1]->IsUndefined())
+      break;
+    --numArgsPassed;
+  }
+  if (UNLIKELY(numArgsPassed <= 0)) {
+    impl->voidMethodArrayOfLongsArg();
+    return;
+  }
+  arrayOfLongsArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
+  impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
 
-void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethod(info);
+void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethod(info);
 }
 
-static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "voidMethodFloatArgStringArg");
+static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "voidMethodFloatArgStringArg");
 
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 2)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 2)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+    return;
+  }
 
-    float floatArg;
-    V8StringResource<> stringArg;
-    floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
-    if (exceptionState.hadException())
-        return;
+  float floatArg;
+  V8StringResource<> stringArg;
+  floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    stringArg = info[1];
-    if (!stringArg.prepare())
-        return;
+  stringArg = info[1];
+  if (!stringArg.prepare())
+      return;
 
-    impl->voidMethodFloatArgStringArg(floatArg, stringArg);
+  impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
 
-void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::voidMethodFloatArgStringArgMethod(info);
+void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::voidMethodFloatArgStringArgMethod(info);
 }
 
-static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    TestCallbackInterface* testCallbackInterfaceTypeArg;
-    if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."));
+  TestCallbackInterface* testCallbackInterfaceTypeArg;
+  if (info.Length() <= 0 || !info[0]->IsFunction()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."));
 
-        return;
-    }
-    testCallbackInterfaceTypeArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    return;
+  }
+  testCallbackInterfaceTypeArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
 
-    impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg);
+  impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg);
 }
 
-void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethod(info);
+void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethod(info);
 }
 
-static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "uLongLongMethodTestInterfaceEmptyTypeSequenceArg");
+static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "uLongLongMethodTestInterfaceEmptyTypeSequenceArg");
 
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
 
-    HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyTypeSequenceArg;
-    testInterfaceEmptyTypeSequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
-    if (exceptionState.hadException())
-        return;
+  HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyTypeSequenceArg;
+  testInterfaceEmptyTypeSequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+  if (exceptionState.hadException())
+      return;
 
-    v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
+  v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
 
-void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(info);
+void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(info);
 }
 
-static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    TestInterfaceOrTestInterfaceEmpty result;
-    impl->testInterfaceOrTestInterfaceEmptyMethod(result);
-    v8SetReturnValue(info, result);
+  TestInterfaceOrTestInterfaceEmpty result;
+  impl->testInterfaceOrTestInterfaceEmptyMethod(result);
+  v8SetReturnValue(info, result);
 }
 
-void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::testInterfaceOrTestInterfaceEmptyMethodMethod(info);
+void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::testInterfaceOrTestInterfaceEmptyMethodMethod(info);
 }
 
-static void domStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+static void domStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    StringOrDouble result;
-    impl->domStringOrDoubleMethod(result);
-    v8SetReturnValue(info, result);
+  StringOrDouble result;
+  impl->domStringOrDoubleMethod(result);
+  v8SetReturnValue(info, result);
 }
 
-void domStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::domStringOrDoubleMethodMethod(info);
+void domStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::domStringOrDoubleMethodMethod(info);
 }
 
-static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "arrayOfStringsMethodArrayOfStringsArg");
+static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "arrayOfStringsMethodArrayOfStringsArg");
 
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
 
-    Vector<String> arrayOfStringsArg;
-    arrayOfStringsArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
-    if (exceptionState.hadException())
-        return;
+  Vector<String> arrayOfStringsArg;
+  arrayOfStringsArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    v8SetReturnValue(info, toV8(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
+  v8SetReturnValue(info, toV8(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
 }
 
-void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethod(info);
+void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethod(info);
 }
 
-static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "stringArrayMethodStringArrayArg");
+static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "stringArrayMethodStringArrayArg");
 
-    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
 
-    Vector<String> stringArrayArg;
-    stringArrayArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
-    if (exceptionState.hadException())
-        return;
+  Vector<String> stringArrayArg;
+  stringArrayArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+  if (exceptionState.hadException())
+      return;
 
-    v8SetReturnValue(info, toV8(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
+  v8SetReturnValue(info, toV8(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
 
-void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethod(info);
+void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethod(info);
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    V8StringResource<> stringArg;
-    stringArg = info[0];
-    if (!stringArg.prepare())
-        return;
+  V8StringResource<> stringArg;
+  stringArg = info[0];
+  if (!stringArg.prepare())
+      return;
 
-    TestTypedefs* impl = TestTypedefs::create(stringArg);
-    v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+  TestTypedefs* impl = TestTypedefs::create(stringArg);
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
 } // namespace TestTypedefsV8Internal

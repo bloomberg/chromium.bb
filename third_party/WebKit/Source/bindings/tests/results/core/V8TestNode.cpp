@@ -191,12 +191,11 @@ void hrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Va
     TestNodeV8Internal::hrefByteStringAttributeSetter(v8Value, info);
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestNode* impl = TestNode::create();
-    v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestNode::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestNode* impl = TestNode::create();
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestNode::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
 } // namespace TestNodeV8Internal

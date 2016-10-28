@@ -62,32 +62,31 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeIn
 #pragma clang diagnostic pop
 #endif
 
-static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Audio"));
-        return;
-    }
+static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (!info.IsConstructCall()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Audio"));
+    return;
+  }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
-    }
+  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    v8SetReturnValue(info, info.Holder());
+    return;
+  }
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceNamedConstructor2", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceNamedConstructor2", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    V8StringResource<> stringArg;
-    stringArg = info[0];
-    if (!stringArg.prepare())
-        return;
+  V8StringResource<> stringArg;
+  stringArg = info[0];
+  if (!stringArg.prepare())
+      return;
 
-    TestInterfaceNamedConstructor2* impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
-    v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+  TestInterfaceNamedConstructor2* impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
+  v8::Local<v8::Object> wrapper = info.Holder();
+  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper);
+  v8SetReturnValue(info, wrapper);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2Constructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {

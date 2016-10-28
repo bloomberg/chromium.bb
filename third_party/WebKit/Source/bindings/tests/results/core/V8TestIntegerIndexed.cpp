@@ -86,29 +86,27 @@ void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& in
     TestIntegerIndexedV8Internal::lengthAttributeSetter(v8Value, info);
 }
 
-static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestIntegerIndexed* impl = V8TestIntegerIndexed::toImpl(info.Holder());
+static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestIntegerIndexed* impl = V8TestIntegerIndexed::toImpl(info.Holder());
 
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexed", ExceptionMessages::notEnoughArguments(1, info.Length())));
-        return;
-    }
+  if (UNLIKELY(info.Length() < 1)) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexed", ExceptionMessages::notEnoughArguments(1, info.Length())));
+    return;
+  }
 
-    Document* document;
-    document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-    if (!document) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexed", "parameter 1 is not of type 'Document'."));
+  Document* document;
+  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  if (!document) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexed", "parameter 1 is not of type 'Document'."));
 
-        return;
-    }
+    return;
+  }
 
-    impl->voidMethodDocument(document);
+  impl->voidMethodDocument(document);
 }
 
-void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestIntegerIndexedV8Internal::voidMethodDocumentMethod(info);
+void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestIntegerIndexedV8Internal::voidMethodDocumentMethod(info);
 }
 
 void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {

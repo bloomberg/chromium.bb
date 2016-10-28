@@ -289,76 +289,64 @@ void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(co
     TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
-static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
 
-    impl->secureContextMethod();
+  impl->secureContextMethod();
 }
 
-void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextMethodMethod(info);
+void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextMethodMethod(info);
 }
 
-static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
 
-    impl->secureContextRuntimeEnabledMethod();
+  impl->secureContextRuntimeEnabledMethod();
 }
 
-void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledMethodMethod(info);
+void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledMethodMethod(info);
 }
 
-static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
 
-    impl->secureContextWindowExposedMethod();
+  impl->secureContextWindowExposedMethod();
 }
 
-void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWindowExposedMethodMethod(info);
+void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWindowExposedMethodMethod(info);
 }
 
-static void secureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+static void secureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
 
-    impl->secureContextWorkerExposedMethod();
+  impl->secureContextWorkerExposedMethod();
 }
 
-void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWorkerExposedMethodMethod(info);
+void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWorkerExposedMethodMethod(info);
 }
 
-static void secureContextWindowExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+static void secureContextWindowExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
 
-    impl->secureContextWindowExposedRuntimeEnabledMethod();
+  impl->secureContextWindowExposedRuntimeEnabledMethod();
 }
 
-void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethod(info);
+void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
 
-static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
 
-    impl->secureContextWorkerExposedRuntimeEnabledMethod();
+  impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 
-void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
+void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 
 } // namespace TestInterfaceSecureContextV8Internal
@@ -435,7 +423,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   }
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
-  ASSERT(executionContext);
+  DCHECK(executionContext);
   if (executionContext && (executionContext->isSecureContext())) {
       const V8DOMConfiguration::MethodConfiguration secureContextMethodMethodConfiguration = {"secureContextMethod", TestInterfaceSecureContextV8Internal::secureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextMethodMethodConfiguration);
