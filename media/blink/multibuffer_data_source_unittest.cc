@@ -1431,6 +1431,19 @@ TEST_F(MultibufferDataSourceTest, Http_RangeNotSatisfiableAfterRedirect) {
   Stop();
 }
 
+TEST_F(MultibufferDataSourceTest, Http_404AfterRedirect) {
+  Initialize(kHttpUrl, false);
+
+  // Server responds with a redirect.
+  blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
+  blink::WebURLResponse response((GURL(kHttpUrl)));
+  response.setHTTPStatusCode(307);
+  data_provider()->willFollowRedirect(request, response);
+
+  Respond(response_generator_->Generate404());
+  Stop();
+}
+
 TEST_F(MultibufferDataSourceTest, LengthKnownAtEOF) {
   Initialize(kHttpUrl, true);
   // Server responds without content-length.

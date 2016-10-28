@@ -172,6 +172,7 @@ void ResourceMultiBufferDataProvider::SetDeferred(bool deferred) {
 bool ResourceMultiBufferDataProvider::willFollowRedirect(
     const WebURLRequest& newRequest,
     const WebURLResponse& redirectResponse) {
+  DVLOG(1) << "willFollowRedirect";
   redirects_to_ = newRequest.url();
   url_data_->set_valid_until(base::Time::Now() +
                              GetCacheValidUntil(redirectResponse));
@@ -201,8 +202,8 @@ void ResourceMultiBufferDataProvider::didSendData(
 
 void ResourceMultiBufferDataProvider::didReceiveResponse(
     const WebURLResponse& response) {
-#if ENABLE_DLOG
-  string version;
+#if DCHECK_IS_ON()
+  std::string version;
   switch (response.httpVersion()) {
     case WebURLResponse::HTTPVersion_0_9:
       version = "0.9";
@@ -215,6 +216,9 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
       break;
     case WebURLResponse::HTTPVersion_2_0:
       version = "2.1";
+      break;
+    case WebURLResponse::HTTPVersionUnknown:
+      version = "unknown";
       break;
   }
   DVLOG(1) << "didReceiveResponse: HTTP/" << version << " "
@@ -270,6 +274,7 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
   // |content_length_| is not specified and this is a streaming response.
   int64_t content_length = response.expectedContentLength();
   bool end_of_file = false;
+  bool do_fail = false;
 
   // We make a strong assumption that when we reach here we have either
   // received a response from HTTP/HTTPS protocol or the request was
@@ -305,8 +310,9 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
       end_of_file = true;
     } else {
       active_loader_ = nullptr;
-      destination_url_data->Fail();
-      return;  // "this" may be deleted now.
+      // Can't call fail until readers have been migrated to the new
+      // url data below.
+      do_fail = true;
     }
   } else {
     destination_url_data->set_range_supported();
@@ -315,7 +321,7 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
     }
   }
 
-  if (url_index) {
+  if (url_index && !do_fail) {
     destination_url_data = url_index->TryInsert(destination_url_data);
   }
 
@@ -338,6 +344,11 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
     // This will merge the data from the two multibuffers and
     // cause clients to start using the new UrlData.
     old_url_data->RedirectTo(destination_url_data);
+  }
+
+  if (do_fail) {
+    destination_url_data->Fail();
+    return;  // "this" may be deleted now.
   }
 
   // This test is vital for security!
