@@ -215,7 +215,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertTrue(self.command.trigger_jobs_for_missing_builds([]))
         self.assertEqual(
             self.tool.executive.calls,
-            [['git', 'cl', 'try', '-b', 'MOCK Try Linux'], ['git', 'cl', 'try', '-b', 'MOCK Try Win']])
+            [['git', 'cl', 'try', '-b', 'MOCK Try Linux', '-b', 'MOCK Try Win']])
         self.assertLog([
             'INFO: Triggering try jobs for:\n',
             'INFO:   MOCK Try Linux\n',

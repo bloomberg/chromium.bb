@@ -133,14 +133,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         if builders_without_builds:
             _log.info('Triggering try jobs for:')
+            command = ['try']
             for builder in sorted(builders_without_builds):
                 _log.info('  %s', builder)
-            # If the builders may be under different masters, then they cannot
-            # all be started in one invocation of git cl try without providing
-            # master names. Doing separate invocations is slower, but always works
-            # even when there are builders under different master names.
-            for builder in sorted(builders_without_builds):
-                self.git_cl().run(['try', '-b', builder])
+                command.extend(['-b', builder])
+            self.git_cl().run(command)
 
         return bool(builders_with_pending_builds or builders_without_builds)
 
