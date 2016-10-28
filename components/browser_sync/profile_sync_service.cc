@@ -2370,7 +2370,7 @@ syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
   return device_info_sync_service_.get();
 }
 
-syncer::ModelTypeService* ProfileSyncService::GetDeviceInfoService() {
+syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoService() {
   return device_info_service_.get();
 }
 

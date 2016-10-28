@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_MODEL_STUB_MODEL_TYPE_SERVICE_H_
-#define COMPONENTS_SYNC_MODEL_STUB_MODEL_TYPE_SERVICE_H_
+#ifndef COMPONENTS_SYNC_MODEL_STUB_MODEL_TYPE_SYNC_BRIDGE_H_
+#define COMPONENTS_SYNC_MODEL_STUB_MODEL_TYPE_SYNC_BRIDGE_H_
 
 #include <memory>
 #include <string>
 
-#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
 
-// A non-functional implementation of ModelTypeService for
+// A non-functional implementation of ModelTypeSyncBridge for
 // testing purposes.
-class StubModelTypeService : public ModelTypeService {
+class StubModelTypeSyncBridge : public ModelTypeSyncBridge {
  public:
-  StubModelTypeService();
-  explicit StubModelTypeService(
+  StubModelTypeSyncBridge();
+  explicit StubModelTypeSyncBridge(
       const ChangeProcessorFactory& change_processor_factory);
-  ~StubModelTypeService() override;
+  ~StubModelTypeSyncBridge() override;
 
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   SyncError MergeSyncData(
@@ -36,4 +36,4 @@ class StubModelTypeService : public ModelTypeService {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_MODEL_STUB_MODEL_TYPE_SERVICE_H_
+#endif  // COMPONENTS_SYNC_MODEL_STUB_MODEL_TYPE_SYNC_BRIDGE_H_

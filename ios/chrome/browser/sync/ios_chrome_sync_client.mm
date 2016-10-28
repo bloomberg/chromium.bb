@@ -327,8 +327,8 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   }
 }
 
-base::WeakPtr<syncer::ModelTypeService>
-IOSChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
+base::WeakPtr<syncer::ModelTypeSyncBridge>
+IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
       return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
@@ -337,7 +337,7 @@ IOSChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
           ->AsWeakPtr();
     default:
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeService>();
+      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
   }
 }
 

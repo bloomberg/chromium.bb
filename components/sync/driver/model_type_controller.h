@@ -67,7 +67,7 @@ class ModelTypeController : public DataTypeController {
       SyncError error,
       std::unique_ptr<ActivationContext> activation_context);
 
-  // The sync client, which provides access to this type's ModelTypeService.
+  // The sync client, which provides access to this type's ModelTypeSyncBridge.
   SyncClient* const sync_client_;
 
   // The thread the model type lives on.

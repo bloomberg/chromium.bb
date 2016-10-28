@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model/fake_model_type_service.h"
+#include "components/sync/model/fake_model_type_sync_bridge.h"
 
 #include <utility>
 
@@ -38,18 +38,18 @@ std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data) {
 }  // namespace
 
 // static
-std::string FakeModelTypeService::ClientTagFromKey(const std::string& key) {
+std::string FakeModelTypeSyncBridge::ClientTagFromKey(const std::string& key) {
   return "ClientTag_" + key;
 }
 
 // static
-std::string FakeModelTypeService::TagHashFromKey(const std::string& key) {
+std::string FakeModelTypeSyncBridge::TagHashFromKey(const std::string& key) {
   return syncable::GenerateSyncableHash(
-      PREFERENCES, FakeModelTypeService::ClientTagFromKey(key));
+      PREFERENCES, FakeModelTypeSyncBridge::ClientTagFromKey(key));
 }
 
 // static
-EntitySpecifics FakeModelTypeService::GenerateSpecifics(
+EntitySpecifics FakeModelTypeSyncBridge::GenerateSpecifics(
     const std::string& key,
     const std::string& value) {
   EntitySpecifics specifics;
@@ -59,7 +59,7 @@ EntitySpecifics FakeModelTypeService::GenerateSpecifics(
 }
 
 // static
-std::unique_ptr<EntityData> FakeModelTypeService::GenerateEntityData(
+std::unique_ptr<EntityData> FakeModelTypeSyncBridge::GenerateEntityData(
     const std::string& key,
     const std::string& value) {
   std::unique_ptr<EntityData> entity_data = base::MakeUnique<EntityData>();
@@ -69,56 +69,57 @@ std::unique_ptr<EntityData> FakeModelTypeService::GenerateEntityData(
   return entity_data;
 }
 
-FakeModelTypeService::Store::Store() {}
-FakeModelTypeService::Store::~Store() {}
+FakeModelTypeSyncBridge::Store::Store() {}
+FakeModelTypeSyncBridge::Store::~Store() {}
 
-void FakeModelTypeService::Store::PutData(const std::string& key,
-                                          const EntityData& data) {
+void FakeModelTypeSyncBridge::Store::PutData(const std::string& key,
+                                             const EntityData& data) {
   data_change_count_++;
   data_store_[key] = CopyEntityData(data);
 }
 
-void FakeModelTypeService::Store::PutMetadata(const std::string& key,
-                                              const EntityMetadata& metadata) {
+void FakeModelTypeSyncBridge::Store::PutMetadata(
+    const std::string& key,
+    const EntityMetadata& metadata) {
   metadata_change_count_++;
   metadata_store_[key] = metadata;
 }
 
-void FakeModelTypeService::Store::RemoveData(const std::string& key) {
+void FakeModelTypeSyncBridge::Store::RemoveData(const std::string& key) {
   data_change_count_++;
   data_store_.erase(key);
 }
 
-void FakeModelTypeService::Store::RemoveMetadata(const std::string& key) {
+void FakeModelTypeSyncBridge::Store::RemoveMetadata(const std::string& key) {
   metadata_change_count_++;
   metadata_store_.erase(key);
 }
 
-bool FakeModelTypeService::Store::HasData(const std::string& key) const {
+bool FakeModelTypeSyncBridge::Store::HasData(const std::string& key) const {
   return data_store_.find(key) != data_store_.end();
 }
 
-bool FakeModelTypeService::Store::HasMetadata(const std::string& key) const {
+bool FakeModelTypeSyncBridge::Store::HasMetadata(const std::string& key) const {
   return metadata_store_.find(key) != metadata_store_.end();
 }
 
-const EntityData& FakeModelTypeService::Store::GetData(
+const EntityData& FakeModelTypeSyncBridge::Store::GetData(
     const std::string& key) const {
   return *data_store_.find(key)->second;
 }
 
-const std::string& FakeModelTypeService::Store::GetValue(
+const std::string& FakeModelTypeSyncBridge::Store::GetValue(
     const std::string& key) const {
   return GetData(key).specifics.preference().value();
 }
 
-const sync_pb::EntityMetadata& FakeModelTypeService::Store::GetMetadata(
+const sync_pb::EntityMetadata& FakeModelTypeSyncBridge::Store::GetMetadata(
     const std::string& key) const {
   return metadata_store_.find(key)->second;
 }
 
 std::unique_ptr<MetadataBatch>
-FakeModelTypeService::Store::CreateMetadataBatch() const {
+FakeModelTypeSyncBridge::Store::CreateMetadataBatch() const {
   std::unique_ptr<MetadataBatch> metadata_batch(new MetadataBatch());
   metadata_batch->SetModelTypeState(model_type_state_);
   for (const auto& kv : metadata_store_) {
@@ -127,7 +128,7 @@ FakeModelTypeService::Store::CreateMetadataBatch() const {
   return metadata_batch;
 }
 
-void FakeModelTypeService::Store::Reset() {
+void FakeModelTypeSyncBridge::Store::Reset() {
   data_change_count_ = 0;
   metadata_change_count_ = 0;
   data_store_.clear();
@@ -135,17 +136,17 @@ void FakeModelTypeService::Store::Reset() {
   model_type_state_.Clear();
 }
 
-FakeModelTypeService::FakeModelTypeService(
+FakeModelTypeSyncBridge::FakeModelTypeSyncBridge(
     const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeService(change_processor_factory, PREFERENCES),
+    : ModelTypeSyncBridge(change_processor_factory, PREFERENCES),
       db_(base::MakeUnique<Store>()) {}
 
-FakeModelTypeService::~FakeModelTypeService() {
+FakeModelTypeSyncBridge::~FakeModelTypeSyncBridge() {
   CheckPostConditions();
 }
 
-EntitySpecifics FakeModelTypeService::WriteItem(const std::string& key,
-                                                const std::string& value) {
+EntitySpecifics FakeModelTypeSyncBridge::WriteItem(const std::string& key,
+                                                   const std::string& value) {
   std::unique_ptr<EntityData> entity_data = GenerateEntityData(key, value);
   EntitySpecifics specifics_copy = entity_data->specifics;
   WriteItem(key, std::move(entity_data));
@@ -153,8 +154,9 @@ EntitySpecifics FakeModelTypeService::WriteItem(const std::string& key,
 }
 
 // Overloaded form to allow passing of custom entity data.
-void FakeModelTypeService::WriteItem(const std::string& key,
-                                     std::unique_ptr<EntityData> entity_data) {
+void FakeModelTypeSyncBridge::WriteItem(
+    const std::string& key,
+    std::unique_ptr<EntityData> entity_data) {
   db_->PutData(key, *entity_data);
   if (change_processor()) {
     std::unique_ptr<MetadataChangeList> change_list(
@@ -164,7 +166,7 @@ void FakeModelTypeService::WriteItem(const std::string& key,
   }
 }
 
-void FakeModelTypeService::DeleteItem(const std::string& key) {
+void FakeModelTypeSyncBridge::DeleteItem(const std::string& key) {
   db_->RemoveData(key);
   if (change_processor()) {
     std::unique_ptr<MetadataChangeList> change_list(
@@ -175,16 +177,16 @@ void FakeModelTypeService::DeleteItem(const std::string& key) {
 }
 
 std::unique_ptr<MetadataChangeList>
-FakeModelTypeService::CreateMetadataChangeList() {
+FakeModelTypeSyncBridge::CreateMetadataChangeList() {
   return std::unique_ptr<MetadataChangeList>(new SimpleMetadataChangeList());
 }
 
-SyncError FakeModelTypeService::MergeSyncData(
+SyncError FakeModelTypeSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityDataMap data_map) {
-  if (service_error_.IsSet()) {
-    SyncError error = service_error_;
-    service_error_ = SyncError();
+  if (bridge_error_.IsSet()) {
+    SyncError error = bridge_error_;
+    bridge_error_ = SyncError();
     return error;
   }
   // Commit any local entities that aren't being overwritten by the server.
@@ -202,12 +204,12 @@ SyncError FakeModelTypeService::MergeSyncData(
   return SyncError();
 }
 
-SyncError FakeModelTypeService::ApplySyncChanges(
+SyncError FakeModelTypeSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityChangeList entity_changes) {
-  if (service_error_.IsSet()) {
-    SyncError error = service_error_;
-    service_error_ = SyncError();
+  if (bridge_error_.IsSet()) {
+    SyncError error = bridge_error_;
+    bridge_error_ = SyncError();
     return error;
   }
   for (const EntityChange& change : entity_changes) {
@@ -230,7 +232,7 @@ SyncError FakeModelTypeService::ApplySyncChanges(
   return SyncError();
 }
 
-void FakeModelTypeService::ApplyMetadataChangeList(
+void FakeModelTypeSyncBridge::ApplyMetadataChangeList(
     std::unique_ptr<MetadataChangeList> change_list) {
   DCHECK(change_list);
   SimpleMetadataChangeList* changes =
@@ -261,10 +263,11 @@ void FakeModelTypeService::ApplyMetadataChangeList(
   }
 }
 
-void FakeModelTypeService::GetData(StorageKeyList keys, DataCallback callback) {
-  if (service_error_.IsSet()) {
-    callback.Run(service_error_, nullptr);
-    service_error_ = SyncError();
+void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
+                                      DataCallback callback) {
+  if (bridge_error_.IsSet()) {
+    callback.Run(bridge_error_, nullptr);
+    bridge_error_ = SyncError();
     return;
   }
 
@@ -276,10 +279,10 @@ void FakeModelTypeService::GetData(StorageKeyList keys, DataCallback callback) {
   callback.Run(SyncError(), std::move(batch));
 }
 
-void FakeModelTypeService::GetAllData(DataCallback callback) {
-  if (service_error_.IsSet()) {
-    callback.Run(service_error_, nullptr);
-    service_error_ = SyncError();
+void FakeModelTypeSyncBridge::GetAllData(DataCallback callback) {
+  if (bridge_error_.IsSet()) {
+    callback.Run(bridge_error_, nullptr);
+    bridge_error_ = SyncError();
     return;
   }
 
@@ -290,34 +293,36 @@ void FakeModelTypeService::GetAllData(DataCallback callback) {
   callback.Run(SyncError(), std::move(batch));
 }
 
-std::string FakeModelTypeService::GetClientTag(const EntityData& entity_data) {
+std::string FakeModelTypeSyncBridge::GetClientTag(
+    const EntityData& entity_data) {
   return ClientTagFromKey(entity_data.specifics.preference().name());
 }
 
-std::string FakeModelTypeService::GetStorageKey(const EntityData& entity_data) {
+std::string FakeModelTypeSyncBridge::GetStorageKey(
+    const EntityData& entity_data) {
   return entity_data.specifics.preference().name();
 }
 
-ConflictResolution FakeModelTypeService::ResolveConflict(
+ConflictResolution FakeModelTypeSyncBridge::ResolveConflict(
     const EntityData& local_data,
     const EntityData& remote_data) const {
   DCHECK(conflict_resolution_);
   return std::move(*conflict_resolution_);
 }
 
-void FakeModelTypeService::SetConflictResolution(
+void FakeModelTypeSyncBridge::SetConflictResolution(
     ConflictResolution resolution) {
   conflict_resolution_ =
       base::MakeUnique<ConflictResolution>(std::move(resolution));
 }
 
-void FakeModelTypeService::SetServiceError(SyncError::ErrorType error_type) {
-  DCHECK(!service_error_.IsSet());
-  service_error_ = SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
+void FakeModelTypeSyncBridge::ErrorOnNextCall(SyncError::ErrorType error_type) {
+  DCHECK(!bridge_error_.IsSet());
+  bridge_error_ = SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
 }
 
-void FakeModelTypeService::CheckPostConditions() {
-  DCHECK(!service_error_.IsSet());
+void FakeModelTypeSyncBridge::CheckPostConditions() {
+  DCHECK(!bridge_error_.IsSet());
 }
 
 }  // namespace syncer

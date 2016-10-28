@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 #include <utility>
 
@@ -11,7 +11,7 @@
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/metadata_batch.h"
-#include "components/sync/model/stub_model_type_service.h"
+#include "components/sync/model/stub_model_type_sync_bridge.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
  private:
   // This callback is invoked when DisableSync() is called, instead of
   // remembering that this event happened in our own state. The reason for this
-  // is that after DisableSync() is called on us, the service is going to
+  // is that after DisableSync() is called on us, the bridge is going to
   // destroy this processor instance, and any state would be lost. The callback
   // allows this information to reach somewhere safe instead.
   base::Closure disabled_callback_;
@@ -52,16 +52,17 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   std::unique_ptr<MetadataBatch> on_metadata_loaded_batch_;
 };
 
-class MockModelTypeService : public StubModelTypeService {
+class MockModelTypeSyncBridge : public StubModelTypeSyncBridge {
  public:
-  MockModelTypeService()
-      : StubModelTypeService(base::Bind(&MockModelTypeService::CreateProcessor,
-                                        base::Unretained(this))) {}
-  ~MockModelTypeService() override {}
+  MockModelTypeSyncBridge()
+      : StubModelTypeSyncBridge(
+            base::Bind(&MockModelTypeSyncBridge::CreateProcessor,
+                       base::Unretained(this))) {}
+  ~MockModelTypeSyncBridge() override {}
 
   MockModelTypeChangeProcessor* change_processor() const {
     return static_cast<MockModelTypeChangeProcessor*>(
-        ModelTypeService::change_processor());
+        ModelTypeSyncBridge::change_processor());
   }
 
   bool processor_disable_sync_called() const {
@@ -71,9 +72,10 @@ class MockModelTypeService : public StubModelTypeService {
  private:
   std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor(
       ModelType type,
-      ModelTypeService* service) {
-    return base::MakeUnique<MockModelTypeChangeProcessor>(base::Bind(
-        &MockModelTypeService::OnProcessorDisableSync, base::Unretained(this)));
+      ModelTypeSyncBridge* bridge) {
+    return base::MakeUnique<MockModelTypeChangeProcessor>(
+        base::Bind(&MockModelTypeSyncBridge::OnProcessorDisableSync,
+                   base::Unretained(this)));
   }
 
   void OnProcessorDisableSync() { processor_disable_sync_called_ = true; }
@@ -81,20 +83,20 @@ class MockModelTypeService : public StubModelTypeService {
   bool processor_disable_sync_called_ = false;
 };
 
-class ModelTypeServiceTest : public ::testing::Test {
+class ModelTypeSyncBridgeTest : public ::testing::Test {
  public:
-  ModelTypeServiceTest() {}
-  ~ModelTypeServiceTest() override {}
+  ModelTypeSyncBridgeTest() {}
+  ~ModelTypeSyncBridgeTest() override {}
 
   void OnSyncStarting() {
-    service_.OnSyncStarting(
+    bridge_.OnSyncStarting(
         base::MakeUnique<DataTypeErrorHandlerMock>(),
-        base::Bind(&ModelTypeServiceTest::OnProcessorStarted,
+        base::Bind(&ModelTypeSyncBridgeTest::OnProcessorStarted,
                    base::Unretained(this)));
   }
 
   bool start_callback_called() const { return start_callback_called_; }
-  MockModelTypeService* service() { return &service_; }
+  MockModelTypeSyncBridge* bridge() { return &bridge_; }
 
  private:
   void OnProcessorStarted(
@@ -104,11 +106,11 @@ class ModelTypeServiceTest : public ::testing::Test {
   }
 
   bool start_callback_called_ = false;
-  MockModelTypeService service_;
+  MockModelTypeSyncBridge bridge_;
 };
 
 // OnSyncStarting should create a processor and call OnSyncStarting on it.
-TEST_F(ModelTypeServiceTest, OnSyncStarting) {
+TEST_F(ModelTypeSyncBridgeTest, OnSyncStarting) {
   EXPECT_FALSE(start_callback_called());
   OnSyncStarting();
 
@@ -118,18 +120,18 @@ TEST_F(ModelTypeServiceTest, OnSyncStarting) {
 }
 
 // DisableSync should call DisableSync on the processor and then delete it.
-TEST_F(ModelTypeServiceTest, DisableSync) {
-  EXPECT_FALSE(service()->processor_disable_sync_called());
-  service()->DisableSync();
+TEST_F(ModelTypeSyncBridgeTest, DisableSync) {
+  EXPECT_FALSE(bridge()->processor_disable_sync_called());
+  bridge()->DisableSync();
 
-  // Disabling also wipes out metadata, and the service should have told the new
+  // Disabling also wipes out metadata, and the bridge should have told the new
   // processor about this.
-  EXPECT_TRUE(service()->processor_disable_sync_called());
+  EXPECT_TRUE(bridge()->processor_disable_sync_called());
 
   EXPECT_FALSE(
-      service()->change_processor()->on_metadata_loaded_error().IsSet());
+      bridge()->change_processor()->on_metadata_loaded_error().IsSet());
   MetadataBatch* batch =
-      service()->change_processor()->on_metadata_loaded_batch();
+      bridge()->change_processor()->on_metadata_loaded_batch();
   EXPECT_NE(nullptr, batch);
   EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
             batch->GetModelTypeState().SerializeAsString());
@@ -137,7 +139,7 @@ TEST_F(ModelTypeServiceTest, DisableSync) {
 }
 
 // ResolveConflicts should return USE_REMOTE unless the remote data is deleted.
-TEST_F(ModelTypeServiceTest, DefaultConflictResolution) {
+TEST_F(ModelTypeSyncBridgeTest, DefaultConflictResolution) {
   EntityData local_data;
   EntityData remote_data;
 
@@ -147,19 +149,19 @@ TEST_F(ModelTypeServiceTest, DefaultConflictResolution) {
   EXPECT_FALSE(local_data.is_deleted());
   EXPECT_TRUE(remote_data.is_deleted());
   EXPECT_EQ(ConflictResolution::USE_LOCAL,
-            service()->ResolveConflict(local_data, remote_data).type());
+            bridge()->ResolveConflict(local_data, remote_data).type());
 
   remote_data.specifics.mutable_preference()->set_value("value");
   EXPECT_FALSE(local_data.is_deleted());
   EXPECT_FALSE(remote_data.is_deleted());
   EXPECT_EQ(ConflictResolution::USE_REMOTE,
-            service()->ResolveConflict(local_data, remote_data).type());
+            bridge()->ResolveConflict(local_data, remote_data).type());
 
   local_data.specifics.clear_preference();
   EXPECT_TRUE(local_data.is_deleted());
   EXPECT_FALSE(remote_data.is_deleted());
   EXPECT_EQ(ConflictResolution::USE_REMOTE,
-            service()->ResolveConflict(local_data, remote_data).type());
+            bridge()->ResolveConflict(local_data, remote_data).type());
 }
 
 }  // namespace syncer

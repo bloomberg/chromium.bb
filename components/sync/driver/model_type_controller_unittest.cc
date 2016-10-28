@@ -25,7 +25,7 @@
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
-#include "components/sync/model/stub_model_type_service.h"
+#include "components/sync/model/stub_model_type_sync_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -124,19 +124,19 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
 
   void SetUp() override {
     model_thread_.Start();
-    InitializeModelTypeService();
+    InitializeModelTypeSyncBridge();
     controller_ = base::MakeUnique<ModelTypeController>(
         kTestModelType, base::Closure(), this, model_thread_.task_runner());
   }
 
   void TearDown() override {
-    ClearModelTypeService();
+    ClearModelTypeSyncBridge();
     PumpUIThread();
   }
 
-  base::WeakPtr<ModelTypeService> GetModelTypeServiceForType(
+  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridgeForModelType(
       ModelType type) override {
-    return service_->AsWeakPtr();
+    return bridge_->AsWeakPtr();
   }
 
   void LoadModels() {
@@ -211,33 +211,34 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
 
   std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor(
       ModelType type,
-      ModelTypeService* service) {
+      ModelTypeSyncBridge* bridge) {
     std::unique_ptr<TestModelTypeProcessor> processor =
         base::MakeUnique<TestModelTypeProcessor>(&disable_sync_call_count_);
     processor_ = processor.get();
     return std::move(processor);
   }
 
-  void InitializeModelTypeService() {
+  void InitializeModelTypeSyncBridge() {
     if (model_thread_.task_runner()->BelongsToCurrentThread()) {
-      service_ = base::MakeUnique<StubModelTypeService>(base::Bind(
+      bridge_ = base::MakeUnique<StubModelTypeSyncBridge>(base::Bind(
           &ModelTypeControllerTest::CreateProcessor, base::Unretained(this)));
     } else {
       model_thread_.task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&ModelTypeControllerTest::InitializeModelTypeService,
+          base::Bind(&ModelTypeControllerTest::InitializeModelTypeSyncBridge,
                      base::Unretained(this)));
       PumpModelThread();
     }
   }
 
-  void ClearModelTypeService() {
+  void ClearModelTypeSyncBridge() {
     if (model_thread_.task_runner()->BelongsToCurrentThread()) {
-      service_.reset();
+      bridge_.reset();
     } else {
       model_thread_.task_runner()->PostTask(
-          FROM_HERE, base::Bind(&ModelTypeControllerTest::ClearModelTypeService,
-                                base::Unretained(this)));
+          FROM_HERE,
+          base::Bind(&ModelTypeControllerTest::ClearModelTypeSyncBridge,
+                     base::Unretained(this)));
       PumpModelThread();
     }
   }
@@ -251,7 +252,7 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
   base::Thread model_thread_;
   SyncPrefs sync_prefs_;
   TestBackendDataTypeConfigurer configurer_;
-  std::unique_ptr<StubModelTypeService> service_;
+  std::unique_ptr<StubModelTypeSyncBridge> bridge_;
   std::unique_ptr<ModelTypeController> controller_;
   TestModelTypeProcessor* processor_;
 };
@@ -363,7 +364,7 @@ TEST_F(ModelTypeControllerTest, StopWithInitialSyncPrefs) {
 }
 
 // Test emulates disabling sync when datatype is not loaded yet. DisableSync
-// should not be called as service is potentially not ready to handle it.
+// should not be called as the bridge is potentially not ready to handle it.
 TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
   // Enable datatype through preferences.
   sync_prefs()->SetFirstSetupComplete();

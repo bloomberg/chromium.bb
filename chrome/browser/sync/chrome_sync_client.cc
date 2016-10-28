@@ -426,8 +426,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   }
 }
 
-base::WeakPtr<syncer::ModelTypeService>
-ChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
+base::WeakPtr<syncer::ModelTypeSyncBridge>
+ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
       return ProfileSyncServiceFactory::GetForProfile(profile_)
@@ -435,7 +435,7 @@ ChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
           ->AsWeakPtr();
     default:
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeService>();
+      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
   }
 }
 

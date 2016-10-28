@@ -14,16 +14,16 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/sync/model/fake_model_type_service.h"
+#include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
 
 using browser_sync::ChromeSyncClient;
 using browser_sync::ProfileSyncComponentsFactoryImpl;
 using syncer::ConflictResolution;
-using syncer::FakeModelTypeService;
+using syncer::FakeModelTypeSyncBridge;
 using syncer::ModelTypeChangeProcessor;
-using syncer::ModelTypeService;
+using syncer::ModelTypeSyncBridge;
 
 namespace {
 
@@ -36,33 +36,33 @@ const char kValue2[] = "value2";
 const char kValue3[] = "value3";
 const char* kPassphrase = "12345";
 
-// A ChromeSyncClient that provides a ModelTypeService for PREFERENCES.
+// A ChromeSyncClient that provides a ModelTypeSyncBridge for PREFERENCES.
 class TestSyncClient : public ChromeSyncClient {
  public:
-  TestSyncClient(Profile* profile, ModelTypeService* service)
-      : ChromeSyncClient(profile), service_(service) {}
+  TestSyncClient(Profile* profile, ModelTypeSyncBridge* bridge)
+      : ChromeSyncClient(profile), bridge_(bridge) {}
 
-  base::WeakPtr<ModelTypeService> GetModelTypeServiceForType(
+  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridgeForModelType(
       syncer::ModelType type) override {
     return type == syncer::PREFERENCES
-               ? service_->AsWeakPtr()
-               : ChromeSyncClient::GetModelTypeServiceForType(type);
+               ? bridge_->AsWeakPtr()
+               : ChromeSyncClient::GetSyncBridgeForModelType(type);
   }
 
  private:
-  ModelTypeService* const service_;
+  ModelTypeSyncBridge* const bridge_;
 };
 
-// A FakeModelTypeService that supports observing ApplySyncChanges.
-class TestModelTypeService : public FakeModelTypeService {
+// A FakeModelTypeSyncBridge that supports observing ApplySyncChanges.
+class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
  public:
   class Observer {
    public:
     virtual void OnApplySyncChanges() = 0;
   };
 
-  TestModelTypeService()
-      : FakeModelTypeService(base::Bind(&ModelTypeChangeProcessor::Create)) {
+  TestModelTypeSyncBridge()
+      : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create)) {
     change_processor()->OnMetadataLoaded(syncer::SyncError(),
                                          db().CreateMetadataBatch());
   }
@@ -70,7 +70,7 @@ class TestModelTypeService : public FakeModelTypeService {
   syncer::SyncError ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
       syncer::EntityChangeList entity_changes) override {
-    syncer::SyncError error = FakeModelTypeService::ApplySyncChanges(
+    syncer::SyncError error = FakeModelTypeSyncBridge::ApplySyncChanges(
         std::move(metadata_changes), entity_changes);
     NotifyObservers();
     return error;
@@ -90,34 +90,34 @@ class TestModelTypeService : public FakeModelTypeService {
 };
 
 // A StatusChangeChecker for checking the status of keys in a
-// TestModelTypeService::Store.
+// TestModelTypeSyncBridge::Store.
 class KeyChecker : public StatusChangeChecker,
-                   public TestModelTypeService::Observer {
+                   public TestModelTypeSyncBridge::Observer {
  public:
-  KeyChecker(TestModelTypeService* service, const std::string& key)
-      : service_(service), key_(key) {
-    service_->AddObserver(this);
+  KeyChecker(TestModelTypeSyncBridge* bridge, const std::string& key)
+      : bridge_(bridge), key_(key) {
+    bridge_->AddObserver(this);
   }
 
-  ~KeyChecker() override { service_->RemoveObserver(this); }
+  ~KeyChecker() override { bridge_->RemoveObserver(this); }
 
   void OnApplySyncChanges() override { CheckExitCondition(); }
 
  protected:
-  TestModelTypeService* const service_;
+  TestModelTypeSyncBridge* const bridge_;
   const std::string key_;
 };
 
 // Wait for data for a key to have a certain value.
 class DataChecker : public KeyChecker {
  public:
-  DataChecker(TestModelTypeService* service,
+  DataChecker(TestModelTypeSyncBridge* bridge,
               const std::string& key,
               const std::string& value)
-      : KeyChecker(service, key), value_(value) {}
+      : KeyChecker(bridge, key), value_(value) {}
 
   bool IsExitConditionSatisfied() override {
-    const auto& db = service_->db();
+    const auto& db = bridge_->db();
     return db.HasData(key_) && db.GetValue(key_) == value_;
   }
 
@@ -132,11 +132,11 @@ class DataChecker : public KeyChecker {
 // Wait for data for a key to be absent.
 class DataAbsentChecker : public KeyChecker {
  public:
-  DataAbsentChecker(TestModelTypeService* service, const std::string& key)
-      : KeyChecker(service, key) {}
+  DataAbsentChecker(TestModelTypeSyncBridge* bridge, const std::string& key)
+      : KeyChecker(bridge, key) {}
 
   bool IsExitConditionSatisfied() override {
-    return !service_->db().HasData(key_);
+    return !bridge_->db().HasData(key_);
   }
 
   std::string GetDebugMessage() const override {
@@ -147,11 +147,12 @@ class DataAbsentChecker : public KeyChecker {
 // Wait for metadata for a key to be present.
 class MetadataPresentChecker : public KeyChecker {
  public:
-  MetadataPresentChecker(TestModelTypeService* service, const std::string& key)
-      : KeyChecker(service, key) {}
+  MetadataPresentChecker(TestModelTypeSyncBridge* bridge,
+                         const std::string& key)
+      : KeyChecker(bridge, key) {}
 
   bool IsExitConditionSatisfied() override {
-    return service_->db().HasMetadata(key_);
+    return bridge_->db().HasMetadata(key_);
   }
 
   std::string GetDebugMessage() const override {
@@ -162,11 +163,11 @@ class MetadataPresentChecker : public KeyChecker {
 // Wait for metadata for a key to be absent.
 class MetadataAbsentChecker : public KeyChecker {
  public:
-  MetadataAbsentChecker(TestModelTypeService* service, const std::string& key)
-      : KeyChecker(service, key) {}
+  MetadataAbsentChecker(TestModelTypeSyncBridge* bridge, const std::string& key)
+      : KeyChecker(bridge, key) {}
 
   bool IsExitConditionSatisfied() override {
-    return !service_->db().HasMetadata(key_);
+    return !bridge_->db().HasMetadata(key_);
   }
 
   std::string GetDebugMessage() const override {
@@ -207,8 +208,8 @@ class TwoClientUssSyncTest : public SyncTest {
 
   bool TestUsesSelfNotifications() override { return false; }
 
-  TestModelTypeService* GetModelTypeService(int i) {
-    return services_.at(i).get();
+  TestModelTypeSyncBridge* GetModelTypeSyncBridge(int i) {
+    return bridges_.at(i).get();
   }
 
  protected:
@@ -218,15 +219,15 @@ class TwoClientUssSyncTest : public SyncTest {
       first_client_ignored_ = true;
       return base::MakeUnique<ChromeSyncClient>(profile);
     }
-    auto service = base::MakeUnique<TestModelTypeService>();
-    auto client = base::MakeUnique<TestSyncClient>(profile, service.get());
+    auto bridge = base::MakeUnique<TestModelTypeSyncBridge>();
+    auto client = base::MakeUnique<TestSyncClient>(profile, bridge.get());
     clients_.push_back(client.get());
-    services_.push_back(std::move(service));
+    bridges_.push_back(std::move(bridge));
     return std::move(client);
   }
 
   ProfileSyncServiceFactory::SyncClientFactory sync_client_factory_;
-  std::vector<std::unique_ptr<TestModelTypeService>> services_;
+  std::vector<std::unique_ptr<TestModelTypeSyncBridge>> bridges_;
   std::vector<TestSyncClient*> clients_;
   bool first_client_ignored_ = false;
 
@@ -237,9 +238,9 @@ class TwoClientUssSyncTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync());
   ASSERT_EQ(2U, clients_.size());
-  ASSERT_EQ(2U, services_.size());
-  TestModelTypeService* model0 = GetModelTypeService(0);
-  TestModelTypeService* model1 = GetModelTypeService(1);
+  ASSERT_EQ(2U, bridges_.size());
+  TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
+  TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
 
   // Add an entity.
   model0->WriteItem(kKey1, kValue1);
@@ -256,8 +257,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Sanity) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_TRUE(SetupSync());
-  TestModelTypeService* model0 = GetModelTypeService(0);
-  TestModelTypeService* model1 = GetModelTypeService(1);
+  TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
+  TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
 
   // Add an entity to test with.
   model0->WriteItem(kKey1, kValue1);
@@ -293,34 +294,34 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
   ASSERT_TRUE(SetupSync());
-  TestModelTypeService* model0 = GetModelTypeService(0);
-  TestModelTypeService* model1 = GetModelTypeService(1);
+  TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
+  TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
   model0->SetConflictResolution(ConflictResolution::UseNew(
-      FakeModelTypeService::GenerateEntityData(kKey1, kValue3)));
+      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue3)));
   model1->SetConflictResolution(ConflictResolution::UseNew(
-      FakeModelTypeService::GenerateEntityData(kKey1, kValue3)));
+      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue3)));
 
   // Write conflicting entities.
   model0->WriteItem(kKey1, kValue1);
   model1->WriteItem(kKey1, kValue2);
 
   // Wait for them to be resolved to kResolutionValue by the custom conflict
-  // resolution logic in TestModelTypeService.
+  // resolution logic in TestModelTypeSyncBridge.
   ASSERT_TRUE(DataChecker(model0, kKey1, kValue3).Wait());
   ASSERT_TRUE(DataChecker(model1, kKey1, kValue3).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Error) {
   ASSERT_TRUE(SetupSync());
-  TestModelTypeService* model0 = GetModelTypeService(0);
-  TestModelTypeService* model1 = GetModelTypeService(1);
+  TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
+  TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
 
   // Add an entity.
   model0->WriteItem(kKey1, kValue1);
   ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
 
   // Set an error in model 1 to trigger in the next GetUpdates.
-  model1->SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  model1->ErrorOnNextCall(syncer::SyncError::DATATYPE_ERROR);
   // Write an item on model 0 to trigger a GetUpdates in model 1.
   model0->WriteItem(kKey1, kValue2);
 
@@ -333,8 +334,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Error) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Encryption) {
   ASSERT_TRUE(SetupSync());
-  TestModelTypeService* model0 = GetModelTypeService(0);
-  TestModelTypeService* model1 = GetModelTypeService(1);
+  TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
+  TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
 
   model0->WriteItem(kKey1, kValue1);
   ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());

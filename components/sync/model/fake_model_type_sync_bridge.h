@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_MODEL_FAKE_MODEL_TYPE_SERVICE_H_
-#define COMPONENTS_SYNC_MODEL_FAKE_MODEL_TYPE_SERVICE_H_
+#ifndef COMPONENTS_SYNC_MODEL_FAKE_MODEL_TYPE_SYNC_BRIDGE_H_
+#define COMPONENTS_SYNC_MODEL_FAKE_MODEL_TYPE_SYNC_BRIDGE_H_
 
 #include <map>
 #include <memory>
@@ -12,16 +12,16 @@
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/metadata_batch.h"
-#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
 namespace syncer {
 
-// A basic, functional implementation of ModelTypeService for testing purposes.
-// It uses the PREFERENCES type to provide a simple key/value interface, and
-// uses its own simple in-memory Store class.
-class FakeModelTypeService : public ModelTypeService {
+// A basic, functional implementation of ModelTypeSyncBridge for testing
+// purposes. It uses the PREFERENCES type to provide a simple key/value
+// interface, and uses its own simple in-memory Store class.
+class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
  public:
   // Generate a client tag with the given key.
   static std::string ClientTagFromKey(const std::string& key);
@@ -85,9 +85,9 @@ class FakeModelTypeService : public ModelTypeService {
     sync_pb::ModelTypeState model_type_state_;
   };
 
-  explicit FakeModelTypeService(
+  explicit FakeModelTypeSyncBridge(
       const ChangeProcessorFactory& change_processor_factory);
-  ~FakeModelTypeService() override;
+  ~FakeModelTypeSyncBridge() override;
 
   // Local data modification. Emulates signals from the model thread.
   sync_pb::EntitySpecifics WriteItem(const std::string& key,
@@ -100,7 +100,7 @@ class FakeModelTypeService : public ModelTypeService {
   // Local data deletion.
   void DeleteItem(const std::string& key);
 
-  // ModelTypeService implementation
+  // ModelTypeSyncBridge implementation
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   SyncError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
@@ -120,8 +120,8 @@ class FakeModelTypeService : public ModelTypeService {
   // is a USE_NEW resolution, the data will only exist for one resolve call.
   void SetConflictResolution(ConflictResolution resolution);
 
-  // Sets the error that the next fallible call to the service will generate.
-  void SetServiceError(SyncError::ErrorType error_type);
+  // Sets the error that the next fallible call to the bridge will generate.
+  void ErrorOnNextCall(SyncError::ErrorType error_type);
 
   const Store& db() { return *db_; }
 
@@ -139,10 +139,10 @@ class FakeModelTypeService : public ModelTypeService {
   // The conflict resolution to use for calls to ResolveConflict.
   std::unique_ptr<ConflictResolution> conflict_resolution_;
 
-  // The error to produce on the next service call.
-  SyncError service_error_;
+  // The error to produce on the next bridge call.
+  SyncError bridge_error_;
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_MODEL_FAKE_MODEL_TYPE_SERVICE_H_
+#endif  // COMPONENTS_SYNC_MODEL_FAKE_MODEL_TYPE_SYNC_BRIDGE_H_

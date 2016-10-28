@@ -21,7 +21,7 @@ void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
 }  // namespace
 
 FakeSyncClient::FakeSyncClient()
-    : model_type_service_(nullptr),
+    : bridge_(nullptr),
       factory_(nullptr),
       sync_service_(base::MakeUnique<FakeSyncService>()) {
   // Register sync preferences and set them to "Sync everything" state.
@@ -94,9 +94,9 @@ base::WeakPtr<SyncableService> FakeSyncClient::GetSyncableServiceForType(
   return base::WeakPtr<SyncableService>();
 }
 
-base::WeakPtr<ModelTypeService> FakeSyncClient::GetModelTypeServiceForType(
+base::WeakPtr<ModelTypeSyncBridge> FakeSyncClient::GetSyncBridgeForModelType(
     ModelType type) {
-  return model_type_service_->AsWeakPtr();
+  return bridge_->AsWeakPtr();
 }
 
 scoped_refptr<ModelSafeWorker> FakeSyncClient::CreateModelWorkerForGroup(
@@ -109,8 +109,8 @@ SyncApiComponentFactory* FakeSyncClient::GetSyncApiComponentFactory() {
   return factory_;
 }
 
-void FakeSyncClient::SetModelTypeService(ModelTypeService* model_type_service) {
-  model_type_service_ = model_type_service;
+void FakeSyncClient::SetModelTypeSyncBridge(ModelTypeSyncBridge* bridge) {
+  bridge_ = bridge;
 }
 
 }  // namespace syncer

@@ -19,8 +19,8 @@
 #include "base/timer/timer.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/device_info/local_device_info_provider.h"
-#include "components/sync/model/model_type_service.h"
 #include "components/sync/model/model_type_store.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/simple_metadata_change_list.h"
 
 namespace sync_pb {
@@ -35,7 +35,7 @@ class SyncError;
 // USS service implementation for DEVICE_INFO model type. Handles storage of
 // device info and associated sync metadata, applying/merging foreign changes,
 // and allows public read access.
-class DeviceInfoService : public ModelTypeService, public DeviceInfoTracker {
+class DeviceInfoService : public ModelTypeSyncBridge, public DeviceInfoTracker {
  public:
   typedef base::Callback<void(const ModelTypeStore::InitCallback& callback)>
       StoreFactoryFunction;
@@ -45,7 +45,7 @@ class DeviceInfoService : public ModelTypeService, public DeviceInfoTracker {
                     const ChangeProcessorFactory& change_processor_factory);
   ~DeviceInfoService() override;
 
-  // ModelTypeService implementation.
+  // ModelTypeSyncBridge implementation.
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   SyncError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,

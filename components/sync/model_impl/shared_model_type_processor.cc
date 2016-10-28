@@ -21,14 +21,14 @@
 namespace syncer {
 
 SharedModelTypeProcessor::SharedModelTypeProcessor(ModelType type,
-                                                   ModelTypeService* service)
+                                                   ModelTypeSyncBridge* bridge)
     : type_(type),
       is_metadata_loaded_(false),
       is_initial_pending_data_loaded_(false),
-      service_(service),
+      bridge_(bridge),
       error_handler_(nullptr),
       weak_ptr_factory_(this) {
-  DCHECK(service);
+  DCHECK(bridge);
 }
 
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
@@ -82,7 +82,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     model_type_state_ = batch->GetModelTypeState();
     if (!entities_to_commit.empty()) {
       is_initial_pending_data_loaded_ = false;
-      service_->GetData(
+      bridge_->GetData(
           entities_to_commit,
           base::Bind(&SharedModelTypeProcessor::OnInitialPendingDataLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -131,13 +131,13 @@ void SharedModelTypeProcessor::DisableSync() {
   DCHECK(CalledOnValidThread());
   DCHECK(is_metadata_loaded_);
   std::unique_ptr<MetadataChangeList> change_list =
-      service_->CreateMetadataChangeList();
+      bridge_->CreateMetadataChangeList();
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
     change_list->ClearMetadata(it->second->storage_key());
   }
   change_list->ClearModelTypeState();
   // Nothing to do if this fails, so just ignore the error it might return.
-  service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+  bridge_->ApplySyncChanges(std::move(change_list), EntityChangeList());
 }
 
 bool SharedModelTypeProcessor::IsTrackingMetadata() {
@@ -200,7 +200,7 @@ void SharedModelTypeProcessor::Put(const std::string& storage_key,
   ProcessorEntityTracker* entity = GetEntityForTagHash(data->client_tag_hash);
 
   if (entity == nullptr) {
-    // The service is creating a new entity.
+    // The bridge is creating a new entity.
     if (data->creation_time.is_null()) {
       data->creation_time = data->modification_time;
     }
@@ -270,7 +270,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
   std::unique_ptr<MetadataChangeList> change_list =
-      service_->CreateMetadataChangeList();
+      bridge_->CreateMetadataChangeList();
 
   model_type_state_ = type_state;
   change_list->UpdateModelTypeState(model_type_state_);
@@ -295,7 +295,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
   }
 
   SyncError error =
-      service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+      bridge_->ApplySyncChanges(std::move(change_list), EntityChangeList());
   if (error.IsSet()) {
     error_handler_->OnUnrecoverableError(error);
   }
@@ -310,7 +310,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   }
 
   std::unique_ptr<MetadataChangeList> metadata_changes =
-      service_->CreateMetadataChangeList();
+      bridge_->CreateMetadataChangeList();
   EntityChangeList entity_changes;
 
   metadata_changes->UpdateModelTypeState(model_type_state);
@@ -349,9 +349,9 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     RecommitAllForEncryption(already_updated, metadata_changes.get());
   }
 
-  // Inform the service of the new or updated data.
+  // Inform the bridge of the new or updated data.
   SyncError error =
-      service_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
+      bridge_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
 
   if (error.IsSet()) {
     error_handler_->OnUnrecoverableError(error);
@@ -387,7 +387,7 @@ ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
                               ConflictResolution::TYPE_SIZE);
   } else if (data.is_deleted()) {
-    // The entity was deleted; inform the service. Note that the local data
+    // The entity was deleted; inform the bridge. Note that the local data
     // can never be deleted at this point because it would have either been
     // acked (the add case) or pending (the conflict case).
     DCHECK(!entity->metadata().is_deleted());
@@ -395,7 +395,7 @@ ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
         EntityChange::CreateDelete(entity->storage_key()));
     entity->RecordAcceptedUpdate(update);
   } else if (!entity->MatchesData(data)) {
-    // Specifics have changed, so update the service.
+    // Specifics have changed, so update the bridge.
     entity_changes->push_back(
         EntityChange::CreateUpdate(entity->storage_key(), update.entity));
     entity->RecordAcceptedUpdate(update);
@@ -448,9 +448,9 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
     // was seen, so it must have been a re-encryption and can be ignored.
     resolution_type = ConflictResolution::IGNORE_REMOTE_ENCRYPTION;
   } else {
-    // There's a real data conflict here; let the service resolve it.
+    // There's a real data conflict here; let the bridge resolve it.
     ConflictResolution resolution =
-        service_->ResolveConflict(entity->commit_data().value(), remote_data);
+        bridge_->ResolveConflict(entity->commit_data().value(), remote_data);
     resolution_type = resolution.type();
     new_data = resolution.ExtractData();
   }
@@ -496,7 +496,7 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
 void SharedModelTypeProcessor::RecommitAllForEncryption(
     std::unordered_set<std::string> already_updated,
     MetadataChangeList* metadata_changes) {
-  ModelTypeService::StorageKeyList entities_needing_data;
+  ModelTypeSyncBridge::StorageKeyList entities_needing_data;
 
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
     ProcessorEntityTracker* entity = it->second.get();
@@ -511,7 +511,7 @@ void SharedModelTypeProcessor::RecommitAllForEncryption(
   }
 
   if (!entities_needing_data.empty()) {
-    service_->GetData(
+    bridge_->GetData(
         entities_needing_data,
         base::Bind(&SharedModelTypeProcessor::OnDataLoadedForReEncryption,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -528,7 +528,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   DCHECK(model_type_state.initial_sync_done());
 
   std::unique_ptr<MetadataChangeList> metadata_changes =
-      service_->CreateMetadataChangeList();
+      bridge_->CreateMetadataChangeList();
   EntityDataMap data_map;
 
   model_type_state_ = model_type_state;
@@ -542,9 +542,9 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
     data_map[storage_key] = update.entity;
   }
 
-  // Let the service handle associating and merging the data.
+  // Let the bridge handle associating and merging the data.
   SyncError error =
-      service_->MergeSyncData(std::move(metadata_changes), data_map);
+      bridge_->MergeSyncData(std::move(metadata_changes), data_map);
 
   if (error.IsSet()) {
     error_handler_->OnUnrecoverableError(error);
@@ -604,7 +604,7 @@ std::string SharedModelTypeProcessor::GetClientTagHash(
     const EntityData& data) {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   return iter == storage_key_to_tag_hash_.end()
-             ? GetHashForTag(service_->GetClientTag(data))
+             ? GetHashForTag(bridge_->GetClientTag(data))
              : iter->second;
 }
 
@@ -640,8 +640,8 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
 ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
   // Verify the tag hash matches, may be relaxed in the future.
-  DCHECK_EQ(data.client_tag_hash, GetHashForTag(service_->GetClientTag(data)));
-  return CreateEntity(service_->GetStorageKey(data), data);
+  DCHECK_EQ(data.client_tag_hash, GetHashForTag(bridge_->GetClientTag(data)));
+  return CreateEntity(bridge_->GetStorageKey(data), data);
 }
 
 }  // namespace syncer

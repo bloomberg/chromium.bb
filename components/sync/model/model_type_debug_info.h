@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_SYNC_MODEL_MODEL_TYPE_DEBUG_INFO_H_
 #define COMPONENTS_SYNC_MODEL_MODEL_TYPE_DEBUG_INFO_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model_impl/shared_model_type_processor.h"
 
 namespace syncer {
@@ -23,23 +25,23 @@ class ModelTypeDebugInfo {
   // Returns a ListValue representing all nodes for the type to |callback|.
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
   static void GetAllNodes(
-      const base::WeakPtr<ModelTypeService>& service,
+      const base::WeakPtr<ModelTypeSyncBridge>& bridge,
       const base::Callback<void(const ModelType,
                                 std::unique_ptr<base::ListValue>)>& callback);
 
   // Returns StatusCounters for the type to |callback|.
   // Used for updating data type counters in chrome://sync-internals.
   static void GetStatusCounters(
-      const base::WeakPtr<ModelTypeService>& service,
+      const base::WeakPtr<ModelTypeSyncBridge>& bridge,
       const base::Callback<void(const ModelType, const StatusCounters&)>&
           callback);
 
  private:
   ModelTypeDebugInfo();
 
-  // This is callback function for ModelTypeService::GetAllData. This function
-  // will merge real data from |batch| with metadata extracted from the
-  // |processor|, then pass it all to |callback|.
+  // This is callback function for ModelTypeSyncBridge::GetAllData. This
+  // function will merge real data from |batch| with metadata extracted from
+  // the |processor|, then pass it all to |callback|.
   static void MergeDataWithMetadata(
       SharedModelTypeProcessor* processor,
       const base::Callback<void(const ModelType,

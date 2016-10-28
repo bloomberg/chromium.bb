@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 #include <utility>
 
@@ -11,16 +11,16 @@
 
 namespace syncer {
 
-ModelTypeService::ModelTypeService(
+ModelTypeSyncBridge::ModelTypeSyncBridge(
     const ChangeProcessorFactory& change_processor_factory,
     ModelType type)
     : type_(type),
       change_processor_factory_(change_processor_factory),
       change_processor_(change_processor_factory_.Run(type_, this)) {}
 
-ModelTypeService::~ModelTypeService() {}
+ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
 
-ConflictResolution ModelTypeService::ResolveConflict(
+ConflictResolution ModelTypeSyncBridge::ResolveConflict(
     const EntityData& local_data,
     const EntityData& remote_data) const {
   if (remote_data.is_deleted()) {
@@ -30,13 +30,13 @@ ConflictResolution ModelTypeService::ResolveConflict(
   return ConflictResolution::UseRemote();
 }
 
-void ModelTypeService::OnSyncStarting(
+void ModelTypeSyncBridge::OnSyncStarting(
     std::unique_ptr<DataTypeErrorHandler> error_handler,
     const ModelTypeChangeProcessor::StartCallback& start_callback) {
   change_processor_->OnSyncStarting(std::move(error_handler), start_callback);
 }
 
-void ModelTypeService::DisableSync() {
+void ModelTypeSyncBridge::DisableSync() {
   DCHECK(change_processor_);
   change_processor_->DisableSync();
   change_processor_ = change_processor_factory_.Run(type_, this);
@@ -48,7 +48,7 @@ void ModelTypeService::DisableSync() {
                                       base::MakeUnique<MetadataBatch>());
 }
 
-ModelTypeChangeProcessor* ModelTypeService::change_processor() const {
+ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() const {
   return change_processor_.get();
 }
 

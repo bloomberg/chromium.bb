@@ -14,14 +14,14 @@
 
 namespace syncer {
 
-class ModelTypeService;
+class ModelTypeSyncBridge;
 
 // A ModelTypeChangeProcessor implementation for tests.
 class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
  public:
   static std::unique_ptr<ModelTypeChangeProcessor> Create(
       ModelType type,
-      ModelTypeService* service);
+      ModelTypeSyncBridge* bridge);
 
   FakeModelTypeChangeProcessor();
   ~FakeModelTypeChangeProcessor() override;

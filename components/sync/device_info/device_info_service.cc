@@ -38,7 +38,7 @@ DeviceInfoService::DeviceInfoService(
     LocalDeviceInfoProvider* local_device_info_provider,
     const StoreFactoryFunction& callback,
     const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeService(change_processor_factory, DEVICE_INFO),
+    : ModelTypeSyncBridge(change_processor_factory, DEVICE_INFO),
       local_device_info_provider_(local_device_info_provider) {
   DCHECK(local_device_info_provider);
 
@@ -187,7 +187,7 @@ void DeviceInfoService::DisableSync() {
   // Allow deletion of metadata to happen before the deletion of data below. If
   // we crash after removing metadata but not regular data, then merge can
   // handle pairing everything back up.
-  ModelTypeService::DisableSync();
+  ModelTypeSyncBridge::DisableSync();
 
   // Remove all local data, if sync is being disabled, the user has expressed
   // their desire to not have knowledge about other devices.

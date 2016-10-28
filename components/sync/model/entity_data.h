@@ -31,7 +31,7 @@ typedef std::vector<EntityDataPtr> EntityDataList;
 typedef std::map<std::string, EntityDataPtr> EntityDataMap;
 
 // A light-weight container for sync entity data which represents either
-// local data created on the ModelTypeService side or remote data created
+// local data created on the ModelTypeSyncBridge side or remote data created
 // on ModelTypeWorker.
 // EntityData is supposed to be wrapped and passed by reference.
 struct EntityData {

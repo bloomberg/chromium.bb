@@ -12,8 +12,8 @@ namespace syncer {
 // static
 std::unique_ptr<ModelTypeChangeProcessor> ModelTypeChangeProcessor::Create(
     ModelType type,
-    ModelTypeService* service) {
-  return base::MakeUnique<SharedModelTypeProcessor>(type, service);
+    ModelTypeSyncBridge* bridge) {
+  return base::MakeUnique<SharedModelTypeProcessor>(type, bridge);
 }
 
 ModelTypeChangeProcessor::ModelTypeChangeProcessor() {}

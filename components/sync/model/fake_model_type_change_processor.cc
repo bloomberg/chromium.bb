@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/model/metadata_batch.h"
-#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/sync_error.h"
 
 namespace syncer {
@@ -15,7 +15,7 @@ namespace syncer {
 // static
 std::unique_ptr<ModelTypeChangeProcessor> FakeModelTypeChangeProcessor::Create(
     ModelType type,
-    ModelTypeService* service) {
+    ModelTypeSyncBridge* bridge) {
   return base::WrapUnique(new FakeModelTypeChangeProcessor());
 }
 

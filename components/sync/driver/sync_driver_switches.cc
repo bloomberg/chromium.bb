@@ -30,7 +30,7 @@ const base::Feature kSyncClearDataOnPassphraseEncryption{
     "ClearSyncDataOnPassphraseEncryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables USS implementation of DeviceInfo datatype. This flag controls whether
-// SyncableService based or ModelTypeService based implementation is used for
+// SyncableService based or ModelTypeSyncBridge based implementation is used for
 // DeviceInfo type.
 const base::Feature kSyncUSSDeviceInfo{"EnableSyncUSSDeviceInfo",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

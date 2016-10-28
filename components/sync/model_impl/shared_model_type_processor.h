@@ -21,7 +21,7 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
-#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -37,11 +37,11 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
                                  public ModelTypeChangeProcessor,
                                  base::NonThreadSafe {
  public:
-  SharedModelTypeProcessor(ModelType type, ModelTypeService* service);
+  SharedModelTypeProcessor(ModelType type, ModelTypeSyncBridge* bridge);
   ~SharedModelTypeProcessor() override;
 
   // Whether the processor is allowing changes to its model type. If this is
-  // false, the service should not allow any changes to its data.
+  // false, the bridge should not allow any changes to its data.
   bool IsAllowingChanges() const;
 
   // Returns true if the handshake with sync thread is complete.
@@ -100,11 +100,11 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   void OnInitialUpdateReceived(const sync_pb::ModelTypeState& type_state,
                                const UpdateResponseDataList& updates);
 
-  // ModelTypeService::GetData() callback for initial pending commit data.
+  // ModelTypeSyncBridge::GetData() callback for initial pending commit data.
   void OnInitialPendingDataLoaded(SyncError error,
                                   std::unique_ptr<DataBatch> data_batch);
 
-  // ModelTypeService::GetData() callback for re-encryption commit data.
+  // ModelTypeSyncBridge::GetData() callback for re-encryption commit data.
   void OnDataLoadedForReEncryption(SyncError error,
                                    std::unique_ptr<DataBatch> data_batch);
 
@@ -167,16 +167,15 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // entities may not always contain model type data/specifics.
   EntityMap entities_;
 
-  // The service wants to communicate entirly via storage keys that is free to
+  // The bridge wants to communicate entirly via storage keys that is free to
   // define and can understand more easily. All of the sync machinery wants to
   // use client tag hash. This mapping allows us to convert from storage key to
   // client tag hash. The other direction can use |entities_|.
   std::map<std::string, std::string> storage_key_to_tag_hash_;
 
-  // ModelTypeService linked to this processor.
-  // The service owns this processor instance so the pointer should never
-  // become invalid.
-  ModelTypeService* const service_;
+  // ModelTypeSyncBridge linked to this processor. The bridge owns this
+  // processor instance so the pointer should never become invalid.
+  ModelTypeSyncBridge* const bridge_;
 
   // The object used for informing sync of errors; will be non-null after
   // OnSyncStarting has been called. This pointer is not owned.

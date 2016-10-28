@@ -18,10 +18,10 @@ namespace syncer {
 
 class MetadataBatch;
 class MetadataChangeList;
-class ModelTypeService;
+class ModelTypeSyncBridge;
 class SyncError;
 
-// Interface used by the ModelTypeService to inform sync of local
+// Interface used by the ModelTypeSyncBridge to inform sync of local
 // changes.
 class ModelTypeChangeProcessor : public SyncErrorFactory {
  public:
@@ -31,14 +31,14 @@ class ModelTypeChangeProcessor : public SyncErrorFactory {
   // A factory function to make an implementation of ModelTypeChangeProcessor.
   static std::unique_ptr<ModelTypeChangeProcessor> Create(
       ModelType type,
-      ModelTypeService* service);
+      ModelTypeSyncBridge* bridge);
 
   ModelTypeChangeProcessor();
   ~ModelTypeChangeProcessor() override;
 
   // Inform the processor of a new or updated entity. The |entity_data| param
   // does not need to be fully set, but it should at least have specifics and
-  // non-unique name. The processor will fill in the rest if the service does
+  // non-unique name. The processor will fill in the rest if the bridge does
   // not have a reason to care.
   virtual void Put(const std::string& storage_key,
                    std::unique_ptr<EntityData> entity_data,
@@ -48,13 +48,13 @@ class ModelTypeChangeProcessor : public SyncErrorFactory {
   virtual void Delete(const std::string& storage_key,
                       MetadataChangeList* metadata_change_list) = 0;
 
-  // Accept the initial sync metadata loaded by the service. This should be
-  // called as soon as the metadata is available to the service.
+  // Accept the initial sync metadata loaded by the bridge. This should be
+  // called as soon as the metadata is available to the bridge.
   virtual void OnMetadataLoaded(SyncError error,
                                 std::unique_ptr<MetadataBatch> batch) = 0;
 
   // Indicates that sync wants to connect a sync worker to this processor. Once
-  // the processor has metadata from the service, it will pass the info needed
+  // the processor has metadata from the bridge, it will pass the info needed
   // for the worker into |callback|. |error_handler| is how the processor will
   // inform sync of any unrecoverable errors after calling |callback|, and it is
   // guaranteed to outlive the processor. StartCallback takes a SyncError and an
@@ -69,7 +69,7 @@ class ModelTypeChangeProcessor : public SyncErrorFactory {
 
   // Returns a boolean representing whether the processor's metadata is
   // currently up to date and accurately tracking the model type's data. If
-  // false, calls to Put and Delete will no-op and can be omitted by services.
+  // false, calls to Put and Delete will no-op and can be omitted by bridge.
   virtual bool IsTrackingMetadata() = 0;
 };
 

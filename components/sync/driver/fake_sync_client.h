@@ -39,18 +39,18 @@ class FakeSyncClient : public SyncClient {
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
   base::WeakPtr<SyncableService> GetSyncableServiceForType(
       ModelType type) override;
-  base::WeakPtr<ModelTypeService> GetModelTypeServiceForType(
+  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridgeForModelType(
       ModelType type) override;
   scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
       ModelSafeGroup group,
       WorkerLoopDestructionObserver* observer) override;
   SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
-  void SetModelTypeService(ModelTypeService* model_type_service);
+  void SetModelTypeSyncBridge(ModelTypeSyncBridge* bridge);
 
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  ModelTypeService* model_type_service_;
+  ModelTypeSyncBridge* bridge_;
   SyncApiComponentFactory* factory_;
   std::unique_ptr<FakeSyncService> sync_service_;
 

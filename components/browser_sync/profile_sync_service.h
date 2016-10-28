@@ -345,8 +345,8 @@ class ProfileSyncService : public syncer::SyncService,
   // Returns the SyncableService for syncer::DEVICE_INFO.
   virtual syncer::SyncableService* GetDeviceInfoSyncableService();
 
-  // Returns the ModelTypeService for syncer::DEVICE_INFO.
-  virtual syncer::ModelTypeService* GetDeviceInfoService();
+  // Returns the ModelTypeSyncBridge for syncer::DEVICE_INFO.
+  virtual syncer::ModelTypeSyncBridge* GetDeviceInfoService();
 
   // Returns synced devices tracker.
   virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;
@@ -958,7 +958,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
 
-  // Locally owned SyncableService and ModelTypeService implementations.
+  // Locally owned SyncableService and ModelTypeSyncBridge implementations.
   std::unique_ptr<sync_sessions::SessionsSyncManager> sessions_sync_manager_;
   std::unique_ptr<syncer::DeviceInfoSyncService> device_info_sync_service_;
   std::unique_ptr<syncer::DeviceInfoService> device_info_service_;

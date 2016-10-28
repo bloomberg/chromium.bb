@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_MODEL_MODEL_TYPE_SERVICE_H_
-#define COMPONENTS_SYNC_MODEL_MODEL_TYPE_SERVICE_H_
+#ifndef COMPONENTS_SYNC_MODEL_MODEL_TYPE_SYNC_BRIDGE_H_
+#define COMPONENTS_SYNC_MODEL_MODEL_TYPE_SYNC_BRIDGE_H_
 
 #include <memory>
 #include <string>
@@ -27,20 +27,20 @@ class MetadataChangeList;
 // Interface implemented by model types to receive updates from sync via the
 // SharedModelTypeProcessor. Provides a way for sync to update the data and
 // metadata for entities, as well as the model type state.
-class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
+class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
  public:
   typedef base::Callback<void(SyncError, std::unique_ptr<DataBatch>)>
       DataCallback;
   typedef std::vector<std::string> StorageKeyList;
   typedef base::Callback<std::unique_ptr<ModelTypeChangeProcessor>(
       ModelType type,
-      ModelTypeService* service)>
+      ModelTypeSyncBridge* bridge)>
       ChangeProcessorFactory;
 
-  ModelTypeService(const ChangeProcessorFactory& change_processor_factory,
-                   ModelType type);
+  ModelTypeSyncBridge(const ChangeProcessorFactory& change_processor_factory,
+                      ModelType type);
 
-  virtual ~ModelTypeService();
+  virtual ~ModelTypeSyncBridge();
 
   // Creates an object used to communicate changes in the sync metadata to the
   // model type store.
@@ -51,7 +51,7 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // sync metadata. Best effort should be made to match local and sync data. The
   // keys in the |entity_data_map| will have been created via GetClientTag(...),
   // and if a local and sync data should match/merge but disagree on tags, the
-  // service should use the sync data's tag. Any local pieces of data that are
+  // bridge should use the sync data's tag. Any local pieces of data that are
   // not present in sync should immediately be Put(...) to the processor before
   // returning. The same MetadataChangeList that was passed into this function
   // can be passed to Put(...) calls. Delete(...) can also be called but should
@@ -125,4 +125,4 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_MODEL_MODEL_TYPE_SERVICE_H_
+#endif  // COMPONENTS_SYNC_MODEL_MODEL_TYPE_SYNC_BRIDGE_H_

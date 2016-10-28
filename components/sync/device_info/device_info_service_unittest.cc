@@ -33,7 +33,7 @@ using sync_pb::EntitySpecifics;
 using sync_pb::ModelTypeState;
 
 using DeviceInfoList = std::vector<std::unique_ptr<DeviceInfo>>;
-using StorageKeyList = ModelTypeService::StorageKeyList;
+using StorageKeyList = ModelTypeSyncBridge::StorageKeyList;
 using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
 using StartCallback = ModelTypeChangeProcessor::StartCallback;
@@ -179,7 +179,7 @@ class DeviceInfoServiceTest : public testing::Test,
 
   std::unique_ptr<ModelTypeChangeProcessor> CreateModelTypeChangeProcessor(
       ModelType type,
-      ModelTypeService* service) {
+      ModelTypeSyncBridge* bridge) {
     auto processor = base::MakeUnique<RecordingModelTypeChangeProcessor>();
     processor_ = processor.get();
     return std::move(processor);

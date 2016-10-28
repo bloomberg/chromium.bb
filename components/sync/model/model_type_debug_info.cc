@@ -4,6 +4,9 @@
 
 #include "components/sync/model/model_type_debug_info.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
@@ -13,15 +16,15 @@ namespace syncer {
 
 namespace {
 
-SharedModelTypeProcessor* GetProcessorFromService(
-    const base::WeakPtr<ModelTypeService>& service) {
-  if (!service.get()) {
+SharedModelTypeProcessor* GetProcessorFromBridge(
+    const base::WeakPtr<ModelTypeSyncBridge>& bridge) {
+  if (!bridge.get()) {
     LOG(WARNING)
-        << "ModelTypeService destroyed before debug info was retrieved.";
+        << "ModelTypeSyncBridge destroyed before debug info was retrieved.";
     return nullptr;
   }
   SharedModelTypeProcessor* processor =
-      static_cast<SharedModelTypeProcessor*>(service->change_processor());
+      static_cast<SharedModelTypeProcessor*>(bridge->change_processor());
   if (!processor) {
     LOG(WARNING) << "SharedModelTypeProcessor destroyed before debug info was "
                     "retrieved.";
@@ -34,21 +37,21 @@ SharedModelTypeProcessor* GetProcessorFromService(
 
 // static
 void ModelTypeDebugInfo::GetAllNodes(
-    const base::WeakPtr<ModelTypeService>& service,
+    const base::WeakPtr<ModelTypeSyncBridge>& bridge,
     const base::Callback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>& callback) {
-  SharedModelTypeProcessor* processor = GetProcessorFromService(service);
+  SharedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
   if (processor) {
-    service->GetAllData(base::Bind(&ModelTypeDebugInfo::MergeDataWithMetadata,
-                                   base::Unretained(processor), callback));
+    bridge->GetAllData(base::Bind(&ModelTypeDebugInfo::MergeDataWithMetadata,
+                                  base::Unretained(processor), callback));
   }
 }
 
 // static
 void ModelTypeDebugInfo::GetStatusCounters(
-    const base::WeakPtr<ModelTypeService>& service,
+    const base::WeakPtr<ModelTypeSyncBridge>& bridge,
     const base::Callback<void(ModelType, const StatusCounters&)>& callback) {
-  SharedModelTypeProcessor* processor = GetProcessorFromService(service);
+  SharedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
   if (processor) {
     syncer::StatusCounters counters;
     counters.num_entries_and_tombstones = processor->entities_.size();
