@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -14,7 +16,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::FileChooserParams;
 
 class FileSelectHelperTest : public testing::Test {
  public:
@@ -112,4 +118,68 @@ TEST_F(FileSelectHelperTest, GetSanitizedFileName) {
   // cause conversions to fail. Such failures shouldn't cause the resulting
   // filename to disappear.
   EXPECT_FALSE(FileSelectHelper::GetSanitizedFileName(bad_filename).empty());
+}
+
+TEST_F(FileSelectHelperTest, LastSelectedDirectory) {
+  content::TestBrowserThreadBundle browser_thread_bundle;
+  TestingProfile profile;
+  scoped_refptr<FileSelectHelper> file_select_helper =
+      new FileSelectHelper(&profile);
+
+  const int index = 0;
+  void* params = nullptr;
+
+  const base::FilePath dir_path_1 = data_dir_.AppendASCII("dir1");
+  const base::FilePath dir_path_2 = data_dir_.AppendASCII("dir2");
+  const base::FilePath file_path_1 = dir_path_1.AppendASCII("file1.txt");
+  const base::FilePath file_path_2 = dir_path_1.AppendASCII("file2.txt");
+  const base::FilePath file_path_3 = dir_path_2.AppendASCII("file3.txt");
+  std::vector<base::FilePath> files;  // Both in dir1.
+  files.push_back(file_path_1);
+  files.push_back(file_path_2);
+  std::vector<base::FilePath> dirs;
+  dirs.push_back(dir_path_1);
+  dirs.push_back(dir_path_2);
+
+  // Modes where the parent of the selection is remembered.
+  const std::vector<FileChooserParams::Mode> modes = {
+    FileChooserParams::Open,
+    FileChooserParams::OpenMultiple,
+    FileChooserParams::Save,
+  };
+
+  for (const auto& mode : modes) {
+    file_select_helper->dialog_mode_ = mode;
+
+    file_select_helper->AddRef();  // Normally called by RunFileChooser().
+    file_select_helper->FileSelected(file_path_1, index, params);
+    EXPECT_EQ(dir_path_1, profile.last_selected_directory());
+
+    file_select_helper->AddRef();  // Normally called by RunFileChooser().
+    file_select_helper->FileSelected(file_path_2, index, params);
+    EXPECT_EQ(dir_path_1, profile.last_selected_directory());
+
+    file_select_helper->AddRef();  // Normally called by RunFileChooser().
+    file_select_helper->FileSelected(file_path_3, index, params);
+    EXPECT_EQ(dir_path_2, profile.last_selected_directory());
+
+    file_select_helper->AddRef();  // Normally called by RunFileChooser().
+    file_select_helper->MultiFilesSelected(files, params);
+    EXPECT_EQ(dir_path_1, profile.last_selected_directory());
+  }
+
+  // Type where the selected folder itself is remembered.
+  file_select_helper->dialog_mode_ = FileChooserParams::UploadFolder;
+
+  file_select_helper->AddRef();  // Normally called by RunFileChooser().
+  file_select_helper->FileSelected(dir_path_1, index, params);
+  EXPECT_EQ(dir_path_1, profile.last_selected_directory());
+
+  file_select_helper->AddRef();  // Normally called by RunFileChooser().
+  file_select_helper->FileSelected(dir_path_2, index, params);
+  EXPECT_EQ(dir_path_2, profile.last_selected_directory());
+
+  file_select_helper->AddRef();  // Normally called by RunFileChooser().
+  file_select_helper->MultiFilesSelected(dirs, params);
+  EXPECT_EQ(dir_path_1, profile.last_selected_directory());
 }

@@ -85,6 +85,9 @@ void DeleteFiles(const std::vector<base::FilePath>& paths) {
 
 bool IsValidProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // No profile manager in unit tests.
+  if (!g_browser_process->profile_manager())
+    return true;
   return g_browser_process->profile_manager()->IsValidProfile(profile);
 }
 
@@ -174,8 +177,12 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
     const ui::SelectedFileInfo& file,
     int index,
     void* params) {
-  if (IsValidProfile(profile_))
-    profile_->set_last_selected_directory(file.file_path.DirName());
+  if (IsValidProfile(profile_)) {
+    base::FilePath path = file.file_path;
+    if (dialog_mode_ != FileChooserParams::UploadFolder)
+      path = path.DirName();
+    profile_->set_last_selected_directory(path);
+  }
 
   if (!render_frame_host_) {
     RunFileChooserEnd();
@@ -214,9 +221,12 @@ void FileSelectHelper::MultiFilesSelected(
 void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
     const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
-  if (!files.empty() && IsValidProfile(profile_))
-    profile_->set_last_selected_directory(files[0].file_path.DirName());
-
+  if (!files.empty() && IsValidProfile(profile_)) {
+    base::FilePath path = files[0].file_path;
+    if (dialog_mode_ != FileChooserParams::UploadFolder)
+      path = path.DirName();
+    profile_->set_last_selected_directory(path);
+  }
 #if defined(OS_MACOSX)
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE_USER_BLOCKING,
