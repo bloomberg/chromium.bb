@@ -19,7 +19,7 @@ namespace content {
 namespace {
 
 // A WebContentsDelegate that exposes the visible SSLStatus at the time
-// of the last VisibleSSLStateChanged() call.
+// of the last VisibleSecurityStateChanged() call.
 class TestWebContentsDelegate : public WebContentsDelegate {
  public:
   TestWebContentsDelegate() : WebContentsDelegate() {}
