@@ -4,9 +4,6 @@
 
 #include "components/webcrypto/algorithms/rsa.h"
 
-#include <openssl/bn.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
 #include <utility>
 
 #include "base/logging.h"
@@ -20,6 +17,9 @@
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#include "third_party/boringssl/src/include/openssl/bn.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
 
 namespace webcrypto {
 

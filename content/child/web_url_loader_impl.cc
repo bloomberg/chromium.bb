@@ -4,7 +4,6 @@
 
 #include "content/child/web_url_loader_impl.h"
 
-#include <openssl/ssl.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -61,6 +60,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using base::Time;
 using base::TimeTicks;

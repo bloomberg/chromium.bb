@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_WEBCRYPTO_ALGORITHMS_ASYMMETRIC_KEY_UTIL_
 #define COMPONENTS_WEBCRYPTO_ALGORITHMS_ASYMMETRIC_KEY_UTIL_
 
-#include <openssl/base.h>
-
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 // This file contains functions shared by multiple asymmetric key algorithms.
 

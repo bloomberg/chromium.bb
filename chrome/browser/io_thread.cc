@@ -130,8 +130,8 @@
 #endif
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-#include <openssl/cpu.h>
 #include "crypto/openssl_util.h"
+#include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
 using content::BrowserThread;

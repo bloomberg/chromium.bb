@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_WEBCRYPTO_BLINK_KEY_HANDLE_H_
 #define COMPONENTS_WEBCRYPTO_BLINK_KEY_HANDLE_H_
 
-#include <openssl/base.h>
 #include <stdint.h>
 
 #include <vector>
 
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 // Blink keys (blink::WebCryptoKey) have an associated key handle
 // (blink::WebCryptoKeyHandle) used to store custom data. This is where the

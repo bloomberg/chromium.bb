@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <openssl/digest.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
 #include <stddef.h>
 
 #include "base/numerics/safe_math.h"
@@ -15,6 +12,9 @@
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#include "third_party/boringssl/src/include/openssl/digest.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
 
 namespace webcrypto {
 

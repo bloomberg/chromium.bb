@@ -47,6 +47,7 @@ include_rules = [
   "+services/service_manager",
   "+skia/ext",
   "+syzygy/kasko",
+  "+third_party/boringssl/src/include",
   "+third_party/crashpad",
   "+third_party/cros_system_api",
   "+third_party/kasko",

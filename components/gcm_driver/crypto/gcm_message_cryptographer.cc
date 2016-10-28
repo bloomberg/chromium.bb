@@ -4,7 +4,6 @@
 
 #include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
 
-#include <openssl/aead.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "crypto/hkdf.h"
+#include "third_party/boringssl/src/include/openssl/aead.h"
 
 namespace gcm {
 namespace {

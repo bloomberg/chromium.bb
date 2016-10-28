@@ -4,10 +4,6 @@
 
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 
-#include <openssl/digest.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/x509.h>
 #include <stddef.h>
 
 #include <memory>
@@ -18,6 +14,10 @@
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/pem_tokenizer.h"
+#include "third_party/boringssl/src/include/openssl/digest.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "third_party/boringssl/src/include/openssl/x509.h"
 
 namespace {
 

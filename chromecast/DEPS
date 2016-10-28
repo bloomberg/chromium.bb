@@ -9,4 +9,5 @@ include_rules = [
   "+chromecast/base",
   "+chromecast/chromecast_features.h",
   "+chromecast/public",
+  "+third_party/boringssl/src/include",
 ]

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
-#include <openssl/rand.h>
 #include <stdint.h>
 
 #include "base/files/file_util.h"
@@ -15,6 +14,7 @@
 #include "content/common/sandbox_mac_unittest_helper.h"
 #include "crypto/openssl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/rand.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 
 namespace content {

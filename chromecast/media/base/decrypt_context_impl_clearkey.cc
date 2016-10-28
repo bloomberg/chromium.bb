@@ -4,7 +4,6 @@
 
 #include "chromecast/media/base/decrypt_context_impl_clearkey.h"
 
-#include <openssl/aes.h>
 #include <string.h>
 
 #include <memory>
@@ -15,6 +14,7 @@
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/cast_decrypt_config.h"
 #include "crypto/symmetric_key.h"
+#include "third_party/boringssl/src/include/openssl/aes.h"
 
 namespace chromecast {
 namespace media {

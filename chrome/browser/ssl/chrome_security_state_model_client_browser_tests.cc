@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 
-#include <openssl/ssl.h>
-
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -55,6 +53,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using security_state::SecurityStateModel;

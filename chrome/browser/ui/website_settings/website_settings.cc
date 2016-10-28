@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/website_settings/website_settings.h"
 
-#include <openssl/ssl.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -66,6 +65,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

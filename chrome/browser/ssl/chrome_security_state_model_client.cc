@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 
-#include <openssl/ssl.h>
-
 #include <vector>
 
 #include "base/command_line.h"
@@ -34,6 +32,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);

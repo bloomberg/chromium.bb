@@ -4,12 +4,6 @@
 
 #include "components/webcrypto/algorithms/ec.h"
 
-#include <openssl/bn.h>
-#include <openssl/bytestring.h>
-#include <openssl/ec.h>
-#include <openssl/ec_key.h>
-#include <openssl/evp.h>
-#include <openssl/mem.h>
 #include <stddef.h>
 #include <utility>
 
@@ -25,6 +19,12 @@
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#include "third_party/boringssl/src/include/openssl/bn.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/ec_key.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 
 namespace webcrypto {
 

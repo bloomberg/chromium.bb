@@ -33,6 +33,7 @@ include_rules = [
   "+ppapi/shared_impl",
   "+ppapi/thunk",
   "+sandbox/linux/services/credentials.h",
+  "+third_party/boringssl/src/include",
   "+third_party/kasko",
 
   # FIXME - refactor code and remove these dependencies

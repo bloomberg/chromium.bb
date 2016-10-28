@@ -6,8 +6,6 @@
 
 #include <dlfcn.h>
 #include <fcntl.h>
-#include <openssl/crypto.h>
-#include <openssl/rand.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stddef.h>
@@ -52,6 +50,8 @@
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
+#include "third_party/boringssl/src/include/openssl/crypto.h"
+#include "third_party/boringssl/src/include/openssl/rand.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"

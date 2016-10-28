@@ -4,9 +4,6 @@
 
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
 
-#include <openssl/bytestring.h>
-#include <openssl/evp.h>
-#include <openssl/mem.h>
 #include <stdint.h>
 #include <utility>
 
@@ -16,6 +13,9 @@
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 
 namespace webcrypto {
 

@@ -4,9 +4,6 @@
 
 #include "components/gcm_driver/crypto/p256_key_util.h"
 
-#include <openssl/ec.h>
-#include <openssl/ecdh.h>
-#include <openssl/evp.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +13,9 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "crypto/ec_private_key.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/ecdh.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace gcm {
 

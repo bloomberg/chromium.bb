@@ -66,6 +66,7 @@ include_rules = [
 
   # Allow inclusion of third-party code:
   "+third_party/angle",
+  "+third_party/boringssl/src/include",
   "+third_party/flac",
   "+third_party/libjingle",
   "+third_party/mozilla",

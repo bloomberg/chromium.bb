@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -37,6 +35,8 @@
 #include "extensions/test/result_catcher.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
 
 using testing::Return;
 using testing::_;

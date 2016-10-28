@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
-#include <openssl/base.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 // This file contains miscellaneous helpers that don't belong in any of the
 // other *_util.h

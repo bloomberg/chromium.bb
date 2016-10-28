@@ -4,8 +4,6 @@
 
 #include "content/common/origin_trials/trial_token.h"
 
-#include <openssl/curve25519.h>
-
 #include <vector>
 
 #include "base/base64.h"
@@ -17,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
+#include "third_party/boringssl/src/include/openssl/curve25519.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

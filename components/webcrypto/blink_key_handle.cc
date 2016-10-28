@@ -4,14 +4,13 @@
 
 #include "components/webcrypto/blink_key_handle.h"
 
-#include <openssl/evp.h>
-
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace webcrypto {
 

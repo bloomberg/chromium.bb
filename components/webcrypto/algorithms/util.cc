@@ -4,14 +4,13 @@
 
 #include "components/webcrypto/algorithms/util.h"
 
-#include <openssl/aead.h>
-#include <openssl/bn.h>
-#include <openssl/digest.h>
-
 #include "base/logging.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
+#include "third_party/boringssl/src/include/openssl/aead.h"
+#include "third_party/boringssl/src/include/openssl/bn.h"
+#include "third_party/boringssl/src/include/openssl/digest.h"
 
 namespace webcrypto {
 
