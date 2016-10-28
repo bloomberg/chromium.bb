@@ -222,6 +222,9 @@ Polymer({
     if (state.GUID != this.networkLastSelectedGuid_)
       return;
 
+    // Duplicate asynchronous event may be delivered to some other screen,
+    // so disable it.
+    this.networkLastSelectedGuid_ = '';
     this.onSelectedNetworkConnected_();
   },
 
