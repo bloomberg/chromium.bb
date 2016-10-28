@@ -374,6 +374,26 @@ latter case we provide an array with a list of the fully qualified Mojo
 interface names (module.path.InterfaceName). A special case of array is one that
 contains the single entry "*", which means 'all interfaces'.
 
+Let's consider our previous example the `service:other_service`, which we want
+our `service:my_service` to connect to, and bind mojom::SomeInterface. Every
+interface that a service provides that is intended to be reachable via
+Connect()/OnConnect() must be statically declared in the manifest as exported
+in the providing service's manifest as part of a named capability. A capability
+name is just a string that provider and consumer agree upon. Here's what
+`service:other_service`'s manifest must then look like:
+
+    {
+      "name": "service:other_service",
+      "display_name": "Other Service",
+      "interface_provider_specs": {
+        "service_manager:connector": {
+          "provides": {
+            "other_capability": [ "mojom.SomeInterface" ]
+          }
+        }
+      }
+    }
+
 #### Required Capabilities
 
 The requires dictionary enumerates the capabilities required by the service. The
@@ -407,20 +427,15 @@ If we just run now, it still won't work, and we'll see this error:
     service:other_service
 
 The connection was allowed to complete, but the attempt to bind
-`mojom.SomeInterface` was blocked. We need to add that interface to the array in
-the manifest:
+`mojom.SomeInterface` was blocked. As it happens, this interface is provided as
+part of the capability `other_capability` exported by `service:other_service`.
+We need to add that capability to the array in our manifest:
 
     "requires": {
-      "service:other_service": [ "mojom::SomeInterface" ],
+      "service:other_service": [ "other_capability" ],
     }
 
 Now everything should work.
-
-(Note that we didn't write a manifest for service:other_service. We'd need to do
-that too, though for this example we wouldn't have to describe
-mojom.SomeInterface in the provided section of its interface_provider_spec,
-since it wasn't part of a class. Connecting services like service:my_service just
-need to state that interface.)
 
 ### Testing
 
@@ -672,6 +687,111 @@ also managed by the Service Manager. While a service-launched process may quit
 itself at any point, when the Service Manager shuts down it will also shut down
 any process it started. Processes created by services themselves are left to
 those services to manage.
+
+### Other InterfaceProviderSpecs
+
+We discussed InterfaceProviderSpecs in detail in the section above about
+exchange of capabilities between services. That section focused on how
+interfaces are exposed via Connect()/OnConnect(). Looking at the structure of
+service manifests:
+
+    "interface_provider_specs": {
+      "service_manager:connector": {
+        "provides": {
+          ...
+        },
+        "requires": {
+          ...
+        }
+      }
+    }
+
+It was discussed that the "service_manager:connector" dictionary described
+capabilities of interest to the Service Manager. While our use cases thus far
+have focused on this single InterfaceProviderSpec, it's possible (and desirable)
+to use others, any time an InterfaceProvider is used. Why? Well
+InterfaceProvider is a generic interface - it can theoretically be used to bind,
+anything and as such it's useful to be able to statically assert what interfaces
+are exposed to what contexts. In Chromium, manifest files get security review,
+which provides an extra layer of care when we think about what capabilities are
+being exposed between contexts at different trust levels. A concrete example
+from Chrome - a pair of InterfaceProviders is used to expose frame-specific
+interfaces between browser and renderer processes. To define another spec, we do
+this:
+
+    "interface_provider_specs": {
+      "service_manager:connector": {
+        "provides": {
+          ...
+        },
+        "requires": {
+          ...
+        }
+      },
+      "my_spec_name": {
+        "provides": {
+          ...
+        },
+        "requires": {
+          ...
+        }
+      }
+    }
+
+And here again we can define capabilities & consume them. To actually hook up
+this new spec in code, we must do what `service_manager::ServiceContext` does
+for us with the `service_manager:connector` spec, and configure a
+`service_manager::InterfaceRegistry` appropriately:
+
+    void OnStart(const service_manager::ServiceInfo& info) override {
+      registry_ =
+          base::MakeUnique<service_manager::InterfaceRegistry>("my_spec_name");
+      registry_->AddInterface<mojom::Foo>(this);
+      registry_->AddInterface<mojom::Bar>(this);
+
+      // Store this so we can use it when we Bind() registry_.
+      local_info_ = info;
+    }
+
+    bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                   service_manager::InterfaceRegistry* remote) override {
+      remote_info_ = remote_info;
+      registry->AddInterface<mojom::MyInterface>(this);
+      return true;
+    }
+
+    ...
+
+    // mojom::MyInterface:
+    void GetInterfaceProvider(
+        service_manager::mojom::InterfaceProviderRequest request) override {
+      service_manager::InterfaceProviderSpec my_spec, remote_spec;
+      service_manager::GetInterfaceProviderSpec(
+          "my_spec_name", local_info_.interface_provider_specs, &my_spec);
+      service_manager::GetInterfaceProviderSpec(
+          "my_spec_name", remote_info_.interface_provider_specs, &remote_spec);
+      registry_->Bind(std::move(request), local_info_.identity, my_spec,
+                      remote_info_.identity, remote_spec);
+      // |registry_| is now bound to the remote, and its GetInterface()
+      // implementation is now controlled via the rules set out in
+      // `my_spec_name` declared in this service's and the remote service's
+      // manifests.
+    }
+
+    ...
+
+    std::unique_ptr<service_manager::InterfaceRegistry> registry_;
+    service_manager::ServiceInfo local_info_;
+    service_manager::ServiceInfo remote_info_;
+
+When we construct an `InterfaceRegistry` we pass the name of the spec that
+controls it. When our service is started we're given (by the Service Manager)
+our own spec. This allows us to know everything we provide. When we receive a
+connection request from another service, the Service Manager provides us with
+the remote service's spec. This is enough information that when we're asked to
+bind the InterfaceRegistry to a pipe from the remote, the appropriate filtering
+is performed.
+
 
 ***
 
