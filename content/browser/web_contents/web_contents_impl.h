@@ -183,6 +183,9 @@ class CONTENT_EXPORT WebContentsImpl
   // plugins it is hosting.
   void CancelActiveAndPendingDialogs();
 
+  // Invoked when visible SSL state (as defined by SSLStatus) changes.
+  void DidChangeVisibleSSLState();
+
   // Informs the render view host and the BrowserPluginEmbedder, if present, of
   // a Drag Source End.
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
@@ -334,7 +337,6 @@ class CONTENT_EXPORT WebContentsImpl
   void AttachToOuterWebContentsFrame(
       WebContents* outer_web_contents,
       RenderFrameHost* outer_contents_frame) override;
-  void DidChangeVisibleSecurityState() override;
   void Stop() override;
   WebContents* Clone() override;
   void ReloadFocusedFrame(bool bypass_cache) override;

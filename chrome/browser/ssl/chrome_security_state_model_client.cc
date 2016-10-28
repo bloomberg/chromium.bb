@@ -327,7 +327,7 @@ void ChromeSecurityStateModelClient::GetSecurityInfo(
   security_state_model_->GetSecurityInfo(result);
 }
 
-void ChromeSecurityStateModelClient::VisibleSecurityStateChanged() {
+void ChromeSecurityStateModelClient::VisibleSSLStateChanged() {
   if (logged_http_warning_on_current_navigation_)
     return;
 

@@ -63,7 +63,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       const std::vector<content::ColorSuggestion>& suggestions) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
-  void VisibleSecurityStateChanged(content::WebContents* source) override;
+  void VisibleSSLStateChanged(content::WebContents* source) override;
   void ActivateContents(content::WebContents* contents) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;

@@ -404,7 +404,7 @@ void SSLManager::UpdateLastCommittedEntry(int additional_content_status_flags) {
 void SSLManager::NotifyDidChangeVisibleSSLState() {
   WebContentsImpl* contents =
       static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
-  contents->DidChangeVisibleSecurityState();
+  contents->DidChangeVisibleSSLState();
 }
 
 // static

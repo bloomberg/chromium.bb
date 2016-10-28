@@ -578,7 +578,7 @@ class Browser : public TabStripModelObserver,
       const content::OpenURLParams& params) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
-  void VisibleSecurityStateChanged(content::WebContents* source) override;
+  void VisibleSSLStateChanged(content::WebContents* source) override;
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,

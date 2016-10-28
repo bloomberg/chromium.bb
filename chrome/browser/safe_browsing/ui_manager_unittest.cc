@@ -5,17 +5,14 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 
 #include "base/run_loop.h"
-#include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,9 +112,6 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
       bool proceed) {
     ui_manager_->OnBlockingPageDone(resources, proceed);
   }
-
- protected:
-  SafeBrowsingUIManager* ui_manager() { return ui_manager_.get(); }
 
  private:
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
@@ -275,112 +269,6 @@ TEST_F(SafeBrowsingUIManagerTest, IOCallbackDontProceed) {
   waiter.WaitForCallback();
   EXPECT_TRUE(waiter.callback_called());
   EXPECT_FALSE(waiter.proceed());
-}
-
-namespace {
-
-// A WebContentsDelegate that records whether
-// VisibleSecurityStateChanged() was called.
-class SecurityStateWebContentsDelegate : public content::WebContentsDelegate {
- public:
-  SecurityStateWebContentsDelegate() {}
-  ~SecurityStateWebContentsDelegate() override {}
-
-  bool visible_security_state_changed() const {
-    return visible_security_state_changed_;
-  }
-
-  void ClearVisibleSecurityStateChanged() {
-    visible_security_state_changed_ = false;
-  }
-
-  // WebContentsDelegate:
-  void VisibleSecurityStateChanged(content::WebContents* source) override {
-    visible_security_state_changed_ = true;
-  }
-
- private:
-  bool visible_security_state_changed_ = false;
-  DISALLOW_COPY_AND_ASSIGN(SecurityStateWebContentsDelegate);
-};
-
-// A test blocking page that does not create windows.
-class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
- public:
-  TestSafeBrowsingBlockingPage(SafeBrowsingUIManager* manager,
-                               content::WebContents* web_contents,
-                               const GURL& main_frame_url,
-                               const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPage(manager,
-                                 web_contents,
-                                 main_frame_url,
-                                 unsafe_resources) {
-    // Don't delay details at all for the unittest.
-    threat_details_proceed_delay_ms_ = 0;
-    DontCreateViewForTesting();
-  }
-};
-
-// A factory that creates TestSafeBrowsingBlockingPages.
-class TestSafeBrowsingBlockingPageFactory
-    : public SafeBrowsingBlockingPageFactory {
- public:
-  TestSafeBrowsingBlockingPageFactory() {}
-  ~TestSafeBrowsingBlockingPageFactory() override {}
-
-  SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
-      SafeBrowsingUIManager* delegate,
-      content::WebContents* web_contents,
-      const GURL& main_frame_url,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      override {
-    return new TestSafeBrowsingBlockingPage(delegate, web_contents,
-                                            main_frame_url, unsafe_resources);
-  }
-};
-
-}  // namespace
-
-// Tests that the WebContentsDelegate is notified of a visible security
-// state change when a blocking page is shown for a subresource.
-TEST_F(SafeBrowsingUIManagerTest,
-       VisibleSecurityStateChangedForUnsafeSubresource) {
-  TestSafeBrowsingBlockingPageFactory factory;
-  SafeBrowsingBlockingPage::RegisterFactory(&factory);
-  SecurityStateWebContentsDelegate delegate;
-  web_contents()->SetDelegate(&delegate);
-
-  // Simulate a blocking page showing for an unsafe subresource.
-  SafeBrowsingUIManager::UnsafeResource resource =
-      MakeUnsafeResource(kBadURL, true /* is_subresource */);
-  // Needed for showing the blocking page.
-  resource.threat_source = safe_browsing::ThreatSource::REMOTE;
-  NavigateAndCommit(GURL("http://example.test"));
-
-  delegate.ClearVisibleSecurityStateChanged();
-  EXPECT_FALSE(delegate.visible_security_state_changed());
-  ui_manager()->DisplayBlockingPage(resource);
-  EXPECT_TRUE(delegate.visible_security_state_changed());
-
-  // Simulate proceeding through the blocking page.
-  SafeBrowsingCallbackWaiter waiter;
-  resource.callback =
-      base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
-                 base::Unretained(&waiter));
-  resource.callback_thread =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
-  resources.push_back(resource);
-
-  delegate.ClearVisibleSecurityStateChanged();
-  EXPECT_FALSE(delegate.visible_security_state_changed());
-  SimulateBlockingPageDone(resources, true);
-  EXPECT_TRUE(delegate.visible_security_state_changed());
-
-  waiter.WaitForCallback();
-  EXPECT_TRUE(waiter.callback_called());
-  EXPECT_TRUE(waiter.proceed());
-  EXPECT_TRUE(IsWhitelisted(resource));
 }
 
 }  // namespace safe_browsing
