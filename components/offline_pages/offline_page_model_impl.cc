@@ -23,6 +23,7 @@
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model_query.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
 #include "url/gurl.h"
 
@@ -431,21 +432,26 @@ void OfflinePageModelImpl::DoDeletePagesByOfflineId(
 void OfflinePageModelImpl::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const DeletePageCallback& callback) {
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::DoDeletePagesByClientIds,
-                           weak_ptr_factory_.GetWeakPtr(), client_ids,
-                           callback));
+  OfflinePageModelQueryBuilder builder;
+  builder
+      .SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
+                    client_ids)
+      .AllowExpiredPages(true);
+  auto delete_pages = base::Bind(&OfflinePageModelImpl::DeletePages,
+                                 weak_ptr_factory_.GetWeakPtr(), callback);
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), delete_pages));
 }
 
-void OfflinePageModelImpl::DoDeletePagesByClientIds(
-    const std::vector<ClientId>& client_ids,
-    const DeletePageCallback& callback) {
-  std::set<ClientId> client_id_set(client_ids.begin(), client_ids.end());
+void OfflinePageModelImpl::DeletePages(
+    const DeletePageCallback& callback,
+    const MultipleOfflinePageItemResult& pages) {
+  DCHECK(is_loaded_);
 
   std::vector<int64_t> offline_ids;
-  for (const auto& page_pair : offline_pages_) {
-    if (client_id_set.count(page_pair.second.client_id) > 0)
-      offline_ids.emplace_back(page_pair.first);
-  }
+  for (auto& page : pages)
+    offline_ids.emplace_back(page.offline_id);
 
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
@@ -453,24 +459,12 @@ void OfflinePageModelImpl::DoDeletePagesByClientIds(
 void OfflinePageModelImpl::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const MultipleOfflinePageItemCallback& callback) {
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::DoGetPagesByClientIds,
-                           weak_ptr_factory_.GetWeakPtr(), client_ids,
-                           callback));
-}
-
-void OfflinePageModelImpl::DoGetPagesByClientIds(
-    const std::vector<ClientId>& client_ids,
-    const MultipleOfflinePageItemCallback& callback) {
-  std::set<ClientId> client_id_set(client_ids.begin(), client_ids.end());
-
-  std::vector<OfflinePageItem> result;
-  for (const auto& page_pair : offline_pages_) {
-    if (!page_pair.second.IsExpired() &&
-        client_id_set.count(page_pair.second.client_id) > 0) {
-      result.emplace_back(page_pair.second);
-    }
-  }
-  callback.Run(result);
+  OfflinePageModelQueryBuilder builder;
+  builder.SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
+                       client_ids);
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
 void OfflinePageModelImpl::DeleteCachedPagesByURLPredicate(
@@ -499,56 +493,57 @@ void OfflinePageModelImpl::DoDeleteCachedPagesByURLPredicate(
 void OfflinePageModelImpl::CheckPagesExistOffline(
     const std::set<GURL>& urls,
     const CheckPagesExistOfflineCallback& callback) {
-  RunWhenLoaded(
-      base::Bind(&OfflinePageModelImpl::CheckPagesExistOfflineAfterLoadDone,
-                 weak_ptr_factory_.GetWeakPtr(), urls, callback));
+  OfflinePageModelQueryBuilder builder;
+  builder
+      .SetUrls(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
+               std::vector<GURL>(urls.begin(), urls.end()))
+      .RequireRestrictedToOriginalTab(
+          OfflinePageModelQueryBuilder::Requirement::EXCLUDE_MATCHING);
+  auto pages_to_urls = base::Bind(
+      [](const CheckPagesExistOfflineCallback& callback,
+         const MultipleOfflinePageItemResult& pages) {
+        CheckPagesExistOfflineResult result;
+        for (auto& page : pages)
+          result.insert(page.url);
+        callback.Run(result);
+      },
+      callback);
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), pages_to_urls));
 }
 
-void OfflinePageModelImpl::CheckPagesExistOfflineAfterLoadDone(
-    const std::set<GURL>& urls,
-    const CheckPagesExistOfflineCallback& callback) {
-  DCHECK(is_loaded_);
-  CheckPagesExistOfflineResult result;
+void OfflinePageModelImpl::ExecuteQuery(
+    std::unique_ptr<OfflinePageModelQuery> query,
+    const MultipleOfflinePageItemCallback& callback) {
+  DCHECK(query);
+
+  MultipleOfflinePageItemResult offline_pages_result;
+
   for (const auto& id_page_pair : offline_pages_) {
-    // TODO(dewittj): Remove the "Last N" restriction in favor of a better query
-    // interface.  See https://crbug.com/622763 for information.
-    if (id_page_pair.second.IsExpired() ||
-        id_page_pair.second.client_id.name_space == kLastNNamespace)
-      continue;
-    auto iter = urls.find(id_page_pair.second.url);
-    if (iter != urls.end())
-      result.insert(*iter);
+    if (query->Matches(id_page_pair.second))
+      offline_pages_result.emplace_back(id_page_pair.second);
   }
-  callback.Run(result);
+
+  callback.Run(offline_pages_result);
 }
 
 void OfflinePageModelImpl::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetAllPagesAfterLoadDone,
-                           weak_ptr_factory_.GetWeakPtr(), GetAllPageMode::ALL,
-                           callback));
+  OfflinePageModelQueryBuilder builder;
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
 void OfflinePageModelImpl::GetAllPagesWithExpired(
     const MultipleOfflinePageItemCallback& callback) {
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetAllPagesAfterLoadDone,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           GetAllPageMode::ALL_WITH_EXPIRED, callback));
-}
+  OfflinePageModelQueryBuilder builder;
+  builder.AllowExpiredPages(true);
 
-void OfflinePageModelImpl::GetAllPagesAfterLoadDone(
-    GetAllPageMode mode,
-    const MultipleOfflinePageItemCallback& callback) const {
-  DCHECK(is_loaded_);
-
-  MultipleOfflinePageItemResult offline_pages;
-  for (const auto& id_page_pair : offline_pages_) {
-    if (mode == GetAllPageMode::ALL_WITH_EXPIRED ||
-        !id_page_pair.second.IsExpired())
-      offline_pages.push_back(id_page_pair.second);
-  }
-
-  callback.Run(offline_pages);
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
 void OfflinePageModelImpl::GetOfflineIdsForClientId(
@@ -584,23 +579,28 @@ const std::vector<int64_t> OfflinePageModelImpl::MaybeGetOfflineIdsForClientId(
 void OfflinePageModelImpl::GetPageByOfflineId(
     int64_t offline_id,
     const SingleOfflinePageItemCallback& callback) {
-  RunWhenLoaded(
-      base::Bind(&OfflinePageModelImpl::GetPageByOfflineIdWhenLoadDone,
-                 weak_ptr_factory_.GetWeakPtr(), offline_id, callback));
-}
+  std::vector<int64_t> query_ids;
+  query_ids.emplace_back(offline_id);
 
-void OfflinePageModelImpl::GetPageByOfflineIdWhenLoadDone(
-    int64_t offline_id,
-    const SingleOfflinePageItemCallback& callback) const {
-  callback.Run(MaybeGetPageByOfflineId(offline_id));
-}
+  OfflinePageModelQueryBuilder builder;
+  builder.SetOfflinePageIds(
+      OfflinePageModelQuery::Requirement::INCLUDE_MATCHING, query_ids);
 
-const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineId(
-    int64_t offline_id) const {
-  const auto iter = offline_pages_.find(offline_id);
-  return iter != offline_pages_.end() && !iter->second.IsExpired()
-             ? &(iter->second)
-             : nullptr;
+  auto multiple_callback = base::Bind(
+      [](const SingleOfflinePageItemCallback& callback,
+         const MultipleOfflinePageItemResult& result) {
+        DCHECK_LE(result.size(), 1U);
+        if (result.empty()) {
+          callback.Run(nullptr);
+        } else {
+          callback.Run(&result[0]);
+        }
+      },
+      callback);
+
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), multiple_callback));
 }
 
 void OfflinePageModelImpl::GetPagesByOnlineURL(

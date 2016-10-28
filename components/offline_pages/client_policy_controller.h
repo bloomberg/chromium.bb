@@ -35,6 +35,9 @@ class ClientPolicyController {
   // Get the client policy for |name_space|.
   const OfflinePageClientPolicy& GetPolicy(const std::string& name_space) const;
 
+  // Returns a list of all known namespaces.
+  std::vector<std::string> GetAllNamespaces() const;
+
   // Returns whether pages for |name_space| should be removed on cache reset.
   bool IsRemovedOnCacheReset(const std::string& name_space) const;
 
@@ -52,6 +55,9 @@ class ClientPolicyController {
   // tab they were generated in.
   bool IsRestrictedToOriginalTab(const std::string& name_space) const;
   const std::vector<std::string>& GetNamespacesRestrictedToOriginalTab() const;
+
+  void AddPolicyForTest(const std::string& name_space,
+                        const OfflinePageClientPolicyBuilder& builder);
 
  private:
   // The map from name_space to a client policy. Will be generated

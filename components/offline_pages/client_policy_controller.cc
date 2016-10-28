@@ -84,6 +84,14 @@ const OfflinePageClientPolicy& ClientPolicyController::GetPolicy(
   return policies_.at(kDefaultNamespace);
 }
 
+std::vector<std::string> ClientPolicyController::GetAllNamespaces() const {
+  std::vector<std::string> result;
+  for (const auto& policy_item : policies_)
+    result.emplace_back(policy_item.first);
+
+  return result;
+}
+
 bool ClientPolicyController::IsRemovedOnCacheReset(
     const std::string& name_space) const {
   return GetPolicy(name_space).feature_policy.is_removed_on_cache_reset;
@@ -143,6 +151,12 @@ ClientPolicyController::GetNamespacesRestrictedToOriginalTab() const {
   }
 
   return *show_in_original_tab_cache_;
+}
+
+void ClientPolicyController::AddPolicyForTest(
+    const std::string& name_space,
+    const OfflinePageClientPolicyBuilder& builder) {
+  policies_.insert(std::make_pair(name_space, builder.Build()));
 }
 
 }  // namespace offline_pages
