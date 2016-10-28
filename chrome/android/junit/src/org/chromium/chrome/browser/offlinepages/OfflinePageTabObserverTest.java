@@ -16,21 +16,19 @@ import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadows.multidex.ShadowMultiDex;
-
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 /**
  * Unit tests for OfflinePageUtils.
@@ -57,7 +55,6 @@ public class OfflinePageTabObserverTest {
         // TODO(fgorski): This call has to be mocked out until we update OfflinePageUtils.
         // It also goes to NetworkChangeNotifier from there.
         doReturn(false).when(observer).isConnected();
-        doReturn(false).when(observer).isShowingOfflinePreview(any(Tab.class));
         // TODO(fgorski): This call has to be mocked out until we update OfflinePageUtils.
         doNothing().when(observer).showReloadSnackbar(any(Tab.class));
         return observer;
@@ -245,28 +242,6 @@ public class OfflinePageTabObserverTest {
         assertTrue(observer.isObservingTab(mTab));
         assertTrue(observer.isLoadedTab(mTab));
         assertTrue(observer.wasSnackbarSeen(mTab));
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
-    public void testDontShowPreviewSnackbar_onShown() {
-        OfflinePageTabObserver observer = createObserver();
-
-        connect(observer, false);
-        hideTab(null);
-
-        observer.startObservingTab(mTab);
-        doReturn(true).when(observer).isShowingOfflinePreview(mTab);
-        observer.onPageLoadFinished(mTab);
-
-        verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
-        assertFalse(observer.wasSnackbarSeen(mTab));
-        showTab(observer);
-
-        verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
-        assertTrue(observer.isObservingTab(mTab));
-        assertTrue(observer.isLoadedTab(mTab));
-        assertFalse(observer.wasSnackbarSeen(mTab));
     }
 
     @Test
