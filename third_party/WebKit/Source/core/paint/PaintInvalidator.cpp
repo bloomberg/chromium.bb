@@ -124,6 +124,9 @@ static PaintInvalidationRectInBacking mapLocalRectToPaintInvalidationBacking(
     result.rect.moveBy(-containerContentsProperties.paintOffset);
   }
 
+  if (object.adjustVisualRectForRasterEffects(result.rect))
+    result.coversExtraPixels = true;
+
   if (context.paintInvalidationContainer->layer()->groupedMapping()) {
     PaintLayer::mapRectInPaintInvalidationContainerToBacking(
         *context.paintInvalidationContainer, result.rect);

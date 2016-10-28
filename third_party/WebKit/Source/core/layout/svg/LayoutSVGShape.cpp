@@ -45,15 +45,17 @@
 
 namespace blink {
 
-void LayoutSVGShape::adjustVisualRectForRasterEffects(
+bool LayoutSVGShape::adjustVisualRectForRasterEffects(
     LayoutRect& visualRect) const {
   // Account for raster expansions due to SVG stroke hairline raster effects.
-  if (styleRef().svgStyle().hasVisibleStroke()) {
-    float pad = 0.5f;
+  if (!visualRect.isEmpty() && styleRef().svgStyle().hasVisibleStroke()) {
+    LayoutUnit pad(0.5f);
     if (styleRef().svgStyle().capStyle() != ButtCap)
       pad += 0.5f;
-    visualRect.inflate(LayoutUnit(pad));
+    visualRect.inflate(pad);
+    return true;
   }
+  return false;
 }
 
 LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)

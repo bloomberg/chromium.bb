@@ -8,13 +8,23 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath polygon id='polygon'",
-          "rect": [264, 218, 164, 107],
+          "rect": [264, 219, 163, 106],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='polygon'",
+          "rect": [264, 209, 163, 106],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [265, 219, 162, 105],
-          "reason": "became visible"
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [265, 209, 162, 105],
+          "reason": "bounds change"
         }
       ]
     }
@@ -22,7 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "became visible"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGPath polygon id='polygon'",

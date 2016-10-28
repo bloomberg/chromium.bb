@@ -15,11 +15,6 @@
           "object": "LayoutSVGRoot svg",
           "rect": [265, 219, 162, 105],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutSVGPath polygon id='polygon'",
-          "rect": [-1, -1, 2, 2],
-          "reason": "full"
         }
       ]
     }

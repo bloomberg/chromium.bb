@@ -106,7 +106,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   const char* name() const override { return "LayoutSVGShape"; }
 
  protected:
-  void adjustVisualRectForRasterEffects(LayoutRect&) const override;
+  bool adjustVisualRectForRasterEffects(LayoutRect&) const override;
 
   void clearPath() { m_path.reset(); }
   void createPath();

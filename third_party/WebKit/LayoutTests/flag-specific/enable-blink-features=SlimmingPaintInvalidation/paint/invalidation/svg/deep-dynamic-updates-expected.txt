@@ -1,0 +1,46 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [24, 24, 402, 402],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [-1, -1, 402, 402],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [-1, -1, 123, 23],
+          "reason": "SVG resource change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop id='stop1'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "SVG resource change"
+    }
+  ]
+}
+

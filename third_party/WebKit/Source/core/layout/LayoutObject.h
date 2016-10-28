@@ -1384,6 +1384,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       LayoutRect&,
       VisualRectFlags = DefaultVisualRectFlags) const;
 
+  // Allows objects to adjust |visualEffect|, which is in the space of the
+  // paint invalidation container, for any special raster effects that might
+  // expand the rastered pixel area. Returns true if the rect is expanded.
+  virtual bool adjustVisualRectForRasterEffects(LayoutRect& visualRect) const {
+    return false;
+  }
+
   // Return the offset to the column in which the specified point (in
   // flow-thread coordinates) lives. This is used to convert a flow-thread point
   // to a point in the containing coordinate space.
@@ -1866,11 +1873,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // other custom mechanisms (if they need to be notified of parent style
   // changes at all).
   virtual bool anonymousHasStylePropagationOverride() { return false; }
-
-  // Allows objects to adjust |visualEffect|, which is in the space of the
-  // paint invalidation container, for any special raster effects that might
-  // expand the rastered pixel area.
-  virtual void adjustVisualRectForRasterEffects(LayoutRect& visualRect) const {}
 
  protected:
   // This function is called before calling the destructor so that some clean-up

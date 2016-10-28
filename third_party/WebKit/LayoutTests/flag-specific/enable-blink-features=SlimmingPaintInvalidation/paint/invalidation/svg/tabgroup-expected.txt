@@ -1,0 +1,1999 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [7, 7, 736, 573],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [389, 38, 316, 81],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [389, 38, 316, 81],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [389, 38, 316, 81],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [389, 38, 316, 81],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRound'",
+          "rect": [390, 38, 314, 80],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectRound'",
+          "rect": [263, 279, 301, 300],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [506, 233, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [506, 233, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [506, 233, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [506, 233, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [6, 256, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [6, 256, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [6, 256, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [6, 256, 238, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
+          "rect": [507, 233, 236, 159],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupTriangle'",
+          "rect": [7, 257, 236, 158],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupTriangle__0_content'",
+          "rect": [15, 291, 211, 37],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 291, 211, 37],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 291, 211, 37],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 291, 211, 37],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [15, 291, 211, 37],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [15, 291, 211, 37],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text id='contentTabGroupTriangle0'",
+          "rect": [15, 291, 211, 37],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [31, 404, 188, 10],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [23, 146, 188, 10],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [30, 147, 175, 97],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [38, 405, 174, 96],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [39, 404, 172, 96],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [31, 146, 172, 96],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [38, 6, 159, 238],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [38, 6, 159, 238],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [38, 6, 159, 238],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [38, 6, 159, 238],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRect'",
+          "rect": [38, 7, 158, 236],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 291, 150, 25],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 291, 150, 25],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [15, 291, 150, 25],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [15, 291, 150, 25],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [7, 33, 150, 25],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [7, 33, 150, 25],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [7, 33, 150, 25],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [7, 33, 150, 25],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__1'",
+          "rect": [61, 256, 67, 31],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__0'",
+          "rect": [506, 233, 66, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRound__0'",
+          "rect": [389, 38, 66, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__0'",
+          "rect": [362, 279, 64, 63],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__1'",
+          "rect": [569, 233, 64, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__1'",
+          "rect": [415, 331, 63, 63],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRound__1'",
+          "rect": [452, 38, 63, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
+          "rect": [6, 256, 58, 31],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [66, 257, 57, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [66, 257, 57, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [66, 257, 57, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [66, 257, 57, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [66, 257, 57, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [511, 234, 56, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [511, 234, 56, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [511, 234, 56, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [394, 38, 56, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [394, 38, 56, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [394, 38, 56, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
+          "rect": [125, 256, 55, 31],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [574, 234, 54, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [574, 234, 54, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [574, 234, 54, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [457, 38, 54, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [457, 38, 54, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [457, 38, 54, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__3'",
+          "rect": [506, 422, 53, 53],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__2'",
+          "rect": [466, 382, 51, 52],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [370, 285, 50, 50],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [370, 285, 50, 50],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [370, 285, 50, 50],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__3'",
+          "rect": [674, 233, 50, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRound__3'",
+          "rect": [557, 38, 50, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [422, 337, 49, 49],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [422, 337, 49, 49],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [422, 337, 49, 49],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [11, 257, 48, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [11, 257, 48, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [11, 257, 48, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [11, 257, 48, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [11, 257, 48, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
+          "rect": [630, 233, 47, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRound__2'",
+          "rect": [513, 38, 47, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [129, 257, 45, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [129, 257, 45, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [129, 257, 45, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [129, 257, 45, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [129, 257, 45, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
+          "rect": [177, 256, 42, 31],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [679, 234, 40, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [679, 234, 40, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [679, 234, 40, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [562, 38, 40, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [562, 38, 40, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [562, 38, 40, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [513, 429, 39, 39],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [513, 429, 39, 39],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [513, 429, 39, 39],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [473, 389, 38, 38],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [473, 389, 38, 38],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [473, 389, 38, 38],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [635, 234, 38, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [635, 234, 38, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [635, 234, 38, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [517, 38, 38, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [517, 38, 38, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [517, 38, 38, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [182, 257, 31, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [182, 257, 31, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [182, 257, 31, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [182, 257, 31, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [182, 257, 31, 29],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__0'",
+          "rect": [178, 6, 19, 66],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__1'",
+          "rect": [178, 69, 19, 64],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__3'",
+          "rect": [178, 174, 19, 50],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__2'",
+          "rect": [178, 130, 19, 47],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [180, 11, 16, 56],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [180, 11, 16, 56],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [180, 11, 16, 56],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [180, 74, 16, 54],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [180, 74, 16, 54],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [180, 74, 16, 54],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [180, 179, 16, 40],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [180, 179, 16, 40],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [180, 179, 16, 40],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [180, 135, 16, 38],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [180, 135, 16, 38],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [180, 135, 16, 38],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRect__1'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRect__1_content'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__0_content'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectTriangle__2_content'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRound__1'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRound__1_content'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectRound__0'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectRound__0_content'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='oversizeContent'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRect'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRect__0'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Biography'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRect__0_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRect__2'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Events'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRect__2_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRect__3'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Portrait'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRect__3_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRect__1'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Relations'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRect__1_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupTriangle'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupTriangle__1'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Download'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Folder'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__1_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='oversizeContent'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'This is oversize content that can be'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'hidden on tab-change'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Your'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Account'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__2_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Help'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox '& Info'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__3_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Geodata'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Browser'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupTriangle__0_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text id='contentTabGroupTriangle0'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'This is a tabgroup with triangular tab corners'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'and a double line tab. (use \"\\n\" as a line separator)'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Click on the second tab to see oversize content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectTriangle__0'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Biography'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectTriangle__0_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectTriangle__1'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Relations'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectTriangle__1_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectTriangle__3'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Portrait'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectTriangle__3_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Events'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectTriangle__2_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRound'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRound__0'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Biography'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRound__0_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRound__2'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Events'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRound__2_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRound__3'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Portrait'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRound__3_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRound__1'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Relations'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRound__1_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectRound'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectRound__1'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Relations'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectRound__1_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectRound__2'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Events'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectRound__2_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectRound__3'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Portrait'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectRound__3_content'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupRectRound__0'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Biography'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupRectRound__0_content'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

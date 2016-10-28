@@ -1,0 +1,94 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [187, 106, 310, 390],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [90, 85, 277, 249],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [203, 336, 123, 44],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text id='text'",
+          "rect": [203, 336, 123, 44],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [247, 90, 122, 43],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text id='text'",
+          "rect": [247, 90, 122, 43],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [355, 125, 103, 104],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [109, 84, 103, 101],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGImage image id='image'",
+          "rect": [90, 208, 98, 97],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGImage image id='image'",
+          "rect": [353, 398, 97, 98],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGText text id='text'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'This is some text'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGImage image id='image'",
+      "reason": "full"
+    }
+  ]
+}
+

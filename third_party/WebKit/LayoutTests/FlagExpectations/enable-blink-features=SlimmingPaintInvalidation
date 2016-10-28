@@ -1,4 +1,4 @@
-# Expectations for slimmingPaintInvalidation feature
+# Expectations for SlimmingPaintInvalidation feature
 
 # Rebaselined because of different clipping behavior, sometimes more accurate
 # (e.g. about css clip), sometimes less accurate (e.g. when clip has transforms)
@@ -7,14 +7,6 @@
 # paint/invalidation/scroll-in-transformed-layer.html
 # paint/invalidation/scroll-with-transformed-parent-layer.html
 # paint/invalidation/shift-relative-positioned-container-with-image-addition.html
-
-crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]
-
-# Missing enclosingIntRect for scale transforms.
-#crbug.com/648769 paint/invalidation/invalidation-with-scale-transform.html [ Failure ]
-#crbug.com/648769 paint/invalidation/transform-inline-layered-child.html [ Failure ]
-#crbug.com/648769 paint/invalidation/transform-layout-repaint.html [ Failure ]
-#crbug.com/648769 fast/sub-pixel/sub-pixel-accumulates-to-layers.html [ Failure ]
 
 # Rebaselined: We use FrameView::x() and FrameView::y() which are integers to
 # generate FrameViewpreTranslation, but the old path uses offsets in the layout tree.
@@ -29,3 +21,8 @@ crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html
 # paint/invalidation/line-flow-with-floats-4.html
 # paint/invalidation/line-flow-with-floats-5.html
 # paint/invalidation/window-resize-percent-html.html
+
+# Rebaselined paint/invalidation/svg because we do more accurate pixel snapping
+# for SVGRoot instead of enclosingIntRect() on SVGRoot during rect mapping.
+
+crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]

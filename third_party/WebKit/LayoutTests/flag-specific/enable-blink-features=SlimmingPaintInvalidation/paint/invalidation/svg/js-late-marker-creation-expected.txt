@@ -1,0 +1,37 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [202, 211, 112, 112],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [0, 0, 4, 4],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "style change"
+    }
+  ]
+}
+
