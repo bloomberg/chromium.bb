@@ -26,7 +26,11 @@ class MetadataChangeList;
 
 // Interface implemented by model types to receive updates from sync via the
 // SharedModelTypeProcessor. Provides a way for sync to update the data and
-// metadata for entities, as well as the model type state.
+// metadata for entities, as well as the model type state. Sync bridge
+// implementations have the responsibility of providing thier change_processor()
+// with metadata through ModelTypeChangeProcessor::OnMetadataLoaded() as soon as
+// possible. Sync will wait for this method to be called, and afterwards it will
+// start calling into the bridge.
 class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
  public:
   typedef base::Callback<void(SyncError, std::unique_ptr<DataBatch>)>

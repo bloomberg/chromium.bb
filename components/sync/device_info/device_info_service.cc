@@ -4,6 +4,8 @@
 
 #include "components/sync/device_info/device_info_service.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 #include <utility>
@@ -33,6 +35,54 @@ using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
 using WriteBatch = ModelTypeStore::WriteBatch;
+
+namespace {
+
+// Find the timestamp for the last time this |device_info| was edited.
+Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
+  if (specifics.has_last_updated_timestamp()) {
+    return ProtoTimeToTime(specifics.last_updated_timestamp());
+  } else {
+    return Time();
+  }
+}
+
+// Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
+std::unique_ptr<DeviceInfo> SpecificsToModel(
+    const DeviceInfoSpecifics& specifics) {
+  return base::MakeUnique<DeviceInfo>(
+      specifics.cache_guid(), specifics.client_name(),
+      specifics.chrome_version(), specifics.sync_user_agent(),
+      specifics.device_type(), specifics.signin_scoped_device_id());
+}
+
+// Allocate a EntityData and copies |specifics| into it.
+std::unique_ptr<EntityData> CopyToEntityData(
+    const DeviceInfoSpecifics& specifics) {
+  auto entity_data = base::MakeUnique<EntityData>();
+  *entity_data->specifics.mutable_device_info() = specifics;
+  entity_data->non_unique_name = specifics.client_name();
+  return entity_data;
+}
+
+// Converts DeviceInfo into a freshly allocated DeviceInfoSpecifics. Takes
+// |last_updated_timestamp| to set because the model object does not contain
+// this concept.
+std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
+    const DeviceInfo& info,
+    int64_t last_updated_timestamp) {
+  auto specifics = base::MakeUnique<DeviceInfoSpecifics>();
+  specifics->set_cache_guid(info.guid());
+  specifics->set_client_name(info.client_name());
+  specifics->set_chrome_version(info.chrome_version());
+  specifics->set_sync_user_agent(info.sync_user_agent());
+  specifics->set_device_type(info.device_type());
+  specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
+  specifics->set_last_updated_timestamp(last_updated_timestamp);
+  return specifics;
+}
+
+}  // namespace
 
 DeviceInfoService::DeviceInfoService(
     LocalDeviceInfoProvider* local_device_info_provider,
@@ -90,7 +140,7 @@ SyncError DeviceInfoService::MergeSyncData(
     DCHECK_EQ(kv.first, specifics.cache_guid());
     if (specifics.cache_guid() == local_guid) {
       // Don't Put local data if it's the same as the remote copy.
-      if (local_info->Equals(*CopyToModel(specifics))) {
+      if (local_info->Equals(*SpecificsToModel(specifics))) {
         local_guids_to_put.erase(local_guid);
       } else {
         // This device is valid right now and this entry is about to be
@@ -215,7 +265,7 @@ std::unique_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
   if (iter == all_data_.end()) {
     return std::unique_ptr<DeviceInfo>();
   }
-  return CopyToModel(*iter->second);
+  return SpecificsToModel(*iter->second);
 }
 
 std::vector<std::unique_ptr<DeviceInfo>> DeviceInfoService::GetAllDeviceInfo()
@@ -223,7 +273,7 @@ std::vector<std::unique_ptr<DeviceInfo>> DeviceInfoService::GetAllDeviceInfo()
   std::vector<std::unique_ptr<DeviceInfo>> list;
   for (ClientIdToSpecifics::const_iterator iter = all_data_.begin();
        iter != all_data_.end(); ++iter) {
-    list.push_back(CopyToModel(*iter->second));
+    list.push_back(SpecificsToModel(*iter->second));
   }
   return list;
 }
@@ -245,44 +295,10 @@ void DeviceInfoService::NotifyObservers() {
     observer.OnDeviceInfoChange();
 }
 
-// Static.
-std::unique_ptr<DeviceInfoSpecifics> DeviceInfoService::CopyToSpecifics(
-    const DeviceInfo& info) {
-  std::unique_ptr<DeviceInfoSpecifics> specifics =
-      base::WrapUnique(new DeviceInfoSpecifics);
-  specifics->set_cache_guid(info.guid());
-  specifics->set_client_name(info.client_name());
-  specifics->set_chrome_version(info.chrome_version());
-  specifics->set_sync_user_agent(info.sync_user_agent());
-  specifics->set_device_type(info.device_type());
-  specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
-  return specifics;
-}
-
-// Static.
-std::unique_ptr<DeviceInfo> DeviceInfoService::CopyToModel(
-    const DeviceInfoSpecifics& specifics) {
-  return base::MakeUnique<DeviceInfo>(
-      specifics.cache_guid(), specifics.client_name(),
-      specifics.chrome_version(), specifics.sync_user_agent(),
-      specifics.device_type(), specifics.signin_scoped_device_id());
-}
-
-// Static.
-std::unique_ptr<EntityData> DeviceInfoService::CopyToEntityData(
-    const DeviceInfoSpecifics& specifics) {
-  std::unique_ptr<EntityData> entity_data(new EntityData());
-  *entity_data->specifics.mutable_device_info() = specifics;
-  entity_data->non_unique_name = specifics.client_name();
-  return entity_data;
-}
-
 void DeviceInfoService::StoreSpecifics(
     std::unique_ptr<DeviceInfoSpecifics> specifics,
     WriteBatch* batch) {
   const std::string guid = specifics->cache_guid();
-  DVLOG(1) << "Storing DEVICE_INFO for " << specifics->client_name()
-           << " with ID " << guid;
   store_->WriteData(batch, guid, specifics->SerializeAsString());
   all_data_[guid] = std::move(specifics);
 }
@@ -291,8 +307,6 @@ bool DeviceInfoService::DeleteSpecifics(const std::string& guid,
                                         WriteBatch* batch) {
   ClientIdToSpecifics::const_iterator iter = all_data_.find(guid);
   if (iter != all_data_.end()) {
-    DVLOG(1) << "Deleting DEVICE_INFO for " << iter->second->client_name()
-             << " with ID " << guid;
     store_->DeleteData(batch, guid);
     all_data_.erase(iter);
     return true;
@@ -320,8 +334,6 @@ void DeviceInfoService::OnStoreCreated(Result result,
         base::Bind(&DeviceInfoService::OnReadAllData, base::AsWeakPtr(this)));
   } else {
     ReportStartupErrorToSync("ModelTypeStore creation failed.");
-    // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
-    // failure.
   }
 }
 
@@ -329,8 +341,6 @@ void DeviceInfoService::OnReadAllData(Result result,
                                       std::unique_ptr<RecordList> record_list) {
   if (result != Result::SUCCESS) {
     ReportStartupErrorToSync("Initial load of data failed.");
-    // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
-    // failure.
     return;
   }
 
@@ -341,8 +351,6 @@ void DeviceInfoService::OnReadAllData(Result result,
       all_data_[specifics->cache_guid()] = std::move(specifics);
     } else {
       ReportStartupErrorToSync("Failed to deserialize specifics.");
-      // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
-      // failure.
     }
   }
 
@@ -362,47 +370,36 @@ void DeviceInfoService::OnReadAllMetadata(
     std::unique_ptr<RecordList> metadata_records,
     const std::string& global_metadata) {
   if (result != Result::SUCCESS) {
-    // Store has encountered some serious error. We should still be able to
-    // continue as a read only service, since if we got this far we must have
-    // loaded all data out succesfully.
     ReportStartupErrorToSync("Load of metadata completely failed.");
     return;
   }
 
-  std::unique_ptr<MetadataBatch> batch(new MetadataBatch());
+  auto batch = base::MakeUnique<MetadataBatch>();
   ModelTypeState state;
   if (state.ParseFromString(global_metadata)) {
     batch->SetModelTypeState(state);
   } else {
-    // TODO(skym): How bad is this scenario? We may be able to just give an
-    // empty batch to the processor and we'll treat corrupted data type state
-    // as no data type state at all. The question is do we want to add any of
-    // the entity metadata to the batch or completely skip that step? We're
-    // going to have to perform a merge shortly. Does this decision/logic even
-    // belong in this service?
-    change_processor()->OnMetadataLoaded(
-        change_processor()->CreateAndUploadError(
-            FROM_HERE, "Failed to deserialize global metadata."),
-        nullptr);
+    ReportStartupErrorToSync("Failed to deserialize global metadata.");
+    return;
   }
+
   for (const Record& r : *metadata_records.get()) {
     sync_pb::EntityMetadata entity_metadata;
     if (entity_metadata.ParseFromString(r.value)) {
       batch->AddMetadata(r.id, entity_metadata);
     } else {
-      // TODO(skym): This really isn't too bad. We just want to regenerate
-      // metadata for this particular entity. Unfortunately there isn't a
-      // convenient way to tell the processor to do this.
-      LOG(WARNING) << "Failed to deserialize entity metadata.";
+      ReportStartupErrorToSync("Failed to deserialize entity metadata.");
     }
   }
+
   change_processor()->OnMetadataLoaded(SyncError(), std::move(batch));
   ReconcileLocalAndStored();
 }
 
 void DeviceInfoService::OnCommit(Result result) {
   if (result != Result::SUCCESS) {
-    LOG(WARNING) << "Failed a write to store.";
+    change_processor()->CreateAndUploadError(FROM_HERE,
+                                             "Failed a write to store.");
   }
 }
 
@@ -421,7 +418,7 @@ void DeviceInfoService::ReconcileLocalAndStored() {
 
   // Convert to DeviceInfo for Equals function.
   if (iter != all_data_.end() &&
-      current_info->Equals(*CopyToModel(*iter->second))) {
+      current_info->Equals(*SpecificsToModel(*iter->second))) {
     const TimeDelta pulse_delay(DeviceInfoUtil::CalculatePulseDelay(
         GetLastUpdateTime(*iter->second), Time::Now()));
     if (!pulse_delay.is_zero()) {
@@ -442,9 +439,8 @@ void DeviceInfoService::SendLocalData() {
   // is enabled later.
   if (local_device_info_provider_->GetLocalDeviceInfo() != nullptr) {
     std::unique_ptr<DeviceInfoSpecifics> specifics =
-        CopyToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo());
-    specifics->set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
-
+        ModelToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo(),
+                         TimeToProtoTime(Time::Now()));
     std::unique_ptr<MetadataChangeList> metadata_change_list =
         CreateMetadataChangeList();
     if (change_processor()->IsTrackingMetadata()) {
@@ -490,16 +486,6 @@ void DeviceInfoService::ReportStartupErrorToSync(const std::string& msg) {
   LOG(WARNING) << msg;
   change_processor()->OnMetadataLoaded(
       change_processor()->CreateAndUploadError(FROM_HERE, msg), nullptr);
-}
-
-// static
-Time DeviceInfoService::GetLastUpdateTime(
-    const DeviceInfoSpecifics& specifics) {
-  if (specifics.has_last_updated_timestamp()) {
-    return ProtoTimeToTime(specifics.last_updated_timestamp());
-  } else {
-    return Time();
-  }
 }
 
 }  // namespace syncer

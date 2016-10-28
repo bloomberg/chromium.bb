@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_
 #define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_
 
-#include <stdint.h>
-
 #include <map>
 #include <memory>
 #include <string>
@@ -75,16 +73,6 @@ class DeviceInfoService : public ModelTypeSyncBridge, public DeviceInfoTracker {
   using ClientIdToSpecifics =
       std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;
 
-  static std::unique_ptr<sync_pb::DeviceInfoSpecifics> CopyToSpecifics(
-      const DeviceInfo& info);
-
-  // Allocate new DeviceInfo from SyncData.
-  static std::unique_ptr<DeviceInfo> CopyToModel(
-      const sync_pb::DeviceInfoSpecifics& specifics);
-  // Conversion as we prepare to hand data to the processor.
-  static std::unique_ptr<EntityData> CopyToEntityData(
-      const sync_pb::DeviceInfoSpecifics& specifics);
-
   // Store SyncData in the cache and durable storage.
   void StoreSpecifics(std::unique_ptr<sync_pb::DeviceInfoSpecifics> specifics,
                       ModelTypeStore::WriteBatch* batch);
@@ -138,10 +126,6 @@ class DeviceInfoService : public ModelTypeSyncBridge, public DeviceInfoTracker {
   // Report an error starting up to sync if it tries to connect to this
   // datatype, since these errors prevent us from knowing if sync is enabled.
   void ReportStartupErrorToSync(const std::string& msg);
-
-  // Find the timestamp for the last time this |device_info| was edited.
-  static base::Time GetLastUpdateTime(
-      const sync_pb::DeviceInfoSpecifics& specifics);
 
   // |local_device_info_provider_| isn't owned.
   const LocalDeviceInfoProvider* const local_device_info_provider_;
