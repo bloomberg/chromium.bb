@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -137,9 +136,8 @@ public class AppMenuPropertiesDelegate {
             menu.findItem(R.id.move_to_other_window_menu_id).setVisible(
                     MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity));
 
-            // Hide "Recent tabs" in incognito mode or when sync can't be enabled.
             MenuItem recentTabsMenuItem = menu.findItem(R.id.recent_tabs_menu_id);
-            recentTabsMenuItem.setVisible(!isIncognito && FeatureUtilities.canAllowSync(mActivity));
+            recentTabsMenuItem.setVisible(!isIncognito);
             recentTabsMenuItem.setTitle(R.string.menu_recent_tabs);
 
             MenuItem allBookmarksMenuItem = menu.findItem(R.id.all_bookmarks_menu_id);

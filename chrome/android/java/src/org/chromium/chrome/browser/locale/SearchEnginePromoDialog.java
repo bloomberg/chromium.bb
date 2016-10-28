@@ -54,6 +54,7 @@ public class SearchEnginePromoDialog extends Dialog
             Intent intent = PreferencesLauncher.createIntentForSettingsPage(getContext(),
                     SearchEnginePreference.class.getName());
             getContext().startActivity(intent);
+            dismiss();
         }
     };
 

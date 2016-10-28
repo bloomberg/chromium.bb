@@ -139,7 +139,8 @@ public class LocaleManager {
 
     /**
      * Switches the default search engine based on the current locale, if the user has delegated
-     * Chrome to do so.
+     * Chrome to do so. This method also adds some special engines to user's search engine list, as
+     * long as the user is in this locale.
      */
     protected void maybeAutoSwitchSearchEngine() {
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
@@ -151,6 +152,9 @@ public class LocaleManager {
         } else if (isInSpecialLocale && !wasInSpecialLocale) {
             addSpecialSearchEngines();
             overrideDefaultSearchEngine();
+        } else if (isInSpecialLocale) {
+            // As long as the user is in the special locale, special engines should be in the list.
+            addSpecialSearchEngines();
         }
         preferences.edit().putBoolean(PREF_WAS_IN_SPECIAL_LOCALE, isInSpecialLocale).apply();
     }
