@@ -248,10 +248,11 @@ enum WouldLoadReason {
   // if the inner frame is visible, so just load it.
   // TODO(dgrogan): Revisit after https://crbug.com/650433 is fixed.
   WouldLoadOutOfProcess,
-  // The next four indicate frames that are probably used for cross-origin
+  // The next five indicate frames that are probably used for cross-origin
   // communication.
   WouldLoadDisplayNone,
   WouldLoadZeroByZero,
+  WouldLoadAboveAndLeft,
   WouldLoadAbove,
   WouldLoadLeft,
   // We have to load documents in visible frames.

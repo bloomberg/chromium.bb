@@ -4355,6 +4355,8 @@ void FrameView::updateViewportIntersectionIfNeeded() {
   if (parentLoaded) {
     if (frameRect().isEmpty())
       frame().document()->maybeRecordLoadReason(WouldLoadZeroByZero);
+    else if (frameRect().maxY() < 0 && frameRect().maxX() < 0)
+      frame().document()->maybeRecordLoadReason(WouldLoadAboveAndLeft);
     else if (frameRect().maxY() < 0)
       frame().document()->maybeRecordLoadReason(WouldLoadAbove);
     else if (frameRect().maxX() < 0)

@@ -406,7 +406,7 @@ static void runAutofocusTask(ExecutionContext* context) {
 static void recordLoadReasonToHistogram(WouldLoadReason reason) {
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, unseenFrameHistogram,
-      ("Navigation.DeferredDocumentLoading.StatesV2", WouldLoadReasonEnd));
+      ("Navigation.DeferredDocumentLoading.StatesV3", WouldLoadReasonEnd));
   unseenFrameHistogram.count(reason);
 }
 

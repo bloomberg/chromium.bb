@@ -13,7 +13,7 @@
 namespace blink {
 
 static const char* kHistogramName =
-    "Navigation.DeferredDocumentLoading.StatesV2";
+    "Navigation.DeferredDocumentLoading.StatesV3";
 
 class DeferredLoadingTest : public SimTest {
  protected:
@@ -108,9 +108,8 @@ TEST_F(DeferredLoadingTest, AboveAndLeft) {
 
   compositeFrame();
 
-  // Don't log WouldLoadAbove AND WouldLoadLeft.
   histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadAbove, 1);
+  histogramTester.expectBucketCount(kHistogramName, WouldLoadAboveAndLeft, 1);
   histogramTester.expectTotalCount(kHistogramName, 2);
 }
 
