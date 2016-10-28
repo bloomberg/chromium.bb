@@ -3,21 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{hasChildren: boolean,
- *            id: string,
- *            title: string,
- *            totalUsage: string,
- *            type: string}}
- */
-var CookieDetails;
-
-/**
- * @typedef {{content: string,
- *            label: string}}
- */
-var CookieDataForDisplay;
-
-/**
  * @typedef {{title: string,
  *            id: string,
  *            data: CookieDetails}}
@@ -40,8 +25,8 @@ var CookieList;
 
 /**
  * @typedef {{id: string,
- *            start: !number,
- *            count: !number}}
+ *            start: number,
+ *            count: number}}
  */
 var CookieRemovePacket;
 
@@ -80,9 +65,9 @@ cr.define('settings', function() {
   function CookieTreeNode(data) {
     /**
      * The data for this cookie node.
-     * @private {CookieDetails}
+     * @type {CookieDetails}
      */
-    this.data_ = data;
+    this.data = data;
 
     /**
      * The child cookie nodes.
@@ -118,7 +103,7 @@ cr.define('settings', function() {
      */
     populateChildNodes: function(parentId, startingNode, newNodes) {
       for (var i = 0; i < startingNode.children_.length; ++i) {
-        if (startingNode.children_[i].data_.id == parentId) {
+        if (startingNode.children_[i].data.id == parentId) {
           this.addChildNodes(startingNode.children_[i], newNodes);
           return true;
         }
@@ -152,9 +137,9 @@ cr.define('settings', function() {
 
       for (var group of this.children_) {
         for (var cookie of group.children_) {
-          list.push({title: cookie.data_.title,
-                     id: cookie.data_.id,
-                     data: cookie.data_});
+          list.push({title: cookie.data.title,
+                     id: cookie.data.id,
+                     data: cookie.data});
         }
       }
 
@@ -169,8 +154,8 @@ cr.define('settings', function() {
       var list = [];
       for (var i = 0; i < this.children_.length; ++i) {
         var siteEntry = this.children_[i];
-        var title = siteEntry.data_.title;
-        var id = siteEntry.data_.id;
+        var title = siteEntry.data.title;
+        var id = siteEntry.data.id;
         var description = '';
 
         if (siteEntry.children_.length == 0)
@@ -183,12 +168,12 @@ cr.define('settings', function() {
 
           // Some types, like quota, have no description nodes.
           var dataType = '';
-          if (descriptionNode.data_.type != undefined) {
-            dataType = descriptionNode.data_.type;
+          if (descriptionNode.data.type != undefined) {
+            dataType = descriptionNode.data.type;
           } else {
             // A description node might not have children when it's deleted.
             if (descriptionNode.children_.length > 0)
-              dataType = descriptionNode.children_[0].data_.type;
+              dataType = descriptionNode.children_[0].data.type;
           }
 
           var count =
@@ -197,7 +182,7 @@ cr.define('settings', function() {
             description += loadTimeData.getStringF('cookiePlural', count);
           } else {
             description += getCookieDataCategoryText(
-                dataType, descriptionNode.data_.totalUsage);
+                dataType, descriptionNode.data.totalUsage);
           }
 
         }
@@ -219,7 +204,7 @@ cr.define('settings', function() {
       for (var i = 0; i < this.children_.length; ++i) {
         if (this.children_[i] == null)
           return null;
-        if (this.children_[i].data_.id == id)
+        if (this.children_[i].data.id == id)
           return this.children_[i];
         if (recursive) {
           var node = this.children_[i].fetchNodeById(id, true);
@@ -228,30 +213,6 @@ cr.define('settings', function() {
         }
       }
       return null;
-    },
-
-    /**
-     * Get cookie data for a given HTML node.
-     * @return {!Array<CookieDataForDisplay>}
-     */
-    getCookieData: function(item) {
-      /** @type {!Array<CookieDataForDisplay>} */
-      var out = [];
-      var fields = cookieInfo[item.data_.type];
-      for (var field of fields) {
-        // Iterate through the keys found in |cookieInfo| for the given |type|
-        // and see if those keys are present in the data. If so, display them
-        // (in the order determined by |cookieInfo|).
-        var key = field[0];
-        if (item.data_[key].length > 0) {
-          var entry = /** @type {CookieDataForDisplay} */({
-            label: loadTimeData.getString(field[1]),
-            content: item.data_[key],
-          });
-          out.push(entry);
-        }
-      }
-      return out;
     },
   };
 

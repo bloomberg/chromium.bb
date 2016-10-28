@@ -777,6 +777,12 @@
                  file="route.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_COOKIE_TREE_BEHAVIOR_HTML"
+                 file="site_settings/cookie_tree_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_COOKIE_TREE_BEHAVIOR_JS"
+                 file="site_settings/cookie_tree_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_DATA_HTML"
                  file="site_settings/site_data.html"
                  type="chrome_html" />

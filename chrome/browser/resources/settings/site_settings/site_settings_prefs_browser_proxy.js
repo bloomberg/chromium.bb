@@ -157,7 +157,7 @@ cr.define('settings', function() {
 
     /**
      * Reloads all cookies.
-     * @return {!Promise<Array<CookieDataSummaryItem>>} Returns the full cookie
+     * @return {!Promise<!CookieList>} Returns the full cookie
      *     list.
      */
     reloadCookies: function() {},
@@ -165,7 +165,7 @@ cr.define('settings', function() {
     /**
      * Fetches all children of a given cookie.
      * @param {string} path The path to the parent cookie.
-     * @return {!Promise<Array<CookieDataSummaryItem>>} Returns a cookie list
+     * @return {!Promise<!Array<!CookieDataSummaryItem>>} Returns a cookie list
      *     for the given path.
      */
     loadCookieChildren: function(path) {},
@@ -178,7 +178,7 @@ cr.define('settings', function() {
 
     /**
      * Removes all cookies.
-     * @return {!Promise<Array<CookieDataSummaryItem>>} Returns the up to date
+     * @return {!Promise<!CookieList>} Returns the up to date
      *     cookie list once deletion is complete (empty list).
      */
     removeAllCookies: function() {},
@@ -212,7 +212,7 @@ cr.define('settings', function() {
 
     /**
      * Fetches a list of all USB devices and the sites permitted to use them.
-     * @return {!Promise<Array<UsbDeviceEntry>>} The list of USB devices.
+     * @return {!Promise<!Array<!UsbDeviceEntry>>} The list of USB devices.
      */
     fetchUsbDevices: function() {},
 

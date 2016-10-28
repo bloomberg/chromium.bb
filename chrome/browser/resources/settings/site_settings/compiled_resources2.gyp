@@ -39,16 +39,29 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'cookie_info',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'cookie_tree_behavior',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        'cookie_info',
+        'site_settings_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'cookie_tree_node',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'cookie_info',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'cookie_info',
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
@@ -70,9 +83,8 @@
     {
       'target_name': 'site_data',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        'cookie_tree_behavior',
         'cookie_tree_node',
-        'site_settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -80,7 +92,6 @@
       'target_name': 'site_data_details_dialog',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'cookie_tree_node',
         'site_settings_behavior',
       ],

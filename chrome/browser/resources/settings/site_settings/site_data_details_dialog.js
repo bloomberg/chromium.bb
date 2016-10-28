@@ -78,7 +78,7 @@ Polymer({
    */
   populateDialog_: function() {
     this.title_ = loadTimeData.getStringF('siteSettingsCookieDialog',
-                                          this.site_.data_.title);
+                                          this.site_.data.title);
 
     this.entries_ = this.site_.getCookieList();
     if (this.entries_.length < 2) {
@@ -104,13 +104,13 @@ Polymer({
    * @private
    */
   nodePath_: function(node, currentPath, targetId) {
-    if (node.data_.id == targetId)
+    if (node.data.id == targetId)
       return currentPath;
 
     for (var i = 0; i < node.children_.length; ++i) {
       var child = node.children_[i];
       var path = this.nodePath_(
-          child, currentPath + ',' + child.data_.id, targetId);
+          child, currentPath + ',' + child.data.id, targetId);
       if (path.length > 0)
         return path;
     }
@@ -127,7 +127,7 @@ Polymer({
   populateItem_: function(id, site) {
     var node = site.fetchNodeById(id, true);
     if (node)
-      this.cookieNodes_ = site.getCookieData(node);
+      this.cookieNodes_ = getCookieData(node.data);
   },
 
   /**
@@ -183,7 +183,7 @@ Polymer({
    */
   onRemove_: function(event) {
     this.browserProxy.removeCookie(this.nodePath_(
-        this.site_, this.site_.data_.id, this.$.picker.value));
+        this.site_, this.site_.data.id, this.$.picker.value));
   },
 
   /**
@@ -192,7 +192,7 @@ Polymer({
    */
   onRemoveAll_: function(event) {
     cr.removeWebUIListener(this.listener_);
-    this.browserProxy.removeCookie(this.site_.data_.id);
+    this.browserProxy.removeCookie(this.site_.data.id);
     this.close();
   },
 
