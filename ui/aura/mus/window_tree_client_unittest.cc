@@ -24,6 +24,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -50,6 +51,10 @@ void SetWindowVisibility(Window* window, bool visible) {
 
 Window* GetFirstRoot(WindowTreeClient* client) {
   return client->GetRoots().empty() ? nullptr : *client->GetRoots().begin();
+}
+
+bool IsWindowHostVisible(Window* window) {
+  return window->GetRootWindow()->GetHost()->compositor()->IsVisible();
 }
 
 const char kAlwaysOnTopServerKey[] = "always-on-top-server";
@@ -434,8 +439,12 @@ TEST_F(WindowTreeClientClientTest, InputEventBasic) {
   std::unique_ptr<Window> top_level(base::MakeUnique<Window>(&window_delegate));
   top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   top_level->Init(ui::LAYER_NOT_DRAWN);
-  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
-  top_level->Show();
+  WindowTreeHost* window_tree_host = top_level->GetRootWindow()->GetHost();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host->SetBounds(bounds);
+  window_tree_host->Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host->window()->bounds());
   EXPECT_FALSE(window_delegate.got_move());
   EXPECT_FALSE(window_delegate.was_acked());
   std::unique_ptr<ui::Event> ui_event(
@@ -701,8 +710,7 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   EXPECT_EQ(initial_root_count + 1,
             window_tree_client_impl()->GetRoots().size());
 
-  // TODO: check drawn.
-  // EXPECT_FALSE(root2->IsDrawn());
+  EXPECT_FALSE(IsWindowHostVisible(top_level.get()));
   EXPECT_FALSE(top_level->TargetVisibility());
 
   // Ack the request to the windowtree to create the new window.
@@ -718,37 +726,43 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
   window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
                                           display_id, true);
+  EXPECT_EQ(
+      0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
 
   // Make sure all the properties took.
-  // EXPECT_TRUE(root2->IsDrawn());
+  EXPECT_TRUE(IsWindowHostVisible(top_level.get()));
   EXPECT_TRUE(top_level->TargetVisibility());
   // TODO: check display_id.
   // EXPECT_EQ(1, root2->display_id());
-  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), top_level->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 3, 4), top_level->bounds());
+  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), top_level->GetHost()->GetBounds());
 }
 
 TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   SetPropertyConverter(base::MakeUnique<TestPropertyConverter>());
 
-  Window window(nullptr);
-  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
+  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  top_level->Init(ui::LAYER_NOT_DRAWN);
 
-  EXPECT_FALSE(window.TargetVisibility());
+  EXPECT_FALSE(top_level->TargetVisibility());
 
   // Make visibility go from false->true->false. Don't ack immediately.
-  window.Show();
-  window.Hide();
+  top_level->Show();
+  top_level->Hide();
 
   // Change bounds to 5, 6, 7, 8.
-  window.SetBounds(gfx::Rect(5, 6, 7, 8));
+  top_level->SetBounds(gfx::Rect(5, 6, 7, 8));
 
   const uint8_t explicitly_set_test_property1_value = 2;
-  window.SetProperty(kTestPropertyKey1, explicitly_set_test_property1_value);
+  top_level->SetProperty(kTestPropertyKey1,
+                         explicitly_set_test_property1_value);
 
-  // Ack the new window top level window. Vis and bounds shouldn't change.
+  // Ack the new window top level top_level Vis and bounds shouldn't change.
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
-  data->window_id = server_id(&window);
-  data->bounds.SetRect(1, 2, 3, 4);
+  data->window_id = server_id(top_level.get());
+  const gfx::Rect bounds_from_server(1, 2, 3, 4);
+  data->bounds = bounds_from_server;
   data->visible = true;
   const uint8_t server_test_property1_value = 3;
   data->properties[kTestPropertyServerKey1] =
@@ -757,35 +771,42 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   data->properties[kTestPropertyServerKey2] =
       Uint8ToPropertyTransportValue(server_test_property2_value);
   const int64_t display_id = 1;
-  // Get the id of the in flight change for creating the new window.
+  // Get the id of the in flight change for creating the new top_level.
   uint32_t new_window_in_flight_change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
-      WindowTreeChangeType::NEW_WINDOW, &new_window_in_flight_change_id));
+      WindowTreeChangeType::NEW_TOP_LEVEL, &new_window_in_flight_change_id));
   window_tree_client()->OnTopLevelCreated(new_window_in_flight_change_id,
                                           std::move(data), display_id, true);
 
   // The only value that should take effect is the property for 'yy' as it was
   // not in flight.
-  EXPECT_FALSE(window.TargetVisibility());
-  EXPECT_EQ(gfx::Rect(5, 6, 7, 8), window.bounds());
+  EXPECT_FALSE(top_level->TargetVisibility());
+  EXPECT_EQ(gfx::Rect(5, 6, 7, 8), top_level->bounds());
   EXPECT_EQ(explicitly_set_test_property1_value,
-            window.GetProperty(kTestPropertyKey1));
-  EXPECT_EQ(server_test_property2_value, window.GetProperty(kTestPropertyKey2));
+            top_level->GetProperty(kTestPropertyKey1));
+  EXPECT_EQ(server_test_property2_value,
+            top_level->GetProperty(kTestPropertyKey2));
 
   // Tell the client the changes failed. This should cause the values to change
   // to that of the server.
   ASSERT_TRUE(window_tree()->AckFirstChangeOfType(WindowTreeChangeType::VISIBLE,
                                                   false));
-  EXPECT_FALSE(window.TargetVisibility());
+  EXPECT_FALSE(top_level->TargetVisibility());
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::VISIBLE, false));
-  EXPECT_TRUE(window.TargetVisibility());
+  EXPECT_TRUE(top_level->TargetVisibility());
   window_tree()->AckAllChangesOfType(WindowTreeChangeType::BOUNDS, false);
-  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), window.bounds());
+  // The bounds of the top_level is always at the origin.
+  EXPECT_EQ(gfx::Rect(bounds_from_server.size()), top_level->bounds());
+  // But the bounds of the WindowTreeHost is display relative.
+  EXPECT_EQ(bounds_from_server,
+            top_level->GetRootWindow()->GetHost()->GetBounds());
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, false));
-  EXPECT_EQ(server_test_property1_value, window.GetProperty(kTestPropertyKey1));
-  EXPECT_EQ(server_test_property2_value, window.GetProperty(kTestPropertyKey2));
+  EXPECT_EQ(server_test_property1_value,
+            top_level->GetProperty(kTestPropertyKey1));
+  EXPECT_EQ(server_test_property2_value,
+            top_level->GetProperty(kTestPropertyKey2));
 }
 
 TEST_F(WindowTreeClientClientTest, NewWindowGetsProperties) {

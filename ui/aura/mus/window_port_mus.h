@@ -36,7 +36,9 @@ class WindowTreeClientPrivate;
 // calling back to WindowTreeClient.
 class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
  public:
-  WindowPortMus(WindowTreeClient* client);
+  // See WindowMus's constructor for details on |create_remote_window|.
+  explicit WindowPortMus(WindowTreeClient* client,
+                         bool create_remote_window = true);
   ~WindowPortMus() override;
 
   static WindowPortMus* Get(Window* window);
@@ -137,6 +139,13 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     DISALLOW_COPY_AND_ASSIGN(ScopedServerChange);
   };
 
+  struct WindowMusChangeDataImpl : public WindowMusChangeData {
+    WindowMusChangeDataImpl();
+    ~WindowMusChangeDataImpl() override;
+
+    std::unique_ptr<ScopedServerChange> change;
+  };
+
   // Creates and adds a ServerChange to |server_changes_|. Returns the id
   // assigned to the ServerChange.
   ServerChangeIdType ScheduleChange(const ServerChangeType type,
@@ -168,6 +177,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const std::vector<uint8_t>* property_data) override;
   void SetSurfaceIdFromServer(
       std::unique_ptr<SurfaceInfo> surface_info) override;
+  std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
+      const gfx::Rect& bounds) override;
+  std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
+      bool value) override;
   void NotifyEmbeddedAppDisconnected() override;
 
   // WindowPort:
@@ -186,6 +199,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
                          std::unique_ptr<WindowPortPropertyData> data) override;
 
   WindowTreeClient* window_tree_client_;
+
   Window* window_ = nullptr;
 
   ServerChangeIdType next_server_change_id_ = 0;

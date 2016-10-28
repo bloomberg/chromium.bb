@@ -137,13 +137,16 @@ class InFlightChange {
 
 class InFlightBoundsChange : public InFlightChange {
  public:
-  InFlightBoundsChange(WindowMus* window, const gfx::Rect& revert_bounds);
+  InFlightBoundsChange(WindowTreeClient* window_tree_client,
+                       WindowMus* window,
+                       const gfx::Rect& revert_bounds);
 
   // InFlightChange:
   void SetRevertValueFrom(const InFlightChange& change) override;
   void Revert() override;
 
  private:
+  WindowTreeClient* window_tree_client_;
   gfx::Rect revert_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBoundsChange);
@@ -271,7 +274,9 @@ class InFlightPredefinedCursorChange : public InFlightChange {
 
 class InFlightVisibleChange : public InFlightChange {
  public:
-  InFlightVisibleChange(WindowMus* window, const bool revert_value);
+  InFlightVisibleChange(WindowTreeClient* client,
+                        WindowMus* window,
+                        const bool revert_value);
   ~InFlightVisibleChange() override;
 
   // InFlightChange:
@@ -279,6 +284,7 @@ class InFlightVisibleChange : public InFlightChange {
   void Revert() override;
 
  private:
+  WindowTreeClient* window_tree_client_;
   bool revert_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightVisibleChange);

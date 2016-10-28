@@ -85,6 +85,15 @@ bool TestWindowTree::GetAndRemoveFirstChangeOfType(WindowTreeChangeType type,
   return false;
 }
 
+size_t TestWindowTree::GetChangeCountForType(WindowTreeChangeType type) {
+  size_t count = 0;
+  for (const auto& change : changes_) {
+    if (change.type == type)
+      ++count;
+  }
+  return count;
+}
+
 void TestWindowTree::OnChangeReceived(uint32_t change_id,
                                       WindowTreeChangeType type) {
   changes_.push_back({type, change_id});

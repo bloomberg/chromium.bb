@@ -15,13 +15,18 @@
 
 namespace aura {
 
+WindowPortMus::WindowMusChangeDataImpl::WindowMusChangeDataImpl() = default;
+
+WindowPortMus::WindowMusChangeDataImpl::~WindowMusChangeDataImpl() = default;
+
 // static
 WindowMus* WindowMus::Get(Window* window) {
   return WindowPortMus::Get(window);
 }
 
-WindowPortMus::WindowPortMus(WindowTreeClient* client)
-    : window_tree_client_(client) {}
+WindowPortMus::WindowPortMus(WindowTreeClient* client,
+                             bool create_remote_window)
+    : WindowMus(create_remote_window), window_tree_client_(client) {}
 
 WindowPortMus::~WindowPortMus() {
   if (surface_info_)
@@ -205,6 +210,28 @@ void WindowPortMus::SetSurfaceIdFromServer(
                                                              &surface_info);
   }
   surface_info_ = std::move(surface_info);
+}
+
+std::unique_ptr<WindowMusChangeData>
+WindowPortMus::PrepareForServerBoundsChange(const gfx::Rect& bounds) {
+  std::unique_ptr<WindowMusChangeDataImpl> data(
+      base::MakeUnique<WindowMusChangeDataImpl>());
+  ServerChangeData change_data;
+  change_data.bounds = bounds;
+  data->change = base::MakeUnique<ScopedServerChange>(
+      this, ServerChangeType::BOUNDS, change_data);
+  return std::move(data);
+}
+
+std::unique_ptr<WindowMusChangeData>
+WindowPortMus::PrepareForServerVisibilityChange(bool value) {
+  std::unique_ptr<WindowMusChangeDataImpl> data(
+      base::MakeUnique<WindowMusChangeDataImpl>());
+  ServerChangeData change_data;
+  change_data.visible = value;
+  data->change = base::MakeUnique<ScopedServerChange>(
+      this, ServerChangeType::VISIBLE, change_data);
+  return std::move(data);
 }
 
 void WindowPortMus::NotifyEmbeddedAppDisconnected() {

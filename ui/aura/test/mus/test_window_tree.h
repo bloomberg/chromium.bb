@@ -67,6 +67,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
   bool GetAndRemoveFirstChangeOfType(WindowTreeChangeType type,
                                      uint32_t* change_id);
 
+  size_t GetChangeCountForType(WindowTreeChangeType type);
+
  private:
   struct Change {
     WindowTreeChangeType type;

@@ -26,6 +26,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_manager_delegate.h"
+#include "ui/aura/mus/window_tree_host_mus_delegate.h"
 
 namespace display {
 class Display;
@@ -40,10 +41,12 @@ class Connector;
 }
 
 namespace aura {
+class InFlightBoundsChange;
 class InFlightCaptureChange;
 class InFlightChange;
 class InFlightFocusChange;
 class InFlightPropertyChange;
+class InFlightVisibleChange;
 class WindowMus;
 class WindowPortMus;
 struct WindowPortInitData;
@@ -72,7 +75,8 @@ class AURA_EXPORT WindowTreeClient
       NON_EXPORTED_BASE(public ui::mojom::WindowManager),
       public WindowManagerClient,
       public client::CaptureClientObserver,
-      public client::FocusChangeObserver {
+      public client::FocusChangeObserver,
+      public WindowTreeHostMusDelegate {
  public:
   explicit WindowTreeClient(
       WindowTreeClientDelegate* delegate,
@@ -174,13 +178,13 @@ class AURA_EXPORT WindowTreeClient
   void RemoveObserver(WindowTreeClientObserver* observer);
 
  private:
+  friend class InFlightBoundsChange;
   friend class InFlightCaptureChange;
   friend class InFlightFocusChange;
   friend class InFlightPropertyChange;
+  friend class InFlightVisibleChange;
   friend class WindowPortMus;
   friend class WindowTreeClientPrivate;
-
-  enum class WindowTreeHostType { EMBED, TOP_LEVEL, DISPLAY };
 
   struct CurrentDragState;
 
@@ -233,8 +237,9 @@ class AURA_EXPORT WindowTreeClient
   // details.
   // TODO(sky): it would be nice to always have a single window and not the
   // two different. That requires ownership changes to WindowTreeHost though.
-  Window* CreateWindowTreeHost(WindowTreeHostType type,
+  Window* CreateWindowTreeHost(RootWindowType type,
                                const ui::mojom::WindowDataPtr& window_data,
+                               int64_t display_id,
                                Window* content_window);
 
   WindowMus* NewWindowFromWindowData(
@@ -268,6 +273,12 @@ class AURA_EXPORT WindowTreeClient
       int32_t event_id);
 
   void OnReceivedCursorLocationMemory(mojo::ScopedSharedBufferHandle handle);
+
+  // Called when a property needs to change as the result of a change in the
+  // server, or the server failing to accept a change.
+  void SetWindowBoundsFromServer(WindowMus* window,
+                                 const gfx::Rect& revert_bounds);
+  void SetWindowVisibleFromServer(WindowMus* window, bool visible);
 
   // Following are called from WindowMus.
   std::unique_ptr<WindowPortInitData> OnWindowMusCreated(WindowMus* window);
@@ -430,6 +441,9 @@ class AURA_EXPORT WindowTreeClient
 
   // Overriden from client::CaptureClientObserver:
   void OnCaptureChanged(Window* lost_capture, Window* gained_capture) override;
+
+  // Overriden from WindowTreeHostMusDelegate:
+  void SetRootWindowBounds(Window* window, gfx::Rect* bounds) override;
 
   // The one int in |cursor_location_mapping_|. When we read from this
   // location, we must always read from it atomically.

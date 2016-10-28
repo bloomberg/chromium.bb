@@ -16,6 +16,7 @@
 
 namespace gfx {
 class Rect;
+class Vector2d;
 }
 
 namespace ui {
@@ -30,6 +31,11 @@ struct SurfaceInfo;
 class Window;
 class WindowTreeClient;
 
+// See PrepareForServerBoundsChange() for details on this.
+struct AURA_EXPORT WindowMusChangeData {
+  virtual ~WindowMusChangeData() {}
+};
+
 // WindowMus defines the interface used by WindowTreeClient to modify
 // the underlying Window. It's defined as a separate interface to make it clear
 // that any changes that WindowTreeClient makes must be propagated through
@@ -39,6 +45,11 @@ class WindowTreeClient;
 // change the bounds too. See WindowPortMus for details.
 class AURA_EXPORT WindowMus {
  public:
+  // |create_remote_window| indicates whether a window should be created on the
+  // server. Generally |create_remote_window| should be true, only in rare
+  // exceptions (such as the root of a WindowTreeHost) is it false.
+  explicit WindowMus(bool create_remote_window)
+      : create_remote_window_(create_remote_window) {}
   virtual ~WindowMus() {}
 
   // Returns the WindowMus associated with |window|.
@@ -51,6 +62,9 @@ class AURA_EXPORT WindowMus {
   // then the WindowTreeHost. Each WindowTreeHost has a Window, so the
   // WindowTreeHost for top-levels has no server window.
   bool has_server_window() const { return server_id() != kInvalidServerId; }
+
+  // See constructor for details.
+  bool create_remote_window() const { return create_remote_window_; }
 
   virtual Window* GetWindow() = 0;
 
@@ -72,6 +86,16 @@ class AURA_EXPORT WindowMus {
   virtual void SetSurfaceIdFromServer(
       std::unique_ptr<SurfaceInfo> surface_info) = 0;
 
+  // Called in the rare case when WindowTreeClient needs to change state and
+  // can't go through one of the SetFooFromServer() functions above. Generally
+  // because it needs to call another function that as a side effect changes the
+  // window. Once the call to the underlying window has completed the returned
+  // object should be destroyed.
+  virtual std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
+      const gfx::Rect& bounds) = 0;
+  virtual std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
+      bool value) = 0;
+
   virtual void NotifyEmbeddedAppDisconnected() = 0;
 
  private:
@@ -81,6 +105,7 @@ class AURA_EXPORT WindowMus {
   void set_server_id(Id id) { server_id_ = id; }
 
   Id server_id_ = kInvalidServerId;
+  const bool create_remote_window_;
 };
 
 }  // namespace aura

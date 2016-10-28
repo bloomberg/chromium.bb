@@ -29,9 +29,11 @@ void InFlightChange::ChangeFailed() {}
 
 // InFlightBoundsChange -------------------------------------------------------
 
-InFlightBoundsChange::InFlightBoundsChange(WindowMus* window,
+InFlightBoundsChange::InFlightBoundsChange(WindowTreeClient* window_tree_client,
+                                           WindowMus* window,
                                            const gfx::Rect& revert_bounds)
     : InFlightChange(window, ChangeType::BOUNDS),
+      window_tree_client_(window_tree_client),
       revert_bounds_(revert_bounds) {}
 
 void InFlightBoundsChange::SetRevertValueFrom(const InFlightChange& change) {
@@ -40,7 +42,7 @@ void InFlightBoundsChange::SetRevertValueFrom(const InFlightChange& change) {
 }
 
 void InFlightBoundsChange::Revert() {
-  window()->SetBoundsFromServer(revert_bounds_);
+  window_tree_client_->SetWindowBoundsFromServer(window(), revert_bounds_);
 }
 
 // InFlightDragChange -----------------------------------------------------
@@ -188,9 +190,11 @@ void InFlightPredefinedCursorChange::Revert() {
 
 // InFlightVisibleChange -------------------------------------------------------
 
-InFlightVisibleChange::InFlightVisibleChange(WindowMus* window,
+InFlightVisibleChange::InFlightVisibleChange(WindowTreeClient* client,
+                                             WindowMus* window,
                                              bool revert_value)
     : InFlightChange(window, ChangeType::VISIBLE),
+      window_tree_client_(client),
       revert_visible_(revert_value) {}
 
 InFlightVisibleChange::~InFlightVisibleChange() {}
@@ -201,7 +205,7 @@ void InFlightVisibleChange::SetRevertValueFrom(const InFlightChange& change) {
 }
 
 void InFlightVisibleChange::Revert() {
-  window()->SetVisibleFromServer(revert_visible_);
+  window_tree_client_->SetWindowVisibleFromServer(window(), revert_visible_);
 }
 
 // InFlightOpacityChange -------------------------------------------------------

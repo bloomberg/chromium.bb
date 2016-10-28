@@ -22,6 +22,20 @@ using ClientSpecificId = uint16_t;
 
 constexpr Id kInvalidServerId = 0;
 
+// Identifies the type of root window.
+enum class RootWindowType {
+  // The window is an embed root. That is, the client received this window by
+  // way of another client calling Embed().
+  EMBED,
+
+  // The window is a top level window, that is the client created it by way of
+  // NewTopLevelWindow().
+  TOP_LEVEL,
+
+  // The window is a display root for the window manager.
+  DISPLAY
+};
+
 }  // namespace ui
 
 #endif  // UI_AURA_MUS_MUS_TYPES_H_

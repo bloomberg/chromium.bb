@@ -11,8 +11,13 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 class SkBitmap;
+
+namespace display {
+class Display;
+}
 
 namespace service_manager {
 class Connector;
@@ -22,6 +27,9 @@ namespace aura {
 
 class InputMethodMus;
 class WindowPortMus;
+class WindowTreeHostMusDelegate;
+
+enum class RootWindowType;
 
 // WindowTreeHostMus is configured in two distinct modes:
 // . with a content window. In this case the content window is added as a child
@@ -35,11 +43,15 @@ class WindowPortMus;
 // the WindowTreeHostMus is explicitly deleted.
 class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
-  explicit WindowTreeHostMus(std::unique_ptr<WindowPortMus> window_port,
-                             Window* content_window = nullptr);
+  WindowTreeHostMus(std::unique_ptr<WindowPortMus> window_port,
+                    WindowTreeHostMusDelegate* delegate,
+                    RootWindowType root_window_type,
+                    int64_t display_id,
+                    Window* content_window = nullptr);
   ~WindowTreeHostMus() override;
 
-  void CreateInputMethod(WindowPortMus* window_port_mus);
+  // Sets the bounds in dips.
+  void SetBoundsFromServer(const gfx::Rect& bounds);
 
   ui::EventDispatchDetails SendEventToProcessor(ui::Event* event) {
     return aura::WindowTreeHostPlatform::SendEventToProcessor(event);
@@ -49,20 +61,47 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
 
   InputMethodMus* input_method() { return input_method_.get(); }
 
+  // Offset of the bounds from its parent. The Window (and content window if
+  // present) always has an origin of 0x0 locally. This offset gives the offset
+  // of the window in its parent.
+  void set_origin_offset(const gfx::Vector2d& offset) {
+    origin_offset_ = offset;
+  }
+  const gfx::Vector2d& origin_offset() const { return origin_offset_; }
+
+  RootWindowType root_window_type() const { return root_window_type_; }
+
+  void set_display_id(int64_t id) { display_id_ = id; }
+  display::Display GetDisplay() const;
+
  private:
   class ContentWindowObserver;
 
+  Window* GetWindowWithServerWindow();
+
   // Called when various things happen to the content window.
   void ContentWindowDestroyed();
-  void ContentWindowResized();
-  void ContentWindowVisibilityChanging(bool visible);
 
   // aura::WindowTreeHostPlatform:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetBounds() const override;
+  gfx::Point GetLocationOnNativeScreen() const override;
   void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnActivationChanged(bool active) override;
   void OnCloseRequest() override;
   gfx::ICCProfile GetICCProfileForCurrentDisplay() override;
+
+  int64_t display_id_;
+  const RootWindowType root_window_type_;
+
+  WindowTreeHostMusDelegate* delegate_;
+
+  bool in_set_bounds_from_server_ = false;
+
+  gfx::Vector2d origin_offset_;
 
   // May be null, see class description.
   Window* content_window_;

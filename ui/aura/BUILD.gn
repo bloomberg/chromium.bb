@@ -93,6 +93,7 @@ component("aura") {
     "mus/window_tree_client_observer.h",
     "mus/window_tree_host_mus.cc",
     "mus/window_tree_host_mus.h",
+    "mus/window_tree_host_mus_delegate.h",
     "scoped_window_targeter.cc",
     "scoped_window_targeter.h",
     "window.cc",
