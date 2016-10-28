@@ -15,9 +15,9 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
+#include "components/sync/syncable/test_user_share.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
-#include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -38,12 +38,10 @@ class ModelTypeRegistryTest : public ::testing::Test {
   }
 
   static std::unique_ptr<ActivationContext> MakeActivationContext(
-      const sync_pb::ModelTypeState& model_type_state,
-      std::unique_ptr<ModelTypeProcessor> type_processor) {
-    std::unique_ptr<ActivationContext> context =
-        base::WrapUnique(new ActivationContext);
+      const sync_pb::ModelTypeState& model_type_state) {
+    auto context = base::MakeUnique<ActivationContext>();
     context->model_type_state = model_type_state;
-    context->type_processor = std::move(type_processor);
+    context->type_processor = base::MakeUnique<FakeModelTypeProcessor>();
     return context;
   }
 
@@ -58,21 +56,31 @@ class ModelTypeRegistryTest : public ::testing::Test {
     directory()->MarkInitialSyncEndedForType(&trans, type);
   }
 
+  bool migration_attempted() { return migration_attempted_; }
+
  private:
+  bool MigrateDirectory(ModelType type,
+                        UserShare* user_share,
+                        ModelTypeWorker* worker) {
+    migration_attempted_ = true;
+    return true;
+  }
+
   syncable::Directory* directory();
 
   base::MessageLoop message_loop_;
 
-  TestDirectorySetterUpper dir_maker_;
+  TestUserShare test_user_share_;
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
   std::unique_ptr<ModelTypeRegistry> registry_;
   MockNudgeHandler mock_nudge_handler_;
+  bool migration_attempted_ = false;
 };
 
 ModelTypeRegistryTest::ModelTypeRegistryTest() {}
 
 void ModelTypeRegistryTest::SetUp() {
-  dir_maker_.SetUp();
+  test_user_share_.SetUp();
   scoped_refptr<ModelSafeWorker> passive_worker(
       new FakeModelWorker(GROUP_PASSIVE));
   scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
@@ -81,14 +89,16 @@ void ModelTypeRegistryTest::SetUp() {
   workers_.push_back(ui_worker);
   workers_.push_back(db_worker);
 
-  registry_ = base::MakeUnique<ModelTypeRegistry>(workers_, directory(),
-                                                  &mock_nudge_handler_);
+  registry_ = base::MakeUnique<ModelTypeRegistry>(
+      workers_, test_user_share_.user_share(), &mock_nudge_handler_,
+      base::Bind(&ModelTypeRegistryTest::MigrateDirectory,
+                 base::Unretained(this)));
 }
 
 void ModelTypeRegistryTest::TearDown() {
   registry_.reset();
   workers_.clear();
-  dir_maker_.TearDown();
+  test_user_share_.TearDown();
 }
 
 ModelTypeRegistry* ModelTypeRegistryTest::registry() {
@@ -96,7 +106,7 @@ ModelTypeRegistry* ModelTypeRegistryTest::registry() {
 }
 
 syncable::Directory* ModelTypeRegistryTest::directory() {
-  return dir_maker_.directory();
+  return test_user_share_.user_share()->directory.get();
 }
 
 // Create some directory update handlers and commit contributors.
@@ -180,15 +190,11 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
   registry()->ConnectType(
-      THEMES,
-      MakeActivationContext(MakeInitialModelTypeState(THEMES),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
+      THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
   EXPECT_EQ(ModelTypeSet(THEMES), registry()->GetEnabledTypes());
 
   registry()->ConnectType(
-      SESSIONS,
-      MakeActivationContext(MakeInitialModelTypeState(SESSIONS),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
+      SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
   EXPECT_EQ(ModelTypeSet(THEMES, SESSIONS), registry()->GetEnabledTypes());
 
   registry()->DisconnectType(THEMES);
@@ -213,9 +219,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 
   // Add the themes non-blocking type.
   registry()->ConnectType(
-      THEMES,
-      MakeActivationContext(MakeInitialModelTypeState(THEMES),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
+      THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
   current_types.Put(THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
@@ -226,9 +230,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 
   // Add sessions non-blocking type.
   registry()->ConnectType(
-      SESSIONS,
-      MakeActivationContext(MakeInitialModelTypeState(SESSIONS),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
+      SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
   current_types.Put(SESSIONS);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
@@ -259,13 +261,20 @@ TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
 
   sync_pb::ModelTypeState model_type_state = MakeInitialModelTypeState(THEMES);
   model_type_state.set_initial_sync_done(true);
-  registry()->ConnectType(
-      THEMES,
-      MakeActivationContext(model_type_state,
-                            base::WrapUnique(new FakeModelTypeProcessor())));
+  registry()->ConnectType(THEMES, MakeActivationContext(model_type_state));
 
   EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),
             registry()->GetInitialSyncEndedTypes());
+}
+
+TEST_F(ModelTypeRegistryTest, UssMigrationAttempted) {
+  EXPECT_FALSE(migration_attempted());
+
+  MarkInitialSyncEndedForDirectoryType(THEMES);
+  registry()->ConnectType(
+      THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
+
+  EXPECT_TRUE(migration_attempted());
 }
 
 }  // namespace syncer

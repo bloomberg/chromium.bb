@@ -28,6 +28,7 @@ namespace syncer {
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
     const sync_pb::ModelTypeState& initial_state,
+    bool trigger_initial_sync,
     std::unique_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
     std::unique_ptr<ModelTypeProcessor> model_type_processor,
@@ -42,7 +43,7 @@ ModelTypeWorker::ModelTypeWorker(
   DCHECK(model_type_processor_);
 
   // Request an initial sync if it hasn't been completed yet.
-  if (!model_type_state_.initial_sync_done()) {
+  if (trigger_initial_sync) {
     nudge_handler_->NudgeForInitialDownload(type_);
   }
 
@@ -310,6 +311,15 @@ void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
   // items have been successfully committed so it can save that information in
   // permanent storage.
   model_type_processor_->OnCommitCompleted(model_type_state_, *response_list);
+}
+
+void ModelTypeWorker::AbortMigration() {
+  DCHECK(!model_type_state_.initial_sync_done());
+  model_type_state_ = sync_pb::ModelTypeState();
+  entities_.clear();
+  pending_updates_.clear();
+  has_encrypted_updates_ = false;
+  nudge_handler_->NudgeForInitialDownload(type_);
 }
 
 base::WeakPtr<ModelTypeWorker> ModelTypeWorker::AsWeakPtr() {

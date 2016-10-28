@@ -21,11 +21,11 @@
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/test_util.h"
+#include "components/sync/syncable/test_user_share.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_connection_manager.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
-#include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "components/sync/test/mock_invalidation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,7 +124,7 @@ class SyncSchedulerImplTest : public testing::Test {
   };
 
   void SetUp() override {
-    dir_maker_.SetUp();
+    test_user_share_.SetUp();
     syncer_ = new testing::StrictMock<MockSyncer>();
     delay_ = nullptr;
     extensions_activity_ = new ExtensionsActivity();
@@ -144,7 +144,8 @@ class SyncSchedulerImplTest : public testing::Test {
     connection_->SetServerReachable();
 
     model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
-        workers_, directory(), &mock_nudge_handler_);
+        workers_, test_user_share_.user_share(), &mock_nudge_handler_,
+        UssMigrator());
 
     context_ = base::MakeUnique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),
@@ -174,7 +175,7 @@ class SyncSchedulerImplTest : public testing::Test {
     PumpLoop();
     scheduler_.reset();
     PumpLoop();
-    dir_maker_.TearDown();
+    test_user_share_.TearDown();
   }
 
   void AnalyzePollRun(const SyncShareTimes& times,
@@ -240,10 +241,12 @@ class SyncSchedulerImplTest : public testing::Test {
   }
 
  private:
-  syncable::Directory* directory() { return dir_maker_.directory(); }
+  syncable::Directory* directory() {
+    return test_user_share_.user_share()->directory.get();
+  }
 
   base::MessageLoop loop_;
-  TestDirectorySetterUpper dir_maker_;
+  TestUserShare test_user_share_;
   CancelationSignal cancelation_signal_;
   std::unique_ptr<MockConnectionManager> connection_;
   std::unique_ptr<ModelTypeRegistry> model_type_registry_;

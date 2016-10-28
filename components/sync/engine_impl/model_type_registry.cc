@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/cryptographer.h"
@@ -55,10 +56,12 @@ void CommitQueueProxy::EnqueueForCommit(const CommitRequestDataList& list) {
 
 ModelTypeRegistry::ModelTypeRegistry(
     const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-    syncable::Directory* directory,
-    NudgeHandler* nudge_handler)
-    : directory_(directory),
+    UserShare* user_share,
+    NudgeHandler* nudge_handler,
+    const UssMigrator& uss_migrator)
+    : user_share_(user_share),
       nudge_handler_(nudge_handler),
+      uss_migrator_(uss_migrator),
       weak_ptr_factory_(this) {
   for (size_t i = 0u; i < workers.size(); ++i) {
     workers_map_.insert(
@@ -103,13 +106,13 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
     DataTypeDebugInfoEmitter* emitter = GetEmitter(type);
     if (emitter == nullptr) {
       auto new_emitter = base::MakeUnique<DirectoryTypeDebugInfoEmitter>(
-          directory_, type, &type_debug_info_observers_);
+          directory(), type, &type_debug_info_observers_);
       emitter = new_emitter.get();
       data_type_debug_info_emitter_map_.insert(
           std::make_pair(type, std::move(new_emitter)));
     }
 
-    auto updater = base::MakeUnique<DirectoryUpdateHandler>(directory_, type,
+    auto updater = base::MakeUnique<DirectoryUpdateHandler>(directory(), type,
                                                             worker, emitter);
     bool updater_inserted =
         update_handler_map_.insert(std::make_pair(type, updater.get())).second;
@@ -117,8 +120,8 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
         << "Attempt to override existing type handler in map";
     directory_update_handlers_.push_back(std::move(updater));
 
-    auto committer =
-        base::MakeUnique<DirectoryCommitContributor>(directory_, type, emitter);
+    auto committer = base::MakeUnique<DirectoryCommitContributor>(
+        directory(), type, emitter);
     bool committer_inserted =
         commit_contributor_map_.insert(std::make_pair(type, committer.get()))
             .second;
@@ -136,9 +139,21 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
 void ModelTypeRegistry::ConnectType(
     ModelType type,
     std::unique_ptr<ActivationContext> activation_context) {
+  DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
+  DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
-  // Initialize Worker -> Processor communication channel.
+  bool initial_sync_done =
+      activation_context->model_type_state.initial_sync_done();
+  // Attempt migration if the USS initial sync hasn't been done, there is a
+  // migrator function, and directory has data for this type.
+  // Note: The injected migrator function is currently null outside of testing
+  // until issues with triggering initial sync correctly are addressed.
+  bool do_migration = !initial_sync_done && !uss_migrator_.is_null() &&
+                      directory()->InitialSyncEndedForType(type);
+  bool trigger_initial_sync = !initial_sync_done && !do_migration;
+
+  // Save a raw pointer to the processor for connecting later.
   ModelTypeProcessor* type_processor = activation_context->type_processor.get();
 
   std::unique_ptr<Cryptographer> cryptographer_copy;
@@ -155,23 +170,35 @@ void ModelTypeRegistry::ConnectType(
   }
 
   auto worker = base::MakeUnique<ModelTypeWorker>(
-      type, activation_context->model_type_state, std::move(cryptographer_copy),
-      nudge_handler_, std::move(activation_context->type_processor), emitter);
+      type, activation_context->model_type_state, trigger_initial_sync,
+      std::move(cryptographer_copy), nudge_handler_,
+      std::move(activation_context->type_processor), emitter);
+
+  // Save a raw pointer and add the worker to our structures.
+  ModelTypeWorker* worker_ptr = worker.get();
+  model_type_workers_.push_back(std::move(worker));
+  update_handler_map_.insert(std::make_pair(type, worker_ptr));
+  commit_contributor_map_.insert(std::make_pair(type, worker_ptr));
 
   // Initialize Processor -> Worker communication channel.
-  auto commit_queue_proxy = base::MakeUnique<CommitQueueProxy>(
-      worker->AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+  type_processor->ConnectSync(base::MakeUnique<CommitQueueProxy>(
+      worker_ptr->AsWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
 
-  type_processor->ConnectSync(std::move(commit_queue_proxy));
+  // Attempt migration if necessary.
+  if (do_migration) {
+    // TODO(crbug.com/658002): Store a pref before attempting migration
+    // indicating that it was attempted so we can avoid failure loops.
+    if (uss_migrator_.Run(type, user_share_, worker_ptr)) {
+      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationSuccess", type,
+                                MODEL_TYPE_COUNT);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationFailure", type,
+                                MODEL_TYPE_COUNT);
+    }
+  }
 
-  DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
-  DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
-
-  update_handler_map_.insert(std::make_pair(type, worker.get()));
-  commit_contributor_map_.insert(std::make_pair(type, worker.get()));
-
-  // The container takes ownership.
-  model_type_workers_.push_back(std::move(worker));
+  // TODO(crbug.com/658002): Delete directory data here if initial_sync_done and
+  // has_directory_data are both true.
 
   DCHECK(Intersection(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes())
              .Empty());
@@ -210,7 +237,7 @@ ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
   // reported by directory and types reported by update handlers. We need to
   // refactor initialization and configuratrion flow to be able to only query
   // this set from update handlers.
-  ModelTypeSet result = directory_->InitialSyncEndedTypes();
+  ModelTypeSet result = directory()->InitialSyncEndedTypes();
   for (const auto& kv : update_handler_map_) {
     if (kv.second->IsInitialSyncEnded())
       result.Put(kv.first);

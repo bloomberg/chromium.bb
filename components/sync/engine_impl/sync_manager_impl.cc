@@ -34,6 +34,7 @@
 #include "components/sync/engine_impl/net/sync_server_connection_manager.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/syncer_types.h"
+#include "components/sync/engine_impl/uss_migrator.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/base_node.h"
@@ -296,8 +297,10 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DVLOG(1) << "Setting invalidator client ID: " << args->invalidator_client_id;
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
-  model_type_registry_ =
-      base::MakeUnique<ModelTypeRegistry>(args->workers, directory(), this);
+  // TODO(crbug.com/658002): Pass in the real USS migrator function once initial
+  // GetUpdates issues are addressed.
+  model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
+      args->workers, &share_, this, UssMigrator());
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Build a SyncCycleContext and store the worker in it.

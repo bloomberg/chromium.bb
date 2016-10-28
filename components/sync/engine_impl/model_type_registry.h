@@ -19,6 +19,8 @@
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine_impl/nudge_handler.h"
+#include "components/sync/engine_impl/uss_migrator.h"
+#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
@@ -31,10 +33,6 @@ class ModelTypeWorker;
 class UpdateHandler;
 struct ModelTypeState;
 
-namespace syncable {
-class Directory;
-}  // namespace syncable
-
 typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
 typedef std::map<ModelType, CommitContributor*> CommitContributorMap;
 
@@ -44,8 +42,9 @@ class ModelTypeRegistry : public ModelTypeConnector,
  public:
   // Constructs a ModelTypeRegistry that supports directory types.
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-                    syncable::Directory* directory,
-                    NudgeHandler* nudge_handler);
+                    UserShare* user_share,
+                    NudgeHandler* nudge_handler,
+                    const UssMigrator& uss_migrator);
   ~ModelTypeRegistry() override;
 
   // Sets the set of enabled types.
@@ -113,6 +112,10 @@ class ModelTypeRegistry : public ModelTypeConnector,
   ModelTypeSet GetEnabledNonBlockingTypes() const;
   ModelTypeSet GetEnabledDirectoryTypes() const;
 
+  syncable::Directory* directory() const {
+    return user_share_->directory.get();
+  }
+
   // Sets of handlers and contributors.
   std::vector<std::unique_ptr<DirectoryCommitContributor>>
       directory_commit_contributors_;
@@ -133,8 +136,8 @@ class ModelTypeRegistry : public ModelTypeConnector,
   // The known ModelSafeWorkers.
   std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> workers_map_;
 
-  // The directory.  Not owned.
-  syncable::Directory* directory_;
+  // The user share. Not owned.
+  UserShare* user_share_;
 
   // A copy of the directory's most recent cryptographer.
   std::unique_ptr<Cryptographer> cryptographer_;
@@ -147,6 +150,9 @@ class ModelTypeRegistry : public ModelTypeConnector,
 
   // The set of enabled directory types.
   ModelTypeSet enabled_directory_types_;
+
+  // Function to call to migrate data from the directory to USS.
+  UssMigrator uss_migrator_;
 
   // The set of observers of per-type debug info.
   //

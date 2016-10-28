@@ -58,11 +58,18 @@ class TestEntryFactory {
   int64_t CreateUnappliedAndUnsyncedBookmarkItem(const std::string& name);
 
   // Creates a unique_client_tag item that has neither IS_UNSYNED or
-  // IS_UNAPPLIED_UPDATE.  The item is known to both the server and client.
-  // Returns the metahandle of the created item.
+  // IS_UNAPPLIED_UPDATE. The item is known to both the server and client.
+  // Returns the metahandle of the created item. |specifics| is optional.
   int64_t CreateSyncedItem(const std::string& name,
                            ModelType model_type,
                            bool is_folder);
+  int64_t CreateSyncedItem(const std::string& name,
+                           ModelType model_type,
+                           bool is_folder,
+                           const sync_pb::EntitySpecifics& specifics);
+
+  // Creates a root node for |model_type|.
+  int64_t CreateTypeRootNode(ModelType model_type);
 
   // Creates a root node that IS_UNAPPLIED. Similar to what one would find in
   // the database between the ProcessUpdates of an initial datatype configure

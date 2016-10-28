@@ -60,6 +60,7 @@ class ModelTypeWorker : public UpdateHandler,
  public:
   ModelTypeWorker(ModelType type,
                   const sync_pb::ModelTypeState& initial_state,
+                  bool trigger_initial_sync,
                   std::unique_ptr<Cryptographer> cryptographer,
                   NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor,
@@ -96,6 +97,10 @@ class ModelTypeWorker : public UpdateHandler,
 
   // Callback for when our contribution gets a response.
   void OnCommitResponse(CommitResponseDataList* response_list);
+
+  // If migration the directory encounters an error partway through, we need to
+  // clear the update data that has been added so far.
+  void AbortMigration();
 
   base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 

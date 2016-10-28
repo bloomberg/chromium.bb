@@ -192,7 +192,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
     worker_ = base::MakeUnique<ModelTypeWorker>(
-        kModelType, state, std::move(cryptographer_copy), &mock_nudge_handler_,
+        kModelType, state, !state.initial_sync_done(),
+        std::move(cryptographer_copy), &mock_nudge_handler_,
         std::move(processor), &preferences_emitter_);
   }
 

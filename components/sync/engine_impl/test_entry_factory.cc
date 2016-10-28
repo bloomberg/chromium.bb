@@ -4,10 +4,13 @@
 
 #include "components/sync/engine_impl/test_entry_factory.h"
 
+#include "components/sync/base/model_type.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
+#include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_id.h"
+#include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
@@ -141,11 +144,23 @@ int64_t TestEntryFactory::CreateUnappliedAndUnsyncedBookmarkItem(
 int64_t TestEntryFactory::CreateSyncedItem(const std::string& name,
                                            ModelType model_type,
                                            bool is_folder) {
+  return CreateSyncedItem(name, model_type, is_folder,
+                          sync_pb::EntitySpecifics());
+}
+
+int64_t TestEntryFactory::CreateSyncedItem(
+    const std::string& name,
+    ModelType model_type,
+    bool is_folder,
+    const sync_pb::EntitySpecifics& specifics) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
 
-  syncable::Id parent_id(TestIdFactory::root());
+  // Use the type root if it exists or the real root otherwise.
+  syncable::Entry root(&trans, syncable::GET_TYPE_ROOT, model_type);
+  syncable::Id parent_id = root.good() ? root.GetId() : TestIdFactory::root();
   syncable::Id item_id(TestIdFactory::MakeServer(name));
   int64_t version = GetNextRevision();
+  base::Time now = base::Time::Now();
 
   MutableEntry entry(&trans, syncable::CREATE, model_type, parent_id, name);
   if (!entry.good()) {
@@ -154,6 +169,9 @@ int64_t TestEntryFactory::CreateSyncedItem(const std::string& name,
   }
 
   entry.PutId(item_id);
+  entry.PutCtime(now);
+  entry.PutMtime(now);
+  entry.PutUniqueClientTag(syncable::GenerateSyncableHash(model_type, name));
   entry.PutBaseVersion(version);
   entry.PutIsUnsynced(false);
   entry.PutNonUniqueName(name);
@@ -161,14 +179,37 @@ int64_t TestEntryFactory::CreateSyncedItem(const std::string& name,
   entry.PutIsDel(false);
   entry.PutParentId(parent_id);
 
-  entry.PutServerVersion(GetNextRevision());
+  entry.PutServerCtime(now);
+  entry.PutServerMtime(now);
+  entry.PutServerVersion(version);
   entry.PutIsUnappliedUpdate(false);
   entry.PutServerNonUniqueName(name);
   entry.PutServerParentId(parent_id);
   entry.PutServerIsDir(is_folder);
   entry.PutServerIsDel(false);
-  entry.PutServerSpecifics(entry.GetSpecifics());
 
+  // Only rewrite the default specifics inside the entry (which have the model
+  // type marker already) if |specifics| actually contains data.
+  if (specifics.ByteSize() > 0) {
+    entry.PutSpecifics(specifics);
+    entry.PutServerSpecifics(specifics);
+  } else {
+    entry.PutServerSpecifics(entry.GetSpecifics());
+  }
+
+  return entry.GetMetahandle();
+}
+
+int64_t TestEntryFactory::CreateTypeRootNode(ModelType model_type) {
+  syncable::ModelNeutralWriteTransaction trans(FROM_HERE, syncable::UNITTEST,
+                                               directory_);
+  sync_pb::EntitySpecifics specifics;
+  AddDefaultFieldValue(model_type, &specifics);
+  syncable::ModelNeutralMutableEntry entry(
+      &trans, syncable::CREATE_NEW_TYPE_ROOT, model_type);
+  DCHECK(entry.good());
+  entry.PutServerIsDir(true);
+  entry.PutUniqueServerTag(ModelTypeToRootTag(model_type));
   return entry.GetMetahandle();
 }
 
