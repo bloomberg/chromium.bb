@@ -214,7 +214,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   bool result = impl->hasForBinding(scriptState, value, exceptionState);
   if (exceptionState.hadException()) {
@@ -242,7 +242,7 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   TestInterfaceGarbageCollected* result = impl->addForBinding(scriptState, value, exceptionState);
   if (exceptionState.hadException()) {
@@ -287,7 +287,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   bool result = impl->deleteForBinding(scriptState, value, exceptionState);
   if (exceptionState.hadException()) {
@@ -327,7 +327,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> str;
   str = info[0];
   if (!str.prepare())
-      return;
+    return;
 
   TestInterfaceGarbageCollected* impl = TestInterfaceGarbageCollected::create(str);
   v8::Local<v8::Object> wrapper = info.Holder();

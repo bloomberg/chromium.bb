@@ -107,24 +107,24 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   }
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   defaultUndefinedOptionalBooleanArg = toBoolean(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   defaultUndefinedOptionalLongArg = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   defaultUndefinedOptionalStringArg = info[3];
   if (!defaultUndefinedOptionalStringArg.prepare())
-      return;
+    return;
 
   if (!info[4]->IsUndefined()) {
     defaultNullStringOptionalstringArg = info[4];
     if (!defaultNullStringOptionalstringArg.prepare())
-        return;
+      return;
   } else {
     defaultNullStringOptionalstringArg = nullptr;
   }
@@ -141,7 +141,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   }
   optionalStringArg = info[5];
   if (!optionalStringArg.prepare())
-      return;
+    return;
 
   Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
   TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);

@@ -12,33 +12,33 @@ namespace blink {
 
 {# FIXME: Add "final" if this class doesn\'t have subclasses #}
 class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_class}}{% endif %} {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    {{cpp_class}}();
-    virtual ~{{cpp_class}}();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  {{cpp_class}}();
+  virtual ~{{cpp_class}}();
 
-    {% for member in members %}
-    bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
-    {{member.rvalue_cpp_type}} {{member.cpp_name}}() const { return {{member.getter_expression}}; }
-    void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.cpp_name}} = value; }
-    {% if member.null_setter_name %}
-    void {{member.null_setter_name}}() { m_{{member.cpp_name}} = {{member.member_cpp_type}}(); }
-    {% endif %}
+  {% for member in members %}
+  bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
+  {{member.rvalue_cpp_type}} {{member.cpp_name}}() const { return {{member.getter_expression}}; }
+  void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.cpp_name}} = value; }
+  {% if member.null_setter_name %}
+  void {{member.null_setter_name}}() { m_{{member.cpp_name}} = {{member.member_cpp_type}}(); }
+  {% endif %}
 
-    {% endfor %}
-    v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-    DECLARE_VIRTUAL_TRACE();
+  {% endfor %}
+  v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    {% for member in members %}
-    {{member.member_cpp_type}} m_{{member.cpp_name}};
-    {% endfor %}
+ private:
+  {% for member in members %}
+  {{member.member_cpp_type}} m_{{member.cpp_name}};
+  {% endfor %}
 
-    friend class V8{{cpp_class}};
+  friend class V8{{cpp_class}};
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // {{cpp_class}}_h
+#endif  // {{cpp_class}}_h
 
 {% endfilter %}{# format_blink_cpp_source_code #}

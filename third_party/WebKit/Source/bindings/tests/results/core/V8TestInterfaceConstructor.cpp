@@ -84,11 +84,11 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   stringArg = info[1];
   if (!stringArg.prepare())
-      return;
+    return;
 
   testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
   if (!testInterfaceEmptyArg) {
@@ -104,19 +104,19 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   dictionaryArg = Dictionary(info[3], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   sequenceStringArg = toImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   sequenceDictionaryArg = toImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   sequenceLongOrTestDictionaryArg = toImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   if (!isUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
     exceptionState.throwTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
@@ -125,7 +125,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   optionalDictionaryArg = Dictionary(info[7], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[8]);
   if (!optionalTestInterfaceEmptyArg) {
@@ -159,7 +159,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   arg = info[0];
   if (!arg.prepare())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -175,7 +175,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   optArg = info[1];
   if (!optArg.prepare())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
   Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
@@ -197,15 +197,15 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> arg3;
   arg = info[0];
   if (!arg.prepare())
-      return;
+    return;
 
   arg2 = info[1];
   if (!arg2.prepare())
-      return;
+    return;
 
   arg3 = info[2];
   if (!arg3.prepare())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
   Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
@@ -316,7 +316,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
   }
   arg = info[0];
   if (!arg.prepare())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -332,7 +332,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
   }
   optArg = info[1];
   if (!optArg.prepare())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
   Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));

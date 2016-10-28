@@ -102,7 +102,7 @@ static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setLongAttribute(cppValue);
 }
@@ -134,7 +134,7 @@ static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> 
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoNotCheckSecurityLongAttribute(cppValue);
 }
@@ -178,7 +178,7 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8:
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoNotCheckSecurityOnSetterLongAttribute(cppValue);
 }

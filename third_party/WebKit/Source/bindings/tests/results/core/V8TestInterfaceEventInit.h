@@ -19,28 +19,27 @@ namespace blink {
 class ExceptionState;
 
 class V8TestInterfaceEventInit {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceEventInit&, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceEventInit&, ExceptionState&);
 };
 
 CORE_EXPORT bool toV8TestInterfaceEventInit(const TestInterfaceEventInit&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceEventInit& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceEventInit& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestInterfaceEventInit> {
-    static TestInterfaceEventInit nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  static TestInterfaceEventInit nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>
 struct V8TypeOf<TestInterfaceEventInit> {
-    typedef V8TestInterfaceEventInit Type;
+  typedef V8TestInterfaceEventInit Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestInterfaceEventInit_h
+#endif  // V8TestInterfaceEventInit_h

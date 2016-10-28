@@ -69,7 +69,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   unsigned index;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfaceEmpty* result = impl->item(index, exceptionState);
   if (exceptionState.hadException()) {
@@ -96,7 +96,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceEmpty* value;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!value) {
@@ -129,7 +129,7 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   unsigned index;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   bool result = impl->deleteItem(index, exceptionState);
   if (exceptionState.hadException()) {
@@ -155,7 +155,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> name;
   name = info[0];
   if (!name.prepare())
-      return;
+    return;
 
   TestInterfaceEmpty* result = impl->namedItem(name, exceptionState);
   if (exceptionState.hadException()) {
@@ -182,7 +182,7 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) 
   TestInterfaceEmpty* value;
   name = info[0];
   if (!name.prepare())
-      return;
+    return;
 
   value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!value && !isUndefinedOrNull(info[1])) {
@@ -215,7 +215,7 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
   V8StringResource<> name;
   name = info[0];
   if (!name.prepare())
-      return;
+    return;
 
   bool result = impl->deleteNamedItem(name, exceptionState);
   if (exceptionState.hadException()) {

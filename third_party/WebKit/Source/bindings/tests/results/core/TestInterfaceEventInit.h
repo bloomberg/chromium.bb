@@ -16,24 +16,24 @@
 namespace blink {
 
 class CORE_EXPORT TestInterfaceEventInit : public EventInit {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestInterfaceEventInit();
-    virtual ~TestInterfaceEventInit();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  TestInterfaceEventInit();
+  virtual ~TestInterfaceEventInit();
 
-    bool hasStringMember() const { return !m_stringMember.isNull(); }
-    String stringMember() const { return m_stringMember; }
-    void setStringMember(String value) { m_stringMember = value; }
+  bool hasStringMember() const { return !m_stringMember.isNull(); }
+  String stringMember() const { return m_stringMember; }
+  void setStringMember(String value) { m_stringMember = value; }
 
-    v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-    DECLARE_VIRTUAL_TRACE();
+  v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    String m_stringMember;
+ private:
+  String m_stringMember;
 
-    friend class V8TestInterfaceEventInit;
+  friend class V8TestInterfaceEventInit;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TestInterfaceEventInit_h
+#endif  // TestInterfaceEventInit_h

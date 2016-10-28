@@ -70,7 +70,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   // Prepare the value to be set.
   double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoubleAttribute(cppValue);
 }
@@ -102,7 +102,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setConditionalLongAttribute(cppValue);
 }
@@ -137,7 +137,7 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestInterfaceOriginTrialEnabled::setStaticStringAttribute(cppValue);
 }
@@ -170,11 +170,11 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
   float floatArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
@@ -197,7 +197,7 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
   double doubleArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodPartialOverload(doubleArg);
 }

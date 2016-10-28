@@ -12,67 +12,63 @@
 
 namespace blink {
 
-void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState)
-{
-    if (isUndefinedOrNull(v8Value)) {
-        return;
-    }
-    if (!v8Value->IsObject()) {
-        exceptionState.throwTypeError("cannot convert to dictionary.");
-        return;
-    }
+void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState) {
+  if (isUndefinedOrNull(v8Value)) {
+    return;
+  }
+  if (!v8Value->IsObject()) {
+    exceptionState.throwTypeError("cannot convert to dictionary.");
+    return;
+  }
 
-    V8EventInit::toImpl(isolate, v8Value, impl, exceptionState);
-    if (exceptionState.hadException())
-        return;
+  V8EventInit::toImpl(isolate, v8Value, impl, exceptionState);
+  if (exceptionState.hadException())
+    return;
 
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Object> v8Object;
-    if (!v8Call(v8Value->ToObject(isolate->GetCurrentContext()), v8Object, block)) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
-    }
-    v8::Local<v8::Value> stringMemberValue;
-    if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
-    }
-    if (stringMemberValue.IsEmpty() || stringMemberValue->IsUndefined()) {
-        // Do nothing.
-    } else {
-        V8StringResource<> stringMember = stringMemberValue;
-        if (!stringMember.prepare(exceptionState))
-            return;
-        impl.setStringMember(stringMember);
-    }
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Object> v8Object;
+  if (!v8Call(v8Value->ToObject(isolate->GetCurrentContext()), v8Object, block)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  v8::Local<v8::Value> stringMemberValue;
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  if (stringMemberValue.IsEmpty() || stringMemberValue->IsUndefined()) {
+    // Do nothing.
+  } else {
+    V8StringResource<> stringMember = stringMemberValue;
+    if (!stringMember.prepare(exceptionState))
+      return;
+    impl.setStringMember(stringMember);
+  }
 }
 
-v8::Local<v8::Value> TestInterfaceEventInit::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const
-{
-    v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    if (!toV8TestInterfaceEventInit(*this, v8Object, creationContext, isolate))
-        return v8::Undefined(isolate);
-    return v8Object;
+v8::Local<v8::Value> TestInterfaceEventInit::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const {
+  v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
+  if (!toV8TestInterfaceEventInit(*this, v8Object, creationContext, isolate))
+    return v8::Undefined(isolate);
+  return v8Object;
 }
 
-bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!toV8EventInit(impl, dictionary, creationContext, isolate))
-        return false;
+bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  if (!toV8EventInit(impl, dictionary, creationContext, isolate))
+    return false;
 
-    if (impl.hasStringMember()) {
-        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
-            return false;
-    }
+  if (impl.hasStringMember()) {
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
+      return false;
+  }
 
-    return true;
+  return true;
 }
 
-TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    TestInterfaceEventInit impl;
-    V8TestInterfaceEventInit::toImpl(isolate, value, impl, exceptionState);
-    return impl;
+TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  TestInterfaceEventInit impl;
+  V8TestInterfaceEventInit::toImpl(isolate, value, impl, exceptionState);
+  return impl;
 }
 
-} // namespace blink
+}  // namespace blink

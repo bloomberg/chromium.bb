@@ -52,7 +52,7 @@ static void partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfacePartial4::setPartial4LongAttribute(*impl, cppValue);
 }
@@ -77,7 +77,7 @@ static void partial4StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfacePartial4::setPartial4StaticLongAttribute(cppValue);
 }
@@ -94,7 +94,7 @@ static void voidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   TestInterfacePartial3Implementation::voidMethodPartialOverload(*impl, value);
 }
@@ -125,7 +125,7 @@ static void staticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInf
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   TestInterfacePartial3Implementation::staticVoidMethodPartialOverload(value);
 }
@@ -199,7 +199,7 @@ static void staticPromiseMethodPartialOverload2Method(const v8::FunctionCallback
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare(exceptionState))
-      return;
+    return;
 
   v8SetReturnValue(info, TestInterfacePartial3Implementation::staticPromiseMethodPartialOverload(value).v8Value());
 }
@@ -233,7 +233,7 @@ static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   TestInterfacePartial3Implementation::partial2VoidMethod(*impl, value);
 }
@@ -291,7 +291,7 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
   V8StringResource<> arg;
   arg = info[0];
   if (!arg.prepare())
-      return;
+    return;
   const char* validArgValues[] = {
       "EnumModulesValue1",
       "EnumModulesValue2",
@@ -311,7 +311,7 @@ static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::V
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   TestInterfacePartial3Implementation::partial2StaticVoidMethod(value);
 }

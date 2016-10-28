@@ -25,7 +25,7 @@
 {% endif %}
 {% if item.check_expression %}
 if ({{item.check_expression}})
-    return{% if item.return_expression %} {{item.return_expression}}{% endif %};
+  return{% if item.return_expression %} {{item.return_expression}}{% endif %};
 {% endif %}{# item.check_expression #}
 {% endif %}{# item.error_message #}
 {% endmacro %}
@@ -59,10 +59,10 @@ const char* {{enum_variable}}[] = {
 ExecutionContext* executionContext = currentExecutionContext({{isolate}});
 String errorMessage;
 if (!{{member.origin_trial_enabled_function}}(executionContext, errorMessage)) {
-    v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-    if (!errorMessage.isEmpty()) {
-        executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
-    }
-    return;
+  v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+  if (!errorMessage.isEmpty()) {
+    executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+  }
+  return;
 }
 {% endmacro %}

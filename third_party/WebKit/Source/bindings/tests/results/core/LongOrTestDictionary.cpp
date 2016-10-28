@@ -13,123 +13,110 @@
 
 namespace blink {
 
-LongOrTestDictionary::LongOrTestDictionary()
-    : m_type(SpecificTypeNone)
-{
+LongOrTestDictionary::LongOrTestDictionary() : m_type(SpecificTypeNone) {}
+
+int LongOrTestDictionary::getAsLong() const {
+  DCHECK(isLong());
+  return m_long;
 }
 
-int LongOrTestDictionary::getAsLong() const
-{
-    ASSERT(isLong());
-    return m_long;
+void LongOrTestDictionary::setLong(int value) {
+  DCHECK(isNull());
+  m_long = value;
+  m_type = SpecificTypeLong;
 }
 
-void LongOrTestDictionary::setLong(int value)
-{
-    ASSERT(isNull());
-    m_long = value;
-    m_type = SpecificTypeLong;
+LongOrTestDictionary LongOrTestDictionary::fromLong(int value) {
+  LongOrTestDictionary container;
+  container.setLong(value);
+  return container;
 }
 
-LongOrTestDictionary LongOrTestDictionary::fromLong(int value)
-{
-    LongOrTestDictionary container;
-    container.setLong(value);
-    return container;
+const TestDictionary& LongOrTestDictionary::getAsTestDictionary() const {
+  DCHECK(isTestDictionary());
+  return m_testDictionary;
 }
 
-const TestDictionary& LongOrTestDictionary::getAsTestDictionary() const
-{
-    ASSERT(isTestDictionary());
-    return m_testDictionary;
+void LongOrTestDictionary::setTestDictionary(const TestDictionary& value) {
+  DCHECK(isNull());
+  m_testDictionary = value;
+  m_type = SpecificTypeTestDictionary;
 }
 
-void LongOrTestDictionary::setTestDictionary(const TestDictionary& value)
-{
-    ASSERT(isNull());
-    m_testDictionary = value;
-    m_type = SpecificTypeTestDictionary;
-}
-
-LongOrTestDictionary LongOrTestDictionary::fromTestDictionary(const TestDictionary& value)
-{
-    LongOrTestDictionary container;
-    container.setTestDictionary(value);
-    return container;
+LongOrTestDictionary LongOrTestDictionary::fromTestDictionary(const TestDictionary& value) {
+  LongOrTestDictionary container;
+  container.setTestDictionary(value);
+  return container;
 }
 
 LongOrTestDictionary::LongOrTestDictionary(const LongOrTestDictionary&) = default;
 LongOrTestDictionary::~LongOrTestDictionary() = default;
 LongOrTestDictionary& LongOrTestDictionary::operator=(const LongOrTestDictionary&) = default;
 
-DEFINE_TRACE(LongOrTestDictionary)
-{
-    visitor->trace(m_testDictionary);
+DEFINE_TRACE(LongOrTestDictionary) {
+  visitor->trace(m_testDictionary);
 }
 
-void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
-{
-    if (v8Value.IsEmpty())
-        return;
+void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+  if (v8Value.IsEmpty())
+    return;
 
-    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
-        return;
+  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+    return;
 
-    if (isUndefinedOrNull(v8Value)) {
-        TestDictionary cppValue;
-        V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        impl.setTestDictionary(cppValue);
-        return;
-    }
+  if (isUndefinedOrNull(v8Value)) {
+    TestDictionary cppValue;
+    V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setTestDictionary(cppValue);
+    return;
+  }
 
-    if (v8Value->IsObject()) {
-        TestDictionary cppValue;
-        V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        impl.setTestDictionary(cppValue);
-        return;
-    }
+  if (v8Value->IsObject()) {
+    TestDictionary cppValue;
+    V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setTestDictionary(cppValue);
+    return;
+  }
 
-    if (v8Value->IsNumber()) {
-        int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        impl.setLong(cppValue);
-        return;
-    }
+  if (v8Value->IsNumber()) {
+    int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setLong(cppValue);
+    return;
+  }
 
-    {
-        int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        impl.setLong(cppValue);
-        return;
-    }
+  {
+    int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setLong(cppValue);
+    return;
+  }
 }
 
-v8::Local<v8::Value> toV8(const LongOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    switch (impl.m_type) {
+v8::Local<v8::Value> toV8(const LongOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  switch (impl.m_type) {
     case LongOrTestDictionary::SpecificTypeNone:
-        return v8::Null(isolate);
+      return v8::Null(isolate);
     case LongOrTestDictionary::SpecificTypeLong:
-        return v8::Integer::New(isolate, impl.getAsLong());
+      return v8::Integer::New(isolate, impl.getAsLong());
     case LongOrTestDictionary::SpecificTypeTestDictionary:
-        return toV8(impl.getAsTestDictionary(), creationContext, isolate);
+      return toV8(impl.getAsTestDictionary(), creationContext, isolate);
     default:
-        ASSERT_NOT_REACHED();
-    }
-    return v8::Local<v8::Value>();
+      NOTREACHED();
+  }
+  return v8::Local<v8::Value>();
 }
 
-LongOrTestDictionary NativeValueTraits<LongOrTestDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    LongOrTestDictionary impl;
-    V8LongOrTestDictionary::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
-    return impl;
+LongOrTestDictionary NativeValueTraits<LongOrTestDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  LongOrTestDictionary impl;
+  V8LongOrTestDictionary::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  return impl;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -36,7 +36,7 @@ static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   TestInterface2Partial::voidMethodPartial1(*impl, value);
 }
@@ -56,7 +56,7 @@ static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   TestInterface2Partial2::voidMethodPartial2(*impl, value);
 }

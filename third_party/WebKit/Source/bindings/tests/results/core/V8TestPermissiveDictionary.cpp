@@ -11,60 +11,56 @@
 
 namespace blink {
 
-void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary& impl, ExceptionState& exceptionState)
-{
-    if (isUndefinedOrNull(v8Value)) {
-        return;
-    }
-    if (!v8Value->IsObject()) {
-        // Do nothing.
-        return;
-    }
+void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary& impl, ExceptionState& exceptionState) {
+  if (isUndefinedOrNull(v8Value)) {
+    return;
+  }
+  if (!v8Value->IsObject()) {
+    // Do nothing.
+    return;
+  }
 
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Object> v8Object;
-    if (!v8Call(v8Value->ToObject(isolate->GetCurrentContext()), v8Object, block)) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
-    }
-    v8::Local<v8::Value> booleanMemberValue;
-    if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
-    }
-    if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
-        // Do nothing.
-    } else {
-        bool booleanMember = toBoolean(isolate, booleanMemberValue, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        impl.setBooleanMember(booleanMember);
-    }
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Object> v8Object;
+  if (!v8Call(v8Value->ToObject(isolate->GetCurrentContext()), v8Object, block)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  v8::Local<v8::Value> booleanMemberValue;
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
+    // Do nothing.
+  } else {
+    bool booleanMember = toBoolean(isolate, booleanMemberValue, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setBooleanMember(booleanMember);
+  }
 }
 
-v8::Local<v8::Value> TestPermissiveDictionary::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const
-{
-    v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    if (!toV8TestPermissiveDictionary(*this, v8Object, creationContext, isolate))
-        return v8::Undefined(isolate);
-    return v8Object;
+v8::Local<v8::Value> TestPermissiveDictionary::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const {
+  v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
+  if (!toV8TestPermissiveDictionary(*this, v8Object, creationContext, isolate))
+    return v8::Undefined(isolate);
+  return v8Object;
 }
 
-bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (impl.hasBooleanMember()) {
-        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
-            return false;
-    }
+bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  if (impl.hasBooleanMember()) {
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
+      return false;
+  }
 
-    return true;
+  return true;
 }
 
-TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    TestPermissiveDictionary impl;
-    V8TestPermissiveDictionary::toImpl(isolate, value, impl, exceptionState);
-    return impl;
+TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  TestPermissiveDictionary impl;
+  V8TestPermissiveDictionary::toImpl(isolate, value, impl, exceptionState);
+  return impl;
 }
 
-} // namespace blink
+}  // namespace blink

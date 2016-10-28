@@ -19,39 +19,35 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT VoidCallbackFunctionTypedef final : public GarbageCollectedFinalized<VoidCallbackFunctionTypedef>,
-                                        public TraceWrapperBase {
-public:
-    static VoidCallbackFunctionTypedef* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    {
-        return new VoidCallbackFunctionTypedef(scriptState, callback);
-    }
+class CORE_EXPORT VoidCallbackFunctionTypedef final : public GarbageCollectedFinalized<VoidCallbackFunctionTypedef>, public TraceWrapperBase {
+ public:
+  static VoidCallbackFunctionTypedef* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
+    return new VoidCallbackFunctionTypedef(scriptState, callback);
+  }
 
-    ~VoidCallbackFunctionTypedef() = default;
+  ~VoidCallbackFunctionTypedef() = default;
 
-    DECLARE_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptWrappable* scriptWrappable, const String& arg);
+  bool call(ScriptWrappable* scriptWrappable, const String& arg);
 
-    v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
-    {
-        return m_callback.newLocal(isolate);
-    }
+  v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
+    return m_callback.newLocal(isolate);
+  }
 
-    void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
-    {
-        DCHECK(!m_callback.isEmpty());
-        m_callback.setReference(wrapper, isolate);
-    }
+  void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper) {
+    DCHECK(!m_callback.isEmpty());
+    m_callback.setReference(wrapper, isolate);
+  }
 
-private:
-    VoidCallbackFunctionTypedef(ScriptState*, v8::Local<v8::Function>);
+ private:
+  VoidCallbackFunctionTypedef(ScriptState*, v8::Local<v8::Function>);
 
-    RefPtr<ScriptState> m_scriptState;
-    ScopedPersistent<v8::Function> m_callback;
+  RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Function> m_callback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VoidCallbackFunctionTypedef_h
+#endif  // VoidCallbackFunctionTypedef_h

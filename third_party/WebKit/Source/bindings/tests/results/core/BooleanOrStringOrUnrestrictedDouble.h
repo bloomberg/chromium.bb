@@ -17,66 +17,65 @@
 namespace blink {
 
 class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    BooleanOrStringOrUnrestrictedDouble();
-    bool isNull() const { return m_type == SpecificTypeNone; }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  BooleanOrStringOrUnrestrictedDouble();
+  bool isNull() const { return m_type == SpecificTypeNone; }
 
-    bool isBoolean() const { return m_type == SpecificTypeBoolean; }
-    bool getAsBoolean() const;
-    void setBoolean(bool);
-    static BooleanOrStringOrUnrestrictedDouble fromBoolean(bool);
+  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool getAsBoolean() const;
+  void setBoolean(bool);
+  static BooleanOrStringOrUnrestrictedDouble fromBoolean(bool);
 
-    bool isString() const { return m_type == SpecificTypeString; }
-    String getAsString() const;
-    void setString(String);
-    static BooleanOrStringOrUnrestrictedDouble fromString(String);
+  bool isString() const { return m_type == SpecificTypeString; }
+  String getAsString() const;
+  void setString(String);
+  static BooleanOrStringOrUnrestrictedDouble fromString(String);
 
-    bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
-    double getAsUnrestrictedDouble() const;
-    void setUnrestrictedDouble(double);
-    static BooleanOrStringOrUnrestrictedDouble fromUnrestrictedDouble(double);
+  bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
+  double getAsUnrestrictedDouble() const;
+  void setUnrestrictedDouble(double);
+  static BooleanOrStringOrUnrestrictedDouble fromUnrestrictedDouble(double);
 
-    BooleanOrStringOrUnrestrictedDouble(const BooleanOrStringOrUnrestrictedDouble&);
-    ~BooleanOrStringOrUnrestrictedDouble();
-    BooleanOrStringOrUnrestrictedDouble& operator=(const BooleanOrStringOrUnrestrictedDouble&);
-    DECLARE_TRACE();
+  BooleanOrStringOrUnrestrictedDouble(const BooleanOrStringOrUnrestrictedDouble&);
+  ~BooleanOrStringOrUnrestrictedDouble();
+  BooleanOrStringOrUnrestrictedDouble& operator=(const BooleanOrStringOrUnrestrictedDouble&);
+  DECLARE_TRACE();
 
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeBoolean,
-        SpecificTypeString,
-        SpecificTypeUnrestrictedDouble,
-    };
-    SpecificTypes m_type;
+ private:
+  enum SpecificTypes {
+    SpecificTypeNone,
+    SpecificTypeBoolean,
+    SpecificTypeString,
+    SpecificTypeUnrestrictedDouble,
+  };
+  SpecificTypes m_type;
 
-    bool m_boolean;
-    String m_string;
-    double m_unrestrictedDouble;
+  bool m_boolean;
+  String m_string;
+  double m_unrestrictedDouble;
 
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8BooleanOrStringOrUnrestrictedDouble final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrStringOrUnrestrictedDouble&, UnionTypeConversionMode, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrStringOrUnrestrictedDouble&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOrUnrestrictedDouble& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOrUnrestrictedDouble& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> {
-    CORE_EXPORT static BooleanOrStringOrUnrestrictedDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static BooleanOrStringOrUnrestrictedDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 // We need to set canInitializeWithMemset=true because HeapVector supports
 // items that can initialize with memset or have a vtable. It is safe to
@@ -84,4 +83,4 @@ struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::BooleanOrStringOrUnrestrictedDouble);
 
-#endif // BooleanOrStringOrUnrestrictedDouble_h
+#endif  // BooleanOrStringOrUnrestrictedDouble_h

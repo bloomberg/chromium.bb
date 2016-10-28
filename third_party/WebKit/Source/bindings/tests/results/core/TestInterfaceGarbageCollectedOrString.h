@@ -19,59 +19,58 @@ namespace blink {
 class TestInterfaceGarbageCollected;
 
 class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestInterfaceGarbageCollectedOrString();
-    bool isNull() const { return m_type == SpecificTypeNone; }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  TestInterfaceGarbageCollectedOrString();
+  bool isNull() const { return m_type == SpecificTypeNone; }
 
-    bool isTestInterfaceGarbageCollected() const { return m_type == SpecificTypeTestInterfaceGarbageCollected; }
-    TestInterfaceGarbageCollected* getAsTestInterfaceGarbageCollected() const;
-    void setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
-    static TestInterfaceGarbageCollectedOrString fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
+  bool isTestInterfaceGarbageCollected() const { return m_type == SpecificTypeTestInterfaceGarbageCollected; }
+  TestInterfaceGarbageCollected* getAsTestInterfaceGarbageCollected() const;
+  void setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
+  static TestInterfaceGarbageCollectedOrString fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
 
-    bool isString() const { return m_type == SpecificTypeString; }
-    String getAsString() const;
-    void setString(String);
-    static TestInterfaceGarbageCollectedOrString fromString(String);
+  bool isString() const { return m_type == SpecificTypeString; }
+  String getAsString() const;
+  void setString(String);
+  static TestInterfaceGarbageCollectedOrString fromString(String);
 
-    TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&);
-    ~TestInterfaceGarbageCollectedOrString();
-    TestInterfaceGarbageCollectedOrString& operator=(const TestInterfaceGarbageCollectedOrString&);
-    DECLARE_TRACE();
+  TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&);
+  ~TestInterfaceGarbageCollectedOrString();
+  TestInterfaceGarbageCollectedOrString& operator=(const TestInterfaceGarbageCollectedOrString&);
+  DECLARE_TRACE();
 
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeTestInterfaceGarbageCollected,
-        SpecificTypeString,
-    };
-    SpecificTypes m_type;
+ private:
+  enum SpecificTypes {
+    SpecificTypeNone,
+    SpecificTypeTestInterfaceGarbageCollected,
+    SpecificTypeString,
+  };
+  SpecificTypes m_type;
 
-    Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollected;
-    String m_string;
+  Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollected;
+  String m_string;
 
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceGarbageCollectedOrString final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceGarbageCollectedOrString&, UnionTypeConversionMode, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceGarbageCollectedOrString&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> {
-    CORE_EXPORT static TestInterfaceGarbageCollectedOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceGarbageCollectedOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 // We need to set canInitializeWithMemset=true because HeapVector supports
 // items that can initialize with memset or have a vtable. It is safe to
@@ -79,4 +78,4 @@ struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterfaceGarbageCollectedOrString);
 
-#endif // TestInterfaceGarbageCollectedOrString_h
+#endif  // TestInterfaceGarbageCollectedOrString_h

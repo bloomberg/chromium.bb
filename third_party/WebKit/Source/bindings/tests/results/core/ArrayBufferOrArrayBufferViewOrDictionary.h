@@ -20,66 +20,65 @@ class TestArrayBuffer;
 class TestArrayBufferView;
 
 class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    ArrayBufferOrArrayBufferViewOrDictionary();
-    bool isNull() const { return m_type == SpecificTypeNone; }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  ArrayBufferOrArrayBufferViewOrDictionary();
+  bool isNull() const { return m_type == SpecificTypeNone; }
 
-    bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
-    TestArrayBuffer* getAsArrayBuffer() const;
-    void setArrayBuffer(TestArrayBuffer*);
-    static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBuffer(TestArrayBuffer*);
+  bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
+  TestArrayBuffer* getAsArrayBuffer() const;
+  void setArrayBuffer(TestArrayBuffer*);
+  static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBuffer(TestArrayBuffer*);
 
-    bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
-    TestArrayBufferView* getAsArrayBufferView() const;
-    void setArrayBufferView(TestArrayBufferView*);
-    static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBufferView(TestArrayBufferView*);
+  bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
+  TestArrayBufferView* getAsArrayBufferView() const;
+  void setArrayBufferView(TestArrayBufferView*);
+  static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBufferView(TestArrayBufferView*);
 
-    bool isDictionary() const { return m_type == SpecificTypeDictionary; }
-    Dictionary getAsDictionary() const;
-    void setDictionary(Dictionary);
-    static ArrayBufferOrArrayBufferViewOrDictionary fromDictionary(Dictionary);
+  bool isDictionary() const { return m_type == SpecificTypeDictionary; }
+  Dictionary getAsDictionary() const;
+  void setDictionary(Dictionary);
+  static ArrayBufferOrArrayBufferViewOrDictionary fromDictionary(Dictionary);
 
-    ArrayBufferOrArrayBufferViewOrDictionary(const ArrayBufferOrArrayBufferViewOrDictionary&);
-    ~ArrayBufferOrArrayBufferViewOrDictionary();
-    ArrayBufferOrArrayBufferViewOrDictionary& operator=(const ArrayBufferOrArrayBufferViewOrDictionary&);
-    DECLARE_TRACE();
+  ArrayBufferOrArrayBufferViewOrDictionary(const ArrayBufferOrArrayBufferViewOrDictionary&);
+  ~ArrayBufferOrArrayBufferViewOrDictionary();
+  ArrayBufferOrArrayBufferViewOrDictionary& operator=(const ArrayBufferOrArrayBufferViewOrDictionary&);
+  DECLARE_TRACE();
 
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeArrayBuffer,
-        SpecificTypeArrayBufferView,
-        SpecificTypeDictionary,
-    };
-    SpecificTypes m_type;
+ private:
+  enum SpecificTypes {
+    SpecificTypeNone,
+    SpecificTypeArrayBuffer,
+    SpecificTypeArrayBufferView,
+    SpecificTypeDictionary,
+  };
+  SpecificTypes m_type;
 
-    Member<TestArrayBuffer> m_arrayBuffer;
-    Member<TestArrayBufferView> m_arrayBufferView;
-    Dictionary m_dictionary;
+  Member<TestArrayBuffer> m_arrayBuffer;
+  Member<TestArrayBufferView> m_arrayBufferView;
+  Dictionary m_dictionary;
 
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8ArrayBufferOrArrayBufferViewOrDictionary final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, UnionTypeConversionMode, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArrayBufferViewOrDictionary& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArrayBufferViewOrDictionary& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
-    CORE_EXPORT static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 // We need to set canInitializeWithMemset=true because HeapVector supports
 // items that can initialize with memset or have a vtable. It is safe to
@@ -87,4 +86,4 @@ struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::ArrayBufferOrArrayBufferViewOrDictionary);
 
-#endif // ArrayBufferOrArrayBufferViewOrDictionary_h
+#endif  // ArrayBufferOrArrayBufferViewOrDictionary_h

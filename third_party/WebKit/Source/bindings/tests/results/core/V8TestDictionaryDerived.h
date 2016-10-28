@@ -19,28 +19,27 @@ namespace blink {
 class ExceptionState;
 
 class V8TestDictionaryDerivedImplementedAs {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestDictionaryDerivedImplementedAs&, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestDictionaryDerivedImplementedAs&, ExceptionState&);
 };
 
 CORE_EXPORT bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDerivedImplementedAs& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDerivedImplementedAs& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestDictionaryDerivedImplementedAs> {
-    static TestDictionaryDerivedImplementedAs nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  static TestDictionaryDerivedImplementedAs nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>
 struct V8TypeOf<TestDictionaryDerivedImplementedAs> {
-    typedef V8TestDictionaryDerivedImplementedAs Type;
+  typedef V8TestDictionaryDerivedImplementedAs Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestDictionaryDerived_h
+#endif  // V8TestDictionaryDerived_h

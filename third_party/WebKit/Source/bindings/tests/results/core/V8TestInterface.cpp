@@ -138,7 +138,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   // Prepare the value to be set.
   double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoubleAttribute(cppValue);
 }
@@ -170,7 +170,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   // Prepare the value to be set.
   float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setFloatAttribute(cppValue);
 }
@@ -202,7 +202,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   // Prepare the value to be set.
   double cppValue = toDouble(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnrestrictedDoubleAttribute(cppValue);
 }
@@ -234,7 +234,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   float cppValue = toFloat(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnrestrictedFloatAttribute(cppValue);
 }
@@ -266,7 +266,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
@@ -316,7 +316,7 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   StringOrDouble cppValue;
   V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setStringOrDoubleAttribute(cppValue);
 }
@@ -348,7 +348,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setConditionalLongAttribute(cppValue);
 }
@@ -383,7 +383,7 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestInterfaceImplementation::setStaticStringAttribute(cppValue);
 }
@@ -506,7 +506,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setAlwaysExposedAttribute(cppValue);
 }
@@ -538,7 +538,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setWorkerExposedAttribute(cppValue);
 }
@@ -570,7 +570,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setWindowExposedAttribute(cppValue);
 }
@@ -855,7 +855,7 @@ static void implementsStaticStringAttributeAttributeSetter(v8::Local<v8::Value> 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestInterfaceImplementation::setImplementsStaticStringAttribute(cppValue);
 }
@@ -897,7 +897,7 @@ static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setImplementsStringAttribute(cppValue);
 }
@@ -1022,7 +1022,7 @@ static void implements2StaticStringAttributeAttributeSetter(v8::Local<v8::Value>
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestImplements2::setImplements2StaticStringAttribute(cppValue);
 }
@@ -1052,7 +1052,7 @@ static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestImplements2::setImplements2StringAttribute(*impl, cppValue);
 }
@@ -1082,7 +1082,7 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestImplements3Implementation::setImplements3StringAttribute(*impl, cppValue);
 }
@@ -1105,7 +1105,7 @@ static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value>
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestImplements3Implementation::setImplements3StaticStringAttribute(cppValue);
 }
@@ -1137,7 +1137,7 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfacePartial::setPartialLongAttribute(*impl, cppValue);
 }
@@ -1162,7 +1162,7 @@ static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfacePartial::setPartialStaticLongAttribute(cppValue);
 }
@@ -1196,7 +1196,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 
@@ -1230,7 +1230,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
@@ -1276,7 +1276,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   V8TestInterface::PrivateScript::stringAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
@@ -1308,7 +1308,7 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfacePartial2Implementation::setPartial2LongAttribute(*impl, cppValue);
 }
@@ -1333,7 +1333,7 @@ static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfacePartial2Implementation::setPartial2StaticLongAttribute(cppValue);
 }
@@ -1633,11 +1633,11 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
   float floatArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
@@ -1660,11 +1660,11 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
   float unrestrictedFloatArg;
   unrestrictedDoubleArg = toDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   unrestrictedFloatArg = toFloat(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestrictedDoubleArg, unrestrictedFloatArg);
 }
@@ -1686,7 +1686,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
   V8StringResource<> testEnumArg;
   testEnumArg = info[0];
   if (!testEnumArg.prepare())
-      return;
+    return;
   const char* validTestEnumArgValues[] = {
       "",
       "EnumValue1",
@@ -1804,7 +1804,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag1Method(const v8::Func
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadMethodWithExposedAndRuntimeEnabledFlag(longArg);
 }
@@ -1815,7 +1815,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag2Method(const v8::Func
   V8StringResource<> string;
   string = info[0];
   if (!string.prepare())
-      return;
+    return;
 
   impl->overloadMethodWithExposedAndRuntimeEnabledFlag(string);
 }
@@ -1912,7 +1912,7 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
   double doubleArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodPartialOverload(doubleArg);
 }
@@ -2050,7 +2050,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   TestInterfaceEmpty* testInterfaceEmptyArg;
   strArg = info[0];
   if (!strArg.prepare())
-      return;
+    return;
 
   testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!testInterfaceEmptyArg) {
@@ -2142,7 +2142,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfacePartial::partialVoidMethodLongArg(*impl, longArg);
 }
@@ -2203,7 +2203,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
   int value;
   value = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   int result = 0;
   if (!V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
@@ -2493,7 +2493,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
   V8StringResource<> propertyValue = v8Value;
   if (!propertyValue.prepare())
-      return;
+    return;
 
   bool result = impl->anonymousNamedSetter(name, propertyValue);
   if (!result)
@@ -2584,7 +2584,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
   V8StringResource<> propertyValue = v8Value;
   if (!propertyValue.prepare())
-      return;
+    return;
 
   bool result = impl->anonymousIndexedSetter(index, propertyValue);
   if (!result)
@@ -3043,7 +3043,7 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     return false;
   int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return false;
+    return false;
   *result = cppValue;
   CHECK(!exceptionState.hadException());
   return true;
@@ -3069,7 +3069,7 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
     return false;
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return false;
+    return false;
   CHECK(!exceptionState.hadException());
   *result = cppValue;
   return true;

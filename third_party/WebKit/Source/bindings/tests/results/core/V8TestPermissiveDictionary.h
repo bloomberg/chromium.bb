@@ -19,28 +19,27 @@ namespace blink {
 class ExceptionState;
 
 class V8TestPermissiveDictionary {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestPermissiveDictionary&, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestPermissiveDictionary&, ExceptionState&);
 };
 
 CORE_EXPORT bool toV8TestPermissiveDictionary(const TestPermissiveDictionary&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestPermissiveDictionary& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestPermissiveDictionary& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestPermissiveDictionary> {
-    static TestPermissiveDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  static TestPermissiveDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>
 struct V8TypeOf<TestPermissiveDictionary> {
-    typedef V8TestPermissiveDictionary Type;
+  typedef V8TestPermissiveDictionary Type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8TestPermissiveDictionary_h
+#endif  // V8TestPermissiveDictionary_h

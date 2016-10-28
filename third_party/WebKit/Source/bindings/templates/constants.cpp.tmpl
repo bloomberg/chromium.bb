@@ -1,20 +1,19 @@
 {##############################################################################}
 {% macro constant_getter_callback(constant) %}
-void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    {% if constant.deprecate_as %}
-    Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
-    {% endif %}
-    {% if constant.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as('ConstantGetter')}});
-    {% endif %}
-    {% if constant.idl_type in ('Double', 'Float') %}
-    v8SetReturnValue(info, {{constant.value}});
-    {% elif constant.idl_type == 'String' %}
-    v8SetReturnValueString(info, "{{constant.value}}");
-    {% else %}
-    v8SetReturnValueInt(info, {{constant.value}});
-    {% endif %}
+void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {% if constant.deprecate_as %}
+  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
+  {% endif %}
+  {% if constant.measure_as %}
+  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as('ConstantGetter')}});
+  {% endif %}
+  {% if constant.idl_type in ('Double', 'Float') %}
+  v8SetReturnValue(info, {{constant.value}});
+  {% elif constant.idl_type == 'String' %}
+  v8SetReturnValueString(info, "{{constant.value}}");
+  {% else %}
+  v8SetReturnValueInt(info, {{constant.value}});
+  {% endif %}
 }
 {% endmacro %}
 

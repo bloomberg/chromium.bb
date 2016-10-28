@@ -19,39 +19,35 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<LongCallbackFunction>,
-                                        public TraceWrapperBase {
-public:
-    static LongCallbackFunction* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    {
-        return new LongCallbackFunction(scriptState, callback);
-    }
+class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<LongCallbackFunction>, public TraceWrapperBase {
+ public:
+  static LongCallbackFunction* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
+    return new LongCallbackFunction(scriptState, callback);
+  }
 
-    ~LongCallbackFunction() = default;
+  ~LongCallbackFunction() = default;
 
-    DECLARE_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue);
+  bool call(ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue);
 
-    v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
-    {
-        return m_callback.newLocal(isolate);
-    }
+  v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
+    return m_callback.newLocal(isolate);
+  }
 
-    void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
-    {
-        DCHECK(!m_callback.isEmpty());
-        m_callback.setReference(wrapper, isolate);
-    }
+  void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper) {
+    DCHECK(!m_callback.isEmpty());
+    m_callback.setReference(wrapper, isolate);
+  }
 
-private:
-    LongCallbackFunction(ScriptState*, v8::Local<v8::Function>);
+ private:
+  LongCallbackFunction(ScriptState*, v8::Local<v8::Function>);
 
-    RefPtr<ScriptState> m_scriptState;
-    ScopedPersistent<v8::Function> m_callback;
+  RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Function> m_callback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LongCallbackFunction_h
+#endif  // LongCallbackFunction_h

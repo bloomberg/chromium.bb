@@ -81,7 +81,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   TestInterfaceNamedConstructor2* impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
   v8::Local<v8::Object> wrapper = info.Holder();

@@ -58,7 +58,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   TestInterfaceConstructor3* impl = TestInterfaceConstructor3::create(stringArg);
   v8::Local<v8::Object> wrapper = info.Holder();

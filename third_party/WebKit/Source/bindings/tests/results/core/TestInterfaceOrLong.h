@@ -19,59 +19,58 @@ namespace blink {
 class TestInterfaceImplementation;
 
 class CORE_EXPORT TestInterfaceOrLong final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestInterfaceOrLong();
-    bool isNull() const { return m_type == SpecificTypeNone; }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  TestInterfaceOrLong();
+  bool isNull() const { return m_type == SpecificTypeNone; }
 
-    bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
-    TestInterfaceImplementation* getAsTestInterface() const;
-    void setTestInterface(TestInterfaceImplementation*);
-    static TestInterfaceOrLong fromTestInterface(TestInterfaceImplementation*);
+  bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
+  TestInterfaceImplementation* getAsTestInterface() const;
+  void setTestInterface(TestInterfaceImplementation*);
+  static TestInterfaceOrLong fromTestInterface(TestInterfaceImplementation*);
 
-    bool isLong() const { return m_type == SpecificTypeLong; }
-    int getAsLong() const;
-    void setLong(int);
-    static TestInterfaceOrLong fromLong(int);
+  bool isLong() const { return m_type == SpecificTypeLong; }
+  int getAsLong() const;
+  void setLong(int);
+  static TestInterfaceOrLong fromLong(int);
 
-    TestInterfaceOrLong(const TestInterfaceOrLong&);
-    ~TestInterfaceOrLong();
-    TestInterfaceOrLong& operator=(const TestInterfaceOrLong&);
-    DECLARE_TRACE();
+  TestInterfaceOrLong(const TestInterfaceOrLong&);
+  ~TestInterfaceOrLong();
+  TestInterfaceOrLong& operator=(const TestInterfaceOrLong&);
+  DECLARE_TRACE();
 
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeTestInterface,
-        SpecificTypeLong,
-    };
-    SpecificTypes m_type;
+ private:
+  enum SpecificTypes {
+    SpecificTypeNone,
+    SpecificTypeTestInterface,
+    SpecificTypeLong,
+  };
+  SpecificTypes m_type;
 
-    Member<TestInterfaceImplementation> m_testInterface;
-    int m_long;
+  Member<TestInterfaceImplementation> m_testInterface;
+  int m_long;
 
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceOrLong final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrLong&, UnionTypeConversionMode, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrLong&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLong& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLong& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestInterfaceOrLong> {
-    CORE_EXPORT static TestInterfaceOrLong nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceOrLong nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 // We need to set canInitializeWithMemset=true because HeapVector supports
 // items that can initialize with memset or have a vtable. It is safe to
@@ -79,4 +78,4 @@ struct NativeValueTraits<TestInterfaceOrLong> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterfaceOrLong);
 
-#endif // TestInterfaceOrLong_h
+#endif  // TestInterfaceOrLong_h

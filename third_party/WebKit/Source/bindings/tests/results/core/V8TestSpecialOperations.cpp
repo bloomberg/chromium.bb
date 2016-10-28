@@ -66,7 +66,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> name;
   name = info[0];
   if (!name.prepare())
-      return;
+    return;
 
   NodeOrNodeList result;
   impl->getItem(name, result);

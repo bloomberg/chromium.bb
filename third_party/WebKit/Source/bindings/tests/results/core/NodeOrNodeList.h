@@ -20,59 +20,58 @@ class Node;
 class NodeList;
 
 class CORE_EXPORT NodeOrNodeList final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    NodeOrNodeList();
-    bool isNull() const { return m_type == SpecificTypeNone; }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  NodeOrNodeList();
+  bool isNull() const { return m_type == SpecificTypeNone; }
 
-    bool isNode() const { return m_type == SpecificTypeNode; }
-    Node* getAsNode() const;
-    void setNode(Node*);
-    static NodeOrNodeList fromNode(Node*);
+  bool isNode() const { return m_type == SpecificTypeNode; }
+  Node* getAsNode() const;
+  void setNode(Node*);
+  static NodeOrNodeList fromNode(Node*);
 
-    bool isNodeList() const { return m_type == SpecificTypeNodeList; }
-    NodeList* getAsNodeList() const;
-    void setNodeList(NodeList*);
-    static NodeOrNodeList fromNodeList(NodeList*);
+  bool isNodeList() const { return m_type == SpecificTypeNodeList; }
+  NodeList* getAsNodeList() const;
+  void setNodeList(NodeList*);
+  static NodeOrNodeList fromNodeList(NodeList*);
 
-    NodeOrNodeList(const NodeOrNodeList&);
-    ~NodeOrNodeList();
-    NodeOrNodeList& operator=(const NodeOrNodeList&);
-    DECLARE_TRACE();
+  NodeOrNodeList(const NodeOrNodeList&);
+  ~NodeOrNodeList();
+  NodeOrNodeList& operator=(const NodeOrNodeList&);
+  DECLARE_TRACE();
 
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeNode,
-        SpecificTypeNodeList,
-    };
-    SpecificTypes m_type;
+ private:
+  enum SpecificTypes {
+    SpecificTypeNone,
+    SpecificTypeNode,
+    SpecificTypeNodeList,
+  };
+  SpecificTypes m_type;
 
-    Member<Node> m_node;
-    Member<NodeList> m_nodeList;
+  Member<Node> m_node;
+  Member<NodeList> m_nodeList;
 
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8NodeOrNodeList final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, NodeOrNodeList&, UnionTypeConversionMode, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, NodeOrNodeList&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<NodeOrNodeList> {
-    CORE_EXPORT static NodeOrNodeList nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static NodeOrNodeList nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 // We need to set canInitializeWithMemset=true because HeapVector supports
 // items that can initialize with memset or have a vtable. It is safe to
@@ -80,4 +79,4 @@ struct NativeValueTraits<NodeOrNodeList> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::NodeOrNodeList);
 
-#endif // NodeOrNodeList_h
+#endif  // NodeOrNodeList_h

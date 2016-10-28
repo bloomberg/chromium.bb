@@ -12,41 +12,37 @@
 
 namespace blink {
 
-TestDictionary::TestDictionary()
-{
-    setDoubleOrStringMember(DoubleOrString::fromDouble(3.14));
-    setEnumMember(String("foo"));
-    setLongMember(1);
-    setOtherDoubleOrStringMember(DoubleOrString::fromString(String("default string value")));
-    setRestrictedDoubleMember(3.14);
-    setStringOrNullMember(String("default string value"));
-    setStringSequenceMember(Vector<String>());
-    setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
-    setTestInterfaceSequenceMember(HeapVector<Member<TestInterfaceImplementation>>());
-    setUnrestrictedDoubleMember(3.14);
+TestDictionary::TestDictionary() {
+  setDoubleOrStringMember(DoubleOrString::fromDouble(3.14));
+  setEnumMember(String("foo"));
+  setLongMember(1);
+  setOtherDoubleOrStringMember(DoubleOrString::fromString(String("default string value")));
+  setRestrictedDoubleMember(3.14);
+  setStringOrNullMember(String("default string value"));
+  setStringSequenceMember(Vector<String>());
+  setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
+  setTestInterfaceSequenceMember(HeapVector<Member<TestInterfaceImplementation>>());
+  setUnrestrictedDoubleMember(3.14);
 }
 
-TestDictionary::~TestDictionary()
-{
+TestDictionary::~TestDictionary() {}
+
+DEFINE_TRACE(TestDictionary) {
+  visitor->trace(m_doubleOrStringMember);
+  visitor->trace(m_doubleOrStringSequenceMember);
+  visitor->trace(m_elementOrNullMember);
+  visitor->trace(m_eventTargetMember);
+  visitor->trace(m_internalDictionarySequenceMember);
+  visitor->trace(m_otherDoubleOrStringMember);
+  visitor->trace(m_testInterface2OrUint8ArrayMember);
+  visitor->trace(m_testInterfaceGarbageCollectedMember);
+  visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);
+  visitor->trace(m_testInterfaceGarbageCollectedSequenceMember);
+  visitor->trace(m_testInterfaceMember);
+  visitor->trace(m_testInterfaceOrNullMember);
+  visitor->trace(m_testInterfaceSequenceMember);
+  visitor->trace(m_uint8ArrayMember);
+  IDLDictionaryBase::trace(visitor);
 }
 
-DEFINE_TRACE(TestDictionary)
-{
-    visitor->trace(m_doubleOrStringMember);
-    visitor->trace(m_doubleOrStringSequenceMember);
-    visitor->trace(m_elementOrNullMember);
-    visitor->trace(m_eventTargetMember);
-    visitor->trace(m_internalDictionarySequenceMember);
-    visitor->trace(m_otherDoubleOrStringMember);
-    visitor->trace(m_testInterface2OrUint8ArrayMember);
-    visitor->trace(m_testInterfaceGarbageCollectedMember);
-    visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);
-    visitor->trace(m_testInterfaceGarbageCollectedSequenceMember);
-    visitor->trace(m_testInterfaceMember);
-    visitor->trace(m_testInterfaceOrNullMember);
-    visitor->trace(m_testInterfaceSequenceMember);
-    visitor->trace(m_uint8ArrayMember);
-    IDLDictionaryBase::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

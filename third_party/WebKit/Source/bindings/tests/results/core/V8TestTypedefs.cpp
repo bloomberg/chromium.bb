@@ -75,7 +75,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   // Prepare the value to be set.
   unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setULongLongAttribute(cppValue);
 }
@@ -111,7 +111,7 @@ static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value>
   StringOrDouble cppValue;
   V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDomStringOrDoubleOrNullAttribute(cppValue);
 }
@@ -140,7 +140,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
   }
   arrayOfLongsArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
@@ -163,11 +163,11 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
   V8StringResource<> stringArg;
   floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   stringArg = info[1];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
@@ -212,7 +212,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
   HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyTypeSequenceArg;
   testInterfaceEmptyTypeSequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
@@ -258,7 +258,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
   Vector<String> arrayOfStringsArg;
   arrayOfStringsArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, toV8(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
 }
@@ -280,7 +280,7 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
   Vector<String> stringArrayArg;
   stringArrayArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, toV8(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
@@ -298,7 +298,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   TestTypedefs* impl = TestTypedefs::create(stringArg);
   v8::Local<v8::Object> wrapper = info.Holder();

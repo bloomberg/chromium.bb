@@ -68,7 +68,7 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHref(cppValue);
 }
@@ -100,7 +100,7 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Fu
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHrefThrows(cppValue, exceptionState);
 }
@@ -130,7 +130,7 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 
@@ -164,7 +164,7 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   // Prepare the value to be set.
   V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setHrefByteString(cppValue);
 }

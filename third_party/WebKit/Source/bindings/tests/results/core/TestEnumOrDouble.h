@@ -17,59 +17,58 @@
 namespace blink {
 
 class CORE_EXPORT TestEnumOrDouble final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestEnumOrDouble();
-    bool isNull() const { return m_type == SpecificTypeNone; }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  TestEnumOrDouble();
+  bool isNull() const { return m_type == SpecificTypeNone; }
 
-    bool isTestEnum() const { return m_type == SpecificTypeTestEnum; }
-    String getAsTestEnum() const;
-    void setTestEnum(String);
-    static TestEnumOrDouble fromTestEnum(String);
+  bool isTestEnum() const { return m_type == SpecificTypeTestEnum; }
+  String getAsTestEnum() const;
+  void setTestEnum(String);
+  static TestEnumOrDouble fromTestEnum(String);
 
-    bool isDouble() const { return m_type == SpecificTypeDouble; }
-    double getAsDouble() const;
-    void setDouble(double);
-    static TestEnumOrDouble fromDouble(double);
+  bool isDouble() const { return m_type == SpecificTypeDouble; }
+  double getAsDouble() const;
+  void setDouble(double);
+  static TestEnumOrDouble fromDouble(double);
 
-    TestEnumOrDouble(const TestEnumOrDouble&);
-    ~TestEnumOrDouble();
-    TestEnumOrDouble& operator=(const TestEnumOrDouble&);
-    DECLARE_TRACE();
+  TestEnumOrDouble(const TestEnumOrDouble&);
+  ~TestEnumOrDouble();
+  TestEnumOrDouble& operator=(const TestEnumOrDouble&);
+  DECLARE_TRACE();
 
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeTestEnum,
-        SpecificTypeDouble,
-    };
-    SpecificTypes m_type;
+ private:
+  enum SpecificTypes {
+    SpecificTypeNone,
+    SpecificTypeTestEnum,
+    SpecificTypeDouble,
+  };
+  SpecificTypes m_type;
 
-    String m_testEnum;
-    double m_double;
+  String m_testEnum;
+  double m_double;
 
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestEnumOrDouble final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestEnumOrDouble&, UnionTypeConversionMode, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestEnumOrDouble&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestEnumOrDouble> {
-    CORE_EXPORT static TestEnumOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestEnumOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 // We need to set canInitializeWithMemset=true because HeapVector supports
 // items that can initialize with memset or have a vtable. It is safe to
@@ -77,4 +76,4 @@ struct NativeValueTraits<TestEnumOrDouble> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestEnumOrDouble);
 
-#endif // TestEnumOrDouble_h
+#endif  // TestEnumOrDouble_h

@@ -20,59 +20,58 @@ class DOMUint8Array;
 class TestInterface2;
 
 class CORE_EXPORT TestInterface2OrUint8Array final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestInterface2OrUint8Array();
-    bool isNull() const { return m_type == SpecificTypeNone; }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  TestInterface2OrUint8Array();
+  bool isNull() const { return m_type == SpecificTypeNone; }
 
-    bool isTestInterface2() const { return m_type == SpecificTypeTestInterface2; }
-    TestInterface2* getAsTestInterface2() const;
-    void setTestInterface2(TestInterface2*);
-    static TestInterface2OrUint8Array fromTestInterface2(TestInterface2*);
+  bool isTestInterface2() const { return m_type == SpecificTypeTestInterface2; }
+  TestInterface2* getAsTestInterface2() const;
+  void setTestInterface2(TestInterface2*);
+  static TestInterface2OrUint8Array fromTestInterface2(TestInterface2*);
 
-    bool isUint8Array() const { return m_type == SpecificTypeUint8Array; }
-    DOMUint8Array* getAsUint8Array() const;
-    void setUint8Array(DOMUint8Array*);
-    static TestInterface2OrUint8Array fromUint8Array(DOMUint8Array*);
+  bool isUint8Array() const { return m_type == SpecificTypeUint8Array; }
+  DOMUint8Array* getAsUint8Array() const;
+  void setUint8Array(DOMUint8Array*);
+  static TestInterface2OrUint8Array fromUint8Array(DOMUint8Array*);
 
-    TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
-    ~TestInterface2OrUint8Array();
-    TestInterface2OrUint8Array& operator=(const TestInterface2OrUint8Array&);
-    DECLARE_TRACE();
+  TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
+  ~TestInterface2OrUint8Array();
+  TestInterface2OrUint8Array& operator=(const TestInterface2OrUint8Array&);
+  DECLARE_TRACE();
 
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeTestInterface2,
-        SpecificTypeUint8Array,
-    };
-    SpecificTypes m_type;
+ private:
+  enum SpecificTypes {
+    SpecificTypeNone,
+    SpecificTypeTestInterface2,
+    SpecificTypeUint8Array,
+  };
+  SpecificTypes m_type;
 
-    Member<TestInterface2> m_testInterface2;
-    Member<DOMUint8Array> m_uint8Array;
+  Member<TestInterface2> m_testInterface2;
+  Member<DOMUint8Array> m_uint8Array;
 
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterface2OrUint8Array final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterface2OrUint8Array&, UnionTypeConversionMode, ExceptionState&);
+ public:
+  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterface2OrUint8Array&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl) {
+  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestInterface2OrUint8Array> {
-    CORE_EXPORT static TestInterface2OrUint8Array nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterface2OrUint8Array nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 // We need to set canInitializeWithMemset=true because HeapVector supports
 // items that can initialize with memset or have a vtable. It is safe to
@@ -80,4 +79,4 @@ struct NativeValueTraits<TestInterface2OrUint8Array> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterface2OrUint8Array);
 
-#endif // TestInterface2OrUint8Array_h
+#endif  // TestInterface2OrUint8Array_h

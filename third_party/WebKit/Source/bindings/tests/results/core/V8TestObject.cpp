@@ -136,7 +136,7 @@ static void stringifierAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setStringifierAttribute(cppValue);
 }
@@ -214,7 +214,7 @@ static void dateAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   // Prepare the value to be set.
   double cppValue = toCoreDate(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDateAttribute(cppValue);
 }
@@ -244,7 +244,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setStringAttribute(cppValue);
 }
@@ -276,7 +276,7 @@ static void byteStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   // Prepare the value to be set.
   V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setByteStringAttribute(cppValue);
 }
@@ -308,7 +308,7 @@ static void usvStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   // Prepare the value to be set.
   V8StringResource<> cppValue = toUSVString(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUsvStringAttribute(cppValue);
 }
@@ -340,7 +340,7 @@ static void domTimeStampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDomTimeStampAttribute(cppValue);
 }
@@ -372,7 +372,7 @@ static void booleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
   // Prepare the value to be set.
   bool cppValue = toBoolean(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setBooleanAttribute(cppValue);
 }
@@ -404,7 +404,7 @@ static void byteAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   // Prepare the value to be set.
   int cppValue = toInt8(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setByteAttribute(cppValue);
 }
@@ -436,7 +436,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   // Prepare the value to be set.
   double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoubleAttribute(cppValue);
 }
@@ -468,7 +468,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   // Prepare the value to be set.
   float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setFloatAttribute(cppValue);
 }
@@ -500,7 +500,7 @@ static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setLongAttribute(cppValue);
 }
@@ -532,7 +532,7 @@ static void longLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   // Prepare the value to be set.
   long long cppValue = toInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setLongLongAttribute(cppValue);
 }
@@ -564,7 +564,7 @@ static void octetAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   // Prepare the value to be set.
   unsigned cppValue = toUInt8(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setOctetAttribute(cppValue);
 }
@@ -596,7 +596,7 @@ static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   // Prepare the value to be set.
   int cppValue = toInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setShortAttribute(cppValue);
 }
@@ -628,7 +628,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   // Prepare the value to be set.
   double cppValue = toDouble(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnrestrictedDoubleAttribute(cppValue);
 }
@@ -660,7 +660,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   float cppValue = toFloat(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnrestrictedFloatAttribute(cppValue);
 }
@@ -692,7 +692,7 @@ static void unsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   unsigned cppValue = toUInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnsignedLongAttribute(cppValue);
 }
@@ -724,7 +724,7 @@ static void unsignedLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   // Prepare the value to be set.
   unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnsignedLongLongAttribute(cppValue);
 }
@@ -756,7 +756,7 @@ static void unsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   // Prepare the value to be set.
   unsigned cppValue = toUInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnsignedShortAttribute(cppValue);
 }
@@ -860,7 +860,7 @@ static void cssAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setCSSAttribute(cppValue);
 }
@@ -892,7 +892,7 @@ static void imeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setIMEAttribute(cppValue);
 }
@@ -924,7 +924,7 @@ static void svgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setSVGAttribute(cppValue);
 }
@@ -956,7 +956,7 @@ static void xmlAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setXMLAttribute(cppValue);
 }
@@ -1016,7 +1016,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
   // Prepare the value to be set.
   RefPtr<SerializedScriptValue> cppValue = SerializedScriptValue::serialize(info.GetIsolate(), v8Value, nullptr, nullptr, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setSerializedScriptValueAttribute(cppValue);
 }
@@ -1536,7 +1536,7 @@ static void stringArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   // Prepare the value to be set.
   Vector<String> cppValue = toImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setStringArrayAttribute(cppValue);
 }
@@ -1568,7 +1568,7 @@ static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value>
   // Prepare the value to be set.
   HeapVector<Member<TestInterfaceEmpty>> cppValue = (toMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setTestInterfaceEmptyArrayAttribute(cppValue);
 }
@@ -1600,7 +1600,7 @@ static void floatArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   // Prepare the value to be set.
   Vector<float> cppValue = toImplArray<Vector<float>>(v8Value, 0, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setFloatArrayAttribute(cppValue);
 }
@@ -1632,7 +1632,7 @@ static void stringFrozenArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   Vector<String> cppValue = toImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setStringFrozenArrayAttribute(cppValue);
 }
@@ -1664,7 +1664,7 @@ static void testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8::Local<v8::
   // Prepare the value to be set.
   HeapVector<Member<TestInterfaceEmpty>> cppValue = (toMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setTestInterfaceEmptyFrozenArrayAttribute(cppValue);
 }
@@ -1694,7 +1694,7 @@ static void stringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   V8StringResource<TreatNullAndUndefinedAsNullString> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setStringOrNullAttribute(cppValue);
 }
@@ -1735,7 +1735,7 @@ static void longOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setLongOrNullAttribute(cppValue);
 }
@@ -1803,7 +1803,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
@@ -1849,7 +1849,7 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   // Prepare the value to be set.
   V8StringResource<TreatNullAndUndefinedAsNullString> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
@@ -1886,7 +1886,7 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   TestObject::setStaticStringAttribute(cppValue);
 }
@@ -1911,7 +1911,7 @@ static void staticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestObject::setStaticLongAttribute(cppValue);
 }
@@ -1977,7 +1977,7 @@ static void doubleOrStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   DoubleOrString cppValue;
   V8DoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoubleOrStringAttribute(cppValue);
 }
@@ -2013,7 +2013,7 @@ static void doubleOrStringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8
   DoubleOrString cppValue;
   V8DoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoubleOrStringOrNullAttribute(cppValue);
 }
@@ -2049,7 +2049,7 @@ static void doubleOrNullStringAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   DoubleOrString cppValue;
   V8DoubleOrNullOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDoubleOrNullStringAttribute(cppValue);
 }
@@ -2085,7 +2085,7 @@ static void stringOrStringSequenceAttributeAttributeSetter(v8::Local<v8::Value> 
   StringOrStringSequence cppValue;
   V8StringOrStringSequence::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setStringOrStringSequenceAttribute(cppValue);
 }
@@ -2121,7 +2121,7 @@ static void testEnumOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   TestEnumOrDouble cppValue;
   V8TestEnumOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setTestEnumOrDoubleAttribute(cppValue);
 }
@@ -2157,7 +2157,7 @@ static void unrestrictedDoubleOrStringAttributeAttributeSetter(v8::Local<v8::Val
   UnrestrictedDoubleOrString cppValue;
   V8UnrestrictedDoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnrestrictedDoubleOrStringAttribute(cppValue);
 }
@@ -2195,7 +2195,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8::Lo
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingAccessForAllWorldsLongAttribute(cppValue);
 }
@@ -2239,7 +2239,7 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingGetterForAllWorldsLongAttribute(cppValue);
 }
@@ -2271,7 +2271,7 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingSetterForAllWorldsLongAttribute(cppValue);
 }
@@ -2373,7 +2373,7 @@ static void cachedArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   // Prepare the value to be set.
   Vector<String> cppValue = toImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setCachedArrayAttribute(cppValue);
 
@@ -2423,7 +2423,7 @@ static void cachedStringOrNoneAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   // Prepare the value to be set.
   V8StringResource<TreatNullAndUndefinedAsNullString> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setCachedStringOrNoneAttribute(cppValue);
 
@@ -2591,7 +2591,7 @@ static void customGetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setCustomGetterLongAttribute(cppValue);
 }
@@ -2647,7 +2647,7 @@ static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setDeprecatedLongAttribute(cppValue);
 }
@@ -2681,7 +2681,7 @@ static void enforceRangeLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, EnforceRange, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setEnforceRangeLongAttribute(cppValue);
 }
@@ -2713,7 +2713,7 @@ static void implementedAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setImplementedAsName(cppValue);
 }
@@ -2747,7 +2747,7 @@ static void customGetterImplementedAsLongAttributeAttributeSetter(v8::Local<v8::
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setImplementedAsNameWithCustomGetter(cppValue);
 }
@@ -2799,7 +2799,7 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setMeasureAsLongAttribute(cppValue);
 }
@@ -2833,7 +2833,7 @@ static void notEnumerableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setNotEnumerableLongAttribute(cppValue);
 }
@@ -2865,7 +2865,7 @@ static void originTrialEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> 
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setOriginTrialEnabledLongAttribute(cppValue);
 }
@@ -2947,7 +2947,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(v8
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingAccessPerWorldBindingsLongAttribute(cppValue);
 }
@@ -2991,7 +2991,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterFor
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingAccessPerWorldBindingsLongAttribute(cppValue);
 }
@@ -3035,7 +3035,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
@@ -3073,7 +3073,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
@@ -3111,7 +3111,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(v8
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingGetterPerWorldBindingsLongAttribute(cppValue);
 }
@@ -3149,7 +3149,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterFor
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingGetterPerWorldBindingsLongAttribute(cppValue);
 }
@@ -3187,7 +3187,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
@@ -3219,7 +3219,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
@@ -3252,7 +3252,7 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHref(cppValue);
 }
@@ -3287,7 +3287,7 @@ static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHrefThrows(cppValue, exceptionState);
 }
@@ -3320,7 +3320,7 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 
@@ -3357,7 +3357,7 @@ static void locationByteStringAttributeSetter(v8::Local<v8::Value> v8Value, cons
   // Prepare the value to be set.
   V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setHrefByteString(cppValue);
 }
@@ -3390,7 +3390,7 @@ static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> v8V
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHref(cppValue);
 }
@@ -3423,7 +3423,7 @@ static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHref(cppValue);
 }
@@ -3456,7 +3456,7 @@ static void locationLegacyInterfaceTypeCheckingAttributeSetter(v8::Local<v8::Val
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHref(cppValue);
 }
@@ -3544,7 +3544,7 @@ static void raisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setRaisesExceptionLongAttribute(cppValue, exceptionState);
 }
@@ -3583,7 +3583,7 @@ static void raisesExceptionGetterLongAttributeAttributeSetter(v8::Local<v8::Valu
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setRaisesExceptionGetterLongAttribute(cppValue);
 }
@@ -3615,7 +3615,7 @@ static void setterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Valu
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setSetterRaisesExceptionLongAttribute(cppValue, exceptionState);
 }
@@ -3830,7 +3830,7 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   // Prepare the value to be set.
   bool cppValue = toBoolean(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setBooleanAttribute(HTMLNames::reflectbooleanattributeAttr, cppValue);
 }
@@ -3867,7 +3867,7 @@ static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setIntegralAttribute(HTMLNames::reflectlongattributeAttr, cppValue);
 }
@@ -3904,7 +3904,7 @@ static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8
   // Prepare the value to be set.
   unsigned cppValue = toUInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::reflectunsignedshortattributeAttr, cppValue);
 }
@@ -3941,7 +3941,7 @@ static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
   // Prepare the value to be set.
   unsigned cppValue = toUInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnsignedIntegralAttribute(HTMLNames::reflectunsignedlongattributeAttr, cppValue);
 }
@@ -3976,7 +3976,7 @@ static void idAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCa
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::idAttr, cppValue);
 }
@@ -4011,7 +4011,7 @@ static void nameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::nameAttr, cppValue);
 }
@@ -4046,7 +4046,7 @@ static void classAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::classAttr, cppValue);
 }
@@ -4081,7 +4081,7 @@ static void reflectedIdAttributeSetter(v8::Local<v8::Value> v8Value, const v8::F
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::idAttr, cppValue);
 }
@@ -4116,7 +4116,7 @@ static void reflectedNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::nameAttr, cppValue);
 }
@@ -4151,7 +4151,7 @@ static void reflectedClassAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::classAttr, cppValue);
 }
@@ -4196,7 +4196,7 @@ static void limitedToOnlyOneAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::limitedtoonlyoneattributeAttr, cppValue);
 }
@@ -4245,7 +4245,7 @@ static void limitedToOnlyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::limitedtoonlyattributeAttr, cppValue);
 }
@@ -4292,7 +4292,7 @@ static void limitedToOnlyOtherAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::otherAttr, cppValue);
 }
@@ -4339,7 +4339,7 @@ static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Valu
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr, cppValue);
 }
@@ -4388,7 +4388,7 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr, cppValue);
 }
@@ -4504,7 +4504,7 @@ static void locationPutForwardsAttributeSetter(v8::Local<v8::Value> v8Value, con
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHref(cppValue);
 }
@@ -4536,7 +4536,7 @@ static void runtimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setRuntimeEnabledLongAttribute(cppValue);
 }
@@ -4566,7 +4566,7 @@ static void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeS
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setSetterCallWithCurrentWindowAndEnteredWindowStringAttribute(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
@@ -4596,7 +4596,7 @@ static void setterCallWithExecutionContextStringAttributeAttributeSetter(v8::Loc
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 
@@ -4628,7 +4628,7 @@ static void treatNullAsEmptyStringStringAttributeAttributeSetter(v8::Local<v8::V
   // Prepare the value to be set.
   V8StringResource<TreatNullAsEmptyString> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setTreatNullAsEmptyStringStringAttribute(cppValue);
 }
@@ -4658,7 +4658,7 @@ static void treatNullAsNullStringStringAttributeAttributeSetter(v8::Local<v8::Va
   // Prepare the value to be set.
   V8StringResource<TreatNullAsNullString> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setTreatNullAsNullStringStringAttribute(cppValue);
 }
@@ -4690,7 +4690,7 @@ static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8::Local<v
   // Prepare the value to be set.
   float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setLegacyInterfaceTypeCheckingFloatAttribute(cppValue);
 }
@@ -4779,7 +4779,7 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::urlstringattributeAttr, cppValue);
 }
@@ -4814,7 +4814,7 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::reflectUrlAttributeAttr, cppValue);
 }
@@ -4848,7 +4848,7 @@ static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnforgeableLongAttribute(cppValue);
 }
@@ -4882,7 +4882,7 @@ static void measuredLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setMeasuredLongAttribute(cppValue);
 }
@@ -4978,7 +4978,7 @@ static void unscopableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnscopableLongAttribute(cppValue);
 }
@@ -5010,7 +5010,7 @@ static void unscopableOriginTrialEnabledLongAttributeAttributeSetter(v8::Local<v
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnscopableOriginTrialEnabledLongAttribute(cppValue);
 }
@@ -5042,7 +5042,7 @@ static void unscopableRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::V
   // Prepare the value to be set.
   int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->setUnscopableRuntimeEnabledLongAttribute(cppValue);
 }
@@ -5202,7 +5202,7 @@ static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   // Prepare the value to be set.
   int cppValue = toInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   V8TestObject::PrivateScript::shortAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
@@ -5236,7 +5236,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   V8TestObject::PrivateScript::stringAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
@@ -5306,7 +5306,7 @@ static void attributeImplementedInCPPForPrivateScriptOnlyAttributeSetter(v8::Loc
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttributeImplementedInCPPForPrivateScriptOnly(cppValue);
 }
@@ -5342,7 +5342,7 @@ static void enumForPrivateScriptAttributeSetter(v8::Local<v8::Value> v8Value, co
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
@@ -5578,7 +5578,7 @@ static void voidMethodDateArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   double dateArg;
   dateArg = toCoreDate(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDateArg(dateArg);
 }
@@ -5598,7 +5598,7 @@ static void voidMethodStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->voidMethodStringArg(stringArg);
 }
@@ -5620,7 +5620,7 @@ static void voidMethodByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Val
   V8StringResource<> stringArg;
   stringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodByteStringArg(stringArg);
 }
@@ -5642,7 +5642,7 @@ static void voidMethodUSVStringArgMethod(const v8::FunctionCallbackInfo<v8::Valu
   V8StringResource<> usvStringArg;
   usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodUSVStringArg(usvStringArg);
 }
@@ -5664,7 +5664,7 @@ static void voidMethodDOMTimeStampArgMethod(const v8::FunctionCallbackInfo<v8::V
   unsigned long long domTimeStampArg;
   domTimeStampArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDOMTimeStampArg(domTimeStampArg);
 }
@@ -5686,7 +5686,7 @@ static void voidMethodBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>
   bool booleanArg;
   booleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodBooleanArg(booleanArg);
 }
@@ -5708,7 +5708,7 @@ static void voidMethodByteArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   int byteArg;
   byteArg = toInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodByteArg(byteArg);
 }
@@ -5730,7 +5730,7 @@ static void voidMethodDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
   double doubleArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDoubleArg(doubleArg);
 }
@@ -5752,7 +5752,7 @@ static void voidMethodFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   float floatArg;
   floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodFloatArg(floatArg);
 }
@@ -5774,7 +5774,7 @@ static void voidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodLongArg(longArg);
 }
@@ -5796,7 +5796,7 @@ static void voidMethodLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value
   long long longLongArg;
   longLongArg = toInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodLongLongArg(longLongArg);
 }
@@ -5818,7 +5818,7 @@ static void voidMethodOctetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   unsigned octetArg;
   octetArg = toUInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodOctetArg(octetArg);
 }
@@ -5840,7 +5840,7 @@ static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   int shortArg;
   shortArg = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodShortArg(shortArg);
 }
@@ -5862,7 +5862,7 @@ static void voidMethodUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::V
   unsigned unsignedLongArg;
   unsignedLongArg = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodUnsignedLongArg(unsignedLongArg);
 }
@@ -5884,7 +5884,7 @@ static void voidMethodUnsignedLongLongArgMethod(const v8::FunctionCallbackInfo<v
   unsigned long long unsignedLongLongArg;
   unsignedLongLongArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodUnsignedLongLongArg(unsignedLongLongArg);
 }
@@ -5906,7 +5906,7 @@ static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::
   unsigned unsignedShortArg;
   unsignedShortArg = toUInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodUnsignedShortArg(unsignedShortArg);
 }
@@ -5962,7 +5962,7 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
   TestInterfaceEmpty* testInterfaceEmptyArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!testInterfaceEmptyArg) {
@@ -6421,7 +6421,7 @@ static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Valu
   Vector<int> arrayLongArg;
   arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodArrayLongArg(arrayLongArg);
 }
@@ -6443,7 +6443,7 @@ static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Va
   Vector<String> arrayStringArg;
   arrayStringArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodArrayStringArg(arrayStringArg);
 }
@@ -6465,7 +6465,7 @@ static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbac
   HeapVector<Member<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
   arrayTestInterfaceEmptyArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodArrayTestInterfaceEmptyArg(arrayTestInterfaceEmptyArg);
 }
@@ -6488,7 +6488,7 @@ static void voidMethodNullableArrayLongArgMethod(const v8::FunctionCallbackInfo<
   if (!isUndefinedOrNull(info[0])) {
     arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   }
 
   impl->voidMethodNullableArrayLongArg(arrayLongArg);
@@ -6541,7 +6541,7 @@ static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::V
   Vector<int> longSequenceArg;
   longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodSequenceLongArg(longSequenceArg);
 }
@@ -6563,7 +6563,7 @@ static void voidMethodSequenceStringArgMethod(const v8::FunctionCallbackInfo<v8:
   Vector<String> stringSequenceArg;
   stringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodSequenceStringArg(stringSequenceArg);
 }
@@ -6585,7 +6585,7 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCall
   HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptySequenceArg;
   testInterfaceEmptySequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodSequenceTestInterfaceEmptyArg(testInterfaceEmptySequenceArg);
 }
@@ -6607,7 +6607,7 @@ static void voidMethodSequenceSequenceDOMStringArgMethod(const v8::FunctionCallb
   Vector<Vector<String>> stringSequenceSequenceArg;
   stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodSequenceSequenceDOMStringArg(stringSequenceSequenceArg);
 }
@@ -6630,7 +6630,7 @@ static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
   if (!isUndefinedOrNull(info[0])) {
     longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   }
 
   impl->voidMethodNullableSequenceLongArg(longSequenceArg);
@@ -6663,7 +6663,7 @@ static void voidMethodStringFrozenArrayMethodMethod(const v8::FunctionCallbackIn
   Vector<String> stringFrozenArrayArg;
   stringFrozenArrayArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodStringFrozenArrayMethod(stringFrozenArrayArg);
 }
@@ -6685,7 +6685,7 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
   HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyFrozenArrayArg;
   testInterfaceEmptyFrozenArrayArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodTestInterfaceEmptyFrozenArrayMethod(testInterfaceEmptyFrozenArrayArg);
 }
@@ -6791,7 +6791,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
   DoubleOrString arg;
   V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDoubleOrDOMStringArg(arg);
 }
@@ -6813,7 +6813,7 @@ static void voidMethodDoubleOrDOMStringOrNullArgMethod(const v8::FunctionCallbac
   DoubleOrString arg;
   V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDoubleOrDOMStringOrNullArg(arg);
 }
@@ -6835,7 +6835,7 @@ static void voidMethodDoubleOrNullOrDOMStringArgMethod(const v8::FunctionCallbac
   DoubleOrString arg;
   V8DoubleOrNullOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDoubleOrNullOrDOMStringArg(arg);
 }
@@ -6857,7 +6857,7 @@ static void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethod(const v8:
   StringOrArrayBufferOrArrayBufferView arg;
   V8StringOrArrayBufferOrArrayBufferView::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg(arg);
 }
@@ -6879,7 +6879,7 @@ static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(const v8
   ArrayBufferOrArrayBufferViewOrDictionary arg;
   V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg(arg);
 }
@@ -6896,7 +6896,7 @@ static void voidMethodArrayOfDoubleOrDOMStringArgMethod(const v8::FunctionCallba
   HeapVector<DoubleOrString> arg;
   arg = toImplArguments<HeapVector<DoubleOrString>>(info, 0, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodArrayOfDoubleOrDOMStringArg(arg);
 }
@@ -7019,7 +7019,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
   V8StringResource<> testEnumTypeArg;
   testEnumTypeArg = info[0];
   if (!testEnumTypeArg.prepare())
-      return;
+    return;
   const char* validTestEnumTypeArgValues[] = {
       "",
       "EnumValue1",
@@ -7051,7 +7051,7 @@ static void voidMethodTestMultipleEnumArgMethod(const v8::FunctionCallbackInfo<v
   V8StringResource<> testEnumTypeArg2;
   testEnumTypeArg = info[0];
   if (!testEnumTypeArg.prepare())
-      return;
+    return;
   const char* validTestEnumTypeArgValues[] = {
       "",
       "EnumValue1",
@@ -7064,7 +7064,7 @@ static void voidMethodTestMultipleEnumArgMethod(const v8::FunctionCallbackInfo<v
 
   testEnumTypeArg2 = info[1];
   if (!testEnumTypeArg2.prepare())
-      return;
+    return;
   const char* validTestEnumTypeArg2Values[] = {
       "",
       "EnumValue1",
@@ -7127,7 +7127,7 @@ static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<
   TestDictionary arg;
   V8TestDictionary::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->passPermissiveDictionaryMethod(arg);
 }
@@ -7163,7 +7163,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
   Vector<String> variadic;
   arg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
     exceptionState.throwTypeError("parameter 2 ('arg2') is not an object.");
@@ -7172,15 +7172,15 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
   }
   arg2 = Dictionary(info[1], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   arg3 = info[2];
   if (!arg3.prepare(exceptionState))
-      return;
+    return;
 
   variadic = toImplArguments<Vector<String>>(info, 3, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, impl->promiseMethod(arg1, arg2, arg3, variadic).v8Value());
 }
@@ -7208,7 +7208,7 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
   }
   arg1 = Dictionary(info[0], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
 }
@@ -7255,7 +7255,7 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
   }
   dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDictionaryArg(dictionaryArg);
 }
@@ -7318,7 +7318,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
   RefPtr<SerializedScriptValue> serializedScriptValueArg;
   serializedScriptValueArg = SerializedScriptValue::serialize(info.GetIsolate(), info[0], nullptr, nullptr, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
 }
@@ -7363,7 +7363,7 @@ static void voidMethodDictionarySequenceArgMethod(const v8::FunctionCallbackInfo
   Vector<Dictionary> dictionarySequenceArg;
   dictionarySequenceArg = toImplArray<Vector<Dictionary>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDictionarySequenceArg(dictionarySequenceArg);
 }
@@ -7386,11 +7386,11 @@ static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::
   int longArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodStringArgLongArg(stringArg, longArg);
 }
@@ -7415,7 +7415,7 @@ static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8:
   }
   optionalStringArg = info[0];
   if (!optionalStringArg.prepare())
-      return;
+    return;
 
   impl->voidMethodOptionalStringArg(optionalStringArg);
 }
@@ -7470,7 +7470,7 @@ static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
   }
   optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodOptionalLongArg(optionalLongArg);
 }
@@ -7497,7 +7497,7 @@ static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8:
   }
   optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(optionalLongArg), info.GetIsolate());
 }
@@ -7524,7 +7524,7 @@ static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCall
   }
   optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg(optionalLongArg));
 }
@@ -7551,7 +7551,7 @@ static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
   }
   optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValueInt(info, impl->longMethodOptionalLongArg(optionalLongArg));
 }
@@ -7580,7 +7580,7 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
   }
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
     impl->voidMethodLongArgOptionalLongArg(longArg);
@@ -7588,7 +7588,7 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
   }
   optionalLongArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodLongArgOptionalLongArg(longArg, optionalLongArg);
 }
@@ -7618,7 +7618,7 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
   }
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
     impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
@@ -7626,7 +7626,7 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
   }
   optionalLongArg1 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 2)) {
     impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
@@ -7634,7 +7634,7 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
   }
   optionalLongArg2 = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1, optionalLongArg2);
 }
@@ -7663,7 +7663,7 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
   }
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
     impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
@@ -7714,7 +7714,7 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
   }
   longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty, longArg);
 }
@@ -7736,7 +7736,7 @@ static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo
   }
   optionalDictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
 }
@@ -7754,7 +7754,7 @@ static void voidMethodDefaultByteStringArgMethod(const v8::FunctionCallbackInfo<
   if (!info[0]->IsUndefined()) {
     defaultByteStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultByteStringArg = String("foo");
   }
@@ -7773,7 +7773,7 @@ static void voidMethodDefaultStringArgMethod(const v8::FunctionCallbackInfo<v8::
   if (!info[0]->IsUndefined()) {
     defaultStringArg = info[0];
     if (!defaultStringArg.prepare())
-        return;
+      return;
   } else {
     defaultStringArg = String("foo");
   }
@@ -7796,21 +7796,21 @@ static void voidMethodDefaultIntegerArgsMethod(const v8::FunctionCallbackInfo<v8
   if (!info[0]->IsUndefined()) {
     defaultLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultLongArg = 10;
   }
   if (!info[1]->IsUndefined()) {
     defaultLongLongArg = toInt64(info.GetIsolate(), info[1], NormalConversion, exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultLongLongArg = -10;
   }
   if (!info[2]->IsUndefined()) {
     defaultUnsignedArg = toUInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultUnsignedArg = 4294967295u;
   }
@@ -7831,7 +7831,7 @@ static void voidMethodDefaultDoubleArgMethod(const v8::FunctionCallbackInfo<v8::
   if (!info[0]->IsUndefined()) {
     defaultDoubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultDoubleArg = 0.5;
   }
@@ -7852,7 +7852,7 @@ static void voidMethodDefaultTrueBooleanArgMethod(const v8::FunctionCallbackInfo
   if (!info[0]->IsUndefined()) {
     defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultBooleanArg = true;
   }
@@ -7873,7 +7873,7 @@ static void voidMethodDefaultFalseBooleanArgMethod(const v8::FunctionCallbackInf
   if (!info[0]->IsUndefined()) {
     defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultBooleanArg = false;
   }
@@ -7894,7 +7894,7 @@ static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallb
   if (!info[0]->IsUndefined()) {
     defaultStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultStringArg = nullptr;
   }
@@ -7913,7 +7913,7 @@ static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackI
   if (!info[0]->IsUndefined()) {
     defaultStringArg = info[0];
     if (!defaultStringArg.prepare())
-        return;
+      return;
   } else {
     defaultStringArg = nullptr;
   }
@@ -7958,21 +7958,21 @@ static void voidMethodDefaultDoubleOrStringArgsMethod(const v8::FunctionCallback
   if (!info[0]->IsUndefined()) {
     V8DoubleOrString::toImpl(info.GetIsolate(), info[0], defaultLongArg, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultLongArg.setDouble(10);
   }
   if (!info[1]->IsUndefined()) {
     V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[1], defaultStringArg, UnionTypeConversionMode::Nullable, exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     defaultStringArg.setString(String("foo"));
   }
   if (!info[2]->IsUndefined()) {
     V8DoubleOrString::toImpl(info.GetIsolate(), info[2], defaultNullArg, UnionTypeConversionMode::Nullable, exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     /* null default value */;
   }
@@ -7993,7 +7993,7 @@ static void voidMethodDefaultStringSequenceArgMethod(const v8::FunctionCallbackI
   if (!info[0]->IsUndefined()) {
     defaultStringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
     if (exceptionState.hadException())
-        return;
+      return;
   } else {
     /* Nothing to do */;
   }
@@ -8013,7 +8013,7 @@ static void voidMethodVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8:
   Vector<String> variadicStringArgs;
   variadicStringArgs = toImplArguments<Vector<String>>(info, 0, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodVariadicStringArg(variadicStringArgs);
 }
@@ -8036,11 +8036,11 @@ static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbac
   Vector<String> variadicStringArgs;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   variadicStringArgs = toImplArguments<Vector<String>>(info, 1, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodStringArgVariadicStringArg(stringArg, variadicStringArgs);
 }
@@ -8136,7 +8136,7 @@ static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodA(longArg);
 }
@@ -8150,11 +8150,11 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   int longArg2;
   longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodA(longArg1, longArg2);
 }
@@ -8201,7 +8201,7 @@ static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodB(longArg);
 }
@@ -8221,7 +8221,7 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   }
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
     impl->overloadedMethodB(stringArg);
@@ -8229,7 +8229,7 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   }
   longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodB(stringArg, longArg);
 }
@@ -8284,7 +8284,7 @@ static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodC(longArg);
 }
@@ -8343,7 +8343,7 @@ static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodD(longArg);
 }
@@ -8356,7 +8356,7 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   Vector<int> longArrayArg;
   longArrayArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodD(longArrayArg);
 }
@@ -8401,7 +8401,7 @@ static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodE(longArg);
 }
@@ -8472,7 +8472,7 @@ static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   }
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->overloadedMethodF(stringArg);
 }
@@ -8485,7 +8485,7 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   double doubleArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodF(doubleArg);
 }
@@ -8540,7 +8540,7 @@ static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodG(longArg);
 }
@@ -8671,7 +8671,7 @@ static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->overloadedMethodI(stringArg);
 }
@@ -8684,7 +8684,7 @@ static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   double doubleArg;
   doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodI(doubleArg);
 }
@@ -8731,7 +8731,7 @@ static void overloadedMethodJ1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->overloadedMethodJ(stringArg);
 }
@@ -8749,7 +8749,7 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   }
   V8TestDictionary::toImpl(info.GetIsolate(), info[0], testDictionaryArg, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodJ(testDictionaryArg);
 }
@@ -8806,7 +8806,7 @@ static void overloadedMethodK2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->overloadedMethodK(stringArg);
 }
@@ -8852,11 +8852,11 @@ static void overloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   Vector<ScriptValue> restArgs;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodL(longArg, restArgs);
 }
@@ -8870,11 +8870,11 @@ static void overloadedMethodL2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   Vector<ScriptValue> restArgs;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedMethodL(stringArg, restArgs);
 }
@@ -9012,7 +9012,7 @@ static void promiseOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Valu
 
   arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());
 }
@@ -9034,7 +9034,7 @@ static void promiseOverloadMethod3Method(const v8::FunctionCallbackInfo<v8::Valu
 
   arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());
 }
@@ -9098,7 +9098,7 @@ static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackIn
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedPerWorldBindingsMethod(longArg);
 }
@@ -9141,7 +9141,7 @@ static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::Functi
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->overloadedPerWorldBindingsMethod(longArg);
 }
@@ -9182,7 +9182,7 @@ static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Val
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestObject::overloadedStaticMethod(longArg);
 }
@@ -9194,11 +9194,11 @@ static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Val
   int longArg2;
   longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestObject::overloadedStaticMethod(longArg1, longArg2);
 }
@@ -9252,7 +9252,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   unsigned index;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   ScriptValue result = impl->item(scriptState, index);
   v8SetReturnValue(info, result.v8Value());
@@ -9278,11 +9278,11 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> value;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   value = info[1];
   if (!value.prepare())
-      return;
+    return;
 
   String result = impl->setItem(scriptState, index, value);
   v8SetReturnValueString(info, result, info.GetIsolate());
@@ -9305,7 +9305,7 @@ static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo
   unsigned clampUnsignedShortArg;
   clampUnsignedShortArg = toUInt16(info.GetIsolate(), info[0], Clamp, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodClampUnsignedShortArg(clampUnsignedShortArg);
 }
@@ -9327,7 +9327,7 @@ static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<
   unsigned clampUnsignedLongArg;
   clampUnsignedLongArg = toUInt32(info.GetIsolate(), info[0], Clamp, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodClampUnsignedLongArg(clampUnsignedLongArg);
 }
@@ -9362,7 +9362,7 @@ static void voidMethodDefaultUndefinedLongArgMethod(const v8::FunctionCallbackIn
   int defaultUndefinedLongArg;
   defaultUndefinedLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodDefaultUndefinedLongArg(defaultUndefinedLongArg);
 }
@@ -9377,7 +9377,7 @@ static void voidMethodDefaultUndefinedStringArgMethod(const v8::FunctionCallback
   V8StringResource<> defaultUndefinedStringArg;
   defaultUndefinedStringArg = info[0];
   if (!defaultUndefinedStringArg.prepare())
-      return;
+    return;
 
   impl->voidMethodDefaultUndefinedStringArg(defaultUndefinedStringArg);
 }
@@ -9399,7 +9399,7 @@ static void voidMethodEnforceRangeLongArgMethod(const v8::FunctionCallbackInfo<v
   int enforceRangeLongArg;
   enforceRangeLongArg = toInt32(info.GetIsolate(), info[0], EnforceRange, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodEnforceRangeLongArg(enforceRangeLongArg);
 }
@@ -9419,7 +9419,7 @@ static void voidMethodTreatNullAsEmptyStringStringArgMethod(const v8::FunctionCa
   V8StringResource<TreatNullAsEmptyString> treatNullAsEmptyStringStringArg;
   treatNullAsEmptyStringStringArg = info[0];
   if (!treatNullAsEmptyStringStringArg.prepare())
-      return;
+    return;
 
   impl->voidMethodTreatNullAsEmptyStringStringArg(treatNullAsEmptyStringStringArg);
 }
@@ -9439,7 +9439,7 @@ static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCal
   V8StringResource<TreatNullAsNullString> treatNullAsNullStringStringArg;
   treatNullAsNullStringStringArg = info[0];
   if (!treatNullAsNullStringStringArg.prepare())
-      return;
+    return;
 
   impl->voidMethodTreatNullAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
@@ -9459,7 +9459,7 @@ static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMe
   V8StringResource<TreatNullAndUndefinedAsNullString> treatNullAsNullStringStringArg;
   treatNullAsNullStringStringArg = info[0];
   if (!treatNullAsNullStringStringArg.prepare())
-      return;
+    return;
 
   impl->voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
@@ -9568,7 +9568,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
   }
   optionalBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
   impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments, optionalBooleanArg);
@@ -9709,7 +9709,7 @@ static void measureOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Va
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->measureOverloadedMethod(arg);
 }
@@ -9760,7 +9760,7 @@ static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->DeprecateAsOverloadedMethod(arg);
 }
@@ -9811,7 +9811,7 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->DeprecateAsSameValueOverloadedMethod(arg);
 }
@@ -9862,7 +9862,7 @@ static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->measureAsOverloadedMethod(arg);
 }
@@ -9913,7 +9913,7 @@ static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallback
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->measureAsSameValueOverloadedMethod(arg);
 }
@@ -9964,7 +9964,7 @@ static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::Funct
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->deprecateAsMeasureAsSameValueOverloadedMethod(arg);
 }
@@ -10017,7 +10017,7 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->deprecateAsSameValueMeasureAsOverloadedMethod(arg);
 }
@@ -10070,7 +10070,7 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
   int arg;
   arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod(arg);
 }
@@ -10379,7 +10379,7 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
   }
   optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->raisesExceptionVoidMethodOptionalLongArg(optionalLongArg, exceptionState);
   if (exceptionState.hadException()) {
@@ -10491,7 +10491,7 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
   impl->callWithExecutionContextRaisesExceptionVoidMethodLongArg(executionContext, longArg, exceptionState);
@@ -10540,7 +10540,7 @@ static void runtimeEnabledOverloadedVoidMethod1Method(const v8::FunctionCallback
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->runtimeEnabledOverloadedVoidMethod(stringArg);
 }
@@ -10553,7 +10553,7 @@ static void runtimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallback
   int longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->runtimeEnabledOverloadedVoidMethod(longArg);
 }
@@ -10600,7 +10600,7 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod1Method(const v8::Functio
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->partiallyRuntimeEnabledOverloadedVoidMethod(stringArg);
 }
@@ -10628,11 +10628,11 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::Functio
   V8StringResource<> stringArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   stringArg = info[1];
   if (!stringArg.prepare())
-      return;
+    return;
 
   impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg, stringArg);
 }
@@ -10647,11 +10647,11 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::Functio
   TestInterfaceImplementation* testInterfaceArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   stringArg = info[1];
   if (!stringArg.prepare())
-      return;
+    return;
 
   testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[2]);
   if (!testInterfaceArg) {
@@ -10896,7 +10896,7 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::F
   HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceArg;
   testInterfaceGarbageCollectedSequenceArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodTestInterfaceGarbageCollectedSequenceArg(testInterfaceGarbageCollectedSequenceArg);
 }
@@ -10918,7 +10918,7 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::Func
   HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedArrayArg;
   testInterfaceGarbageCollectedArrayArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
   if (exceptionState.hadException())
-      return;
+    return;
 
   impl->voidMethodTestInterfaceGarbageCollectedArrayArg(testInterfaceGarbageCollectedArrayArg);
 }
@@ -10987,7 +10987,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
   int value;
   value = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   int result = 0;
   if (!V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
@@ -11010,7 +11010,7 @@ static void stringMethodWithStringArgumentImplementedInPrivateScriptMethod(const
   V8StringResource<> value;
   value = info[0];
   if (!value.prepare())
-      return;
+    return;
 
   String result;
   if (!V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
@@ -11079,15 +11079,15 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
 
   value1 = toInt16(info.GetIsolate(), info[2], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   value2 = toRestrictedDouble(info.GetIsolate(), info[3], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   string = info[4];
   if (!string.prepare())
-      return;
+    return;
 
   Node* result = nullptr;
   if (!V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, document, node, value1, value2, string, &result))
@@ -11113,11 +11113,11 @@ static void methodImplementedInCPPForPrivateScriptOnlyMethod(const v8::FunctionC
   int value2;
   value1 = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   value2 = toInt16(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValueInt(info, impl->methodImplementedInCPPForPrivateScriptOnly(value1, value2));
 }
@@ -11228,7 +11228,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   int key;
   key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   bool result = impl->hasForBinding(scriptState, key, exceptionState);
   if (exceptionState.hadException()) {
@@ -11256,7 +11256,7 @@ static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   int key;
   key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   ScriptValue result = impl->getForBinding(scriptState, key, exceptionState);
   if (exceptionState.hadException()) {
@@ -11301,7 +11301,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   int key;
   key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   bool result = impl->deleteForBinding(scriptState, key, exceptionState);
   if (exceptionState.hadException()) {
@@ -11330,11 +11330,11 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   StringOrDouble value;
   key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   V8StringOrDouble::toImpl(info.GetIsolate(), info[1], value, UnionTypeConversionMode::NotNullable, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestObject* result = impl->setForBinding(scriptState, key, value, exceptionState);
   if (exceptionState.hadException()) {
@@ -11409,7 +11409,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
   TestObject* impl = V8TestObject::toImpl(info.Holder());
   V8StringResource<> propertyValue = v8Value;
   if (!propertyValue.prepare())
-      return;
+    return;
 
   bool result = impl->anonymousNamedSetter(scriptState, name, propertyValue);
   if (!result)
@@ -11504,7 +11504,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
   V8StringResource<> propertyValue = v8Value;
   if (!propertyValue.prepare())
-      return;
+    return;
 
   ScriptState* scriptState = ScriptState::forReceiverObject(info);
   bool result = impl->setItem(scriptState, index, propertyValue);
@@ -12100,7 +12100,7 @@ bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(Lo
     return false;
   int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return false;
+    return false;
   *result = cppValue;
   CHECK(!exceptionState.hadException());
   return true;
@@ -12128,7 +12128,7 @@ bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPriva
     return false;
   int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return false;
+    return false;
   *result = cppValue;
   CHECK(!exceptionState.hadException());
   return true;
@@ -12156,7 +12156,7 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
     return false;
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return false;
+    return false;
   *result = cppValue;
   CHECK(!exceptionState.hadException());
   return true;
@@ -12241,7 +12241,7 @@ bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* f
     return false;
   int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return false;
+    return false;
   *result = cppValue;
   CHECK(!exceptionState.hadException());
   return true;
@@ -12267,7 +12267,7 @@ bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFra
     return false;
   int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return false;
+    return false;
   CHECK(!exceptionState.hadException());
   *result = cppValue;
   return true;
@@ -12293,7 +12293,7 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* fram
     return false;
   int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return false;
+    return false;
   CHECK(!exceptionState.hadException());
   *result = cppValue;
   return true;
@@ -12337,7 +12337,7 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* fra
     return false;
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return false;
+    return false;
   CHECK(!exceptionState.hadException());
   *result = cppValue;
   return true;
@@ -12423,7 +12423,7 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(L
     return false;
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return false;
+    return false;
   CHECK(!exceptionState.hadException());
   *result = cppValue;
   return true;
@@ -12467,7 +12467,7 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame
     return false;
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return false;
+    return false;
   CHECK(!exceptionState.hadException());
   *result = cppValue;
   return true;

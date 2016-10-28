@@ -11,104 +11,91 @@
 
 namespace blink {
 
-DoubleOrString::DoubleOrString()
-    : m_type(SpecificTypeNone)
-{
+DoubleOrString::DoubleOrString() : m_type(SpecificTypeNone) {}
+
+double DoubleOrString::getAsDouble() const {
+  DCHECK(isDouble());
+  return m_double;
 }
 
-double DoubleOrString::getAsDouble() const
-{
-    ASSERT(isDouble());
-    return m_double;
+void DoubleOrString::setDouble(double value) {
+  DCHECK(isNull());
+  m_double = value;
+  m_type = SpecificTypeDouble;
 }
 
-void DoubleOrString::setDouble(double value)
-{
-    ASSERT(isNull());
-    m_double = value;
-    m_type = SpecificTypeDouble;
+DoubleOrString DoubleOrString::fromDouble(double value) {
+  DoubleOrString container;
+  container.setDouble(value);
+  return container;
 }
 
-DoubleOrString DoubleOrString::fromDouble(double value)
-{
-    DoubleOrString container;
-    container.setDouble(value);
-    return container;
+String DoubleOrString::getAsString() const {
+  DCHECK(isString());
+  return m_string;
 }
 
-String DoubleOrString::getAsString() const
-{
-    ASSERT(isString());
-    return m_string;
+void DoubleOrString::setString(String value) {
+  DCHECK(isNull());
+  m_string = value;
+  m_type = SpecificTypeString;
 }
 
-void DoubleOrString::setString(String value)
-{
-    ASSERT(isNull());
-    m_string = value;
-    m_type = SpecificTypeString;
-}
-
-DoubleOrString DoubleOrString::fromString(String value)
-{
-    DoubleOrString container;
-    container.setString(value);
-    return container;
+DoubleOrString DoubleOrString::fromString(String value) {
+  DoubleOrString container;
+  container.setString(value);
+  return container;
 }
 
 DoubleOrString::DoubleOrString(const DoubleOrString&) = default;
 DoubleOrString::~DoubleOrString() = default;
 DoubleOrString& DoubleOrString::operator=(const DoubleOrString&) = default;
 
-DEFINE_TRACE(DoubleOrString)
-{
+DEFINE_TRACE(DoubleOrString) {
 }
 
-void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
-{
-    if (v8Value.IsEmpty())
-        return;
+void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+  if (v8Value.IsEmpty())
+    return;
 
-    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
-        return;
+  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+    return;
 
-    if (v8Value->IsNumber()) {
-        double cppValue = toRestrictedDouble(isolate, v8Value, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        impl.setDouble(cppValue);
-        return;
-    }
+  if (v8Value->IsNumber()) {
+    double cppValue = toRestrictedDouble(isolate, v8Value, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setDouble(cppValue);
+    return;
+  }
 
-    {
-        V8StringResource<> cppValue = v8Value;
-        if (!cppValue.prepare(exceptionState))
-            return;
-        impl.setString(cppValue);
-        return;
-    }
+  {
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare(exceptionState))
+      return;
+    impl.setString(cppValue);
+    return;
+  }
 }
 
-v8::Local<v8::Value> toV8(const DoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    switch (impl.m_type) {
+v8::Local<v8::Value> toV8(const DoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  switch (impl.m_type) {
     case DoubleOrString::SpecificTypeNone:
-        return v8::Null(isolate);
+      return v8::Null(isolate);
     case DoubleOrString::SpecificTypeDouble:
-        return v8::Number::New(isolate, impl.getAsDouble());
+      return v8::Number::New(isolate, impl.getAsDouble());
     case DoubleOrString::SpecificTypeString:
-        return v8String(isolate, impl.getAsString());
+      return v8String(isolate, impl.getAsString());
     default:
-        ASSERT_NOT_REACHED();
-    }
-    return v8::Local<v8::Value>();
+      NOTREACHED();
+  }
+  return v8::Local<v8::Value>();
 }
 
-DoubleOrString NativeValueTraits<DoubleOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    DoubleOrString impl;
-    V8DoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
-    return impl;
+DoubleOrString NativeValueTraits<DoubleOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  DoubleOrString impl;
+  V8DoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  return impl;
 }
 
-} // namespace blink
+}  // namespace blink

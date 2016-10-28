@@ -19,39 +19,35 @@ namespace blink {
 
 class ScriptState;
 
-class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules>,
-                                        public TraceWrapperBase {
-public:
-    static VoidCallbackFunctionModules* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    {
-        return new VoidCallbackFunctionModules(scriptState, callback);
-    }
+class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules>, public TraceWrapperBase {
+ public:
+  static VoidCallbackFunctionModules* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
+    return new VoidCallbackFunctionModules(scriptState, callback);
+  }
 
-    ~VoidCallbackFunctionModules() = default;
+  ~VoidCallbackFunctionModules() = default;
 
-    DECLARE_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptWrappable* scriptWrappable);
+  bool call(ScriptWrappable* scriptWrappable);
 
-    v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
-    {
-        return m_callback.newLocal(isolate);
-    }
+  v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
+    return m_callback.newLocal(isolate);
+  }
 
-    void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
-    {
-        DCHECK(!m_callback.isEmpty());
-        m_callback.setReference(wrapper, isolate);
-    }
+  void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper) {
+    DCHECK(!m_callback.isEmpty());
+    m_callback.setReference(wrapper, isolate);
+  }
 
-private:
-    VoidCallbackFunctionModules(ScriptState*, v8::Local<v8::Function>);
+ private:
+  VoidCallbackFunctionModules(ScriptState*, v8::Local<v8::Function>);
 
-    RefPtr<ScriptState> m_scriptState;
-    ScopedPersistent<v8::Function> m_callback;
+  RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Function> m_callback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VoidCallbackFunctionModules_h
+#endif  // VoidCallbackFunctionModules_h

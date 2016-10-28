@@ -72,7 +72,7 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(SVGNames::typeAttr, cppValue);
 }

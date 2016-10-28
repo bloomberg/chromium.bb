@@ -17,104 +17,91 @@
 
 namespace blink {
 
-NodeOrNodeList::NodeOrNodeList()
-    : m_type(SpecificTypeNone)
-{
+NodeOrNodeList::NodeOrNodeList() : m_type(SpecificTypeNone) {}
+
+Node* NodeOrNodeList::getAsNode() const {
+  DCHECK(isNode());
+  return m_node;
 }
 
-Node* NodeOrNodeList::getAsNode() const
-{
-    ASSERT(isNode());
-    return m_node;
+void NodeOrNodeList::setNode(Node* value) {
+  DCHECK(isNull());
+  m_node = value;
+  m_type = SpecificTypeNode;
 }
 
-void NodeOrNodeList::setNode(Node* value)
-{
-    ASSERT(isNull());
-    m_node = value;
-    m_type = SpecificTypeNode;
+NodeOrNodeList NodeOrNodeList::fromNode(Node* value) {
+  NodeOrNodeList container;
+  container.setNode(value);
+  return container;
 }
 
-NodeOrNodeList NodeOrNodeList::fromNode(Node* value)
-{
-    NodeOrNodeList container;
-    container.setNode(value);
-    return container;
+NodeList* NodeOrNodeList::getAsNodeList() const {
+  DCHECK(isNodeList());
+  return m_nodeList;
 }
 
-NodeList* NodeOrNodeList::getAsNodeList() const
-{
-    ASSERT(isNodeList());
-    return m_nodeList;
+void NodeOrNodeList::setNodeList(NodeList* value) {
+  DCHECK(isNull());
+  m_nodeList = value;
+  m_type = SpecificTypeNodeList;
 }
 
-void NodeOrNodeList::setNodeList(NodeList* value)
-{
-    ASSERT(isNull());
-    m_nodeList = value;
-    m_type = SpecificTypeNodeList;
-}
-
-NodeOrNodeList NodeOrNodeList::fromNodeList(NodeList* value)
-{
-    NodeOrNodeList container;
-    container.setNodeList(value);
-    return container;
+NodeOrNodeList NodeOrNodeList::fromNodeList(NodeList* value) {
+  NodeOrNodeList container;
+  container.setNodeList(value);
+  return container;
 }
 
 NodeOrNodeList::NodeOrNodeList(const NodeOrNodeList&) = default;
 NodeOrNodeList::~NodeOrNodeList() = default;
 NodeOrNodeList& NodeOrNodeList::operator=(const NodeOrNodeList&) = default;
 
-DEFINE_TRACE(NodeOrNodeList)
-{
-    visitor->trace(m_node);
-    visitor->trace(m_nodeList);
+DEFINE_TRACE(NodeOrNodeList) {
+  visitor->trace(m_node);
+  visitor->trace(m_nodeList);
 }
 
-void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
-{
-    if (v8Value.IsEmpty())
-        return;
+void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+  if (v8Value.IsEmpty())
+    return;
 
-    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
-        return;
+  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+    return;
 
-    if (V8Node::hasInstance(v8Value, isolate)) {
-        Node* cppValue = V8Node::toImpl(v8::Local<v8::Object>::Cast(v8Value));
-        impl.setNode(cppValue);
-        return;
-    }
+  if (V8Node::hasInstance(v8Value, isolate)) {
+    Node* cppValue = V8Node::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    impl.setNode(cppValue);
+    return;
+  }
 
-    if (V8NodeList::hasInstance(v8Value, isolate)) {
-        NodeList* cppValue = V8NodeList::toImpl(v8::Local<v8::Object>::Cast(v8Value));
-        impl.setNodeList(cppValue);
-        return;
-    }
+  if (V8NodeList::hasInstance(v8Value, isolate)) {
+    NodeList* cppValue = V8NodeList::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    impl.setNodeList(cppValue);
+    return;
+  }
 
-    exceptionState.throwTypeError("The provided value is not of type '(Node or NodeList)'");
+  exceptionState.throwTypeError("The provided value is not of type '(Node or NodeList)'");
 }
 
-v8::Local<v8::Value> toV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    switch (impl.m_type) {
+v8::Local<v8::Value> toV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  switch (impl.m_type) {
     case NodeOrNodeList::SpecificTypeNone:
-        return v8::Null(isolate);
+      return v8::Null(isolate);
     case NodeOrNodeList::SpecificTypeNode:
-        return toV8(impl.getAsNode(), creationContext, isolate);
+      return toV8(impl.getAsNode(), creationContext, isolate);
     case NodeOrNodeList::SpecificTypeNodeList:
-        return toV8(impl.getAsNodeList(), creationContext, isolate);
+      return toV8(impl.getAsNodeList(), creationContext, isolate);
     default:
-        ASSERT_NOT_REACHED();
-    }
-    return v8::Local<v8::Value>();
+      NOTREACHED();
+  }
+  return v8::Local<v8::Value>();
 }
 
-NodeOrNodeList NativeValueTraits<NodeOrNodeList>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    NodeOrNodeList impl;
-    V8NodeOrNodeList::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
-    return impl;
+NodeOrNodeList NativeValueTraits<NodeOrNodeList>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  NodeOrNodeList impl;
+  V8NodeOrNodeList::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  return impl;
 }
 
-} // namespace blink
+}  // namespace blink

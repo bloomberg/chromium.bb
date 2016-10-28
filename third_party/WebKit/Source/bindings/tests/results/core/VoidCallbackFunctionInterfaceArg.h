@@ -20,39 +20,35 @@ namespace blink {
 class ScriptState;
 class HTMLDivElement;
 
-class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg>,
-                                        public TraceWrapperBase {
-public:
-    static VoidCallbackFunctionInterfaceArg* create(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    {
-        return new VoidCallbackFunctionInterfaceArg(scriptState, callback);
-    }
+class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg>, public TraceWrapperBase {
+ public:
+  static VoidCallbackFunctionInterfaceArg* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
+    return new VoidCallbackFunctionInterfaceArg(scriptState, callback);
+  }
 
-    ~VoidCallbackFunctionInterfaceArg() = default;
+  ~VoidCallbackFunctionInterfaceArg() = default;
 
-    DECLARE_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    bool call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);
+  bool call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);
 
-    v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
-    {
-        return m_callback.newLocal(isolate);
-    }
+  v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
+    return m_callback.newLocal(isolate);
+  }
 
-    void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
-    {
-        DCHECK(!m_callback.isEmpty());
-        m_callback.setReference(wrapper, isolate);
-    }
+  void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper) {
+    DCHECK(!m_callback.isEmpty());
+    m_callback.setReference(wrapper, isolate);
+  }
 
-private:
-    VoidCallbackFunctionInterfaceArg(ScriptState*, v8::Local<v8::Function>);
+ private:
+  VoidCallbackFunctionInterfaceArg(ScriptState*, v8::Local<v8::Function>);
 
-    RefPtr<ScriptState> m_scriptState;
-    ScopedPersistent<v8::Function> m_callback;
+  RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Function> m_callback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VoidCallbackFunctionInterfaceArg_h
+#endif  // VoidCallbackFunctionInterfaceArg_h

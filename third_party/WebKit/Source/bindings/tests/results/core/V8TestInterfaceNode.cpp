@@ -72,7 +72,7 @@ static void nodeNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setNodeName(cppValue);
 }
@@ -102,7 +102,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setStringAttribute(cppValue);
 }
@@ -197,7 +197,7 @@ static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::reflectstringattributeAttr, cppValue);
 }
@@ -229,7 +229,7 @@ static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setAttribute(HTMLNames::reflecturlstringattributeAttr, cppValue);
 }
@@ -290,7 +290,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
   }
   optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument), impl);
 }
@@ -317,7 +317,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
   }
   optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument));
 }

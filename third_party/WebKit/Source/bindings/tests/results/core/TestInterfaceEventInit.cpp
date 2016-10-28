@@ -9,17 +9,13 @@
 
 namespace blink {
 
-TestInterfaceEventInit::TestInterfaceEventInit()
-{
+TestInterfaceEventInit::TestInterfaceEventInit() {
 }
 
-TestInterfaceEventInit::~TestInterfaceEventInit()
-{
+TestInterfaceEventInit::~TestInterfaceEventInit() {}
+
+DEFINE_TRACE(TestInterfaceEventInit) {
+  EventInit::trace(visitor);
 }
 
-DEFINE_TRACE(TestInterfaceEventInit)
-{
-    EventInit::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

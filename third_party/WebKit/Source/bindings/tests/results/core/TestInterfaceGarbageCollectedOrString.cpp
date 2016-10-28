@@ -12,103 +12,90 @@
 
 namespace blink {
 
-TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString()
-    : m_type(SpecificTypeNone)
-{
+TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString() : m_type(SpecificTypeNone) {}
+
+TestInterfaceGarbageCollected* TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const {
+  DCHECK(isTestInterfaceGarbageCollected());
+  return m_testInterfaceGarbageCollected;
 }
 
-TestInterfaceGarbageCollected* TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const
-{
-    ASSERT(isTestInterfaceGarbageCollected());
-    return m_testInterfaceGarbageCollected;
+void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
+  DCHECK(isNull());
+  m_testInterfaceGarbageCollected = value;
+  m_type = SpecificTypeTestInterfaceGarbageCollected;
 }
 
-void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value)
-{
-    ASSERT(isNull());
-    m_testInterfaceGarbageCollected = value;
-    m_type = SpecificTypeTestInterfaceGarbageCollected;
+TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
+  TestInterfaceGarbageCollectedOrString container;
+  container.setTestInterfaceGarbageCollected(value);
+  return container;
 }
 
-TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value)
-{
-    TestInterfaceGarbageCollectedOrString container;
-    container.setTestInterfaceGarbageCollected(value);
-    return container;
+String TestInterfaceGarbageCollectedOrString::getAsString() const {
+  DCHECK(isString());
+  return m_string;
 }
 
-String TestInterfaceGarbageCollectedOrString::getAsString() const
-{
-    ASSERT(isString());
-    return m_string;
+void TestInterfaceGarbageCollectedOrString::setString(String value) {
+  DCHECK(isNull());
+  m_string = value;
+  m_type = SpecificTypeString;
 }
 
-void TestInterfaceGarbageCollectedOrString::setString(String value)
-{
-    ASSERT(isNull());
-    m_string = value;
-    m_type = SpecificTypeString;
-}
-
-TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromString(String value)
-{
-    TestInterfaceGarbageCollectedOrString container;
-    container.setString(value);
-    return container;
+TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromString(String value) {
+  TestInterfaceGarbageCollectedOrString container;
+  container.setString(value);
+  return container;
 }
 
 TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&) = default;
 TestInterfaceGarbageCollectedOrString::~TestInterfaceGarbageCollectedOrString() = default;
 TestInterfaceGarbageCollectedOrString& TestInterfaceGarbageCollectedOrString::operator=(const TestInterfaceGarbageCollectedOrString&) = default;
 
-DEFINE_TRACE(TestInterfaceGarbageCollectedOrString)
-{
-    visitor->trace(m_testInterfaceGarbageCollected);
+DEFINE_TRACE(TestInterfaceGarbageCollectedOrString) {
+  visitor->trace(m_testInterfaceGarbageCollected);
 }
 
-void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
-{
-    if (v8Value.IsEmpty())
-        return;
+void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+  if (v8Value.IsEmpty())
+    return;
 
-    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
-        return;
+  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+    return;
 
-    if (V8TestInterfaceGarbageCollected::hasInstance(v8Value, isolate)) {
-        TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
-        impl.setTestInterfaceGarbageCollected(cppValue);
-        return;
-    }
+  if (V8TestInterfaceGarbageCollected::hasInstance(v8Value, isolate)) {
+    TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    impl.setTestInterfaceGarbageCollected(cppValue);
+    return;
+  }
 
-    {
-        V8StringResource<> cppValue = v8Value;
-        if (!cppValue.prepare(exceptionState))
-            return;
-        impl.setString(cppValue);
-        return;
-    }
+  {
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare(exceptionState))
+      return;
+    impl.setString(cppValue);
+    return;
+  }
 }
 
-v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    switch (impl.m_type) {
+v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  switch (impl.m_type) {
     case TestInterfaceGarbageCollectedOrString::SpecificTypeNone:
-        return v8::Null(isolate);
+      return v8::Null(isolate);
     case TestInterfaceGarbageCollectedOrString::SpecificTypeTestInterfaceGarbageCollected:
-        return toV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
+      return toV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
     case TestInterfaceGarbageCollectedOrString::SpecificTypeString:
-        return v8String(isolate, impl.getAsString());
+      return v8String(isolate, impl.getAsString());
     default:
-        ASSERT_NOT_REACHED();
-    }
-    return v8::Local<v8::Value>();
+      NOTREACHED();
+  }
+  return v8::Local<v8::Value>();
 }
 
-TestInterfaceGarbageCollectedOrString NativeValueTraits<TestInterfaceGarbageCollectedOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    TestInterfaceGarbageCollectedOrString impl;
-    V8TestInterfaceGarbageCollectedOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
-    return impl;
+TestInterfaceGarbageCollectedOrString NativeValueTraits<TestInterfaceGarbageCollectedOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  TestInterfaceGarbageCollectedOrString impl;
+  V8TestInterfaceGarbageCollectedOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  return impl;
 }
 
-} // namespace blink
+}  // namespace blink

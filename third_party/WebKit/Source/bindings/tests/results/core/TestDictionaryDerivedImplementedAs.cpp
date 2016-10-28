@@ -9,19 +9,15 @@
 
 namespace blink {
 
-TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs()
-{
-    setDerivedStringMemberWithDefault(String("default string value"));
+TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs() {
+  setDerivedStringMemberWithDefault(String("default string value"));
 }
 
-TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs()
-{
+TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs() {}
+
+DEFINE_TRACE(TestDictionaryDerivedImplementedAs) {
+  visitor->trace(m_stringOrDoubleSequenceMember);
+  TestDictionary::trace(visitor);
 }
 
-DEFINE_TRACE(TestDictionaryDerivedImplementedAs)
-{
-    visitor->trace(m_stringOrDoubleSequenceMember);
-    TestDictionary::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -16,24 +16,24 @@
 namespace blink {
 
 class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestPermissiveDictionary();
-    virtual ~TestPermissiveDictionary();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  TestPermissiveDictionary();
+  virtual ~TestPermissiveDictionary();
 
-    bool hasBooleanMember() const { return !m_booleanMember.isNull(); }
-    bool booleanMember() const { return m_booleanMember.get(); }
-    void setBooleanMember(bool value) { m_booleanMember = value; }
+  bool hasBooleanMember() const { return !m_booleanMember.isNull(); }
+  bool booleanMember() const { return m_booleanMember.get(); }
+  void setBooleanMember(bool value) { m_booleanMember = value; }
 
-    v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-    DECLARE_VIRTUAL_TRACE();
+  v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    Nullable<bool> m_booleanMember;
+ private:
+  Nullable<bool> m_booleanMember;
 
-    friend class V8TestPermissiveDictionary;
+  friend class V8TestPermissiveDictionary;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TestPermissiveDictionary_h
+#endif  // TestPermissiveDictionary_h

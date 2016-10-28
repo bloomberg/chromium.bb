@@ -78,7 +78,7 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
-      return;
+    return;
 
   impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue, exceptionState);
 }

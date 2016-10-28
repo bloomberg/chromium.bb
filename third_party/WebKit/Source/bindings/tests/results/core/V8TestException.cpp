@@ -94,7 +94,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   unsigned argument;
   argument = toUInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestException* impl = TestException::create(argument);
   v8::Local<v8::Object> wrapper = info.Holder();

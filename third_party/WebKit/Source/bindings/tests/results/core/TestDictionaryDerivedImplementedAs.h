@@ -19,39 +19,39 @@
 namespace blink {
 
 class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestDictionaryDerivedImplementedAs();
-    virtual ~TestDictionaryDerivedImplementedAs();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+ public:
+  TestDictionaryDerivedImplementedAs();
+  virtual ~TestDictionaryDerivedImplementedAs();
 
-    bool hasDerivedStringMember() const { return !m_derivedStringMember.isNull(); }
-    String derivedStringMember() const { return m_derivedStringMember; }
-    void setDerivedStringMember(String value) { m_derivedStringMember = value; }
+  bool hasDerivedStringMember() const { return !m_derivedStringMember.isNull(); }
+  String derivedStringMember() const { return m_derivedStringMember; }
+  void setDerivedStringMember(String value) { m_derivedStringMember = value; }
 
-    bool hasDerivedStringMemberWithDefault() const { return !m_derivedStringMemberWithDefault.isNull(); }
-    String derivedStringMemberWithDefault() const { return m_derivedStringMemberWithDefault; }
-    void setDerivedStringMemberWithDefault(String value) { m_derivedStringMemberWithDefault = value; }
+  bool hasDerivedStringMemberWithDefault() const { return !m_derivedStringMemberWithDefault.isNull(); }
+  String derivedStringMemberWithDefault() const { return m_derivedStringMemberWithDefault; }
+  void setDerivedStringMemberWithDefault(String value) { m_derivedStringMemberWithDefault = value; }
 
-    bool hasRequiredLongMember() const { return !m_requiredLongMember.isNull(); }
-    int requiredLongMember() const { return m_requiredLongMember.get(); }
-    void setRequiredLongMember(int value) { m_requiredLongMember = value; }
+  bool hasRequiredLongMember() const { return !m_requiredLongMember.isNull(); }
+  int requiredLongMember() const { return m_requiredLongMember.get(); }
+  void setRequiredLongMember(int value) { m_requiredLongMember = value; }
 
-    bool hasStringOrDoubleSequenceMember() const { return !m_stringOrDoubleSequenceMember.isNull(); }
-    const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const { return m_stringOrDoubleSequenceMember.get(); }
-    void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) { m_stringOrDoubleSequenceMember = value; }
+  bool hasStringOrDoubleSequenceMember() const { return !m_stringOrDoubleSequenceMember.isNull(); }
+  const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const { return m_stringOrDoubleSequenceMember.get(); }
+  void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) { m_stringOrDoubleSequenceMember = value; }
 
-    v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-    DECLARE_VIRTUAL_TRACE();
+  v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    String m_derivedStringMember;
-    String m_derivedStringMemberWithDefault;
-    Nullable<int> m_requiredLongMember;
-    Nullable<HeapVector<StringOrDouble>> m_stringOrDoubleSequenceMember;
+ private:
+  String m_derivedStringMember;
+  String m_derivedStringMemberWithDefault;
+  Nullable<int> m_requiredLongMember;
+  Nullable<HeapVector<StringOrDouble>> m_stringOrDoubleSequenceMember;
 
-    friend class V8TestDictionaryDerivedImplementedAs;
+  friend class V8TestDictionaryDerivedImplementedAs;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TestDictionaryDerivedImplementedAs_h
+#endif  // TestDictionaryDerivedImplementedAs_h

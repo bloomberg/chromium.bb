@@ -71,7 +71,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> usvStringArg;
   usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfaceConstructor4* impl = TestInterfaceConstructor4::create(usvStringArg);
   v8::Local<v8::Object> wrapper = info.Holder();

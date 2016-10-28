@@ -55,7 +55,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8StringResource<> stringArg;
   stringArg = info[0];
   if (!stringArg.prepare())
-      return;
+    return;
 
   TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(stringArg);
   v8::Local<v8::Object> wrapper = info.Holder();
@@ -74,7 +74,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(dictionaryArg);
   v8::Local<v8::Object> wrapper = info.Holder();
@@ -88,7 +88,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
   Vector<Vector<String>> stringSequenceSequenceArg;
   stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(stringSequenceSequenceArg);
   v8::Local<v8::Object> wrapper = info.Holder();
@@ -120,16 +120,16 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   defaultUndefinedOptionalStringArg = info[2];
   if (!defaultUndefinedOptionalStringArg.prepare())
-      return;
+    return;
 
   if (!info[3]->IsUndefined()) {
     defaultNullStringOptionalStringArg = info[3];
     if (!defaultNullStringOptionalStringArg.prepare())
-        return;
+      return;
   } else {
     defaultNullStringOptionalStringArg = nullptr;
   }
@@ -140,7 +140,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
-      return;
+    return;
 
   if (UNLIKELY(numArgsPassed <= 5)) {
     TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
@@ -151,7 +151,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   optionalStringArg = info[5];
   if (!optionalStringArg.prepare())
-      return;
+    return;
 
   TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg, optionalStringArg);
   v8::Local<v8::Object> wrapper = info.Holder();
