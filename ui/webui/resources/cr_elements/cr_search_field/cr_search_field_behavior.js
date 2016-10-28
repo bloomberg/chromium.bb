@@ -92,8 +92,16 @@ var CrSearchFieldBehavior = {
       this.showingSearch = false;
   },
 
-  /** @private */
-  showingSearchChanged_: function() {
+  /**
+   * @param {boolean} current
+   * @param {boolean|undefined} previous
+   * @private
+   */
+  showingSearchChanged_: function(current, previous) {
+    // Prevent unnecessary 'search-changed' event from firing on startup.
+    if (previous == undefined)
+      return;
+
     if (this.showingSearch) {
       this.focus_();
       return;

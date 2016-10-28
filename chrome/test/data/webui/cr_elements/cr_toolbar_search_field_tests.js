@@ -34,6 +34,23 @@ cr.define('cr_toolbar_search_field', function() {
         searches = null;
       });
 
+      // Test that no initial 'search-changed' event is fired during
+      // construction and initialization of the cr-toolbar-search-field element.
+      test('no initial search-changed event', function() {
+        var didFire = false;
+        var onSearchChanged = function () { didFire = true; };
+
+        // Need to attach listener event before the element is created, to catch
+        // the unnecessary initial event.
+        document.body.addEventListener('search-changed', onSearchChanged);
+        document.body.innerHTML =
+            '<cr-toolbar-search-field></cr-toolbar-search-field>';
+        // Remove event listener on |body| so that other tests are not affected.
+        document.body.removeEventListener('search-changed', onSearchChanged);
+
+        assertFalse(didFire, 'Should not have fired search-changed event');
+      });
+
       test('opens and closes correctly', function() {
         assertFalse(field.showingSearch);
         MockInteractions.tap(field);
