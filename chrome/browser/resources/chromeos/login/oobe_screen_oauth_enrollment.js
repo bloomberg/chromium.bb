@@ -135,6 +135,16 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
             this.updateControlsState();
           }).bind(this));
 
+      this.authenticator_.addEventListener('dialogShown',
+        (function(e) {
+          this.navigation_.disabled = true;
+        }).bind(this));
+
+      this.authenticator_.addEventListener('dialogHidden',
+        (function(e) {
+          this.navigation_.disabled = false;
+        }).bind(this));
+
       this.authenticator_.insecureContentBlockedCallback =
           (function(url) {
             this.showError(
@@ -234,6 +244,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       }
       this.isManualEnrollment_ = data.enrollment_mode === 'manual';
       this.isCancelDisabled = true;
+      this.navigation_.disabled = false;
 
       this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
     },

@@ -518,6 +518,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       // Header is hidden once GAIA reports on successful sign in.
       Oobe.getInstance().headerHidden = false;
 
+      // Re-enable navigation in case it was disabled before refresh.
+      this.navigation_.disabled = false;
+
       this.lastBackMessageValue_ = false;
       this.updateControlsState();
     },
