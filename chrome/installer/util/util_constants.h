@@ -188,7 +188,6 @@ extern const char kUpdateSetupExe[];
 extern const char kUncompressedArchive[];
 extern const char kVerboseLogging[];
 extern const char kShowEula[];
-extern const char kShowEulaForMetro[];
 extern const char kInactiveUserToast[];
 extern const char kSystemLevelToast[];
 extern const char kExperimentGroup[];

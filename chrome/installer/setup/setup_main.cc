@@ -39,7 +39,6 @@
 #include "base/win/process_startup_helper.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -1066,28 +1065,6 @@ bool CreateEULASentinel(BrowserDistribution* dist) {
           base::WriteFile(eula_sentinel, "", 0) != -1);
 }
 
-void ActivateMetroChrome() {
-  // Check to see if we're per-user or not. Need to do this since we may
-  // not have been invoked with --system-level even for a machine install.
-  base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
-  bool is_per_user_install = InstallUtil::IsPerUserInstall(exe_path);
-
-  base::string16 app_model_id = ShellUtil::GetBrowserModelId(
-      BrowserDistribution::GetDistribution(), is_per_user_install);
-
-  base::win::ScopedComPtr<IApplicationActivationManager> activator;
-  HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
-  if (SUCCEEDED(hr)) {
-    DWORD pid = 0;
-    hr = activator->ActivateApplication(
-        app_model_id.c_str(), L"open", AO_NONE, &pid);
-  }
-
-  LOG_IF(ERROR, FAILED(hr)) << "Tried and failed to launch Metro Chrome. "
-                            << "hr=" << std::hex << hr;
-}
-
 installer::InstallStatus RegisterDevChrome(
     const InstallationState& original_state,
     const InstallerState& installer_state,
@@ -1231,9 +1208,6 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
               *original_state, BrowserDistribution::GetDistribution(), true)) {
         CreateEULASentinel(BrowserDistribution::GetDistribution());
       }
-      // For a metro-originated launch, we now need to launch back into metro.
-      if (cmd_line.HasSwitch(installer::switches::kShowEulaForMetro))
-        ActivateMetroChrome();
     }
   } else if (cmd_line.HasSwitch(installer::switches::kConfigureUserSettings)) {
     // NOTE: Should the work done here, on kConfigureUserSettings, change:

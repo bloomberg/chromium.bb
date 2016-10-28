@@ -163,9 +163,6 @@ const char kVerboseLogging[] = "verbose-logging";
 // Show the embedded EULA dialog.
 const char kShowEula[] = "show-eula";
 
-// Show the embedded EULA dialog, relaunch metro Chrome on acceptance.
-const char kShowEulaForMetro[] = "show-eula-for-metro";
-
 // Perform the inactive user toast experiment.
 const char kInactiveUserToast[] = "inactive-user-toast";
 
