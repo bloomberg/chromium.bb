@@ -81,8 +81,8 @@ const char *
 drv_get_name(struct driver *drv);
 
 int
-drv_is_format_supported(struct driver *drv, uint32_t format,
-			uint64_t usage);
+drv_is_combination_supported(struct driver *drv, uint32_t format,
+			     uint64_t usage, uint64_t modifier);
 
 struct bo *
 drv_bo_new(struct driver *drv, uint32_t width, uint32_t height,

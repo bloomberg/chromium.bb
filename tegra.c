@@ -33,6 +33,17 @@ enum nv_mem_kind
 	NV_MEM_KIND_GENERIC_16Bx2 = 0xfe,
 };
 
+static struct supported_combination combos[4] = {
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
+		DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
+		DRV_BO_USE_RENDERING | DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
+		DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
+		DRV_BO_USE_RENDERING | DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
+};
+
 static int compute_block_height_log2(int height)
 {
 	int block_height_log2 = NV_DEFAULT_BLOCK_HEIGHT_LOG2;
@@ -85,6 +96,12 @@ static void compute_layout_linear(int width, int height, int format,
 {
 	*stride = drv_stride_from_format(format, width, 0);
 	*size = *stride * height;
+}
+
+static int tegra_init(struct driver *drv)
+{
+	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
+	return drv_add_kms_flags(drv);
 }
 
 static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
@@ -162,24 +179,13 @@ static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 		    bo->drv->fd, gem_map.offset);
 }
 
-const struct backend backend_tegra =
+struct backend backend_tegra =
 {
 	.name = "tegra",
+	.init = tegra_init,
 	.bo_create = tegra_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_map = tegra_bo_map,
-	.format_list = {
-		/* Linear support */
-		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR
-				      | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
-		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR
-				      | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
-		/* Blocklinear support */
-		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING |
-				      DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
-		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING |
-				      DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
-	}
 };
 
 #endif

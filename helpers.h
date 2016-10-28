@@ -24,4 +24,10 @@ void drv_increment_reference_count(struct driver *drv, struct bo *bo,
 void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
 				   size_t plane);
 uint32_t drv_log_base2(uint32_t value);
+void drv_insert_supported_combination(struct driver *drv, uint32_t format,
+			              uint64_t usage, uint64_t modifier);
+void drv_insert_combinations(struct driver *drv,
+			     struct supported_combination *combos,
+			     uint32_t size);
+int drv_add_kms_flags(struct driver *drv);
 #endif

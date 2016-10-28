@@ -17,6 +17,20 @@
 #include "helpers.h"
 #include "util.h"
 
+static struct supported_combination combos[5] = {
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+	{DRM_FORMAT_NV12, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+};
+
+static int exynos_init(struct driver *drv)
+{
+	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
+	return drv_add_kms_flags(drv);
+}
+
 static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 			    uint32_t format, uint32_t flags)
 {
@@ -86,19 +100,13 @@ cleanup_planes:
  * Use dumb mapping with exynos even though a GEM buffer is created.
  * libdrm does the same thing in exynos_drm.c
  */
-const struct backend backend_exynos =
+struct backend backend_exynos =
 {
 	.name = "exynos",
+	.init = exynos_init,
 	.bo_create = exynos_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_map = drv_dumb_bo_map,
-	.format_list = {
-		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
-		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
-		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
-		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
-		{DRM_FORMAT_NV12, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING},
-	}
 };
 
 #endif

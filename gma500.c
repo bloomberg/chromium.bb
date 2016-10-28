@@ -6,14 +6,24 @@
 
 #include "drv_priv.h"
 #include "helpers.h"
+#include "util.h"
 
-const struct backend backend_gma500 =
+static struct supported_combination combos[2] = {
+	{DRM_FORMAT_RGBX8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
+	{DRM_FORMAT_RGBX8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+};
+
+static int gma500_init(struct driver *drv)
+{
+	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
+	return drv_add_kms_flags(drv);
+}
+
+struct backend backend_gma500 =
 {
 	.name = "gma500",
+	.init = gma500_init,
 	.bo_create = drv_dumb_bo_create,
 	.bo_destroy = drv_dumb_bo_destroy,
 	.bo_map = drv_dumb_bo_map,
-	.format_list = {
-		{DRM_FORMAT_RGBX8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
-	}
 };

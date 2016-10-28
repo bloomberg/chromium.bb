@@ -38,6 +38,14 @@ enum {
 	FAMILY_LAST,
 };
 
+static struct supported_combination combos[5] = {
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_LINEAR},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+};
+
 static int amdgpu_set_metadata(int fd, uint32_t handle,
 			       struct amdgpu_bo_metadata *info)
 {
@@ -283,7 +291,8 @@ static int amdgpu_init(struct driver *drv)
 
 	drv->priv = addrlib;
 
-	return 0;
+	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
+	return drv_add_kms_flags(drv);
 }
 
 static void amdgpu_close(struct driver *drv)
@@ -338,21 +347,12 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	return ret;
 }
 
-const struct backend backend_amdgpu = {
+struct backend backend_amdgpu = {
 	.name = "amdgpu",
 	.init = amdgpu_init,
 	.close = amdgpu_close,
 	.bo_create = amdgpu_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
-	.format_list = {
-		/* Linear support */
-		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_LINEAR},
-		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
-		/* Blocklinear support */
-		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING},
-		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING},
-		{DRM_FORMAT_XBGR8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING},
-	}
 };
 
 #endif

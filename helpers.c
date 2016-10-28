@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <xf86drm.h>
+#include <xf86drmMode.h>
 
 #include "drv_priv.h"
 #include "helpers.h"
@@ -272,5 +273,134 @@ uint32_t drv_log_base2(uint32_t value)
 	while (value >>= 1)
 		++ret;
 
+	return ret;
+}
+
+void drv_insert_supported_combination(struct driver *drv, uint32_t format,
+			              uint64_t usage, uint64_t modifier)
+{
+	int found = 0;
+	struct combination_list_element *elem;
+
+	pthread_mutex_lock(&drv->table_lock);
+
+	list_for_each_entry(struct combination_list_element,
+			    elem, &drv->backend->combinations, link) {
+		if (elem->combination.format == format &&
+		    elem->combination.modifier == modifier) {
+			elem->combination.usage |= usage;
+			found = 1;
+		}
+	}
+
+	if (found)
+		goto out;
+
+	elem = calloc(1, sizeof(*elem));
+	elem->combination.format = format;
+	elem->combination.modifier = modifier;
+	elem->combination.usage = usage;
+	LIST_ADD(&elem->link, &drv->backend->combinations);
+
+out:
+	pthread_mutex_unlock(&drv->table_lock);
+}
+
+void drv_insert_combinations(struct driver *drv, struct supported_combination *combos,
+			     uint32_t size)
+{
+	unsigned int i;
+	for (i = 0; i < size; i++)
+		drv_insert_supported_combination(drv, combos[i].format,
+						 combos[i].usage,
+						 combos[i].modifier);
+}
+
+int drv_add_kms_flags(struct driver *drv)
+{
+	int ret;
+	uint32_t i, j;
+	uint64_t flag, usage;
+	drmModePlanePtr plane;
+	drmModePropertyPtr prop;
+	drmModePlaneResPtr resources;
+	drmModeObjectPropertiesPtr props;
+
+	/*
+	 * All current drivers can scanout XRGB8888/ARGB8888 as a primary plane.
+	 * Some older kernel versions can only return overlay planes, so add the
+	 * combination here. Note that the kernel disregards the alpha component
+	 * of ARGB unless it's an overlay plane.
+	 */
+	drv_insert_supported_combination(drv, DRM_FORMAT_XRGB8888,
+					 DRV_BO_USE_SCANOUT,
+					 0);
+	drv_insert_supported_combination(drv, DRM_FORMAT_ARGB8888,
+					 DRV_BO_USE_SCANOUT,
+					 0);
+
+	/*
+	 * The ability to return universal planes is only complete on
+	 * ChromeOS kernel versions >= v3.18.  The SET_CLIENT_CAP ioctl
+	 * therefore might return an error code, so don't check it.  If it
+	 * fails, it'll just return the plane list as overlay planes, which is
+	 * fine in our case (our drivers already have cursor bits set).
+	 * modetest in libdrm does the same thing.
+	 */
+	drmSetClientCap(drv->fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+
+	resources = drmModeGetPlaneResources(drv->fd);
+	if (!resources)
+		goto err;
+
+	for (i = 0; i < resources->count_planes; i++) {
+
+		plane = drmModeGetPlane(drv->fd, resources->planes[i]);
+
+		if (!plane)
+			goto err;
+
+		props = drmModeObjectGetProperties(drv->fd, plane->plane_id,
+						   DRM_MODE_OBJECT_PLANE);
+		if (!props)
+			goto err;
+
+		for (j = 0; j < props->count_props; j++) {
+
+			prop = drmModeGetProperty(drv->fd, props->props[j]);
+			if (prop) {
+				if (strcmp(prop->name, "type") == 0) {
+					flag = props->prop_values[j];
+				}
+				drmModeFreeProperty(prop);
+			}
+		}
+
+		switch (flag) {
+		case DRM_PLANE_TYPE_OVERLAY:
+		case DRM_PLANE_TYPE_PRIMARY:
+			usage = DRV_BO_USE_SCANOUT;
+			break;
+		case DRM_PLANE_TYPE_CURSOR:
+			usage = DRV_BO_USE_CURSOR;
+			break;
+		default:
+			assert(0);
+		}
+
+		for (j = 0; j < plane->count_formats; j++)
+			drv_insert_supported_combination(drv, plane->formats[j],
+							 usage, 0);
+
+		drmModeFreeObjectProperties(props);
+		drmModeFreePlane(plane);
+
+	}
+
+	drmModeFreePlaneResources(resources);
+	return 0;
+
+err:
+	ret = -1;
 	return ret;
 }

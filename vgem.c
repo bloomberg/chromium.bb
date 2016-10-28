@@ -6,6 +6,20 @@
 
 #include "drv_priv.h"
 #include "helpers.h"
+#include "util.h"
+
+static struct supported_combination combos[2] = {
+	{DRM_FORMAT_ABGR8888, DRM_FORMAT_MOD_NONE,
+		DRV_BO_USE_RENDERING | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+	{DRM_FORMAT_YVU420, DRM_FORMAT_MOD_NONE,
+		DRV_BO_USE_RENDERING | DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
+};
+
+static int vgem_init(struct driver *drv)
+{
+	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
+	return drv_add_kms_flags(drv);
+}
 
 static uint32_t vgem_resolve_format(uint32_t format)
 {
@@ -20,18 +34,13 @@ static uint32_t vgem_resolve_format(uint32_t format)
 	}
 }
 
-const struct backend backend_vgem =
+struct backend backend_vgem =
 {
 	.name = "vgem",
+	.init = vgem_init,
 	.bo_create = drv_dumb_bo_create,
 	.bo_destroy = drv_dumb_bo_destroy,
 	.bo_map = drv_dumb_bo_map,
 	.resolve_format = vgem_resolve_format,
-	.format_list = {
-		{DRM_FORMAT_ABGR8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING | DRV_BO_USE_CURSOR
-				      | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
-		{DRM_FORMAT_YVU420,   DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING |
-				      DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
-	}
 };
 

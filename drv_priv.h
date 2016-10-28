@@ -13,6 +13,7 @@
 #include <sys/types.h>
 
 #include "drv.h"
+#include "list.h"
 
 struct bo
 {
@@ -47,6 +48,17 @@ struct map_info {
 	int32_t refcount;
 };
 
+struct supported_combination {
+	uint32_t format;
+	uint64_t modifier;
+	uint64_t usage;
+};
+
+struct combination_list_element {
+	struct supported_combination combination;
+	struct list_head link;
+};
+
 struct backend
 {
 	char *name;
@@ -57,11 +69,7 @@ struct backend
 	void* (*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
 	int (*bo_destroy)(struct bo *bo);
 	uint32_t (*resolve_format)(uint32_t format);
-	struct format_supported {
-		uint32_t format;
-		uint64_t usage;
-	}
-	format_list[19];
+	struct list_head combinations;
 };
 
 #endif

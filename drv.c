@@ -122,6 +122,8 @@ struct driver *drv_create(int fd)
 	if (!drv->map_table)
 		goto free_buffer_table;
 
+	LIST_INITHEAD(&drv->backend->combinations);
+
 	if (drv->backend->init) {
 		ret = drv->backend->init(drv);
 		if (ret)
@@ -143,12 +145,22 @@ free_driver:
 
 void drv_destroy(struct driver *drv)
 {
+	pthread_mutex_lock(&drv->table_lock);
+
 	if (drv->backend->close)
 		drv->backend->close(drv);
 
-	pthread_mutex_destroy(&drv->table_lock);
 	drmHashDestroy(drv->buffer_table);
 	drmHashDestroy(drv->map_table);
+
+	list_for_each_entry_safe(struct combination_list_element, elem,
+				 &drv->backend->combinations, link) {
+		LIST_DEL(&elem->link);
+		free(elem);
+	}
+
+	pthread_mutex_unlock(&drv->table_lock);
+	pthread_mutex_destroy(&drv->table_lock);
 
 	free(drv);
 }
@@ -164,21 +176,18 @@ drv_get_name(struct driver *drv)
 	return drv->backend->name;
 }
 
-int drv_is_format_supported(struct driver *drv, uint32_t format,
-			    uint64_t usage)
+int drv_is_combination_supported(struct driver *drv, uint32_t format,
+			         uint64_t usage, uint64_t modifier)
 {
-	unsigned int i;
 
 	if (format == DRM_FORMAT_NONE || usage == DRV_BO_USE_NONE)
 		return 0;
 
-	for (i = 0 ; i < ARRAY_SIZE(drv->backend->format_list); i++)
-	{
-		if (!drv->backend->format_list[i].format)
-			break;
-
-		if (drv->backend->format_list[i].format == format &&
-		      (drv->backend->format_list[i].usage & usage) == usage)
+	list_for_each_entry(struct combination_list_element, elem,
+			    &drv->backend->combinations, link) {
+		if (format == elem->combination.format &&
+		    usage == (elem->combination.usage & usage) &&
+		    modifier == elem->combination.modifier)
 			return 1;
 	}
 
