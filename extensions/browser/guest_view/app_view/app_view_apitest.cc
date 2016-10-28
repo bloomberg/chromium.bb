@@ -188,8 +188,16 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewRefusedDataShouldFail) {
           "app_view/apitest/skeleton");
 }
 
+#if defined(OS_WIN)
+#define MAYBE_TestAppViewWithUndefinedDataShouldSucceed \
+  DISABLED_TestAppViewWithUndefinedDataShouldSucceed
+#else
+#define MAYBE_TestAppViewWithUndefinedDataShouldSucceed \
+  TestAppViewWithUndefinedDataShouldSucceed
+#endif
 // Tests that <appview> is able to navigate to another installed app.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_P(AppViewTest,
+                       MAYBE_TestAppViewWithUndefinedDataShouldSucceed) {
   RunTest("testAppViewWithUndefinedDataShouldSucceed",
           "app_view/apitest",
           "app_view/apitest/skeleton");
