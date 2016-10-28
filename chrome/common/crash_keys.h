@@ -91,6 +91,10 @@ extern const char kHungRendererOutstandingAckCount[];
 extern const char kHungRendererOutstandingEventType[];
 extern const char kHungRendererLastEventType[];
 extern const char kHungRendererReason[];
+
+// Third-party module crash keys are sent only on Windows.
+extern const char kThirdPartyModulesLoaded[];
+extern const char kThirdPartyModulesNotLoaded[];
 #endif
 
 // The user's printers, up to kPrinterInfoCount. Should be set with

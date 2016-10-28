@@ -52,6 +52,9 @@ constexpr char kHungRendererOutstandingEventType[] =
 constexpr char kHungRendererLastEventType[] = "hung-last-event-type";
 constexpr char kHungRendererReason[] = "hung-reason";
 
+constexpr char kThirdPartyModulesLoaded[] = "third-party-modules-loaded";
+constexpr char kThirdPartyModulesNotLoaded[] = "third-party-modules-not-loaded";
+
 constexpr char kViewCount[] = "view-count";
 constexpr char kZeroEncodeDetails[] = "zero-encode-details";
 
@@ -93,6 +96,10 @@ size_t RegisterCrashKeysHelper() {
       {kGPUDriverVersion, kSmallSize},
       {kGPUPixelShaderVersion, kSmallSize},
       {kGPUVertexShaderVersion, kSmallSize},
+
+      // browser/:
+      {kThirdPartyModulesLoaded, kSmallSize},
+      {kThirdPartyModulesNotLoaded, kSmallSize},
 
       // content/:
       {"bad_message_reason", kSmallSize},

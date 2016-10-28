@@ -48,6 +48,10 @@ static const struct NormalizationEntryList {
     {kType, kStatus, L"c:\\",        L"foo.dll", L"", L"", L"1.0",
          kAction},
   }, {
+    // Commas instead of periods in version string.
+    {kType, kStatus, L"", L"", L"", L"", L"1, 0", kAction},
+    {kType, kStatus, L"", L"", L"", L"", L"1.0", kAction},
+  }, {
     // Corner case: No path (not sure this will ever happen).
     {kType, kStatus, L"bar.dll", L"",        L"", L"", L"", kAction},
     {kType, kStatus, L"",        L"bar.dll", L"", L"", L"", kAction},
@@ -61,7 +65,6 @@ static const struct NormalizationEntryList {
 TEST_F(EnumerateModulesTest, NormalizeEntry) {
   for (size_t i = 0; i < arraysize(kNormalizationTestCases); ++i) {
     ModuleEnumerator::Module test = kNormalizationTestCases[i].test_case;
-    EXPECT_FALSE(test.normalized);
     ModuleEnumerator::NormalizeModule(&test);
     ModuleEnumerator::Module expected = kNormalizationTestCases[i].expected;
 
@@ -74,7 +77,6 @@ TEST_F(EnumerateModulesTest, NormalizeEntry) {
     EXPECT_STREQ(expected.description.c_str(), test.description.c_str());
     EXPECT_STREQ(expected.version.c_str(), test.version.c_str());
     EXPECT_EQ(expected.recommended_action, test.recommended_action);
-    EXPECT_TRUE(test.normalized);
   }
 }
 

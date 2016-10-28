@@ -24,6 +24,10 @@ size_t RegisterEngineCrashKeys() {
       { crash_keys::kNumVariations, crash_keys::kSmallSize },
       { crash_keys::kVariations, crash_keys::kLargeSize },
 
+      // browser/:
+      { "third-party-modules-loaded", crash_keys::kSmallSize },
+      { "third-party-modules-not-loaded", crash_keys::kSmallSize },
+
       // //content crash keys
       { "bad_message_reason", crash_keys::kSmallSize },
       { "channel_error_bt", crash_keys::kMediumSize },

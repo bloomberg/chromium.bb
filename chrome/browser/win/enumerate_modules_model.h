@@ -125,9 +125,6 @@ class ModuleEnumerator {
     RecommendedAction recommended_action;
     // The duplicate count within each category of modules.
     int duplicate_count;
-    // Whether this module has been normalized (necessary before checking it
-    // against blacklist).
-    bool normalized;
     // The certificate info for the module.
     CertificateInfo cert_info;
   };

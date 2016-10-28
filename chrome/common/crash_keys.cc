@@ -55,6 +55,9 @@ const char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
 const char kHungRendererOutstandingEventType[] = "hung-outstanding-event-type";
 const char kHungRendererLastEventType[] = "hung-last-event-type";
 const char kHungRendererReason[] = "hung-reason";
+
+const char kThirdPartyModulesLoaded[] = "third-party-modules-loaded";
+const char kThirdPartyModulesNotLoaded[] = "third-party-modules-not-loaded";
 #endif
 
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
@@ -136,6 +139,8 @@ size_t RegisterChromeCrashKeys() {
     { kHungRendererOutstandingEventType, kSmallSize },
     { kHungRendererLastEventType, kSmallSize },
     { kHungRendererReason, kSmallSize },
+    { kThirdPartyModulesLoaded, kSmallSize },
+    { kThirdPartyModulesNotLoaded, kSmallSize },
 #endif
 #if defined(OS_CHROMEOS)
     { kNumberOfUsers, kSmallSize },

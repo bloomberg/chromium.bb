@@ -17,6 +17,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
@@ -35,6 +36,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/grit/generated_resources.h"
 #include "crypto/sha2.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -64,7 +66,7 @@ namespace {
 // certificate inspection and validation from using a large amount of CPU and
 // battery immediately after startup.
 constexpr base::TimeDelta kDefaultPerModuleDelay =
-  base::TimeDelta::FromSeconds(1);
+    base::TimeDelta::FromSeconds(1);
 
 // A struct to help de-duping modules before adding them to the enumerated
 // modules vector.
@@ -73,8 +75,7 @@ struct FindModule {
   explicit FindModule(const ModuleEnumerator::Module& x)
     : module(x) {}
   bool operator()(const ModuleEnumerator::Module& module_in) const {
-    return (module.location == module_in.location) &&
-           (module.name == module_in.name);
+    return (module.location == module_in.location);
   }
 
   const ModuleEnumerator::Module& module;
@@ -360,9 +361,7 @@ ModuleEnumerator::Module::Module(ModuleType type,
       description(description),
       version(version),
       recommended_action(recommended_action),
-      duplicate_count(0),
-      normalized(false) {
-}
+      duplicate_count(0) {}
 
 ModuleEnumerator::Module::~Module() {
 }
@@ -388,13 +387,19 @@ void ModuleEnumerator::NormalizeModule(Module* module) {
     module->location.clear();
   }
 
+  // Some version strings use ", " instead ".". Convert those.
+  base::ReplaceSubstringsAfterOffset(&module->version, 0, L", ", L".");
+
   // Some version strings have things like (win7_rtm.090713-1255) appended
   // to them. Remove that.
   size_t first_space = module->version.find_first_of(L" ");
   if (first_space != base::string16::npos)
     module->version = module->version.substr(0, first_space);
 
-  module->normalized = true;
+  // The signer may be returned with trailing nulls.
+  size_t first_null = module->cert_info.subject.find(L'\0');
+  if (first_null != base::string16::npos)
+    module->cert_info.subject.resize(first_null);
 }
 
 ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
@@ -484,6 +489,7 @@ void ModuleEnumerator::ScanImplModule(size_t index) {
     base::TimeTicks start_time = base::TimeTicks::Now();
     Module& entry = enumerated_modules_->at(index);
     PopulateModuleInformation(&entry);
+    NormalizeModule(&entry);
     CollapsePath(&entry);
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
     enumeration_inspection_time_ += elapsed;
@@ -551,7 +557,6 @@ void ModuleEnumerator::EnumerateLoadedModules() {
     Module entry;
     entry.type = LOADED_MODULE;
     entry.location = module.szExePath;
-    NormalizeModule(&entry);
     enumerated_modules_->push_back(entry);
   } while (::Module32Next(snap.Get(), &module));
 }
@@ -581,7 +586,6 @@ void ModuleEnumerator::ReadShellExtensions(HKEY parent) {
     Module entry;
     entry.type = SHELL_EXTENSION;
     entry.location = dll;
-    NormalizeModule(&entry);
     AddToListWithoutDuplicating(entry);
 
     ++registration;
@@ -596,7 +600,6 @@ void ModuleEnumerator::EnumerateWinsockModules() {
     Module entry;
     entry.type = WINSOCK_MODULE_REGISTRATION;
     entry.status = NOT_MATCHED;
-    entry.normalized = false;
     entry.location = layered_providers[i].path;
     entry.description = layered_providers[i].name;
     entry.recommended_action = NONE;
@@ -608,7 +611,6 @@ void ModuleEnumerator::EnumerateWinsockModules() {
     if (size != 0 && size <= MAX_PATH)
       entry.location = expanded;
     entry.version = base::IntToString16(layered_providers[i].version);
-    NormalizeModule(&entry);
     AddToListWithoutDuplicating(entry);
   }
 }
@@ -616,7 +618,6 @@ void ModuleEnumerator::EnumerateWinsockModules() {
 void ModuleEnumerator::PopulateModuleInformation(Module* module) {
   module->status = NOT_MATCHED;
   module->duplicate_count = 0;
-  module->normalized = false;
   GetCertificateInfo(base::FilePath(module->location), &module->cert_info);
   module->recommended_action = NONE;
   std::unique_ptr<FileVersionInfo> version_info(
@@ -629,7 +630,6 @@ void ModuleEnumerator::PopulateModuleInformation(Module* module) {
 }
 
 void ModuleEnumerator::AddToListWithoutDuplicating(const Module& module) {
-  DCHECK(module.normalized);
   // These are registered modules, not loaded modules so the same module
   // can be registered multiple times, often dozens of times. There is no need
   // to list each registration, so we just increment the count for each module
@@ -696,6 +696,7 @@ void ModuleEnumerator::CollapsePath(Module* entry) {
 
 void ModuleEnumerator::ReportThirdPartyMetrics() {
   static const wchar_t kMicrosoft[] = L"Microsoft ";
+  static const wchar_t kGoogle[] = L"Google Inc";
 
   // Used for counting unique certificates that need to be validated. A
   // catalog counts as a single certificate, as does a file with a baked in
@@ -705,6 +706,8 @@ void ModuleEnumerator::ReportThirdPartyMetrics() {
   size_t signed_modules = 0;
   size_t microsoft_modules = 0;
   size_t catalog_modules = 0;
+  size_t third_party_loaded = 0;
+  size_t third_party_not_loaded = 0;
   for (const auto& module : *enumerated_modules_) {
     if (module.cert_info.type != ModuleEnumerator::NO_CERTIFICATE) {
       ++signed_modules;
@@ -725,15 +728,37 @@ void ModuleEnumerator::ReportThirdPartyMetrics() {
         ++microsoft_modules;
         if (new_certificate)
           ++microsoft_certificates;
+      } else if (module.cert_info.subject == kGoogle) {
+        // No need to count these explicitly.
+      } else {
+        // Count modules that are neither signed by Google nor Microsoft.
+        // These are considered "third party" modules.
+        if (module.type & LOADED_MODULE) {
+          ++third_party_loaded;
+        } else {
+          ++third_party_not_loaded;
+        }
       }
     }
   }
+
+  // Indicate the presence of third party modules in crash data. This allows
+  // comparing how much third party modules affect crash rates compared to
+  // the regular user distribution.
+  base::debug::SetCrashKeyValue(crash_keys::kThirdPartyModulesLoaded,
+                                base::SizeTToString(third_party_loaded));
+  base::debug::SetCrashKeyValue(crash_keys::kThirdPartyModulesNotLoaded,
+                                base::SizeTToString(third_party_not_loaded));
 
   // Report back some metrics regarding third party modules and certificates.
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Certificates.Total",
                               unique_certificates.size(), 1, 500, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Certificates.Microsoft",
                               microsoft_certificates, 1, 500, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Loaded",
+                              third_party_loaded, 1, 500, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.NotLoaded",
+                              third_party_not_loaded, 1, 500, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Signed",
                               signed_modules, 1, 500, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Signed.Microsoft",
