@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 
+#include "base/command_line.h"
+#include "base/test/histogram_tester.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/security_state/security_state_model.h"
+#include "components/security_state/switches.h"
 #include "content/public/browser/security_style_explanation.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "net/cert/cert_status_flags.h"
@@ -13,6 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const char kHTTPBadHistogram[] =
+    "Security.HTTPBad.UserWarnedAboutSensitiveInput";
 
 // Tests that SecurityInfo flags for subresources with certificate
 // errors are reflected in the SecurityStyleExplanations produced by
@@ -240,6 +247,82 @@ TEST(ChromeSecurityStateModelClientTest, HTTPWarningInFuture) {
                                                        &explanations);
   EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
   EXPECT_EQ(1u, explanations.info_explanations.size());
+}
+
+class ChromeSecurityStateModelClientHistogramTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+  ChromeSecurityStateModelClientHistogramTest() {}
+  ~ChromeSecurityStateModelClientHistogramTest() override {}
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    ChromeSecurityStateModelClient::CreateForWebContents(web_contents());
+    client_ = ChromeSecurityStateModelClient::FromWebContents(web_contents());
+    navigate_to_http();
+  }
+
+ protected:
+  ChromeSecurityStateModelClient* client() { return client_; }
+
+  void signal_password() {
+    web_contents()->OnPasswordInputShownOnHttp();
+    client_->VisibleSecurityStateChanged();
+  }
+
+  void navigate_to_http() { NavigateAndCommit(GURL("http://example.test")); }
+
+ private:
+  ChromeSecurityStateModelClient* client_;
+  DISALLOW_COPY_AND_ASSIGN(ChromeSecurityStateModelClientHistogramTest);
+};
+
+// Tests that UMA logs the omnibox warning when security level is
+// HTTP_SHOW_WARNING.
+TEST_F(ChromeSecurityStateModelClientHistogramTest,
+       HTTPOmniboxWarningHistogram) {
+  // Show Warning Chip.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpWithPasswordsOrCcWithChip);
+
+  base::HistogramTester histograms;
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
+
+  // Fire again and ensure no sample is recorded.
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
+
+  // Navigate to a new page and ensure a sample is recorded.
+  navigate_to_http();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 2);
+}
+
+// Tests that UMA logs the console warning when security level is NONE.
+TEST_F(ChromeSecurityStateModelClientHistogramTest,
+       HTTPConsoleWarningHistogram) {
+  // Show Neutral for HTTP
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsNeutral);
+
+  base::HistogramTester histograms;
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
+
+  // Fire again and ensure no sample is recorded.
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
+
+  // Navigate to a new page and ensure a sample is recorded.
+  navigate_to_http();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 2);
 }
 
 }  // namespace

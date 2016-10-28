@@ -338,14 +338,17 @@ void ChromeSecurityStateModelClient::VisibleSecurityStateChanged() {
     return;
 
   std::string warning;
+  bool warning_is_user_visible = false;
   switch (security_info.security_level) {
     case security_state::SecurityStateModel::HTTP_SHOW_WARNING:
       warning =
           "This page includes a password or credit card input in a non-secure "
           "context. A warning has been added to the URL bar. For more "
           "information, see https://goo.gl/zmWq3m.";
+      warning_is_user_visible = true;
       break;
     case security_state::SecurityStateModel::NONE:
+    case security_state::SecurityStateModel::DANGEROUS:
       warning =
           "This page includes a password or credit card input in a non-secure "
           "context. A warning will be added to the URL bar in Chrome 56 (Jan "
@@ -358,6 +361,8 @@ void ChromeSecurityStateModelClient::VisibleSecurityStateChanged() {
   logged_http_warning_on_current_navigation_ = true;
   web_contents_->GetMainFrame()->AddMessageToConsole(
       content::CONSOLE_MESSAGE_LEVEL_WARNING, warning);
+  UMA_HISTOGRAM_BOOLEAN("Security.HTTPBad.UserWarnedAboutSensitiveInput",
+                        warning_is_user_visible);
 }
 
 void ChromeSecurityStateModelClient::DidFinishNavigation(
