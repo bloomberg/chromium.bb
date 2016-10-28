@@ -110,9 +110,7 @@ const char kMP4VideoHEVC2[] = "video/mp4; codecs=\"hev1.1.6.L93.B0\"";
 const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
 const char kMP4Audio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP3[] = "audio/mpeg";
-#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char kMP2AudioSBR[] = "video/mp2t; codecs=\"avc1.4D4041,mp4a.40.5\"";
-#endif
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Key used to encrypt test files.
@@ -2017,21 +2015,25 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 TEST_F(PipelineIntegrationTest, Mp2ts_AAC_HE_SBR_Audio) {
   MockMediaSource source("bear-1280x720-aac_he.ts", kMP2AudioSBR,
                          kAppendWholeFile);
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
-
   source.EndOfStream();
   ASSERT_EQ(PIPELINE_OK, pipeline_status_);
 
-  // When SBR is not taken into account correctly by mpeg2ts parser, it will
-  // estimate audio frame durations incorrectly and that will lead to gaps in
-  // buffered ranges (so this check will fail) and stalled playback.
+  // Check that SBR is taken into account correctly by mpeg2ts parser. When an
+  // SBR stream is parsed as non-SBR stream, then audio frame durations are
+  // calculated incorrectly and that leads to gaps in buffered ranges (so this
+  // check will fail) and eventually leads to stalled playback.
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-}
+#else
+  EXPECT_EQ(
+      DEMUXER_ERROR_COULD_NOT_OPEN,
+      StartPipelineWithMediaSource(&source, kExpectDemuxerFailure, nullptr));
 #endif
+}
 
 TEST_F(PipelineIntegrationTest,
        MAYBE_EME(EncryptedPlayback_NoEncryptedFrames_MP4_CENC_AudioOnly)) {
