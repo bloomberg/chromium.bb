@@ -96,7 +96,7 @@ class GnGenerator(object):
     args.append(('is_official_build', self._config == 'Official'))
     args.append(('is_chrome_branded', 'is_official_build'))
     args.append(('use_xcode_clang', 'is_official_build'))
-    if os.environ['FORCE_MAC_TOOLCHAIN']:
+    if os.environ.get('FORCE_MAC_TOOLCHAIN'):
       args.append(('use_system_xcode', False))
 
     cpu_values = self.TARGET_CPU_VALUES[self._target]
