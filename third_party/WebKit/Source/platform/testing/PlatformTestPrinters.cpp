@@ -22,7 +22,8 @@ std::ostream& operator<<(std::ostream& os, const ResourceError& error) {
             << ", isAccessCheck = " << error.isAccessCheck()
             << ", isTimeout = " << error.isTimeout()
             << ", staleCopyInCache = " << error.staleCopyInCache()
-            << ", wasIgnoredByHandler = " << error.wasIgnoredByHandler();
+            << ", wasIgnoredByHandler = " << error.wasIgnoredByHandler()
+            << ", isCacheMiss = " << error.isCacheMiss();
 }
 
 }  // namespace blink

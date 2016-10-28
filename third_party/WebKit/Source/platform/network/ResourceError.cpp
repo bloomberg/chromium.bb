@@ -46,6 +46,12 @@ ResourceError ResourceError::cancelledDueToAccessCheckError(
   return error;
 }
 
+ResourceError ResourceError::cacheMissError(const String& failingURL) {
+  ResourceError error(errorDomainBlinkInternal, 0, failingURL, String());
+  error.setIsCacheMiss(true);
+  return error;
+}
+
 ResourceError ResourceError::copy() const {
   ResourceError errorCopy;
   errorCopy.m_domain = m_domain.isolatedCopy();
@@ -58,6 +64,7 @@ ResourceError ResourceError::copy() const {
   errorCopy.m_isTimeout = m_isTimeout;
   errorCopy.m_staleCopyInCache = m_staleCopyInCache;
   errorCopy.m_wasIgnoredByHandler = m_wasIgnoredByHandler;
+  errorCopy.m_isCacheMiss = m_isCacheMiss;
   return errorCopy;
 }
 
@@ -93,6 +100,9 @@ bool ResourceError::compare(const ResourceError& a, const ResourceError& b) {
     return false;
 
   if (a.wasIgnoredByHandler() != b.wasIgnoredByHandler())
+    return false;
+
+  if (a.isCacheMiss() != b.isCacheMiss())
     return false;
 
   return true;

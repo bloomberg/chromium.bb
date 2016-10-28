@@ -44,6 +44,9 @@ class PLATFORM_EXPORT ResourceError final {
   static ResourceError cancelledError(const String& failingURL);
   static ResourceError cancelledDueToAccessCheckError(const String& failingURL);
 
+  // Only for Blink internal usage.
+  static ResourceError cacheMissError(const String& failingURL);
+
   ResourceError()
       : m_errorCode(0),
         m_isNull(true),
@@ -51,7 +54,8 @@ class PLATFORM_EXPORT ResourceError final {
         m_isAccessCheck(false),
         m_isTimeout(false),
         m_staleCopyInCache(false),
-        m_wasIgnoredByHandler(false) {}
+        m_wasIgnoredByHandler(false),
+        m_isCacheMiss(false) {}
 
   ResourceError(const String& domain,
                 int errorCode,
@@ -66,7 +70,8 @@ class PLATFORM_EXPORT ResourceError final {
         m_isAccessCheck(false),
         m_isTimeout(false),
         m_staleCopyInCache(false),
-        m_wasIgnoredByHandler(false) {}
+        m_wasIgnoredByHandler(false),
+        m_isCacheMiss(false) {}
 
   // Makes a deep copy. Useful for when you need to use a ResourceError on
   // another thread.
@@ -99,6 +104,9 @@ class PLATFORM_EXPORT ResourceError final {
   }
   bool wasIgnoredByHandler() const { return m_wasIgnoredByHandler; }
 
+  void setIsCacheMiss(bool isCacheMiss) { m_isCacheMiss = isCacheMiss; }
+  bool isCacheMiss() const { return m_isCacheMiss; }
+
   static bool compare(const ResourceError&, const ResourceError&);
 
  private:
@@ -112,6 +120,7 @@ class PLATFORM_EXPORT ResourceError final {
   bool m_isTimeout;
   bool m_staleCopyInCache;
   bool m_wasIgnoredByHandler;
+  bool m_isCacheMiss;
 };
 
 inline bool operator==(const ResourceError& a, const ResourceError& b) {

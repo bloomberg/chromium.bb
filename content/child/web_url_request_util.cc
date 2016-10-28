@@ -489,6 +489,8 @@ blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
   error.staleCopyInCache = stale_copy_in_cache;
   if (reason == net::ERR_ABORTED) {
     error.isCancellation = true;
+  } else if (reason == net::ERR_CACHE_MISS) {
+    error.isCacheMiss = true;
   } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
     error.localizedDescription =
         WebString::fromUTF8(kThrottledErrorDescription);
