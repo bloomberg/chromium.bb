@@ -14,7 +14,6 @@ source_set("test_support") {
     "//components/content_settings/core/common",
     "//components/gcm_driver:gcm_driver",
     "//components/signin/core/browser",
-    "//mojo/edk/system",
     "//net",
     "//testing/gtest",
     "//ui/base",

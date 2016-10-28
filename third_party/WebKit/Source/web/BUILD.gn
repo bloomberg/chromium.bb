@@ -399,7 +399,6 @@ test("webkit_unit_tests") {
     "//content/test:test_support",
     "//device/wake_lock/public/interfaces:interfaces_blink",
     "//gpu:test_support",
-    "//mojo/edk/system:system",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/core:unit_tests",

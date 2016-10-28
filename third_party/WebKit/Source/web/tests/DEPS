@@ -7,6 +7,5 @@ include_rules = [
 specific_include_rules = {
     'RunAllTests\.cpp': [
         "+content/test/blink_test_environment.h",
-        "+mojo/edk/embedder/embedder.h",
     ],
 }

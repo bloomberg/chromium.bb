@@ -25,7 +25,6 @@
 #if !defined(OS_IOS)
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/unittest_test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
@@ -154,7 +153,6 @@ base::RunTestSuiteCallback GetLaunchCallback(int argc, char** argv) {
   listeners.Append(new ComponentsUnitTestEventListener());
 
 #if !defined(OS_IOS)
-  mojo::edk::Init();
   return base::Bind(&content::UnitTestTestSuite::Run, std::move(test_suite));
 #else
   return base::Bind(&base::TestSuite::Run, std::move(test_suite));

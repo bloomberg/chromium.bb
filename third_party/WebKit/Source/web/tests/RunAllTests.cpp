@@ -35,7 +35,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "content/test/blink_test_environment.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include <v8.h>
@@ -67,8 +66,6 @@ int runHelper(base::TestSuite* testSuite) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  mojo::edk::Init();
-
   base::TestSuite testSuite(argc, argv);
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&runHelper, base::Unretained(&testSuite)));

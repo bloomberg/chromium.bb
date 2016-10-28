@@ -209,7 +209,6 @@ test("extensions_unittests") {
     "//extensions/renderer:unit_tests",
     "//extensions/shell:unit_tests",
     "//extensions/utility:unit_tests",
-    "//mojo/edk/system",
     "//mojo/edk/test:test_support",
     "//ui/gl:test_support",
   ]

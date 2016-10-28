@@ -1898,7 +1898,6 @@ source_set("blink_fuzzer_test_support") {
     ":platform",
     ":test_support",
     "//content/test:test_support",
-    "//mojo/edk/system:system",
   ]
 }
 

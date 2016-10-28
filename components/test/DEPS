@@ -8,9 +8,3 @@ include_rules = [
   "+net",
   "+ui",
 ]
-
-specific_include_rules = {
-  "components_test_suite\.cc": [
-    "+mojo/edk/embedder/embedder.h",
-  ],
-}
