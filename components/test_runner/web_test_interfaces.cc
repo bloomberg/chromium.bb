@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/mock_web_audio_device.h"
 #include "components/test_runner/mock_web_media_stream_center.h"
 #include "components/test_runner/mock_web_midi_accessor.h"
@@ -81,13 +80,6 @@ WebMIDIAccessor* WebTestInterfaces::CreateMIDIAccessor(
 
 WebAudioDevice* WebTestInterfaces::CreateAudioDevice(double sample_rate) {
   return new MockWebAudioDevice(sample_rate);
-}
-
-std::unique_ptr<blink::WebAppBannerClient>
-WebTestInterfaces::CreateAppBannerClient() {
-  std::unique_ptr<AppBannerClient> client(new AppBannerClient);
-  interfaces_->SetAppBannerClient(client.get());
-  return std::move(client);
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(

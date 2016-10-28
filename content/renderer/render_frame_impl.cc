@@ -4618,15 +4618,6 @@ void RenderFrameImpl::exitFullscreen() {
   Send(new FrameHostMsg_ToggleFullscreen(routing_id_, false));
 }
 
-blink::WebAppBannerClient* RenderFrameImpl::appBannerClient() {
-  if (!app_banner_client_) {
-    app_banner_client_ =
-        GetContentClient()->renderer()->CreateAppBannerClient(this);
-  }
-
-  return app_banner_client_.get();
-}
-
 void RenderFrameImpl::registerProtocolHandler(const WebString& scheme,
                                               const WebURL& url,
                                               const WebString& title) {

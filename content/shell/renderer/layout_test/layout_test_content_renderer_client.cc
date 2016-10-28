@@ -32,7 +32,6 @@
 #include "gin/modules/module_registry.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -212,14 +211,6 @@ WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
   return LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->ThemeEngine();
-}
-
-std::unique_ptr<blink::WebAppBannerClient>
-LayoutTestContentRendererClient::CreateAppBannerClient(
-    RenderFrame* render_frame) {
-  test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  return interfaces->CreateAppBannerClient();
 }
 
 std::unique_ptr<MediaStreamRendererFactory>

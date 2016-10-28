@@ -15,7 +15,8 @@
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h"
 
 class SkBitmap;
 struct WebApplicationInfo;
@@ -42,12 +43,13 @@ namespace banners {
 // as well as no-op callbacks that the platform-specific implementations pass to
 // base::Bind. This allows a WeakPtrFactory to be housed in this class.
 //
-// The InstallableManager fetches and validate a site's eligibility for banners.
-// The manager is first called to fetch the manifest, so we can verify whether
-// the site is already installed (and on Android, divert the flow to a
+// The InstallableManager fetches and validates whether a site is eligible for
+// banners. The manager is first called to fetch the manifest, so we can verify
+// whether the site is already installed (and on Android, divert the flow to a
 // native app banner if requested). The second call completes the checking for a
 // web app banner (checking manifest validity, service worker, and icon).
 class AppBannerManager : public content::WebContentsObserver,
+                         public blink::mojom::AppBannerService,
                          public SiteEngagementObserver {
  public:
   // Returns the current time.
@@ -69,18 +71,26 @@ class AppBannerManager : public content::WebContentsObserver,
   // pipeline will be reported to the devtools console.
   virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
 
+  // Sends a message to the renderer that the user accepted the banner. Does
+  // nothing if |request_id| does not match the current request.
+  void SendBannerAccepted(int request_id);
+
+  // Sends a message to the renderer that the user dismissed the banner. Does
+  // nothing if |request_id| does not match the current request.
+  void SendBannerDismissed(int request_id);
+
   // Overridden and passed through base::Bind on desktop platforms. Called when
   // the bookmark app install initiated by a banner has completed. Not used on
   // Android.
   virtual void DidFinishCreatingBookmarkApp(
       const extensions::Extension* extension,
-      const WebApplicationInfo& web_app_info) { }
+      const WebApplicationInfo& web_app_info) {}
 
   // Overridden and passed through base::Bind on Android. Called when the
   // download of a native app's icon is complete, as native banners use an icon
   // provided from the Play Store rather than the web manifest. Not used on
   // desktop platforms.
-  virtual void OnAppIconFetched(const SkBitmap& bitmap) { }
+  virtual void OnAppIconFetched(const SkBitmap& bitmap) {}
 
   // Overridden and passed through base::Bind on Android. Called after a web app
   // banner was successfully used to add a web app to homescreen to kick off an
@@ -210,21 +220,16 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns true if the banner should be shown.
   bool CheckIfShouldShowBanner();
 
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
-
   // Called after the manager sends a message to the renderer regarding its
   // intention to show a prompt. The renderer will send a message back with the
   // opportunity to cancel.
-  void OnBannerPromptReply(content::RenderFrameHost* render_frame_host,
-                           int request_id,
-                           blink::WebAppBannerPromptReply reply,
-                           std::string referrer);
+  void OnBannerPromptReply(blink::mojom::AppBannerPromptReply reply,
+                           const std::string& referrer);
 
-  // Called when the client has prevented a banner from being shown, and is
-  // now requesting that it be shown later.
-  void OnRequestShowAppBanner(content::RenderFrameHost* render_frame_host,
-                              int request_id);
+  // blink::mojom::AppBannerService overrides.
+  // Called when Blink has prevented a banner from being shown, and is now
+  // requesting that it be shown later.
+  void DisplayAppBanner() override;
 
   // The type of navigation made to the page
   ui::PageTransition last_transition_type_;
@@ -240,6 +245,11 @@ class AppBannerManager : public content::WebContentsObserver,
   // a WebContents that is playing video. Banners triggering on a site in the
   // background will appear when the tab is reactivated.
   std::vector<MediaPlayerId> active_media_players_;
+
+  // Mojo bindings and interface pointers.
+  mojo::Binding<blink::mojom::AppBannerService> binding_;
+  blink::mojom::AppBannerEventPtr event_;
+  blink::mojom::AppBannerControllerPtr controller_;
 
   // Whether we are currently working on whether to show a banner.
   bool is_active_;

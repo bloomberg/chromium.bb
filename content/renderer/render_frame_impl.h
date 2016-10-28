@@ -51,7 +51,6 @@
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -639,7 +638,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeManifest() override;
   void enterFullscreen() override;
   void exitFullscreen() override;
-  blink::WebAppBannerClient* appBannerClient() override;
   void registerProtocolHandler(const blink::WebString& scheme,
                                const blink::WebURL& url,
                                const blink::WebString& title) override;
@@ -1270,8 +1268,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
   RenderAccessibilityImpl* render_accessibility_;
-
-  std::unique_ptr<blink::WebAppBannerClient> app_banner_client_;
 
   std::unique_ptr<blink::WebBluetooth> bluetooth_;
 

@@ -31,6 +31,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
+#include "components/test_runner/app_banner_service.h"
 #include "components/test_runner/gamepad_controller.h"
 #include "components/test_runner/layout_and_paint_async_then.h"
 #include "components/test_runner/pixel_dump.h"
@@ -59,6 +60,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -75,7 +77,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h"
 #include "third_party/WebKit/public/web/WebArrayBufferView.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -706,22 +708,24 @@ cc::SharedBitmapManager* BlinkTestRunner::GetSharedBitmapManager() {
 }
 
 void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
-    int request_id,
     const std::vector<std::string>& event_platforms,
     const base::Callback<void(bool)>& callback) {
-  // Send the event to the frame.
-  blink::WebAppBannerPromptReply reply;
-  std::vector<blink::WebString> blink_web_strings;
-  for (const auto& platform : event_platforms)
-    blink_web_strings.push_back(blink::WebString::fromUTF8(platform));
-  blink::WebVector<blink::WebString> blink_event_platforms(blink_web_strings);
+  app_banner_service_.reset(new test_runner::AppBannerService());
 
-  WebLocalFrame* main_frame =
-      render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
-  main_frame->willShowInstallBannerPrompt(request_id, blink_event_platforms,
-                                          &reply);
+  service_manager::InterfaceRegistry::TestApi test_api(
+      render_view()->GetMainRenderFrame()->GetInterfaceRegistry());
+  test_api.GetLocalInterface(
+      mojo::GetProxy(&app_banner_service_->controller()));
 
-  callback.Run(reply == blink::WebAppBannerPromptReply::Cancel);
+  app_banner_service_->SendBannerPromptRequest(event_platforms, callback);
+}
+
+void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
+    const std::string& platform) {
+  if (app_banner_service_) {
+    app_banner_service_->ResolvePromise(platform);
+    app_banner_service_.reset(nullptr);
+  }
 }
 
 blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(

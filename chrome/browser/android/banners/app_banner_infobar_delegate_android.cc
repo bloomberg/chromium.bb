@@ -9,8 +9,6 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
@@ -22,9 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
-#include "chrome/common/render_messages.h"
 #include "components/rappor/rappor_utils.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
 #include "jni/AppBannerInfoBarDelegateAndroid_jni.h"
@@ -283,7 +279,7 @@ bool AppBannerInfoBarDelegateAndroid::AcceptNativeApp(
   else
     TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_TRIGGERED);
 
-  SendBannerAccepted(web_contents, "play");
+  SendBannerAccepted();
   return was_opened;
 }
 
@@ -303,7 +299,7 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApp(
         *icon_.get(), weak_manager_->FetchWebappSplashScreenImageCallback(uid));
   }
 
-  SendBannerAccepted(web_contents, "web");
+  SendBannerAccepted();
   return true;
 }
 
@@ -322,7 +318,7 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
       webapk::TrackUserAction(webapk::USER_ACTION_OPEN);
     else
       webapk::TrackUserAction(webapk::USER_ACTION_INSTALLED_OPEN);
-    SendBannerAccepted(web_contents, "web");
+    SendBannerAccepted();
     return true;
   }
 
@@ -343,21 +339,16 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
   ShortcutHelper::InstallWebApkWithSkBitmap(web_contents->GetBrowserContext(),
                                             *shortcut_info_,
                                             *icon_.get(), callback);
-  SendBannerAccepted(web_contents, "web");
+  SendBannerAccepted();
 
   // Prevent the infobar from disappearing, because the infobar will show
   // "Adding" during the installation process.
   return false;
 }
 
-void AppBannerInfoBarDelegateAndroid::SendBannerAccepted(
-    content::WebContents* web_contents,
-    const std::string& platform) {
-  web_contents->GetMainFrame()->Send(
-      new ChromeViewMsg_AppBannerAccepted(
-          web_contents->GetMainFrame()->GetRoutingID(),
-          event_request_id_,
-          platform));
+void AppBannerInfoBarDelegateAndroid::SendBannerAccepted() {
+  if (weak_manager_)
+    weak_manager_->SendBannerAccepted(event_request_id_);
 }
 
 void AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished(
@@ -408,10 +399,8 @@ void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
 
-  web_contents->GetMainFrame()->Send(
-      new ChromeViewMsg_AppBannerDismissed(
-          web_contents->GetMainFrame()->GetRoutingID(),
-          event_request_id_));
+  if (weak_manager_)
+    weak_manager_->SendBannerDismissed(event_request_id_);
 
   if (native_app_data_.is_null()) {
     if (is_webapk_)
@@ -455,7 +444,7 @@ bool AppBannerInfoBarDelegateAndroid::LinkClicked(
 }
 
 bool RegisterAppBannerInfoBarDelegateAndroid(JNIEnv* env) {
- return RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace banners

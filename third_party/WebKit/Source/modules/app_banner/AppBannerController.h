@@ -6,29 +6,30 @@
 #define AppBannerController_h
 
 #include "modules/ModulesExport.h"
+#include "platform/heap/Persistent.h"
+#include "public/platform/modules/app_banner/app_banner.mojom-blink.h"
 #include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
-enum class WebAppBannerPromptReply;
 class LocalFrame;
-class WebAppBannerClient;
-class WebString;
-template <typename T>
-class WebVector;
 
-// FIXME: unless userChoice ends up implemented, this class should not exist and
-// a regular static method could be used instead.
-class MODULES_EXPORT AppBannerController final {
-  STATIC_ONLY(AppBannerController);
-
+class MODULES_EXPORT AppBannerController final
+    : public mojom::blink::AppBannerController {
  public:
-  static void willShowInstallBannerPrompt(int requestId,
-                                          WebAppBannerClient*,
-                                          LocalFrame*,
-                                          const WebVector<WebString>& platforms,
-                                          WebAppBannerPromptReply*);
+  explicit AppBannerController(LocalFrame&);
+
+  static void bindMojoRequest(LocalFrame*,
+                              mojom::blink::AppBannerControllerRequest);
+
+  void BannerPromptRequest(mojom::blink::AppBannerServicePtr,
+                           mojom::blink::AppBannerEventRequest,
+                           const Vector<String>& platforms,
+                           const BannerPromptRequestCallback&) override;
+
+ private:
+  WeakPersistent<LocalFrame> m_frame;
 };
 
 }  // namespace blink

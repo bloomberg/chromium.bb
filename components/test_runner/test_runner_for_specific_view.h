@@ -134,7 +134,6 @@ class TestRunnerForSpecificView {
 
   // Causes the beforeinstallprompt event to be sent to the renderer.
   void DispatchBeforeInstallPromptEvent(
-      int request_id,
       const std::vector<std::string>& event_platforms,
       v8::Local<v8::Function> callback);
   void DispatchBeforeInstallPromptCallback(

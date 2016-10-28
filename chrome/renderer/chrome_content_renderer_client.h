@@ -169,8 +169,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void RecordRappor(const std::string& metric,
                     const std::string& sample) override;
   void RecordRapporURL(const std::string& metric, const GURL& url) override;
-  std::unique_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
-      content::RenderFrame* render_frame) override;
   void AddImageContextMenuProperties(
       const blink::WebURLResponse& response,
       std::map<std::string, std::string>* properties) override;

@@ -522,9 +522,8 @@ class TestRunner : public WebTestRunner {
                      const GURL& origin,
                      const GURL& embedding_origin);
 
-  // Resolve the beforeinstallprompt event with the matching request id.
-  void ResolveBeforeInstallPromptPromise(int request_id,
-                                         const std::string& platform);
+  // Resolve the in-flight beforeinstallprompt event.
+  void ResolveBeforeInstallPromptPromise(const std::string& platform);
 
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.

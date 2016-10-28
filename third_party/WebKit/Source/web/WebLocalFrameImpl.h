@@ -270,9 +270,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   void setCommittedFirstRealLoad() override;
   void setHasReceivedUserGesture() override;
   void sendOrientationChangeEvent() override;
-  void willShowInstallBannerPrompt(int requestId,
-                                   const WebVector<WebString>& platforms,
-                                   WebAppBannerPromptReply*) override;
   WebSandboxFlags effectiveSandboxFlags() const override;
   void forceSandboxFlags(WebSandboxFlags) override;
   void requestRunTask(WebSuspendableTask*) const override;

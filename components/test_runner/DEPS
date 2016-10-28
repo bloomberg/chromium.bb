@@ -3,6 +3,7 @@ include_rules = [
   "+gin",
   "+gpu/command_buffer/client",
   "+media/midi/midi_service.mojom.h",
+  "+mojo/public",
   "+net/base",
   "+skia",
   "+third_party/khronos/GLES2/gl2.h",

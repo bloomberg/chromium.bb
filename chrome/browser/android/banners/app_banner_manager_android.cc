@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
+
+#include <memory>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "jni/AppBannerManager_jni.h"
@@ -128,7 +128,7 @@ std::string AppBannerManagerAndroid::GetAppIdentifier() {
 
 std::string AppBannerManagerAndroid::GetBannerType() {
   return native_app_data_.is_null() ? AppBannerManager::GetBannerType()
-                                    : "android";
+                                    : "play";
 }
 
 int AppBannerManagerAndroid::GetIdealIconSizeInDp() {

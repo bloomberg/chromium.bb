@@ -22,7 +22,6 @@ class WebView;
 
 namespace test_runner {
 
-class AppBannerClient;
 class GamepadController;
 class TestRunner;
 class WebTestDelegate;
@@ -41,7 +40,6 @@ class TestInterfaces {
   void SetTestIsRunning(bool running);
   void ConfigureForTestWithURL(const blink::WebURL& test_url,
                                bool generate_pixels);
-  void SetAppBannerClient(AppBannerClient* app_banner_client);
 
   void WindowOpened(WebViewTestProxyBase* proxy);
   void WindowClosed(WebViewTestProxyBase* proxy);
@@ -50,13 +48,11 @@ class TestInterfaces {
   WebTestDelegate* GetDelegate();
   const std::vector<WebViewTestProxyBase*>& GetWindowList();
   blink::WebThemeEngine* GetThemeEngine();
-  AppBannerClient* GetAppBannerClient();
 
  private:
   base::WeakPtr<GamepadController> gamepad_controller_;
   std::unique_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;
-  AppBannerClient* app_banner_client_;
 
   std::vector<WebViewTestProxyBase*> window_list_;
   blink::WebView* main_view_;

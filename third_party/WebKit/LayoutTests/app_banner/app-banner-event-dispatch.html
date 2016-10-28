@@ -47,14 +47,14 @@ function banner_test(index) {
         });
         window.addEventListener('beforeinstallprompt', event_handler);
 
-        testRunner.dispatchBeforeInstallPromptEvent(index, ['foo', 'bar'], t.step_func(function(result) {
+        testRunner.dispatchBeforeInstallPromptEvent(['foo', 'bar'], t.step_func(function(result) {
             assert_equals(result, test_case.cancel, 'Event canceled');
             if (test_case.cancel) {
                 banner_test(index + 1);
                 t.done();
                 return;
             }
-            testRunner.resolveBeforeInstallPromptPromise(index, test_case.platform);
+            testRunner.resolveBeforeInstallPromptPromise(test_case.platform);
         }));
     }, test_case.name);
 }

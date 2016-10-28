@@ -320,9 +320,6 @@ source_set("blink_headers") {
     "platform/linux/WebFontRenderStyle.h",
     "platform/linux/WebSandboxSupport.h",
     "platform/mac/WebSandboxSupport.h",
-    "platform/modules/app_banner/WebAppBannerClient.h",
-    "platform/modules/app_banner/WebAppBannerPromptReply.h",
-    "platform/modules/app_banner/WebAppBannerPromptResult.h",
     "platform/modules/background_sync/WebSyncClient.h",
     "platform/modules/background_sync/WebSyncError.h",
     "platform/modules/background_sync/WebSyncProvider.h",
@@ -670,6 +667,7 @@ mojom("mojo_bindings") {
 
 mojom("new_wrapper_types_mojo_bindings") {
   sources = [
+    "platform/modules/app_banner/app_banner.mojom",
     "platform/modules/mediasession/media_session.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",

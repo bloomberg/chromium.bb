@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_MANAGER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_MANAGER_ANDROID_H_
 
+#include <string>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -13,13 +15,14 @@
 
 namespace banners {
 
-// Extends the AppBannerManager to support native Android apps.
-// This class owns a Java-side AppBannerManager which is used to interface with
-// the Java runtime for fetching native app data and installing them when
-// requested.
+// Extends the AppBannerManager to support native Android apps. This class owns
+// a Java-side AppBannerManager which interfaces with the Java runtime to fetch
+// native app data and install them when requested.
+//
 // A site requests a native app banner by setting "prefer_related_applications"
 // to true in its manifest, and providing at least one related application for
 // the "play" platform with a Play Store ID.
+//
 // This class uses that information to request the app's metadata, including an
 // icon. If successful, the icon is downloaded and the native app banner shown.
 // Otherwise, if no related applications were detected, or their manifest

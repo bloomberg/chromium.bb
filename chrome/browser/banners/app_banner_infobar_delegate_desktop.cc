@@ -4,18 +4,17 @@
 
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -76,10 +75,8 @@ void AppBannerInfoBarDelegateDesktop::InfoBarDismissed() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (web_contents) {
-    web_contents->GetMainFrame()->Send(
-        new ChromeViewMsg_AppBannerDismissed(
-            web_contents->GetMainFrame()->GetRoutingID(),
-            event_request_id_));
+    if (weak_manager_)
+      weak_manager_->SendBannerDismissed(event_request_id_);
 
     AppBannerSettingsHelper::RecordBannerDismissEvent(
         web_contents, manifest_.start_url.spec(), AppBannerSettingsHelper::WEB);

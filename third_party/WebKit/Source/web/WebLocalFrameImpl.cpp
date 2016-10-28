@@ -179,6 +179,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebDoubleSize.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
@@ -231,6 +232,7 @@
 #include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -1615,11 +1617,19 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
   // during init(). Note that this may dispatch JS events; the frame may be
   // detached after init() returns.
   frame()->init();
-  if (frame() &&
-      frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() &&
-      !parent() && !opener() &&
-      frame()->settings()->shouldReuseGlobalForUnownedMainFrame())
-    frame()->document()->getSecurityOrigin()->grantUniversalAccess();
+  if (frame()) {
+    if (frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() &&
+        !parent() && !opener() &&
+        frame()->settings()->shouldReuseGlobalForUnownedMainFrame()) {
+      frame()->document()->getSecurityOrigin()->grantUniversalAccess();
+    }
+
+    // TODO(dominickn): This interface should be document-scoped rather than
+    // frame-scoped, as the resulting banner event is dispatched to
+    // frame()->document().
+    frame()->interfaceRegistry()->addInterface(WTF::bind(
+        &AppBannerController::bindMojoRequest, wrapWeakPersistent(frame())));
+  }
 }
 
 LocalFrame* WebLocalFrameImpl::createChildFrame(
@@ -2100,17 +2110,6 @@ void WebLocalFrameImpl::sendOrientationChangeEvent() {
   // Legacy window.orientation API
   if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
     frame()->localDOMWindow()->sendOrientationChangeEvent();
-}
-
-void WebLocalFrameImpl::willShowInstallBannerPrompt(
-    int requestId,
-    const WebVector<WebString>& platforms,
-    WebAppBannerPromptReply* reply) {
-  if (!frame())
-    return;
-
-  AppBannerController::willShowInstallBannerPrompt(
-      requestId, client()->appBannerClient(), frame(), platforms, reply);
 }
 
 void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const {

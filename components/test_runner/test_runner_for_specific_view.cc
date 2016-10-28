@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/layout_and_paint_async_then.h"
 #include "components/test_runner/layout_dump.h"
 #include "components/test_runner/mock_content_settings_client.h"
@@ -395,11 +394,10 @@ void TestRunnerForSpecificView::SetColorProfile(
 }
 
 void TestRunnerForSpecificView::DispatchBeforeInstallPromptEvent(
-    int request_id,
     const std::vector<std::string>& event_platforms,
     v8::Local<v8::Function> callback) {
   delegate()->DispatchBeforeInstallPromptEvent(
-      request_id, event_platforms,
+      event_platforms,
       base::Bind(
           &TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback,
           weak_factory_.GetWeakPtr(),

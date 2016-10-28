@@ -12,7 +12,6 @@
 #include "components/test_runner/test_runner_export.h"
 
 namespace blink {
-class WebAppBannerClient;
 class WebAudioDevice;
 class WebFrame;
 class WebFrameClient;
@@ -29,7 +28,6 @@ class WebView;
 
 namespace test_runner {
 
-class AppBannerClient;
 class TestInterfaces;
 class WebFrameTestClient;
 class WebFrameTestProxyBase;
@@ -64,8 +62,6 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
       blink::WebMIDIAccessorClient* client);
 
   blink::WebAudioDevice* CreateAudioDevice(double sample_rate);
-
-  std::unique_ptr<blink::WebAppBannerClient> CreateAppBannerClient();
 
   TestInterfaces* GetTestInterfaces();
 

@@ -11,6 +11,40 @@ test(function() {
 test(function() {
     var event = new BeforeInstallPromptEvent('eventType', { platforms: ['a'] });
     assert_array_equals(['a'], event.platforms, 'platforms');
-}, 'paltforms is passed');
-</script>
+}, 'platforms is passed');
 
+test(function() {
+    var event = new BeforeInstallPromptEvent('eventType', { platforms: ['a'] });
+    event.preventDefault();
+}, 'preventDefault called');
+
+async_test(function(t) {
+    var event = new BeforeInstallPromptEvent('eventType', { platforms: ['a'] });
+    var thrown = false;
+    var rejected = false;
+    event.prompt()
+        .then(t.unreached_func('prompt() should not resolve'), function(){
+            rejected = true;
+        })
+        .catch(function(reason) { thrown = true; });
+    t.done();
+
+    assert_true(rejected);
+    assert_true(thrown);
+}, 'prompt() called and rejected');
+
+async_test(function(t) {
+    var event = new BeforeInstallPromptEvent('eventType', { platforms: ['a'] });
+    var thrown = false;
+    var rejected = false;
+    event.userChoice
+        .then(t.unreached_func('userChoice should not resolve'), function(){
+            rejected = true;
+        })
+        .catch(function(reason) { thrown = true; });
+    t.done();
+
+    assert_true(rejected);
+    assert_true(thrown);
+}, 'userChoice accessed, throws and rejects');
+</script>

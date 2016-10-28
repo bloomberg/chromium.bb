@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/layout_and_paint_async_then.h"
 #include "components/test_runner/layout_dump.h"
 #include "components/test_runner/mock_content_settings_client.h"
@@ -131,7 +130,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DidNotAcquirePointerLock();
   void DisableMockScreenOrientation();
   void DispatchBeforeInstallPromptEvent(
-      int request_id,
       const std::vector<std::string>& event_platforms,
       v8::Local<v8::Function> callback);
   void DumpAsMarkup();
@@ -186,8 +184,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void RemoveWebPageOverlay();
   void ResetDeviceLight();
   void ResetTestHelperControllers();
-  void ResolveBeforeInstallPromptPromise(int request_id,
-                                         const std::string& platform);
+  void ResolveBeforeInstallPromptPromise(const std::string& platform);
   void RunIdleTasks(v8::Local<v8::Function> callback);
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument);
@@ -1482,23 +1479,21 @@ void TestRunnerBindings::SetPermission(const std::string& name,
 }
 
 void TestRunnerBindings::DispatchBeforeInstallPromptEvent(
-    int request_id,
     const std::vector<std::string>& event_platforms,
     v8::Local<v8::Function> callback) {
   if (!view_runner_)
     return;
 
-  return view_runner_->DispatchBeforeInstallPromptEvent(
-      request_id, event_platforms, callback);
+  return view_runner_->DispatchBeforeInstallPromptEvent(event_platforms,
+                                                        callback);
 }
 
 void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
-    int request_id,
     const std::string& platform) {
   if (!runner_)
     return;
 
-  runner_->ResolveBeforeInstallPromptPromise(request_id, platform);
+  runner_->ResolveBeforeInstallPromptPromise(platform);
 }
 
 void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> callback) {
@@ -2692,11 +2687,8 @@ void TestRunner::SetPermission(const std::string& name,
 }
 
 void TestRunner::ResolveBeforeInstallPromptPromise(
-    int request_id,
     const std::string& platform) {
-  if (!test_interfaces_->GetAppBannerClient())
-    return;
-  test_interfaces_->GetAppBannerClient()->ResolvePromise(request_id, platform);
+  delegate_->ResolveBeforeInstallPromptPromise(platform);
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {

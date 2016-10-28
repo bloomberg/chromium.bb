@@ -30,7 +30,6 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -149,8 +148,6 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
 #endif
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_AppBannerPromptRequest,
-                        OnAppBannerPromptRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -238,30 +235,6 @@ void ChromeRenderFrameObserver::OnSetClientSidePhishingDetection(
                                                               nullptr)
           : nullptr;
 #endif
-}
-
-void ChromeRenderFrameObserver::OnAppBannerPromptRequest(
-    int request_id,
-    const std::string& platform) {
-  // App banner prompt requests are handled in the general chrome render frame
-  // observer, not the AppBannerClient, as the AppBannerClient is created lazily
-  // by blink and may not exist when the request is sent.
-  blink::WebAppBannerPromptReply reply = blink::WebAppBannerPromptReply::None;
-  blink::WebString web_platform(base::UTF8ToUTF16(platform));
-  blink::WebVector<blink::WebString> web_platforms(&web_platform, 1);
-
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  frame->willShowInstallBannerPrompt(request_id, web_platforms, &reply);
-
-  // Extract the referrer header for this site according to its referrer policy.
-  // Pass in an empty URL as the destination so that it is always treated
-  // as a cross-origin request.
-  std::string referrer = blink::WebSecurityPolicy::generateReferrerHeader(
-      frame->document().referrerPolicy(), GURL(),
-      frame->document().outgoingReferrer()).utf8();
-
-  Send(new ChromeViewHostMsg_AppBannerPromptReply(
-      routing_id(), request_id, reply, referrer));
 }
 
 void ChromeRenderFrameObserver::DidFinishLoad() {

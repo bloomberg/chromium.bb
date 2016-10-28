@@ -23,7 +23,6 @@ class WebFrameWidget;
 class WebRange;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
-enum class WebAppBannerPromptReply;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
@@ -314,16 +313,6 @@ class WebLocalFrame : public WebFrame {
   // Content Settings -------------------------------------------------------
 
   virtual void setContentSettingsClient(WebContentSettingsClient*) = 0;
-
-  // App banner -------------------------------------------------------------
-
-  // Request to show an application install banner for the given |platforms|.
-  // The implementation can request the embedder to cancel the call by setting
-  // |cancel| to true.
-  virtual void willShowInstallBannerPrompt(
-      int requestId,
-      const WebVector<WebString>& platforms,
-      WebAppBannerPromptReply*) = 0;
 
   // Image reload -----------------------------------------------------------
 

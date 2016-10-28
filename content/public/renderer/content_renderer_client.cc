@@ -7,7 +7,6 @@
 #include "cc/blimp/remote_compositor_bridge.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "media/base/renderer_factory.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 
@@ -229,11 +228,6 @@ BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
     RenderFrame* render_frame,
     const std::string& mime_type,
     const GURL& original_url) {
-  return nullptr;
-}
-
-std::unique_ptr<blink::WebAppBannerClient>
-ContentRendererClient::CreateAppBannerClient(RenderFrame* render_frame) {
   return nullptr;
 }
 

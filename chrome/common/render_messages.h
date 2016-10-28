@@ -25,7 +25,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/features/features.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/base/window_open_disposition.h"
@@ -188,9 +187,6 @@ IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
   IPC_STRUCT_TRAITS_MEMBER(icons)
   IPC_STRUCT_TRAITS_MEMBER(mobile_capable)
 IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAppBannerPromptReply,
-                          blink::WebAppBannerPromptReply::Cancel)
 
 //-----------------------------------------------------------------------------
 // RenderView messages
@@ -501,21 +497,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowFlashPermissionBubble)
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
                     base::FilePath /* plugin_path */)
 
-// Asks the renderer whether an app banner should be shown. It will reply with
-// ChromeViewHostMsg_AppBannerPromptReply.
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_AppBannerPromptRequest,
-                    int /* request_id */,
-                    std::string /* platform */)
-
-// Tells the renderer that a banner has been accepted.
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_AppBannerAccepted,
-                    int32_t /* request_id */,
-                    std::string /* platform */)
-
-// Tells the renderer that a banner has been dismissed.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_AppBannerDismissed,
-                    int32_t /* request_id */)
-
 // Notification that the page has an OpenSearch description document
 // associated with it.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PageHasOSDD,
@@ -623,17 +604,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetSearchURLs,
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
                             bool /* enabled */)
 #endif
-
-// Tells the browser process whether the web page wants the banner to be shown.
-// This is a reply from ChromeViewMsg_AppBannerPromptRequest.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_AppBannerPromptReply,
-                    int /* request_id */,
-                    blink::WebAppBannerPromptReply /* reply */,
-                    std::string /* referrer */)
-
-// Tells the browser to restart the app banner display pipeline.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RequestShowAppBanner,
-                    int32_t /* request_id */)
 
 // Sent by the renderer to indicate that a fields trial has been activated.
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_FieldTrialActivated,

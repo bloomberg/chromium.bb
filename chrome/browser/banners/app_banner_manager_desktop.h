@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_DESKTOP_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_DESKTOP_H_
 
-#include "chrome/browser/banners/app_banner_manager.h"
+#include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace extensions {

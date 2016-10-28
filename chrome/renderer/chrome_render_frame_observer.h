@@ -52,8 +52,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
       int callback_id);
   void OnPrintNodeUnderContextMenu();
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
-  void OnAppBannerPromptRequest(int request_id,
-                                const std::string& platform);
 
   // Captures page information using the top (main) frame of a frame tree.
   // Currently, this page information is just the text content of the all

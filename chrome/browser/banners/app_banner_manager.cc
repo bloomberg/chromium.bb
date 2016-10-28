@@ -4,6 +4,8 @@
 
 #include "chrome/browser/banners/app_banner_manager.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -13,17 +15,14 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/installable/installable_logging.h"
-#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -31,8 +30,7 @@
 namespace {
 
 int gCurrentRequestID = -1;
-base::LazyInstance<base::TimeDelta> gTimeDeltaForTesting =
-    LAZY_INSTANCE_INITIALIZER;
+int gTimeDeltaInDaysForTesting = 0;
 
 // Returns |size_in_px| in dp, i.e. divided by the current device scale factor.
 int ConvertIconSizeFromPxToDp(int size_in_px) {
@@ -63,12 +61,13 @@ namespace banners {
 
 // static
 base::Time AppBannerManager::GetCurrentTime() {
-  return base::Time::Now() + gTimeDeltaForTesting.Get();
+  return base::Time::Now() +
+         base::TimeDelta::FromDays(gTimeDeltaInDaysForTesting);
 }
 
 // static
 void AppBannerManager::SetTimeDeltaForTesting(int days) {
-  gTimeDeltaForTesting.Get() = base::TimeDelta::FromDays(days);
+  gTimeDeltaInDaysForTesting = days;
 }
 
 // static
@@ -122,9 +121,29 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   if (validated_url_.is_empty())
     validated_url_ = validated_url;
 
+  // Any existing binding is invalid when we request a new banner.
+  if (binding_.is_bound())
+    binding_.Close();
+
   manager_->GetData(
       ParamsToGetManifest(),
       base::Bind(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
+}
+
+void AppBannerManager::SendBannerAccepted(int request_id) {
+  if (request_id != gCurrentRequestID)
+    return;
+
+  DCHECK(event_.is_bound());
+  event_->BannerAccepted(GetBannerType());
+}
+
+void AppBannerManager::SendBannerDismissed(int request_id) {
+  if (request_id != gCurrentRequestID)
+    return;
+
+  DCHECK(event_.is_bound());
+  event_->BannerDismissed();
 }
 
 base::Closure AppBannerManager::FetchWebappSplashScreenImageCallback(
@@ -137,6 +156,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       SiteEngagementObserver(nullptr),
       manager_(nullptr),
       event_request_id_(-1),
+      binding_(this),
       is_active_(false),
       banner_request_queued_(false),
       load_finished_(false),
@@ -302,6 +322,10 @@ void AppBannerManager::Stop() {
   DCHECK(!need_to_log_status_ || is_active_);
 
   weak_factory_.InvalidateWeakPtrs();
+  binding_.Close();
+  controller_.reset();
+  event_.reset();
+
   is_active_ = false;
   was_canceled_by_page_ = false;
   page_requested_prompt_ = false;
@@ -322,9 +346,14 @@ void AppBannerManager::SendBannerPromptRequest() {
 
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_CREATED);
   event_request_id_ = ++gCurrentRequestID;
-  content::RenderFrameHost* frame = web_contents()->GetMainFrame();
-  frame->Send(new ChromeViewMsg_AppBannerPromptRequest(
-      frame->GetRoutingID(), event_request_id_, GetBannerType()));
+
+  web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+      mojo::GetProxy(&controller_));
+
+  controller_->BannerPromptRequest(
+      binding_.CreateInterfacePtrAndBind(), mojo::GetProxy(&event_),
+      {GetBannerType()},
+      base::Bind(&AppBannerManager::OnBannerPromptReply, GetWeakPtr()));
 }
 
 void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
@@ -453,30 +482,13 @@ bool AppBannerManager::CheckIfShouldShowBanner() {
   return false;
 }
 
-bool AppBannerManager::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AppBannerManager, message, render_frame_host)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AppBannerPromptReply,
-                        OnBannerPromptReply)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestShowAppBanner,
-                        OnRequestShowAppBanner)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
 void AppBannerManager::OnBannerPromptReply(
-    content::RenderFrameHost* render_frame_host,
-    int request_id,
-    blink::WebAppBannerPromptReply reply,
-    std::string referrer) {
+    blink::mojom::AppBannerPromptReply reply,
+    const std::string& referrer) {
+  // We don't need the controller any more, so reset it so the Blink-side object
+  // is destroyed.
+  controller_.reset();
   content::WebContents* contents = web_contents();
-  if (request_id != event_request_id_)
-    return;
 
   // The renderer might have requested the prompt to be canceled.
   // They may request that it is redisplayed later, so don't Stop() here.
@@ -487,7 +499,7 @@ void AppBannerManager::OnBannerPromptReply(
   // request may be received *before* the Cancel prompt reply (e.g. if redisplay
   // is requested in the beforeinstallprompt event handler).
   referrer_ = referrer;
-  if (reply == blink::WebAppBannerPromptReply::Cancel &&
+  if (reply == blink::mojom::AppBannerPromptReply::CANCEL &&
       !page_requested_prompt_) {
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
     was_canceled_by_page_ = true;
@@ -518,14 +530,11 @@ void AppBannerManager::OnBannerPromptReply(
   is_active_ = false;
 }
 
-void AppBannerManager::OnRequestShowAppBanner(
-    content::RenderFrameHost* render_frame_host,
-    int request_id) {
+void AppBannerManager::DisplayAppBanner() {
   if (was_canceled_by_page_) {
     // Simulate a non-canceled OnBannerPromptReply to show the delayed banner.
     // Don't reset |was_canceled_by_page_| yet for metrics purposes.
-    OnBannerPromptReply(render_frame_host, request_id,
-                        blink::WebAppBannerPromptReply::None, referrer_);
+    OnBannerPromptReply(blink::mojom::AppBannerPromptReply::NONE, referrer_);
   } else {
     // Log that the prompt request was made for when we get the prompt reply.
     page_requested_prompt_ = true;

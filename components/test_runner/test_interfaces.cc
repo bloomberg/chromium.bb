@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/gamepad_controller.h"
 #include "components/test_runner/gc_controller.h"
 #include "components/test_runner/test_runner.h"
@@ -29,7 +28,6 @@ namespace test_runner {
 TestInterfaces::TestInterfaces()
     : test_runner_(new TestRunner(this)),
       delegate_(nullptr),
-      app_banner_client_(nullptr),
       main_view_(nullptr) {
   blink::setLayoutTestMode(true);
   // NOTE: please don't put feature specific enable flags here,
@@ -118,10 +116,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     test_runner_->set_is_web_platform_tests_mode();
 }
 
-void TestInterfaces::SetAppBannerClient(AppBannerClient* app_banner_client) {
-  app_banner_client_ = app_banner_client;
-}
-
 void TestInterfaces::WindowOpened(WebViewTestProxyBase* proxy) {
   window_list_.push_back(proxy);
 }
@@ -157,10 +151,6 @@ blink::WebThemeEngine* TestInterfaces::GetThemeEngine() {
   if (!theme_engine_.get())
     theme_engine_.reset(new MockWebThemeEngine());
   return theme_engine_.get();
-}
-
-AppBannerClient* TestInterfaces::GetAppBannerClient() {
-  return app_banner_client_;
 }
 
 }  // namespace test_runner

@@ -32,7 +32,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
-class WebAppBannerClient;
 class WebAudioDevice;
 class WebClipboard;
 class WebFrame;
@@ -328,10 +327,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Records a domain and registry of a url to a Rappor privacy-preserving
   // metric. See: https://www.chromium.org/developers/design-documents/rappor
   virtual void RecordRapporURL(const std::string& metric, const GURL& url) {}
-
-  // Allows an embedder to provide a blink::WebAppBannerClient.
-  virtual std::unique_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
-      RenderFrame* render_frame);
 
   // Gives the embedder a chance to add properties to the context menu.
   // Currently only called when the context menu is for an image.

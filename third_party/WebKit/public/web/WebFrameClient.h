@@ -70,7 +70,6 @@ class InterfaceProvider;
 class InterfaceRegistry;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebAppBannerClient;
 class WebBluetooth;
 class WebColorChooser;
 class WebColorChooserClient;
@@ -701,9 +700,6 @@ class BLINK_EXPORT WebFrameClient {
   virtual void suddenTerminationDisablerChanged(bool present,
                                                 SuddenTerminationDisablerType) {
   }
-
-  // App Banners ---------------------------------------------------------
-  virtual WebAppBannerClient* appBannerClient() { return 0; }
 
   // Navigator Content Utils  --------------------------------------------
 

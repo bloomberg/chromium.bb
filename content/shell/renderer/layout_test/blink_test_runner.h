@@ -36,6 +36,7 @@ struct WebRect;
 }
 
 namespace test_runner {
+class AppBannerService;
 class WebViewTestProxyBase;
 }
 
@@ -153,9 +154,10 @@ class BlinkTestRunner : public RenderViewObserver,
       blink::WebMediaStream* stream) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   void DispatchBeforeInstallPromptEvent(
-      int request_id,
       const std::vector<std::string>& event_platforms,
       const base::Callback<void(bool)>& callback) override;
+  void ResolveBeforeInstallPromptPromise(
+      const std::string& platform) override;
   blink::WebPlugin* CreatePluginPlaceholder(
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) override;
@@ -218,6 +220,8 @@ class BlinkTestRunner : public RenderViewObserver,
   bool is_main_window_;
 
   bool focus_on_next_commit_;
+
+  std::unique_ptr<test_runner::AppBannerService> app_banner_service_;
 
   std::unique_ptr<LeakDetector> leak_detector_;
 

@@ -32,8 +32,6 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   blink::WebAudioDevice* OverrideCreateAudioDevice(double sample_rate) override;
   blink::WebClipboard* OverrideWebClipboard() override;
   blink::WebThemeEngine* OverrideThemeEngine() override;
-  std::unique_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
-      RenderFrame* render_frame) override;
   std::unique_ptr<MediaStreamRendererFactory> CreateMediaStreamRendererFactory()
       override;
   std::unique_ptr<gfx::ICCProfile> GetImageDecodeColorProfile() override;

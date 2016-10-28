@@ -5,7 +5,6 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 
 #include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -13,9 +12,7 @@
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/web_application_info.h"
-#include "content/public/browser/render_frame_host.h"
 #include "extensions/common/constants.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerDesktop);
@@ -44,17 +41,12 @@ void AppBannerManagerDesktop::DidFinishCreatingBookmarkApp(
   content::WebContents* contents = web_contents();
   if (contents) {
     // A null extension pointer indicates that the bookmark app install was
-    // not successful.
+    // not successful. Call Stop() to terminate the flow. Don't record a dismiss
+    // metric here because the banner isn't necessarily dismissed.
     if (extension == nullptr) {
-      contents->GetMainFrame()->Send(new ChromeViewMsg_AppBannerDismissed(
-          contents->GetMainFrame()->GetRoutingID(), event_request_id()));
-
-      AppBannerSettingsHelper::RecordBannerDismissEvent(
-          contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+      Stop();
     } else {
-      contents->GetMainFrame()->Send(new ChromeViewMsg_AppBannerAccepted(
-          contents->GetMainFrame()->GetRoutingID(), event_request_id(),
-          GetBannerType()));
+      SendBannerAccepted(event_request_id());
 
       AppBannerSettingsHelper::RecordBannerInstallEvent(
           contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);

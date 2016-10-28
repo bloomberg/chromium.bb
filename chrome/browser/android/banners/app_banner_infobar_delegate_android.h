@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
 
+#include <memory>
+#include <string>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
-#include "chrome/browser/banners/app_banner_manager.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/gfx/image/image.h"
-#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -26,6 +27,8 @@ class InfoBarManager;
 struct ShortcutInfo;
 
 namespace banners {
+
+class AppBannerManager;
 
 // Manages installation of an app being promoted by a page.
 class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
@@ -114,8 +117,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // infobar should be closed as a result of the button press.
   bool AcceptWebApk(content::WebContents* web_contents);
 
-  void SendBannerAccepted(content::WebContents* web_contents,
-                          const std::string& platform);
+  void SendBannerAccepted();
   void OnWebApkInstallFinished(bool success,
                                const std::string& webapk_package_name);
   void TrackWebApkInstallationDismissEvents(InstallState install_state);

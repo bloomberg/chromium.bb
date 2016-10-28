@@ -16,8 +16,8 @@ component("test_runner") {
   sources = [
     "accessibility_controller.cc",
     "accessibility_controller.h",
-    "app_banner_client.cc",
-    "app_banner_client.h",
+    "app_banner_service.cc",
+    "app_banner_service.h",
     "event_sender.cc",
     "event_sender.h",
     "gamepad_controller.cc",
@@ -112,6 +112,7 @@ component("test_runner") {
     "//base:i18n",
     "//cc",
     "//cc/blink",
+    "//content/public/common",
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",

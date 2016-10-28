@@ -276,15 +276,19 @@ class WebTestDelegate {
 
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
-  // Causes the beforeinstallprompt event to be sent to the renderer with a
-  // request id of |request_id|. |event_platforms| are the platforms to be sent
-  // with the event. Once the event listener completes, |callback| will be
-  // called with a boolean argument. This argument will be true if the event is
-  // canceled, and false otherwise.
+  // Causes the beforeinstallprompt event to be sent to the renderer.
+  // |event_platforms| are the platforms to be sent with the event. Once the
+  // event listener completes, |callback| will be called with a boolean
+  // argument. This argument will be true if the event is canceled, and false
+  // otherwise.
   virtual void DispatchBeforeInstallPromptEvent(
-      int request_id,
       const std::vector<std::string>& event_platforms,
       const base::Callback<void(bool)>& callback) = 0;
+
+  // Resolves the in-flight beforeinstallprompt event userChoice promise with a
+  // platform of |platform|.
+  virtual void ResolveBeforeInstallPromptPromise(
+      const std::string& platform) = 0;
 
   virtual blink::WebPlugin* CreatePluginPlaceholder(
     blink::WebLocalFrame* frame,

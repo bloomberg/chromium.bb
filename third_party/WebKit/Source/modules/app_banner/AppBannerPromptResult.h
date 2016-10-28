@@ -6,13 +6,10 @@
 #define AppBannerPromptResult_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "public/platform/modules/app_banner/WebAppBannerPromptResult.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-class ScriptPromiseResolver;
 
 class AppBannerPromptResult final
     : public GarbageCollectedFinalized<AppBannerPromptResult>,
@@ -21,9 +18,10 @@ class AppBannerPromptResult final
   WTF_MAKE_NONCOPYABLE(AppBannerPromptResult);
 
  public:
-  static AppBannerPromptResult* create(
-      const AtomicString& platform,
-      WebAppBannerPromptResult::Outcome outcome) {
+  enum class Outcome { Accepted, Dismissed };
+
+  static AppBannerPromptResult* create(const String& platform,
+                                       Outcome outcome) {
     return new AppBannerPromptResult(platform, outcome);
   }
 
@@ -35,11 +33,10 @@ class AppBannerPromptResult final
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  AppBannerPromptResult(const AtomicString& platform,
-                        WebAppBannerPromptResult::Outcome);
+  AppBannerPromptResult(const String& platform, Outcome);
 
   String m_platform;
-  WebAppBannerPromptResult::Outcome m_outcome;
+  Outcome m_outcome;
 };
 
 }  // namespace blink
