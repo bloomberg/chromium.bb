@@ -23,7 +23,7 @@ const std::string GetCryptohomeId(const AccountId& account_id) {
     return account_id.GetUserEmail();  // Migrated
 
   if (GetGaiaIdMigrationStatus(account_id))
-    return account_id.GetGaiaIdKey();
+    return account_id.GetAccountIdKey();
 
   return account_id.GetUserEmail();  // Migrated
 }
@@ -56,7 +56,7 @@ AccountId Identification::GetAccountId() const {
   // A LOT of tests start with --login_user <user>, and not registing this user
   // before. So we might have "known_user" entry without gaia_id.
   for (const AccountId& known_id : known_account_ids) {
-    if (!known_id.GetGaiaId().empty() && known_id.GetGaiaIdKey() == id_) {
+    if (!known_id.GetGaiaId().empty() && known_id.GetAccountIdKey() == id_) {
       return known_id;
     }
   }

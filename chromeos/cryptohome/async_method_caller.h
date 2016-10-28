@@ -138,7 +138,7 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // is to be associated with the current user.  |key_name| is a name for the
   // key.  If |key_type| is KEY_USER, a |user_id| must be provided.  Otherwise
   // |user_id| is ignored.  For normal GAIA users the |user_id| is
-  // a GaiaId-derived string (see AccountId::GetGaiaIdKey).
+  // an AccountId-derived string (see AccountId::GetAccountIdKey).
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       chromeos::attestation::AttestationKeyType key_type,
@@ -149,7 +149,7 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // Asks cryptohomed to asynchronously register the attestation key specified
   // by |key_type| and |key_name|.  If |key_type| is KEY_USER, a |user_id| must
   // be provided.  Otherwise |user_id| is ignored.  For normal GAIA users the
-  // |user_id| is a GaiaId-derived string (see AccountId::GetGaiaIdKey).
+  // |user_id| is an AccountId-derived string (see AccountId::GetAccountIdKey).
   virtual void TpmAttestationRegisterKey(
       chromeos::attestation::AttestationKeyType key_type,
       const Identification& user_id,
@@ -162,7 +162,7 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // a valid enterprise challenge.  On success, the data sent to |callback| is
   // the challenge response.  If |key_type| is KEY_USER, a |user_id| must be
   // provided.  Otherwise |user_id| is ignored.  For normal GAIA users the
-  // |user_id| is a GaiaId-derived string (see AccountId::GetGaiaIdKey).
+  // |user_id| is an AccountaId-derived string (see AccountId::GetAccountIdKey).
   virtual void TpmAttestationSignEnterpriseChallenge(
       chromeos::attestation::AttestationKeyType key_type,
       const Identification& user_id,
@@ -177,8 +177,8 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // specified by |key_type| and |key_name|.  |challenge| can be any arbitrary
   // set of bytes.  On success, the data sent to |callback| is the challenge
   // response.  If |key_type| is KEY_USER, a |user_id| must be provided.
-  // Otherwise |user_id| is ignored.  For normal GAIA users the |user_id| is a
-  // GaiaId-derived string (see AccountId::GetGaiaIdKey).
+  // Otherwise |user_id| is ignored.  For normal GAIA users the |user_id| is an
+  // AccountId-derived string (see AccountId::GetAccountIdKey).
   virtual void TpmAttestationSignSimpleChallenge(
       chromeos::attestation::AttestationKeyType key_type,
       const Identification& user_id,

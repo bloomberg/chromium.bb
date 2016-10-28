@@ -168,11 +168,11 @@ class CHROMEOS_EXPORT MountParameters {
 };
 
 // This function returns true if cryptohome of |account_id| is migrated to
-// gaiaId-based identifier (AccountId::GetGaiaIdKey()).
+// accountId-based identifier (AccountId::GetAccountIdKey()).
 bool GetGaiaIdMigrationStatus(const AccountId& account_id);
 
-// This function marks |account_id| cryptohome migrated to gaiaId-based
-// identifier (AccountId::GetGaiaIdKey()).
+// This function marks |account_id| cryptohome migrated to accountId-based
+// identifier (AccountId::GetAccountIdKey()).
 void SetGaiaIdMigrationStatusDone(const AccountId& account_id);
 
 }  // namespace cryptohome

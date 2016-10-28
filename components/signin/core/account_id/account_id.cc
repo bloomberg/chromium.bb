@@ -23,7 +23,7 @@ const char kGoogle[] = "google";
 const char kGaiaIdKey[] = "gaia_id";
 const char kEmailKey[] = "email";
 
-// Prefix for GetGaiaIdKey().
+// Prefix for GetAccountIdKey().
 const char kKeyGaiaIdPrefix[] = "g-";
 
 struct GoogleStringSingleton {
@@ -105,10 +105,10 @@ const std::string& AccountId::GetUserEmail() const {
   return user_email_;
 }
 
-const std::string AccountId::GetGaiaIdKey() const {
+const std::string AccountId::GetAccountIdKey() const {
 #ifdef NDEBUG
   if (gaia_id_.empty())
-    LOG(FATAL) << "GetGaiaIdKey(): no gaia id for " << Serialize();
+    LOG(FATAL) << "GetAccountIdKey(): no gaia id for " << Serialize();
 
 #else
   CHECK(!gaia_id_.empty());

@@ -33,10 +33,14 @@ class AccountId {
 
   const std::string& GetAccountType() const;
   const std::string& GetGaiaId() const;
+  // Users of AccountId should make no assumptions on the format of email.
+  // I.e. it cannot be used as account identifier, because it is (in general)
+  // non-comparable.
   const std::string& GetUserEmail() const;
 
-  // This returns prefixed GaiaId string to be used as a storage key.
-  const std::string GetGaiaIdKey() const;
+  // This returns prefixed some string that can be used as a storage key.
+  // You should make no assumptions on the format of this string.
+  const std::string GetAccountIdKey() const;
 
   void SetGaiaId(const std::string& gaia_id);
   void SetUserEmail(const std::string& email);

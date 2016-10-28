@@ -239,7 +239,7 @@ void EnsureCryptohomeMigratedToGaiaId(
     const std::string& cryptohome_id_from =
         attempt->user_context.GetAccountId().GetUserEmail();  // Migrated
     const std::string cryptohome_id_to =
-        attempt->user_context.GetAccountId().GetGaiaIdKey();
+        attempt->user_context.GetAccountId().GetAccountIdKey();
 
     cryptohome::HomedirMethods::GetInstance()->RenameCryptohome(
         cryptohome::Identification::FromString(cryptohome_id_from),
