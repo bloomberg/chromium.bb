@@ -168,7 +168,7 @@ def get_test_baselines(test_file, test_config):
 
         def __init__(self, host):
             super(AllPlatformsPort, self).__init__(host, 'mac')
-            self._platforms_by_directory = dict([(self._webkit_baseline_path(p), p) for p in test_config.platforms])
+            self._platforms_by_directory = dict([(self._absolute_baseline_path(p), p) for p in test_config.platforms])
 
         def baseline_search_path(self):
             return self._platforms_by_directory.keys()

@@ -305,7 +305,7 @@ class Port(object):
         """Return a list of absolute paths to directories to search under for
         baselines. The directories are searched in order.
         """
-        return map(self._webkit_baseline_path, self.FALLBACK_PATHS[self.version()])
+        return map(self._absolute_baseline_path, self.FALLBACK_PATHS[self.version()])
 
     @memoized
     def _compare_baseline(self):
@@ -954,7 +954,7 @@ class Port(object):
     def _expectations_from_skipped_files(self, skipped_file_paths):
         tests_to_skip = []
         for search_path in skipped_file_paths:
-            filename = self._filesystem.join(self._webkit_baseline_path(search_path), "Skipped")
+            filename = self._filesystem.join(self._absolute_baseline_path(search_path), "Skipped")
             if not self._filesystem.exists(filename):
                 _log.debug("Skipped does not exist: %s", filename)
                 continue
@@ -1558,11 +1558,11 @@ class Port(object):
                 return path
         return None
 
-    def _webkit_baseline_path(self, platform):
-        """Return the  full path to the top of the baseline tree for a
-        given platform.
+    def _absolute_baseline_path(self, platform_dir):
+        """Return the absolute path to the top of the baseline tree for a
+        given platform directory.
         """
-        return self._filesystem.join(self.layout_tests_dir(), 'platform', platform)
+        return self._filesystem.join(self.layout_tests_dir(), 'platform', platform_dir)
 
     def _driver_class(self):
         """Returns the port's driver implementation."""
