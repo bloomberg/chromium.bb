@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/pickle.h"
 #include "base/process/memory.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -46,29 +47,31 @@ const uint32_t kFieldTrialType = 0xABA17E13 + 1;  // SHA1(FieldTrialEntry) v1
 const size_t kFieldTrialAllocationSize = 4 << 10;  // 4 KiB = one page
 #endif
 
-// We create one FieldTrialEntry struct per field trial in shared memory (via
-// field_trial_allocator_). It contains whether or not it's activated, and the
-// offset from the start of the allocated memory to the group name. We don't
-// need the offset into the trial name because that's always a fixed position
-// from the start of the struct. Two strings will be appended to the end of this
-// structure in allocated memory, so the result will look like this:
-// ---------------------------------
-// | fte | trial_name | group_name |
-// ---------------------------------
+// We create one FieldTrialEntry per field trial in shared memory, via
+// AddToAllocatorWhileLocked. The FieldTrialEntry is followed by a base::Pickle
+// object that we unpickle and read from.
 struct FieldTrialEntry {
   bool activated;
-  uint32_t group_name_offset;
 
-  const char* GetTrialName() const {
-    const char* src =
-        reinterpret_cast<char*>(const_cast<FieldTrialEntry*>(this));
-    return src + sizeof(FieldTrialEntry);
-  }
+  // Size of the pickled structure, NOT the total size of this entry.
+  uint32_t size;
 
-  const char* GetGroupName() const {
-    const char* src =
-        reinterpret_cast<char*>(const_cast<FieldTrialEntry*>(this));
-    return src + this->group_name_offset;
+  // Calling this is only valid when the entry is initialized. That is, it
+  // resides in shared memory and has a pickle containing the trial name and
+  // group name following it.
+  bool GetTrialAndGroupName(StringPiece* trial_name,
+                            StringPiece* group_name) const {
+    char* src = reinterpret_cast<char*>(const_cast<FieldTrialEntry*>(this)) +
+                sizeof(FieldTrialEntry);
+
+    Pickle pickle(src, size);
+    PickleIterator pickle_iter(pickle);
+
+    if (!pickle_iter.ReadStringPiece(trial_name))
+      return false;
+    if (!pickle_iter.ReadStringPiece(group_name))
+      return false;
+    return true;
   }
 };
 
@@ -798,15 +801,25 @@ void FieldTrialList::CreateTrialsFromSharedMemory(
     std::unique_ptr<SharedMemory> shm) {
   const SharedPersistentMemoryAllocator shalloc(std::move(shm), 0,
                                                 kAllocatorName, true);
-  PersistentMemoryAllocator::Iterator iter(&shalloc);
+  PersistentMemoryAllocator::Iterator mem_iter(&shalloc);
 
   SharedPersistentMemoryAllocator::Reference ref;
-  while ((ref = iter.GetNextOfType(kFieldTrialType)) !=
+  while ((ref = mem_iter.GetNextOfType(kFieldTrialType)) !=
          SharedPersistentMemoryAllocator::kReferenceNull) {
     const FieldTrialEntry* entry =
         shalloc.GetAsObject<const FieldTrialEntry>(ref, kFieldTrialType);
+
+    StringPiece trial_name;
+    StringPiece group_name;
+    if (!entry->GetTrialAndGroupName(&trial_name, &group_name)) {
+      NOTREACHED();
+      continue;
+    }
+
+    // TODO(lawrencewu): Convert the API for CreateFieldTrial to take
+    // StringPieces.
     FieldTrial* trial =
-        CreateFieldTrial(entry->GetTrialName(), entry->GetGroupName());
+        CreateFieldTrial(trial_name.as_string(), group_name.as_string());
 
     if (entry->activated) {
       // Call |group()| to mark the trial as "used" and notify observers, if
@@ -866,34 +879,25 @@ void FieldTrialList::AddToAllocatorWhileLocked(FieldTrial* field_trial) {
   if (!field_trial->GetState(&trial_state))
     return;
 
-  size_t trial_name_size = trial_state.trial_name.size() + 1;
-  size_t group_name_size = trial_state.group_name.size() + 1;
-  size_t size = sizeof(FieldTrialEntry) + trial_name_size + group_name_size;
+  Pickle pickle;
+  pickle.WriteString(trial_state.trial_name);
+  pickle.WriteString(trial_state.group_name);
 
-  // Allocate just enough memory to fit the FieldTrialEntry struct, trial name,
-  // and group name.
+  size_t total_size = sizeof(FieldTrialEntry) + pickle.size();
   SharedPersistentMemoryAllocator::Reference ref =
-      allocator->Allocate(size, kFieldTrialType);
+      allocator->Allocate(total_size, kFieldTrialType);
   if (ref == SharedPersistentMemoryAllocator::kReferenceNull)
     return;
 
-  // Calculate offsets into the shared memory segment.
   FieldTrialEntry* entry =
       allocator->GetAsObject<FieldTrialEntry>(ref, kFieldTrialType);
-  uint32_t trial_name_offset = sizeof(FieldTrialEntry);
-  uint32_t group_name_offset = trial_name_offset + trial_name_size;
-
-  // Copy over the data.
   entry->activated = trial_state.activated;
-  entry->group_name_offset = group_name_offset;
-  char* trial_name = reinterpret_cast<char*>(entry) + trial_name_offset;
-  char* group_name = reinterpret_cast<char*>(entry) + group_name_offset;
-  memcpy(trial_name, trial_state.trial_name.data(), trial_name_size);
-  memcpy(group_name, trial_state.group_name.data(), group_name_size);
+  entry->size = pickle.size();
 
-  // Null terminate the strings.
-  trial_name[trial_state.trial_name.size()] = '\0';
-  group_name[trial_state.group_name.size()] = '\0';
+  // TODO(lawrencewu): Modify base::Pickle to be able to write over a section in
+  // memory, so we can avoid this memcpy.
+  char* dst = reinterpret_cast<char*>(entry) + sizeof(FieldTrialEntry);
+  memcpy(dst, pickle.data(), pickle.size());
 
   allocator->MakeIterable(ref);
   field_trial->ref_ = ref;
