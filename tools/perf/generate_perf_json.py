@@ -118,12 +118,14 @@ SCRIPT_TESTS = [
     ],
     'name': 'tracing_perftests',
     'script': 'gtest_perf_test.py',
-    'testers': [
-      {
-        'name': 'Linux Perf',
-        'shards': [3]
-      },
-    ]
+    'testers': {
+      'chromium.perf': [
+        {
+          'name': 'Linux Perf',
+          'shards': [3]
+        },
+      ]
+    }
   },
   {
     'args': [
@@ -469,6 +471,17 @@ BENCHMARK_NAME_WHITELIST = set([
     u'dromaeo.cssqueryjquery',
 ])
 
+# List of benchmarks that are to never be run on a waterfall.
+BENCHMARK_NAME_BLACKLIST = [
+    'multipage_skpicture_printer',
+    'multipage_skpicture_printer_ct',
+    'rasterize_and_record_micro_ct',
+    'repaint_ct',
+    'multipage_skpicture_printer',
+    'multipage_skpicture_printer_ct',
+    'skpicture_printer',
+    'skpicture_printer_ct',
+]
 
 def current_benchmarks(use_whitelist):
   current_dir = os.path.dirname(__file__)
@@ -478,6 +491,13 @@ def current_benchmarks(use_whitelist):
   all_benchmarks = discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
       index_by_class_name=True).values()
+  # Remove all blacklisted benchmarks
+  for blacklisted in BENCHMARK_NAME_BLACKLIST:
+    for benchmark in all_benchmarks:
+      if benchmark.Name() == blacklisted:
+        all_benchmarks.remove(benchmark)
+        break
+
   if use_whitelist:
     all_benchmarks = (
         bench for bench in all_benchmarks
