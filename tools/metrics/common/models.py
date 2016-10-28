@@ -130,7 +130,10 @@ class TextNodeType(NodeType):
     Returns:
       The string content of the node.
     """
-    return node.firstChild.nodeValue.strip()
+    if not node.firstChild:
+      return ''
+    text = node.firstChild.nodeValue
+    return '\n\n'.join(pretty_print_xml.SplitParagraphs(text))
 
   def Marshall(self, doc, obj):
     """Converts an object into an XML node of this type.
@@ -143,7 +146,8 @@ class TextNodeType(NodeType):
       An XML node encoding the object.
     """
     node = doc.createElement(self.tag)
-    node.appendChild(doc.createTextNode(obj))
+    if obj:
+      node.appendChild(doc.createTextNode(obj))
     return node
 
 
