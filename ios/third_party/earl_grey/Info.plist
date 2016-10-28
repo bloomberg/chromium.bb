@@ -11,7 +11,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.chromium.test.${EXECUTABLE_NAME:rfc1034identifier}</string>
+	<string>${IOS_BUNDLE_ID_PREFIX}.test.${EXECUTABLE_NAME:rfc1034identifier}</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleDevelopmentRegion</key>
