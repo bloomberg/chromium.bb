@@ -606,7 +606,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
             long downloadId = mDownloadManagerDelegate.addCompletedDownload(
                     downloadInfo.getFileName(), description, downloadInfo.getMimeType(),
                     downloadInfo.getFilePath(), downloadInfo.getContentLength(),
-                    downloadInfo.getOriginalUrl(), downloadInfo.getReferer());
+                    downloadInfo.getOriginalUrl(), downloadInfo.getReferer(),
+                    downloadInfo.getDownloadGuid());
             downloadItem.setSystemDownloadId(downloadId);
             return true;
         } catch (RuntimeException e) {
@@ -1157,9 +1158,16 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param isOffTheRecord Whether the download is off the record.
      */
     @Override
-    public void removeDownload(String downloadGuid, boolean isOffTheRecord) {
+    public void removeDownload(final String downloadGuid, boolean isOffTheRecord) {
         nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
         removeDownloadProgress(downloadGuid);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            public Void doInBackground(Void... params) {
+                mDownloadManagerDelegate.removeCompletedDownload(downloadGuid);
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
