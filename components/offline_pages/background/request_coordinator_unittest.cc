@@ -160,6 +160,14 @@ class NetworkQualityEstimatorStub
     return connection_type_;
   }
 
+  void AddEffectiveConnectionTypeObserver(
+      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
+      override {}
+
+  void RemoveEffectiveConnectionTypeObserver(
+      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
+      override {}
+
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
     connection_type_ = type;
   }

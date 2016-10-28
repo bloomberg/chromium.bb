@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/nqe/cached_network_quality.h"
 #include "net/nqe/effective_connection_type.h"
@@ -31,11 +32,21 @@ class UINetworkQualityEstimatorService
   explicit UINetworkQualityEstimatorService(Profile* profile);
   ~UINetworkQualityEstimatorService() override;
 
+  // NetworkQualityProvider implementation:
+  // Must be called on the UI thread.
+  net::EffectiveConnectionType GetEffectiveConnectionType() const override;
+  // Must be called on the UI thread. |observer| will be notified on the UI
+  // thread.
+  void AddEffectiveConnectionTypeObserver(
+      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
+      override;
+  // Must be called on the UI thread.
+  void RemoveEffectiveConnectionTypeObserver(
+      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
+      override;
+
   // Registers the profile-specific network quality estimator prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-  // The current EffectiveConnectionType.
-  net::EffectiveConnectionType GetEffectiveConnectionType() const override;
 
   // Tests can manually set EffectiveConnectionType, but browser tests should
   // expect that the EffectiveConnectionType could change.
@@ -65,6 +76,11 @@ class UINetworkQualityEstimatorService
   // IO thread based observer that is owned by this service. Created on the UI
   // thread, but used and deleted on the IO thread.
   std::unique_ptr<IONetworkQualityObserver> io_observer_;
+
+  // Observer list for changes in effective connection type.
+  base::ObserverList<
+      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver>
+      effective_connection_type_observer_list_;
 
   // Prefs manager that is owned by this service. Created on the UI thread, but
   // used and deleted on the IO thread.

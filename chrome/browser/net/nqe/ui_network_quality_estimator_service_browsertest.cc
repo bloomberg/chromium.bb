@@ -21,11 +21,34 @@
 #include "net/nqe/cached_network_quality.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_id.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Profile;
 
 namespace {
+
+class TestEffectiveConnectionTypeObserver
+    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver {
+ public:
+  TestEffectiveConnectionTypeObserver() {}
+  ~TestEffectiveConnectionTypeObserver() override {}
+
+  // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
+  // implementation:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override {
+    effective_connection_type_ = type;
+  }
+
+  // The most recently set EffectiveConnectionType.
+  net::EffectiveConnectionType effective_connection_type() const {
+    return effective_connection_type_;
+  }
+
+ private:
+  net::EffectiveConnectionType effective_connection_type_;
+};
 
 class UINetworkQualityEstimatorServiceBrowserTest
     : public InProcessBrowserTest {
@@ -138,16 +161,31 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
   Profile* profile = ProfileManager::GetActiveUserProfile();
   UINetworkQualityEstimatorService* nqe_service =
       UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
+  TestEffectiveConnectionTypeObserver nqe_observer;
+  nqe_service->AddEffectiveConnectionTypeObserver(&nqe_observer);
 
   nqe_test_util::OverrideEffectiveConnectionTypeAndWait(
       net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
             nqe_service->GetEffectiveConnectionType());
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+            nqe_observer.effective_connection_type());
 
   nqe_test_util::OverrideEffectiveConnectionTypeAndWait(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
             nqe_service->GetEffectiveConnectionType());
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+            nqe_observer.effective_connection_type());
+
+  nqe_service->RemoveEffectiveConnectionTypeObserver(&nqe_observer);
+
+  nqe_test_util::OverrideEffectiveConnectionTypeAndWait(
+      net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+            nqe_service->GetEffectiveConnectionType());
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+            nqe_observer.effective_connection_type());
 }
 
 // Verify that prefs are not writen when writing of the prefs is not enabled

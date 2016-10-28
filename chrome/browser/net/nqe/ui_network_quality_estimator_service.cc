@@ -207,12 +207,26 @@ void UINetworkQualityEstimatorService::EffectiveConnectionTypeChanged(
     net::EffectiveConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   type_ = type;
+  for (auto& observer : effective_connection_type_observer_list_)
+    observer.OnEffectiveConnectionTypeChanged(type);
+}
+
+void UINetworkQualityEstimatorService::AddEffectiveConnectionTypeObserver(
+    net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  effective_connection_type_observer_list_.AddObserver(observer);
+}
+
+void UINetworkQualityEstimatorService::RemoveEffectiveConnectionTypeObserver(
+    net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  effective_connection_type_observer_list_.RemoveObserver(observer);
 }
 
 void UINetworkQualityEstimatorService::SetEffectiveConnectionTypeForTesting(
     net::EffectiveConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  type_ = type;
+  EffectiveConnectionTypeChanged(type);
 }
 
 net::EffectiveConnectionType

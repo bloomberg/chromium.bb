@@ -156,6 +156,14 @@ class NET_EXPORT NetworkQualityEstimator
     // Returns the current effective connection type.
     virtual EffectiveConnectionType GetEffectiveConnectionType() const = 0;
 
+    // Adds |observer| to a list of effective connection type observers.
+    virtual void AddEffectiveConnectionTypeObserver(
+        EffectiveConnectionTypeObserver* observer) = 0;
+
+    // Removes |observer| from a list of effective connection type observers.
+    virtual void RemoveEffectiveConnectionTypeObserver(
+        EffectiveConnectionTypeObserver* observer) = 0;
+
     virtual ~NetworkQualityProvider() {}
 
    protected:
