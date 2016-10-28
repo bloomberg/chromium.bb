@@ -89,17 +89,6 @@ const DisplayManager* Display::display_manager() const {
   return window_server_->display_manager();
 }
 
-mojom::WsDisplayPtr Display::ToWsDisplay() const {
-  mojom::WsDisplayPtr display_ptr = mojom::WsDisplay::New();
-
-  display_ptr->display = ToDisplay();
-  display_ptr->is_primary = platform_display_->IsPrimaryDisplay();
-
-  // TODO(sky): make this real.
-  display_ptr->frame_decoration_values = mojom::FrameDecorationValues::New();
-  return display_ptr;
-}
-
 display::Display Display::ToDisplay() const {
   display::Display display(GetId());
 

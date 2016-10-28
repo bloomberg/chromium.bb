@@ -72,11 +72,7 @@ class Display : public PlatformDisplayDelegate,
 
   PlatformDisplay* platform_display() { return platform_display_.get(); }
 
-  // Returns a mojom::WsDisplay for the specified display. WindowManager
-  // specific values are not set.
-  mojom::WsDisplayPtr ToWsDisplay() const;
-
-  // Returns a display::Display for the specficied display.
+  // Returns a display::Display corresponding to this ws::Display.
   display::Display ToDisplay() const;
 
   // Schedules a paint for the specified region in the coordinates of |window|.

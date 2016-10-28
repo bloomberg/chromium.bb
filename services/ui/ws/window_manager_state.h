@@ -13,7 +13,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "services/ui/public/interfaces/display.mojom.h"
+#include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"
 #include "services/ui/ws/server_window_observer.h"

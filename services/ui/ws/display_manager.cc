@@ -214,5 +214,13 @@ void DisplayManager::OnDisplayModified(
   OnDisplayUpdate(display);
 }
 
+void DisplayManager::OnPrimaryDisplayChanged(int64_t primary_display_id) {
+  // TODO(kylechar): Send IPCs to WM clients first.
+
+  // Send IPCs to any DisplayManagerObservers.
+  for (const auto& pair : user_display_managers_)
+    pair.second->OnPrimaryDisplayChanged(primary_display_id);
+}
+
 }  // namespace ws
 }  // namespace ui

@@ -34,6 +34,9 @@ class PlatformScreenDelegate {
   virtual void OnDisplayModified(int64_t id,
                                  const ViewportMetrics& metrics) = 0;
 
+  // Called when the primary display is changed.
+  virtual void OnPrimaryDisplayChanged(int64_t primary_display_id) = 0;
+
  protected:
   virtual ~PlatformScreenDelegate() {}
 };

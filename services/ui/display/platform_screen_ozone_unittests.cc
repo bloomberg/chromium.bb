@@ -8,12 +8,12 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "services/ui/display/platform_screen.h"
 #include "services/ui/display/platform_screen_ozone.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/fake_display_snapshot.h"
 #include "ui/display/types/display_constants.h"
@@ -23,17 +23,12 @@
 
 namespace display {
 
-using ui::DisplayConfigurator;
 using ui::DisplayMode;
 using ui::DisplaySnapshot;
-using ui::DisplaySnapshotVirtual;
 using testing::IsEmpty;
 using testing::SizeIs;
 
 namespace {
-
-// The ID of default "display" that gets added when running off device.
-const int64_t kDefaultDisplayId = 1;
 
 // Holds info about the display state we want to test.
 struct DisplayState {
@@ -73,35 +68,55 @@ class TestPlatformScreenDelegate : public PlatformScreenDelegate {
   TestPlatformScreenDelegate() {}
   ~TestPlatformScreenDelegate() override {}
 
-  std::vector<DisplayState> added() { return added_; }
-  std::vector<DisplayState> removed() { return removed_; }
-  std::vector<DisplayState> modified() { return modified_; }
+  const std::vector<DisplayState>& added() const { return added_; }
+  const std::vector<DisplayState>& modified() const { return modified_; }
+
+  // Returns a string containing the function calls that PlatformScreenDelegate
+  // has received in the order they occured. Each function call will be in the
+  // form "<action>(<id>)" and multiple function calls will be separated by ";".
+  // For example, if display 2 was added then display 1 was modified, changes()
+  // would return "Added(2);Modified(1)".
+  const std::string& changes() const { return changes_; }
 
   void Reset() {
     added_.clear();
-    removed_.clear();
     modified_.clear();
+    changes_.clear();
   }
 
  private:
+  void AddChange(const std::string& name, const std::string& value) {
+    if (!changes_.empty())
+      changes_ += ";";
+    changes_ += name + "(" + value + ")";
+  }
+
   void OnDisplayAdded(int64_t id, const ViewportMetrics& metrics) override {
     added_.push_back({id, metrics});
+    AddChange("Added", base::Int64ToString(id));
   }
 
   void OnDisplayRemoved(int64_t id) override {
-    removed_.push_back({id, ViewportMetrics()});
+    AddChange("Removed", base::Int64ToString(id));
   }
 
   void OnDisplayModified(int64_t id, const ViewportMetrics& metrics) override {
     modified_.push_back({id, metrics});
+    AddChange("Modified", base::Int64ToString(id));
+  }
+
+  void OnPrimaryDisplayChanged(int64_t primary_display_id) override {
+    AddChange("Primary", base::Int64ToString(primary_display_id));
   }
 
   std::vector<DisplayState> added_;
-  std::vector<DisplayState> removed_;
   std::vector<DisplayState> modified_;
+  std::string changes_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformScreenDelegate);
 };
+
+}  // namespace
 
 // Test fixture with helpers to act like ui::DisplayConfigurator and send
 // OnDisplayModeChanged() to PlatformScreenOzone.
@@ -110,7 +125,7 @@ class PlatformScreenOzoneTest : public testing::Test {
   PlatformScreenOzoneTest() {}
   ~PlatformScreenOzoneTest() override {}
 
-  PlatformScreen* platform_screen() { return platform_screen_.get(); }
+  PlatformScreenOzone* platform_screen() { return platform_screen_.get(); }
   TestPlatformScreenDelegate* delegate() { return &delegate_; }
 
   // Adds a display snapshot with specified ID and default size.
@@ -119,6 +134,7 @@ class PlatformScreenOzoneTest : public testing::Test {
   // Adds a display snapshot with specified ID and size to list of snapshots.
   void AddDisplay(int64_t id, const gfx::Size& size) {
     snapshots_.push_back(MakeSnapshot(id, size));
+    TriggerOnDisplayModeChanged();
   }
 
   // Removes display snapshot with specified ID.
@@ -128,6 +144,7 @@ class PlatformScreenOzoneTest : public testing::Test {
                        [id](std::unique_ptr<DisplaySnapshot>& snapshot) {
                          return snapshot->display_id() == id;
                        }));
+    TriggerOnDisplayModeChanged();
   }
 
   // Modify the size of the display snapshot with specified ID.
@@ -148,6 +165,7 @@ class PlatformScreenOzoneTest : public testing::Test {
     }
 
     snapshot->set_current_mode(new_mode);
+    TriggerOnDisplayModeChanged();
   }
 
   // Calls OnDisplayModeChanged with our list of display snapshots.
@@ -156,8 +174,7 @@ class PlatformScreenOzoneTest : public testing::Test {
     for (auto& snapshot : snapshots_) {
       snapshots_ptrs.push_back(snapshot.get());
     }
-    static_cast<DisplayConfigurator::Observer*>(platform_screen_.get())
-        ->OnDisplayModeChanged(snapshots_ptrs);
+    platform_screen_->OnDisplayModeChanged(snapshots_ptrs);
   }
 
  private:
@@ -180,14 +197,15 @@ class PlatformScreenOzoneTest : public testing::Test {
     platform_screen_->Init(&delegate_);
 
     // Have all tests start with a 1024x768 display by default.
-    AddDisplay(kDefaultDisplayId, gfx::Size(1024, 768));
+    AddDisplay(1, gfx::Size(1024, 768));
     TriggerOnDisplayModeChanged();
 
     // Double check the expected display exists and clear counters.
     ASSERT_THAT(delegate()->added(), SizeIs(1));
-    ASSERT_THAT(delegate_.added()[0], DisplayId(kDefaultDisplayId));
+    ASSERT_THAT(delegate_.added()[0], DisplayId(1));
     ASSERT_THAT(delegate_.added()[0], DisplayOrigin("0,0"));
     ASSERT_THAT(delegate_.added()[0], DisplaySize("1024x768"));
+    ASSERT_EQ("Added(1);Primary(1)", delegate()->changes());
     delegate_.Reset();
   }
 
@@ -202,84 +220,48 @@ class PlatformScreenOzoneTest : public testing::Test {
   std::vector<std::unique_ptr<DisplaySnapshot>> snapshots_;
 };
 
-}  // namespace
-
 TEST_F(PlatformScreenOzoneTest, AddDisplay) {
   AddDisplay(2);
-  TriggerOnDisplayModeChanged();
 
   // Check that display 2 was added.
-  ASSERT_THAT(delegate()->added(), SizeIs(1));
-  EXPECT_THAT(delegate()->added()[0], DisplayId(2));
-  EXPECT_THAT(delegate()->removed(), IsEmpty());
-  EXPECT_THAT(delegate()->modified(), IsEmpty());
+  EXPECT_EQ("Added(2)", delegate()->changes());
 }
 
 TEST_F(PlatformScreenOzoneTest, RemoveDisplay) {
   AddDisplay(2);
-  TriggerOnDisplayModeChanged();
   delegate()->Reset();
 
   RemoveDisplay(2);
-  TriggerOnDisplayModeChanged();
 
   // Check that display 2 was removed.
-  ASSERT_THAT(delegate()->removed(), SizeIs(1));
-  EXPECT_THAT(delegate()->removed()[0], DisplayId(2));
-  EXPECT_THAT(delegate()->added(), IsEmpty());
-  EXPECT_THAT(delegate()->modified(), IsEmpty());
+  EXPECT_EQ("Removed(2)", delegate()->changes());
 }
 
 TEST_F(PlatformScreenOzoneTest, RemoveFirstDisplay) {
   AddDisplay(2);
-  TriggerOnDisplayModeChanged();
   delegate()->Reset();
 
-  RemoveDisplay(kDefaultDisplayId);
-  TriggerOnDisplayModeChanged();
+  RemoveDisplay(1);
 
-  // Check that the default display was removed and display 2 was modified due
-  // to the origin changing.
-  EXPECT_THAT(delegate()->added(), IsEmpty());
-  ASSERT_THAT(delegate()->removed(), SizeIs(1));
-  EXPECT_THAT(delegate()->removed()[0], DisplayId(kDefaultDisplayId));
-
+  // Check that display 1 was removed and display 2 was modified due to the
+  // origin changing.
+  EXPECT_EQ("Primary(2);Removed(1);Modified(2)", delegate()->changes());
   ASSERT_THAT(delegate()->modified(), SizeIs(1));
   EXPECT_THAT(delegate()->modified()[0], DisplayId(2));
   EXPECT_THAT(delegate()->modified()[0], DisplayOrigin("0,0"));
 }
 
-TEST_F(PlatformScreenOzoneTest, RemovePrimaryDisplay) {
-  EXPECT_EQ(kDefaultDisplayId, platform_screen()->GetPrimaryDisplayId());
-
-  AddDisplay(2);
-  RemoveDisplay(kDefaultDisplayId);
-  TriggerOnDisplayModeChanged();
-
-  // Check the primary display changed because the old primary was removed.
-  EXPECT_EQ(2, platform_screen()->GetPrimaryDisplayId());
-}
-
 TEST_F(PlatformScreenOzoneTest, RemoveMultipleDisplay) {
   AddDisplay(2);
   AddDisplay(3);
-  TriggerOnDisplayModeChanged();
   delegate()->Reset();
 
   RemoveDisplay(2);
-  TriggerOnDisplayModeChanged();
-
-  // Check that display 2 was removed.
-  ASSERT_THAT(delegate()->removed(), SizeIs(1));
-  EXPECT_THAT(delegate()->removed()[0], DisplayId(2));
-
-  delegate()->Reset();
   RemoveDisplay(3);
-  TriggerOnDisplayModeChanged();
 
-  // Check that display 3 was removed.
-  ASSERT_THAT(delegate()->removed(), SizeIs(1));
-  EXPECT_THAT(delegate()->removed()[0], DisplayId(3));
+  // Check that display 2 was removed and display 3 is modifed (origin change),
+  // then display 3 was removed.
+  EXPECT_EQ("Removed(2);Modified(3);Removed(3)", delegate()->changes());
 }
 
 TEST_F(PlatformScreenOzoneTest, ModifyDisplaySize) {
@@ -287,44 +269,82 @@ TEST_F(PlatformScreenOzoneTest, ModifyDisplaySize) {
   const gfx::Size size2(1680, 1050);
 
   AddDisplay(2, size1);
-  TriggerOnDisplayModeChanged();
 
   // Check that display 2 was added with expected size.
   ASSERT_THAT(delegate()->added(), SizeIs(1));
   EXPECT_THAT(delegate()->added()[0], DisplayId(2));
   EXPECT_THAT(delegate()->added()[0], DisplaySize(size1.ToString()));
+  EXPECT_EQ("Added(2)", delegate()->changes());
   delegate()->Reset();
 
   ModifyDisplay(2, size2);
-  TriggerOnDisplayModeChanged();
 
   // Check that display 2 was modified to have the new expected size.
   ASSERT_THAT(delegate()->modified(), SizeIs(1));
   EXPECT_THAT(delegate()->modified()[0], DisplayId(2));
   EXPECT_THAT(delegate()->modified()[0], DisplaySize(size2.ToString()));
+  EXPECT_EQ("Modified(2)", delegate()->changes());
 }
 
 TEST_F(PlatformScreenOzoneTest, ModifyFirstDisplaySize) {
   const gfx::Size size(1920, 1200);
 
   AddDisplay(2, size);
-  TriggerOnDisplayModeChanged();
 
-  // Check that display two has the expected initial origin.
+  // Check that display 2 has the expected initial origin.
+  EXPECT_EQ("Added(2)", delegate()->changes());
   ASSERT_THAT(delegate()->added(), SizeIs(1));
   EXPECT_THAT(delegate()->added()[0], DisplayOrigin("1024,0"));
   delegate()->Reset();
 
-  ModifyDisplay(kDefaultDisplayId, size);
-  TriggerOnDisplayModeChanged();
+  ModifyDisplay(1, size);
 
-  // Check that the default display was modified with a new size and display 2
-  // was modified with a new origin.
+  // Check that display 1 was modified with a new size and display 2 origin was
+  // modified after.
+  EXPECT_EQ("Modified(1);Modified(2)", delegate()->changes());
   ASSERT_THAT(delegate()->modified(), SizeIs(2));
-  EXPECT_THAT(delegate()->modified()[0], DisplayId(kDefaultDisplayId));
+  EXPECT_THAT(delegate()->modified()[0], DisplayId(1));
   EXPECT_THAT(delegate()->modified()[0], DisplaySize(size.ToString()));
   EXPECT_THAT(delegate()->modified()[1], DisplayId(2));
   EXPECT_THAT(delegate()->modified()[1], DisplayOrigin("1920,0"));
+}
+
+TEST_F(PlatformScreenOzoneTest, RemovePrimaryDisplay) {
+  AddDisplay(2);
+  delegate()->Reset();
+
+  RemoveDisplay(1);
+
+  // Check the primary display changed because the old primary was removed.
+  EXPECT_EQ("Primary(2);Removed(1);Modified(2)", delegate()->changes());
+}
+
+TEST_F(PlatformScreenOzoneTest, RemoveLastDisplay) {
+  RemoveDisplay(1);
+
+  // Check that display 1 is removed and no updates for the primary display are
+  // received.
+  EXPECT_EQ("Removed(1)", delegate()->changes());
+}
+
+TEST_F(PlatformScreenOzoneTest, SwapPrimaryDisplay) {
+  AddDisplay(2);
+  delegate()->Reset();
+
+  platform_screen()->SwapPrimaryDisplay();
+  EXPECT_EQ("Primary(2)", delegate()->changes());
+}
+
+TEST_F(PlatformScreenOzoneTest, SwapPrimaryThreeDisplays) {
+  AddDisplay(2);
+  AddDisplay(3);
+  EXPECT_EQ("Added(2);Added(3)", delegate()->changes());
+  delegate()->Reset();
+
+  platform_screen()->SwapPrimaryDisplay();
+  platform_screen()->SwapPrimaryDisplay();
+  platform_screen()->SwapPrimaryDisplay();
+  EXPECT_EQ("Primary(2);Primary(3);Primary(1)", delegate()->changes());
 }
 
 }  // namespace display

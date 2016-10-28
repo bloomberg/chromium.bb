@@ -12,7 +12,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "services/ui/public/interfaces/display.mojom.h"
+#include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"

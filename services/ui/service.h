@@ -22,7 +22,7 @@
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
-#include "services/ui/public/interfaces/display.mojom.h"
+#include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"

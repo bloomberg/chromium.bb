@@ -87,6 +87,7 @@ class DisplayManager : public UserIdTrackerObserver,
   void OnDisplayRemoved(int64_t id) override;
   void OnDisplayModified(int64_t id,
                          const display::ViewportMetrics& metrics) override;
+  void OnPrimaryDisplayChanged(int64_t primary_display_id) override;
 
   WindowServer* window_server_;
   UserIdTracker* user_id_tracker_;

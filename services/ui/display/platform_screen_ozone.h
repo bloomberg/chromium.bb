@@ -56,6 +56,8 @@ class PlatformScreenOzone
                           const gfx::Insets& insets) override;
 
  private:
+  friend class PlatformScreenOzoneTest;
+
   // TODO(kylechar): This struct is just temporary until we migrate
   // DisplayManager code out of ash so it can be used here.
   struct DisplayInfo {

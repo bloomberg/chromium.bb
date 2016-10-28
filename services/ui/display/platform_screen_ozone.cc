@@ -164,7 +164,7 @@ void PlatformScreenOzone::SwapPrimaryDisplay() {
     primary_display_id_ = cached_displays_[primary_display_index + 1].id;
   }
 
-  // TODO(kylechar): Update ws::DisplayManager.
+  delegate_->OnPrimaryDisplayChanged(primary_display_id_);
 }
 
 void PlatformScreenOzone::SetDisplayWorkArea(int64_t display_id,
@@ -208,16 +208,6 @@ void PlatformScreenOzone::ProcessRemovedDisplays(
       display.removed = true;
       if (primary_display_id_ == display.id)
         primary_display_id_ = Display::kInvalidDisplayID;
-    }
-  }
-
-  // If the primary display was removed find a new primary display id.
-  if (primary_display_id_ == Display::kInvalidDisplayID) {
-    for (const DisplayInfo& display : cached_displays_) {
-      if (!display.removed) {
-        primary_display_id_ = display.id;
-        break;
-      }
     }
   }
 }
@@ -279,10 +269,6 @@ void PlatformScreenOzone::AddNewDisplays(
     if (GetCachedDisplayIterator(id) != cached_displays_.end())
       continue;
 
-    // If we have no primary display then this one should be it.
-    if (primary_display_id_ == Display::kInvalidDisplayID)
-      primary_display_id_ = id;
-
     DisplayInfo display_info;
     display_info.id = snapshot->display_id();
     display_info.metrics = MetricsFromSnapshot(*snapshot, next_display_origin_);
@@ -299,6 +285,12 @@ void PlatformScreenOzone::AddNewDisplays(
 
     cached_displays_.push_back(display_info);
     delegate_->OnDisplayAdded(display_info.id, display_info.metrics);
+
+    // If we have no primary display then this one should be it.
+    if (primary_display_id_ == Display::kInvalidDisplayID) {
+      primary_display_id_ = id;
+      delegate_->OnPrimaryDisplayChanged(primary_display_id_);
+    }
   }
 }
 
@@ -333,8 +325,22 @@ void PlatformScreenOzone::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& displays) {
   ProcessRemovedDisplays(displays);
   ProcessModifiedDisplays(displays);
+
+  // If the primary display is marked as removed we'll try to find a new primary
+  // display and update the delegate before removing the old primary display.
+  if (primary_display_id_ == Display::kInvalidDisplayID) {
+    for (const DisplayInfo& display : cached_displays_) {
+      if (!display.removed) {
+        primary_display_id_ = display.id;
+        delegate_->OnPrimaryDisplayChanged(primary_display_id_);
+        break;
+      }
+    }
+  }
+
   UpdateCachedDisplays();
   AddNewDisplays(displays);
+
   wait_for_display_config_update_ = false;
 }
 
