@@ -235,7 +235,6 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
 FINAL_STATUS_PASSED = 'passed'
 FINAL_STATUS_FAILED = 'failed'
 
-
 # Monarch metric names
 MON_CL_ACTION = 'chromeos/cbuildbot/cl_action/%s'
 MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
@@ -252,6 +251,9 @@ MON_CL_CQRUN_TIME = 'chromeos/cbuildbot/submitted_change/cq_run_times'
 MON_CL_FALSE_REJ = 'chromeos/cbuildbot/submitted_change/false_rejections'
 MON_CL_FALSE_REJ_COUNT = ('chromeos/cbuildbot/submitted_change/'
                           'false_rejection_count')
+MON_REPO_SYNC_COUNT = 'chromeos/cbuildbot/repo/sync_count'
+MON_REPO_SYNC_RETRY_COUNT = 'chromeos/cbuildbot/repo/sync_retry_count'
+MON_GIT_FETCH_COUNT = 'chromeos/cbuildbot/git/fetch_count'
 
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they

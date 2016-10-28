@@ -923,8 +923,11 @@ class GitRepoPatch(PatchQuery):
     sha1 = self.HasBeenFetched(git_repo)
 
     if sha1 is None:
+      fields = {'project_url': self.project_url}
       git.RunGit(git_repo, ['fetch', '-f', self.project_url, self.ref],
-                 print_cmd=True)
+                 print_cmd=True,
+                 mon_name=constants.MON_GIT_FETCH_COUNT,
+                 mon_fields=fields)
 
     return self.UpdateMetadataFromRepo(git_repo, sha1=sha1 or self.sha1)
 

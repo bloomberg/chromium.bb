@@ -18,6 +18,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_util
@@ -399,13 +400,21 @@ class RepoRepository(object):
     return '--force-sync' in result.output
 
   def _CleanUpAndRunCommand(self, *args, **kwargs):
-    """Clean up repository and run command"""
+    """Clean up repository and run command.
+
+    This is only called in repo network Sync retries.
+    """
     commands.BuildRootGitCleanup(self.directory)
     local_manifest = kwargs.pop('local_manifest', None)
     # Always re-initialize to the current branch.
     self.Initialize(local_manifest)
     # Fix existing broken mirroring configurations.
     self._EnsureMirroring()
+
+    fields = {'manifest_repo': self.manifest_repo_url}
+    metrics.Counter(constants.MON_REPO_SYNC_RETRY_COUNT).increment(
+        fields=fields)
+
     cros_build_lib.RunCommand(*args, **kwargs)
 
   def Sync(self, local_manifest=None, jobs=None, all_branches=True,
@@ -447,6 +456,9 @@ class RepoRepository(object):
         cmd.append('--cache-dir=%s' % self.git_cache_dir)
       # Do the network half of the sync; retry as necessary to get the content.
       try:
+        fields = {'manifest_repo': self.manifest_repo_url}
+        metrics.Counter(constants.MON_REPO_SYNC_COUNT).increment(fields=fields)
+
         cros_build_lib.RunCommand(cmd + ['-n'], cwd=self.directory)
       except cros_build_lib.RunCommandError:
         if constants.SYNC_RETRIES > 0:
@@ -457,7 +469,9 @@ class RepoRepository(object):
           time.sleep(DEFAULT_SLEEP_TIME)
           retry_util.RetryCommand(self._CleanUpAndRunCommand,
                                   constants.SYNC_RETRIES - 1,
-                                  cmd + ['-n'], cwd=self.directory,
+                                  cmd + ['-n'],
+                                  cwd=self.directory,
+                                  local_manifest=local_manifest,
                                   sleep=DEFAULT_SLEEP_TIME,
                                   backoff_factor=2,
                                   log_retries=True)

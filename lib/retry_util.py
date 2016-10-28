@@ -12,6 +12,7 @@ import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import metrics
 
 
 def GenericRetry(handler, max_retry, functor, *args, **kwargs):
@@ -51,6 +52,9 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
                                       retries. If True, the first exception
                                       that was encountered. If False, the
                                       final one. Default: True.
+    mon_name: Optional string presenting the metrics name to count. This is
+              counted on every call.
+    mon_fields: Optional fields dict associated with the metrics name mon_name.
 
   Returns:
     Whatever functor(*args, **kwargs) returns.
@@ -85,6 +89,9 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
   delay_sec = kwargs.pop('delay_sec', 0)
   exception_to_raise = kwargs.pop('exception_to_raise', None)
 
+  mon_name = kwargs.pop('mon_name', None)
+  mon_fields = kwargs.pop('mon_fields', None)
+
   attempt = 0
 
   exc_info = None
@@ -102,6 +109,9 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
         sleep_time = sleep * attempt
       time.sleep(sleep_time)
     try:
+      if mon_name is not None:
+        metrics.Counter(mon_name).increment(fields=mon_fields)
+
       ret = functor(*args, **kwargs)
       success = True
       break
