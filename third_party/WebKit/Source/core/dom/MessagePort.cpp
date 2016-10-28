@@ -58,8 +58,6 @@ MessagePort::MessagePort(ExecutionContext& executionContext)
 
 MessagePort::~MessagePort() {
   DCHECK(!m_started || !isEntangled());
-  if (m_scriptStateForConversion)
-    m_scriptStateForConversion->disposePerContextData();
 }
 
 void MessagePort::postMessage(ExecutionContext* context,

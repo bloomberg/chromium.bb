@@ -145,8 +145,6 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   bool m_started;
   bool m_closed;
-
-  RefPtr<ScriptState> m_scriptStateForConversion;
 };
 
 }  // namespace blink
