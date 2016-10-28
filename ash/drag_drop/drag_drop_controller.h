@@ -24,6 +24,10 @@ namespace gfx {
 class LinearAnimation;
 }
 
+namespace ui {
+class LocatedEvent;
+}
+
 namespace ash {
 class DragDropTracker;
 class DragDropTrackerDelegate;
@@ -53,8 +57,6 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
                        const gfx::Point& screen_location,
                        int operation,
                        ui::DragDropTypes::DragEventSource source) override;
-  void DragUpdate(aura::Window* target, const ui::LocatedEvent& event) override;
-  void Drop(aura::Window* target, const ui::LocatedEvent& event) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
 
@@ -75,6 +77,10 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
       int duration,
       int frame_rate,
       gfx::AnimationDelegate* delegate);
+
+  // Exposed for tests to override.
+  virtual void DragUpdate(aura::Window* target, const ui::LocatedEvent& event);
+  virtual void Drop(aura::Window* target, const ui::LocatedEvent& event);
 
   // Actual implementation of |DragCancel()|. protected for testing.
   virtual void DoDragCancel(int drag_cancel_animation_duration_ms);

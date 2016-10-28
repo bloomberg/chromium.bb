@@ -872,16 +872,6 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-void DesktopDragDropClientAuraX11::DragUpdate(aura::Window* target,
-                                              const ui::LocatedEvent& event) {
-  NOTIMPLEMENTED();
-}
-
-void DesktopDragDropClientAuraX11::Drop(aura::Window* target,
-                                        const ui::LocatedEvent& event) {
-  NOTIMPLEMENTED();
-}
-
 void DesktopDragDropClientAuraX11::DragCancel() {
   move_loop_->EndMoveLoop();
 }

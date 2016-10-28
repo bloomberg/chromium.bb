@@ -75,14 +75,6 @@ int DesktopDragDropClientWin::StartDragAndDrop(
   return drag_operation;
 }
 
-void DesktopDragDropClientWin::DragUpdate(aura::Window* target,
-                                          const ui::LocatedEvent& event) {
-}
-
-void DesktopDragDropClientWin::Drop(aura::Window* target,
-                                    const ui::LocatedEvent& event) {
-}
-
 void DesktopDragDropClientWin::DragCancel() {
   drag_source_->CancelDrag();
   drag_operation_ = 0;

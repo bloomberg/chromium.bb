@@ -245,8 +245,6 @@ class TestDragDropClient : public aura::client::DragDropClient,
                        const gfx::Point& screen_location,
                        int operation,
                        ui::DragDropTypes::DragEventSource source) override;
-  void DragUpdate(aura::Window* target, const ui::LocatedEvent& event) override;
-  void Drop(aura::Window* target, const ui::LocatedEvent& event) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
 
@@ -284,15 +282,6 @@ int TestDragDropClient::StartDragAndDrop(
   return operation;
 }
 
-void TestDragDropClient::DragUpdate(aura::Window* target,
-                                    const ui::LocatedEvent& event) {
-}
-
-void TestDragDropClient::Drop(aura::Window* target,
-                              const ui::LocatedEvent& event) {
-  drag_in_progress_ = false;
-}
-
 void TestDragDropClient::DragCancel() {
   drag_in_progress_ = false;
 }
@@ -306,11 +295,10 @@ void TestDragDropClient::OnMouseEvent(ui::MouseEvent* event) {
     return;
   switch (event->type()) {
     case ui::ET_MOUSE_DRAGGED:
-      DragUpdate(target_, *event);
       event->StopPropagation();
       break;
     case ui::ET_MOUSE_RELEASED:
-      Drop(target_, *event);
+      drag_in_progress_ = false;
       event->StopPropagation();
       break;
     default:

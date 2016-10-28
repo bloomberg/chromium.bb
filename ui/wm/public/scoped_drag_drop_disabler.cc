@@ -21,9 +21,6 @@ class NopDragDropClient : public DragDropClient {
                        ui::DragDropTypes::DragEventSource source) override {
     return 0;
   }
-  void DragUpdate(aura::Window* target,
-                  const ui::LocatedEvent& event) override {}
-  void Drop(aura::Window* target, const ui::LocatedEvent& event) override {}
   void DragCancel() override {}
   bool IsDragDropInProgress() override {
     return false;

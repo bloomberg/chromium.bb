@@ -61,18 +61,6 @@ int DragDropClientMus::StartDragAndDrop(
   return action_taken;
 }
 
-void DragDropClientMus::DragUpdate(aura::Window* target,
-                                   const ui::LocatedEvent& event) {
-  // Only called on OSX.
-  NOTREACHED();
-}
-
-void DragDropClientMus::Drop(aura::Window* target,
-                             const ui::LocatedEvent& event) {
-  // Only called on OSX.
-  NOTREACHED();
-}
-
 void DragDropClientMus::DragCancel() {
   ui_window_->CancelDragDrop();
 }

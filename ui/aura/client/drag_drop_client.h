@@ -14,7 +14,6 @@ class Point;
 }
 
 namespace ui {
-class LocatedEvent;
 class OSExchangeData;
 }
 
@@ -36,14 +35,6 @@ class AURA_EXPORT DragDropClient {
                                const gfx::Point& screen_location,
                                int operation,
                                ui::DragDropTypes::DragEventSource source) = 0;
-
-  // Called when mouse is dragged during a drag and drop.
-  virtual void DragUpdate(aura::Window* target,
-                          const ui::LocatedEvent& event) = 0;
-
-  // Called when mouse is released during a drag and drop.
-  virtual void Drop(aura::Window* target,
-                    const ui::LocatedEvent& event) = 0;
 
   // Called when a drag and drop session is cancelled.
   virtual void DragCancel() = 0;
