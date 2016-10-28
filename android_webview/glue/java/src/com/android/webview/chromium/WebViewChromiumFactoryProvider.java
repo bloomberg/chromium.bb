@@ -58,6 +58,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.net.NetworkChangeNotifier;
@@ -305,6 +306,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 }
             }
         }
+    }
+
+    public static boolean preloadInZygote() {
+        for (String library : NativeLibraries.LIBRARIES) {
+            System.loadLibrary(library);
+        }
+        return true;
     }
 
     private void initPlatSupportLibrary() {
