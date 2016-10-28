@@ -270,6 +270,8 @@ class PLATFORM_EXPORT DrawingBuffer
 
    private:
     RefPtr<DrawingBuffer> m_drawingBuffer;
+    // The previous state restorer, in case restorers are nested.
+    ScopedStateRestorer* m_previousStateRestorer = nullptr;
     bool m_clearStateDirty = false;
     bool m_pixelPackAlignmentDirty = false;
     bool m_textureBindingDirty = false;
