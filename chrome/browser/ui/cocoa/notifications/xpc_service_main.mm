@@ -21,11 +21,6 @@ int main(int argc, const char* argv[]) {
     NSXPCListener* listener = [NSXPCListener serviceListener];
     listener.delegate = delegate.get();
 
-    // Keep the connection open forever since there is no xpc_transaction_end()
-    // TODO(miguelg): send xpc_transaction_end when no alerts are being
-    // displayed.
-    xpc_transaction_begin();
-
     [listener resume];
 
     return 0;

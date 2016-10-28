@@ -18,6 +18,8 @@ mac_app_bundle("alert_notification_xpc_service") {
     "notification_service_delegate.h",
     "notification_service_delegate.mm",
     "xpc_service_main.mm",
+    "xpc_transaction_handler.h",
+    "xpc_transaction_handler.mm",
   ]
 
   deps = [

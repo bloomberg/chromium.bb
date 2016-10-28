@@ -9,9 +9,12 @@
 
 #import "chrome/browser/ui/cocoa/notifications/notification_delivery.h"
 
+@class XPCTransactionHandler;
+
 // Implementation of the NotificationDelivery protocol that can display
 // notifications of type alert.
 @interface AlertNotificationService : NSObject<NotificationDelivery>
+- (instancetype)initWithTransactionHandler:(XPCTransactionHandler*)handler;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_BANNER_NOTIFICATION_SERVICE_H_

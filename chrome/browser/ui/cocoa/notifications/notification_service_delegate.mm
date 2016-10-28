@@ -10,16 +10,20 @@
 #import "chrome/browser/ui/cocoa/notifications/alert_notification_service.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_delivery.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
+#import "chrome/browser/ui/cocoa/notifications/xpc_transaction_handler.h"
 
 @class NSUserNotificationCenter;
 
-@implementation ServiceDelegate
+@implementation ServiceDelegate {
+  base::scoped_nsobject<XPCTransactionHandler> transactionHandler_;
+}
 
 @synthesize connection = connection_;
 
 - (instancetype)init {
   if ((self = [super init])) {
     [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
+    transactionHandler_.reset([[XPCTransactionHandler alloc] init]);
   }
   return self;
 }
@@ -42,7 +46,8 @@
             ofReply:NO];
 
   base::scoped_nsobject<AlertNotificationService> object(
-      [[AlertNotificationService alloc] init]);
+      [[AlertNotificationService alloc]
+          initWithTransactionHandler:transactionHandler_]);
   newConnection.exportedObject = object.get();
   newConnection.remoteObjectInterface =
       [NSXPCInterface interfaceWithProtocol:@protocol(NotificationReply)];
@@ -66,6 +71,7 @@
   NSDictionary* response =
       [NotificationResponseBuilder buildDictionary:notification];
   [[connection_ remoteObjectProxy] notificationClick:response];
+  [transactionHandler_ closeTransactionIfNeeded];
 }
 
 @end
