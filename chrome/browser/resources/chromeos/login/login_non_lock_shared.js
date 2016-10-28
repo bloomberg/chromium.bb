@@ -42,8 +42,6 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     // Immediately load async assets.
-    // TODO(dconnelly): remove this at some point and only load as needed.
-    // See crbug.com/236426
     cr.ui.login.ResourceLoader.loadAssets(SCREEN_OOBE_ENROLLMENT, function() {
       // This screen is async-loaded so we manually trigger i18n processing.
       i18nTemplate.process($('oauth-enrollment'), loadTimeData);
