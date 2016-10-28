@@ -26,6 +26,10 @@ class VoiceSearchProvider {
   VoiceSearchProvider() = default;
   virtual ~VoiceSearchProvider() = default;
 
+  // Returns true if voice search is enabled.  The other methods in this
+  // provider must not be called if this method returns false.
+  virtual bool IsVoiceSearchEnabled() const;
+
   // Returns the list of available voice search languages.
   virtual NSArray* GetAvailableLanguages() const;
 

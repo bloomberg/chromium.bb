@@ -6,6 +6,10 @@
 
 #import "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 
+bool VoiceSearchProvider::IsVoiceSearchEnabled() const {
+  return false;
+}
+
 NSArray* VoiceSearchProvider::GetAvailableLanguages() const {
   return @[];
 }
