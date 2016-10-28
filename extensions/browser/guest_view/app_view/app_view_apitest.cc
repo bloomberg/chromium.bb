@@ -159,6 +159,12 @@ class AppViewTest : public AppShellTest,
 
 INSTANTIATE_TEST_CASE_P(AppViewTests, AppViewTest, testing::Bool());
 
+#if defined(OS_WIN)
+#define MAYBE_TestAppViewGoodDataShouldSucceed \
+  DISABLED_TestAppViewGoodDataShouldSucceed
+#else
+#define MAYBE_TestAppViewGoodDataShouldSucceed TestAppViewGoodDataShouldSucceed
+#endif
 // Tests that <appview> correctly processes parameters passed on connect.
 IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewGoodDataShouldSucceed) {
   RunTest("testAppViewGoodDataShouldSucceed",
