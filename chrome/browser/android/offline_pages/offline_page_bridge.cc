@@ -501,6 +501,17 @@ ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflinePageHeaderForReload(
       env, offline_header_for_reload.GetCompleteHeaderString()));
 }
 
+jboolean OfflinePageBridge::IsShowingOfflinePreview(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents)
+    return false;
+  return offline_pages::OfflinePageUtils::IsShowingOfflinePreview(web_contents);
+}
+
 void OfflinePageBridge::GetRequestsInQueue(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

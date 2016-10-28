@@ -403,6 +403,14 @@ public class OfflinePageBridge {
         return nativeGetOfflinePageHeaderForReload(mNativeOfflinePageBridge, webContents);
     }
 
+    /**
+     * @return True if an offline preview is being shown.
+     * @param webContents Contents of the page to check.
+     */
+    public boolean isShowingOfflinePreview(WebContents webContents) {
+        return nativeIsShowingOfflinePreview(mNativeOfflinePageBridge, webContents);
+    }
+
     private static class CheckPagesExistOfflineCallbackInternal {
         private Callback<Set<String>> mCallback;
 
@@ -528,5 +536,7 @@ public class OfflinePageBridge {
     private native void nativeSavePageLater(long nativeOfflinePageBridge, String url,
             String clientNamespace, String clientId, boolean userRequested);
     private native String nativeGetOfflinePageHeaderForReload(
+            long nativeOfflinePageBridge, WebContents webContents);
+    private native boolean nativeIsShowingOfflinePreview(
             long nativeOfflinePageBridge, WebContents webContents);
 }
