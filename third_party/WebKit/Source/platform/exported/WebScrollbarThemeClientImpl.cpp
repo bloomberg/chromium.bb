@@ -94,10 +94,10 @@ void WebScrollbarThemeClientImpl::invalidateRect(const IntRect&) {
   ASSERT_NOT_REACHED();
 }
 
-ScrollbarOverlayStyle WebScrollbarThemeClientImpl::getScrollbarOverlayStyle()
-    const {
-  return static_cast<ScrollbarOverlayStyle>(
-      m_scrollbar.scrollbarOverlayStyle());
+ScrollbarOverlayColorTheme
+WebScrollbarThemeClientImpl::getScrollbarOverlayColorTheme() const {
+  return static_cast<ScrollbarOverlayColorTheme>(
+      m_scrollbar.scrollbarOverlayColorTheme());
 }
 
 void WebScrollbarThemeClientImpl::getTickmarks(

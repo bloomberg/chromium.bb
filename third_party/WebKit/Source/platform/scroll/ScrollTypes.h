@@ -185,10 +185,9 @@ enum ScrollbarPart {
   AllParts = 0xffffffff
 };
 
-enum ScrollbarOverlayStyle {
-  ScrollbarOverlayStyleDefault,
-  ScrollbarOverlayStyleDark,
-  ScrollbarOverlayStyleLight
+enum ScrollbarOverlayColorTheme {
+  ScrollbarOverlayColorThemeDark,
+  ScrollbarOverlayColorThemeLight
 };
 
 enum ScrollBehavior {

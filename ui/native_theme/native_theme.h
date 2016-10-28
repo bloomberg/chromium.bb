@@ -171,8 +171,14 @@ class NATIVE_THEME_EXPORT NativeTheme {
     int classic_state;  // Used on Windows when uxtheme is not available.
   };
 
+  enum ScrollbarOverlayColorTheme {
+    ScrollbarOverlayColorThemeDark,
+    ScrollbarOverlayColorThemeLight
+  };
+
   struct ScrollbarThumbExtraParams {
     bool is_hovering;
+    ScrollbarOverlayColorTheme scrollbar_theme;
   };
 
   struct SliderExtraParams {
@@ -235,7 +241,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
                                     State startState,
                                     State endState,
                                     double progress,
-                                    const gfx::Rect& rect) const { }
+                                    const gfx::Rect& rect,
+                                    ScrollbarOverlayColorTheme theme) const {}
 
   // Supports theme specific colors.
   void SetScrollbarColors(unsigned inactive_color,

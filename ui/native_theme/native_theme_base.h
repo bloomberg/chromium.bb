@@ -35,13 +35,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
              const gfx::Rect& rect,
              const ExtraParams& extra) const override;
 
-  void PaintStateTransition(SkCanvas* canvas,
-                            Part part,
-                            State startState,
-                            State endState,
-                            double progress,
-                            const gfx::Rect& rect) const override;
-
  protected:
   NativeThemeBase();
   ~NativeThemeBase() override;
@@ -65,7 +58,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       SkCanvas* canvas,
       Part part,
       State state,
-      const gfx::Rect& rect) const;
+      const gfx::Rect& rect,
+      NativeTheme::ScrollbarOverlayColorTheme theme) const;
 
   virtual void PaintScrollbarCorner(SkCanvas* canvas,
                                     State state,
@@ -135,14 +129,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       State state,
       const gfx::Rect& rect,
       const ProgressBarExtraParams& progress_bar) const;
-
-  virtual void PaintScrollbarThumbStateTransition(SkCanvas* canvas,
-                                                  Part part,
-                                                  State startState,
-                                                  State endState,
-                                                  double progress,
-                                                  const gfx::Rect& rect) const {
-  }
 
   // Shrinks checkbox/radio button rect, if necessary, to make room for padding
   // and drop shadow.

@@ -70,7 +70,7 @@ class PLATFORM_EXPORT ScrollbarTheme {
 
   virtual bool supportsControlTints() const { return false; }
   virtual bool usesOverlayScrollbars() const { return false; }
-  virtual void updateScrollbarOverlayStyle(const ScrollbarThemeClient&) {}
+  virtual void updateScrollbarOverlayColorTheme(const ScrollbarThemeClient&) {}
 
   virtual bool invalidateOnMouseEnterExit() { return false; }
   virtual bool invalidateOnWindowActiveChange() const { return false; }

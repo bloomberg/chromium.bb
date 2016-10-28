@@ -27,6 +27,7 @@
 
 #include "WebPoint.h"
 #include "WebRect.h"
+#include "WebScrollbarOverlayColorTheme.h"
 #include "WebSize.h"
 #include "WebVector.h"
 
@@ -62,12 +63,6 @@ class BLINK_PLATFORM_EXPORT WebScrollbar {
     AllParts = 0xffffffff
   };
 
-  enum ScrollbarOverlayStyle {
-    ScrollbarOverlayStyleDefault,
-    ScrollbarOverlayStyleDark,
-    ScrollbarOverlayStyleLight
-  };
-
   virtual ~WebScrollbar() {}
 
   // Return true if this is an overlay scrollbar.
@@ -86,7 +81,7 @@ class BLINK_PLATFORM_EXPORT WebScrollbar {
   virtual ScrollbarControlSize controlSize() const = 0;
   virtual ScrollbarPart pressedPart() const = 0;
   virtual ScrollbarPart hoveredPart() const = 0;
-  virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const = 0;
+  virtual WebScrollbarOverlayColorTheme scrollbarOverlayColorTheme() const = 0;
   virtual bool isCustomScrollbar() const = 0;
   virtual Orientation orientation() const = 0;
   virtual bool isLeftSideVerticalScrollbar() const = 0;

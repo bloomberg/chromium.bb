@@ -66,7 +66,7 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   void updateEnabledState(const ScrollbarThemeClient&) override;
   int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
   bool usesOverlayScrollbars() const override;
-  void updateScrollbarOverlayStyle(const ScrollbarThemeClient&) override;
+  void updateScrollbarOverlayColorTheme(const ScrollbarThemeClient&) override;
   WebScrollbarButtonsPlacement buttonsPlacement() const override;
 
   void setNewPainterForScrollbar(ScrollbarThemeClient&, ScrollbarPainter);

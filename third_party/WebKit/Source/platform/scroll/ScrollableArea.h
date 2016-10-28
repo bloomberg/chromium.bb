@@ -120,10 +120,11 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void contentsResized();
 
   bool hasOverlayScrollbars() const;
-  void setScrollbarOverlayStyle(ScrollbarOverlayStyle);
-  void recalculateScrollbarOverlayStyle(Color);
-  ScrollbarOverlayStyle getScrollbarOverlayStyle() const {
-    return static_cast<ScrollbarOverlayStyle>(m_scrollbarOverlayStyle);
+  void setScrollbarOverlayColorTheme(ScrollbarOverlayColorTheme);
+  void recalculateScrollbarOverlayColorTheme(Color);
+  ScrollbarOverlayColorTheme getScrollbarOverlayColorTheme() const {
+    return static_cast<ScrollbarOverlayColorTheme>(
+        m_scrollbarOverlayColorTheme);
   }
 
   // This getter will create a ScrollAnimatorBase if it doesn't already exist.
@@ -390,7 +391,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   mutable Member<ScrollAnimatorBase> m_scrollAnimator;
   mutable Member<ProgrammaticScrollAnimator> m_programmaticScrollAnimator;
 
-  unsigned m_scrollbarOverlayStyle : 2;  // ScrollbarOverlayStyle
+  unsigned m_scrollbarOverlayColorTheme : 2;
 
   unsigned m_scrollOriginChanged : 1;
 

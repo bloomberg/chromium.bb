@@ -88,10 +88,10 @@ WebScrollbar::ScrollbarPart WebScrollbarImpl::hoveredPart() const {
   return static_cast<WebScrollbar::ScrollbarPart>(m_scrollbar->hoveredPart());
 }
 
-WebScrollbar::ScrollbarOverlayStyle WebScrollbarImpl::scrollbarOverlayStyle()
+WebScrollbarOverlayColorTheme WebScrollbarImpl::scrollbarOverlayColorTheme()
     const {
-  return static_cast<WebScrollbar::ScrollbarOverlayStyle>(
-      m_scrollbar->getScrollbarOverlayStyle());
+  return static_cast<WebScrollbarOverlayColorTheme>(
+      m_scrollbar->getScrollbarOverlayColorTheme());
 }
 
 WebScrollbar::Orientation WebScrollbarImpl::orientation() const {

@@ -59,7 +59,7 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
   ScrollbarControlSize controlSize() const override;
   ScrollbarPart pressedPart() const override;
   ScrollbarPart hoveredPart() const override;
-  ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
+  WebScrollbarOverlayColorTheme scrollbarOverlayColorTheme() const override;
   bool isCustomScrollbar() const override;
   Orientation orientation() const override;
   bool isLeftSideVerticalScrollbar() const override;

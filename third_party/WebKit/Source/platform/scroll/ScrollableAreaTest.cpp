@@ -225,14 +225,14 @@ TEST_F(ScrollableAreaTest, RecalculatesScrollbarOverlayIfBackgroundChanges) {
   MockScrollableArea* scrollableArea =
       MockScrollableArea::create(ScrollOffset(0, 100));
 
-  EXPECT_EQ(ScrollbarOverlayStyleDefault,
-            scrollableArea->getScrollbarOverlayStyle());
-  scrollableArea->recalculateScrollbarOverlayStyle(Color(34, 85, 51));
-  EXPECT_EQ(ScrollbarOverlayStyleLight,
-            scrollableArea->getScrollbarOverlayStyle());
-  scrollableArea->recalculateScrollbarOverlayStyle(Color(236, 143, 185));
-  EXPECT_EQ(ScrollbarOverlayStyleDefault,
-            scrollableArea->getScrollbarOverlayStyle());
+  EXPECT_EQ(ScrollbarOverlayColorThemeDark,
+            scrollableArea->getScrollbarOverlayColorTheme());
+  scrollableArea->recalculateScrollbarOverlayColorTheme(Color(34, 85, 51));
+  EXPECT_EQ(ScrollbarOverlayColorThemeLight,
+            scrollableArea->getScrollbarOverlayColorTheme());
+  scrollableArea->recalculateScrollbarOverlayColorTheme(Color(236, 143, 185));
+  EXPECT_EQ(ScrollbarOverlayColorThemeDark,
+            scrollableArea->getScrollbarOverlayColorTheme());
 }
 
 }  // namespace blink

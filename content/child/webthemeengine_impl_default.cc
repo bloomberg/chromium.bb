@@ -14,6 +14,7 @@ using blink::WebCanvas;
 using blink::WebColor;
 using blink::WebRect;
 using blink::WebThemeEngine;
+using blink::WebScrollbarOverlayColorTheme;
 
 namespace content {
 namespace {
@@ -78,6 +79,18 @@ static ui::NativeTheme::Part NativeThemePart(
   }
 }
 
+static ui::NativeTheme::ScrollbarOverlayColorTheme
+NativeThemeScrollbarOverlayColorTheme(WebScrollbarOverlayColorTheme theme) {
+  switch (theme) {
+    case WebScrollbarOverlayColorTheme::WebScrollbarOverlayColorThemeLight:
+      return ui::NativeTheme::ScrollbarOverlayColorThemeLight;
+    case WebScrollbarOverlayColorTheme::WebScrollbarOverlayColorThemeDark:
+      return ui::NativeTheme::ScrollbarOverlayColorThemeDark;
+    default:
+      return ui::NativeTheme::ScrollbarOverlayColorThemeDark;
+  }
+}
+
 static ui::NativeTheme::State NativeThemeState(
     WebThemeEngine::State state) {
   switch (state) {
@@ -99,6 +112,9 @@ static void GetNativeThemeExtraParams(
     WebThemeEngine::State state,
     const WebThemeEngine::ExtraParams* extra_params,
     ui::NativeTheme::ExtraParams* native_theme_extra_params) {
+  if (!extra_params)
+    return;
+
   switch (part) {
     case WebThemeEngine::PartScrollbarHorizontalTrack:
     case WebThemeEngine::PartScrollbarVerticalTrack:
@@ -177,6 +193,12 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->progress_bar.value_rect_height =
           extra_params->progressBar.valueRectHeight;
       break;
+    case WebThemeEngine::PartScrollbarHorizontalThumb:
+    case WebThemeEngine::PartScrollbarVerticalThumb:
+      native_theme_extra_params->scrollbar_thumb.scrollbar_theme =
+          NativeThemeScrollbarOverlayColorTheme(
+              extra_params->scrollbarThumb.scrollbarTheme);
+      break;
     default:
       break;  // Parts that have no extra params get here.
   }
@@ -219,17 +241,6 @@ void WebThemeEngineImpl::paint(
   ui::NativeTheme::GetInstanceForWeb()->Paint(
       canvas, NativeThemePart(part), NativeThemeState(state), gfx::Rect(rect),
       native_theme_extra_params);
-}
-
-void WebThemeEngineImpl::paintStateTransition(blink::WebCanvas* canvas,
-                                              WebThemeEngine::Part part,
-                                              WebThemeEngine::State startState,
-                                              WebThemeEngine::State endState,
-                                              double progress,
-                                              const blink::WebRect& rect) {
-  ui::NativeTheme::GetInstanceForWeb()->PaintStateTransition(
-      canvas, NativeThemePart(part), NativeThemeState(startState),
-      NativeThemeState(endState), progress, gfx::Rect(rect));
 }
 
 #if defined(OS_WIN)

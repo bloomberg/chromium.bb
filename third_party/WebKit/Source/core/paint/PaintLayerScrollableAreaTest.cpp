@@ -9,6 +9,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 
 namespace blink {
@@ -369,5 +370,40 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_FALSE(paintLayer->needsCompositedScrolling());
   EXPECT_FALSE(paintLayer->graphicsLayerBacking());
+}
+
+// Ensure OverlayScrollbarColorTheme get updated when page load
+TEST_F(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
+  setBodyInnerHTML(
+      "<style>"
+      "div { overflow: scroll; }"
+      "#white { background-color: white; }"
+      "#black { background-color: black; }"
+      "</style>"
+      "<div id=\"none\">a</div>"
+      "<div id=\"white\">b</div>"
+      "<div id=\"black\">c</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* none = document().getElementById("none");
+  Element* white = document().getElementById("white");
+  Element* black = document().getElementById("black");
+
+  PaintLayer* noneLayer = toLayoutBoxModelObject(none->layoutObject())->layer();
+  PaintLayer* whiteLayer =
+      toLayoutBoxModelObject(white->layoutObject())->layer();
+  PaintLayer* blackLayer =
+      toLayoutBoxModelObject(black->layoutObject())->layer();
+
+  ASSERT_TRUE(noneLayer);
+  ASSERT_TRUE(whiteLayer);
+  ASSERT_TRUE(blackLayer);
+
+  ASSERT_EQ(ScrollbarOverlayColorTheme::ScrollbarOverlayColorThemeDark,
+            noneLayer->getScrollableArea()->getScrollbarOverlayColorTheme());
+  ASSERT_EQ(ScrollbarOverlayColorTheme::ScrollbarOverlayColorThemeDark,
+            whiteLayer->getScrollableArea()->getScrollbarOverlayColorTheme());
+  ASSERT_EQ(ScrollbarOverlayColorTheme::ScrollbarOverlayColorThemeLight,
+            blackLayer->getScrollableArea()->getScrollbarOverlayColorTheme());
 }
 }

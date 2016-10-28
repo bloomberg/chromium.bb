@@ -81,7 +81,7 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   void setFrameRect(const IntRect&) override;
   IntRect frameRect() const override { return Widget::frameRect(); }
 
-  ScrollbarOverlayStyle getScrollbarOverlayStyle() const override;
+  ScrollbarOverlayColorTheme getScrollbarOverlayColorTheme() const override;
   void getTickmarks(Vector<IntRect>&) const override;
   bool isScrollableAreaActive() const override;
 

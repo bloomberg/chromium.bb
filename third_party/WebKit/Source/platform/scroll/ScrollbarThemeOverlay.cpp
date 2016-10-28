@@ -162,8 +162,13 @@ void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context,
   if (scrollbar.orientation() == VerticalScrollbar)
     part = WebThemeEngine::PartScrollbarVerticalThumb;
 
+  blink::WebThemeEngine::ExtraParams params;
+  params.scrollbarThumb.scrollbarTheme =
+      static_cast<WebScrollbarOverlayColorTheme>(
+          scrollbar.getScrollbarOverlayColorTheme());
+
   Platform::current()->themeEngine()->paint(canvas, part, state, WebRect(rect),
-                                            0);
+                                            &params);
 }
 
 ScrollbarPart ScrollbarThemeOverlay::hitTest(

@@ -273,6 +273,7 @@ source_set("blink_headers") {
     "platform/WebScrollbarBehavior.h",
     "platform/WebScrollbarButtonsPlacement.h",
     "platform/WebScrollbarLayer.h",
+    "platform/WebScrollbarOverlayColorTheme.h",
     "platform/WebScrollbarThemeGeometry.h",
     "platform/WebScrollbarThemePainter.h",
     "platform/WebSecurityOrigin.h",

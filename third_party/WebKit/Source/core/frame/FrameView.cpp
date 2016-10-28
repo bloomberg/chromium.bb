@@ -2122,7 +2122,7 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor) {
     if (compositedLayerMapping->mainGraphicsLayer())
       compositedLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
   }
-  recalculateScrollbarOverlayStyle(documentBackgroundColor());
+  recalculateScrollbarOverlayColorTheme(documentBackgroundColor());
 
   if (!shouldThrottleRendering())
     page()->animator().scheduleVisualUpdate(m_frame.get());

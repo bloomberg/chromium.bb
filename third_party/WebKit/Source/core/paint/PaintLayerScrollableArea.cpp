@@ -853,6 +853,22 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
                             hasScrollableVerticalOverflow());
   }
 
+  // Whenever background changes on the scrollable element, the scroll bar
+  // overlay style might need to be changed to have contrast against the
+  // background.
+  // Skip the need scrollbar check, because we dont know do we need a scrollbar
+  // when this method get called.
+  Color oldBackground;
+  if (oldStyle) {
+    oldBackground = oldStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+  }
+  Color newBackground =
+      box().style()->visitedDependentColor(CSSPropertyBackgroundColor);
+
+  if (newBackground != oldBackground) {
+    recalculateScrollbarOverlayColorTheme(newBackground);
+  }
+
   bool needsHorizontalScrollbar;
   bool needsVerticalScrollbar;
   // We add auto scrollbars only during layout to prevent spurious activations.
@@ -890,20 +906,6 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
   updateScrollCornerStyle();
   updateResizerAreaSet();
   updateResizerStyle();
-
-  // Whenever background changes on the scrollable element, the scroll bar
-  // overlay style might need to be changed to have contrast against the
-  // background.
-  Color oldBackground;
-  if (oldStyle) {
-    oldBackground = oldStyle->visitedDependentColor(CSSPropertyBackgroundColor);
-  }
-  Color newBackground =
-      box().style()->visitedDependentColor(CSSPropertyBackgroundColor);
-
-  if (newBackground != oldBackground) {
-    recalculateScrollbarOverlayStyle(newBackground);
-  }
 }
 
 bool PaintLayerScrollableArea::updateAfterCompositingChange() {

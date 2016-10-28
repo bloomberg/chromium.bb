@@ -613,12 +613,10 @@ STATIC_ASSERT_ENUM(WebScrollbar::ForwardButtonEndPart, ForwardButtonEndPart);
 STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarBGPart, ScrollbarBGPart);
 STATIC_ASSERT_ENUM(WebScrollbar::TrackBGPart, TrackBGPart);
 STATIC_ASSERT_ENUM(WebScrollbar::AllParts, AllParts);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarOverlayStyleDefault,
-                   ScrollbarOverlayStyleDefault);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarOverlayStyleDark,
-                   ScrollbarOverlayStyleDark);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarOverlayStyleLight,
-                   ScrollbarOverlayStyleLight);
+STATIC_ASSERT_ENUM(WebScrollbarOverlayColorThemeDark,
+                   ScrollbarOverlayColorThemeDark);
+STATIC_ASSERT_ENUM(WebScrollbarOverlayColorThemeLight,
+                   ScrollbarOverlayColorThemeLight);
 
 STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorMac, EditingMacBehavior);
 STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorWin, EditingWindowsBehavior);

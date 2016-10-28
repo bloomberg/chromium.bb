@@ -319,8 +319,8 @@ void ScrollbarThemeAura::paintButton(GraphicsContext& gc,
   if (!params.shouldPaint)
     return;
   DrawingRecorder recorder(gc, scrollbar, displayItemType, rect);
-  Platform::current()->themeEngine()->paint(gc.canvas(), params.part,
-                                            params.state, WebRect(rect), 0);
+  Platform::current()->themeEngine()->paint(
+      gc.canvas(), params.part, params.state, WebRect(rect), nullptr);
 }
 
 void ScrollbarThemeAura::paintThumb(GraphicsContext& gc,
@@ -340,11 +340,12 @@ void ScrollbarThemeAura::paintThumb(GraphicsContext& gc,
     state = WebThemeEngine::StateHover;
   else
     state = WebThemeEngine::StateNormal;
+
   Platform::current()->themeEngine()->paint(
       canvas, scrollbar.orientation() == HorizontalScrollbar
                   ? WebThemeEngine::PartScrollbarHorizontalThumb
                   : WebThemeEngine::PartScrollbarVerticalThumb,
-      state, WebRect(rect), 0);
+      state, WebRect(rect), nullptr);
 }
 
 bool ScrollbarThemeAura::shouldRepaintAllPartsOnInvalidation() const {

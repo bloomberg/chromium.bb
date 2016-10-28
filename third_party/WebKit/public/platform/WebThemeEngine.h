@@ -33,6 +33,7 @@
 
 #include "WebCanvas.h"
 #include "WebColor.h"
+#include "WebScrollbarOverlayColorTheme.h"
 #include "WebSize.h"
 
 namespace blink {
@@ -137,6 +138,11 @@ class WebThemeEngine {
     int valueRectHeight;
   };
 
+  // Extra parameters for scrollbar thumb. Used only for overlay scrollbars.
+  struct ScrollbarThumbExtraParams {
+    WebScrollbarOverlayColorTheme scrollbarTheme;
+  };
+
   union ExtraParams {
     ScrollbarTrackExtraParams scrollbarTrack;
     ButtonExtraParams button;
@@ -145,6 +151,7 @@ class WebThemeEngine {
     SliderExtraParams slider;
     InnerSpinButtonExtraParams innerSpin;
     ProgressBarExtraParams progressBar;
+    ScrollbarThumbExtraParams scrollbarThumb;
   };
 
   // Gets the size of the given theme part. For variable sized items

@@ -74,7 +74,7 @@ int ScrollableArea::maxOverlapBetweenPages() {
 }
 
 ScrollableArea::ScrollableArea()
-    : m_scrollbarOverlayStyle(ScrollbarOverlayStyleDefault),
+    : m_scrollbarOverlayColorTheme(ScrollbarOverlayColorThemeDark),
       m_scrollOriginChanged(false),
       m_horizontalScrollbarNeedsPaintInvalidation(false),
       m_verticalScrollbarNeedsPaintInvalidation(false),
@@ -363,7 +363,7 @@ void ScrollableArea::didAddScrollbar(Scrollbar& scrollbar,
 
   // <rdar://problem/9797253> AppKit resets the scrollbar's style when you
   // attach a scrollbar
-  setScrollbarOverlayStyle(getScrollbarOverlayStyle());
+  setScrollbarOverlayColorTheme(getScrollbarOverlayColorTheme());
 }
 
 void ScrollableArea::willRemoveScrollbar(Scrollbar& scrollbar,
@@ -389,24 +389,25 @@ bool ScrollableArea::hasOverlayScrollbars() const {
   return hScrollbar && hScrollbar->isOverlayScrollbar();
 }
 
-void ScrollableArea::setScrollbarOverlayStyle(
-    ScrollbarOverlayStyle overlayStyle) {
-  m_scrollbarOverlayStyle = overlayStyle;
+void ScrollableArea::setScrollbarOverlayColorTheme(
+    ScrollbarOverlayColorTheme overlayTheme) {
+  m_scrollbarOverlayColorTheme = overlayTheme;
 
   if (Scrollbar* scrollbar = horizontalScrollbar()) {
-    ScrollbarTheme::theme().updateScrollbarOverlayStyle(*scrollbar);
+    ScrollbarTheme::theme().updateScrollbarOverlayColorTheme(*scrollbar);
     scrollbar->setNeedsPaintInvalidation(AllParts);
   }
 
   if (Scrollbar* scrollbar = verticalScrollbar()) {
-    ScrollbarTheme::theme().updateScrollbarOverlayStyle(*scrollbar);
+    ScrollbarTheme::theme().updateScrollbarOverlayColorTheme(*scrollbar);
     scrollbar->setNeedsPaintInvalidation(AllParts);
   }
 }
 
-void ScrollableArea::recalculateScrollbarOverlayStyle(Color backgroundColor) {
-  ScrollbarOverlayStyle oldOverlayStyle = getScrollbarOverlayStyle();
-  ScrollbarOverlayStyle overlayStyle = ScrollbarOverlayStyleDefault;
+void ScrollableArea::recalculateScrollbarOverlayColorTheme(
+    Color backgroundColor) {
+  ScrollbarOverlayColorTheme oldOverlayTheme = getScrollbarOverlayColorTheme();
+  ScrollbarOverlayColorTheme overlayTheme = ScrollbarOverlayColorThemeDark;
 
   // Reduce the background color from RGB to a lightness value
   // and determine which scrollbar style to use based on a lightness
@@ -414,10 +415,10 @@ void ScrollableArea::recalculateScrollbarOverlayStyle(Color backgroundColor) {
   double hue, saturation, lightness;
   backgroundColor.getHSL(hue, saturation, lightness);
   if (lightness <= .5)
-    overlayStyle = ScrollbarOverlayStyleLight;
+    overlayTheme = ScrollbarOverlayColorThemeLight;
 
-  if (oldOverlayStyle != overlayStyle)
-    setScrollbarOverlayStyle(overlayStyle);
+  if (oldOverlayTheme != overlayTheme)
+    setScrollbarOverlayColorTheme(overlayTheme);
 }
 
 void ScrollableArea::setScrollbarNeedsPaintInvalidation(
