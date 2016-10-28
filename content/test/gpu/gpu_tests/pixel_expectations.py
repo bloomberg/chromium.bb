@@ -39,8 +39,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=581526)
     self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=581526)
 
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=615325)
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              ['mac', ('nvidia', 0xfe9)], bug=652931)
+              bug=615325)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
