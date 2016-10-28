@@ -260,7 +260,7 @@ public class DownloadNotificationService extends Service {
                 buildPendingIntent(cancelIntent, notificationId));
         Intent pauseIntent = buildActionIntent(
                 ACTION_DOWNLOAD_PAUSE, notificationId, downloadGuid, fileName, isOfflinePage);
-        builder.addAction(R.drawable.ic_vidcontrol_pause,
+        builder.addAction(R.drawable.ic_media_control_pause,
                 mContext.getResources().getString(R.string.download_notification_pause_button),
                 buildPendingIntent(pauseIntent, notificationId));
         updateNotification(notificationId, builder.build());
