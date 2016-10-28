@@ -273,6 +273,38 @@ public class WebApkUpdateManagerTest {
     }
 
     /**
+     * Test that the is-update-needed check is tried the next time that the WebAPK is launched if
+     * Chrome is killed prior to the initial URL finishing loading.
+     */
+    @Test
+    public void testCheckOnNextLaunchIfClosePriorToFirstPageLoad() {
+        mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
+        {
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            updateIfNeeded(updateManager);
+            assertTrue(updateManager.updateCheckStarted());
+        }
+
+        // Chrome is killed.
+        // {@link WebApkUpdateManager#onFinishedFetchingWebManifestForInitialUrl()} is never called.
+
+        {
+            // Relaunching the WebAPK should do an is-update-needed check.
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            updateIfNeeded(updateManager);
+            assertTrue(updateManager.updateCheckStarted());
+            onGotWebApkCompatibleWebManifestForInitialUrl(updateManager, false);
+        }
+
+        {
+            // Relaunching the WebAPK should not do an is-update-needed-check.
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            updateIfNeeded(updateManager);
+            assertFalse(updateManager.updateCheckStarted());
+        }
+    }
+
+    /**
      * Test that the completion time of the previous WebAPK update is not modified if:
      * - The previous WebAPK update succeeded.
      * AND

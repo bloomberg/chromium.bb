@@ -46,7 +46,7 @@ public class WebappDataStorage {
     static final String KEY_VERSION = "version";
     static final String KEY_WEBAPK_PACKAGE_NAME = "webapk_package_name";
 
-    // The last time that Chrome checked for Web Manifest updates for a WebAPK.
+    // The completion time of the last check for whether the WebAPK's Web Manifest was updated.
     static final String KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME =
             "last_check_web_manifest_update_time";
 
@@ -350,7 +350,8 @@ public class WebappDataStorage {
     }
 
     /**
-     * Updates the time of the last check for whether the WebAPK's Web Manifest was updated.
+     * Updates the time of the completion of the last check for whether the WebAPK's Web Manifest
+     * was updated.
      */
     void updateTimeOfLastCheckForUpdatedWebManifest() {
         mPreferences.edit()
@@ -359,8 +360,8 @@ public class WebappDataStorage {
     }
 
     /**
-     * Returns the time of the last check for whether the WebAPK's Web Manifest was updated.
-     * This time needs to be set when the WebAPK was registered.
+     * Returns the completion time of the last check for whether the WebAPK's Web Manifest was
+     * updated. This time needs to be set when the WebAPK is registered.
      */
     long getLastCheckForWebManifestUpdateTime() {
         return mPreferences.getLong(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME, LAST_USED_INVALID);

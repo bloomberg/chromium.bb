@@ -73,11 +73,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
         if (!shouldCheckIfWebManifestUpdated(storage, mMetaData, mPreviousUpdateSucceeded)) return;
 
         mUpgradeDetector = buildManifestUpgradeDetector(tab, mMetaData);
-        if (!mUpgradeDetector.start()) return;
-
-        // crbug.com/636525. The timestamp of the last manifest update check should be updated after
-        // the detector finds the manifest, not when the detector is started.
-        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+        mUpgradeDetector.start();
     }
 
     public void destroy() {
@@ -93,6 +89,9 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     @Override
     public void onGotManifestData(
             boolean needsUpgrade, ManifestUpgradeDetector.FetchedManifestData data) {
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(mId);
+        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+
         boolean gotManifest = (data != null);
         needsUpgrade |= isShellApkVersionOutOfDate(mMetaData);
         Log.v(TAG, "Got Manifest: " + gotManifest);
@@ -116,14 +115,14 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
 
         if (!needsUpgrade) {
             if (!mPreviousUpdateSucceeded) {
-                recordUpdateInWebappDataStorage(mId, true);
+                recordUpdate(storage, true);
             }
             return;
         }
 
         // Set WebAPK update as having failed in case that Chrome is killed prior to
         // {@link onBuiltWebApk} being called.
-        recordUpdateInWebappDataStorage(mId, false);
+        recordUpdate(storage, false);
 
         if (data != null) {
             updateAsync(data.startUrl, data.scopeUrl, data.name, data.shortName, data.iconUrl,
@@ -246,8 +245,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      * Updates {@link WebappDataStorage} with the time of the latest WebAPK update and whether the
      * WebAPK update succeeded.
      */
-    private static void recordUpdateInWebappDataStorage(String id, boolean success) {
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
+    private static void recordUpdate(WebappDataStorage storage, boolean success) {
         // Update the request time and result together. It prevents getting a correct request time
         // but a result from the previous request.
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
@@ -260,7 +258,8 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     @CalledByNative
     private static void onBuiltWebApk(String id, boolean success) {
-        recordUpdateInWebappDataStorage(id, success);
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
+        recordUpdate(storage, success);
     }
 
     private static native void nativeUpdateAsync(String id, String startUrl, String scope,
