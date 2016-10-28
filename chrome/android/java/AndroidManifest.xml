@@ -168,10 +168,6 @@ by a child template that "extends" this file.
                 {% if channel in ['dev', 'canary', 'default'] %}
                 <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
                 {% endif %}
-                {% if enable_vr_shell == "true" %}
-                <!-- Show icon in Daydream app launcher. -->
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                {% endif %}
             </intent-filter>
             <!-- Matches the common case of intents with no MIME type.
                  Make sure to keep in sync with the next filter.  -->
