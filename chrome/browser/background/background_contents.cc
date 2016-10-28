@@ -9,6 +9,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -62,6 +63,8 @@ BackgroundContents::BackgroundContents(
       web_contents_.get(), extensions::VIEW_TYPE_BACKGROUND_CONTENTS);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
+  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
+      web_contents_.get());
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());
 
