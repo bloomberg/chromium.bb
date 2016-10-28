@@ -105,6 +105,10 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
   // The app string, possibly based on the local profile id.
   std::string app_string_;
 
+  // True if we're already ensured that the default keyring has been unlocked
+  // once.
+  bool ensured_keyring_unlocked_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeBackendLibsecret);
 };
 

@@ -102,6 +102,10 @@ gboolean MockLibsecretLoader::mock_secret_password_store_sync(
     GCancellable* cancellable,
     GError** error,
     ...) {
+  // TODO(crbug.com/660005) We don't read the dummy we store to unlock keyring.
+  if (strcmp("_chrome_dummy_schema_for_unlocking", schema->name) == 0)
+    return true;
+
   EXPECT_STREQ(kKeystoreSchemaV2.name, schema->name);
   delete stored_password_mock_ptr_;
   stored_password_mock_ptr_ = new MockSecretValue(password);

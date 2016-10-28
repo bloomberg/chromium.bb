@@ -164,8 +164,8 @@ std::string GetProfileSpecificAppString(LocalProfileId id) {
 }  // namespace
 
 NativeBackendLibsecret::NativeBackendLibsecret(LocalProfileId id)
-    : app_string_(GetProfileSpecificAppString(id)) {
-}
+    : app_string_(GetProfileSpecificAppString(id)),
+      ensured_keyring_unlocked_(false) {}
 
 NativeBackendLibsecret::~NativeBackendLibsecret() {
 }
@@ -307,6 +307,11 @@ bool NativeBackendLibsecret::GetLogins(
 bool NativeBackendLibsecret::AddUpdateLoginSearch(
     const autofill::PasswordForm& lookup_form,
     ScopedVector<autofill::PasswordForm>* forms) {
+  if (!ensured_keyring_unlocked_) {
+    LibsecretLoader::EnsureKeyringUnlocked();
+    ensured_keyring_unlocked_ = true;
+  }
+
   LibsecretAttributesBuilder attrs;
   attrs.Append("origin_url", lookup_form.origin.spec());
   attrs.Append("username_element", UTF16ToUTF8(lookup_form.username_element));
@@ -408,6 +413,11 @@ bool NativeBackendLibsecret::GetLoginsList(
     const PasswordStore::FormDigest* lookup_form,
     GetLoginsListOptions options,
     ScopedVector<autofill::PasswordForm>* forms) {
+  if (!ensured_keyring_unlocked_) {
+    LibsecretLoader::EnsureKeyringUnlocked();
+    ensured_keyring_unlocked_ = true;
+  }
+
   LibsecretAttributesBuilder attrs;
   attrs.Append("application", app_string_);
   if (options != ALL_LOGINS)

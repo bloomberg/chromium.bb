@@ -98,6 +98,10 @@ gboolean mock_secret_password_store_sync(const SecretSchema* schema,
                                          GCancellable* cancellable,
                                          GError** error,
                                          ...) {
+  // TODO(crbug.com/660005) We don't read the dummy we store to unlock keyring.
+  if (strcmp("_chrome_dummy_schema_for_unlocking", schema->name) == 0)
+    return true;
+
   GHashTable* attributes =
       g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   va_list ap;

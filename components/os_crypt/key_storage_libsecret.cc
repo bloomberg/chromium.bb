@@ -100,7 +100,10 @@ std::string KeyStorageLibsecret::GetKey() {
 }
 
 bool KeyStorageLibsecret::Init() {
-  return LibsecretLoader::EnsureLibsecretLoaded();
+  bool loaded = LibsecretLoader::EnsureLibsecretLoaded();
+  if (loaded)
+    LibsecretLoader::EnsureKeyringUnlocked();
+  return loaded;
 }
 
 std::string KeyStorageLibsecret::Migrate() {

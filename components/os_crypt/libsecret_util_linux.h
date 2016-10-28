@@ -30,6 +30,10 @@ class LibsecretLoader {
   // the library again if already successful.
   static bool EnsureLibsecretLoaded();
 
+  // Ensure that the default keyring is accessible. This won't prevent the user
+  // from locking their keyring while Chrome is running.
+  static void EnsureKeyringUnlocked();
+
  protected:
   static bool libsecret_loaded_;
 

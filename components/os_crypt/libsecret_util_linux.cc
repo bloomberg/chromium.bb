@@ -13,6 +13,17 @@
 // LibsecretLoader
 //
 
+namespace {
+
+// TODO(crbug.com/660005) A message that is attached to useless entries that we
+// create, to explain its existence.
+const char kExplanationMessage[] =
+    "Because of quirks in the gnome libsecret API, Chrome needs to store a "
+    "dummy entry to quarantee that this keyring was properly unlocked. More "
+    "details at http://crbug.com/660005.";
+
+}  // namespace
+
 decltype(
     &::secret_password_store_sync) LibsecretLoader::secret_password_store_sync =
     nullptr;
@@ -117,6 +128,31 @@ bool LibsecretLoader::LibsecretIsAvailable() {
     g_list_free(found);
 
   return success;
+}
+
+// TODO(crbug.com/660005) This is needed to properly unlock the default keyring.
+// We don't need to ever read it.
+void LibsecretLoader::EnsureKeyringUnlocked() {
+  const SecretSchema kDummySchema = {
+      "_chrome_dummy_schema_for_unlocking",
+      SECRET_SCHEMA_NONE,
+      {{"explanation", SECRET_SCHEMA_ATTRIBUTE_STRING},
+       {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING}}};
+
+  GError* error = nullptr;
+  bool success = LibsecretLoader::secret_password_store_sync(
+      &kDummySchema, nullptr /* default keyring */,
+      "Chrome Safe Storage Control" /* entry title */,
+      "The meaning of life" /* password */, nullptr, &error, "explanation",
+      kExplanationMessage,
+      nullptr /* null-terminated variable argument list */);
+  if (error) {
+    VLOG(1) << "Dummy store to unlock the default keyring failed: "
+            << error->message;
+    g_error_free(error);
+  } else if (!success) {
+    VLOG(1) << "Dummy store to unlock the default keyring failed.";
+  }
 }
 
 //
