@@ -379,42 +379,27 @@ bool PictureLayerTiling::TilingMatchesTileIndices(
          twin->tiling_data_.max_texture_size();
 }
 
-PictureLayerTiling::CoverageIterator::CoverageIterator()
-    : tiling_(NULL),
-      current_tile_(NULL),
-      tile_i_(0),
-      tile_j_(0),
-      left_(0),
-      top_(0),
-      right_(-1),
-      bottom_(-1) {
-}
+PictureLayerTiling::CoverageIterator::CoverageIterator() = default;
 
 PictureLayerTiling::CoverageIterator::CoverageIterator(
     const PictureLayerTiling* tiling,
-    float dest_scale,
-    const gfx::Rect& dest_rect)
-    : tiling_(tiling),
-      dest_rect_(dest_rect),
-      dest_to_content_scale_(0),
-      current_tile_(NULL),
-      tile_i_(0),
-      tile_j_(0),
-      left_(0),
-      top_(0),
-      right_(-1),
-      bottom_(-1) {
+    float coverage_scale,
+    const gfx::Rect& coverage_rect)
+    : tiling_(tiling), coverage_rect_(coverage_rect) {
   DCHECK(tiling_);
-  DCHECK_GE(dest_scale, tiling_->contents_scale_);
+  // In order to avoid artifacts in geometry_rect scaling and clamping to ints,
+  // the |coverage_scale| should always be at least as big as the tiling's
+  // contents scale.
+  DCHECK_GE(coverage_scale, tiling_->contents_scale_);
 
-  // Clamp dest_rect_ to the bounds of the layer.
-  dest_layer_bounds_ =
-      gfx::ScaleToCeiledSize(tiling->raster_source_->GetSize(), dest_scale);
-  dest_rect_.Intersect(gfx::Rect(dest_layer_bounds_));
-  if (dest_rect_.IsEmpty())
+  // Clamp |coverage_rect| to the bounds of this tiling's raster source.
+  coverage_rect_max_bounds_ =
+      gfx::ScaleToCeiledSize(tiling->raster_source_->GetSize(), coverage_scale);
+  coverage_rect_.Intersect(gfx::Rect(coverage_rect_max_bounds_));
+  if (coverage_rect_.IsEmpty())
     return;
 
-  dest_to_content_scale_ = tiling_->contents_scale_ / dest_scale;
+  coverage_to_content_scale_ = tiling_->contents_scale_ / coverage_scale;
 
   // Find the indices of the texel samples that enclose the rect we want to
   // cover.
@@ -433,7 +418,7 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
   // Or in integer index:
   // wanted_texels(integer index) = (l:99, t:189, r:280, b:371)
   gfx::RectF content_rect =
-      gfx::ScaleRect(gfx::RectF(dest_rect_), dest_to_content_scale_);
+      gfx::ScaleRect(gfx::RectF(coverage_rect_), coverage_to_content_scale_);
   content_rect.Offset(-0.5f, -0.5f);
   gfx::Rect wanted_texels = gfx::ToEnclosingRect(content_rect);
 
@@ -492,29 +477,33 @@ PictureLayerTiling::CoverageIterator::operator++() {
     texel_extent.Inset(-epsilon, -epsilon);
   }
 
+  // Convert texel_extent to coverage scale, which is what we have to report
+  // geometry_rect in.
   current_geometry_rect_ = gfx::ToEnclosedRect(
-      gfx::ScaleRect(texel_extent, 1 / dest_to_content_scale_));
+      gfx::ScaleRect(texel_extent, 1.f / coverage_to_content_scale_));
   {
     // Adjust external edges to cover the whole layer in dest space.
     //
     // For external edges, extend the tile to scaled layer bounds. This is
-    // needed to fully cover the dest space because the sample extent doesn't
-    // cover the last 0.5 texel to layer edge, and also the dest space can be
-    // rounded up for up to 1 pixel. This overhang will never be sampled as the
-    // AA fragment shader clamps sample coordinate and antialiasing itself.
+    // needed to fully cover the coverage space because the sample extent
+    // doesn't cover the last 0.5 texel to layer edge, and also the coverage
+    // space can be rounded up for up to 1 pixel. This overhang will never be
+    // sampled as the AA fragment shader clamps sample coordinate and
+    // antialiasing itself.
     const TilingData& data = tiling_->tiling_data_;
-    current_geometry_rect_.Inset(
-        tile_i_ ? 0 : -current_geometry_rect_.x(),
-        tile_j_ ? 0 : -current_geometry_rect_.y(),
-        (tile_i_ != data.num_tiles_x() - 1)
-            ? 0
-            : current_geometry_rect_.right() - dest_layer_bounds_.width(),
-        (tile_j_ != data.num_tiles_y() - 1)
-            ? 0
-            : current_geometry_rect_.bottom() - dest_layer_bounds_.height());
+    current_geometry_rect_.Inset(tile_i_ ? 0 : -current_geometry_rect_.x(),
+                                 tile_j_ ? 0 : -current_geometry_rect_.y(),
+                                 (tile_i_ != data.num_tiles_x() - 1)
+                                     ? 0
+                                     : current_geometry_rect_.right() -
+                                           coverage_rect_max_bounds_.width(),
+                                 (tile_j_ != data.num_tiles_y() - 1)
+                                     ? 0
+                                     : current_geometry_rect_.bottom() -
+                                           coverage_rect_max_bounds_.height());
   }
 
-  current_geometry_rect_.Intersect(dest_rect_);
+  current_geometry_rect_.Intersect(coverage_rect_);
   DCHECK(!current_geometry_rect_.IsEmpty());
 
   if (first_time)
@@ -526,7 +515,7 @@ PictureLayerTiling::CoverageIterator::operator++() {
   int min_left;
   int min_top;
   if (new_row) {
-    min_left = dest_rect_.x();
+    min_left = coverage_rect_.x();
     min_top = last_geometry_rect.bottom();
   } else {
     min_left = last_geometry_rect.right();
@@ -556,8 +545,7 @@ gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
 
   // Convert from dest space => content space => texture space.
   gfx::RectF texture_rect(current_geometry_rect_);
-  texture_rect.Scale(dest_to_content_scale_,
-                     dest_to_content_scale_);
+  texture_rect.Scale(coverage_to_content_scale_);
   texture_rect.Intersect(gfx::RectF(gfx::SizeF(tiling_->tiling_size())));
   if (texture_rect.IsEmpty())
     return texture_rect;

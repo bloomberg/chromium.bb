@@ -190,12 +190,14 @@ class CC_EXPORT PictureLayerTiling {
   class CC_EXPORT CoverageIterator {
    public:
     CoverageIterator();
+    // This requests an iterator that produces a coverage of the
+    // |coverage_rect|, which is specified at |coverage_scale|.
     CoverageIterator(const PictureLayerTiling* tiling,
-        float dest_scale,
-        const gfx::Rect& rect);
+                     float coverage_scale,
+                     const gfx::Rect& coverage_rect);
     ~CoverageIterator();
 
-    // Visible rect (no borders), always in the space of content_rect,
+    // Visible rect (no borders), always in the space of |coverage_rect|,
     // regardless of the contents scale of the tiling.
     gfx::Rect geometry_rect() const;
     // Texture rect (in texels) for geometry_rect
@@ -211,19 +213,19 @@ class CC_EXPORT PictureLayerTiling {
     int j() const { return tile_j_; }
 
    private:
-    const PictureLayerTiling* tiling_;
-    gfx::Size dest_layer_bounds_;
-    gfx::Rect dest_rect_;
-    float dest_to_content_scale_;
+    const PictureLayerTiling* tiling_ = nullptr;
+    gfx::Size coverage_rect_max_bounds_;
+    gfx::Rect coverage_rect_;
+    float coverage_to_content_scale_ = 0.f;
 
-    Tile* current_tile_;
+    Tile* current_tile_ = nullptr;
     gfx::Rect current_geometry_rect_;
-    int tile_i_;
-    int tile_j_;
-    int left_;
-    int top_;
-    int right_;
-    int bottom_;
+    int tile_i_ = 0;
+    int tile_j_ = 0;
+    int left_ = 0;
+    int top_ = 0;
+    int right_ = -1;
+    int bottom_ = -1;
 
     friend class PictureLayerTiling;
   };

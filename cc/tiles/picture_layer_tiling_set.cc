@@ -547,25 +547,28 @@ void PictureLayerTilingSet::GetAllPrioritizedTilesForTracing(
 
 PictureLayerTilingSet::CoverageIterator::CoverageIterator(
     const PictureLayerTilingSet* set,
-    float contents_scale,
-    const gfx::Rect& content_rect,
+    float coverage_scale,
+    const gfx::Rect& coverage_rect,
     float ideal_contents_scale)
     : set_(set),
-      contents_scale_(contents_scale),
-      ideal_contents_scale_(ideal_contents_scale),
+      coverage_scale_(coverage_scale),
       current_tiling_(std::numeric_limits<size_t>::max()) {
-  missing_region_.Union(content_rect);
+  missing_region_.Union(coverage_rect);
 
+  // Determine the smallest content_scale tiling which a scale higher than the
+  // ideal (or the first tiling if all tilings have a scale less than ideal).
   size_t tilings_size = set_->tilings_.size();
   for (ideal_tiling_ = 0; ideal_tiling_ < tilings_size; ++ideal_tiling_) {
     PictureLayerTiling* tiling = set_->tilings_[ideal_tiling_].get();
-    if (tiling->contents_scale() < ideal_contents_scale_) {
+    if (tiling->contents_scale() < ideal_contents_scale) {
       if (ideal_tiling_ > 0)
         ideal_tiling_--;
       break;
     }
   }
 
+  // If all tilings have a scale larger than the ideal, then use the smallest
+  // scale (which is the last one).
   if (ideal_tiling_ == tilings_size && ideal_tiling_ > 0)
     ideal_tiling_--;
 
@@ -576,6 +579,8 @@ PictureLayerTilingSet::CoverageIterator::~CoverageIterator() {
 }
 
 gfx::Rect PictureLayerTilingSet::CoverageIterator::geometry_rect() const {
+  // If we don't have any more tilings to process, then return the region
+  // iterator rect that we need to fill, so that the caller can checkerboard it.
   if (!tiling_iter_) {
     if (!region_iter_.has_rect())
       return gfx::Rect();
@@ -585,6 +590,7 @@ gfx::Rect PictureLayerTilingSet::CoverageIterator::geometry_rect() const {
 }
 
 gfx::RectF PictureLayerTilingSet::CoverageIterator::texture_rect() const {
+  // Texture rects are only valid if we have a tiling.
   if (!tiling_iter_)
     return gfx::RectF();
   return tiling_iter_.texture_rect();
@@ -645,11 +651,15 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
 
   // Loop until we find a valid place to stop.
   while (true) {
+    // While we don't have a ready to draw tile, accumulate the geometry rects
+    // back into the missing region, which will be iterated after this tiling is
+    // processed.
     while (tiling_iter_ &&
            (!*tiling_iter_ || !tiling_iter_->draw_info().IsReadyToDraw())) {
       missing_region_.Union(tiling_iter_.geometry_rect());
       ++tiling_iter_;
     }
+    // We found a ready tile, yield it!
     if (tiling_iter_)
       return *this;
 
@@ -685,7 +695,7 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
     // Construct a new iterator for the next tiling, but we need to loop
     // again until we get to a valid one.
     tiling_iter_ = PictureLayerTiling::CoverageIterator(
-        set_->tilings_[current_tiling_].get(), contents_scale_, last_rect);
+        set_->tilings_[current_tiling_].get(), coverage_scale_, last_rect);
   }
 
   return *this;
