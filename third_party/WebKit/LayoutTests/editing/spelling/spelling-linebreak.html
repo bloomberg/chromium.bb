@@ -1,64 +1,20 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src="../../resources/js-test.js"></script>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 
 <script>
-
-jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
-
-function editingTest() {
-
-    var elem = document.getElementById("test");
-    var selection = window.getSelection();
-    selection.collapse(elem, elem.childNodes.length);
-
-    typeCharacterCommand('z');
-    typeCharacterCommand('z');
-    typeCharacterCommand(' ');
-    typeCharacterCommand('a');
-    typeCharacterCommand(' ');
-    typeCharacterCommand('a');
-    moveSelectionBackwardByWordCommand();
-    insertLineBreakCommand();
-
-    if (window.testRunner) {
-        selection.collapse(elem, 0);
-        shouldBecomeEqual("internals.hasSpellingMarker(document, 6, 2)", "true", function() {
-            document.getElementById("root").style.display = "none";
-            finishJSTest();
-        });
-    }
-
-}
-
+spellcheck_test(
+    '<div contenteditable>Hello,zz a |a</div>',
+    '',
+    '<div contenteditable>Hello,#zz# a a</div>',
+    {
+      title: 'Has marker on initially misspelled word',
+      callback: sample => spellcheck_test(
+          sample,
+          'insertLineBreak',
+          '<div contenteditable>Hello,#zz# a <br>a</div>',
+          'Markers are preserved after adding line break')
+    });
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<script>
-description("Misspellings should be preserved when a line-break command "
-    + "splits a text node. You should see 'Hello,zz a' on the first line below, "
-    + "and 'a' on the second line. "
-    + "This test succeeds when 'zz' (and only 'zz') is marked as misspelled.");
-</script>
-<div contenteditable id="root" class="editing">
-<!-- we need to lead "Hello," to preserve the marker even after collapse() -->
-<span id="test">Hello,</span>
-</div>
-<script>
-editingTest();
-</script>
-</body>
-</html>
