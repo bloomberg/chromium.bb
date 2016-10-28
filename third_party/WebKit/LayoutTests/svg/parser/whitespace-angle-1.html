@@ -10,7 +10,6 @@
 </svg>
 <div id=log></div>
 <script>
-var svg = document.querySelector("svg");
 
 // test length values
 var EPSILON = Math.pow(2, -24); // float epsilon
@@ -25,11 +24,9 @@ testType("<angle>",
 		 0, // expected default value
 		 whitespace,
 		 [ "-47", ".1", "0.35", "1e-10" ], // valid
-		 [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
 		 [ "", "deg", "rad", "grad" ], // valid units
 		 garbage,
 		 function(elm, value) { assert_approx_equals(elm.orientAngle.baseVal.valueInSpecifiedUnits, parseFloat(value), EPSILON); },
 		 function(elm, expected) { assert_approx_equals(elm.orientAngle.baseVal.value, expected, EPSILON); } );
-
 
 </script>

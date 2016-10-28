@@ -28,7 +28,6 @@ testType("<number>",
 		 0, // expected default value
 		 whitespace,
 		 [ "-47", ".1", "0.35", "1e-10", "+32", "+17E-1", "17e+2" ], // valid
-		 [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
 		 [ "" ], // valid units
 		 garbage,
 		 function(elm, value) { assert_approx_equals(elm.offset.baseVal, parseFloat(value), EPSILON); },
@@ -40,10 +39,30 @@ testType("<percentage>",
 		 0, // expected default value
 		 whitespace,
 		 [ "-47", ".1", "0.35", "1e-10", "+32", "+17E-1", "17e+2" ], // valid
-		 [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
 		 [ "%" ], // valid units
 		 garbage,
 		 function(elm, value) { assert_approx_equals(elm.offset.baseVal, parseFloat(value)/ 100, EPSILON); },
 		 function(elm, expected) { assert_approx_equals(elm.offset.baseVal, expected, EPSILON); } );
+
+testInvalidType("<number>",
+         document.querySelector("stop"),
+         "offset",
+         0, // expected default value
+         whitespace,
+         [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
+         [ "" ], // valid units
+         function(elm, value) { assert_approx_equals(elm.offset.baseVal, parseFloat(value), EPSILON); },
+         function(elm, expected) { assert_approx_equals(elm.offset.baseVal, expected, EPSILON); } );
+
+testInvalidType("<percentage>",
+         document.querySelector("stop"),
+         "offset",
+         0, // expected default value
+         whitespace,
+         [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
+         [ "%" ], // valid units
+         function(elm, value) { assert_approx_equals(elm.offset.baseVal, parseFloat(value)/ 100, EPSILON); },
+         function(elm, expected) { assert_approx_equals(elm.offset.baseVal, expected, EPSILON); } );
+
 
 </script>
