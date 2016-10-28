@@ -45,7 +45,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -240,13 +239,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
     /**
      * Test the entries in the context menu shown when long clicking an image.
+     * Restricted to phone due to BUG=crbug.com/655970
      */
-    /*
-     * @SmallTest
-     * @RetryOnFailure
-     * BUG=crbug.com/655970
-     */
-    @DisabledTest
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testContextMenuEntriesForImage() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
@@ -277,9 +274,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
     /**
      * Test the entries in the context menu shown when long clicking an link.
+     * Restricted to phone due to BUG=crbug.com/655970
      */
     @SmallTest
     @RetryOnFailure
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testContextMenuEntriesForLink() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
