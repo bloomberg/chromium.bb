@@ -82,6 +82,10 @@ SynchronousCompositorHost::SynchronousCompositorHost(
 
 SynchronousCompositorHost::~SynchronousCompositorHost() {
   client_->DidDestroyCompositor(this, process_id_, routing_id_);
+  if (registered_with_filter_) {
+    if (SynchronousCompositorBrowserFilter* filter = GetFilter())
+      filter->UnregisterHost(this);
+  }
 }
 
 bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
@@ -105,6 +109,10 @@ SynchronousCompositorHost::DemandDrawHwAsync(
                                           transform_for_tile_priority);
   scoped_refptr<FrameFuture> frame_future = new FrameFuture();
   if (SynchronousCompositorBrowserFilter* filter = GetFilter()) {
+    if (!registered_with_filter_) {
+      filter->RegisterHost(this);
+      registered_with_filter_ = true;
+    }
     filter->SetFrameFuture(routing_id_, frame_future);
     sender_->Send(new SyncCompositorMsg_DemandDrawHwAsync(routing_id_, params));
   } else {
@@ -135,17 +143,10 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
   if (!compositor_frame)
     return SynchronousCompositor::Frame();
 
-  return ProcessHardwareFrame(compositor_frame_sink_id,
-                              std::move(*compositor_frame));
-}
-
-SynchronousCompositor::Frame SynchronousCompositorHost::ProcessHardwareFrame(
-    uint32_t compositor_frame_sink_id,
-    cc::CompositorFrame compositor_frame) {
   SynchronousCompositor::Frame frame;
   frame.frame.reset(new cc::CompositorFrame);
   frame.compositor_frame_sink_id = compositor_frame_sink_id;
-  *frame.frame = std::move(compositor_frame);
+  *frame.frame = std::move(*compositor_frame);
   UpdateFrameMetaData(frame.frame->metadata.Clone());
   return frame;
 }

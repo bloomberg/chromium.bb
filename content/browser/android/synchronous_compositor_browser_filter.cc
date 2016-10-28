@@ -6,12 +6,15 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/bad_message.h"
 #include "content/common/android/sync_compositor_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/android/window_android.h"
 
@@ -83,12 +86,45 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
   frame_ptr->compositor_frame_sink_id = std::get<0>(param);
   base::Optional<cc::CompositorFrame>& compositor_frame = std::get<1>(param);
   if (compositor_frame) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &SynchronousCompositorBrowserFilter::ProcessFrameMetadataOnUIThread,
+            this, routing_id,
+            base::Passed(compositor_frame->metadata.Clone())));
     frame_ptr->frame.reset(new cc::CompositorFrame);
     *frame_ptr->frame = std::move(*compositor_frame);
   }
   future->SetFrame(std::move(frame_ptr));
-  // TODO(boliu): Post metadata back to UI thread.
   return true;
+}
+
+void SynchronousCompositorBrowserFilter::ProcessFrameMetadataOnUIThread(
+    int routing_id,
+    cc::CompositorFrameMetadata metadata) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto itr = hosts_.find(routing_id);
+  if (itr == hosts_.end())
+    return;
+  itr->second->UpdateFrameMetaData(std::move(metadata));
+}
+
+void SynchronousCompositorBrowserFilter::RegisterHost(
+    SynchronousCompositorHost* host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(host);
+  DCHECK(!base::ContainsKey(hosts_, host->routing_id()));
+  hosts_[host->routing_id()] = host;
+}
+
+void SynchronousCompositorBrowserFilter::UnregisterHost(
+    SynchronousCompositorHost* host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(host);
+  int routing_id = host->routing_id();
+  DCHECK(base::ContainsKey(hosts_, routing_id));
+  DCHECK_EQ(host, hosts_[routing_id]);
+  hosts_.erase(routing_id);
 }
 
 void SynchronousCompositorBrowserFilter::SetFrameFuture(

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/android/window_android_observer.h"
@@ -47,6 +48,10 @@ class SynchronousCompositorBrowserFilter : public ui::WindowAndroidObserver,
 
   void SyncStateAfterVSync(ui::WindowAndroid* window_android,
                            SynchronousCompositorHost* compositor_host);
+
+  // Calls from SynchronousCompositorHost.
+  void RegisterHost(SynchronousCompositorHost* host);
+  void UnregisterHost(SynchronousCompositorHost* host);
   void SetFrameFuture(
       int routing_id,
       scoped_refptr<SynchronousCompositor::FrameFuture> frame_future);
@@ -55,6 +60,8 @@ class SynchronousCompositorBrowserFilter : public ui::WindowAndroidObserver,
   ~SynchronousCompositorBrowserFilter() override;
 
   bool ReceiveFrame(const IPC::Message& message);
+  void ProcessFrameMetadataOnUIThread(int routing_id,
+                                      cc::CompositorFrameMetadata metadata);
   void SignalAllFutures();
 
   RenderProcessHost* const render_process_host_;
@@ -63,6 +70,10 @@ class SynchronousCompositorBrowserFilter : public ui::WindowAndroidObserver,
   ui::WindowAndroid* window_android_in_vsync_ = nullptr;
   std::vector<SynchronousCompositorHost*>
       compositor_host_pending_renderer_state_;
+
+  // Only accessed on the UI thread. Note this is not a parallel map to
+  // |future_map_|.
+  std::map<int, SynchronousCompositorHost*> hosts_;
 
   base::Lock future_map_lock_;  // Protects fields below.
   bool filter_ready_ = false;

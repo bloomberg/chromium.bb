@@ -78,6 +78,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
 
   // Called by SynchronousCompositorBrowserFilter.
   int routing_id() const { return routing_id_; }
+  void UpdateFrameMetaData(cc::CompositorFrameMetadata frame_metadata);
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
 
   SynchronousCompositorClient* client() { return client_; }
@@ -91,14 +92,10 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
                             SynchronousCompositorClient* client,
                             bool use_in_proc_software_draw);
-  void UpdateFrameMetaData(cc::CompositorFrameMetadata frame_metadata);
   void CompositorFrameSinkCreated();
   bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
   void SendZeroMemory();
-  SynchronousCompositor::Frame ProcessHardwareFrame(
-      uint32_t compositor_frame_sink_id,
-      cc::CompositorFrame compositor_frame);
   SynchronousCompositorBrowserFilter* GetFilter();
 
   RenderWidgetHostViewAndroid* const rwhva_;
@@ -108,6 +105,8 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   const int routing_id_;
   IPC::Sender* const sender_;
   const bool use_in_process_zero_copy_software_draw_;
+
+  bool registered_with_filter_ = false;
 
   size_t bytes_limit_;
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
