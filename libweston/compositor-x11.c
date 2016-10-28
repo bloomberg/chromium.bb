@@ -65,6 +65,12 @@
 
 #define DEFAULT_AXIS_STEP_DISTANCE 10
 
+#define WINDOW_MIN_WIDTH 128
+#define WINDOW_MIN_HEIGHT 128
+
+#define WINDOW_MAX_WIDTH 8192
+#define WINDOW_MAX_HEIGHT 8192
+
 struct x11_backend {
 	struct weston_backend	 base;
 	struct weston_compositor *compositor;
@@ -114,6 +120,7 @@ struct x11_output {
 
 	xcb_window_t		window;
 	struct weston_mode	mode;
+	struct weston_mode	native;
 	struct wl_event_source *finish_frame_timer;
 
 	xcb_gc_t		gc;
@@ -123,6 +130,8 @@ struct x11_output {
 	void		       *buf;
 	uint8_t			depth;
 	int32_t                 scale;
+	bool			resize_pending;
+	bool			window_resized;
 };
 
 struct window_delete_data {
@@ -773,6 +782,89 @@ x11_output_init_shm(struct x11_backend *b, struct x11_output *output,
 }
 
 static int
+x11_output_switch_mode(struct weston_output *base, struct weston_mode *mode)
+{
+	struct x11_backend *b;
+	struct x11_output *output;
+	static uint32_t values[2];
+	int ret;
+
+	if (base == NULL) {
+		weston_log("output is NULL.\n");
+		return -1;
+	}
+
+	if (mode == NULL) {
+		weston_log("mode is NULL.\n");
+		return -1;
+	}
+
+        b = to_x11_backend(base->compositor);
+        output = to_x11_output(base);
+
+        if (mode->width == output->mode.width &&
+	    mode->height == output->mode.height)
+	        return 0;
+
+        if (mode->width < WINDOW_MIN_WIDTH || mode->width > WINDOW_MAX_WIDTH)
+		return -1;
+
+	if (mode->height < WINDOW_MIN_HEIGHT || mode->height > WINDOW_MAX_HEIGHT)
+		return -1;
+
+	/* xcb_configure_window will create an event, and we could end up
+	   being called twice */
+	output->resize_pending = true;
+
+	/* window could've been resized by the user, so don't do it twice */
+	if (!output->window_resized) {
+		values[0] = mode->width;
+		values[1] = mode->height;
+		xcb_configure_window(b->conn, output->window, XCB_CONFIG_WINDOW_WIDTH |
+				     XCB_CONFIG_WINDOW_HEIGHT, values);
+	}
+
+	output->mode.width = mode->width;
+	output->mode.height = mode->height;
+
+	if (b->use_pixman) {
+		pixman_renderer_output_destroy(&output->base);
+		x11_output_deinit_shm(b, output);
+
+		if (x11_output_init_shm(b, output,
+		                        output->base.current_mode->width,
+		                        output->base.current_mode->height) < 0) {
+			weston_log("Failed to initialize SHM for the X11 output\n");
+			return -1;
+		}
+
+		if (pixman_renderer_output_create(&output->base) < 0) {
+			weston_log("Failed to create pixman renderer for output\n");
+			x11_output_deinit_shm(b, output);
+			return -1;
+		}
+	} else {
+		Window xid = (Window) output->window;
+
+		gl_renderer->output_destroy(&output->base);
+
+		ret = gl_renderer->output_window_create(&output->base,
+						        (EGLNativeWindowType) output->window,
+						        &xid,
+						        gl_renderer->opaque_attribs,
+						        NULL,
+						        0);
+		if (ret < 0)
+			return -1;
+	}
+
+	output->resize_pending = false;
+	output->window_resized = false;
+
+	return 0;
+}
+
+static int
 x11_output_disable(struct weston_output *base)
 {
 	struct x11_output *output = to_x11_output(base);
@@ -864,14 +956,13 @@ x11_output_enable(struct weston_output *base)
 				    XCB_ATOM_ATOM, 32,
 				    ARRAY_LENGTH(atom_list), atom_list);
 	} else {
-		/* Don't resize me. */
 		memset(&normal_hints, 0, sizeof normal_hints);
 		normal_hints.flags =
 			WM_NORMAL_HINTS_MAX_SIZE | WM_NORMAL_HINTS_MIN_SIZE;
-		normal_hints.min_width = output->base.current_mode->width;
-		normal_hints.min_height = output->base.current_mode->height;
-		normal_hints.max_width = output->base.current_mode->width;
-		normal_hints.max_height = output->base.current_mode->height;
+		normal_hints.min_width = WINDOW_MIN_WIDTH;
+		normal_hints.min_height = WINDOW_MIN_HEIGHT;
+		normal_hints.max_width = WINDOW_MAX_WIDTH;
+		normal_hints.max_height = WINDOW_MAX_HEIGHT;
 		xcb_change_property(b->conn, XCB_PROP_MODE_REPLACE, output->window,
 				    b->atom.wm_normal_hints,
 				    b->atom.wm_size_hints, 32,
@@ -945,7 +1036,7 @@ x11_output_enable(struct weston_output *base)
 	output->base.assign_planes = NULL;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
-	output->base.switch_mode = NULL;
+	output->base.switch_mode = x11_output_switch_mode;
 
 	loop = wl_display_get_event_loop(b->compositor->wl_display);
 	output->finish_frame_timer =
@@ -978,13 +1069,13 @@ x11_output_set_size(struct weston_output *base, int width, int height)
 	/* Make sure we have scale set. */
 	assert(output->base.scale);
 
-	if (width < 1) {
+	if (width < WINDOW_MIN_WIDTH) {
 		weston_log("Invalid width \"%d\" for output %s\n",
 			   width, output->base.name);
 		return -1;
 	}
 
-	if (height < 1) {
+	if (height < WINDOW_MIN_HEIGHT) {
 		weston_log("Invalid height \"%d\" for output %s\n",
 			   height, output->base.name);
 		return -1;
@@ -999,12 +1090,16 @@ x11_output_set_size(struct weston_output *base, int width, int height)
 	output->mode.width = output_width;
 	output->mode.height = output_height;
 	output->mode.refresh = 60000;
+	output->native = output->mode;
 	output->scale = output->base.scale;
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
 	output->base.make = "weston-X11";
 	output->base.model = "none";
+
+	output->base.native_mode = &output->native;
+	output->base.native_scale = output->base.scale;
 
 	output->base.mm_width = width * b->screen->width_in_millimeters /
 		b->screen->width_in_pixels;
@@ -1319,6 +1414,7 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 	xcb_keymap_notify_event_t *keymap_notify;
 	xcb_focus_in_event_t *focus_in;
 	xcb_expose_event_t *expose;
+	xcb_configure_notify_event_t *configure;
 	xcb_atom_t atom;
 	xcb_window_t window;
 	uint32_t *k;
@@ -1472,6 +1568,31 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 				loop = wl_display_get_event_loop(b->compositor->wl_display);
 				wl_event_loop_add_idle(loop, delete_cb, data);
 			}
+			break;
+
+		case XCB_CONFIGURE_NOTIFY:
+			configure = (struct xcb_configure_notify_event_t *) event;
+			struct x11_output *output =
+				x11_backend_find_output(b, configure->window);
+
+			if (!output || output->resize_pending)
+				break;
+
+			struct weston_mode mode = output->mode;
+
+			if (mode.width == configure->width &&
+			    mode.height == configure->height)
+				break;
+
+			output->window_resized = true;
+
+			mode.width = configure->width;
+			mode.height = configure->height;
+
+			if (weston_output_mode_set_native(&output->base,
+							  &mode, output->scale) < 0)
+				weston_log("Mode switch failed\n");
+
 			break;
 
 		case XCB_FOCUS_IN:
