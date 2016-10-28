@@ -119,12 +119,15 @@ void ToggleButton::SetIsOn(bool is_on, bool animate) {
     return;
 
   is_on_ = is_on;
-  if (!animate)
+  if (!animate) {
     slide_animation_.Reset(is_on_ ? 1.0 : 0.0);
-  else if (is_on_)
+    UpdateThumb();
+    SchedulePaint();
+  } else if (is_on_) {
     slide_animation_.Show();
-  else
+  } else {
     slide_animation_.Hide();
+  }
 }
 
 gfx::Rect ToggleButton::GetThumbBounds() const {
