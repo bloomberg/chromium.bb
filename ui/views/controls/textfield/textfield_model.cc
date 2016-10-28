@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -129,7 +129,7 @@ class Edit {
 
   Type type_;
 
-  // True if the edit can be marged.
+  // The type of merging allowed.
   MergeType merge_type_;
   // Old cursor position.
   size_t old_cursor_pos_;
@@ -674,8 +674,8 @@ void TextfieldModel::ConfirmCompositionText() {
       composition_range_.start(), composition_range_.length());
   // TODO(oshima): current behavior on ChromeOS is a bit weird and not
   // sure exactly how this should work. Find out and fix if necessary.
-  AddOrMergeEditHistory(
-      new InsertEdit(false, composition, composition_range_.start()));
+  AddOrMergeEditHistory(base::MakeUnique<InsertEdit>(
+      false, composition, composition_range_.start()));
   render_text_->SetCursorPosition(composition_range_.end());
   ClearComposition();
   if (delegate_)
@@ -707,7 +707,7 @@ bool TextfieldModel::HasCompositionText() const {
 }
 
 void TextfieldModel::ClearEditHistory() {
-  base::STLDeleteElements(&edit_history_);
+  edit_history_.clear();
   current_edit_ = edit_history_.end();
 }
 
@@ -756,7 +756,6 @@ void TextfieldModel::ClearRedoHistory() {
   }
   EditHistory::iterator delete_start = current_edit_;
   ++delete_start;
-  base::STLDeleteContainerPointers(delete_start, edit_history_.end());
   edit_history_.erase(delete_start, edit_history_.end());
 }
 
@@ -764,11 +763,10 @@ void TextfieldModel::ExecuteAndRecordDelete(gfx::Range range, bool mergeable) {
   size_t old_text_start = range.GetMin();
   const base::string16 old_text = text().substr(old_text_start, range.length());
   bool backward = range.is_reversed();
-  Edit* edit = new DeleteEdit(mergeable, old_text, old_text_start, backward);
-  bool delete_edit = AddOrMergeEditHistory(edit);
+  auto edit = base::MakeUnique<DeleteEdit>(mergeable, old_text, old_text_start,
+                                           backward);
   edit->Redo(this);
-  if (delete_edit)
-    delete edit;
+  AddOrMergeEditHistory(std::move(edit));
 }
 
 void TextfieldModel::ExecuteAndRecordReplaceSelection(
@@ -790,38 +788,31 @@ void TextfieldModel::ExecuteAndRecordReplace(MergeType merge_type,
                                              size_t new_text_start) {
   size_t old_text_start = render_text_->selection().GetMin();
   bool backward = render_text_->selection().is_reversed();
-  Edit* edit = new ReplaceEdit(merge_type,
-                               GetSelectedText(),
-                               old_cursor_pos,
-                               old_text_start,
-                               backward,
-                               new_cursor_pos,
-                               new_text,
-                               new_text_start);
-  bool delete_edit = AddOrMergeEditHistory(edit);
+  auto edit = base::MakeUnique<ReplaceEdit>(
+      merge_type, GetSelectedText(), old_cursor_pos, old_text_start, backward,
+      new_cursor_pos, new_text, new_text_start);
   edit->Redo(this);
-  if (delete_edit)
-    delete edit;
+  AddOrMergeEditHistory(std::move(edit));
 }
 
 void TextfieldModel::ExecuteAndRecordInsert(const base::string16& new_text,
                                             bool mergeable) {
-  Edit* edit = new InsertEdit(mergeable, new_text, GetCursorPosition());
-  bool delete_edit = AddOrMergeEditHistory(edit);
+  auto edit =
+      base::MakeUnique<InsertEdit>(mergeable, new_text, GetCursorPosition());
   edit->Redo(this);
-  if (delete_edit)
-    delete edit;
+  AddOrMergeEditHistory(std::move(edit));
 }
 
-bool TextfieldModel::AddOrMergeEditHistory(Edit* edit) {
+void TextfieldModel::AddOrMergeEditHistory(std::unique_ptr<Edit> edit) {
   ClearRedoHistory();
 
-  if (current_edit_ != edit_history_.end() && (*current_edit_)->Merge(edit)) {
-    // If a current edit exists and has been merged with a new edit, don't add
-    // to the history, and return true to delete |edit| after redo.
-    return true;
+  if (current_edit_ != edit_history_.end() &&
+      (*current_edit_)->Merge(edit.get())) {
+    // If the new edit was successfully merged with an old one, don't add it to
+    // the history.
+    return;
   }
-  edit_history_.push_back(edit);
+  edit_history_.push_back(std::move(edit));
   if (current_edit_ == edit_history_.end()) {
     // If there is no redoable edit, this is the 1st edit because RedoHistory
     // has been already deleted.
@@ -830,7 +821,6 @@ bool TextfieldModel::AddOrMergeEditHistory(Edit* edit) {
   } else {
     ++current_edit_;
   }
-  return false;
 }
 
 void TextfieldModel::ModifyText(size_t delete_from,
