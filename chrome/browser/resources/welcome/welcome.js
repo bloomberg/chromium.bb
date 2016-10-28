@@ -27,8 +27,6 @@ cr.define('welcome', function() {
         easing: 'cubic-bezier(1, 0, 0, 1)',
       }));
     };
-
-    document.fonts.load('bold .8125em Roboto');
   }
 
   return {

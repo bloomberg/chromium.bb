@@ -118,8 +118,9 @@ body {
 
 .subheading {
   animation: fadeInAndSlideUp 600ms 1.9s cubic-bezier(.4, .2, 0, 1) both;
-  color: var(--google-grey-500);
+  color: #939393;
   font-size: 1em;
+  font-weight: 500;
   margin-top: .25em;
   text-align: center;
 }
@@ -134,11 +135,10 @@ body {
 .logo-icon {
   animation: spin 2.4s cubic-bezier(.4, .2, 0, 1) both,
              colorize 300ms 700ms linear both;
-  content: -webkit-image-set(url(chrome://welcome/logo.png) 1x,
-                             url(chrome://welcome/logo2x.png) 2x);
+  background-image: -webkit-image-set(url(chrome://welcome/logo.png) 1x,
+                                      url(chrome://welcome/logo2x.png) 2x);
+  background-size: 100%;
   height: 96px;
-  left: 0;
-  position: absolute;
   width: 96px;
 }
 
