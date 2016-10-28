@@ -35,6 +35,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
+#include "net/net_features.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
@@ -228,7 +229,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     bool set_protocol = job_factory->SetProtocolHandler(
         url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler));
     DCHECK(set_protocol);
-#if !defined(DISABLE_FILE_SUPPORT)
+#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
     set_protocol = job_factory->SetProtocolHandler(
         url::kFileScheme,
         base::MakeUnique<net::FileProtocolHandler>(

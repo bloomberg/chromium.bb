@@ -41,6 +41,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
+#include "net/net_features.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/channel_id_service.h"
@@ -207,7 +208,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(browser_context);
 
   builder.set_network_delegate(base::MakeUnique<AwNetworkDelegate>());
-#if !defined(DISABLE_FTP_SUPPORT)
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
   DCHECK(proxy_config_service_.get());

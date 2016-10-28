@@ -91,6 +91,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_persister.h"
+#include "net/net_features.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
@@ -742,9 +743,9 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     url::kContentScheme,
 #endif  // defined(OS_ANDROID)
     url::kAboutScheme,
-#if !defined(DISABLE_FTP_SUPPORT)
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
     url::kFtpScheme,
-#endif  // !defined(DISABLE_FTP_SUPPORT)
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
     url::kBlobScheme,
     url::kFileSystemScheme,
     chrome::kChromeSearchScheme,
@@ -1226,10 +1227,10 @@ ProfileIOData::SetUpJobFactoryDefaults(
       url::kAboutScheme,
       base::MakeUnique<about_handler::AboutProtocolHandler>());
 
-#if !defined(DISABLE_FTP_SUPPORT)
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   job_factory->SetProtocolHandler(
       url::kFtpScheme, net::FtpProtocolHandler::Create(host_resolver));
-#endif  // !defined(DISABLE_FTP_SUPPORT)
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if defined(DEBUG_DEVTOOLS)
   request_interceptors.push_back(new DebugDevToolsInterceptor);

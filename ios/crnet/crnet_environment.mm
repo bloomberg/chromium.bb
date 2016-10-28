@@ -52,6 +52,7 @@
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/write_to_file_net_log_observer.h"
+#include "net/net_features.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
 #include "net/ssl/channel_id_service.h"
@@ -484,11 +485,11 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
       new net::URLRequestJobFactoryImpl;
   job_factory->SetProtocolHandler(
       "data", base::WrapUnique(new net::DataProtocolHandler));
-#if !defined(DISABLE_FILE_SUPPORT)
+#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
   job_factory->SetProtocolHandler(
       "file",
       base::MakeUnique<net::FileProtocolHandler>(file_thread_->task_runner()));
-#endif   // !defined(DISABLE_FILE_SUPPORT)
+#endif   // !BUILDFLAG(DISABLE_FILE_SUPPORT)
   main_context_->set_job_factory(job_factory);
 
   main_context_->set_net_log(net_log_.get());

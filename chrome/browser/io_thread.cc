@@ -88,6 +88,7 @@
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/net_features.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service.h"
@@ -1060,7 +1061,7 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
           content::BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
-#if !defined(DISABLE_FTP_SUPPORT)
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
       net::FtpProtocolHandler::Create(globals->host_resolver.get()));
