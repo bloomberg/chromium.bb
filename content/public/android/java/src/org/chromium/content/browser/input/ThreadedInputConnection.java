@@ -350,7 +350,7 @@ public class ThreadedInputConnection extends BaseInputConnection
             @Override
             public void run() {
                 cancelCombiningAccentOnUiThread();
-                mImeAdapter.sendCompositionToNative(text, newCursorPosition, text.length() > 0, 0);
+                mImeAdapter.sendCompositionToNative(text, newCursorPosition, true, 0);
             }
         });
         notifyUserAction();

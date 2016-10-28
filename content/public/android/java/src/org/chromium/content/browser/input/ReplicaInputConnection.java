@@ -210,7 +210,7 @@ public class ReplicaInputConnection
         mPendingAccent = 0;
         super.commitText(text, newCursorPosition);
         updateSelectionIfRequired();
-        return mImeAdapter.sendCompositionToNative(text, newCursorPosition, text.length() > 0, 0);
+        return mImeAdapter.sendCompositionToNative(text, newCursorPosition, true, 0);
     }
 
     /**
