@@ -893,7 +893,6 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.EmulationAgent = target.emulationAgent();
         InspectorTest.HeapProfilerAgent = target.heapProfilerAgent();
         InspectorTest.InspectorAgent = target.inspectorAgent();
-        InspectorTest.LayerTreeAgent = target.layerTreeAgent();
         InspectorTest.NetworkAgent = target.networkAgent();
         InspectorTest.PageAgent = target.pageAgent();
         InspectorTest.ProfilerAgent = target.profilerAgent();

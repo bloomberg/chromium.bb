@@ -5,25 +5,20 @@
 <script>
 function test()
 {
-    setTimeout(() => InspectorTest.completeTest(), 3000);
     InspectorTest.requestLayers(onGotLayers);
 
     function onGotLayers()
     {
         var layer = InspectorTest.findLayerByNodeIdAttribute("a");
-        layer.requestSnapshot(onSnapshotDone);
-    }
-
-    function onSnapshotDone(snapshot)
-    {
-        testImageForSnapshot(snapshot, undefined).then(() => testImageForSnapshot(snapshot, 0.5)).then(() => InspectorTest.completeTest());
+        layer.snapshots()[0].then(snapshotWithRect =>
+            testImageForSnapshot(snapshotWithRect.snapshot, undefined)
+                .then(() => testImageForSnapshot(snapshotWithRect.snapshot, 0.5))
+                .then(() => InspectorTest.completeTest()));
     }
 
     function testImageForSnapshot(snapshot, scale)
     {
-        return new Promise(fulfill => {
-            InspectorTest.LayerTreeAgent.replaySnapshot(snapshot._id, undefined, undefined, scale, InspectorBackend.wrapClientCallback(fulfill, "LayerTreeAgent.replaySnapshot(): "));
-        }).then(imageURL => new Promise(fulfill => {
+        return snapshot.replay(null, null, scale).then(imageURL => new Promise(fulfill => {
            var image = new Image();
            image.addEventListener("load", () => fulfill(image), false);
            image.src = imageURL;

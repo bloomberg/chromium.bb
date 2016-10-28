@@ -5,26 +5,20 @@
 <script>
 function test()
 {
-    function onSnapshotDone(snapshot)
-    {
-        var wrappedCallback = InspectorBackend.wrapClientCallback(onHistoryReceived, "LayerTreeAgent.snapshotCommandLog(): ");
-        InspectorTest.LayerTreeAgent.snapshotCommandLog(snapshot._id, wrappedCallback);
-    }
-
-    function onHistoryReceived(history)
-    {
-        InspectorTest.addResult("Canvas log:");
-        InspectorTest.addObject(history, {"uniqueID": "skip"});
-        InspectorTest.completeTest();
-    }
+    InspectorTest.requestLayers(onGotLayers);
 
     function onGotLayers()
     {
         var layer = InspectorTest.findLayerByNodeIdAttribute("a");
-        layer.requestSnapshot(onSnapshotDone);
+        layer.snapshots()[0].then(snapshotWithRect => snapshotWithRect.snapshot.commandLog()).then(onHistoryReceived);
     }
 
-    InspectorTest.requestLayers(onGotLayers);
+    function onHistoryReceived(items)
+    {
+        InspectorTest.addResult("Canvas log:");
+        InspectorTest.addObject(items, {"uniqueID": "skip"});
+        InspectorTest.completeTest();
+    }
 }
 </script>
 </head>
