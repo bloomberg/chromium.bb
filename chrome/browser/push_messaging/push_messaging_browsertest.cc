@@ -386,8 +386,8 @@ void PushMessagingBrowserTest::EndpointToToken(const std::string& endpoint,
                                                std::string* out_token) {
   size_t last_slash = endpoint.rfind('/');
 
-  ASSERT_EQ(endpoint.substr(0, last_slash + 1),
-            push_service()->GetEndpoint(standard_protocol).spec());
+  ASSERT_EQ(push_service()->GetEndpoint(standard_protocol).spec(),
+            endpoint.substr(0, last_slash + 1));
 
   ASSERT_LT(last_slash + 1, endpoint.length());  // Token must not be empty.
 
