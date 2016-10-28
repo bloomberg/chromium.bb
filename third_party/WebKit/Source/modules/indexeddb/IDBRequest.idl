@@ -41,10 +41,10 @@ enum IDBRequestReadyState {
     DependentLifetime,
     Exposed=(Window,Worker),
 ] interface IDBRequest : EventTarget {
-    [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
+    [CallWith=ScriptState, RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
     [RaisesException=Getter] readonly attribute DOMException error;
 
-    readonly attribute any source;
+    [CallWith=ScriptState] readonly attribute any source;
     readonly attribute IDBTransaction transaction;
 
     // States

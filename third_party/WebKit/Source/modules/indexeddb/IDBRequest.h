@@ -67,10 +67,9 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   ~IDBRequest() override;
   DECLARE_VIRTUAL_TRACE();
 
-  ScriptState* getScriptState() { return m_scriptState.get(); }
-  ScriptValue result(ExceptionState&);
+  ScriptValue result(ScriptState*, ExceptionState&);
   DOMException* error(ExceptionState&) const;
-  ScriptValue source() const;
+  ScriptValue source(ScriptState*) const;
   IDBTransaction* transaction() const { return m_transaction.get(); }
 
   bool isResultDirty() const { return m_resultDirty; }
@@ -166,7 +165,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void ackReceivedBlobs(const IDBValue*);
   void ackReceivedBlobs(const Vector<RefPtr<IDBValue>>&);
 
-  RefPtr<ScriptState> m_scriptState;
   Member<IDBAny> m_source;
   Member<IDBAny> m_result;
   Member<DOMException> m_error;

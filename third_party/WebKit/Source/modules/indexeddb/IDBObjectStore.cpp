@@ -646,6 +646,9 @@ class IndexPopulator final : public EventListener {
   const IDBIndexMetadata& indexMetadata() const { return *m_indexMetadata; }
 
   void handleEvent(ExecutionContext* executionContext, Event* event) override {
+    if (!m_scriptState->contextIsValid())
+      return;
+
     DCHECK_EQ(m_scriptState->getExecutionContext(), executionContext);
     DCHECK_EQ(event->type(), EventTypeNames::success);
     EventTarget* target = event->target();
@@ -653,6 +656,8 @@ class IndexPopulator final : public EventListener {
 
     if (!m_database->backend())  // If database is stopped?
       return;
+
+    ScriptState::Scope scope(m_scriptState.get());
 
     IDBAny* cursorAny = request->resultAsAny();
     IDBCursorWithValue* cursor = nullptr;

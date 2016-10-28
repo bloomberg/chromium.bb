@@ -112,7 +112,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion,
       metadata.name, metadata.id, oldVersion, metadata.maxObjectStoreId);
 
   m_transaction = IDBTransaction::createVersionChange(
-      getScriptState(), m_transactionId, idbDatabase, this,
+      getExecutionContext(), m_transactionId, idbDatabase, this,
       oldDatabaseMetadata);
   setResult(IDBAny::create(idbDatabase));
 

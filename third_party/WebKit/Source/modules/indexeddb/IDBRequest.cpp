@@ -69,7 +69,6 @@ IDBRequest::IDBRequest(ScriptState* scriptState,
     : ActiveScriptWrappable(this),
       ActiveDOMObject(scriptState->getExecutionContext()),
       m_transaction(transaction),
-      m_scriptState(scriptState),
       m_source(source) {}
 
 IDBRequest::~IDBRequest() {
@@ -90,7 +89,8 @@ DEFINE_TRACE(IDBRequest) {
   ActiveDOMObject::trace(visitor);
 }
 
-ScriptValue IDBRequest::result(ExceptionState& exceptionState) {
+ScriptValue IDBRequest::result(ScriptState* scriptState,
+                               ExceptionState& exceptionState) {
   if (m_readyState != DONE) {
     // Must throw if returning an empty value. Message is arbitrary since it
     // will never be seen.
@@ -104,7 +104,7 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState) {
     return ScriptValue();
   }
   m_resultDirty = false;
-  ScriptValue value = ScriptValue::from(m_scriptState.get(), m_result);
+  ScriptValue value = ScriptValue::from(scriptState, m_result);
   return value;
 }
 
@@ -117,11 +117,11 @@ DOMException* IDBRequest::error(ExceptionState& exceptionState) const {
   return m_error;
 }
 
-ScriptValue IDBRequest::source() const {
+ScriptValue IDBRequest::source(ScriptState* scriptState) const {
   if (m_contextStopped || !getExecutionContext())
     return ScriptValue();
 
-  return ScriptValue::from(m_scriptState.get(), m_source);
+  return ScriptValue::from(scriptState, m_source);
 }
 
 const String& IDBRequest::readyState() const {
@@ -337,11 +337,9 @@ void IDBRequest::onSuccess(PassRefPtr<IDBValue> prpValue) {
   }
 
 #if DCHECK_IS_ON()
-  if (value->primaryKey()) {
-    DCHECK(value->keyPath() == effectiveObjectStore(m_source)->idbKeyPath());
-    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), value.get());
-  }
-#endif  // DCHECK_IS_ON()
+  DCHECK(!value->primaryKey() ||
+         value->keyPath() == effectiveObjectStore(m_source)->idbKeyPath());
+#endif
 
   onSuccessInternal(IDBAny::create(value.release()));
 }
@@ -433,8 +431,6 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
   DCHECK(m_hasPendingActivity);
   DCHECK(m_enqueuedEvents.size());
   DCHECK_EQ(event->target(), this);
-
-  ScriptState::Scope scope(m_scriptState.get());
 
   if (event->type() != EventTypeNames::blocked)
     m_readyState = DONE;
