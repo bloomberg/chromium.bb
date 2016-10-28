@@ -1248,7 +1248,7 @@ class SiteConfig(dict):
     child_configs = [x.deepcopy().apply(grouped=True) for x in args]
     return self.Add(name, args[0], child_configs=child_configs, **kwargs)
 
-  def AddForBoards(self, suffix, boards, per_board,
+  def AddForBoards(self, suffix, boards, per_board=None,
                    template=None, *args, **kwargs):
     """Create configs for all boards in |boards|.
 
@@ -1264,7 +1264,7 @@ class SiteConfig(dict):
       config_name = '%s-%s' % (board, suffix)
 
       # Insert the per_board value as the last mixin, if it exists.
-      mixins = args
+      mixins = args + (dict(boards=[board]),)
       if per_board and board in per_board:
         mixins = mixins + (per_board[board],)
 

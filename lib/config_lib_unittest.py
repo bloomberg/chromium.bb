@@ -535,6 +535,91 @@ class SiteConfigTest(cros_test_lib.TestCase):
     with self.assertRaises(AttributeError):
       _ = self.site_config.templates.no_such_template
 
+  def testAddForBoards(self):
+    per_board = {
+        'foo': config_lib.BuildConfig(value='foo'),
+        'bar': config_lib.BuildConfig(value='bar'),
+        'multiboard': config_lib.BuildConfig(boards=['foo', 'bar']),
+    }
+
+    # Test the minimal invocation.
+    self.site_config.AddForBoards(
+        'minimal',
+        ['foo', 'bar'],
+    )
+
+    self.assertIn('foo-minimal', self.site_config)
+    self.assertEqual(self.site_config['foo-minimal'].boards, ['foo'])
+    self.assertEqual(self.site_config['bar-minimal'].boards, ['bar'])
+
+    # Test a partial set of per-board values specified.
+    self.site_config.AddForBoards(
+        'partial_per_board',
+        ['foo', 'no_per'],
+        per_board,
+    )
+
+    self.assertIn('foo-partial_per_board', self.site_config)
+    self.assertIn('no_per-partial_per_board', self.site_config)
+    self.assertEqual(self.site_config['foo-partial_per_board'].value, 'foo')
+
+    # Test all boards with per_board values specified, and test we can
+    # override board listing in per_board values.
+    self.site_config.AddForBoards(
+        'per_board',
+        ['foo', 'bar', 'multiboard'],
+        per_board,
+    )
+
+    self.assertEqual(self.site_config['foo-per_board'].value, 'foo')
+    self.assertEqual(self.site_config['bar-per_board'].value, 'bar')
+    self.assertEqual(self.site_config['multiboard-per_board'].boards,
+                     ['foo', 'bar'])
+
+    # Test using a template
+    self.site_config.AddForBoards(
+        'template',
+        ['foo', 'bar'],
+        None,
+        self.site_config.templates.template,
+    )
+
+    self.assertEqual(self.site_config['foo-template'].value, 'template')
+
+    # Test a template, and a mixin.
+    self.site_config.AddForBoards(
+        'mixin',
+        ['foo', 'bar'],
+        None,
+        self.site_config.templates.template,
+        self.site_config.templates.mixin,
+    )
+
+    self.assertEqual(self.site_config['foo-mixin'].value, 'mixin')
+
+    # Test a template, and a mixin, and a per-board.
+    self.site_config.AddForBoards(
+        'mixin_per_board',
+        ['foo', 'bar'],
+        per_board,
+        self.site_config.templates.template,
+        self.site_config.templates.mixin,
+    )
+
+    self.assertEqual(self.site_config['foo-mixin_per_board'].value, 'foo')
+
+    # Test a template, and a mixin, and a per-board, and an override.
+    self.site_config.AddForBoards(
+        'override',
+        ['foo', 'bar'],
+        per_board,
+        self.site_config.templates.template,
+        self.site_config.templates.mixin,
+        value='override',
+    )
+
+    self.assertEqual(self.site_config['foo-override'].value, 'override')
+
   def _verifyLoadSave(self, site_config):
     """Make sure that we can save and re-load a site."""
     config_str = site_config.SaveConfigToString()
