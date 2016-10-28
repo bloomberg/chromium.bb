@@ -38,8 +38,6 @@ namespace autofill {
 class PersonalDataManager;
 
 // iOS implementation of AutofillClient.
-// TODO(dconnelly): Split this up, as it collects functionality that doesn't
-// necessarily fit together on iOS. http://crbug.com/432487.
 class AutofillClientIOS : public AutofillClient {
  public:
   AutofillClientIOS(
