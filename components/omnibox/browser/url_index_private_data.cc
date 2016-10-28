@@ -1318,20 +1318,36 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
     const HistoryID history_id) {
   HistoryInfoMap::const_iterator hist_pos =
       private_data_.history_info_map_.find(history_id);
-  if (hist_pos != private_data_.history_info_map_.end()) {
-    const history::URLRow& hist_item = hist_pos->second.url_row;
-    const VisitInfoVector& visits = hist_pos->second.visits;
-    WordStartsMap::const_iterator starts_pos =
-        private_data_.word_starts_map_.find(history_id);
-    DCHECK(starts_pos != private_data_.word_starts_map_.end());
-    ScoredHistoryMatch match(
-        hist_item, visits, lower_string_, lower_terms_,
-        lower_terms_to_word_starts_offsets_, starts_pos->second,
-        bookmark_model_ && bookmark_model_->IsBookmarked(hist_item.url()),
-        template_url_service_, now_);
-    if (match.raw_score > 0)
-      scored_matches_.push_back(match);
-  }
+  if (hist_pos == private_data_.history_info_map_.end())
+    return;
+
+  WordStartsMap::const_iterator starts_pos =
+      private_data_.word_starts_map_.find(history_id);
+  DCHECK(starts_pos != private_data_.word_starts_map_.end());
+
+  const history::URLRow& hist_item = hist_pos->second.url_row;
+  GURL url = hist_item.url();
+  if (!url.is_valid())  // Possible in case of profile corruption.
+    return;
+
+  // Skip results corresponding to queries from the default search engine.
+  // These are low-quality, difficult-to-understand matches for users.
+  // SearchProvider should surface past queries in a better way.
+  TemplateURL* template_url =
+      template_url_service_ ? template_url_service_->GetDefaultSearchProvider()
+                            : nullptr;
+  if (template_url &&
+      template_url->IsSearchURL(url,
+                                template_url_service_->search_terms_data()))
+    return;
+
+  const VisitInfoVector& visits = hist_pos->second.visits;
+  ScoredHistoryMatch match(
+      hist_item, visits, lower_string_, lower_terms_,
+      lower_terms_to_word_starts_offsets_, starts_pos->second,
+      bookmark_model_ && bookmark_model_->IsBookmarked(url), now_);
+  if (match.raw_score > 0)
+    scored_matches_.push_back(match);
 }
 
 

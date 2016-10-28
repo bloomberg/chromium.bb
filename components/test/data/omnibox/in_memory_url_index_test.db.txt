@@ -80,6 +80,7 @@ INSERT INTO "urls" VALUES(32,'https://NearlyPerfectResult.com/','Practically Per
 INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practically Useless Search Result',4,0,99,0,0);  // Qualifies
 INSERT INTO "urls" VALUES(34,'http://FubarFubarAndFubar.com/','Situation Normal -- FUBARED',99,99,0,0,0);  // Qualifies
 INSERT INTO "urls" VALUES(35,'http://en.wikipedia.org/wiki/1%25_rule_(Internet_culture)','Do Not Need Title',2,2,0,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(36,'http://default-engine.com?q=query','Query Query Query',2,2,0,0,0);  // Qualifies
 
 /*
  This file creates some visits, enough to test (in InMemoryURLIndexTest)
@@ -106,3 +107,5 @@ INSERT INTO "visits" VALUES(17, 32, 14, 0, 0, 0, 1);
 INSERT INTO "visits" VALUES(18, 32, 15, 0, 1, 0, 1);
 INSERT INTO "visits" VALUES(19, 35, 0, 0, 1, 0, 1);
 INSERT INTO "visits" VALUES(20, 35, 7, 0, 1, 0, 1);
+INSERT INTO "visits" VALUES(21, 36, 1, 0, 1, 0, 1);
+INSERT INTO "visits" VALUES(22, 36, 2, 0, 1, 0, 1);
