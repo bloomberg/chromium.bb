@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -36,7 +37,6 @@
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/public/drag_drop_delegate.h"
 
 // Reading recommended for understanding the implementation in this file:
 //

@@ -25,6 +25,7 @@
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/transient_window_client_observer.h"
+#include "ui/aura/mus/drag_drop_controller_host.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
@@ -42,6 +43,7 @@ class Connector;
 }
 
 namespace aura {
+class DragDropControllerMus;
 class InFlightBoundsChange;
 class InFlightCaptureChange;
 class InFlightChange;
@@ -74,6 +76,7 @@ using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
 class AURA_EXPORT WindowTreeClient
     : NON_EXPORTED_BASE(public ui::mojom::WindowTreeClient),
       NON_EXPORTED_BASE(public ui::mojom::WindowManager),
+      public DragDropControllerHost,
       public WindowManagerClient,
       public WindowTreeHostMusDelegate,
       public client::CaptureClientObserver,
@@ -153,18 +156,6 @@ class AURA_EXPORT WindowTreeClient
   void StartPointerWatcher(bool want_moves);
   void StopPointerWatcher();
 
-  void PerformDragDrop(
-      Window* window,
-      const std::map<std::string, std::vector<uint8_t>>& drag_data,
-      int drag_operation,
-      const gfx::Point& cursor_location,
-      const SkBitmap& bitmap,
-      const base::Callback<void(bool, uint32_t)>& callback);
-
-  // Cancels a in progress drag drop. (If no drag is in progress, does
-  // nothing.)
-  void CancelDragDrop(Window* window);
-
   // Performs a window move. |callback| will be asynchronously called with the
   // whether the move loop completed successfully.
   void PerformWindowMove(Window* window,
@@ -187,8 +178,6 @@ class AURA_EXPORT WindowTreeClient
   friend class InFlightVisibleChange;
   friend class WindowPortMus;
   friend class WindowTreeClientPrivate;
-
-  struct CurrentDragState;
 
   using IdToWindowMap = std::map<Id, WindowMus*>;
 
@@ -453,6 +442,9 @@ class AURA_EXPORT WindowTreeClient
   void OnTransientChildWindowRemoved(Window* parent,
                                      Window* transient_child) override;
 
+  // Overriden from DragDropControllerHost:
+  uint32_t CreateChangeIdForDrag(WindowMus* window) override;
+
   // The one int in |cursor_location_mapping_|. When we read from this
   // location, we must always read from it atomically.
   base::subtle::Atomic32* cursor_location_memory() {
@@ -522,18 +514,7 @@ class AURA_EXPORT WindowTreeClient
   uint32_t current_wm_move_loop_change_ = 0u;
   Id current_wm_move_loop_window_id_ = 0u;
 
-  // State related to being the initiator of a drag started with
-  // PerformDragDrop().
-  std::unique_ptr<CurrentDragState> current_drag_state_;
-
-  // The mus server sends the mime drag data once per connection; we cache this
-  // and are responsible for sending it to all of our windows.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_drag_data_;
-
-  // A set of window ids for windows that we received an OnDragEnter() message
-  // for. We maintain this set so we know who to send OnDragFinish() messages
-  // at the end of the drag.
-  std::set<Id> drag_entered_windows_;
+  std::unique_ptr<DragDropControllerMus> drag_drop_controller_;
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 

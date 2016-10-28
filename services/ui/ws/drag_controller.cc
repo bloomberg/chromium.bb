@@ -211,7 +211,7 @@ void DragController::EnsureWindowObserved(ServerWindow* window) {
 void DragController::QueueOperation(ServerWindow* window,
                                     OperationType type,
                                     uint32_t event_flags,
-                                    gfx::Point screen_position) {
+                                    const gfx::Point& screen_position) {
   // If this window doesn't have the mime data, send it.
   DragTargetConnection* connection = source_->GetDragTargetForWindow(window);
   if (connection != source_connection_ &&

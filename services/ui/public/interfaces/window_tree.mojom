@@ -447,18 +447,18 @@ interface WindowTreeClient {
   // Called when the mouse cursor enters a window that has opted into
   // accepting drags through SetAcceptsDrags(), providing a list
   // of available mime types.  Returns a bitmask of the supported
-  // operations.
+  // operations. |screen_position| is in screen coordinates.
   OnDragEnter(uint32 window,
               uint32 key_state,
-              gfx.mojom.Point position,
+              gfx.mojom.Point screen_position,
               uint32 effect_bitmask) => (uint32 supported_op_bitmask);
 
   // Called when the pointer moves over the window after the initial
   // DragEnter. Returns a bitmask of the supported operations at this
-  // location.
+  // location. |screen_position| is in screen coordinates.
   OnDragOver(uint32 window,
              uint32 key_state,
-             gfx.mojom.Point position,
+             gfx.mojom.Point screen_position,
              uint32 effect_bitmask) => (uint32 supported_op_bitmask);
 
   // Called when the pointer leaves a window or if the drop is
@@ -466,10 +466,10 @@ interface WindowTreeClient {
   OnDragLeave(uint32 window);
 
   // Called when the drop occurs on a window. Returns the action
-  // taken.
+  // taken. |screen_position| is in screen coordinates.
   OnCompleteDrop(uint32 window,
                  uint32 key_state,
-                 gfx.mojom.Point position,
+                 gfx.mojom.Point screen_position,
                  uint32 effect_bitmask) => (uint32 action_taken);
 
   // Called on the client that requested PerformDragDrop() to return which drag

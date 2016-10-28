@@ -8,13 +8,13 @@
 #include "base/metrics/histogram.h"
 #include "base/win/win_util.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/events/event_constants.h"
-#include "ui/wm/public/drag_drop_delegate.h"
 
 using aura::client::DragDropClient;
 using aura::client::DragDropDelegate;

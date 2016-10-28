@@ -93,7 +93,7 @@ class DragController : public ServerWindowObserver {
   void QueueOperation(ServerWindow* window,
                       OperationType type,
                       uint32_t event_flags,
-                      gfx::Point screen_position);
+                      const gfx::Point& screen_position);
   void DispatchOperation(ServerWindow* window, WindowState* state);
   void OnRespondToOperation(ServerWindow* window);
 
