@@ -13,7 +13,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/browser/process_manager_observer.h"
-#include "extensions/common/feature_switch.h"
 
 namespace media_router {
 
@@ -79,7 +78,6 @@ class MediaRouterBaseBrowserTest : public ExtensionBrowserTest,
   bool extension_host_created_;
 
  private:
-  extensions::FeatureSwitch::ScopedOverride feature_override_;
   DISALLOW_COPY_AND_ASSIGN(MediaRouterBaseBrowserTest);
 };
 

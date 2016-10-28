@@ -902,8 +902,6 @@ TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarSizeAfterPrefChange) {
 // Test that, in the absence of the extension-action-redesign switch, the
 // model only contains extensions with browser actions and component actions.
 TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesDisabledSwitch) {
-  extensions::FeatureSwitch::ScopedOverride enable_media_router(
-      extensions::FeatureSwitch::media_router(), false);
   extensions::FeatureSwitch::ScopedOverride enable_redesign(
       extensions::FeatureSwitch::extension_action_redesign(), false);
   Init();
@@ -972,8 +970,6 @@ TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesEnabledSwitch) {
 // Test that hiding actions on the toolbar results in their removal from the
 // model when the redesign switch is not enabled.
 TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarActionsVisibilityNoSwitch) {
-  extensions::FeatureSwitch::ScopedOverride enable_media_router(
-      extensions::FeatureSwitch::media_router(), false);
   extensions::FeatureSwitch::ScopedOverride enable_redesign(
       extensions::FeatureSwitch::extension_action_redesign(), false);
   Init();

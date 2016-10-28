@@ -5362,11 +5362,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_IFRAME_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag for iframe-based sign-in flows">
         Uses an iframe-based sign-in flow instead of a webview-based flow.
       </message>
-      <message name="IDS_FLAGS_MEDIA_ROUTER_NAME" desc="Title of the flag for the media router.">
-        Media Router
+      <message name="IDS_FLAGS_LOAD_MEDIA_ROUTER_COMPONENT_EXTENSION_NAME" desc="Title of the flag for loading the Media Router component extension.">
+        Load Media Router Component Extension
       </message>
-      <message name="IDS_FLAGS_MEDIA_ROUTER_DESCRIPTION" desc="Description of the flag for the media router.">
-        Enables Chrome to access external presentation-type displays and use them for presenting web content.
+      <message name="IDS_FLAGS_LOAD_MEDIA_ROUTER_COMPONENT_EXTENSION_DESCRIPTION" desc="Description of the flag for loading the Media Router component extension.">
+        Loads the Media Router component extension at startup.
       </message>
       <message name="IDS_FLAGS_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
         Print Preview Registration Promos

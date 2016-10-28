@@ -2238,7 +2238,6 @@ const char kLatestVersionWhenClickedUpdateMenuItem[] =
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)
-#if defined(GOOGLE_CHROME_BUILD)
 // Whether or not the user has explicitly set the cloud services preference
 // through the first run flow.
 const char kMediaRouterCloudServicesPrefSet[] =
@@ -2246,7 +2245,6 @@ const char kMediaRouterCloudServicesPrefSet[] =
 // Whether or not the user has enabled cloud services with Media Router.
 const char kMediaRouterEnableCloudServices[] =
     "media_router.cloudservices.enabled";
-#endif  // defined(GOOGLE_CHROME_BUILD)
 // Whether or not the Media Router first run flow has been acknowledged by the
 // user.
 const char kMediaRouterFirstRunFlowAcknowledged[] =

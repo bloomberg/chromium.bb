@@ -621,6 +621,10 @@ const char kLoadComponentExtension[]        = "load-component-extension";
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
+// Loads the Media Router component extension on startup.
+const char kLoadMediaRouterComponentExtension[] =
+    "load-media-router-component-extension";
+
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
@@ -636,9 +640,6 @@ extern const char kSecurityChipAnimationAll[] = "animate-all";
 
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
-
-// Enables Media Router.
-const char kMediaRouter[]                   = "media-router";
 
 // Enables the recording of metrics reports but disables reporting. In contrast
 // to kDisableMetrics, this executes all the code that a normal client would

@@ -17,20 +17,18 @@
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 namespace media_router {
 
@@ -480,7 +478,6 @@ void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kMediaRouterFirstRunFlowAcknowledged, true);
 
-#if defined(GOOGLE_CHROME_BUILD)
   bool enabled_cloud_services = false;
   // Do not set the relevant cloud services prefs if the user was not shown
   // the cloud services prompt.
@@ -493,7 +490,6 @@ void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
   pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices,
                            enabled_cloud_services);
   pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
-#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void MediaRouterWebUIMessageHandler::OnActOnIssue(
@@ -805,7 +801,6 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
   bool first_run_flow_acknowledged =
       pref_service->GetBoolean(prefs::kMediaRouterFirstRunFlowAcknowledged);
   bool show_cloud_pref = false;
-#if defined(GOOGLE_CHROME_BUILD)
   // Cloud services preference is shown if user is logged in. If the user
   // enables sync after acknowledging the first run flow, this is treated as
   // the user opting into Google services, including cloud services, if the
@@ -832,7 +827,6 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
           base::StringPrintf(kHelpPageUrlPrefix, 6320939));
     }
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
   // Return early if the first run flow won't be surfaced.
   if (first_run_flow_acknowledged && !show_cloud_pref)
@@ -849,14 +843,10 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
 }
 
 AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
-#if defined(GOOGLE_CHROME_BUILD)
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  if (signin_manager)
-    return signin_manager->GetAuthenticatedAccountInfo();
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-  return AccountInfo();
+  return signin_manager ? signin_manager->GetAuthenticatedAccountInfo()
+                        : AccountInfo();
 }
 
 int MediaRouterWebUIMessageHandler::CurrentCastModeForRouteId(

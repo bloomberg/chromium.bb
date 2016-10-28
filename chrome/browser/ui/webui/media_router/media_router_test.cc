@@ -6,11 +6,9 @@
 
 #include "chrome/test/base/dialog_test_browser_window.h"
 
-MediaRouterTest::MediaRouterTest()
-    : feature_override_(extensions::FeatureSwitch::media_router(), true) {}
+MediaRouterTest::MediaRouterTest() {}
 
-MediaRouterTest::~MediaRouterTest() {
-}
+MediaRouterTest::~MediaRouterTest() {}
 
 BrowserWindow* MediaRouterTest::CreateBrowserWindow() {
   return new DialogTestBrowserWindow;

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "extensions/common/feature_switch.h"
 
 class BrowserWindow;
 
@@ -21,7 +20,6 @@ class MediaRouterTest : public BrowserWithTestWindowTest {
   BrowserWindow* CreateBrowserWindow() override;
 
  private:
-  extensions::FeatureSwitch::ScopedOverride feature_override_;
   DISALLOW_COPY_AND_ASSIGN(MediaRouterTest);
 };
 

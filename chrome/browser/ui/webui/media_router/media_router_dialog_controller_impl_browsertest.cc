@@ -13,7 +13,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "extensions/common/feature_switch.h"
 
 using content::WebContents;
 using content::TestNavigationObserver;
@@ -25,8 +24,7 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
   MediaRouterDialogControllerBrowserTest()
       : dialog_controller_(nullptr),
         initiator_(nullptr),
-        media_router_dialog_(nullptr),
-        feature_override_(extensions::FeatureSwitch::media_router(), true) {}
+        media_router_dialog_(nullptr) {}
   ~MediaRouterDialogControllerBrowserTest() override {}
 
  protected:
@@ -53,7 +51,6 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
   WebContents* media_router_dialog_;
 
  private:
-  extensions::FeatureSwitch::ScopedOverride feature_override_;
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerBrowserTest);
 };
 

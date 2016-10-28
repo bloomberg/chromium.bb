@@ -60,7 +60,15 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
 // Tests the basic state of the contextual menu.
 TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
-  int expected_number_items = 7;
+  // About
+  // -----
+  // Learn more
+  // Help
+  // Always show icon (checkbox)
+  // -----
+  // Enable cloud services (checkbox)
+  // Report an issue
+  int expected_number_items = 8;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // On all platforms except Linux, there's an additional menu item to access
@@ -68,26 +76,16 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   expected_number_items++;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
-#if defined(GOOGLE_CHROME_BUILD)
-  // In official Chrome builds, there's an additional menu item to toggle cloud
-  // services settings.
-  expected_number_items++;
-#endif  // GOOGLE_CHROME_BUILD
-
   // Verify the number of menu items, including separators.
   EXPECT_EQ(model()->GetItemCount(), expected_number_items);
 
   for (int i = 0; i < expected_number_items; i++) {
     EXPECT_TRUE(model()->IsEnabledAt(i));
-    bool expected_visibility = true;
 
-#if defined(GOOGLE_CHROME_BUILD)
-    // In official Chrome builds, the cloud services toggle exists and is
-    // enabled, but not visible until the user has authenticated their account.
-    expected_visibility =
+    // The cloud services toggle exists and is enabled, but not visible until
+    // the user has authenticated their account.
+    const bool expected_visibility =
         model()->GetCommandIdAt(i) != IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE;
-#endif  // GOOGLE_CHROME_BUILD
-
     EXPECT_EQ(expected_visibility, model()->IsVisibleAt(i));
   }
 
@@ -103,7 +101,6 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   }
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
 // Tests whether the cloud services item is correctly toggled. This menu item
 // is only availble on official Chrome builds.
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
@@ -127,7 +124,6 @@ TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
   EXPECT_FALSE(menu.IsCommandIdChecked(
       IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
 }
-#endif  // GOOGLE_CHROME_BUILD
 
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleAlwaysShowIconItem) {
   MediaRouterContextualMenu menu(browser());

@@ -15,11 +15,11 @@ namespace extensions {
 
 namespace {
 
-// The switch media-router is defined in chrome/common/chrome_switches.cc, but
-// we can't depend on chrome here.
-const char kMediaRouterFlag[] = "media-router";
+// The switch load-media-router-component-extension is defined in
+// chrome/common/chrome_switches.cc, but we can't depend on chrome here.
+const char kLoadMediaRouterComponentExtensionFlag[] =
+    "load-media-router-component-extension";
 
-const char kEnableMediaRouterExperiment[] = "EnableMediaRouter";
 const char kExtensionActionRedesignExperiment[] = "ExtensionActionRedesign";
 
 class CommonSwitches {
@@ -51,9 +51,14 @@ class CommonSwitches {
                                    FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
                          FeatureSwitch::DEFAULT_ENABLED),
-        media_router(kMediaRouterFlag,
-                     kEnableMediaRouterExperiment,
-                     FeatureSwitch::DEFAULT_ENABLED) {
+        load_media_router_component_extension(
+            kLoadMediaRouterComponentExtensionFlag,
+#if defined(GOOGLE_CHROME_BUILD)
+            FeatureSwitch::DEFAULT_ENABLED)
+#else
+            FeatureSwitch::DEFAULT_DISABLED)
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  {
   }
 
   // Enables extensions to be easily installed from sites other than the web
@@ -72,7 +77,7 @@ class CommonSwitches {
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
-  FeatureSwitch media_router;
+  FeatureSwitch load_media_router_component_extension;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -107,8 +112,8 @@ FeatureSwitch* FeatureSwitch::embedded_extension_options() {
 FeatureSwitch* FeatureSwitch::trace_app_source() {
   return &g_common_switches.Get().trace_app_source;
 }
-FeatureSwitch* FeatureSwitch::media_router() {
-  return &g_common_switches.Get().media_router;
+FeatureSwitch* FeatureSwitch::load_media_router_component_extension() {
+  return &g_common_switches.Get().load_media_router_component_extension;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

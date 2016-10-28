@@ -13,9 +13,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #endif  // defined(OS_ANDROID) || defined(ENABLE_EXTENSIONS)
-#if defined(ENABLE_EXTENSIONS)
-#include "extensions/common/feature_switch.h"
-#endif // defined(ENABLE_EXTENSIONS)
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
 namespace media_router {
@@ -42,11 +39,7 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
     CHECK(pref->GetValue()->GetAsBoolean(&allowed));
     return allowed;
   }
-#if defined(OS_ANDROID)
   return true;
-#else  // defined(ENABLE_EXTENSIONS)
-  return extensions::FeatureSwitch::media_router()->IsEnabled();
-#endif  // defined(OS_ANDROID)
 #else  // !(defined(OS_ANDROID) || defined(ENABLE_EXTENSIONS))
   return false;
 #endif  // defined(OS_ANDROID) || defined(ENABLE_EXTENSIONS)

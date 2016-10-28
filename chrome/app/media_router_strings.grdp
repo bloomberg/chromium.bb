@@ -58,11 +58,9 @@
   <message name="IDS_MEDIA_ROUTER_ABOUT" desc="Title of a menu item which, on click, opens a page with product information about Chromecast.">
    About
   </message>
-  <if expr="_google_chrome">
-    <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE" desc="Title of a menu item which, on click, toggles the preference to opt in or out of cloud services.">
-     Enable cloud services
-    </message>
-  </if>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE" desc="Title of a menu item which, on click, toggles the preference to opt in or out of cloud services.">
+    Enable cloud services
+  </message>
   <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of a menu item which, on click, opens a page to the Chromecast help center.">
    Help
   </message>
@@ -77,10 +75,10 @@
   </message>
 
   <!-- First Run Flow -->
+  <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_PREF_TEXT" desc="Text of the cloud services preferences text in the first run flow, which is shown to the user if they are currently signed in and have enabled sync.">
+    Enable casting to cloud-based services like Google Hangouts.
+  </message>
   <if expr="_google_chrome">
-    <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_PREF_TEXT" desc="Text of the cloud services preferences text in the first run flow, which is shown to the user if they are currently signed in and have enabled sync.">
-      Enable casting to cloud-based services like Google Hangouts.
-    </message>
     <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TITLE" desc="Title of the first run flow, which is shown to the user the first time they use Media Router, until they acknowledge the message. This is a welcome message that introduces Media Router to the user.">
       Welcome to the Cast experience in Chrome!
     </message>
