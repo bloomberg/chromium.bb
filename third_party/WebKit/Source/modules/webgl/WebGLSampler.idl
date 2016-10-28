@@ -4,6 +4,5 @@
 
 [
     DependentLifetime,
-    RuntimeEnabled=UnsafeES3APIs,
 ] interface WebGLSampler {
 };

@@ -284,10 +284,6 @@ void WebRuntimeFeatures::enablePushMessaging(bool enable) {
   RuntimeEnabledFeatures::setPushMessagingEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableUnsafeES3APIs(bool enable) {
-  RuntimeEnabledFeatures::setUnsafeES3APIsEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableWebVR(bool enable) {
   RuntimeEnabledFeatures::setWebVREnabled(enable);
 }

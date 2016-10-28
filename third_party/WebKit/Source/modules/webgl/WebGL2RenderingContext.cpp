@@ -38,17 +38,14 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::create(
     HTMLCanvasElement* canvas,
     const CanvasContextCreationAttributes& attrs,
     Document&) {
-  if (!RuntimeEnabledFeatures::unsafeES3APIsEnabled()) {
-    canvas->dispatchEvent(WebGLContextEvent::create(
-        EventTypeNames::webglcontextcreationerror, false, true,
-        "Creation of WebGL2 contexts disabled."));
-    return nullptr;
-  }
-
   std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(
       createWebGraphicsContext3DProvider(canvas, attrs, 2));
-  if (!contextProvider)
+  if (!contextProvider) {
+    canvas->dispatchEvent(WebGLContextEvent::create(
+        EventTypeNames::webglcontextcreationerror, false, true,
+        "Failed to create a WebGL2 context."));
     return nullptr;
+  }
   gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
   std::unique_ptr<Extensions3DUtil> extensionsUtil =
       Extensions3DUtil::create(gl);

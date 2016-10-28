@@ -189,9 +189,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   else
     WebRuntimeFeatures::enableV8IdleTasks(true);
 
-  if (command_line.HasSwitch(switches::kEnableUnsafeES3APIs))
-    WebRuntimeFeatures::enableUnsafeES3APIs(true);
-
   if (command_line.HasSwitch(switches::kEnableWebVR))
     WebRuntimeFeatures::enableWebVR(true);
 

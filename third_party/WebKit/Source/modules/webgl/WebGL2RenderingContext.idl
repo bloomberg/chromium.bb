@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=UnsafeES3APIs,
     DoNotCheckConstants,
     SetWrapperReferenceFrom=canvas,
     Custom=VisitDOMWrapper,

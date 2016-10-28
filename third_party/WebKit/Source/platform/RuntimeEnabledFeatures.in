@@ -232,7 +232,6 @@ TimerThrottlingForHiddenFrames status=stable
 Touch status=stable
 TraceWrappables
 TrustedEventsDefaultAction status=stable
-UnsafeES3APIs
 UserSelectAll status=stable
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
