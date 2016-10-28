@@ -27,3 +27,44 @@ def PostUploadHook(cl, change, output_api):
   rietveld_obj.update_description(cl.issue, new_description)
   return [output_api.PresubmitNotifyResult(
       'Automatically added optional Closure bots to run on CQ.')]
+
+
+def CheckChangeOnUpload(input_api, output_api):
+  return _CheckForTranslations(input_api, output_api)
+
+
+def CheckChangeOnCommit(input_api, output_api):
+  return _CheckForTranslations(input_api, output_api)
+
+
+def _CheckForTranslations(input_api, output_api):
+  shared_keywords = ['i18n(']
+  html_keywords = shared_keywords + ['$118n{']
+  js_keywords = shared_keywords + ['I18nBehavior', 'loadTimeData.']
+
+  errors = []
+
+  for f in input_api.AffectedFiles():
+    local_path = f.LocalPath()
+
+    keywords = None
+    if local_path.endswith('.js'):
+      keywords = js_keywords
+    elif local_path.endswith('.html'):
+      keywords = html_keywords
+
+    if not keywords:
+      continue
+
+    for lnum, line in f.ChangedContents():
+      if any(line for keyword in keywords if keyword in line):
+        errors.append("%s:%d\n%s" % (f.LocalPath(), lnum, line))
+
+  if not errors:
+    return []
+
+  return [output_api.PresubmitError("\n".join(errors) + """
+
+Don't embed translations directly in shared UI code. Instead, inject your
+translation from the place using the shared code. For an example: see
+<cr-dialog>#closeText (http://bit.ly/2eLEsqh).""")]
