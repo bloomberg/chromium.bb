@@ -45,6 +45,10 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
 
+    # TODO(ajuma): remove after reference images are regenerated.
+    self.Fail('Pixel_2DCanvasWebGL', bug=660118)
+    self.Fail('Pixel_2DCanvasWebGLES3', bug=660118)
+
     # TODO(zakerinasab): check / generate reference images.
     self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D', bug=657946)
     self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', bug=657946)

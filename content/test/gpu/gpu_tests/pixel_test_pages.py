@@ -120,7 +120,7 @@ def ES2AndES3Pages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=2),
+      revision=3),
 
     PixelTestPage(
       'pixel_background.html',
