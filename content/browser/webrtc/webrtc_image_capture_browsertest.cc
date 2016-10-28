@@ -39,7 +39,12 @@ static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 // platforms where the ImageCaptureCode is landed, https://crbug.com/656810
 static struct TargetCamera {
   bool use_fake;
-} const kTestParameters[] = {{true}};
+} const kTestParameters[] = {
+    {true},
+#if !defined(OS_LINUX)
+    {false}
+#endif
+};
 
 }  // namespace
 
@@ -100,6 +105,7 @@ class WebRtcImageCaptureBrowserTest
     std::string result;
     if (!ExecuteScriptAndExtractString(shell(), command, &result))
       return false;
+    DLOG_IF(ERROR, result != "OK") << result;
     return result == "OK";
   }
 
