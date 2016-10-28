@@ -27,6 +27,7 @@
 #ifndef XPathValue_h
 #define XPathValue_h
 
+#include "core/CoreExport.h"
 #include "core/xml/XPathNodeSet.h"
 #include "wtf/text/WTFString.h"
 
@@ -64,7 +65,7 @@ class ValueData : public GarbageCollectedFinalized<ValueData> {
 
 // Copying Value objects makes their data partially shared, so care has to be
 // taken when dealing with copies.
-class Value {
+class CORE_EXPORT Value {
   DISALLOW_NEW();
 
  public:

@@ -27,6 +27,7 @@
 #ifndef XPathPredicate_h
 #define XPathPredicate_h
 
+#include "core/CoreExport.h"
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathValue.h"
 
@@ -34,7 +35,7 @@ namespace blink {
 
 namespace XPath {
 
-class Number final : public Expression {
+class CORE_EXPORT Number final : public Expression {
  public:
   explicit Number(double);
   DECLARE_VIRTUAL_TRACE();
@@ -46,7 +47,7 @@ class Number final : public Expression {
   Value m_value;
 };
 
-class StringExpression final : public Expression {
+class CORE_EXPORT StringExpression final : public Expression {
  public:
   explicit StringExpression(const String&);
   DECLARE_VIRTUAL_TRACE();

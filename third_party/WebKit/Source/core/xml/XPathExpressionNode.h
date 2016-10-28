@@ -27,6 +27,7 @@
 #ifndef XPathExpressionNode_h
 #define XPathExpressionNode_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/xml/XPathValue.h"
 #include "wtf/HashMap.h"
@@ -37,7 +38,7 @@ namespace blink {
 
 namespace XPath {
 
-struct EvaluationContext {
+struct CORE_EXPORT EvaluationContext {
   STACK_ALLOCATED();
 
  public:
@@ -51,13 +52,13 @@ struct EvaluationContext {
   bool hadTypeConversionError;
 };
 
-class ParseNode : public GarbageCollectedFinalized<ParseNode> {
+class CORE_EXPORT ParseNode : public GarbageCollectedFinalized<ParseNode> {
  public:
   virtual ~ParseNode() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-class Expression : public ParseNode {
+class CORE_EXPORT Expression : public ParseNode {
   WTF_MAKE_NONCOPYABLE(Expression);
 
  public:

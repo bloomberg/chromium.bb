@@ -27,13 +27,14 @@
 #ifndef XPathFunctions_h
 #define XPathFunctions_h
 
+#include "core/CoreExport.h"
 #include "core/xml/XPathExpressionNode.h"
 
 namespace blink {
 
 namespace XPath {
 
-class Function : public Expression {
+class CORE_EXPORT Function : public Expression {
  public:
   void setArguments(HeapVector<Member<Expression>>&);
   void setName(const String& name) { m_name = name; }
@@ -49,7 +50,8 @@ class Function : public Expression {
 };
 
 Function* createFunction(const String& name);
-Function* createFunction(const String& name, HeapVector<Member<Expression>>&);
+CORE_EXPORT Function* createFunction(const String& name,
+                                     HeapVector<Member<Expression>>&);
 
 }  // namespace XPath
 

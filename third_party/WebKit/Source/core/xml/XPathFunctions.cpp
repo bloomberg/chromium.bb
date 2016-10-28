@@ -37,6 +37,9 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
+#include <algorithm>
+#include <limits>
+
 namespace blink {
 namespace XPath {
 
@@ -530,34 +533,47 @@ Value FunSubstringAfter::evaluate(EvaluationContext& context) const {
   return s1.substring(i + s2.length());
 }
 
+// Returns |value| clamped to the range [lo, hi].
+// TODO(dominicc): Replace with std::clamp when C++17 is allowed
+// per <https://chromium-cpp.appspot.com/>
+static double clamp(const double value, const double lo, const double hi) {
+  return std::min(hi, std::max(lo, value));
+}
+
+// Computes the 1-based start and end (exclusive) string indices for
+// substring. This is all the positions [1, maxLen (inclusive)] where
+// start <= position < start + len
+static std::pair<unsigned, unsigned> computeSubstringStartEnd(double start,
+                                                              double len,
+                                                              double maxLen) {
+  DCHECK(std::isfinite(maxLen));
+  const double end = start + len;
+  if (std::isnan(start) || std::isnan(end))
+    return std::make_pair(1, 1);
+  // Neither start nor end are NaN, but may still be +/- Inf
+  const double clampedStart = clamp(start, 1, maxLen + 1);
+  const double clampedEnd = clamp(end, clampedStart, maxLen + 1);
+  return std::make_pair(static_cast<unsigned>(clampedStart),
+                        static_cast<unsigned>(clampedEnd));
+}
+
+// substring(string, number pos, number? len)
+//
+// Characters in string are indexed from 1. Numbers are doubles and
+// substring is specified to work with IEEE-754 infinity, NaN, and
+// XPath's bespoke rounding function, round.
+//
+// <https://www.w3.org/TR/xpath/#function-substring>
 Value FunSubstring::evaluate(EvaluationContext& context) const {
-  String s = arg(0)->evaluate(context).toString();
-  double doublePos = arg(1)->evaluate(context).toNumber();
-  if (std::isnan(doublePos))
+  String sourceString = arg(0)->evaluate(context).toString();
+  const double pos = FunRound::round(arg(1)->evaluate(context).toNumber());
+  const double len = argCount() == 3
+                         ? FunRound::round(arg(2)->evaluate(context).toNumber())
+                         : std::numeric_limits<double>::infinity();
+  const auto bounds = computeSubstringStartEnd(pos, len, sourceString.length());
+  if (bounds.second <= bounds.first)
     return "";
-  long pos = static_cast<long>(FunRound::round(doublePos));
-  bool haveLength = argCount() == 3;
-  long len = -1;
-  if (haveLength) {
-    double doubleLen = arg(2)->evaluate(context).toNumber();
-    if (std::isnan(doubleLen))
-      return "";
-    len = static_cast<long>(FunRound::round(doubleLen));
-  }
-
-  if (pos > long(s.length()))
-    return "";
-
-  if (pos < 1) {
-    if (haveLength) {
-      len -= 1 - pos;
-      if (len < 1)
-        return "";
-    }
-    pos = 1;
-  }
-
-  return s.substring(pos - 1, len);
+  return sourceString.substring(bounds.first - 1, bounds.second - bounds.first);
 }
 
 Value FunStringLength::evaluate(EvaluationContext& context) const {
