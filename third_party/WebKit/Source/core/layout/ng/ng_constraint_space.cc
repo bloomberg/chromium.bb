@@ -6,6 +6,8 @@
 
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_units.h"
 
@@ -16,15 +18,6 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGPhysicalConstraintSpace* physical_space)
     : physical_space_(physical_space),
       size_(physical_space->ContainerSize().ConvertToLogical(writing_mode)),
-      writing_mode_(writing_mode),
-      direction_(direction) {}
-
-NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
-                                     NGDirection direction,
-                                     NGLogicalSize container_size)
-    : physical_space_(new NGPhysicalConstraintSpace(
-          container_size.ConvertToPhysical(writing_mode))),
-      size_(container_size),
       writing_mode_(writing_mode),
       direction_(direction) {}
 
@@ -70,17 +63,23 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
   if (box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext())
     is_new_fc = true;
 
-  NGConstraintSpace* derived_constraint_space = new NGConstraintSpace(
+  NGConstraintSpaceBuilder builder(
+      FromPlatformWritingMode(box.styleRef().getWritingMode()));
+  builder
+      .SetContainerSize(
+          NGLogicalSize(container_logical_width, container_logical_height))
+      .SetIsInlineDirectionTriggersScrollbar(
+          box.styleRef().overflowInlineDirection() == OverflowAuto)
+      .SetIsBlockDirectionTriggersScrollbar(
+          box.styleRef().overflowBlockDirection() == OverflowAuto)
+      .SetIsFixedSizeInline(fixed_inline)
+      .SetIsFixedSizeBlock(fixed_block)
+      .SetIsNewFormattingContext(is_new_fc);
+
+  return new NGConstraintSpace(
       FromPlatformWritingMode(box.styleRef().getWritingMode()),
       FromPlatformDirection(box.styleRef().direction()),
-      NGLogicalSize(container_logical_width, container_logical_height));
-  derived_constraint_space->SetOverflowTriggersScrollbar(
-      box.styleRef().overflowInlineDirection() == OverflowAuto,
-      box.styleRef().overflowBlockDirection() == OverflowAuto);
-  derived_constraint_space->SetFixedSize(fixed_inline, fixed_block);
-  derived_constraint_space->SetIsNewFormattingContext(is_new_fc);
-
-  return derived_constraint_space;
+      builder.ToConstraintSpace());
 }
 
 void NGConstraintSpace::AddExclusion(const NGExclusion* exclusion) const {

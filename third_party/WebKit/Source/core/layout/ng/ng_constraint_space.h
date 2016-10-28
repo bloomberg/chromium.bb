@@ -31,12 +31,6 @@ class CORE_EXPORT NGConstraintSpace final
   // coordinates.
   NGConstraintSpace(NGWritingMode, NGDirection, NGPhysicalConstraintSpace*);
 
-  // Constructs a constraint space with a new backing NGPhysicalConstraintSpace.
-  // The size will be used for both for the physical constraint space's
-  // container size and this constraint space's Size().
-  // TODO(layout-dev): Remove once NGConstraintSpaceBuilder exists.
-  NGConstraintSpace(NGWritingMode, NGDirection, NGLogicalSize);
-
   // Constructs a derived constraint space that shares the exclusions of the
   // input constraint space, but has a different container size, writing mode
   // and direction. Sets the offset to zero. For use by layout algorithms

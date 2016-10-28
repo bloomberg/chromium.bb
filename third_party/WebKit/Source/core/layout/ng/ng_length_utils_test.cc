@@ -27,12 +27,12 @@ class NGLengthUtilsTest : public ::testing::Test {
                                                      int block_size,
                                                      bool fixed_inline = false,
                                                      bool fixed_block = false) {
-    NGConstraintSpace* derived_constraint_space = new NGConstraintSpace(
+    return new NGConstraintSpace(
         HorizontalTopBottom, LeftToRight,
-        NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)));
-    derived_constraint_space->SetOverflowTriggersScrollbar(false, false);
-    derived_constraint_space->SetFixedSize(fixed_inline, fixed_block);
-    return derived_constraint_space;
+        new NGPhysicalConstraintSpace(
+            NGPhysicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)),
+            fixed_inline, fixed_block, false, false, FragmentNone, FragmentNone,
+            false));
   }
 
   LayoutUnit ResolveInlineLength(
