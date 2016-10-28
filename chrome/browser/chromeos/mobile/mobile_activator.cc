@@ -625,7 +625,7 @@ void MobileActivator::ContinueConnecting() {
     LOG(WARNING) << "Connect failed, will try again in a little bit.";
     if (network) {
       VLOG(1) << "Connecting to: " << network->path();
-      NetworkConnect::Get()->ConnectToNetwork(network->path());
+      NetworkConnect::Get()->ConnectToNetworkId(network->guid());
     }
   }
 }

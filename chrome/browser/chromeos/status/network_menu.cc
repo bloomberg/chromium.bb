@@ -218,7 +218,11 @@ class MainMenuModel : public NetworkMenuModel {
 
 void NetworkMenuModel::ConnectToNetworkAt(int index) {
   const std::string& service_path = menu_items_[index].service_path;
-  NetworkConnect::Get()->ConnectToNetwork(service_path);
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
+  if (network)
+    NetworkConnect::Get()->ConnectToNetworkId(network->guid());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

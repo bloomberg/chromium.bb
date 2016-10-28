@@ -22,6 +22,13 @@
 namespace chromeos {
 namespace test {
 
+namespace {
+
+const char kWiFi1ServicePath[] = "/service/wifi1";
+const char kWiFi1Guid[] = "wifi1_guid";
+
+}  // namespace
+
 class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
  public:
   NetworkConnectTestDelegate()
@@ -91,14 +98,17 @@ class NetworkStateNotifierTest : public testing::Test {
     service_test->ClearServices();
     const bool add_to_visible = true;
     // Create a wifi network and set to online.
-    service_test->AddService("/service/wifi1", "wifi1_guid", "wifi1",
+    service_test->AddService(kWiFi1ServicePath, kWiFi1Guid, "wifi1",
                              shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible);
-    service_test->SetServiceProperty("wifi1", shill::kSecurityClassProperty,
+    service_test->SetServiceProperty(kWiFi1ServicePath,
+                                     shill::kSecurityClassProperty,
                                      base::StringValue(shill::kSecurityWep));
-    service_test->SetServiceProperty("wifi1", shill::kConnectableProperty,
+    service_test->SetServiceProperty(kWiFi1ServicePath,
+                                     shill::kConnectableProperty,
                                      base::FundamentalValue(true));
-    service_test->SetServiceProperty("wifi1", shill::kPassphraseProperty,
+    service_test->SetServiceProperty(kWiFi1ServicePath,
+                                     shill::kPassphraseProperty,
                                      base::StringValue("failure"));
     base::RunLoop().RunUntilIdle();
   }
@@ -111,7 +121,7 @@ class NetworkStateNotifierTest : public testing::Test {
 };
 
 TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
-  NetworkConnect::Get()->ConnectToNetwork("wifi1");
+  NetworkConnect::Get()->ConnectToNetworkId(kWiFi1Guid);
   base::RunLoop().RunUntilIdle();
   // Failure should spawn a notification.
   message_center::MessageCenter* message_center =

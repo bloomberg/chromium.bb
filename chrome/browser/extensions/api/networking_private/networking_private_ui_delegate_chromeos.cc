@@ -17,24 +17,13 @@ NetworkingPrivateUIDelegateChromeOS::~NetworkingPrivateUIDelegateChromeOS() {}
 
 void NetworkingPrivateUIDelegateChromeOS::ShowAccountDetails(
     const std::string& guid) const {
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-          guid);
-  if (!network || network->path().empty())
-    return;
-  chromeos::NetworkConnect::Get()->ShowMobileSetup(network->path());
+  chromeos::NetworkConnect::Get()->ShowMobileSetup(guid);
 }
 
 bool NetworkingPrivateUIDelegateChromeOS::HandleConnectFailed(
     const std::string& guid,
     const std::string error) const {
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-          guid);
-  if (!network || network->path().empty())
-    return false;
-  return chromeos::NetworkConnect::Get()->MaybeShowConfigureUI(network->path(),
-                                                               error);
+  return chromeos::NetworkConnect::Get()->MaybeShowConfigureUI(guid, error);
 }
 
 }  // namespace extensions

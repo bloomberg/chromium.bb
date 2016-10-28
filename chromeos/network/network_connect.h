@@ -69,11 +69,11 @@ class CHROMEOS_EXPORT NetworkConnect {
   virtual ~NetworkConnect();
 
   // Requests a network connection and handles any errors and notifications.
-  virtual void ConnectToNetwork(const std::string& service_path) = 0;
+  virtual void ConnectToNetworkId(const std::string& network_id) = 0;
 
   // Maybe show the configuration UI after a connect failure based on the
   // network state and error name. Returns true if the UI is shown.
-  virtual bool MaybeShowConfigureUI(const std::string& service_path,
+  virtual bool MaybeShowConfigureUI(const std::string& network_id,
                                     const std::string& connect_error) = 0;
 
   // Enables or disables a network technology. If |technology| refers to
@@ -83,23 +83,22 @@ class CHROMEOS_EXPORT NetworkConnect {
       const chromeos::NetworkTypePattern& technology,
       bool enabled_state) = 0;
 
-  // Requests network activation and handles any errors and notifications.
-  virtual void ActivateCellular(const std::string& service_path) = 0;
-
   // Determines whether or not a network requires a connection to activate or
   // setup and either shows a notification or opens the mobile setup dialog.
-  virtual void ShowMobileSetup(const std::string& service_path) = 0;
+  virtual void ShowMobileSetup(const std::string& network_id) = 0;
 
   // Configures a network with a dictionary of Shill properties, then sends a
   // connect request. The profile is set according to 'shared' if allowed.
-  virtual void ConfigureNetworkAndConnect(
-      const std::string& service_path,
+  // TODO(stevenjb): Use ONC properties instead of shill.
+  virtual void ConfigureNetworkIdAndConnect(
+      const std::string& network_id,
       const base::DictionaryValue& shill_properties,
       bool shared) = 0;
 
   // Requests a new network configuration to be created from a dictionary of
   // Shill properties and sends a connect request if the configuration succeeds.
   // The profile used is determined by |shared|.
+  // TODO(stevenjb): Use ONC properties instead of shill.
   virtual void CreateConfigurationAndConnect(
       base::DictionaryValue* shill_properties,
       bool shared) = 0;

@@ -464,7 +464,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_CONNECT_TO_VPN
             : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-    chromeos::NetworkConnect::Get()->ConnectToNetwork(service_path);
+    chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid());
   }
   owner()->system_tray()->CloseSystemBubble();
 }

@@ -65,13 +65,6 @@ const char kTagSimOpSetLocked[] = "setLocked";
 const char kTagSimOpSetUnlocked[] = "setUnlocked";
 const char kTagSimOpUnlock[] = "unlock";
 
-std::string ServicePathFromGuid(const std::string& guid) {
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-          guid);
-  return network ? network->path() : "";
-}
-
 Profile* GetProfileForPrimaryUser() {
   return chromeos::ProfileHelper::Get()->GetProfileByUser(
       user_manager::UserManager::Get()->GetPrimaryUser());
@@ -141,9 +134,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
     NOTREACHED();
     return;
   }
-  std::string service_path = ServicePathFromGuid(guid);
-  if (!service_path.empty())
-    NetworkConnect::Get()->ShowMobileSetup(service_path);
+  NetworkConnect::Get()->ShowMobileSetup(guid);
 }
 
 void InternetOptionsHandler::SimOperationCallback(const base::ListValue* args) {

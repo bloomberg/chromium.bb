@@ -27,6 +27,7 @@ namespace {
 
 const char kCellularDevicePath[] = "/device/stub_cellular_device1";
 const char kCellularServicePath[] = "/service/cellular1";
+const char kCellularGuid[] = "cellular1_guid";
 const char kNotificationId[] = "chrome://settings/internet/data_saver";
 const char kTestUserName[] = "test-user@example.com";
 
@@ -128,7 +129,7 @@ class DataPromoNotificationTest : public testing::Test {
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
-    service_test->AddService(kCellularServicePath, "cellular1_guid",
+    service_test->AddService(kCellularServicePath, kCellularGuid,
                              "cellular1" /* name */, shill::kTypeCellular,
                              "activated", true /* visible */);
     service_test->SetServiceProperty(
@@ -156,7 +157,7 @@ TEST_F(DataPromoNotificationTest, DataSaverNotification) {
   // Network setup shouldn't be enough to activate notification.
   EXPECT_FALSE(message_center->FindVisibleNotificationById(kNotificationId));
 
-  chromeos::NetworkConnect::Get()->ConnectToNetwork(kCellularServicePath);
+  chromeos::NetworkConnect::Get()->ConnectToNetworkId(kCellularGuid);
   base::RunLoop().RunUntilIdle();
   // Connecting to cellular network (which here makes it the default network)
   // should trigger the Data Saver notification.

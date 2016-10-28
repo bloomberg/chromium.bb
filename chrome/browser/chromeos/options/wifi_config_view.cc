@@ -740,8 +740,8 @@ bool WifiConfigView::Login() {
       share_network = false;
       NetworkConnect::Get()->CreateConfiguration(&properties, share_network);
     } else {
-      NetworkConnect::Get()->ConfigureNetworkAndConnect(
-          service_path_, properties, share_network);
+      NetworkConnect::Get()->ConfigureNetworkIdAndConnect(
+          network->guid(), properties, share_network);
     }
   }
   return true;  // dialog will be closed

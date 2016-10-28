@@ -392,8 +392,8 @@ bool VPNConfigView::Login() {
     }
     base::DictionaryValue properties;
     SetConfigProperties(&properties);
-    NetworkConnect::Get()->ConfigureNetworkAndConnect(service_path_, properties,
-                                                      false /* not shared */);
+    NetworkConnect::Get()->ConfigureNetworkIdAndConnect(vpn->guid(), properties,
+                                                        false /* not shared */);
   }
   return true;  // Close dialog.
 }

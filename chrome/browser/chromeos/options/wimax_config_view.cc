@@ -169,8 +169,8 @@ bool WimaxConfigView::Login() {
                                               false);
   }
 
-  NetworkConnect::Get()->ConfigureNetworkAndConnect(service_path_, properties,
-                                                    share_network);
+  NetworkConnect::Get()->ConfigureNetworkIdAndConnect(wimax->guid(), properties,
+                                                      share_network);
   return true;  // dialog will be closed
 }
 
