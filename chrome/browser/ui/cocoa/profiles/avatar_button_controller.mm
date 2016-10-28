@@ -26,24 +26,16 @@
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/nine_image_painter_factory.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
-NSImage* GetImageFromResourceID(int resourceId) {
-  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      resourceId).ToNSImage();
-}
-
-const SkColor kMaterialButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
-const SkColor kMaterialButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
-const SkColor kMaterialAvatarIconColor = SkColorSetRGB(0x5a, 0x5a, 0x5a);
+const SkColor kButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
+const SkColor kButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
+const SkColor kAvatarIconColor = SkColorSetRGB(0x5a, 0x5a, 0x5a);
 
 const CGFloat kButtonHeight = 24;
 
@@ -51,11 +43,11 @@ const CGFloat kButtonHeight = 24;
 // 6px.
 const CGFloat kButtonExtraPadding = 6 - 5;
 
-// Extra padding for the MD signed out avatar button.
-const CGFloat kMaterialSignedOutWidthPadding = 2;
+// Extra padding for the signed out avatar button.
+const CGFloat kSignedOutWidthPadding = 2;
 
-// Kern value for the MD avatar button title.
-const CGFloat kMaterialTitleKern = 0.25;
+// Kern value for the avatar button title.
+const CGFloat kTitleKern = 0.25;
 
 }  // namespace
 
@@ -86,7 +78,7 @@ const CGFloat kMaterialTitleKern = 0.25;
   // is square. Otherwise, we are displaying the profile's name and an
   // optional authentication error icon.
   if ([self image] && !hasError_)
-    buttonSize.width = kButtonHeight + kMaterialSignedOutWidthPadding;
+    buttonSize.width = kButtonHeight + kSignedOutWidthPadding;
   else
     buttonSize.width += 2 * kButtonExtraPadding;
   buttonSize.height = kButtonHeight;
@@ -101,8 +93,8 @@ const CGFloat kMaterialTitleKern = 0.25;
 - (void)drawImage:(NSImage*)image
         withFrame:(NSRect)frame
            inView:(NSView*)controlView {
-  // The image used in the generic button case as well as the material-designed
-  // error icon both need to be shifted down slightly to be centered correctly.
+  // The image used in the generic button case as well as the error icon both
+  // need to be shifted down slightly to be centered correctly.
   // TODO(noms): When the assets are fixed, remove this latter offset.
   if (!hasError_ || switches::IsMaterialDesignUserMenu())
     frame = NSOffsetRect(frame, 0, 1);
@@ -116,9 +108,9 @@ const CGFloat kMaterialTitleKern = 0.25;
 
   NSColor* backgroundColor = nil;
   if (hoverState == kHoverStateMouseDown) {
-    backgroundColor = skia::SkColorToSRGBNSColor(kMaterialButtonPressedColor);
+    backgroundColor = skia::SkColorToSRGBNSColor(kButtonPressedColor);
   } else if (hoverState == kHoverStateMouseOver) {
-    backgroundColor = skia::SkColorToSRGBNSColor(kMaterialButtonHoverColor);
+    backgroundColor = skia::SkColorToSRGBNSColor(kButtonHoverColor);
   }
 
   if (backgroundColor) {
@@ -215,8 +207,6 @@ const CGFloat kMaterialTitleKern = 0.25;
 }
 
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  // Redraw the button if the window has switched between themed and native
-  // or if we're in MD design.
   ThemeService* themeService =
       ThemeServiceFactory::GetForProfile(browser_->profile());
   BOOL updatedIsThemedWindow = !themeService->UsingSystemTheme();
@@ -228,8 +218,7 @@ const CGFloat kMaterialTitleKern = 0.25;
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
   // The button text has a black foreground and a white drop shadow for regular
   // windows, and a light text with a dark drop shadow for guest windows
-  // which are themed with a dark background. If we're using MD, then there
-  // should be no drop shadows.
+  // which are themed with a dark background.
   NSColor* foregroundColor;
   const ui::ThemeProvider* theme =
       &ThemeService::GetThemeProviderForProfile(browser_->profile());
@@ -256,7 +245,7 @@ const CGFloat kMaterialTitleKern = 0.25;
 
   if (useGenericButton) {
     NSImage* avatarIcon = NSImageFromImageSkia(gfx::CreateVectorIcon(
-        gfx::VectorIconId::USER_ACCOUNT_AVATAR, 18, kMaterialAvatarIconColor));
+        gfx::VectorIconId::USER_ACCOUNT_AVATAR, 18, kAvatarIconColor));
     [button setDefaultImage:avatarIcon];
     [button setHoverImage:nil];
     [button setPressedImage:nil];
@@ -280,14 +269,14 @@ const CGFloat kMaterialTitleKern = 0.25;
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setAlignment:NSLeftTextAlignment];
 
-  base::scoped_nsobject<NSAttributedString> attributedTitle([
-      [NSAttributedString alloc]
-      initWithString:buttonTitle
-          attributes:@{
-            NSForegroundColorAttributeName : foregroundColor,
-            NSParagraphStyleAttributeName : paragraphStyle,
-            NSKernAttributeName : [NSNumber numberWithFloat:kMaterialTitleKern]
-          }]);
+  base::scoped_nsobject<NSAttributedString> attributedTitle(
+      [[NSAttributedString alloc]
+          initWithString:buttonTitle
+              attributes:@{
+                NSForegroundColorAttributeName : foregroundColor,
+                NSParagraphStyleAttributeName : paragraphStyle,
+                NSKernAttributeName : [NSNumber numberWithFloat:kTitleKern]
+              }]);
   [button_ setAttributedTitle:attributedTitle];
   [button_ sizeToFit];
 
