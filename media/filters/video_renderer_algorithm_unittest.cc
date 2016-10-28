@@ -452,14 +452,14 @@ TEST_F(VideoRendererAlgorithmTest, AccountForMissingIntervals) {
   ASSERT_TRUE(frame);
   EXPECT_EQ(tg.interval(3), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
-  EXPECT_EQ(1, GetCurrentFrameDisplayCount());
+  EXPECT_EQ(2, GetCurrentFrameDisplayCount());
 
   tg.step(100);
   frame = RenderAndStep(&tg, &frames_dropped);
   ASSERT_TRUE(frame);
   EXPECT_EQ(tg.interval(3), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
-  EXPECT_EQ(1, GetCurrentFrameDisplayCount());
+  EXPECT_EQ(3, GetCurrentFrameDisplayCount());
 
   time_source_.StartTicking();
 
@@ -468,7 +468,7 @@ TEST_F(VideoRendererAlgorithmTest, AccountForMissingIntervals) {
   ASSERT_TRUE(frame);
   EXPECT_EQ(tg.interval(3), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
-  EXPECT_EQ(2, GetCurrentFrameDisplayCount());
+  EXPECT_EQ(4, GetCurrentFrameDisplayCount());
 
   algorithm_.set_time_stopped();
   tg.step(100);
@@ -476,7 +476,7 @@ TEST_F(VideoRendererAlgorithmTest, AccountForMissingIntervals) {
   ASSERT_TRUE(frame);
   EXPECT_EQ(tg.interval(3), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
-  EXPECT_EQ(3, GetCurrentFrameDisplayCount());
+  EXPECT_EQ(5, GetCurrentFrameDisplayCount());
 }
 
 TEST_F(VideoRendererAlgorithmTest, OnLastFrameDropped) {
@@ -547,6 +547,89 @@ TEST_F(VideoRendererAlgorithmTest, OnLastFrameDropped) {
   ASSERT_TRUE(frame);
   EXPECT_EQ(frame_tg.interval(2), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
+}
+
+TEST_F(VideoRendererAlgorithmTest, OnLastFrameDroppedFirstFrame) {
+  TickGenerator frame_tg(base::TimeTicks(), 25);
+  TickGenerator display_tg(tick_clock_->NowTicks(), 50);
+  time_source_.StartTicking();
+
+  // Disable hysteresis since OnLastFrameDropped() only affects cadence based
+  // rendering.
+  disable_cadence_hysteresis();
+
+  // Use frames in the future to simulate cases where the first frame may be
+  // renderered many times.
+  algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(5)));
+  algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(6)));
+  algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(7)));
+
+  size_t frames_dropped = 0;
+  scoped_refptr<VideoFrame> frame =
+      algorithm_.Render(base::TimeTicks(), base::TimeTicks(), &frames_dropped);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(frame_tg.interval(5), frame->timestamp());
+  EXPECT_EQ(0u, frames_dropped);
+
+  // The frame should have its drop count updated once it's reported as dropped.
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(0, GetCurrentFrameDropCount());
+  algorithm_.OnLastFrameDropped();
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(1, GetCurrentFrameDropCount());
+
+  // Render the frame and check counts at each step.
+  const int kLastValue = 2 * 5 + 2;  // Cadence is 2.
+  for (int i = 0; i < kLastValue; ++i) {
+    frame = RenderAndStep(&display_tg, &frames_dropped);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(frame_tg.interval(5), frame->timestamp());
+    EXPECT_EQ(0u, frames_dropped);
+
+    ASSERT_EQ(i + 2, GetCurrentFrameDisplayCount());
+    if (i == 0) {
+      ASSERT_EQ(i + 1, GetCurrentFrameDropCount());
+      algorithm_.OnLastFrameDropped();
+      ASSERT_EQ(i + 2, GetCurrentFrameDisplayCount());
+      ASSERT_EQ(i + 2, GetCurrentFrameDropCount());
+    }
+  }
+
+  // Ensure the next frame does not pick up the overage.
+  frame = RenderAndStep(&display_tg, &frames_dropped);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(frame_tg.interval(6), frame->timestamp());
+  EXPECT_EQ(0u, frames_dropped);
+
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(0, GetCurrentFrameDropCount());
+  algorithm_.OnLastFrameDropped();
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(1, GetCurrentFrameDropCount());
+
+  // Stop time and verify cadence overage isn't accumulated for next frame.
+  time_source_.StopTicking();
+  for (int i = 0; i < 5; ++i) {
+    frame = RenderAndStep(&display_tg, &frames_dropped);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(frame_tg.interval(6), frame->timestamp());
+    EXPECT_EQ(0u, frames_dropped);
+
+    ASSERT_EQ(i + 2, GetCurrentFrameDisplayCount());
+    ASSERT_EQ(1, GetCurrentFrameDropCount());
+  }
+
+  time_source_.StartTicking();
+  frame = RenderAndStep(&display_tg, &frames_dropped);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(frame_tg.interval(7), frame->timestamp());
+  EXPECT_EQ(0u, frames_dropped);
+
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(0, GetCurrentFrameDropCount());
+  algorithm_.OnLastFrameDropped();
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(1, GetCurrentFrameDropCount());
 }
 
 TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueued) {
@@ -1124,6 +1207,9 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFrames) {
   // Two frames are removed, one displayed frame (which should not be counted as
   // dropped) and one undisplayed one.
   ASSERT_EQ(1u, algorithm_.RemoveExpiredFrames(tg.current()));
+  // Since we just removed the last rendered frame, OnLastFrameDropped() should
+  // be ignored.
+  algorithm_.OnLastFrameDropped();
   frame = RenderAndStep(&tg, &frames_dropped);
   EXPECT_EQ(1u, frames_dropped);
   EXPECT_EQ(2u, frames_queued());

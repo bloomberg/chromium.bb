@@ -75,15 +75,13 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   if (!was_time_moving_ || !have_known_duration || render_interval_.is_zero()) {
     ReadyFrame& ready_frame = frame_queue_.front();
     DCHECK(ready_frame.frame);
-
-    // If duration is unknown, we don't have enough frames to make a good guess
-    // about which frame to use, so always choose the first.
-    if ((was_time_moving_ && !have_known_duration) ||
-        render_interval_.is_zero()) {
-      ++ready_frame.render_count;
-    }
-
+    ++ready_frame.render_count;
     UpdateEffectiveFramesQueued();
+
+    // If time stops, we should reset the |first_frame_| marker, since we can no
+    // longer use cadence overage information for this frame.
+    if (!was_time_moving_)
+      first_frame_ = true;
     return ready_frame.frame;
   }
 
@@ -212,28 +210,27 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   // displayed and dropped for each count.  If the frame wasn't selected by
   // cadence, |cadence_overage| will be zero.
   //
-  // We also don't want to start counting render counts until the first frame
-  // has reached its presentation time; which is considered to be when its
-  // start time is at most |render_interval_| / 2 before |deadline_min|.
-  if (!first_frame_ ||
-      deadline_min >= frame_queue_.front().start_time - render_interval_ / 2) {
-    // Ignore one frame of overage if the last call to Render() ignored the
-    // frame selected by cadence due to drift.
-    if (last_render_ignored_cadence_frame_ && cadence_overage > 0)
-      cadence_overage -= 1;
-
-    last_render_ignored_cadence_frame_ = ignored_cadence_frame;
-    frame_queue_.front().render_count += cadence_overage + 1;
-    frame_queue_.front().drop_count += cadence_overage;
-
-    // Once we reach a glitch in our cadence sequence, reset the base frame
-    // number used for defining the cadence sequence.
-    if (ignored_cadence_frame) {
-      cadence_frame_counter_ = 0;
-      UpdateCadenceForFrames();
-    }
-
+  // Frames far into the future may be rendered many times before video playback
+  // starts, so we always ignore any overages for the first frame.
+  if (first_frame_ && frame_to_render > 0) {
+    DCHECK_EQ(cadence_overage, 0);
     first_frame_ = false;
+  }
+
+  // Ignore one frame of overage if the last call to Render() ignored the
+  // frame selected by cadence due to drift.
+  if (last_render_ignored_cadence_frame_ && cadence_overage > 0)
+    cadence_overage -= 1;
+
+  last_render_ignored_cadence_frame_ = ignored_cadence_frame;
+  frame_queue_.front().render_count += cadence_overage + 1;
+  frame_queue_.front().drop_count += cadence_overage;
+
+  // Once we reach a glitch in our cadence sequence, reset the base frame
+  // number used for defining the cadence sequence.
+  if (ignored_cadence_frame) {
+    cadence_frame_counter_ = 0;
+    UpdateCadenceForFrames();
   }
 
   UpdateEffectiveFramesQueued();
@@ -296,16 +293,17 @@ void VideoRendererAlgorithm::OnLastFrameDropped() {
   // Since compositing is disconnected from the algorithm, the algorithm may be
   // Reset() in between ticks of the compositor, so discard notifications which
   // are invalid.
-  //
+  if (!have_rendered_frames_ || frame_queue_.empty())
+    return;
+
   // If frames were expired by RemoveExpiredFrames() this count may be zero when
   // the OnLastFrameDropped() call comes in.
-  if (!have_rendered_frames_ || frame_queue_.empty() ||
-      !frame_queue_.front().render_count) {
+  ReadyFrame& frame = frame_queue_.front();
+  if (!frame.render_count)
     return;
-  }
 
-  ++frame_queue_.front().drop_count;
-  DCHECK_LE(frame_queue_.front().drop_count, frame_queue_.front().render_count);
+  ++frame.drop_count;
+  DCHECK_LE(frame.drop_count, frame.render_count);
   UpdateEffectiveFramesQueued();
 }
 
