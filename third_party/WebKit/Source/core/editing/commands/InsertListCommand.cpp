@@ -162,7 +162,7 @@ void InsertListCommand::doApply(EditingState* editingState) {
     builder.collapse(visibleStart.toPositionWithAffinity());
     if (newEnd.isNotNull())
       builder.extend(newEnd.deepEquivalent());
-    setEndingSelection(createVisibleSelection(builder.build()));
+    setEndingSelection(builder.build());
     if (!endingSelection().rootEditableElement())
       return;
   }
@@ -286,14 +286,13 @@ void InsertListCommand::doApply(EditingState* editingState) {
       visibleStartOfSelection = createVisiblePosition(startOfSelection);
     }
 
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .setAffinity(visibleStartOfSelection.affinity())
-            .setBaseAndExtentDeprecated(
-                visibleStartOfSelection.deepEquivalent(),
-                visibleEndOfSelection.deepEquivalent())
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .setAffinity(visibleStartOfSelection.affinity())
+                           .setBaseAndExtentDeprecated(
+                               visibleStartOfSelection.deepEquivalent(),
+                               visibleEndOfSelection.deepEquivalent())
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     return;
   }
 

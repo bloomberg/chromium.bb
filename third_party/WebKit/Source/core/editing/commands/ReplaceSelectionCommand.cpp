@@ -1872,26 +1872,22 @@ void ReplaceSelectionCommand::completeHTMLReplacement(
   m_startOfInsertedRange = start;
   m_endOfInsertedRange = end;
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-
   if (m_selectReplacement) {
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .setBaseAndExtentDeprecated(start, end)
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .setBaseAndExtentDeprecated(start, end)
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     return;
   }
 
   if (end.isNotNull()) {
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(end)
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(end)
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     return;
   }
-  setEndingSelection(createVisibleSelection(SelectionInDOMTree()));
+  setEndingSelection(SelectionInDOMTree());
 }
 
 void ReplaceSelectionCommand::mergeTextNodesAroundPosition(
@@ -2099,13 +2095,10 @@ bool ReplaceSelectionCommand::performTrivialReplace(
   m_startOfInsertedRange = start;
   m_endOfInsertedRange = end;
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  VisibleSelection selectionAfterReplace = createVisibleSelection(
+  setEndingSelection(
       SelectionInDOMTree::Builder()
           .setBaseAndExtentDeprecated(m_selectReplacement ? start : end, end)
           .build());
-
-  setEndingSelection(selectionAfterReplace);
 
   return true;
 }

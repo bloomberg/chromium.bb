@@ -39,7 +39,7 @@ EditCommand::EditCommand(Document& document)
   DCHECK(m_document);
   DCHECK(m_document->frame());
   setStartingSelection(m_document->frame()->selection().selection());
-  setEndingSelection(m_startingSelection);
+  setEndingVisibleSelection(m_startingSelection);
 }
 
 EditCommand::~EditCommand() {}
@@ -79,12 +79,12 @@ void EditCommand::setEndingSelection(const SelectionInDOMTree& selection) {
   // updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   document().updateStyleAndLayoutIgnorePendingStylesheets();
-  setEndingSelection(createVisibleSelection(selection));
+  setEndingVisibleSelection(createVisibleSelection(selection));
 }
 
 // TODO(yosin): We will make |SelectionInDOMTree| version of
 // |setEndingSelection()| as primary function instead of wrapper.
-void EditCommand::setEndingSelection(const VisibleSelection& selection) {
+void EditCommand::setEndingVisibleSelection(const VisibleSelection& selection) {
   for (EditCommand* command = this; command; command = command->m_parent) {
     if (EditCommandComposition* composition = compositionIfPossible(command)) {
       DCHECK(command->isTopLevelCommand());

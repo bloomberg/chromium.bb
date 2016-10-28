@@ -323,12 +323,10 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
     if (editingState->isAborted())
       return;
 
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(Position::firstPositionInNode(parent))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(Position::firstPositionInNode(parent))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     return;
   }
 
@@ -394,12 +392,10 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
       return;
 
     // In this case, we need to set the new ending selection.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(insertionPosition)
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(insertionPosition)
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     return;
   }
 
@@ -422,11 +418,11 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
     // If the insertion point is a break element, there is nothing else
     // we need to do.
     if (visiblePos.deepEquivalent().anchorNode()->layoutObject()->isBR()) {
-      setEndingSelection(createVisibleSelection(
+      setEndingSelection(
           SelectionInDOMTree::Builder()
               .collapse(insertionPosition)
               .setIsDirectional(endingSelection().isDirectional())
-              .build()));
+              .build());
       return;
     }
   }
@@ -573,12 +569,10 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
     }
   }
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  setEndingSelection(createVisibleSelection(
-      SelectionInDOMTree::Builder()
-          .collapse(Position::firstPositionInNode(blockToInsert))
-          .setIsDirectional(endingSelection().isDirectional())
-          .build()));
+  setEndingSelection(SelectionInDOMTree::Builder()
+                         .collapse(Position::firstPositionInNode(blockToInsert))
+                         .setIsDirectional(endingSelection().isDirectional())
+                         .build());
   applyStyleAfterInsertion(startBlock, editingState);
 }
 

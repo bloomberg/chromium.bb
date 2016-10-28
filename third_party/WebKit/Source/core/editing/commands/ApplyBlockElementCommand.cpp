@@ -85,8 +85,7 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState) {
     if (newEnd.isNotNull())
       builder.extend(newEnd);
     builder.setIsDirectional(endingSelection().isDirectional());
-    const VisibleSelection newSelection =
-        createVisibleSelection(builder.build());
+    const SelectionInDOMTree& newSelection = builder.build();
     if (newSelection.isNone())
       return;
     setEndingSelection(newSelection);
@@ -116,12 +115,12 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState) {
     VisiblePosition start(visiblePositionForIndex(startIndex, startScope));
     VisiblePosition end(visiblePositionForIndex(endIndex, endScope));
     if (start.isNotNull() && end.isNotNull()) {
-      setEndingSelection(createVisibleSelection(
+      setEndingSelection(
           SelectionInDOMTree::Builder()
               .collapse(start.toPositionWithAffinity())
               .extend(end.deepEquivalent())
               .setIsDirectional(endingSelection().isDirectional())
-              .build()));
+              .build());
     }
   }
 }
@@ -149,12 +148,10 @@ void ApplyBlockElementCommand::formatSelection(
     appendNode(placeholder, blockquote, editingState);
     if (editingState->isAborted())
       return;
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(Position::beforeNode(placeholder))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(Position::beforeNode(placeholder))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     return;
   }
 

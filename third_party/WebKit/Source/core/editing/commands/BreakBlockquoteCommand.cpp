@@ -121,12 +121,10 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
     insertNodeBefore(breakElement, topBlockquote, editingState);
     if (editingState->isAborted())
       return;
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(Position::beforeNode(breakElement))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(Position::beforeNode(breakElement))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     rebalanceWhitespace();
     return;
   }
@@ -141,11 +139,10 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   // If we're inserting the break at the end of the quoted content, we don't
   // need to break the quote.
   if (isLastVisPosInNode) {
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(Position::beforeNode(breakElement))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(Position::beforeNode(breakElement))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     rebalanceWhitespace();
     return;
   }
@@ -186,12 +183,10 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
 
   // If there's nothing inside topBlockquote to move, we're finished.
   if (!startNode->isDescendantOf(topBlockquote)) {
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(firstPositionInOrBeforeNode(startNode))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(firstPositionInOrBeforeNode(startNode))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     return;
   }
 
@@ -271,14 +266,11 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   if (editingState->isAborted())
     return;
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-
   // Put the selection right before the break.
-  setEndingSelection(createVisibleSelection(
-      SelectionInDOMTree::Builder()
-          .collapse(Position::beforeNode(breakElement))
-          .setIsDirectional(endingSelection().isDirectional())
-          .build()));
+  setEndingSelection(SelectionInDOMTree::Builder()
+                         .collapse(Position::beforeNode(breakElement))
+                         .setIsDirectional(endingSelection().isDirectional())
+                         .build());
   rebalanceWhitespace();
 }
 

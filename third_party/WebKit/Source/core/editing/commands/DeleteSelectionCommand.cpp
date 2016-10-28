@@ -1107,7 +1107,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
     builder.setIsDirectional(endingSelection().isDirectional());
     if (m_endingPosition.isNotNull())
       builder.collapse(m_endingPosition);
-    setEndingSelection(createVisibleSelection(builder.build()));
+    setEndingSelection(builder.build());
     clearTransientState();
     rebalanceWhitespace();
     return;
@@ -1168,7 +1168,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
   builder.setIsDirectional(endingSelection().isDirectional());
   if (m_endingPosition.isNotNull())
     builder.collapse(m_endingPosition);
-  setEndingSelection(createVisibleSelection(builder.build()));
+  setEndingSelection(builder.build());
 
   if (relocatableReferencePosition.position().isNull()) {
     clearTransientState();

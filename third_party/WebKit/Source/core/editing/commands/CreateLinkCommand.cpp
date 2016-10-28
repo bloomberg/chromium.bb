@@ -54,13 +54,12 @@ void CreateLinkCommand::doApply(EditingState* editingState) {
     appendNode(textNode, anchorElement, editingState);
     if (editingState->isAborted())
       return;
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
+    setEndingSelection(
         SelectionInDOMTree::Builder()
             .collapse(Position::inParentBeforeNode(*anchorElement))
             .extend(Position::inParentAfterNode(*anchorElement))
             .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+            .build());
   }
 }
 

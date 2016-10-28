@@ -79,10 +79,11 @@ void InsertTextCommand::setEndingSelectionWithoutValidation(
   // We could have inserted a part of composed character sequence,
   // so we are basically treating ending selection as a range to avoid
   // validation. <http://bugs.webkit.org/show_bug.cgi?id=15781>
-  VisibleSelection forcedEndingSelection;
-  forcedEndingSelection.setWithoutValidation(startPosition, endPosition);
-  forcedEndingSelection.setIsDirectional(endingSelection().isDirectional());
-  setEndingSelection(forcedEndingSelection);
+  setEndingSelection(SelectionInDOMTree::Builder()
+                         .collapse(startPosition)
+                         .extend(endPosition)
+                         .setIsDirectional(endingSelection().isDirectional())
+                         .build());
 }
 
 // This avoids the expense of a full fledged delete operation, and avoids a
@@ -103,12 +104,10 @@ bool InsertTextCommand::performTrivialReplace(const String& text,
   setEndingSelectionWithoutValidation(start, endPosition);
   if (selectInsertedText)
     return true;
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  setEndingSelection(createVisibleSelection(
-      SelectionInDOMTree::Builder()
-          .collapse(endingSelection().end())
-          .setIsDirectional(endingSelection().isDirectional())
-          .build()));
+  setEndingSelection(SelectionInDOMTree::Builder()
+                         .collapse(endingSelection().end())
+                         .setIsDirectional(endingSelection().isDirectional())
+                         .build());
   return true;
 }
 
@@ -132,16 +131,12 @@ bool InsertTextCommand::performOverwrite(const String& text,
   Position endPosition =
       Position(textNode, start.offsetInContainerNode() + text.length());
   setEndingSelectionWithoutValidation(start, endPosition);
-  if (selectInsertedText)
+  if (selectInsertedText || endingSelection().isNone())
     return true;
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  if (endingSelection().isNone())
-    return true;
-  setEndingSelection(createVisibleSelection(
-      SelectionInDOMTree::Builder()
-          .collapse(endingSelection().end())
-          .setIsDirectional(endingSelection().isDirectional())
-          .build()));
+  setEndingSelection(SelectionInDOMTree::Builder()
+                         .collapse(endingSelection().end())
+                         .setIsDirectional(endingSelection().isDirectional())
+                         .build());
   return true;
 }
 
@@ -282,13 +277,12 @@ void InsertTextCommand::doApply(EditingState* editingState) {
   }
 
   if (!m_selectInsertedText) {
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
     SelectionInDOMTree::Builder builder;
     builder.setAffinity(endingSelection().affinity());
     builder.setIsDirectional(endingSelection().isDirectional());
     if (endingSelection().end().isNotNull())
       builder.collapse(endingSelection().end());
-    setEndingSelection(createVisibleSelection(builder.build()));
+    setEndingSelection(builder.build());
   }
 }
 

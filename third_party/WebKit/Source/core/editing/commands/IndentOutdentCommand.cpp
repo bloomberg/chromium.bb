@@ -348,7 +348,7 @@ void IndentOutdentCommand::outdentRegion(
       SelectionInDOMTree::Builder builder;
       if (originalSelectionEnd.isNotNull())
         builder.collapse(originalSelectionEnd);
-      setEndingSelection(createVisibleSelection(builder.build()));
+      setEndingSelection(builder.build());
     } else {
       setEndingSelection(SelectionInDOMTree::Builder()
                              .collapse(endOfCurrentParagraph.deepEquivalent())

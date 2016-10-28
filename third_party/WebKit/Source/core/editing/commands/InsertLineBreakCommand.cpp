@@ -126,12 +126,10 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
       nodeToInsert = extraNode;
     }
 
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(Position::beforeNode(nodeToInsert))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(Position::beforeNode(nodeToInsert))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
   } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
     insertNodeAt(nodeToInsert, pos, editingState);
     if (editingState->isAborted())
@@ -144,14 +142,12 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
                        editingState);
       if (editingState->isAborted())
         return;
-      document().updateStyleAndLayoutIgnorePendingStylesheets();
     }
 
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(Position::inParentAfterNode(*nodeToInsert))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(Position::inParentAfterNode(*nodeToInsert))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
     // If we're inserting after all of the rendered text in a text node, or into
     // a non-text node, a simple insertion is sufficient.
   } else if (!pos.anchorNode()->isTextNode() ||
@@ -160,12 +156,10 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
     insertNodeAt(nodeToInsert, pos, editingState);
     if (editingState->isAborted())
       return;
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(Position::inParentAfterNode(*nodeToInsert))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(Position::inParentAfterNode(*nodeToInsert))
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
   } else if (pos.anchorNode()->isTextNode()) {
     // Split a text node
     Text* textNode = toText(pos.anchorNode());
@@ -198,12 +192,10 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
       }
     }
 
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .collapse(endingPosition)
-            .setIsDirectional(endingSelection().isDirectional())
-            .build()));
+    setEndingSelection(SelectionInDOMTree::Builder()
+                           .collapse(endingPosition)
+                           .setIsDirectional(endingSelection().isDirectional())
+                           .build());
   }
 
   // Handle the case where there is a typing style.
