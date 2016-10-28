@@ -129,7 +129,7 @@ ee{
         GU{"Guam nutome"}
         GW{"Gini-Bisao nutome"}
         GY{"Guyanadu"}
-        HK{"Hɔng Kɔng SAR Tsaina nutome"}
+        HK{"Hɔng Kɔng nutome"}
         HM{"Heard kple Mcdonald ƒudomekpowo nutome"}
         HN{"Hondurasdu"}
         HR{"Kroatsia nutome"}
@@ -183,7 +183,7 @@ ee{
         ML{"Mali nutome"}
         MM{"Myanmar (Burma) nutome"}
         MN{"Mongolia nutome"}
-        MO{"Macau SAR Tsaina nutome"}
+        MO{"Macau nutome"}
         MP{"Dziehe Marina ƒudomekpowo nutome"}
         MQ{"Martiniki nutome"}
         MR{"Mauritania nutome"}
@@ -285,10 +285,6 @@ ee{
         ZM{"Zambia nutome"}
         ZW{"Zimbabwe nutome"}
         ZZ{"nutome manya"}
-    }
-    Countries%short{
-        HK{"Hɔng Kɔng nutome"}
-        MO{"Macau nutome"}
     }
     Countries%variant{
         CD{"Kongo demokratik repɔblik nutome"}

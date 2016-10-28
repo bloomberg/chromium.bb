@@ -131,7 +131,7 @@ fil{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong SAR China"}
+        HK{"Hong Kong"}
         HM{"Heard Island and McDonald Islands"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -185,7 +185,7 @@ fil{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau SAR China"}
+        MO{"Macau"}
         MP{"Northern Mariana Islands"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -220,7 +220,7 @@ fil{
         PM{"Saint Pierre and Miquelon"}
         PN{"Pitcairn Islands"}
         PR{"Puerto Rico"}
-        PS{"Palestinian Territories"}
+        PS{"Palestine"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -295,9 +295,6 @@ fil{
     }
     Countries%short{
         GB{"U.K."}
-        HK{"Hong Kong"}
-        MO{"Macau"}
-        PS{"Palestine"}
         UN{"UN"}
         US{"U.S."}
     }

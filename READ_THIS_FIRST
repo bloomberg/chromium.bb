@@ -1,8 +1,0 @@
-WARNING
-
-* ICU is in the middle of being updated to 58.1.
-* DEPS-roll to ToT WOULD NOT work until the update is completed.
-* DO NOT roll icu to the ToT.
-* If you need to make a change to the version currently used by
-  Chromium/v8 (ICU 56.1 + locale changes), please contact jshin@chromium.org
-  (ping jungshik at google) to make a branch.

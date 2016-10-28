@@ -131,7 +131,7 @@ lv{
         GU{"Guama"}
         GW{"Gvineja-Bisava"}
         GY{"Gajāna"}
-        HK{"Ķīnas īpašās pārvaldes apgabals Honkonga"}
+        HK{"Honkonga"}
         HM{"Hērda sala un Makdonalda salas"}
         HN{"Hondurasa"}
         HR{"Horvātija"}
@@ -185,7 +185,7 @@ lv{
         ML{"Mali"}
         MM{"Mjanma (Birma)"}
         MN{"Mongolija"}
-        MO{"Ķīnas īpašās pārvaldes apgabals Makao"}
+        MO{"Makao"}
         MP{"Ziemeļu Marianas salas"}
         MQ{"Martinika"}
         MR{"Mauritānija"}
@@ -295,9 +295,6 @@ lv{
     }
     Countries%short{
         GB{"Lielbritānija"}
-        HK{"Honkonga"}
-        MO{"Makao"}
-        PS{"Palestīna"}
         UN{"ANO"}
         US{"ASV"}
     }

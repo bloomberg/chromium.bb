@@ -131,7 +131,7 @@ ga{
         GU{"Guam"}
         GW{"Guine Bissau"}
         GY{"An Ghuáin"}
-        HK{"S.R.R. na Síne Hong Cong"}
+        HK{"Hong Cong"}
         HM{"Oileán Heard agus Oileáin McDonald"}
         HN{"Hondúras"}
         HR{"An Chróit"}
@@ -185,7 +185,7 @@ ga{
         ML{"Mailí"}
         MM{"Maenmar (Burma)"}
         MN{"An Mhongóil"}
-        MO{"S.R.R. na Síne Macao"}
+        MO{"Macao"}
         MP{"Na hOileáin Mháirianacha Thuaidh"}
         MQ{"Martinique"}
         MR{"An Mháratáin"}
@@ -220,7 +220,7 @@ ga{
         PM{"Saint-Pierre-et-Miquelon"}
         PN{"Oileáin Pitcairn"}
         PR{"Portó Ríce"}
-        PS{"Na Críocha Palaistíneacha"}
+        PS{"An Phalaistín"}
         PT{"An Phortaingéil"}
         PW{"Palau"}
         PY{"Paragua"}
@@ -295,9 +295,6 @@ ga{
     }
     Countries%short{
         GB{"RA"}
-        HK{"Hong Cong"}
-        MO{"Macao"}
-        PS{"An Phalaistín"}
         UN{"NA"}
         US{"SAM"}
     }

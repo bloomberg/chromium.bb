@@ -72,9 +72,9 @@ en{
         BZ{"Belize"}
         CA{"Canada"}
         CC{"Cocos (Keeling) Islands"}
-        CD{"Congo - Kinshasa"}
+        CD{"Congo (DRC)"}
         CF{"Central African Republic"}
-        CG{"Congo - Brazzaville"}
+        CG{"Congo (Republic)"}
         CH{"Switzerland"}
         CI{"Côte d’Ivoire"}
         CK{"Cook Islands"}
@@ -109,7 +109,7 @@ en{
         EZ{"Eurozone"}
         FI{"Finland"}
         FJ{"Fiji"}
-        FK{"Falkland Islands"}
+        FK{"Falkland Islands (Islas Malvinas)"}
         FM{"Micronesia"}
         FO{"Faroe Islands"}
         FR{"France"}
@@ -132,7 +132,7 @@ en{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong SAR China"}
+        HK{"Hong Kong"}
         HM{"Heard & McDonald Islands"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -182,11 +182,11 @@ en{
         MF{"St. Martin"}
         MG{"Madagascar"}
         MH{"Marshall Islands"}
-        MK{"Macedonia"}
+        MK{"Macedonia (FYROM)"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau SAR China"}
+        MO{"Macau"}
         MP{"Northern Mariana Islands"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -221,7 +221,7 @@ en{
         PM{"St. Pierre & Miquelon"}
         PN{"Pitcairn Islands"}
         PR{"Puerto Rico"}
-        PS{"Palestinian Territories"}
+        PS{"Palestine"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -297,10 +297,7 @@ en{
     Countries%short{
         BA{"Bosnia"}
         GB{"UK"}
-        HK{"Hong Kong"}
         MM{"Myanmar"}
-        MO{"Macau"}
-        PS{"Palestine"}
         UN{"UN"}
         US{"US"}
     }

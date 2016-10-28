@@ -131,7 +131,7 @@ is{
         GU{"Gvam"}
         GW{"Gínea-Bissá"}
         GY{"Gvæjana"}
-        HK{"Sjálfstjórnarsvæðið Hong Kong"}
+        HK{"Hong Kong"}
         HM{"Heard og McDonaldseyjar"}
         HN{"Hondúras"}
         HR{"Króatía"}
@@ -185,7 +185,7 @@ is{
         ML{"Malí"}
         MM{"Mjanmar (Búrma)"}
         MN{"Mongólía"}
-        MO{"Sjálfstjórnarsvæðið Makaó"}
+        MO{"Makaó"}
         MP{"Norður-Maríanaeyjar"}
         MQ{"Martiník"}
         MR{"Máritanía"}
@@ -220,7 +220,7 @@ is{
         PM{"Sankti Pierre og Miquelon"}
         PN{"Pitcairn-eyjar"}
         PR{"Púertó Ríkó"}
-        PS{"Heimastjórnarsvæði Palestínumanna"}
+        PS{"Palestína"}
         PT{"Portúgal"}
         PW{"Palá"}
         PY{"Paragvæ"}
@@ -295,9 +295,6 @@ is{
     }
     Countries%short{
         GB{"Bretland"}
-        HK{"Hong Kong"}
-        MO{"Makaó"}
-        PS{"Palestína"}
         UN{"Sameinuðu þjóðirnar"}
         US{"BNA"}
     }

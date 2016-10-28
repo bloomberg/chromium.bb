@@ -4210,6 +4210,8 @@ metadata:table(nofallback){
         "ksb_TZ",
         "ksf_CM",
         "ksh_DE",
+        "ku_Arab",
+        "ku_Latn_SY",
         "ku_TR",
         "kw_GB",
         "ky_KG",

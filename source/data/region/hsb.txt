@@ -131,7 +131,7 @@ hsb{
         GU{"Guam"}
         GW{"Gineja-Bissau"}
         GY{"Guyana"}
-        HK{"Wosebita zarjadniska cona Hongkong"}
+        HK{"Hongkong"}
         HM{"Heardowa kupa a McDonaldowe kupy"}
         HN{"Honduras"}
         HR{"Chorwatska"}
@@ -185,7 +185,7 @@ hsb{
         ML{"Mali"}
         MM{"Myanmar"}
         MN{"Mongolska"}
-        MO{"Wosebita zarjadniska cona Macao"}
+        MO{"Macao"}
         MP{"Sewjerne Mariany"}
         MQ{"Martinique"}
         MR{"Mawretanska"}
@@ -220,7 +220,7 @@ hsb{
         PM{"St. Pierre a Miquelon"}
         PN{"Pitcairnowe kupy"}
         PR{"Puerto Rico"}
-        PS{"Palestinski awtonomny teritorij"}
+        PS{"Palestina"}
         PT{"Portugalska"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -294,9 +294,6 @@ hsb{
     }
     Countries%short{
         GB{"UK"}
-        HK{"Hongkong"}
-        MO{"Macao"}
-        PS{"Palestina"}
         US{"USA"}
     }
     Countries%variant{

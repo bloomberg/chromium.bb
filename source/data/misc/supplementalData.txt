@@ -4100,6 +4100,7 @@ supplementalData:table(nofallback){
                 "BRZ",
                 "BUK",
                 "BYB",
+                "BYR",
                 "CHE",
                 "CHW",
                 "CLE~F",
@@ -16985,6 +16986,12 @@ supplementalData:table(nofallback){
                 "1",
             }
             {
+                "nb",
+                "no",
+                "99",
+                "0",
+            }
+            {
                 "ne_Deva",
                 "en_Latn",
                 "90",
@@ -17000,18 +17007,12 @@ supplementalData:table(nofallback){
                 "nn",
                 "nb",
                 "90",
-                "0",
+                "1",
             }
             {
                 "nn",
                 "no",
                 "90",
-                "1",
-            }
-            {
-                "no",
-                "nb",
-                "99",
                 "0",
             }
             {
@@ -26382,7 +26383,7 @@ supplementalData:table(nofallback){
                 populationShareF:int{48600000}
             }
             yue{
-                populationShareF:int{49900000}
+                populationShareF:int{48900000}
                 writingShareF:int{48430000}
             }
             za{
@@ -30969,7 +30970,7 @@ supplementalData:table(nofallback){
             kk_Cyrl{
                 populationShareF:int{44800000}
             }
-            ku_Latn{
+            ku{
                 populationShareF:int{48550000}
             }
             ky_Latn{

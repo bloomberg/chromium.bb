@@ -131,7 +131,7 @@ vi{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hồng Kông, Trung Quốc"}
+        HK{"Hồng Kông"}
         HM{"Quần đảo Heard và McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -185,7 +185,7 @@ vi{
         ML{"Mali"}
         MM{"Myanmar (Miến Điện)"}
         MN{"Mông Cổ"}
-        MO{"Macao, Trung Quốc"}
+        MO{"Macao"}
         MP{"Quần đảo Bắc Mariana"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -220,7 +220,7 @@ vi{
         PM{"Saint Pierre và Miquelon"}
         PN{"Quần đảo Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Lãnh thổ Palestine"}
+        PS{"Palestine"}
         PT{"Bồ Đào Nha"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -295,9 +295,6 @@ vi{
     }
     Countries%short{
         GB{"Vương quốc Anh"}
-        HK{"Hồng Kông"}
-        MO{"Macao"}
-        PS{"Palestine"}
         UN{"Liên hiệp quốc"}
         US{"Hoa Kỳ"}
     }

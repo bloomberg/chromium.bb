@@ -131,7 +131,7 @@ uz{
         GU{"Guam"}
         GW{"Gvineya-Bisau"}
         GY{"Gayana"}
-        HK{"Gonkong (Xitoy MMH)"}
+        HK{"Gonkong"}
         HM{"Xerd va Makdonald orollari"}
         HN{"Gonduras"}
         HR{"Xorvatiya"}
@@ -185,7 +185,7 @@ uz{
         ML{"Mali"}
         MM{"Myanma (Birma)"}
         MN{"Mongoliya"}
-        MO{"Makao (Xitoy MMH)"}
+        MO{"Makao"}
         MP{"Shimoliy Mariana orollari"}
         MQ{"Martinika"}
         MR{"Mavritaniya"}
@@ -220,7 +220,7 @@ uz{
         PM{"Sen-Pyer va Mikelon"}
         PN{"Pitkern orollari"}
         PR{"Puerto-Riko"}
-        PS{"Falastin hududi"}
+        PS{"Falastin"}
         PT{"Portugaliya"}
         PW{"Palau"}
         PY{"Paragvay"}
@@ -295,9 +295,6 @@ uz{
     }
     Countries%short{
         GB{"Britaniya"}
-        HK{"Gonkong"}
-        MO{"Makao"}
-        PS{"Falastin"}
         UN{"BMT"}
         US{"AQSH"}
     }

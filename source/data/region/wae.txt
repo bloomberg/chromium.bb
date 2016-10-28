@@ -129,7 +129,7 @@ wae{
         GU{"Guam"}
         GW{"Ginea Bissau"}
         GY{"Guyana"}
-        HK{"Sonderverwaltigszona Hongkong"}
+        HK{"Hongkong"}
         HM{"Heard- und McDonald-Inslä"}
         HN{"Honduras"}
         HR{"Kroatie"}
@@ -183,7 +183,7 @@ wae{
         ML{"Mali"}
         MM{"Burma"}
         MN{"Mongolei"}
-        MO{"Sonderverwaltigszona Makau"}
+        MO{"Makau"}
         MP{"Nördliči Mariane"}
         MQ{"Martinique"}
         MR{"Mauretanie"}
@@ -286,10 +286,6 @@ wae{
         ZM{"Sambia"}
         ZW{"Simbabwe"}
         ZZ{"Unbekannti Regio"}
-    }
-    Countries%short{
-        HK{"Hongkong"}
-        MO{"Makau"}
     }
     Countries%variant{
         CD{"Kongo (Demokratiši Rebublik)"}
