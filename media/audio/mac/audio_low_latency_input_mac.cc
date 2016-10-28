@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_bus.h"
 #include "media/base/data_buffer.h"
@@ -830,6 +831,7 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
     const AudioTimeStamp* time_stamp,
     UInt32 bus_number,
     UInt32 number_of_frames) {
+  TRACE_EVENT0("audio", "AUAudioInputStream::OnDataIsAvailable");
   // Update |last_callback_time_| on the main browser thread. Its value is used
   // by CheckIfInputStreamIsAlive() to detect if the stream is dead or alive.
   manager_->GetTaskRunner()->PostTask(
@@ -878,12 +880,16 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
   // Since it happens on the input bus, the |&audio_buffer_list_| parameter is
   // a reference to the preallocated audio buffer list that the audio unit
   // renders into.
+  TRACE_EVENT_BEGIN0("audio", "AudioUnitRender");
   OSStatus result = AudioUnitRender(audio_unit_, flags, time_stamp, bus_number,
                                     number_of_frames, &audio_buffer_list_);
+  TRACE_EVENT_END0("audio", "AudioUnitRender");
   if (result == noErr) {
     audio_unit_render_has_worked_ = true;
   }
   if (result) {
+    TRACE_EVENT_INSTANT0("audio", "AudioUnitRender error",
+                         TRACE_EVENT_SCOPE_THREAD);
     // Only upload UMA histograms for the case when AGC is enabled. The reason
     // is that we want to compare these stats with others in this class and
     // they are only stored for "AGC streams", e.g. WebRTC audio streams.
@@ -942,6 +948,8 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
 OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
                                      AudioBufferList* io_data,
                                      const AudioTimeStamp* time_stamp) {
+  TRACE_EVENT1("audio", "AUAudioInputStream::Provide", "number_of_frames",
+               number_of_frames);
   UpdateCaptureTimestamp(time_stamp);
   last_number_of_frames_ = number_of_frames;
 
@@ -980,6 +988,8 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
         static_cast<int>((number_of_frames - fifo_.GetUnfilledFrames()) /
                          number_of_frames_) + 1;
     DLOG(WARNING) << "Increasing FIFO capacity by " << blocks << " blocks";
+    TRACE_EVENT_INSTANT1("audio", "Increasing FIFO capacity",
+                         TRACE_EVENT_SCOPE_THREAD, "increased by", blocks);
     fifo_.IncreaseCapacity(blocks);
   }
 

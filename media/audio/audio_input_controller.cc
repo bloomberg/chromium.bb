@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/audio_input_writer.h"
 #include "media/base/user_input_monitor.h"
 
@@ -419,6 +420,7 @@ void AudioInputController::OnData(AudioInputStream* stream,
                                   const AudioBus* source,
                                   uint32_t hardware_delay_bytes,
                                   double volume) {
+  TRACE_EVENT0("audio", "AudioInputController::OnData");
   if (debug_writer_ && debug_writer_->WillWrite()) {
     std::unique_ptr<AudioBus> source_copy =
         AudioBus::Create(source->channels(), source->frames());
