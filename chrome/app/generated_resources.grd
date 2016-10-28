@@ -10413,7 +10413,7 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Enterprise sign-in profile linking -->
-      <!-- TODO(dconnelly): remove "new-style" once the old dialog is gone. -->
+      <!-- TODO(crbug.com/660349): remove "new-style" once the old dialog is gone. -->
       <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE" desc="Text of the button to create a new profile after enterprise account sign-in">
         Create a new profile
       </message>
