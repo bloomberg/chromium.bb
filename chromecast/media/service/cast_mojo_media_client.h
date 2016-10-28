@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_MEDIA_CAST_MOJO_MEDIA_CLIENT_H_
-#define CHROMECAST_BROWSER_MEDIA_CAST_MOJO_MEDIA_CLIENT_H_
+#ifndef CHROMECAST_MEDIA_SERVICE_CAST_MOJO_MEDIA_CLIENT_H_
+#define CHROMECAST_MEDIA_SERVICE_CAST_MOJO_MEDIA_CLIENT_H_
 
-#include "chromecast/browser/media/media_pipeline_backend_factory.h"
+#include "chromecast/media/service/media_pipeline_backend_factory.h"
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace chromecast {
@@ -45,4 +45,4 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_MEDIA_CAST_MOJO_MEDIA_CLIENT_H_
+#endif  // CHROMECAST_MEDIA_SERVICE_CAST_MOJO_MEDIA_CLIENT_H_

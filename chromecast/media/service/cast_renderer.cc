@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/media/cast_renderer.h"
+#include "chromecast/media/service/cast_renderer.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/browser/media/video_resolution_policy.h"
+#include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"

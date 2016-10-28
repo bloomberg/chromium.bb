@@ -38,6 +38,13 @@ source_set("base") {
     "video_plane_controller.h",
   ]
 
+  if (!is_android) {
+    sources += [
+      "video_resolution_policy.cc",
+      "video_resolution_policy.h",
+    ]
+  }
+
   public_deps = [
     ":key_systems",
     "//chromecast/public/media",

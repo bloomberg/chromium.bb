@@ -10,6 +10,8 @@ source_set("cdm") {
     "cast_cdm.h",
     "cast_cdm_context.cc",
     "cast_cdm_context.h",
+    "cast_cdm_factory.cc",
+    "cast_cdm_factory.h",
     "cast_cdm_proxy.cc",
     "cast_cdm_proxy.h",
     "chromecast_init_data.cc",

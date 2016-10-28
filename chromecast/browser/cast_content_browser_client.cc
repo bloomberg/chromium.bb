@@ -62,14 +62,14 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "chromecast/browser/media/cast_mojo_media_client.h"
+#include "chromecast/media/service/cast_mojo_media_client.h"
 #include "media/mojo/services/media_service.h"  // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
 #if defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #else
-#include "chromecast/browser/media/cast_browser_cdm_factory.h"
+#include "chromecast/media/cdm/cast_cdm_factory.h"
 #endif  // defined(OS_ANDROID)
 
 namespace chromecast {
@@ -484,8 +484,8 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 std::unique_ptr<::media::CdmFactory>
 CastContentBrowserClient::CreateCdmFactory() {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  return base::MakeUnique<media::CastBrowserCdmFactory>(
-      GetMediaTaskRunner(), media_resource_tracker());
+  return base::MakeUnique<media::CastCdmFactory>(GetMediaTaskRunner(),
+                                                 media_resource_tracker());
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   return nullptr;
 }

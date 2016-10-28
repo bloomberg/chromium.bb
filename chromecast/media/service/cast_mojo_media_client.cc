@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/media/cast_mojo_media_client.h"
+#include "chromecast/media/service/cast_mojo_media_client.h"
 
 #include "base/memory/ptr_util.h"
-#include "chromecast/browser/media/cast_renderer.h"
+#include "chromecast/media/service/cast_renderer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"

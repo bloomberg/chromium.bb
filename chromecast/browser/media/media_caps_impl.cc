@@ -37,10 +37,9 @@ void MediaCapsImpl::SetSupportedHdmiSinkCodecs(
 void MediaCapsImpl::ScreenResolutionChanged(unsigned width, unsigned height) {
   screen_resolution_ = gfx::Size(width, height);
 
-  observers_.ForAllPtrs(
-      [width, height](mojom::MediaCapsObserver* observer) {
-        observer->ScreenResolutionChanged(width, height);
-      });
+  observers_.ForAllPtrs([width, height](mojom::MediaCapsObserver* observer) {
+    observer->ScreenResolutionChanged(width, height);
+  });
 }
 
 void MediaCapsImpl::ScreenInfoChanged(int hdcp_version,

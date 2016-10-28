@@ -49,6 +49,8 @@ source_set("browser") {
     "devtools/remote_debugging_server.h",
     "geolocation/cast_access_token_store.cc",
     "geolocation/cast_access_token_store.h",
+    "media/media_caps_impl.cc",
+    "media/media_caps_impl.h",
     "metrics/cast_metrics_prefs.cc",
     "metrics/cast_metrics_prefs.h",
     "metrics/cast_metrics_service_client.cc",
@@ -71,10 +73,6 @@ source_set("browser") {
     ]
   }
 
-  public_deps = [
-    "//chromecast/browser/media",
-  ]
-
   deps = [
     "//base",
     "//base:i18n",
@@ -89,8 +87,10 @@ source_set("browser") {
     "//chromecast/browser:resources",
     "//chromecast/common",
     "//chromecast/common/media",
+    "//chromecast/common/media:interfaces",
     "//chromecast/graphics",
     "//chromecast/media",
+    "//chromecast/media/service",
     "//chromecast/net",
     "//chromecast/service",
     "//components/crash/content/app",

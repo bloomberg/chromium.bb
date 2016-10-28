@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_BACKEND_FACTORY_H_
-#define CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_BACKEND_FACTORY_H_
+#ifndef CHROMECAST_MEDIA_SERVICE_MEDIA_PIPELINE_BACKEND_FACTORY_H_
+#define CHROMECAST_MEDIA_SERVICE_MEDIA_PIPELINE_BACKEND_FACTORY_H_
 
 #include <memory>
 #include <string>
@@ -17,9 +17,10 @@ namespace media {
 
 typedef base::Callback<std::unique_ptr<MediaPipelineBackend>(
     const MediaPipelineDeviceParams&,
-    const std::string& audio_device_id)> CreateMediaPipelineBackendCB;
+    const std::string& audio_device_id)>
+    CreateMediaPipelineBackendCB;
 
 }  // media
 }  // chromecast
 
-#endif  // CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_BACKEND_FACTORY_H_
+#endif  // CHROMECAST_MEDIA_SERVICE_MEDIA_PIPELINE_BACKEND_FACTORY_H_

@@ -290,8 +290,8 @@ source_set("cast_shell_common") {
 
 source_set("cast_shell_media") {
   deps = [
-    "//chromecast/browser/media",
     "//chromecast/common/media",
+    "//chromecast/media/service",
     "//chromecast/renderer/media",
   ]
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_MEDIA_VIDEO_RESOLUTION_POLICY_H_
-#define CHROMECAST_BROWSER_MEDIA_VIDEO_RESOLUTION_POLICY_H_
+#ifndef CHROMECAST_MEDIA_BASE_VIDEO_RESOLUTION_POLICY_H_
+#define CHROMECAST_MEDIA_BASE_VIDEO_RESOLUTION_POLICY_H_
 
 #include "base/macros.h"
 
@@ -41,4 +41,4 @@ class VideoResolutionPolicy {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_MEDIA_VIDEO_RESOLUTION_POLICY_H_
+#endif  // CHROMECAST_MEDIA_BASE_VIDEO_RESOLUTION_POLICY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_MEDIA_CAST_BROWSER_CDM_FACTORY_H_
-#define CHROMECAST_BROWSER_MEDIA_CAST_BROWSER_CDM_FACTORY_H_
+#ifndef CHROMECAST_MEDIA_CDM_CAST_CDM_FACTORY_H_
+#define CHROMECAST_MEDIA_CDM_CAST_CDM_FACTORY_H_
 
 #include "base/macros.h"
 #include "chromecast/media/base/key_systems_common.h"
@@ -20,12 +20,12 @@ namespace media {
 
 class CastCdm;
 
-class CastBrowserCdmFactory : public ::media::CdmFactory {
+class CastCdmFactory : public ::media::CdmFactory {
  public:
   // CDM factory will use |task_runner| to initialize the CDM.
-  CastBrowserCdmFactory(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        MediaResourceTracker* media_resource_tracker);
-  ~CastBrowserCdmFactory() override;
+  CastCdmFactory(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                 MediaResourceTracker* media_resource_tracker);
+  ~CastCdmFactory() override;
 
   // ::media::CdmFactory implementation:
   void Create(
@@ -48,10 +48,10 @@ class CastBrowserCdmFactory : public ::media::CdmFactory {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  DISALLOW_COPY_AND_ASSIGN(CastBrowserCdmFactory);
+  DISALLOW_COPY_AND_ASSIGN(CastCdmFactory);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_MEDIA_CAST_BROWSER_CDM_FACTORY_H_
+#endif  // CHROMECAST_MEDIA_CDM_CAST_CDM_FACTORY_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/media/cast_browser_cdm_factory.h"
+#include "chromecast/media/cdm/cast_cdm_factory.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -19,7 +19,7 @@
 namespace chromecast {
 namespace media {
 
-CastBrowserCdmFactory::CastBrowserCdmFactory(
+CastCdmFactory::CastCdmFactory(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaResourceTracker* media_resource_tracker)
     : media_resource_tracker_(media_resource_tracker),
@@ -28,9 +28,9 @@ CastBrowserCdmFactory::CastBrowserCdmFactory(
   DCHECK(task_runner_);
 }
 
-CastBrowserCdmFactory::~CastBrowserCdmFactory() {}
+CastCdmFactory::~CastCdmFactory() {}
 
-void CastBrowserCdmFactory::Create(
+void CastCdmFactory::Create(
     const std::string& key_system,
     const GURL& security_origin,
     const ::media::CdmConfig& cdm_config,
@@ -78,7 +78,7 @@ void CastBrowserCdmFactory::Create(
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 }
 
-scoped_refptr<CastCdm> CastBrowserCdmFactory::CreatePlatformBrowserCdm(
+scoped_refptr<CastCdm> CastCdmFactory::CreatePlatformBrowserCdm(
     const CastKeySystem& cast_key_system,
     const GURL& security_origin) {
   return nullptr;
