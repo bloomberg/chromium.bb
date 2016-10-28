@@ -83,6 +83,7 @@ class SnackbarCollection {
             Snackbar snackbar = iter.next();
             if (snackbar.getController() == controller) {
                 iter.remove();
+                controller.onDismissNoAction(snackbar.getActionData());
                 snackbarRemoved = true;
             }
         }
@@ -97,6 +98,7 @@ class SnackbarCollection {
             if (snackbar.getController() == controller
                     && objectsAreEqual(snackbar.getActionData(), data)) {
                 iter.remove();
+                controller.onDismissNoAction(data);
                 snackbarRemoved = true;
             }
         }

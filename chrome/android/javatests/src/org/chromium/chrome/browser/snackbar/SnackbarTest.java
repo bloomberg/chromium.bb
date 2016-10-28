@@ -18,8 +18,8 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * Tests for {@link SnackbarManager}.
  */
 public class SnackbarTest extends ChromeTabbedActivityTestBase {
-    SnackbarManager mManager;
-    SnackbarController mDefaultController = new SnackbarController() {
+    private SnackbarManager mManager;
+    private SnackbarController mDefaultController = new SnackbarController() {
         @Override
         public void onDismissNoAction(Object actionData) {
         }
@@ -28,6 +28,18 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
         public void onAction(Object actionData) {
         }
     };
+
+    private SnackbarController mDismissController = new SnackbarController() {
+        @Override
+        public void onDismissNoAction(Object actionData) {
+            mDismissed = true;
+        }
+
+        @Override
+        public void onAction(Object actionData) { }
+    };
+
+    private boolean mDismissed;
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -115,6 +127,39 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 return !mManager.isShowing();
+            }
+        });
+    }
+
+    @SmallTest
+    public void testDismissSnackbar() throws InterruptedException {
+        final Snackbar snackbar = Snackbar.make("stack", mDismissController,
+                Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
+        mDismissed = false;
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mManager.showSnackbar(snackbar);
+            }
+        });
+        CriteriaHelper.pollUiThread(
+                new Criteria("Snackbar on queue was not cleared by snackbar stack.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mManager.isShowing()
+                                && mManager.getCurrentSnackbarForTesting() == snackbar;
+                    }
+                });
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mManager.dismissSnackbars(mDismissController);
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria("Snackbar did not time out") {
+            @Override
+            public boolean isSatisfied() {
+                return !mManager.isShowing() && mDismissed;
             }
         });
     }
