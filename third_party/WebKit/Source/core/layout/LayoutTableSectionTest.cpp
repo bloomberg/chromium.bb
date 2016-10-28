@@ -16,13 +16,15 @@ TEST_F(LayoutTableSectionTest,
        BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBorder) {
   setBodyInnerHTML(
       "<table style='border-collapse: collapse'>"
-      "  <thead style='will-change: transform; background-color: blue'>"
+      "  <thead id='section' style='will-change: transform; background-color: "
+      "blue'>"
       "    <tr><td>Cell</td></tr>"
       "  </thead>"
       "</table>");
 
-  LayoutTableSection* section = toLayoutTableSection(
-      document().body()->firstChild()->firstChild()->layoutObject());
+  LayoutTableSection* section =
+      toLayoutTableSection(getLayoutObjectByElementId("section"));
+  EXPECT_TRUE(section);
   EXPECT_FALSE(
       section->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
@@ -30,13 +32,14 @@ TEST_F(LayoutTableSectionTest,
 TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing) {
   setBodyInnerHTML(
       "<table style='border-spacing: 10px'>"
-      "  <thead style='background-color: blue'>"
+      "  <thead id='section' style='background-color: blue'>"
       "    <tr><td>Cell</td></tr>"
       "  </thead>"
       "</table>");
 
-  LayoutTableSection* section = toLayoutTableSection(
-      document().body()->firstChild()->firstChild()->layoutObject());
+  LayoutTableSection* section =
+      toLayoutTableSection(getLayoutObjectByElementId("section"));
+  EXPECT_TRUE(section);
   EXPECT_FALSE(
       section->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
@@ -44,14 +47,15 @@ TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing) {
 TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithEmptyCell) {
   setBodyInnerHTML(
       "<table style='border-spacing: 10px'>"
-      "  <thead style='background-color: blue'>"
+      "  <thead id='section' style='background-color: blue'>"
       "    <tr><td>Cell</td></tr>"
       "    <tr><td>Cell</td><td>Cell</td></tr>"
       "  </thead>"
       "</table>");
 
-  LayoutTableSection* section = toLayoutTableSection(
-      document().body()->firstChild()->firstChild()->layoutObject());
+  LayoutTableSection* section =
+      toLayoutTableSection(getLayoutObjectByElementId("section"));
+  EXPECT_TRUE(section);
   EXPECT_FALSE(
       section->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
@@ -64,6 +68,7 @@ TEST_F(LayoutTableSectionTest, EmptySectionDirtiedRows) {
 
   LayoutTableSection* section =
       toLayoutTableSection(getLayoutObjectByElementId("section"));
+  EXPECT_TRUE(section);
   CellSpan cellSpan = section->dirtiedRows(LayoutRect(50, 50, 100, 100));
   EXPECT_EQ(0u, cellSpan.start());
   EXPECT_EQ(0u, cellSpan.end());
@@ -77,6 +82,7 @@ TEST_F(LayoutTableSectionTest, EmptySectionDirtiedEffectiveColumns) {
 
   LayoutTableSection* section =
       toLayoutTableSection(getLayoutObjectByElementId("section"));
+  EXPECT_TRUE(section);
   CellSpan cellSpan =
       section->dirtiedEffectiveColumns(LayoutRect(50, 50, 100, 100));
   // The table has at least 1 column even if there is no cell.
