@@ -1301,8 +1301,16 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 
   // Input IPC messages must not be processed if the RenderView is in
   // swapped out state.
-  if (is_swapped_out_ && IPC_MESSAGE_ID_CLASS(message.type()) == InputMsgStart)
+  if (is_swapped_out_ &&
+      IPC_MESSAGE_ID_CLASS(message.type()) == InputMsgStart) {
+    // TODO(dtapuska): Remove this histogram once we have seen that it actually
+    // produces results true. See crbug.com/615090
+    UMA_HISTOGRAM_BOOLEAN("Event.RenderView.DiscardInput", true);
+    IPC_BEGIN_MESSAGE_MAP(RenderViewImpl, message)
+      IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnDiscardInputEvent)
+    IPC_END_MESSAGE_MAP()
     return false;
+  }
 
   for (auto& observer : observers_) {
     if (observer.OnMessageReceived(message))
@@ -3020,6 +3028,25 @@ void RenderViewImpl::UpdateWebViewWithDeviceScaleFactor() {
   }
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
+}
+
+void RenderViewImpl::OnDiscardInputEvent(
+    const blink::WebInputEvent* input_event,
+    const ui::LatencyInfo& latency_info,
+    InputEventDispatchType dispatch_type) {
+  if (!input_event || (dispatch_type != DISPATCH_TYPE_BLOCKING &&
+                       dispatch_type != DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN)) {
+    return;
+  }
+
+  if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
+    NotifyInputEventHandled(input_event->type,
+                            INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  }
+
+  std::unique_ptr<InputEventAck> ack(
+      new InputEventAck(input_event->type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  OnInputEventAck(std::move(ack));
 }
 
 }  // namespace content
