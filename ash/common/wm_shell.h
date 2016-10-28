@@ -16,6 +16,7 @@
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "base/observer_list.h"
+#include "components/ui_devtools/devtools_server.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/wm/public/window_types.h"
@@ -492,6 +493,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
+  std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
 
   base::ObserverList<LockStateObserver> lock_state_observers_;
 
