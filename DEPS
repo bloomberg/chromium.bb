@@ -8,19 +8,19 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 424840
-  "build_rev": "35915a4e77b124044c105896485d40f6fdd969e2", # from cr commit position 424824
+  # chrome_rev: 428228
+  "build_rev": "9f8cbc346228aa4b9cc6686282155756fab84641", # from cr commit position 428227
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "3d97083b856ee7262f59c1a93beaa65174c8ca0a", # from cr commit position 424416
+  "clang_rev": "f878fcb93103c0f4be35449d026f3055e0c8abd9", # from cr commit position 427269
 
   # Rolls of build_overrides_rev should done at the same time as a roll
   # of build_rev as build_overrides/ is tightly coupled with build/.
   # build_overrides/ is forked from chromium/src/build_overrides/ and
   # needs to be manually updated to keep in sync before a build_rev
   # update can be done.
-  "build_overrides_rev": "2202dc63a4fe83cde3c5b90fe80b3d8c72accc36",
+  "build_overrides_rev": "736dde6d656d80706dc0346c8ae049217961bed1",
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
