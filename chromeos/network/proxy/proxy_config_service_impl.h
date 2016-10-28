@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PROXY_CONFIG_SERVICE_IMPL_H_
-#define CHROME_BROWSER_CHROMEOS_PROXY_CONFIG_SERVICE_IMPL_H_
+#ifndef CHROMEOS_NETWORK_PROXY_PROXY_CONFIG_SERVICE_IMPL_H_
+#define CHROMEOS_NETWORK_PROXY_PROXY_CONFIG_SERVICE_IMPL_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/onc/onc_constants.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -27,8 +28,9 @@ class NetworkState;
 // - provides network stack with latest effective proxy configuration for
 //   currently active network via PrefProxyConfigTrackerImpl's mechanism of
 //   pushing config to ChromeProxyConfigService
-class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
-                               public NetworkStateHandlerObserver {
+class CHROMEOS_EXPORT ProxyConfigServiceImpl
+    : public PrefProxyConfigTrackerImpl,
+      public NetworkStateHandlerObserver {
  public:
   // ProxyConfigServiceImpl is created in ProxyServiceFactory::
   // CreatePrefProxyConfigTrackerImpl via Profile::GetProxyConfigTracker() for
@@ -42,8 +44,10 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
   //
   // |profile_prefs| can be NULL if this object should only track prefs from
   // local state (e.g., for system request context or sigin-in screen).
-  explicit ProxyConfigServiceImpl(PrefService* profile_prefs,
-                                  PrefService* local_state_prefs);
+  ProxyConfigServiceImpl(
+      PrefService* profile_prefs,
+      PrefService* local_state_prefs,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~ProxyConfigServiceImpl() override;
 
   // PrefProxyConfigTrackerImpl implementation.
@@ -107,4 +111,4 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_PROXY_CONFIG_SERVICE_IMPL_H_
+#endif  // CHROMEOS_NETWORK_PROXY_PROXY_CONFIG_SERVICE_IMPL_H_

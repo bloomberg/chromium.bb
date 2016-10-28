@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_PROXY_CONFIG_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_UI_PROXY_CONFIG_SERVICE_H_
+#ifndef CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_SERVICE_H_
+#define CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_SERVICE_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/ui_proxy_config.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/network/proxy/ui_proxy_config.h"
 
 class PrefService;
 
@@ -23,7 +24,7 @@ class NetworkState;
 // Before reading/setting a proxy config, a network has to be selected using
 // either SetCurrentNetwork (any remembered network) or
 // MakeActiveNetworkCurrent.
-class UIProxyConfigService {
+class CHROMEOS_EXPORT UIProxyConfigService {
  public:
   UIProxyConfigService();
   ~UIProxyConfigService();
@@ -75,4 +76,4 @@ class UIProxyConfigService {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_PROXY_CONFIG_SERVICE_H_
+#endif  // CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_SERVICE_H_

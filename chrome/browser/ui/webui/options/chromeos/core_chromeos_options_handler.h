@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

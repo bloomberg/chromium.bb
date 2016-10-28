@@ -28,8 +28,8 @@
 #include "net/url_request/url_request_context.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
+#include "chromeos/network/proxy/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
@@ -88,7 +88,9 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
     PrefService* profile_prefs,
     PrefService* local_state_prefs) {
 #if defined(OS_CHROMEOS)
-  return new chromeos::ProxyConfigServiceImpl(profile_prefs, local_state_prefs);
+  return new chromeos::ProxyConfigServiceImpl(
+      profile_prefs, local_state_prefs,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #else
   return new PrefProxyConfigTrackerImpl(
       profile_prefs, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
@@ -100,7 +102,9 @@ PrefProxyConfigTracker*
 ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
     PrefService* local_state_prefs) {
 #if defined(OS_CHROMEOS)
-  return new chromeos::ProxyConfigServiceImpl(NULL, local_state_prefs);
+  return new chromeos::ProxyConfigServiceImpl(
+      nullptr, local_state_prefs,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #else
   return new PrefProxyConfigTrackerImpl(
       local_state_prefs,

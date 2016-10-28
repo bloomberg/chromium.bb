@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chromeos/network/proxy/proxy_config_service_impl.h"
 
 #include <stddef.h>
 
@@ -16,11 +16,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/ui_proxy_config.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -29,6 +26,8 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/testing_pref_service.h"
@@ -38,6 +37,10 @@
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+// TODO(stevenjb): Refactor and move this to src/chromeos/network/proxy or
+// rename. This is really more of an integration test than a unit test at this
+// point and currently relies on some chrome specific components.
 
 using content::BrowserThread;
 
@@ -248,8 +251,9 @@ class ProxyConfigServiceImplTest : public testing::Test {
   }
 
   void SetUpProxyConfigService(PrefService* profile_prefs) {
-    config_service_impl_.reset(
-        new ProxyConfigServiceImpl(profile_prefs, &pref_service_));
+    config_service_impl_.reset(new ProxyConfigServiceImpl(
+        profile_prefs, &pref_service_,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
     proxy_config_service_ =
         config_service_impl_->CreateTrackingProxyConfigService(
             std::unique_ptr<net::ProxyConfigService>());

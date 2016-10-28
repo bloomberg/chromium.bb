@@ -1,7 +1,9 @@
 include_rules = [
   "+dbus",
   "+components/onc",
+  "+components/pref_registry",
   "+components/proxy_config",
+  "+components/user_manager",
   "+net",
   "+url"
 ]

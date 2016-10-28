@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_PROXY_CONFIG_H_
-#define CHROME_BROWSER_CHROMEOS_UI_PROXY_CONFIG_H_
+#ifndef CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_H_
+#define CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_H_
 
 #include <string>
 
+#include "chromeos/chromeos_export.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"
@@ -34,7 +35,7 @@ namespace chromeos {
 // This is then converted to the common net::ProxyConfig before being pushed
 // to PrefProxyConfigTrackerImpl::OnProxyConfigChanged and then to the network
 // stack.
-struct UIProxyConfig {
+struct CHROMEOS_EXPORT UIProxyConfig {
   // Specifies if proxy config is direct, auto-detect, using pac script,
   // single-proxy, or proxy-per-scheme.
   enum Mode {
@@ -90,17 +91,17 @@ struct UIProxyConfig {
   bool user_modifiable;
 
   // Set if mode is MODE_DIRECT or MODE_AUTO_DETECT or MODE_PAC_SCRIPT.
-  AutomaticProxy  automatic_proxy;
+  AutomaticProxy automatic_proxy;
   // Set if mode is MODE_SINGLE_PROXY.
-  ManualProxy     single_proxy;
+  ManualProxy single_proxy;
   // Set if mode is MODE_PROXY_PER_SCHEME and has http proxy.
-  ManualProxy     http_proxy;
+  ManualProxy http_proxy;
   // Set if mode is MODE_PROXY_PER_SCHEME and has https proxy.
-  ManualProxy     https_proxy;
+  ManualProxy https_proxy;
   // Set if mode is MODE_PROXY_PER_SCHEME and has ftp proxy.
-  ManualProxy     ftp_proxy;
+  ManualProxy ftp_proxy;
   // Set if mode is MODE_PROXY_PER_SCHEME and has socks proxy.
-  ManualProxy     socks_proxy;
+  ManualProxy socks_proxy;
 
   // Exceptions for when not to use a proxy.
   net::ProxyBypassRules bypass_rules;
@@ -108,4 +109,4 @@ struct UIProxyConfig {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_PROXY_CONFIG_H_
+#endif  // CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_H_

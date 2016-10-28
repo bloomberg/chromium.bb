@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui_proxy_config.h"
+#include "chromeos/network/proxy/ui_proxy_config.h"
 
 #include "base/logging.h"
 #include "base/values.h"
@@ -19,11 +19,9 @@ namespace chromeos {
 UIProxyConfig::UIProxyConfig()
     : mode(MODE_DIRECT),
       state(ProxyPrefs::CONFIG_UNSET),
-      user_modifiable(true) {
-}
+      user_modifiable(true) {}
 
-UIProxyConfig::~UIProxyConfig() {
-}
+UIProxyConfig::~UIProxyConfig() {}
 
 void UIProxyConfig::SetPacUrl(const GURL& pac_url) {
   mode = UIProxyConfig::MODE_PAC_SCRIPT;
@@ -82,8 +80,7 @@ bool UIProxyConfig::FromNetProxyConfig(const net::ProxyConfig& net_config) {
       // Make sure we have valid server for at least one of the protocols.
       if (rules.proxies_for_http.IsEmpty() &&
           rules.proxies_for_https.IsEmpty() &&
-          rules.proxies_for_ftp.IsEmpty() &&
-          rules.fallback_proxies.IsEmpty()) {
+          rules.proxies_for_ftp.IsEmpty() && rules.fallback_proxies.IsEmpty()) {
         return false;
       }
       mode = MODE_PROXY_PER_SCHEME;
@@ -120,8 +117,8 @@ base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() const {
       std::string spec;
       if (single_proxy.server.is_valid())
         spec = single_proxy.server.ToURI();
-      return ProxyConfigDictionary::CreateFixedServers(
-          spec, bypass_rules.ToString());
+      return ProxyConfigDictionary::CreateFixedServers(spec,
+                                                       bypass_rules.ToString());
     }
     case MODE_PROXY_PER_SCHEME: {
       std::string spec;
@@ -133,8 +130,8 @@ base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() const {
           url::kFtpScheme, ftp_proxy.server, &spec);
       ProxyConfigDictionary::EncodeAndAppendProxyServer(
           kSocksScheme, socks_proxy.server, &spec);
-      return ProxyConfigDictionary::CreateFixedServers(
-          spec, bypass_rules.ToString());
+      return ProxyConfigDictionary::CreateFixedServers(spec,
+                                                       bypass_rules.ToString());
     }
     default:
       break;

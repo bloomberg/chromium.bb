@@ -33,6 +33,7 @@ component("chromeos") {
     "//components/device_event_log",
     "//components/onc",
     "//components/policy/proto",
+    "//components/pref_registry",
     "//components/prefs",
     "//components/proxy_config",
     "//components/signin/core/account_id",
@@ -41,6 +42,7 @@ component("chromeos") {
     "//crypto:platform",
     "//google_apis",
     "//net",
+    "//skia",  # For components/user_manager
     "//third_party/icu",
     "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",

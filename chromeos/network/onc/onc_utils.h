@@ -16,6 +16,8 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "components/onc/onc_constants.h"
 
+class PrefService;
+
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -25,7 +27,14 @@ namespace net {
 class X509Certificate;
 }
 
+namespace user_manager {
+class User;
+}
+
 namespace chromeos {
+
+class NetworkState;
+
 namespace onc {
 
 struct OncValueSignature;
@@ -156,6 +165,46 @@ ConvertOncProxySettingsToProxyConfig(
 CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
 ConvertProxyConfigToOncProxySettings(
     const base::DictionaryValue& proxy_config_value);
+
+// Replaces string placeholders in |network_configs|, which must be a list of
+// ONC NetworkConfigurations. Currently only user name placeholders are
+// implemented, which are replaced by attributes from |user|.
+CHROMEOS_EXPORT void ExpandStringPlaceholdersInNetworksForUser(
+    const user_manager::User* user,
+    base::ListValue* network_configs);
+
+CHROMEOS_EXPORT void ImportNetworksForUser(
+    const user_manager::User* user,
+    const base::ListValue& network_configs,
+    std::string* error);
+
+// Looks up the policy for |guid| for the current active user and sets
+// |global_config| (if not NULL) and |onc_source| (if not NULL) accordingly. If
+// |guid| is empty, returns NULL and sets the |global_config| and |onc_source|
+// if a policy is found.
+CHROMEOS_EXPORT const base::DictionaryValue* FindPolicyForActiveUser(
+    const std::string& guid,
+    ::onc::ONCSource* onc_source);
+
+// Convenvience function to retrieve the "AllowOnlyPolicyNetworksToAutoconnect"
+// setting from the global network configuration (see
+// GetGlobalConfigFromPolicy).
+CHROMEOS_EXPORT bool PolicyAllowsOnlyPolicyNetworksToAutoconnect(
+    bool for_active_user);
+
+// Returns the effective (user or device) policy for network |network|. Both
+// |profile_prefs| and |local_state_prefs| might be NULL. Returns NULL if no
+// applicable policy is found. Sets |onc_source| accordingly.
+CHROMEOS_EXPORT const base::DictionaryValue* GetPolicyForNetwork(
+    const PrefService* profile_prefs,
+    const PrefService* local_state_prefs,
+    const NetworkState& network,
+    ::onc::ONCSource* onc_source);
+
+// Convenience function to check only whether a policy for a network exists.
+CHROMEOS_EXPORT bool HasPolicyForNetwork(const PrefService* profile_prefs,
+                                         const PrefService* local_state_prefs,
+                                         const NetworkState& network);
 
 }  // namespace onc
 }  // namespace chromeos

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/proxy_config_handler.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/net/onc_utils.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -19,9 +17,11 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -45,9 +45,8 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     const PrefService* local_state_prefs,
     const NetworkState& network,
     ::onc::ONCSource* onc_source) {
-  const base::DictionaryValue* network_policy =
-      onc::GetPolicyForNetwork(
-          profile_prefs, local_state_prefs, network, onc_source);
+  const base::DictionaryValue* network_policy = onc::GetPolicyForNetwork(
+      profile_prefs, local_state_prefs, network, onc_source);
 
   if (network_policy) {
     const base::DictionaryValue* proxy_policy = NULL;
@@ -67,8 +66,9 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
   if (network.profile_path().empty())
     return std::unique_ptr<ProxyConfigDictionary>();
 
-  const NetworkProfile* profile = NetworkHandler::Get()
-      ->network_profile_handler()->GetProfileForPath(network.profile_path());
+  const NetworkProfile* profile =
+      NetworkHandler::Get()->network_profile_handler()->GetProfileForPath(
+          network.profile_path());
   if (!profile) {
     VLOG(1) << "Unknown profile_path '" << network.profile_path() << "'.";
     return std::unique_ptr<ProxyConfigDictionary>();
@@ -105,24 +105,20 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
     // Return empty string for direct mode for portal check to work correctly.
     // TODO(pneubeck): Consider removing this legacy code.
     shill_service_client->ClearProperty(
-        dbus::ObjectPath(network.path()),
-        shill::kProxyConfigProperty,
+        dbus::ObjectPath(network.path()), shill::kProxyConfigProperty,
         base::Bind(&NotifyNetworkStateHandler, network.path()),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "SetProxyConfig.ClearProperty Failed",
-                   network.path(),
+                   "SetProxyConfig.ClearProperty Failed", network.path(),
                    network_handler::ErrorCallback()));
   } else {
     std::string proxy_config_str;
     base::JSONWriter::Write(proxy_config.GetDictionary(), &proxy_config_str);
     shill_service_client->SetProperty(
-        dbus::ObjectPath(network.path()),
-        shill::kProxyConfigProperty,
+        dbus::ObjectPath(network.path()), shill::kProxyConfigProperty,
         base::StringValue(proxy_config_str),
         base::Bind(&NotifyNetworkStateHandler, network.path()),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "SetProxyConfig.SetProperty Failed",
-                   network.path(),
+                   "SetProxyConfig.SetProperty Failed", network.path(),
                    network_handler::ErrorCallback()));
   }
 }

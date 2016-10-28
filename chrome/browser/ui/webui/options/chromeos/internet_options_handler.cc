@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/ui/mobile_config_ui.h"
-#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"

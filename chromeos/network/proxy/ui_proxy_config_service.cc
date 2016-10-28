@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui_proxy_config_service.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 
 #include <memory>
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/net/proxy_config_handler.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
+#include "chromeos/network/proxy/proxy_config_service_impl.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "net/proxy/proxy_config.h"
@@ -63,11 +63,9 @@ bool IsNetworkProxySettingsEditable(const onc::ONCSource onc_source) {
 }  // namespace
 
 UIProxyConfigService::UIProxyConfigService()
-    : profile_prefs_(nullptr), local_state_prefs_(nullptr) {
-}
+    : profile_prefs_(nullptr), local_state_prefs_(nullptr) {}
 
-UIProxyConfigService::~UIProxyConfigService() {
-}
+UIProxyConfigService::~UIProxyConfigService() {}
 
 void UIProxyConfigService::SetPrefs(PrefService* profile_prefs,
                                     PrefService* local_state_prefs) {
@@ -143,19 +141,16 @@ void UIProxyConfigService::DetermineEffectiveConfig(
 
   // Get prefs proxy config if available.
   net::ProxyConfig pref_config;
-  ProxyPrefs::ConfigState pref_state = ProxyConfigServiceImpl::ReadPrefConfig(
-      top_pref_service, &pref_config);
+  ProxyPrefs::ConfigState pref_state =
+      ProxyConfigServiceImpl::ReadPrefConfig(top_pref_service, &pref_config);
 
   // Get network proxy config if available.
   net::ProxyConfig network_config;
   net::ProxyConfigService::ConfigAvailability network_availability =
       net::ProxyConfigService::CONFIG_UNSET;
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
-  if (chromeos::GetProxyConfig(profile_prefs_,
-                               local_state_prefs_,
-                               network,
-                               &network_config,
-                               &onc_source)) {
+  if (chromeos::GetProxyConfig(profile_prefs_, local_state_prefs_, network,
+                               &network_config, &onc_source)) {
     // Network is private or shared with user using shared proxies.
     VLOG(1) << this << ": using proxy of network: " << network.path();
     network_availability = net::ProxyConfigService::CONFIG_VALID;
@@ -165,8 +160,7 @@ void UIProxyConfigService::DetermineEffectiveConfig(
   ProxyPrefs::ConfigState effective_config_state;
   net::ProxyConfig effective_config;
   ProxyConfigServiceImpl::GetEffectiveProxyConfig(
-      pref_state, pref_config,
-      network_availability, network_config, false,
+      pref_state, pref_config, network_availability, network_config, false,
       &effective_config_state, &effective_config);
 
   // Store effective proxy into |current_ui_config_|.

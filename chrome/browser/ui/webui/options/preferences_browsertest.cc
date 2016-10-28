@@ -41,7 +41,6 @@
 #if defined(OS_CHROMEOS)
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -51,6 +50,7 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/proxy_config/proxy_config_dictionary.h"

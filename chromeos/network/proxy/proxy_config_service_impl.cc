@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chromeos/network/proxy/proxy_config_service_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -10,37 +10,34 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/net/proxy_config_handler.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
 #include "components/onc/onc_pref_names.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
 namespace {
 
 // Writes the proxy config of |network| to |proxy_config|.  Set |onc_source| to
-// the source of this configuration. Returns false if no
-// proxy was configured for this network.
-bool GetProxyConfig(const PrefService* profile_prefs,
-                    const PrefService* local_state_prefs,
-                    const NetworkState& network,
-                    net::ProxyConfig* proxy_config,
-                    ::onc::ONCSource* onc_source) {
+// the source of this configuration. Returns false if no proxy was configured
+// for this network.
+bool GetNetworkProxyConfig(const PrefService* profile_prefs,
+                           const PrefService* local_state_prefs,
+                           const NetworkState& network,
+                           net::ProxyConfig* proxy_config,
+                           ::onc::ONCSource* onc_source) {
   std::unique_ptr<ProxyConfigDictionary> proxy_dict =
       proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
                                              network, onc_source);
@@ -52,12 +49,13 @@ bool GetProxyConfig(const PrefService* profile_prefs,
 
 }  // namespace
 
-ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* profile_prefs,
-                                               PrefService* local_state_prefs)
+ProxyConfigServiceImpl::ProxyConfigServiceImpl(
+    PrefService* profile_prefs,
+    PrefService* local_state_prefs,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : PrefProxyConfigTrackerImpl(
           profile_prefs ? profile_prefs : local_state_prefs,
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO)),
+          io_task_runner),
       active_config_state_(ProxyPrefs::CONFIG_UNSET),
       profile_prefs_(profile_prefs),
       local_state_prefs_(local_state_prefs),
@@ -85,8 +83,8 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* profile_prefs,
 
 ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
   if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-        this, FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
   }
 }
 
@@ -142,8 +140,9 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
   if (network_profile_path.empty())
     return true;
 
-  const NetworkProfile* profile = NetworkHandler::Get()
-      ->network_profile_handler()->GetProfileForPath(network_profile_path);
+  const NetworkProfile* profile =
+      NetworkHandler::Get()->network_profile_handler()->GetProfileForPath(
+          network_profile_path);
   if (!profile) {
     VLOG(1) << "Unknown profile_path '" << network_profile_path
             << "'. Ignoring proxy.";
@@ -197,9 +196,8 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
     return base::MakeUnique<ProxyConfigDictionary>(proxy_config_value);
   }
 
-  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                              ->network_state_handler()
-                                              ->DefaultNetwork();
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   // No connected network.
   if (!network)
     return nullptr;
@@ -207,10 +205,10 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
   // Apply network proxy configuration.
   ::onc::ONCSource onc_source;
   std::unique_ptr<ProxyConfigDictionary> proxy_config =
-      chromeos::proxy_config::GetProxyConfigForNetwork(
-          profile_prefs, local_state_prefs, *network, &onc_source);
-  if (!chromeos::ProxyConfigServiceImpl::IgnoreProxy(
-          profile_prefs, network->profile_path(), onc_source))
+      proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
+                                             *network, &onc_source);
+  if (!ProxyConfigServiceImpl::IgnoreProxy(profile_prefs,
+                                           network->profile_path(), onc_source))
     return proxy_config;
 
   return base::MakeUnique<ProxyConfigDictionary>(
@@ -235,7 +233,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
   bool ignore_proxy = true;
   if (network) {
     ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-    const bool network_proxy_configured = chromeos::GetProxyConfig(
+    const bool network_proxy_configured = GetNetworkProxyConfig(
         prefs(), local_state_prefs_, *network, &network_config, &onc_source);
     ignore_proxy =
         IgnoreProxy(profile_prefs_, network->profile_path(), onc_source);
@@ -254,9 +252,9 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
   // Determine effective proxy config, either from prefs or network.
   ProxyPrefs::ConfigState effective_config_state;
   net::ProxyConfig effective_config;
-  GetEffectiveProxyConfig(pref_state, pref_config,
-                          network_availability, network_config, ignore_proxy,
-                          &effective_config_state, &effective_config);
+  GetEffectiveProxyConfig(pref_state, pref_config, network_availability,
+                          network_config, ignore_proxy, &effective_config_state,
+                          &effective_config);
 
   // Activate effective proxy and store into |active_config_|.
   // If last update didn't complete, we definitely update now.
