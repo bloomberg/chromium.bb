@@ -55,7 +55,7 @@ BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
       navigation_feature_(new NavigationFeature),
       ime_feature_(new ImeFeature),
       render_widget_feature_(new RenderWidgetFeature),
-      settings_feature_(new SettingsFeature),
+      settings_feature_(new SettingsFeature(nullptr)),
       weak_factory_(this) {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -151,10 +151,6 @@ void BlimpClientSession::RegisterFeatures() {
   ime_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
                                             ime_feature_.get()));
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDownloadWholeDocument))
-    settings_feature_->SetRecordWholeDocument(true);
 }
 
 void BlimpClientSession::DropConnection() {

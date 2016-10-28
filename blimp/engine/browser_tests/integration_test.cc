@@ -20,6 +20,7 @@
 #include "blimp/engine/browser_tests/blimp_browser_test.h"
 #include "blimp/engine/browser_tests/blimp_contents_view_readback_helper.h"
 #include "blimp/engine/browser_tests/waitable_content_pump.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,13 +83,15 @@ class BlimpIntegrationTest : public BlimpBrowserTest {
 
     delegate_ = base::MakeUnique<client::TestBlimpClientContextDelegate>();
 
+    client::BlimpClientContext::RegisterPrefs(prefs_.registry());
+
     context_ = base::WrapUnique<client::BlimpClientContext>(
         client::BlimpClientContext::Create(
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::IO),
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::FILE),
-            std::move(compositor_dependencies)));
+            std::move(compositor_dependencies), &prefs_));
 
     context_->SetDelegate(delegate_.get());
     context_->ConnectWithAssignment(GetAssignment());
@@ -112,6 +115,7 @@ class BlimpIntegrationTest : public BlimpBrowserTest {
   std::unique_ptr<client::BlimpContents> contents_;
 
  private:
+  TestingPrefServiceSimple prefs_;
   std::unique_ptr<gl::DisableNullDrawGLBindings> scoped_enable_gl_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpIntegrationTest);

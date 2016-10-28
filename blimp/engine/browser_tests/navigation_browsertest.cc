@@ -11,6 +11,7 @@
 #include "blimp/client/test/contents/mock_blimp_contents_observer.h"
 #include "blimp/client/test/test_blimp_client_context_delegate.h"
 #include "blimp/engine/browser_tests/blimp_browser_test.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,13 +42,15 @@ class NavigationBrowserTest : public BlimpBrowserTest {
   void SetUpOnMainThread() override {
     BlimpBrowserTest::SetUpOnMainThread();
 
+    client::BlimpClientContext::RegisterPrefs(prefs_.registry());
+
     context_ = base::WrapUnique<client::BlimpClientContext>(
         client::BlimpClientContext::Create(
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::IO),
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::FILE),
-            base::MakeUnique<client::MockCompositorDependencies>()));
+            base::MakeUnique<client::MockCompositorDependencies>(), &prefs_));
 
     delegate_ = base::MakeUnique<client::TestBlimpClientContextDelegate>();
     context_->SetDelegate(delegate_.get());
@@ -107,6 +110,7 @@ class NavigationBrowserTest : public BlimpBrowserTest {
   std::unique_ptr<client::BlimpContents> contents_;
 
  private:
+  TestingPrefServiceSimple prefs_;
   DISALLOW_COPY_AND_ASSIGN(NavigationBrowserTest);
 };
 

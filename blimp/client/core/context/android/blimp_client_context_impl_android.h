@@ -30,7 +30,8 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
   explicit BlimpClientContextImplAndroid(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-      std::unique_ptr<CompositorDependencies> compositor_dependencies);
+      std::unique_ptr<CompositorDependencies> compositor_dependencies,
+      PrefService* local_state);
   ~BlimpClientContextImplAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();

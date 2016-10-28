@@ -4,6 +4,7 @@ include_rules = [
   "+blimp/client/public",
   "+cc/surfaces",
   "+components/keyed_service/core",
+  "+components/prefs",
   "-content",
   "+url",
 ]

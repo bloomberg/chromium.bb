@@ -7,6 +7,8 @@
 namespace blimp {
 namespace switches {
 
+const char kEnableBlimp[] = "enable-blimp";
+
 const char kEngineCertPath[] = "engine-cert-path";
 
 // Specifies the engine's IP address. Must be used in conjunction with

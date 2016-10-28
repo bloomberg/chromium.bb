@@ -37,6 +37,7 @@ class ImeFeature;
 class NavigationFeature;
 class RenderWidgetFeature;
 class SettingsFeature;
+class Settings;
 class TabControlFeature;
 
 // BlimpClientContextImpl is the implementation of the main context-class for
@@ -54,7 +55,8 @@ class BlimpClientContextImpl
   BlimpClientContextImpl(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-      std::unique_ptr<CompositorDependencies> compositor_dependencies);
+      std::unique_ptr<CompositorDependencies> compositor_dependencies,
+      PrefService* local_state);
   ~BlimpClientContextImpl() override;
 
   // BlimpClientContext implementation.
@@ -107,6 +109,10 @@ class BlimpClientContextImpl
 
   // A set of dependencies required by all BlimpCompositor instances.
   std::unique_ptr<BlimpCompositorDependencies> blimp_compositor_dependencies_;
+
+  // Through this settings are set and retrieved. This should be initialized
+  // before settings_feature_.
+  std::unique_ptr<Settings> settings_;
 
   // Features to handle all incoming and outgoing protobuf messages.
   std::unique_ptr<BlobChannelFeature> blob_channel_feature_;

@@ -143,7 +143,10 @@ if (is_linux && !is_chromeos && use_x11) {
       "//base",
       "//blimp/client/core/compositor",
       "//blimp/client/core/session",
+      "//blimp/client/core/settings:settings",
       "//blimp/net",
+      "//components/pref_registry",
+      "//components/prefs",
       "//net",
       "//services/service_manager/public/cpp",
 

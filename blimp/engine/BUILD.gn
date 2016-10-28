@@ -797,6 +797,7 @@ source_set("browser_tests") {
     "//blimp/engine:session",
     "//blimp/engine:test_support",
     "//blimp/net",
+    "//components/prefs:test_support",
     "//content/public/app:both",
     "//content/test:test_support",
     "//testing/gmock",

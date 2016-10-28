@@ -30,6 +30,10 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/preferences/command_line_pref_store_android.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -114,6 +118,9 @@ void ChromeCommandLinePrefStore::ApplySimpleSwitches() {
   ApplyPathSwitches(path_switch_map_, arraysize(path_switch_map_));
   ApplyIntegerSwitches(integer_switch_map_, arraysize(integer_switch_map_));
   ApplyBooleanSwitches(boolean_switch_map_, arraysize(boolean_switch_map_));
+#if defined(OS_ANDROID)
+  ::android::ApplyBlimpSwitches(this);
+#endif
 }
 
 void ChromeCommandLinePrefStore::ApplyProxyMode() {

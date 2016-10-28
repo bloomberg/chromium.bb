@@ -66,6 +66,7 @@ group("unit_tests") {
     "//blimp/client/core/geolocation:unit_tests",
     "//blimp/client/core/render_widget:unit_tests",
     "//blimp/client/core/session:unit_tests",
+    "//blimp/client/core/settings:unit_tests",
   ]
 }
 

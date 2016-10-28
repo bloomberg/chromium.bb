@@ -25,13 +25,28 @@ namespace client {
 BlimpClientContext* BlimpClientContext::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-    std::unique_ptr<CompositorDependencies> compositor_dependencies) {
+    std::unique_ptr<CompositorDependencies> compositor_dependencies,
+    PrefService* local_state) {
 #if defined(OS_ANDROID)
   return new DummyBlimpClientContextAndroid();
 #else
   return new DummyBlimpClientContext();
 #endif  // defined(OS_ANDROID)
 }
+
+// This function is declared in //blimp/client/public/blimp_client_context.h,
+// and either this function or the one in
+// //blimp/client/core/blimp_client_context_impl.cc should be linked in to
+// any binary using BlimpClientContext::RegisterPrefs.
+// static
+void BlimpClientContext::RegisterPrefs(PrefRegistrySimple* registry) {}
+
+// This function is declared in //blimp/client/public/blimp_client_context.h,
+// and either this function or the one in
+// //blimp/client/core/blimp_client_context_impl.cc should be linked in to
+// any binary using BlimpClientContext::ApplyBlimpSwitches.
+// static
+void BlimpClientContext::ApplyBlimpSwitches(CommandLinePrefStore* store) {}
 
 DummyBlimpClientContext::DummyBlimpClientContext() : BlimpClientContext() {
   UMA_HISTOGRAM_BOOLEAN("Blimp.Supported", false);

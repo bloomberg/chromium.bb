@@ -37,6 +37,7 @@ source_set("context") {
     "//blimp/client/core/geolocation",
     "//blimp/client/core/settings",
     "//blimp/client/core/switches",
+    "//components/prefs:prefs",
   ]
 
   if (is_android) {
@@ -90,8 +91,10 @@ source_set("unit_tests") {
 
   deps = [
     ":context",
+    "//blimp/client/core/settings",
     "//blimp/client/public:public_headers",
     "//blimp/client/test",
+    "//components/prefs:test_support",
     "//testing/gtest",
   ]
 }

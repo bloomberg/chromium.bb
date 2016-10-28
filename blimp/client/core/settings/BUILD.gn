@@ -15,12 +15,19 @@ source_set("settings") {
 
   sources = [
     "blimp_settings_delegate.h",
+    "settings.cc",
+    "settings.h",
     "settings_feature.cc",
     "settings_feature.h",
+    "settings_observer.h",
+    "settings_prefs.cc",
+    "settings_prefs.h",
   ]
 
   deps = [
+    "//blimp/client/core/switches",
     "//blimp/common",
+    "//components/prefs",
     "//net",
   ]
 
@@ -41,6 +48,25 @@ source_set("settings") {
       "//blimp/common",
     ]
   }
+}
+
+source_set("unit_tests") {
+  visibility = [ "//blimp/client/core:unit_tests" ]
+
+  testonly = true
+
+  sources = [
+    "settings_unittest.cc",
+  ]
+
+  deps = [
+    ":settings",
+    "//base",
+    "//blimp/client/core/switches:switches",
+    "//components/prefs:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
 
 if (is_android) {

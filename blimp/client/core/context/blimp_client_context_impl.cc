@@ -23,10 +23,12 @@
 #include "blimp/client/core/geolocation/geolocation_feature.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
+#include "blimp/client/core/settings/settings.h"
 #include "blimp/client/core/settings/settings_feature.h"
 #include "blimp/client/core/switches/blimp_client_switches.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "components/prefs/pref_service.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/location_arbitrator.h"
 #include "ui/gfx/native_widget_types.h"
@@ -57,28 +59,49 @@ void DropConnectionOnIOThread(ClientNetworkComponents* net_components) {
 BlimpClientContext* BlimpClientContext::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-    std::unique_ptr<CompositorDependencies> compositor_dependencies) {
+    std::unique_ptr<CompositorDependencies> compositor_dependencies,
+    PrefService* local_state) {
 #if defined(OS_ANDROID)
-  return new BlimpClientContextImplAndroid(io_thread_task_runner,
-                                           file_thread_task_runner,
-                                           std::move(compositor_dependencies));
+  return new BlimpClientContextImplAndroid(
+      io_thread_task_runner, file_thread_task_runner,
+      std::move(compositor_dependencies), local_state);
 #else
-  return new BlimpClientContextImpl(io_thread_task_runner,
-                                    file_thread_task_runner,
-                                    std::move(compositor_dependencies));
+  return new BlimpClientContextImpl(
+      io_thread_task_runner, file_thread_task_runner,
+      std::move(compositor_dependencies), local_state);
 #endif  // defined(OS_ANDROID)
+}
+
+// This function is declared in //blimp/client/public/blimp_client_context.h
+// and either this function or the one in
+// //blimp/client/core/dummy_blimp_client_context.cc should be linked in to
+// any binary using BlimpClientContext::RegisterPrefs.
+// static
+void BlimpClientContext::RegisterPrefs(PrefRegistrySimple* registry) {
+  Settings::RegisterPrefs(registry);
+}
+
+// This function is declared in //blimp/client/public/blimp_client_context.h
+// and either this function or the one in
+// //blimp/client/core/dummy_blimp_client_context.cc should be linked in to
+// any binary using BlimpClientContext::ApplyBlimpSwitches.
+// static
+void BlimpClientContext::ApplyBlimpSwitches(CommandLinePrefStore* store) {
+  Settings::ApplyBlimpSwitches(store);
 }
 
 BlimpClientContextImpl::BlimpClientContextImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-    std::unique_ptr<CompositorDependencies> compositor_dependencies)
+    std::unique_ptr<CompositorDependencies> compositor_dependencies,
+    PrefService* local_state)
     : BlimpClientContext(),
       io_thread_task_runner_(io_thread_task_runner),
       file_thread_task_runner_(file_thread_task_runner),
       blimp_compositor_dependencies_(
           base::MakeUnique<BlimpCompositorDependencies>(
               std::move(compositor_dependencies))),
+      settings_(base::MakeUnique<Settings>(local_state)),
       blob_channel_feature_(new BlobChannelFeature(this)),
       geolocation_feature_(base::MakeUnique<GeolocationFeature>(
           base::MakeUnique<device::LocationArbitrator>(
@@ -86,7 +109,7 @@ BlimpClientContextImpl::BlimpClientContextImpl(
       ime_feature_(new ImeFeature),
       navigation_feature_(new NavigationFeature),
       render_widget_feature_(new RenderWidgetFeature),
-      settings_feature_(new SettingsFeature),
+      settings_feature_(base::MakeUnique<SettingsFeature>(settings_.get())),
       tab_control_feature_(new TabControlFeature),
       blimp_contents_manager_(
           new BlimpContentsManager(blimp_compositor_dependencies_.get(),
@@ -106,7 +129,7 @@ BlimpClientContextImpl::BlimpClientContextImpl(
       io_thread_task_runner_, net_components_->GetBrowserConnectionHandler());
 
   RegisterFeatures();
-  InitializeSettings();
+  settings_feature_->PushSettings();
 
   connection_status_.AddObserver(this);
 
@@ -223,12 +246,6 @@ void BlimpClientContextImpl::RegisterFeatures() {
   tab_control_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
                                             tab_control_feature_.get()));
-}
-
-void BlimpClientContextImpl::InitializeSettings() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDownloadWholeDocument))
-    settings_feature_->SetRecordWholeDocument(true);
 }
 
 void BlimpClientContextImpl::DropConnection() {

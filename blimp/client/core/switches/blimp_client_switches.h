@@ -10,6 +10,9 @@
 namespace blimp {
 namespace switches {
 
+// Enables blimp mode.
+extern const char kEnableBlimp[];
+
 // The path to the engine's PEM-encoded X509 certificate.
 // If specified, SSL connected Engines must supply this certificate
 // for the connection to be valid.

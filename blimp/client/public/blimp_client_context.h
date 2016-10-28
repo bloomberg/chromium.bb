@@ -13,6 +13,9 @@
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/command_line_pref_store.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -51,7 +54,16 @@ class BlimpClientContext : public KeyedService {
   static BlimpClientContext* Create(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-      std::unique_ptr<CompositorDependencies> compositor_dependencies);
+      std::unique_ptr<CompositorDependencies> compositor_dependencies,
+      PrefService* local_state);
+
+  // Register Blimp prefs. The implementation of this function depends on
+  // whether the core or dummy implementation of Blimp has been linked in.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Apply blimp command-line switches to the corresponding preferences of the
+  // blimp's own switch map.
+  static void ApplyBlimpSwitches(CommandLinePrefStore* store);
 
   // The delegate provides all the required functionality from the embedder.
   virtual void SetDelegate(BlimpClientContextDelegate* delegate) = 0;

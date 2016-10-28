@@ -9,6 +9,7 @@
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "chrome/browser/android/blimp/chrome_compositor_dependencies.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,7 +44,8 @@ KeyedService* BlimpClientContextFactory::BuildServiceInstanceFor(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE),
       base::MakeUnique<ChromeCompositorDependencies>(
-          ui::ContextProviderFactory::GetInstance()));
+          ui::ContextProviderFactory::GetInstance()),
+      Profile::FromBrowserContext(context)->GetPrefs());
 }
 
 content::BrowserContext* BlimpClientContextFactory::GetBrowserContextToUse(

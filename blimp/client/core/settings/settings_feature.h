@@ -6,15 +6,19 @@
 #define BLIMP_CLIENT_CORE_SETTINGS_SETTINGS_FEATURE_H_
 
 #include "base/macros.h"
+#include "blimp/client/core/settings/settings_observer.h"
 #include "blimp/net/blimp_message_processor.h"
 
 namespace blimp {
 namespace client {
 
+class Settings;
+
 // The feature is used to send global settings to the engine.
-class SettingsFeature : public BlimpMessageProcessor {
+class SettingsFeature : public BlimpMessageProcessor, public SettingsObserver {
  public:
-  SettingsFeature();
+  // Caller ensures |settings| outlives this object.
+  explicit SettingsFeature(Settings* settings);
   ~SettingsFeature() override;
 
   // Set the BlimpMessageProcessor that will be used to send
@@ -22,19 +26,23 @@ class SettingsFeature : public BlimpMessageProcessor {
   void set_outgoing_message_processor(
       std::unique_ptr<BlimpMessageProcessor> processor);
 
-  void SetRecordWholeDocument(bool record_whole_document);
   void SendUserAgentOSVersionInfo(const std::string& client_os_info);
 
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
+  // SettingsObserver implementation.
+  void OnRecordWholeDocumentChanged(bool enable) override;
+
+  // Send the necessary settings to the engine.
+  void PushSettings();
+
  private:
   // Used to send BlimpMessage::TAB_CONTROL messages to the engine.
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 
-  // Used to avoid sending unnecessary messages to engine.
-  bool record_whole_document_;
+  Settings* settings_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsFeature);
 };

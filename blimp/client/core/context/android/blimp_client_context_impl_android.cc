@@ -49,10 +49,12 @@ base::android::ScopedJavaLocalRef<jobject> BlimpClientContext::GetJavaObject(
 BlimpClientContextImplAndroid::BlimpClientContextImplAndroid(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-    std::unique_ptr<CompositorDependencies> compositor_dependencies)
+    std::unique_ptr<CompositorDependencies> compositor_dependencies,
+    PrefService* local_state)
     : BlimpClientContextImpl(io_thread_task_runner,
                              file_thread_task_runner,
-                             std::move(compositor_dependencies)) {
+                             std::move(compositor_dependencies),
+                             local_state) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_obj_.Reset(env, Java_BlimpClientContextImpl_create(

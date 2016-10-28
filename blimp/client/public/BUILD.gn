@@ -46,6 +46,7 @@ source_set("public_headers") {
     "//base",
     "//cc/surfaces:surface_id",
     "//components/keyed_service/core",
+    "//components/prefs:prefs",
     "//net",
     "//ui/gfx:native_widget_types",
     "//url",
