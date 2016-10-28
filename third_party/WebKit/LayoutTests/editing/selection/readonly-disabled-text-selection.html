@@ -5,7 +5,7 @@ onload = function() {
     if (!window.eventSender || !window.eventSender.gestureLongPress) {
         debug("gestureLongPress not implemented by this platform.");
         debug("Manullay long press on every element in the page and check whether Text selection is happening or not");
-        debug("If Text selection is not happening for readonly input/textarea, then it's a failure.");
+        debug("If Text selection is not happening for readonly or disabled input/textarea, then it's a failure.");
         return;
     }
 
@@ -37,10 +37,10 @@ function doLongPressOnElement(elementId) {
 </script>
 <input id="normalText" type="text" value="NormalInput">
 <input id="readOnlyText" type="text" value="ReadonlyInput" readonly>
-<input id="disabledText" type="text" value="" disabled>
-<input id="readOnlyDisabledText" size="20" type="text" value=""readonly disabled>
+<input id="disabledText" type="text" value="DisabledInput" disabled>
+<input id="readOnlyDisabledText" size="20" type="text" value="ReadonlyDisabledInput"readonly disabled>
 <textarea id="normalTextArea" cols="31">NormalTextarea</textarea>
 <textarea id="readOnlyTextArea" cols="31" readonly>ReadonlyTextarea</textarea>
-<textarea id="disabledTextArea" cols="31" disabled></textarea>
-<textarea id="readOnlyDisabledTextArea" cols="31" readonly disabled></textarea>
+<textarea id="disabledTextArea" cols="31" disabled>DisabledTextarea</textarea>
+<textarea id="readOnlyDisabledTextArea" cols="31" readonly disabled>ReadonlyDisabledTextarea</textarea>
 

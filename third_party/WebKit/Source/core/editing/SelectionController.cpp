@@ -846,8 +846,9 @@ bool SelectionController::handleGestureLongPress(
   if (!innerNode)
     return false;
   innerNode->document().updateStyleAndLayoutTree();
-  bool innerNodeIsSelectable =
-      hasEditableStyle(*innerNode) || innerNode->canStartSelection();
+  bool innerNodeIsSelectable = hasEditableStyle(*innerNode) ||
+                               innerNode->isTextNode() ||
+                               innerNode->canStartSelection();
   if (!innerNodeIsSelectable)
     return false;
 

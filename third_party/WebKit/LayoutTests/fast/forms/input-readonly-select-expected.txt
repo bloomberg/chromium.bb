@@ -5,7 +5,7 @@ double clicking on readonly input
 PASS selectEventFiredOnReadonlyInput is true
 
 double clicking on disabled input
-PASS selectEventFiredOnDisabledInput is false
+PASS selectEventFiredOnDisabledInput is true
 
 double clicking on normal textarea
 PASS selectEventFiredOnTextarea is true
@@ -14,7 +14,7 @@ double clicking on readonly textarea
 PASS selectEventFiredOnReadonlyTextarea is true
 
 double clicking on disabled textarea
-PASS selectEventFiredOnDisabledTextarea is false
+PASS selectEventFiredOnDisabledTextarea is true
 
 PASS successfullyParsed is true
 

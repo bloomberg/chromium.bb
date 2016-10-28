@@ -961,9 +961,6 @@ int Node::maxCharacterOffset() const {
 // FIXME: Shouldn't these functions be in the editing code?  Code that asks
 // questions about HTML in the core DOM class is obviously misplaced.
 bool Node::canStartSelection() const {
-  if (isDisabledFormControl(this))
-    return false;
-
   if (hasEditableStyle(*this))
     return true;
 

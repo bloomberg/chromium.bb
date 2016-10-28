@@ -65,7 +65,7 @@ debug('');
 
 debug('double clicking on disabled input');
 doubleClickOn(disabledInput);
-shouldBeFalse('selectEventFiredOnDisabledInput');
+shouldBeTrue('selectEventFiredOnDisabledInput');
 debug('');
 
 debug('double clicking on normal textarea');
@@ -80,7 +80,7 @@ debug('');
 
 debug('double clicking on disabled textarea');
 doubleClickOn(disabledTextarea);
-shouldBeFalse('selectEventFiredOnDisabledTextarea');
+shouldBeTrue('selectEventFiredOnDisabledTextarea');
 debug('');
 
 container.innerHTML = "";
