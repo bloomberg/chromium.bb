@@ -32,13 +32,15 @@ function contextClickOnSelection(selection) {
 }
 
 function assertContextMenuSuggestion(sample, expected) {
+  var title = `Context clicking on selected "${sample.selection.toString()}" ` +
+                (expected ? `gives suggestion "${expected}".` : 'does not give any suggestion.');
   test(() => {
     const suggestions = contextClickOnSelection(sample.selection);
-    assert_equals(suggestions[suggestions.length - 1], expected);
-  }, `Context clicking on exactly-selected "${sample.selection.toString()}" gives suggestions "${expected}".`);
+    assert_equals(suggestions[suggestions.length - 1], expected || '<separator>');
+  }, title);
   sample.remove();
 
-  if (++testHolder.finishedCount == 2)
+  if (++testHolder.finishedCount == 7)
     testHolder.done();
 }
 
@@ -47,7 +49,7 @@ spellcheck_test(
     '',
     '<div contenteditable>#wellcome# home.</div>',
     {
-      title: 'Has marker on initial misspelling.',
+      title: 'Has marker on initial misspelling in "wellcome home.".',
       callback: sample => assertContextMenuSuggestion(sample, 'welcome')
     });
 
@@ -56,7 +58,52 @@ spellcheck_test(
     '',
     '<div contenteditable>It should be #upper case#.</div>',
     {
-      title: 'Has marker on initial multi-word misspelling.',
+      title: 'Has marker on initial multi-word misspelling in "It should be upper case.".',
       callback: sample => assertContextMenuSuggestion(sample, 'uppercase')
+    });
+
+spellcheck_test(
+    '<div contenteditable>hello,^ wellcome |home.</div>',
+    '',
+    '<div contenteditable>hello, #wellcome# home.</div>',
+    {
+      title: 'Has marker on initial misspelling in "hello, wellcome home.".',
+      callback: sample => assertContextMenuSuggestion(sample, 'welcome')
+    });
+
+spellcheck_test(
+    '<div contenteditable>Hi, ^_wellcome_| home.</div>',
+    '',
+    '<div contenteditable>Hi, _#wellcome#_ home.</div>',
+    {
+      title: 'Has marker on initial misspelling in "Hi, wellcome home.".',
+      callback: sample => assertContextMenuSuggestion(sample, 'welcome')
+    });
+
+spellcheck_test(
+    '<div contenteditable>^wellcome!|</div>',
+    '',
+    '<div contenteditable>#wellcome#!</div>',
+    {
+      title: 'Has marker on initial misspelling in "wellcome!".',
+      callback: sample => assertContextMenuSuggestion(sample, 'welcome')
+    });
+
+spellcheck_test(
+    '<div contenteditable>we^llco|me home.</div>',
+    '',
+    '<div contenteditable>#wellcome# home.</div>',
+    {
+      title: 'Has marker on initial misspelling in "wellcome home." with "llco" selected.',
+      callback: sample => assertContextMenuSuggestion(sample)
+    });
+
+spellcheck_test(
+    '<div contenteditable>^wellcome home|.</div>',
+    '',
+    '<div contenteditable>#wellcome# home.</div>',
+    {
+      title: 'Has marker on initial misspelling in "wellcome home." with "wellcome home" selected.',
+      callback: sample => assertContextMenuSuggestion(sample)
     });
 </script>
