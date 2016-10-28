@@ -46,6 +46,13 @@ if (is_android) {
     default_lint_android_sdk_version = "23"
   }
 
+  if (!defined(default_extras_android_sdk_root)) {
+    # Purposefully repeated so that downstream can change
+    # default_android_sdk_root without changing where we load the SDK extras
+    # from. (Google Play services, etc.)
+    default_extras_android_sdk_root = "//third_party/android_tools/sdk"
+  }
+
   if (!defined(default_android_keystore_path)) {
     default_android_keystore_path =
         "//build/android/ant/chromium-debug.keystore"
