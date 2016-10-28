@@ -88,6 +88,18 @@ bool NGLogicalOffset::operator==(const NGLogicalOffset& other) const {
          std::tie(inline_offset, block_offset);
 }
 
+NGLogicalOffset NGLogicalOffset::operator+(const NGLogicalOffset& other) const {
+  NGLogicalOffset result;
+  result.inline_offset = this->inline_offset + other.inline_offset;
+  result.block_offset = this->block_offset + other.block_offset;
+  return result;
+}
+
+NGLogicalOffset& NGLogicalOffset::operator+=(const NGLogicalOffset& other) {
+  *this = *this + other;
+  return *this;
+}
+
 bool NGBoxStrut::IsEmpty() const {
   return *this == NGBoxStrut();
 }

@@ -33,8 +33,8 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   //                     text fragment for example.
   NGLayoutOpportunityIterator(
       NGConstraintSpace* space,
-      const NGLogicalOrigin origin_point = NGLogicalOrigin(),
-      const NGLogicalLeader leader_point = NGLogicalLeader());
+      const NGLogicalOffset origin_point = NGLogicalOffset(),
+      const NGLogicalOffset leader_point = NGLogicalOffset());
 
   // Gets the next Layout Opportunity or nullptr if the search is exhausted.
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
@@ -57,8 +57,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   }
 
   Member<NGConstraintSpace> constraint_space_;
-  const NGLogicalOrigin origin_point_;
-  const NGLogicalLeader leader_point_;
+  const NGLogicalOffset leader_point_;
 
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;

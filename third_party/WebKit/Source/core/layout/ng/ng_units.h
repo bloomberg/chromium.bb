@@ -49,18 +49,10 @@ struct NGLogicalOffset {
                     NGPhysicalSize container_size,
                     NGPhysicalSize inner_size) const;
   bool operator==(const NGLogicalOffset& other) const;
-};
 
-// Origin (in logical coordinates) for a fragment or inline content.
-struct NGLogicalOrigin {
-  LayoutUnit inline_offset;
-  LayoutUnit block_offset;
-};
+  NGLogicalOffset operator+(const NGLogicalOffset& other) const;
 
-// Leader point (in logical coordinates) for a text fragment.
-struct NGLogicalLeader {
-  LayoutUnit inline_offset;
-  LayoutUnit block_offset;
+  NGLogicalOffset& operator+=(const NGLogicalOffset& other);
 };
 
 // NGPhysicalOffset is the position of a rect (typically a fragment) relative to

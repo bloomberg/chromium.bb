@@ -120,16 +120,16 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
 //
 // Test case visual representation:
 //
-//         100  200  300  400  500
-//     (1)--|----|----|-(2)|----|-(3)+
-//  50 |                             |
-// 100 |                             |
-// 150 |                             |
-// 200 |       **********            |
-// 250 |       **********            |
-// 300 (4)                           |
-// 350 |                        ***  |
-//     +-----------------------------+
+//         100  200   300  400  500
+//     (1)--|----|-(2)-|----|----|-(3)-+
+//  50 |                               |
+// 100 |                               |
+// 150 |                               |
+// 200 |       ******                  |
+// 250 |       ******                  |
+// 300 (4)                             |
+// 350 |                         ***   |
+//     +-------------------------------+
 //
 // Expected:
 //   Layout opportunity iterator generates the next opportunities:
@@ -165,6 +165,54 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
   EXPECT_EQ("550,0 50x400", OpportunityToString(iterator->Next()));
 
   // 4th Start point
+  EXPECT_EQ("0,300 600x50", OpportunityToString(iterator->Next()));
+  EXPECT_EQ("0,300 500x100", OpportunityToString(iterator->Next()));
+
+  // Iterator is exhausted.
+  EXPECT_EQ("(empty)", OpportunityToString(iterator->Next()));
+}
+
+// This test is the same as LayoutOpportunitiesTwoInMiddle with the only
+// difference that NGLayoutOpportunityIterator takes the additional argument
+// origin_point that changes the iterator to return Layout Opportunities that
+// lay after the origin point.
+//
+// Expected:
+//   Layout opportunity iterator generates the next opportunities:
+//   - 1st Start Point (0, 200): 150x200
+//   - 2nd Start Point (250, 200): 350x150, 250x200
+//   - 3rd Start Point (550, 200): 50x200
+//   - 4th Start Point (0, 300): 600x50, 500x100
+//   All other opportunities that are located before the origin point should be
+//   filtered out.
+TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOrigin) {
+  NGPhysicalSize physical_size;
+  physical_size.width = LayoutUnit(600);
+  physical_size.height = LayoutUnit(400);
+  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
+
+  // Add exclusions
+  physical_space->AddExclusion(new NGExclusion(
+      LayoutUnit(200), LayoutUnit(250), LayoutUnit(300), LayoutUnit(150)));
+  physical_space->AddExclusion(new NGExclusion(
+      LayoutUnit(350), LayoutUnit(550), LayoutUnit(400), LayoutUnit(500)));
+
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+  const NGLogicalOffset origin_point = {LayoutUnit(0), LayoutUnit(200)};
+  auto* iterator = new NGLayoutOpportunityIterator(space, origin_point);
+
+  // 1st Start Point
+  EXPECT_EQ("0,200 150x200", OpportunityToString(iterator->Next()));
+
+  // 2nd Start Point
+  EXPECT_EQ("250,200 350x150", OpportunityToString(iterator->Next()));
+  EXPECT_EQ("250,200 250x200", OpportunityToString(iterator->Next()));
+
+  // 3rd Start Point
+  EXPECT_EQ("550,200 50x200", OpportunityToString(iterator->Next()));
+
+  // 4th Start Point
   EXPECT_EQ("0,300 600x50", OpportunityToString(iterator->Next()));
   EXPECT_EQ("0,300 500x100", OpportunityToString(iterator->Next()));
 

@@ -23,6 +23,21 @@ void CollectAllOpportunities(const NGLayoutOpportunityTreeNode* node,
   CollectAllOpportunities(node->right, opportunities);
 }
 
+// Creates layout opportunity from the provided space and the origin point.
+NGLayoutOpportunity CreateLayoutOpportunityFromConstraintSpace(
+    const NGConstraintSpace& space,
+    const NGLogicalOffset& origin_point) {
+  NGLayoutOpportunity opportunity;
+  opportunity.offset = space.Offset();
+  opportunity.size = space.Size();
+
+  // adjust to the origin_point.
+  opportunity.offset += origin_point;
+  opportunity.size.inline_size -= origin_point.inline_offset;
+  opportunity.size.block_size -= origin_point.block_offset;
+  return opportunity;
+}
+
 // Whether 2 edges overlap with each other.
 bool IsOverlapping(const NGEdge& edge1, const NGEdge& edge2) {
   return std::max(edge1.start, edge2.start) <= std::min(edge1.end, edge2.end);
@@ -205,20 +220,18 @@ bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
 
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
     NGConstraintSpace* space,
-    const NGLogicalOrigin origin_point,
-    const NGLogicalLeader leader_point)
-    : constraint_space_(space),
-      origin_point_(origin_point),
-      leader_point_(leader_point) {
+    const NGLogicalOffset origin_point,
+    const NGLogicalOffset leader_point)
+    : constraint_space_(space), leader_point_(leader_point) {
   // TODO(chrome-layout-team): Combine exclusions that shadow each other.
   auto exclusions = constraint_space_->PhysicalSpace()->Exclusions();
   DCHECK(std::is_sorted(exclusions.begin(), exclusions.end(),
                         &CompareNGExclusionsByTopAsc))
       << "Exclusions are expected to be sorted by TOP";
 
-  opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(NGLayoutOpportunity(
-      space->Offset().inline_offset, space->Offset().block_offset,
-      space->Size().inline_size, space->Size().block_size));
+  NGLayoutOpportunity initial_opportunity =
+      CreateLayoutOpportunityFromConstraintSpace(*space, origin_point);
+  opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(initial_opportunity);
 
   for (const auto exclusion : exclusions) {
     InsertExclusion(MutableOpportunityTreeRoot(), exclusion, opportunities_);
@@ -226,6 +239,7 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
   CollectAllOpportunities(OpportunityTreeRoot(), opportunities_);
   std::sort(opportunities_.begin(), opportunities_.end(),
             &CompareNGLayoutOpportunitesByStartPoint);
+
   opportunity_iter_ = opportunities_.begin();
 }
 
