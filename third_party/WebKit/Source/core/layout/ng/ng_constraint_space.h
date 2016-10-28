@@ -31,16 +31,6 @@ class CORE_EXPORT NGConstraintSpace final
   // coordinates.
   NGConstraintSpace(NGWritingMode, NGDirection, NGPhysicalConstraintSpace*);
 
-  // Constructs a derived constraint space that shares the exclusions of the
-  // input constraint space, but has a different container size, writing mode
-  // and direction. Sets the offset to zero. For use by layout algorithms
-  // to use as the basis to find layout opportunities for children.
-  // TODO(layout-dev): Remove once NGConstraintSpaceBuilder exists.
-  NGConstraintSpace(NGWritingMode,
-                    NGDirection,
-                    const NGConstraintSpace& other,
-                    NGLogicalSize);
-
   // This should live on NGBox or another layout bridge and probably take a root
   // NGConstraintSpace or a NGPhysicalConstraintSpace.
   static NGConstraintSpace* CreateFromLayoutObject(const LayoutBox&);
@@ -82,6 +72,9 @@ class CORE_EXPORT NGConstraintSpace final
   // ContainerSize() for the root constraint space but derived constraint spaces
   // return the size of the layout opportunity.
   virtual NGLogicalSize Size() const { return size_; }
+
+  // Sets the effective size of the constraint space.
+  void SetSize(NGLogicalSize);
 
   // Whether the current constraint space is for the newly established
   // Formatting Context.

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_box.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "wtf/RefPtr.h"
@@ -25,31 +26,27 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param style Style reference of the block that is being laid out.
   // @param first_child Our first child; the algorithm will use its NextSibling
   //                    method to access all the children.
-  NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>, NGBox* first_child);
+  // @param space The constraint space which the algorithm should generate a
+  //              fragment within.
+  NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>,
+                         NGBox* first_child,
+                         NGConstraintSpace* space);
 
-  // Actual layout implementation. Lays out the children in sequence within the
-  // constraints given by the NGConstraintSpace. Returns a fragment with the
-  // resulting layout information.
-  // This function can not be const because for interruptible layout, we have
-  // to be able to store state information.
-  // Returns true when done; when this function returns false, it has to be
-  // called again. The out parameter will only be set when this function
-  // returns true. The same constraint space has to be passed each time.
-  bool Layout(const NGConstraintSpace*, NGPhysicalFragment**) override;
+  bool Layout(NGPhysicalFragment**) override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  bool LayoutCurrentChild();
+
   // Computes collapsed margins for 2 adjoining blocks and updates the resultant
   // fragment's MarginStrut if needed.
   // See https://www.w3.org/TR/CSS2/box.html#collapsing-margins
   //
-  // @param space Constraint space for the block.
   // @param child_margins Margins information for the current child.
   // @param fragment Current child's fragment.
   // @return NGBoxStrut with margins block start/end.
-  NGBoxStrut CollapseMargins(const NGConstraintSpace& space,
-                             const NGBoxStrut& child_margins,
+  NGBoxStrut CollapseMargins(const NGBoxStrut& child_margins,
                              const NGFragment& fragment);
 
   // Calculates position of the in-flow block-level fragment that needs to be
@@ -57,11 +54,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   //
   // @param fragment Fragment that needs to be placed.
   // @param child_margins Margins information for the current child fragment.
-  // @param space Constraint space for the block.
   // @return Position of the fragment in the parent's constraint space.
   NGLogicalOffset PositionFragment(const NGFragment& fragment,
-                                   const NGBoxStrut& child_margins,
-                                   const NGConstraintSpace& space);
+                                   const NGBoxStrut& child_margins);
 
   // Calculates position of the float fragment that needs to be
   // positioned relative to the current fragment that is being built.
@@ -79,19 +74,21 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // keeps updating block-end (on every non-zero height child).
   void UpdateMarginStrut(const NGMarginStrut& from);
 
-  bool LayoutCurrentChild(const NGConstraintSpace*);
-
   // Read-only Getters.
   const ComputedStyle& Style() const { return *style_; }
 
-  RefPtr<const ComputedStyle> style_;
-  Member<NGBox> first_child_;
-
   enum State { kStateInit, kStateChildLayout, kStateFinalize };
   State state_;
+
+  RefPtr<const ComputedStyle> style_;
+
+  Member<NGBox> first_child_;
+  Member<NGConstraintSpace> constraint_space_;
   Member<NGFragmentBuilder> builder_;
-  Member<NGConstraintSpace> constraint_space_for_children_;
+  Member<NGConstraintSpaceBuilder> space_builder_;
+  Member<NGConstraintSpace> space_for_current_child_;
   Member<NGBox> current_child_;
+
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;

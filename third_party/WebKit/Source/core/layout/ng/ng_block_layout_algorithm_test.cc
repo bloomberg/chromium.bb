@@ -26,11 +26,11 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
  protected:
   void SetUp() override { style_ = ComputedStyle::create(); }
 
-  NGPhysicalFragment* RunBlockLayoutAlgorithm(const NGConstraintSpace* space,
+  NGPhysicalFragment* RunBlockLayoutAlgorithm(NGConstraintSpace* space,
                                               NGBox* first_child) {
-    NGBlockLayoutAlgorithm algorithm(style_, first_child);
+    NGBlockLayoutAlgorithm algorithm(style_, first_child, space);
     NGPhysicalFragment* frag;
-    while (!algorithm.Layout(space, &frag))
+    while (!algorithm.Layout(&frag))
       continue;
     return frag;
   }

@@ -21,18 +21,6 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
       writing_mode_(writing_mode),
       direction_(direction) {}
 
-NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
-                                     NGDirection direction,
-                                     const NGConstraintSpace& other,
-                                     NGLogicalSize size)
-    : size_(size), writing_mode_(writing_mode), direction_(direction) {
-  physical_space_ =
-      new NGPhysicalConstraintSpace(size.ConvertToPhysical(writing_mode));
-  for (const auto& exclusion : other.PhysicalSpace()->Exclusions()) {
-    physical_space_->AddExclusion(exclusion);
-  }
-}
-
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
   bool fixed_inline = false, fixed_block = false, is_new_fc = false;
@@ -89,6 +77,10 @@ void NGConstraintSpace::AddExclusion(const NGExclusion* exclusion) const {
 NGLogicalSize NGConstraintSpace::ContainerSize() const {
   return physical_space_->container_size_.ConvertToLogical(
       static_cast<NGWritingMode>(writing_mode_));
+}
+
+void NGConstraintSpace::SetSize(NGLogicalSize size) {
+  size_ = size;
 }
 
 bool NGConstraintSpace::IsNewFormattingContext() const {

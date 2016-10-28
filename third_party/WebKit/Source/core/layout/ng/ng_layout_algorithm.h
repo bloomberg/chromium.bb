@@ -30,10 +30,8 @@ class CORE_EXPORT NGLayoutAlgorithm
   // to be able to store state information.
   // Returns true when done; when this function returns false, it has to be
   // called again. The out parameter will only be set when this function
-  // returns true. The same constraint space has to be passed each time.
-  // TODO(layout-ng): Should we have a StartLayout function to avoid passing
-  // the same space for each Layout iteration?
-  virtual bool Layout(const NGConstraintSpace*, NGPhysicalFragment**) = 0;
+  // returns true.
+  virtual bool Layout(NGPhysicalFragment**) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

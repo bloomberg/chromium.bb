@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
@@ -58,7 +59,7 @@ NGExclusion* CreateExclusion(const NGFragment& fragment,
 // @param margins Margins of the fragment.
 // @return Layout opportunity for the fragment.
 const NGLayoutOpportunity FindLayoutOpportunityForFragment(
-    const Member<NGConstraintSpace>& space,
+    NGConstraintSpace* space,
     const NGFragment& fragment,
     const NGBoxStrut& margins) {
   NGLayoutOpportunityIterator* opportunity_iter = space->LayoutOpportunities();
@@ -139,60 +140,84 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
   return false;
 }
 
+// Creates a new constraint space for a child.
+NGConstraintSpace* CreateConstraintSpaceForChild(
+    const NGConstraintSpace& space,
+    const NGBox& child,
+    NGConstraintSpaceBuilder* builder) {
+  builder->SetIsNewFormattingContext(
+      IsNewFormattingContextForInFlowBlockLevelChild(space, *child.Style()));
+  return new NGConstraintSpace(space.WritingMode(), space.Direction(),
+                               builder->ToConstraintSpace());
+}
+
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
-    NGBox* first_child)
-    : style_(style),
+    NGBox* first_child,
+    NGConstraintSpace* constraint_space)
+    : state_(kStateInit),
+      style_(style),
       first_child_(first_child),
-      state_(kStateInit),
+      constraint_space_(constraint_space),
       is_fragment_margin_strut_block_start_updated_(false) {
   DCHECK(style_);
 }
 
-bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
-                                    NGPhysicalFragment** out) {
+bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
   switch (state_) {
     case kStateInit: {
       border_and_padding_ =
-          ComputeBorders(Style()) + ComputePadding(*constraint_space, Style());
+          ComputeBorders(Style()) + ComputePadding(*constraint_space_, Style());
 
       LayoutUnit inline_size =
-          ComputeInlineSizeForFragment(*constraint_space, Style());
+          ComputeInlineSizeForFragment(*constraint_space_, Style());
       LayoutUnit adjusted_inline_size =
           inline_size - border_and_padding_.InlineSum();
       // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
       // -1?
       LayoutUnit block_size = ComputeBlockSizeForFragment(
-          *constraint_space, Style(), NGSizeIndefinite);
+          *constraint_space_, Style(), NGSizeIndefinite);
       LayoutUnit adjusted_block_size(block_size);
       // Our calculated block-axis size may be indefinite at this point.
       // If so, just leave the size as NGSizeIndefinite instead of subtracting
       // borders and padding.
       if (adjusted_block_size != NGSizeIndefinite)
         adjusted_block_size -= border_and_padding_.BlockSum();
-      constraint_space_for_children_ = new NGConstraintSpace(
-          FromPlatformWritingMode(Style().getWritingMode()),
-          FromPlatformDirection(Style().direction()), *constraint_space,
+
+      space_builder_ =
+          new NGConstraintSpaceBuilder(constraint_space_->WritingMode());
+      space_builder_->SetContainerSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size));
+
+      constraint_space_->SetSize(
+          NGLogicalSize(adjusted_inline_size, adjusted_block_size));
+
       content_size_ = border_and_padding_.block_start;
 
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
-      builder_->SetDirection(constraint_space->Direction());
-      builder_->SetWritingMode(constraint_space->WritingMode());
+      builder_->SetDirection(constraint_space_->Direction());
+      builder_->SetWritingMode(constraint_space_->WritingMode());
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
       current_child_ = first_child_;
+      if (current_child_)
+        space_for_current_child_ = CreateConstraintSpaceForChild(
+            *constraint_space_, *current_child_, space_builder_);
+
       state_ = kStateChildLayout;
       return false;
     }
     case kStateChildLayout: {
       if (current_child_) {
-        if (!LayoutCurrentChild(constraint_space))
+        if (!LayoutCurrentChild())
           return false;
         current_child_ = current_child_->NextSibling();
-        if (current_child_)
+        if (current_child_) {
+          space_for_current_child_ = CreateConstraintSpaceForChild(
+              *constraint_space_, *current_child_, space_builder_);
           return false;
+        }
       }
       state_ = kStateFinalize;
       return false;
@@ -202,7 +227,7 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
 
       // Recompute the block-axis size now that we know our content size.
       LayoutUnit block_size = ComputeBlockSizeForFragment(
-          *constraint_space, Style(), content_size_);
+          *constraint_space_, Style(), content_size_);
 
       builder_->SetBlockSize(block_size)
           .SetInlineOverflow(max_inline_size_)
@@ -217,37 +242,28 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
   return true;
 }
 
-bool NGBlockLayoutAlgorithm::LayoutCurrentChild(
-    const NGConstraintSpace* constraint_space) {
-  constraint_space_for_children_->SetIsNewFormattingContext(
-      IsNewFormattingContextForInFlowBlockLevelChild(*constraint_space,
-                                                     *current_child_->Style()));
-
+bool NGBlockLayoutAlgorithm::LayoutCurrentChild() {
   NGFragment* fragment;
-  if (!current_child_->Layout(constraint_space_for_children_, &fragment))
+  if (!current_child_->Layout(space_for_current_child_, &fragment))
     return false;
 
-  NGBoxStrut child_margins =
-      ComputeMargins(*constraint_space_for_children_, *current_child_->Style(),
-                     constraint_space_for_children_->WritingMode(),
-                     constraint_space_for_children_->Direction());
+  NGBoxStrut child_margins = ComputeMargins(
+      *space_for_current_child_, *current_child_->Style(),
+      constraint_space_->WritingMode(), constraint_space_->Direction());
 
   NGLogicalOffset fragment_offset;
   if (current_child_->Style()->isFloating()) {
     fragment_offset = PositionFloatFragment(*fragment, child_margins);
   } else {
-    // TODO(layout-ng): move ApplyAutoMargins to PositionFragment
-    ApplyAutoMargins(*constraint_space_for_children_, *current_child_->Style(),
+    ApplyAutoMargins(*space_for_current_child_, *current_child_->Style(),
                      *fragment, &child_margins);
-    fragment_offset =
-        PositionFragment(*fragment, child_margins, *constraint_space);
+    fragment_offset = PositionFragment(*fragment, child_margins);
   }
   builder_->AddChild(fragment, fragment_offset);
   return true;
 }
 
 NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
-    const NGConstraintSpace& space,
     const NGBoxStrut& margins,
     const NGFragment& fragment) {
   bool is_zero_height_box = !fragment.BlockSize() && margins.IsEmpty() &&
@@ -260,7 +276,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
   // Calculate borders and padding for the current child.
   NGBoxStrut border_and_padding =
       ComputeBorders(*current_child_->Style()) +
-      ComputePadding(space, *current_child_->Style());
+      ComputePadding(*constraint_space_, *current_child_->Style());
 
   // Collapse BLOCK-START margins if there is no padding or border between
   // parent (current child) and its first in-flow child.
@@ -287,7 +303,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
   // - Compute margins block start for adjoining blocks *including* 1st block.
   // - Compute margins block end for the last block.
   // - Do not set the computed margins to the parent fragment.
-  if (space.IsNewFormattingContext()) {
+  if (constraint_space_->IsNewFormattingContext()) {
     result_margins.block_start = ComputeCollapsedMarginBlockStart(
         prev_child_margin_strut_, curr_margin_strut);
     bool is_last_child = !current_child_->NextSibling();
@@ -315,10 +331,8 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
     const NGFragment& fragment,
-    const NGBoxStrut& child_margins,
-    const NGConstraintSpace& space) {
-  const NGBoxStrut collapsed_margins =
-      CollapseMargins(space, child_margins, fragment);
+    const NGBoxStrut& child_margins) {
+  const NGBoxStrut collapsed_margins = CollapseMargins(child_margins, fragment);
 
   LayoutUnit inline_offset =
       border_and_padding_.inline_start + child_margins.inline_start;
@@ -336,8 +350,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
     const NGBoxStrut& margins) {
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.
-  const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
-      constraint_space_for_children_, fragment, margins);
+  const NGLayoutOpportunity opportunity =
+      FindLayoutOpportunityForFragment(constraint_space_, fragment, margins);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.
@@ -349,7 +363,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
   // Add the float as an exclusion.
   const NGExclusion* exclusion =
       CreateExclusion(fragment, opportunity, float_offset, margins);
-  constraint_space_for_children_->AddExclusion(exclusion);
+  constraint_space_->AddExclusion(exclusion);
 
   return CalculateLogicalOffsetForOpportunity(opportunity, border_and_padding_,
                                               float_offset, margins);
@@ -366,8 +380,10 @@ void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
 DEFINE_TRACE(NGBlockLayoutAlgorithm) {
   NGLayoutAlgorithm::trace(visitor);
   visitor->trace(first_child_);
+  visitor->trace(constraint_space_);
   visitor->trace(builder_);
-  visitor->trace(constraint_space_for_children_);
+  visitor->trace(space_builder_);
+  visitor->trace(space_for_current_child_);
   visitor->trace(current_child_);
 }
 

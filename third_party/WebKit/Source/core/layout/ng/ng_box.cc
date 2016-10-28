@@ -33,16 +33,18 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
   if (CanUseNewLayout()) {
-    if (!algorithm_)
-      algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild());
     // Change the coordinate system of the constraint space.
     NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
         FromPlatformWritingMode(Style()->getWritingMode()),
         FromPlatformDirection(Style()->direction()),
         constraint_space->MutablePhysicalSpace());
 
+    if (!algorithm_)
+      algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild(),
+                                              child_constraint_space);
+
     NGPhysicalFragment* fragment = nullptr;
-    if (!algorithm_->Layout(child_constraint_space, &fragment))
+    if (!algorithm_->Layout(&fragment))
       return false;
     fragment_ = fragment;
 
