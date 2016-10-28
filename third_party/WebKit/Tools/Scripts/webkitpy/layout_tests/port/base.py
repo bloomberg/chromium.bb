@@ -930,7 +930,7 @@ class Port(object):
         """Checks whether the given test is skipped for this port.
 
         This should return True if the test is skipped because the port
-        runs smoke tests only, or because there's a skip test expectation line.
+        runs smoke tests only, or because the
         """
         fs = self.host.filesystem
         if self.default_smoke_test_only():
@@ -938,6 +938,12 @@ class Port(object):
             if fs.exists(smoke_test_filename) and test not in fs.read_text_file(smoke_test_filename):
                 return True
 
+        # In general, Skip lines in the generic expectations file indicate
+        # that the test is temporarily skipped, whereas if the test is skipped
+        # in another file (e.g. WontFix in NeverFixTests), then the test may
+        # always be skipped for this port.
+        # TODO(qyearsley): Simplify this so that it doesn't rely on having
+        # two copies of the test expectations.
         return (SKIP in full_expectations.get_expectations(test) and
                 SKIP not in generic_expectations.get_expectations(test))
 
