@@ -24,6 +24,10 @@ class CrashesDOMHandler;
 class FlashDOMHandler;
 }
 
+namespace arc {
+class ArcOptInPreferenceHandler;
+}
+
 namespace chrome {
 void AttemptRestart();
 namespace android {
@@ -90,7 +94,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  private:
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
-  friend class ArcSupportHost;
+  friend class arc::ArcOptInPreferenceHandler;
   friend class BrowserProcessImpl;
   friend void chrome::AttemptRestart();
   friend class chrome::android::ExternalDataUseObserverBridge;

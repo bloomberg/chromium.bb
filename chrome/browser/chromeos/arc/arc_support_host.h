@@ -5,21 +5,27 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_SUPPORT_HOST_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_SUPPORT_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
-#include "components/prefs/pref_change_registrar.h"
+#include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "ui/display/display_observer.h"
 
+namespace arc {
+class ArcOptInPreferenceHandler;
+}
+
 // Native interface to control ARC support chrome App.
 // TODO(hidehiko): Move more implementation for the UI control from
-// ArcAuthService to this class.
-// TODO(hidehiko,lhchavez,khmel): Extract preference observing into a
-// standalone class so that it can be shared with OOBE flow.
+// ArcAuthService to this class and remove
+// arc::ArcOptInPreferenceHandlerObserver inheritance.
 // TODO(hidehiko,lhchavez): Move this into extensions/ directory, and put it
 // into "arc" namespace. Add unittests at the time.
 class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
+                       public arc::ArcOptInPreferenceHandlerObserver,
                        public display::DisplayObserver {
  public:
   static const char kHostAppId[];
@@ -51,18 +57,13 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  // arc::ArcOptInPreferenceHandlerObserver:
+  void OnMetricsModeChanged(bool enabled, bool managed) override;
+  void OnBackupAndRestoreModeChanged(bool enabled, bool managed) override;
+  void OnLocationServicesModeChanged(bool enabled, bool managed) override;
+
  private:
   bool Initialize();
-  void OnMetricsPreferenceChanged();
-  void OnBackupAndRestorePreferenceChanged();
-  void OnLocationServicePreferenceChanged();
-
-  // Utilities on preference update.
-  void SendMetricsMode();
-  void SendBackupAndRestoreMode();
-  void SendLocationServicesMode();
-  void SendOptionMode(const std::string& action_name,
-                      const std::string& pref_name);
 
   // Sends a preference update to the extension.
   // The message will be
@@ -75,19 +76,13 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
                             bool is_enabled,
                             bool is_managed);
 
-  void EnableMetrics(bool is_enabled);
-  void EnableBackupRestore(bool is_enabled);
-  void EnableLocationService(bool is_enabled);
-
   void DisconnectMessageHost();
 
   // The instance is created and managed by Chrome.
   arc::ArcSupportMessageHost* message_host_ = nullptr;
 
-  // Used to track metrics preference.
-  PrefChangeRegistrar pref_local_change_registrar_;
-  // Used to track backup&restore and location service preference.
-  PrefChangeRegistrar pref_change_registrar_;
+  // Handles preferences and metrics mode.
+  std::unique_ptr<arc::ArcOptInPreferenceHandler> preference_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSupportHost);
 };

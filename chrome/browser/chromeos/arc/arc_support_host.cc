@@ -13,16 +13,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -90,25 +86,6 @@ ArcSupportHost::ArcSupportHost() {
 
   if (!arc_auth_service->IsAllowed())
     return;
-
-  // TODO(hidehiko): This if statement is only for testing. Clean up this.
-  if (g_browser_process->local_state()) {
-    pref_local_change_registrar_.Init(g_browser_process->local_state());
-    pref_local_change_registrar_.Add(
-        metrics::prefs::kMetricsReportingEnabled,
-        base::Bind(&ArcSupportHost::OnMetricsPreferenceChanged,
-                   base::Unretained(this)));
-  }
-
-  pref_change_registrar_.Init(arc_auth_service->profile()->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kArcBackupRestoreEnabled,
-      base::Bind(&ArcSupportHost::OnBackupAndRestorePreferenceChanged,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kArcLocationServiceEnabled,
-      base::Bind(&ArcSupportHost::OnLocationServicePreferenceChanged,
-                 base::Unretained(this)));
 }
 
 ArcSupportHost::~ArcSupportHost() {
@@ -162,12 +139,14 @@ void ArcSupportHost::SetMessageHost(arc::ArcSupportMessageHost* message_host) {
     return;
   }
 
-  SendMetricsMode();
-  SendBackupAndRestoreMode();
-  SendLocationServicesMode();
-
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
   DCHECK(arc_auth_service);
+
+  preference_handler_ = base::MakeUnique<arc::ArcOptInPreferenceHandler>(
+      this, arc_auth_service->profile()->GetPrefs());
+  // This automatically updates all preferences.
+  preference_handler_->Start();
+
   ShowPage(arc_auth_service->ui_page(), arc_auth_service->ui_page_status());
 }
 
@@ -180,6 +159,7 @@ void ArcSupportHost::UnsetMessageHost(
 
 void ArcSupportHost::DisconnectMessageHost() {
   DCHECK(message_host_);
+  preference_handler_.reset();
   display::Screen::GetScreen()->RemoveObserver(this);
   message_host_->SetObserver(nullptr);
   message_host_ = nullptr;
@@ -300,41 +280,16 @@ void ArcSupportHost::OnDisplayMetricsChanged(const display::Display& display,
   message_host_->SendMessage(message);
 }
 
-void ArcSupportHost::OnMetricsPreferenceChanged() {
-  SendMetricsMode();
+void ArcSupportHost::OnMetricsModeChanged(bool enabled, bool managed) {
+  SendPreferenceUpdate(kActionSetMetricsMode, enabled, managed);
 }
 
-void ArcSupportHost::OnBackupAndRestorePreferenceChanged() {
-  SendBackupAndRestoreMode();
+void ArcSupportHost::OnBackupAndRestoreModeChanged(bool enabled, bool managed) {
+  SendPreferenceUpdate(kActionBackupAndRestoreMode, enabled, managed);
 }
 
-void ArcSupportHost::OnLocationServicePreferenceChanged() {
-  SendLocationServicesMode();
-}
-
-void ArcSupportHost::SendMetricsMode() {
-  SendPreferenceUpdate(
-      kActionSetMetricsMode,
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
-      IsMetricsReportingPolicyManaged());
-}
-
-void ArcSupportHost::SendBackupAndRestoreMode() {
-  SendOptionMode(kActionBackupAndRestoreMode, prefs::kArcBackupRestoreEnabled);
-}
-
-void ArcSupportHost::SendLocationServicesMode() {
-  SendOptionMode(kActionLocationServiceMode, prefs::kArcLocationServiceEnabled);
-}
-
-void ArcSupportHost::SendOptionMode(const std::string& action_name,
-                                    const std::string& pref_name) {
-  const arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  DCHECK(arc_auth_service);
-  SendPreferenceUpdate(
-      action_name,
-      arc_auth_service->profile()->GetPrefs()->GetBoolean(pref_name),
-      arc_auth_service->profile()->GetPrefs()->IsManagedPreference(pref_name));
+void ArcSupportHost::OnLocationServicesModeChanged(bool enabled, bool managed) {
+  SendPreferenceUpdate(kActionLocationServiceMode, enabled, managed);
 }
 
 void ArcSupportHost::SendPreferenceUpdate(const std::string& action_name,
@@ -350,24 +305,6 @@ void ArcSupportHost::SendPreferenceUpdate(const std::string& action_name,
   message_host_->SendMessage(message);
 }
 
-void ArcSupportHost::EnableMetrics(bool is_enabled) {
-  ChangeMetricsReportingState(is_enabled);
-}
-
-void ArcSupportHost::EnableBackupRestore(bool is_enabled) {
-  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  DCHECK(arc_auth_service && arc_auth_service->IsAllowed());
-  PrefService* pref_service = arc_auth_service->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kArcBackupRestoreEnabled, is_enabled);
-}
-
-void ArcSupportHost::EnableLocationService(bool is_enabled) {
-  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  DCHECK(arc_auth_service && arc_auth_service->IsAllowed());
-  PrefService* pref_service = arc_auth_service->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kArcLocationServiceEnabled, is_enabled);
-}
-
 void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
   std::string event;
   if (!message.GetString(kEvent, &event)) {
@@ -378,6 +315,8 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
   // TODO(hidehiko): Replace by Observer.
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
   DCHECK(arc_auth_service);
+
+  DCHECK(preference_handler_);
 
   if (event == kEventOnWindowClosed) {
     arc_auth_service->CancelAuthCode();
@@ -397,9 +336,9 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
                            &is_backup_restore_enabled) &&
         message.GetBoolean(kIsLocationServiceEnabled,
                            &is_location_service_enabled)) {
-      EnableMetrics(is_metrics_enabled);
-      EnableBackupRestore(is_backup_restore_enabled);
-      EnableLocationService(is_location_service_enabled);
+      preference_handler_->EnableMetrics(is_metrics_enabled);
+      preference_handler_->EnableBackupRestore(is_backup_restore_enabled);
+      preference_handler_->EnableLocationService(is_location_service_enabled);
       arc_auth_service->StartLso();
     } else {
       NOTREACHED();
