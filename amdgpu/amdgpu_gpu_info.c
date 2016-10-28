@@ -230,6 +230,8 @@ drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 int amdgpu_query_gpu_info(amdgpu_device_handle dev,
 			struct amdgpu_gpu_info *info)
 {
+	if ((dev == NULL) || (info == NULL))
+		return -EINVAL;
 	/* Get ASIC info*/
 	*info = dev->info;
 
