@@ -25,7 +25,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/static_cookie_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,7 +112,7 @@ class TesterForType {
   }
 
  private:
-  syncable_prefs::TestingPrefServiceSyncable* prefs_;
+  sync_preferences::TestingPrefServiceSyncable* prefs_;
   HostContentSettingsMap* host_content_settings_map_;
   ContentSettingsType content_type_;
   const char* policy_default_setting_;
@@ -1007,7 +1007,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -1065,7 +1065,7 @@ TEST_F(HostContentSettingsMapTest,
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   // Set url for JavaScript setting.
@@ -1097,7 +1097,7 @@ TEST_F(HostContentSettingsMapTest,
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   // Block all JavaScript.
@@ -1139,7 +1139,7 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   // Set user defined default-content-setting for Cookies.
@@ -1170,7 +1170,7 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,

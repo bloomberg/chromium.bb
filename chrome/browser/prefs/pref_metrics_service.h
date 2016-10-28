@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/syncable_prefs/synced_pref_change_registrar.h"
+#include "components/sync_preferences/synced_pref_change_registrar.h"
 
 class PrefRegistrySimple;
 
@@ -89,7 +89,7 @@ class PrefMetricsService : public KeyedService {
   PrefService* prefs_;
   PrefService* local_state_;
 
-  std::unique_ptr<syncable_prefs::SyncedPrefChangeRegistrar>
+  std::unique_ptr<sync_preferences::SyncedPrefChangeRegistrar>
       synced_pref_change_registrar_;
 
   base::WeakPtrFactory<PrefMetricsService> weak_factory_;

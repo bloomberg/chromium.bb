@@ -21,7 +21,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -38,7 +38,7 @@ class PolicyProviderTest : public testing::Test {
 
 TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
   TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
@@ -66,7 +66,7 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
 TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
@@ -92,7 +92,7 @@ TEST_F(PolicyProviderTest, ManagedDefaultPluginSettingsExperiment) {
                                           std::string());
 
   TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
@@ -126,7 +126,7 @@ TEST_F(PolicyProviderTest, ManagedDefaultPluginSettingsExperiment) {
 // if the managed setting is removed.
 TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
   TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
@@ -154,7 +154,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
 
 TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   base::ListValue* value = new base::ListValue();
@@ -210,7 +210,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
 
 TEST_F(PolicyProviderTest, ResourceIdentifier) {
   TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   base::ListValue* value = new base::ListValue();
@@ -245,7 +245,7 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
 
 TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   TestingProfile profile;
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   PolicyProvider provider(prefs);

@@ -32,7 +32,7 @@
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +56,7 @@ class SigninGlobalErrorTest : public testing::Test {
     testing_factories.push_back(std::make_pair(
         SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
     profile_ = profile_manager_.CreateTestingProfile(
-        "Person 1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories);
 
     SigninManagerFactory::GetForProfile(profile())

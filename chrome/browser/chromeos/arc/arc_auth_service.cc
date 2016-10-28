@@ -40,7 +40,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -507,7 +507,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 }
 
 void ArcAuthService::OnIsSyncingChanged() {
-  syncable_prefs::PrefServiceSyncable* const pref_service_syncable =
+  sync_preferences::PrefServiceSyncable* const pref_service_syncable =
       PrefServiceSyncableFromProfile(profile_);
   if (!pref_service_syncable->IsSyncing())
     return;
@@ -526,7 +526,7 @@ void ArcAuthService::OnIsSyncingChanged() {
 void ArcAuthService::Shutdown() {
   ShutdownBridgeAndCloseUI();
   if (profile_) {
-    syncable_prefs::PrefServiceSyncable* pref_service_syncable =
+    sync_preferences::PrefServiceSyncable* pref_service_syncable =
         PrefServiceSyncableFromProfile(profile_);
     pref_service_syncable->RemoveObserver(this);
     pref_service_syncable->RemoveSyncedPrefObserver(prefs::kArcEnabled, this);

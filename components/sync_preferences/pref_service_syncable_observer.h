@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_OBSERVER_H_
-#define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_OBSERVER_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_OBSERVER_H_
+#define COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_OBSERVER_H_
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 class PrefServiceSyncableObserver {
  public:
@@ -16,6 +16,6 @@ class PrefServiceSyncableObserver {
   virtual ~PrefServiceSyncableObserver() {}
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_OBSERVER_H_
+#endif  // COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_OBSERVER_H_

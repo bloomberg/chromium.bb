@@ -77,9 +77,9 @@
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -332,7 +332,7 @@ TestingProfile::TestingProfile(
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     TestingProfile* parent,
     bool guest_session,
     const std::string& supervised_user_id,
@@ -675,7 +675,7 @@ scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
-syncable_prefs::TestingPrefServiceSyncable*
+sync_preferences::TestingPrefServiceSyncable*
 TestingProfile::GetTestingPrefService() {
   DCHECK(prefs_);
   DCHECK(testing_prefs_);
@@ -777,7 +777,7 @@ net::CookieStore* TestingProfile::GetCookieStore() {
 
 void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
-  testing_prefs_ = new syncable_prefs::TestingPrefServiceSyncable();
+  testing_prefs_ = new sync_preferences::TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
   user_prefs::UserPrefs::Set(this, prefs_.get());
   chrome::RegisterUserProfilePrefs(testing_prefs_->registry());
@@ -786,7 +786,7 @@ void TestingProfile::CreateTestingPrefService() {
 void TestingProfile::CreatePrefServiceForSupervisedUser() {
   DCHECK(!prefs_.get());
   DCHECK(!supervised_user_id_.empty());
-  syncable_prefs::PrefServiceMockFactory factory;
+  sync_preferences::PrefServiceMockFactory factory;
   SupervisedUserSettingsService* supervised_user_settings =
       SupervisedUserSettingsServiceFactory::GetForProfile(this);
   scoped_refptr<PrefStore> supervised_user_prefs =
@@ -1039,7 +1039,7 @@ void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
 #endif
 
 void TestingProfile::Builder::SetPrefService(
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs) {
   pref_service_ = std::move(prefs);
 }
 

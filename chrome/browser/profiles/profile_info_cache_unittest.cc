@@ -28,7 +28,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -492,7 +492,7 @@ TEST_F(ProfileInfoCacheTest, CreateSupervisedTestingProfile) {
   testing_profile_manager_.CreateTestingProfile("default");
   base::string16 supervised_user_name = ASCIIToUTF16("Supervised User");
   testing_profile_manager_.CreateTestingProfile(
-      "test1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "test1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       supervised_user_name, 0, "TEST_ID", TestingProfile::TestingFactories());
   for (size_t i = 0; i < GetCache()->GetNumberOfProfiles(); i++) {
     bool is_supervised =

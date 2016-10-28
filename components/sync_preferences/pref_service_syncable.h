@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_H_
-#define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_H_
+#define COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_H_
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/syncable_prefs/pref_model_associator.h"
-#include "components/syncable_prefs/synced_pref_observer.h"
+#include "components/sync_preferences/pref_model_associator.h"
+#include "components/sync_preferences/synced_pref_observer.h"
 
 namespace syncer {
 class SyncableService;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 class PrefModelAssociatorClient;
 class PrefServiceSyncableObserver;
@@ -116,6 +117,6 @@ class PrefServiceSyncable : public PrefService {
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncable);
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_H_
+#endif  // COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_H_

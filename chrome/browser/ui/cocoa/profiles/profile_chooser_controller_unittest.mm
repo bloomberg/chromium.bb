@@ -34,7 +34,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 const std::string kGaiaId = "gaiaid-user@gmail.com";
 const std::string kEmail = "user@gmail.com";
@@ -64,10 +64,10 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
         browser()->profile(), gcm::FakeGCMProfileService::Build);
 
     testing_profile_manager()->CreateTestingProfile(
-        "test1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "test1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::ASCIIToUTF16("Test 1"), 0, std::string(), testing_factories());
     testing_profile_manager()->CreateTestingProfile(
-        "test2", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "test2", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::ASCIIToUTF16("Test 2"), 1, std::string(),
         TestingProfile::TestingFactories());
 
@@ -317,11 +317,11 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
   // Add two extra profiles, to make sure sorting is alphabetical and not
   // by order of creation.
   testing_profile_manager()->CreateTestingProfile(
-      "test3", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "test3", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::ASCIIToUTF16("New Profile"), 1, std::string(),
       TestingProfile::TestingFactories());
   testing_profile_manager()->CreateTestingProfile(
-      "test4", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "test4", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::ASCIIToUTF16("Another Test"), 1, std::string(),
       TestingProfile::TestingFactories());
   StartFastUserSwitcher();

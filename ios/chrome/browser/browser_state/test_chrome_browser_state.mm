@@ -27,8 +27,8 @@
 #include "components/history/ios/browser/history_database_helper.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
 #include "ios/chrome/browser/application_context.h"
@@ -129,7 +129,7 @@ TestChromeBrowserState::TestChromeBrowserState(
 
 TestChromeBrowserState::TestChromeBrowserState(
     const base::FilePath& path,
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     const TestingFactories& testing_factories,
     const RefcountedTestingFactories& refcounted_testing_factories)
     : state_path_(path),
@@ -187,7 +187,7 @@ void TestChromeBrowserState::Init() {
     prefs_ =
         CreateIncognitoBrowserStatePrefs(original_browser_state_->prefs_.get());
   } else {
-    testing_prefs_ = new syncable_prefs::TestingPrefServiceSyncable();
+    testing_prefs_ = new sync_preferences::TestingPrefServiceSyncable();
     RegisterBrowserStatePrefs(testing_prefs_->registry());
     prefs_.reset(testing_prefs_);
   }
@@ -378,7 +378,7 @@ void TestChromeBrowserState::DestroyHistoryService() {
   run_loop.Run();
 }
 
-syncable_prefs::TestingPrefServiceSyncable*
+sync_preferences::TestingPrefServiceSyncable*
 TestChromeBrowserState::GetTestingPrefService() {
   DCHECK(prefs_);
   DCHECK(testing_prefs_);
@@ -409,7 +409,7 @@ void TestChromeBrowserState::Builder::SetPath(const base::FilePath& path) {
 }
 
 void TestChromeBrowserState::Builder::SetPrefService(
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs) {
   DCHECK(!build_called_);
   pref_service_ = std::move(prefs);
 }

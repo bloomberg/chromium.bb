@@ -10,25 +10,26 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 #if defined(OS_ANDROID)
 #include "components/proxy_config/proxy_config_pref_names.h"
 #endif
 
-syncable_prefs::PrefServiceSyncable* PrefServiceSyncableFromProfile(
+sync_preferences::PrefServiceSyncable* PrefServiceSyncableFromProfile(
     Profile* profile) {
-  return static_cast<syncable_prefs::PrefServiceSyncable*>(profile->GetPrefs());
+  return static_cast<sync_preferences::PrefServiceSyncable*>(
+      profile->GetPrefs());
 }
 
-syncable_prefs::PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(
+sync_preferences::PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(
     Profile* profile) {
-  return static_cast<syncable_prefs::PrefServiceSyncable*>(
+  return static_cast<sync_preferences::PrefServiceSyncable*>(
       profile->GetOffTheRecordPrefs());
 }
 
-syncable_prefs::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
-    syncable_prefs::PrefServiceSyncable* pref_service,
+sync_preferences::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
+    sync_preferences::PrefServiceSyncable* pref_service,
     PrefStore* incognito_extension_pref_store) {
   // List of keys that cannot be changed in the user prefs file by the incognito
   // profile.  All preferences that store information about the browsing history

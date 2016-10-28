@@ -90,8 +90,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/string_ordinal.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/indexed_db_context.h"
@@ -788,7 +788,8 @@ class ExtensionServiceTest
   }
 
   typedef extensions::ExtensionManagementPrefUpdater<
-      syncable_prefs::TestingPrefServiceSyncable> ManagementPrefUpdater;
+      sync_preferences::TestingPrefServiceSyncable>
+      ManagementPrefUpdater;
 };
 
 // Receives notifications from a PackExtensionJob, indicating either that

@@ -17,7 +17,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 CocoaProfileTest::CocoaProfileTest()
@@ -56,7 +56,7 @@ void CocoaProfileTest::SetUp() {
   ASSERT_TRUE(profile_manager_.SetUp());
 
   profile_ = profile_manager_.CreateTestingProfile(
-      "Person 1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories_);
   ASSERT_TRUE(profile_);
 

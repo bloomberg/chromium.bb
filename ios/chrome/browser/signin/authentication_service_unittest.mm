@@ -15,8 +15,8 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -128,11 +128,11 @@ class AuthenticationServiceTest : public PlatformTest,
         ->AddObserver(this);
   }
 
-  std::unique_ptr<syncable_prefs::PrefServiceSyncable> CreatePrefService() {
-    syncable_prefs::PrefServiceMockFactory factory;
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
+    sync_preferences::PrefServiceMockFactory factory;
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs =
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs =
         factory.CreateSyncable(registry.get());
     RegisterBrowserStatePrefs(registry.get());
     return prefs;

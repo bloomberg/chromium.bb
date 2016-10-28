@@ -35,7 +35,7 @@ source_set("prefs") {
     "//components/ssl_config",
     "//components/strings",
     "//components/sync",
-    "//components/syncable_prefs",
+    "//components/sync_preferences",
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/update_client",

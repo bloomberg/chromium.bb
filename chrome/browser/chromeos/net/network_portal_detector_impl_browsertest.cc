@@ -25,7 +25,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"

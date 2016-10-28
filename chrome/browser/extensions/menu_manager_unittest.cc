@@ -22,7 +22,7 @@
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/test_browser_thread.h"

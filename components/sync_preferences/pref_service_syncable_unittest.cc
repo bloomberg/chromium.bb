@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -23,15 +25,15 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/syncable_prefs/pref_model_associator.h"
-#include "components/syncable_prefs/pref_model_associator_client.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_model_associator.h"
+#include "components/sync_preferences/pref_model_associator_client.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::SyncChange;
 using syncer::SyncData;
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 namespace {
 
@@ -80,20 +82,18 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
       output_->insert(output_->end(), change_list.begin(), change_list.end());
     if (fail_next_) {
       fail_next_ = false;
-      return syncer::SyncError(
-          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "Error",
-          syncer::PREFERENCES);
+      return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                               "Error", syncer::PREFERENCES);
     }
     return syncer::SyncError();
   }
 
-  void FailNextProcessSyncChanges() {
-    fail_next_ = true;
-  }
+  void FailNextProcessSyncChanges() { fail_next_ = true; }
 
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
     return syncer::SyncDataList();
   }
+
  private:
   syncer::SyncChangeList* output_;
   bool fail_next_;
@@ -111,15 +111,12 @@ class PrefServiceSyncableTest : public testing::Test {
     prefs_.registry()->RegisterStringPref(kUnsyncedPreferenceName,
                                           kUnsyncedPreferenceDefaultValue);
     prefs_.registry()->RegisterStringPref(
-        kStringPrefName,
-        std::string(),
+        kStringPrefName, std::string(),
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
     prefs_.registry()->RegisterListPref(
-        kListPrefName,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+        kListPrefName, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
     prefs_.registry()->RegisterStringPref(
-        kDefaultCharsetPrefName,
-        kDefaultCharsetValue,
+        kDefaultCharsetPrefName, kDefaultCharsetValue,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(
@@ -140,13 +137,9 @@ class PrefServiceSyncableTest : public testing::Test {
     pref_one->set_name(name);
     pref_one->set_value(serialized);
     return syncer::SyncChange(
-        FROM_HERE,
-        type,
+        FROM_HERE, type,
         syncer::SyncData::CreateRemoteData(
-            id,
-            entity,
-            base::Time(),
-            syncer::AttachmentIdList(),
+            id, entity, base::Time(), syncer::AttachmentIdList(),
             syncer::AttachmentServiceProxyForTest::Create()));
   }
 
@@ -161,9 +154,7 @@ class PrefServiceSyncableTest : public testing::Test {
     pref_one->set_name(name);
     pref_one->set_value(serialized);
     out->push_back(SyncData::CreateRemoteData(
-        ++next_pref_remote_sync_node_id_,
-        one,
-        base::Time(),
+        ++next_pref_remote_sync_node_id_, one, base::Time(),
         syncer::AttachmentIdList(),
         syncer::AttachmentServiceProxyForTest::Create()));
   }
@@ -228,12 +219,12 @@ TEST_F(PrefServiceSyncableTest, CreatePrefSyncData) {
 
   const PrefService::Preference* pref = prefs_.FindPreference(kStringPrefName);
   syncer::SyncData sync_data;
-  EXPECT_TRUE(pref_sync_service_->CreatePrefSyncData(pref->name(),
-      *pref->GetValue(), &sync_data));
+  EXPECT_TRUE(pref_sync_service_->CreatePrefSyncData(
+      pref->name(), *pref->GetValue(), &sync_data));
   EXPECT_EQ(std::string(kStringPrefName),
             syncer::SyncDataLocal(sync_data).GetTag());
-  const sync_pb::PreferenceSpecifics& specifics(sync_data.GetSpecifics().
-      preference());
+  const sync_pb::PreferenceSpecifics& specifics(
+      sync_data.GetSpecifics().preference());
   EXPECT_EQ(std::string(kStringPrefName), specifics.name());
 
   std::unique_ptr<base::Value> value =
@@ -288,8 +279,7 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   urls_to_restore.AppendString(kExampleUrl2);
   AddToRemoteDataList(kListPrefName, urls_to_restore, &in);
   AddToRemoteDataList(kDefaultCharsetPrefName,
-                      base::StringValue(kNonDefaultCharsetValue),
-                      &in);
+                      base::StringValue(kNonDefaultCharsetValue), &in);
   InitWithSyncDataTakeOutput(in, &out);
 
   ASSERT_FALSE(FindValue(kStringPrefName, out).get());
@@ -354,8 +344,8 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionUpdate) {
 
   base::StringValue expected(kExampleUrl1);
   syncer::SyncChangeList list;
-  list.push_back(MakeRemoteChange(
-      1, kStringPrefName, expected, SyncChange::ACTION_UPDATE));
+  list.push_back(MakeRemoteChange(1, kStringPrefName, expected,
+                                  SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
 
   const base::Value& actual = GetPreferenceValue(kStringPrefName);
@@ -367,22 +357,22 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionAdd) {
 
   base::StringValue expected(kExampleUrl0);
   syncer::SyncChangeList list;
-  list.push_back(MakeRemoteChange(
-      1, kStringPrefName, expected, SyncChange::ACTION_ADD));
+  list.push_back(
+      MakeRemoteChange(1, kStringPrefName, expected, SyncChange::ACTION_ADD));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
 
   const base::Value& actual = GetPreferenceValue(kStringPrefName);
   EXPECT_TRUE(expected.Equals(&actual));
-  EXPECT_EQ(1U,
-      pref_sync_service_->registered_preferences().count(kStringPrefName));
+  EXPECT_EQ(
+      1U, pref_sync_service_->registered_preferences().count(kStringPrefName));
 }
 
 TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeUnknownPreference) {
   InitWithNoSyncData();
   syncer::SyncChangeList list;
   base::StringValue expected(kExampleUrl0);
-  list.push_back(MakeRemoteChange(
-      1, "unknown preference", expected, SyncChange::ACTION_UPDATE));
+  list.push_back(MakeRemoteChange(1, "unknown preference", expected,
+                                  SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
   // Nothing interesting happens on the client when it gets an update
   // of an unknown preference.  We just should not crash.
@@ -406,8 +396,8 @@ TEST_F(PrefServiceSyncableTest, ManagedPreferences) {
   // value.
   base::StringValue sync_value("http://crbug.com");
   syncer::SyncChangeList list;
-  list.push_back(MakeRemoteChange(
-      1, kStringPrefName, sync_value, SyncChange::ACTION_UPDATE));
+  list.push_back(MakeRemoteChange(1, kStringPrefName, sync_value,
+                                  SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
 
   EXPECT_TRUE(managed_value.Equals(prefs_.GetManagedPref(kStringPrefName)));
@@ -449,9 +439,8 @@ TEST_F(PrefServiceSyncableTest, ManagedListPreferences) {
   base::ListValue sync_value;
   sync_value.AppendString("http://crbug.com");
   syncer::SyncChangeList list;
-  list.push_back(MakeRemoteChange(
-      1, kListPrefName, sync_value,
-      SyncChange::ACTION_UPDATE));
+  list.push_back(MakeRemoteChange(1, kListPrefName, sync_value,
+                                  SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
 
   EXPECT_TRUE(managed_value.Equals(prefs_.GetManagedPref(kListPrefName)));
@@ -501,8 +490,8 @@ TEST_F(PrefServiceSyncableTest, DynamicManagedPreferencesWithSyncChange) {
   // Change the sync value.
   base::StringValue sync_value("http://example.com/sync");
   syncer::SyncChangeList list;
-  list.push_back(MakeRemoteChange(
-      1, kStringPrefName, sync_value, SyncChange::ACTION_UPDATE));
+  list.push_back(MakeRemoteChange(1, kStringPrefName, sync_value,
+                                  SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
 
   // The pref value should still be the one dictated by policy.
@@ -552,8 +541,8 @@ TEST_F(PrefServiceSyncableTest, DeletePreference) {
 
   std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
   syncer::SyncChangeList list;
-  list.push_back(MakeRemoteChange(
-      1, kStringPrefName, *null_value, SyncChange::ACTION_DELETE));
+  list.push_back(MakeRemoteChange(1, kStringPrefName, *null_value,
+                                  SyncChange::ACTION_DELETE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_TRUE(pref->IsDefaultValue());
 }
@@ -571,4 +560,4 @@ TEST_F(PrefServiceSyncableTest, RegisterMergeDataFinishedCallback) {
 
 }  // namespace
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences

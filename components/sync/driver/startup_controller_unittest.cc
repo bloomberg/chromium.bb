@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -81,7 +81,7 @@ class StartupControllerTest : public testing::Test {
   bool can_start_;
   bool started_;
   base::MessageLoop message_loop_;
-  syncable_prefs::TestingPrefServiceSyncable pref_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
   std::unique_ptr<StartupController> controller_;
 };

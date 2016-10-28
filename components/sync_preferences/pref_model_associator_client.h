@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_CLIENT_H_
-#define COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_CLIENT_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_CLIENT_H_
+#define COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_CLIENT_H_
 
 #include <string>
 
 #include "base/macros.h"
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 // This class allows the embedder to configure the PrefModelAssociator to
 // have a different behaviour when receiving preference synchronisations
@@ -34,6 +34,6 @@ class PrefModelAssociatorClient {
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociatorClient);
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_CLIENT_H_
+#endif  // COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_CLIENT_H_

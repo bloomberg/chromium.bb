@@ -25,8 +25,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -76,13 +76,13 @@ class RecommendationRestorerTest : public testing::Test {
       disable_purge_for_testing_;
 
   TestingPrefStore* recommended_prefs_;  // Not owned.
-  syncable_prefs::TestingPrefServiceSyncable* prefs_;  // Not owned.
+  sync_preferences::TestingPrefServiceSyncable* prefs_;  // Not owned.
   RecommendationRestorer* restorer_;     // Not owned.
 
   scoped_refptr<base::TestSimpleTaskRunner> runner_;
 
  private:
-  std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_owner_;
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_owner_;
 
   TestingProfileManager profile_manager_;
 
@@ -91,7 +91,7 @@ class RecommendationRestorerTest : public testing::Test {
 
 RecommendationRestorerTest::RecommendationRestorerTest()
     : recommended_prefs_(new TestingPrefStore),
-      prefs_(new syncable_prefs::TestingPrefServiceSyncable(
+      prefs_(new sync_preferences::TestingPrefServiceSyncable(
           new TestingPrefStore,
           new TestingPrefStore,
           recommended_prefs_,
@@ -174,7 +174,7 @@ void RecommendationRestorerTest::NotifyOfUserActivity() {
 void RecommendationRestorerTest::VerifyPrefFollowsUser(
     const char* pref_name,
     const base::Value& expected_value) const {
-  const syncable_prefs::PrefServiceSyncable::Preference* pref =
+  const sync_preferences::PrefServiceSyncable::Preference* pref =
       prefs_->FindPreference(pref_name);
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->HasUserSetting());
@@ -201,7 +201,7 @@ void RecommendationRestorerTest::VerifyPrefsFollowUser() const {
 void RecommendationRestorerTest::VerifyPrefFollowsRecommendation(
     const char* pref_name,
     const base::Value& expected_value) const {
-  const syncable_prefs::PrefServiceSyncable::Preference* pref =
+  const sync_preferences::PrefServiceSyncable::Preference* pref =
       prefs_->FindPreference(pref_name);
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->IsRecommended());

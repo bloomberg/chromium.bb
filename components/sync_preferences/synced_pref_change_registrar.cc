@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/syncable_prefs/synced_pref_change_registrar.h"
+#include "components/sync_preferences/synced_pref_change_registrar.h"
 
 #include "base/bind.h"
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 namespace {
 
@@ -28,19 +28,19 @@ SyncedPrefChangeRegistrar::~SyncedPrefChangeRegistrar() {
   RemoveAll();
 }
 
-void SyncedPrefChangeRegistrar::Add(const char *path,
+void SyncedPrefChangeRegistrar::Add(const char* path,
                                     const ChangeCallback& callback) {
   Add(path, base::Bind(InvokeUnnamedCallback, callback));
 }
 
-void SyncedPrefChangeRegistrar::Add(const char *path,
+void SyncedPrefChangeRegistrar::Add(const char* path,
                                     const NamedChangeCallback& callback) {
   DCHECK(!IsObserved(path));
   observers_[path] = callback;
   pref_service_->AddSyncedPrefObserver(path, this);
 }
 
-void SyncedPrefChangeRegistrar::Remove(const char *path) {
+void SyncedPrefChangeRegistrar::Remove(const char* path) {
   observers_.erase(path);
   pref_service_->RemoveSyncedPrefObserver(path, this);
 }
@@ -67,4 +67,4 @@ void SyncedPrefChangeRegistrar::OnSyncedPrefChanged(const std::string& path,
   iter->second.Run(path, from_sync);
 }
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences

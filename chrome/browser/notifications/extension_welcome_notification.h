@@ -12,7 +12,7 @@
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
-#include "components/syncable_prefs/pref_service_syncable_observer.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace base {
@@ -44,7 +44,7 @@ class Profile;
 // This class expects to be created and called from the UI thread.
 class ExtensionWelcomeNotification
     : public KeyedService,
-      public syncable_prefs::PrefServiceSyncableObserver {
+      public sync_preferences::PrefServiceSyncableObserver {
  public:
   // Allows for overriding global calls.
   class Delegate {
@@ -77,7 +77,7 @@ class ExtensionWelcomeNotification
   static ExtensionWelcomeNotification* Create(Profile* const profile,
                                               Delegate* const delegate);
 
-  // syncable_prefs::PrefServiceSyncableObserver
+  // sync_preferences::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
 
   // Adds in the welcome notification if required for components built

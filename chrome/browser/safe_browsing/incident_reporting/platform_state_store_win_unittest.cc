@@ -18,7 +18,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,8 +62,8 @@ class PlatformStateStoreWinTest : public ::testing::Test {
         new_profile ? PersistentPrefStore::PREF_READ_ERROR_NO_FILE
                     : PersistentPrefStore::PREF_READ_ERROR_NONE);
     // Ownership of |user_pref_store| is passed to the service.
-    std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
-        new syncable_prefs::TestingPrefServiceSyncable(
+    std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs(
+        new sync_preferences::TestingPrefServiceSyncable(
             new TestingPrefStore(), user_pref_store, new TestingPrefStore(),
             new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl()));
     chrome::RegisterUserProfilePrefs(prefs->registry());

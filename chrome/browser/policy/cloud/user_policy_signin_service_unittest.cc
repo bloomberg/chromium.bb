@@ -38,7 +38,7 @@
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -155,8 +155,8 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     // Create a testing profile with cloud-policy-on-signin enabled, and bring
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
-    std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
-        new syncable_prefs::TestingPrefServiceSyncable());
+    std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs(
+        new sync_preferences::TestingPrefServiceSyncable());
     chrome::RegisterUserProfilePrefs(prefs->registry());
 
     // UserCloudPolicyManagerFactory isn't a real
@@ -168,7 +168,8 @@ class UserPolicySigninServiceTest : public testing::Test {
         BuildCloudPolicyManager);
     TestingProfile::Builder builder;
     builder.SetPrefService(
-        std::unique_ptr<syncable_prefs::PrefServiceSyncable>(std::move(prefs)));
+        std::unique_ptr<sync_preferences::PrefServiceSyncable>(
+            std::move(prefs)));
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               BuildFakeSigninManagerBase);
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),

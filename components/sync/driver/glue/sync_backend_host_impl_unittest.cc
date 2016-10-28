@@ -37,8 +37,8 @@
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/test/callback_counter.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -267,7 +267,7 @@ class SyncBackendHostTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
-  syncable_prefs::TestingPrefServiceSyncable pref_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   StrictMock<MockSyncFrontend> mock_frontend_;
   SyncCredentials credentials_;
   BackendSyncClient sync_client_;

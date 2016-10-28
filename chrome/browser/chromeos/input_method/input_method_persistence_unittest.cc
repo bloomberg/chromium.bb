@@ -19,7 +19,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,7 +71,7 @@ class InputMethodPersistenceTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  syncable_prefs::TestingPrefServiceSyncable* mock_user_prefs_;
+  sync_preferences::TestingPrefServiceSyncable* mock_user_prefs_;
   MockInputMethodManager mock_manager_;
   TestingProfileManager mock_profile_manager_;
   chromeos::FakeChromeUserManager* fake_user_manager_;

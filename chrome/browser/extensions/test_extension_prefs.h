@@ -22,7 +22,7 @@ class DictionaryValue;
 class SequencedTaskRunner;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
@@ -98,7 +98,7 @@ class TestExtensionPrefs {
   base::FilePath preferences_file_;
   base::FilePath extensions_dir_;
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
-  std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service_;
   std::unique_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

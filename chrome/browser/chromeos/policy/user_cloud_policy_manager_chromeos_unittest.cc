@@ -41,7 +41,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -102,7 +102,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
                        BuildFakeProfileOAuth2TokenService));
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
-        std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16(""), 0, std::string(), factories);
     // Usually the signin Profile and the main Profile are separate, but since
     // the signin Profile is an OTR Profile then for this test it suffices to

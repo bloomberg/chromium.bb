@@ -31,7 +31,7 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -205,7 +205,7 @@ class PreferencesTest : public testing::Test {
   // Not owned.
   const user_manager::User* test_user_;
   TestingProfile* test_profile_;
-  syncable_prefs::TestingPrefServiceSyncable* pref_service_;
+  sync_preferences::TestingPrefServiceSyncable* pref_service_;
   input_method::MyMockInputMethodManager* mock_manager_;
 
  private:

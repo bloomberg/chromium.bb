@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 class AvatarIconControllerTest : public CocoaProfileTest {
  public:

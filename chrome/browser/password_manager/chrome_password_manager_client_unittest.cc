@@ -35,7 +35,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sessions/content/content_record_password_state.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -147,7 +147,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override;
   void TearDown() override;
 
-  syncable_prefs::TestingPrefServiceSyncable* prefs() {
+  sync_preferences::TestingPrefServiceSyncable* prefs() {
     return profile()->GetTestingPrefService();
   }
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
-#define COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_SYNCED_PREF_CHANGE_REGISTRAR_H_
+#define COMPONENTS_SYNC_PREFERENCES_SYNCED_PREF_CHANGE_REGISTRAR_H_
 
 #include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/synced_pref_observer.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/synced_pref_observer.h"
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 // Manages the registration of one or more SyncedPrefObservers on a
 // PrefServiceSyncable. This is modeled after base::PrefChangeRegistrar, and
@@ -56,6 +56,6 @@ class SyncedPrefChangeRegistrar : public SyncedPrefObserver {
   DISALLOW_COPY_AND_ASSIGN(SyncedPrefChangeRegistrar);
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
+#endif  // COMPONENTS_SYNC_PREFERENCES_SYNCED_PREF_CHANGE_REGISTRAR_H_

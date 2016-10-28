@@ -26,8 +26,8 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/sync/model/string_ordinal.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
@@ -118,7 +118,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   }
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-  syncable_prefs::PrefServiceMockFactory factory;
+  sync_preferences::PrefServiceMockFactory factory;
   factory.SetUserPrefsFile(preferences_file_, task_runner_.get());
   factory.set_extension_prefs(
       new ExtensionPrefStore(extension_pref_value_map_.get(), false));

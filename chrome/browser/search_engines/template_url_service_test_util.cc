@@ -15,7 +15,7 @@
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/testing_search_terms_data.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

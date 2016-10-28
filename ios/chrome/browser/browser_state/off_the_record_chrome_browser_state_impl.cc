@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
@@ -19,7 +19,7 @@ OffTheRecordChromeBrowserStateImpl::OffTheRecordChromeBrowserStateImpl(
     const base::FilePath& otr_path)
     : otr_state_path_(otr_path),
       original_chrome_browser_state_(original_chrome_browser_state),
-      prefs_(static_cast<syncable_prefs::PrefServiceSyncable*>(
+      prefs_(static_cast<sync_preferences::PrefServiceSyncable*>(
           original_chrome_browser_state->GetOffTheRecordPrefs())) {
   user_prefs::UserPrefs::Set(this, GetPrefs());
   io_data_.reset(new OffTheRecordChromeBrowserStateIOData::Handle(this));

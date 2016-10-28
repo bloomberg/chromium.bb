@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "components/prefs/json_pref_store.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #include "ios/chrome/browser/net/net_types.h"
@@ -56,8 +56,8 @@ scoped_refptr<base::SequencedTaskRunner> ChromeBrowserState::GetIOTaskRunner() {
                                              web::WebThread::GetBlockingPool());
 }
 
-syncable_prefs::PrefServiceSyncable* ChromeBrowserState::GetSyncablePrefs() {
-  return static_cast<syncable_prefs::PrefServiceSyncable*>(GetPrefs());
+sync_preferences::PrefServiceSyncable* ChromeBrowserState::GetSyncablePrefs() {
+  return static_cast<sync_preferences::PrefServiceSyncable*>(GetPrefs());
 }
 
 TestChromeBrowserState* ChromeBrowserState::AsTestChromeBrowserState() {

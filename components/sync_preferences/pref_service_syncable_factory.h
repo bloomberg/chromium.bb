@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
-#define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_FACTORY_H_
+#define COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_FACTORY_H_
 
 #include <memory>
 
@@ -23,7 +23,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 class PrefModelAssociatorClient;
 class PrefServiceSyncable;
@@ -55,6 +55,6 @@ class PrefServiceSyncableFactory : public PrefServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncableFactory);
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
+#endif  // COMPONENTS_SYNC_PREFERENCES_PREF_SERVICE_SYNCABLE_FACTORY_H_

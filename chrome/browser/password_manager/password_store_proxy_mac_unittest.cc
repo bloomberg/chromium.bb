@@ -21,7 +21,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/mock_apple_keychain.h"
@@ -150,7 +150,7 @@ class PasswordStoreProxyMacTest
 
   base::ScopedTempDir db_dir_;
   scoped_refptr<PasswordStoreProxyMac> store_;
-  syncable_prefs::TestingPrefServiceSyncable testing_prefs_;
+  sync_preferences::TestingPrefServiceSyncable testing_prefs_;
 };
 
 PasswordStoreProxyMacTest::PasswordStoreProxyMacTest() {

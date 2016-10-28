@@ -43,7 +43,7 @@ namespace storage {
 class SpecialStoragePolicy;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 class PrefServiceSyncable;
 class TestingPrefServiceSyncable;
 }
@@ -100,7 +100,7 @@ class TestingProfile : public Profile {
 
     // Sets the PrefService to be used by this profile.
     void SetPrefService(
-        std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs);
+        std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs);
 
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
@@ -129,7 +129,7 @@ class TestingProfile : public Profile {
     bool build_called_;
 
     // Various staging variables where values are held until Build() is invoked.
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service_;
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
 #endif
@@ -164,7 +164,7 @@ class TestingProfile : public Profile {
 #if defined(ENABLE_EXTENSIONS)
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
-                 std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+                 std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
                  TestingProfile* parent,
                  bool guest_session,
                  const std::string& supervised_user_id,
@@ -208,7 +208,7 @@ class TestingProfile : public Profile {
   // Allow setting a profile as Guest after-the-fact to simplify some tests.
   void SetGuestSession(bool guest);
 
-  syncable_prefs::TestingPrefServiceSyncable* GetTestingPrefService();
+  sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
   // Called on the parent of an incognito |profile|. Usually called from the
   // constructor of an incognito TestingProfile, but can also be used by tests
@@ -337,9 +337,9 @@ class TestingProfile : public Profile {
 
  protected:
   base::Time start_time_;
-  std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   // ref only for right type, lifecycle is managed by prefs_
-  syncable_prefs::TestingPrefServiceSyncable* testing_prefs_;
+  sync_preferences::TestingPrefServiceSyncable* testing_prefs_;
 
  private:
   // Creates a temporary directory for use by this profile.

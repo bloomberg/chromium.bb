@@ -5,7 +5,7 @@ include_rules = [
   "+components/prefs",
   "+components/sync",
 
-  # syncable_prefs can be used on all platforms, including iOS. Do not allow
+  # sync_preferences can be used on all platforms, including iOS. Do not allow
   # platform-specific dependencies.
   "-content",
   "-ios",

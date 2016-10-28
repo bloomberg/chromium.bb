@@ -18,7 +18,7 @@ class TestingOffTheRecordDestructionProfile : public TestingProfile {
             base::FilePath(),
             NULL,
             scoped_refptr<ExtensionSpecialStoragePolicy>()
-                std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+                std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
             true,
             TestingFactories()),
         destroyed_otr_profile_(false) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_
-#define COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_H_
+#define COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_H_
 
 #include <map>
 #include <memory>
@@ -19,7 +19,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/syncable_service.h"
-#include "components/syncable_prefs/synced_pref_observer.h"
+#include "components/sync_preferences/synced_pref_observer.h"
 
 namespace base {
 class Value;
@@ -29,7 +29,7 @@ namespace sync_pb {
 class PreferenceSpecifics;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 class PrefModelAssociatorClient;
 class PrefRegistrySyncable;
@@ -38,9 +38,8 @@ class PrefServiceSyncable;
 // Contains all preference sync related logic.
 // TODO(sync): Merge this into PrefService once we separate the profile
 // PrefService from the local state PrefService.
-class PrefModelAssociator
-    : public syncer::SyncableService,
-      public base::NonThreadSafe {
+class PrefModelAssociator : public syncer::SyncableService,
+                            public base::NonThreadSafe {
  public:
   // Constructs a PrefModelAssociator initializing the |client_| and |type_|
   // instance variable. The |client| is not owned by this object and the caller
@@ -143,8 +142,8 @@ class PrefModelAssociator
                             const std::string& pref_name,
                             syncer::SyncChangeList* sync_changes);
 
-  static base::Value* MergeListValues(
-      const base::Value& from_value, const base::Value& to_value);
+  static base::Value* MergeListValues(const base::Value& from_value,
+                                      const base::Value& to_value);
   static base::Value* MergeDictionaryValues(const base::Value& from_value,
                                             const base::Value& to_value);
 
@@ -204,6 +203,6 @@ class PrefModelAssociator
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_
+#endif  // COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_H_

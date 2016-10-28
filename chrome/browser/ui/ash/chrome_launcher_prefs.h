@@ -11,7 +11,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
-#include "components/syncable_prefs/pref_service_syncable_observer.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
 
 class LauncherControllerHelper;
 class PrefService;
@@ -21,7 +21,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
@@ -123,7 +123,7 @@ void SetPinPosition(Profile* profile,
 
 // Used to propagate remote preferences to local during the first run.
 class ChromeLauncherPrefsObserver
-    : public syncable_prefs::PrefServiceSyncableObserver {
+    : public sync_preferences::PrefServiceSyncableObserver {
  public:
   // Creates and returns an instance of ChromeLauncherPrefsObserver if the
   // profile prefs do not contain all the necessary local settings for the
@@ -135,13 +135,13 @@ class ChromeLauncherPrefsObserver
 
  private:
   explicit ChromeLauncherPrefsObserver(
-      syncable_prefs::PrefServiceSyncable* prefs);
+      sync_preferences::PrefServiceSyncable* prefs);
 
-  // syncable_prefs::PrefServiceSyncableObserver:
+  // sync_preferences::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
   // Profile prefs. Not owned.
-  syncable_prefs::PrefServiceSyncable* prefs_;
+  sync_preferences::PrefServiceSyncable* prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherPrefsObserver);
 };

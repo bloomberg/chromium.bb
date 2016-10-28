@@ -27,7 +27,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
@@ -179,7 +179,7 @@ ExtensionWelcomeNotification::~ExtensionWelcomeNotification() {
 
 void ExtensionWelcomeNotification::OnIsSyncingChanged() {
   DCHECK(delayed_notification_);
-  syncable_prefs::PrefServiceSyncable* const pref_service_syncable =
+  sync_preferences::PrefServiceSyncable* const pref_service_syncable =
       PrefServiceSyncableFromProfile(profile_);
   if (pref_service_syncable->IsSyncing()) {
     pref_service_syncable->RemoveObserver(this);
@@ -192,7 +192,7 @@ void ExtensionWelcomeNotification::OnIsSyncingChanged() {
 void ExtensionWelcomeNotification::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
   if ((notification.notifier_id() == notifier_id_) && !delayed_notification_) {
-    syncable_prefs::PrefServiceSyncable* const pref_service_syncable =
+    sync_preferences::PrefServiceSyncable* const pref_service_syncable =
         PrefServiceSyncableFromProfile(profile_);
     if (pref_service_syncable->IsSyncing()) {
       PrefService* const pref_service = profile_->GetPrefs();

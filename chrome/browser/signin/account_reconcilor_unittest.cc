@@ -35,7 +35,7 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_switches.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -188,7 +188,7 @@ void AccountReconcilorTest::SetUp() {
       MockAccountReconcilor::Build));
 
   profile_ = testing_profile_manager_.get()->CreateTestingProfile(
-      "name", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "name", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::UTF8ToUTF16("name"), 0, std::string(), factories);
 
   test_signin_client_ =

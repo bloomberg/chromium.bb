@@ -22,7 +22,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/mock_bookmark_model_observer.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -136,7 +136,7 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  syncable_prefs::TestingPrefServiceSyncable* prefs_;
+  sync_preferences::TestingPrefServiceSyncable* prefs_;
   bookmarks::MockBookmarkModelObserver observer_;
   ManagedBookmarkService* managed_;
   BookmarkModel* model_;

@@ -9,7 +9,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/default_search_pref_test_util.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 
 TemplateURLServiceFactoryTestUtil::TemplateURLServiceFactoryTestUtil(
     TestingProfile* profile)

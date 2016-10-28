@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/syncable_prefs/pref_model_associator.h"
+#include "components/sync_preferences/pref_model_associator.h"
 
 #include <utility>
 
@@ -19,13 +19,13 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/syncable_prefs/pref_model_associator_client.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_model_associator_client.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 using syncer::PREFERENCES;
 using syncer::PRIORITY_PREFERENCES;
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 namespace {
 
@@ -76,8 +76,8 @@ void PrefModelAssociator::InitPrefAndAssociate(
     const syncer::SyncData& sync_pref,
     const std::string& pref_name,
     syncer::SyncChangeList* sync_changes) {
-  const base::Value* user_pref_value = pref_service_->GetUserPrefValue(
-      pref_name.c_str());
+  const base::Value* user_pref_value =
+      pref_service_->GetUserPrefValue(pref_name.c_str());
   VLOG(1) << "Associating preference " << pref_name;
 
   if (sync_pref.IsValid()) {
@@ -121,10 +121,8 @@ void PrefModelAssociator::InitPrefAndAssociate(
           return;
         }
 
-        sync_changes->push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_UPDATE,
-                             sync_data));
+        sync_changes->push_back(syncer::SyncChange(
+            FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
       }
     } else if (!sync_value->IsType(base::Value::TYPE_NULL)) {
       // Only a server value exists. Just set the local user value.
@@ -141,10 +139,8 @@ void PrefModelAssociator::InitPrefAndAssociate(
       LOG(ERROR) << "Failed to update preference.";
       return;
     }
-    sync_changes->push_back(
-        syncer::SyncChange(FROM_HERE,
-                           syncer::SyncChange::ACTION_ADD,
-                           sync_data));
+    sync_changes->push_back(syncer::SyncChange(
+        FROM_HERE, syncer::SyncChange::ACTION_ADD, sync_data));
     synced_preferences_.insert(pref_name);
   }
 
@@ -184,8 +180,7 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
   // knows about.
   for (syncer::SyncDataList::const_iterator sync_iter =
            initial_sync_data.begin();
-       sync_iter != initial_sync_data.end();
-       ++sync_iter) {
+       sync_iter != initial_sync_data.end(); ++sync_iter) {
     DCHECK_EQ(type_, sync_iter->GetDataType());
 
     const sync_pb::PreferenceSpecifics& preference = GetSpecifics(*sync_iter);
@@ -206,9 +201,8 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
 
   // Go through and build sync data for any remaining preferences.
   for (std::set<std::string>::iterator pref_name_iter =
-          remaining_preferences.begin();
-       pref_name_iter != remaining_preferences.end();
-       ++pref_name_iter) {
+           remaining_preferences.begin();
+       pref_name_iter != remaining_preferences.end(); ++pref_name_iter) {
     InitPrefAndAssociate(syncer::SyncData(), *pref_name_iter, &new_changes);
   }
 
@@ -343,16 +337,14 @@ base::Value* PrefModelAssociator::MergeDictionaryValues(
 // not registered locally as syncable and do not inform the syncer of
 // non-user controlled preferences.
 syncer::SyncDataList PrefModelAssociator::GetAllSyncData(
-    syncer::ModelType type)
-    const {
+    syncer::ModelType type) const {
   DCHECK_EQ(type_, type);
   syncer::SyncDataList current_data;
   for (PreferenceSet::const_iterator iter = synced_preferences_.begin();
-       iter != synced_preferences_.end();
-       ++iter) {
+       iter != synced_preferences_.end(); ++iter) {
     std::string name = *iter;
     const PrefService::Preference* pref =
-      pref_service_->FindPreference(name.c_str());
+        pref_service_->FindPreference(name.c_str());
     DCHECK(pref);
     if (!pref->IsUserControlled() || pref->IsDefaultValue())
       continue;  // This is not data we care about.
@@ -369,10 +361,8 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!models_associated_) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Models not yet associated.",
-                            PREFERENCES);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Models not yet associated.", PREFERENCES);
     return error;
   }
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
@@ -425,8 +415,8 @@ base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
   base::JSONReader reader;
   std::unique_ptr<base::Value> value(reader.ReadToValue(preference.value()));
   if (!value.get()) {
-    std::string err = "Failed to deserialize preference value: " +
-        reader.GetErrorMessage();
+    std::string err =
+        "Failed to deserialize preference value: " + reader.GetErrorMessage();
     LOG(ERROR) << err;
     return NULL;
   }
@@ -438,7 +428,7 @@ bool PrefModelAssociator::IsPrefSynced(const std::string& name) const {
 }
 
 void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,
-    SyncedPrefObserver* observer) {
+                                                SyncedPrefObserver* observer) {
   std::unique_ptr<SyncedPrefObserverList>& observers =
       synced_pref_observers_[name];
   if (!observers)
@@ -447,7 +437,8 @@ void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,
   observers->AddObserver(observer);
 }
 
-void PrefModelAssociator::RemoveSyncedPrefObserver(const std::string& name,
+void PrefModelAssociator::RemoveSyncedPrefObserver(
+    const std::string& name,
     SyncedPrefObserver* observer) {
   auto observer_iter = synced_pref_observers_.find(name);
   if (observer_iter == synced_pref_observers_.end())
@@ -517,10 +508,8 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
       LOG(ERROR) << "Failed to update preference.";
       return;
     }
-    changes.push_back(
-        syncer::SyncChange(FROM_HERE,
-                           syncer::SyncChange::ACTION_UPDATE,
-                           sync_data));
+    changes.push_back(syncer::SyncChange(
+        FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
   }
 
   syncer::SyncError error =
@@ -542,4 +531,4 @@ void PrefModelAssociator::NotifySyncedPrefObservers(const std::string& path,
     observer.OnSyncedPrefChanged(path, from_sync);
 }
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences

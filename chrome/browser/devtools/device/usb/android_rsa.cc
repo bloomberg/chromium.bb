@@ -14,7 +14,7 @@
 #include "base/base64.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
 #include "net/cert/asn1_util.h"

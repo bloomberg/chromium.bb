@@ -22,7 +22,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
@@ -40,15 +40,15 @@ std::unique_ptr<PrefService> CreateLocalState(
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<PrefRegistry>& pref_registry);
 
-std::unique_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
+std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry);
 
 // Creates an incognito copy of |pref_service| that shares most prefs but uses
 // a fresh non-persistent overlay for the user pref store.
-std::unique_ptr<syncable_prefs::PrefServiceSyncable>
+std::unique_ptr<sync_preferences::PrefServiceSyncable>
 CreateIncognitoBrowserStatePrefs(
-    syncable_prefs::PrefServiceSyncable* main_pref_store);
+    sync_preferences::PrefServiceSyncable* main_pref_store);
 
 #endif  // IOS_CHROME_BROWSER_PREFS_IOS_CHROME_PREF_SERVICE_FACTORY_H_

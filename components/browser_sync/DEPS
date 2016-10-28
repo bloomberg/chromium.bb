@@ -14,7 +14,7 @@ include_rules = [
   "+components/signin/core/browser",
   "+components/signin/core/common",
   "+components/sync",
-  "+components/syncable_prefs",
+  "+components/sync_preferences",
   "+components/sync_bookmarks",
   "+components/sync_sessions",
   "+components/strings",

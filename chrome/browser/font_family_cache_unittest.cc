@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +36,7 @@ TEST(FontFamilyCacheTest, Caching) {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile;
   TestingFontFamilyCache cache(&profile);
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
   std::string font1("font 1");

@@ -61,8 +61,8 @@
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 #include "components/sync/engine/passive_model_worker.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/sync_sessions_client.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/device_form_factor.h"
 

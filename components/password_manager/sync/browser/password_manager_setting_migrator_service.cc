@@ -11,7 +11,7 @@
 #include "components/password_manager/core/browser/password_manager_settings_migration_experiment.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 namespace {
 
@@ -87,7 +87,7 @@ namespace password_manager {
 bool PasswordManagerSettingMigratorService::force_disabled_for_testing_ = false;
 
 PasswordManagerSettingMigratorService::PasswordManagerSettingMigratorService(
-    syncable_prefs::PrefServiceSyncable* prefs)
+    sync_preferences::PrefServiceSyncable* prefs)
     : prefs_(prefs), sync_service_(nullptr) {
   SaveCurrentPrefState(prefs_, &initial_new_pref_value_,
                        &initial_legacy_pref_value_);

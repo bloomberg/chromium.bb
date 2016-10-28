@@ -30,7 +30,7 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -133,13 +133,13 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     // Create the profile.
     TestingProfile::Builder builder;
     user_prefs_ = new TestingPrefStoreWithCustomReadError;
-    syncable_prefs::TestingPrefServiceSyncable* pref_service =
-        new syncable_prefs::TestingPrefServiceSyncable(
+    sync_preferences::TestingPrefServiceSyncable* pref_service =
+        new sync_preferences::TestingPrefServiceSyncable(
             new TestingPrefStore(), user_prefs_, new TestingPrefStore(),
             new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl());
     chrome::RegisterUserProfilePrefs(pref_service->registry());
     builder.SetPrefService(
-        base::WrapUnique<syncable_prefs::PrefServiceSyncable>(pref_service));
+        base::WrapUnique<sync_preferences::PrefServiceSyncable>(pref_service));
     profile_ = builder.Build();
 
     // Initialize the services we check.

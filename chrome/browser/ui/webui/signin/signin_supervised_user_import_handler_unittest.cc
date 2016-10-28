@@ -22,7 +22,7 @@
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -84,11 +84,8 @@ class SigninSupervisedUserImportHandlerTest : public BrowserWithTestWindowTest {
                                        BuildFakeSigninManagerBase));
     profile_ = profile_manager_.get()->CreateTestingProfile(
         "test-profile",
-        std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
-        base::UTF8ToUTF16("test-profile"),
-        0,
-        std::string(),
-        factories);
+        std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
+        base::UTF8ToUTF16("test-profile"), 0, std::string(), factories);
 
     // Authenticate the test profile.
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
@@ -219,9 +216,8 @@ TEST_F(SigninSupervisedUserImportHandlerTest, CustodianIsSupervised) {
   // Build a supervised test profile.
   TestingProfile* profile_ = profile_manager()->CreateTestingProfile(
       "supervised-test-profile",
-      std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
-      base::UTF8ToUTF16("supervised-test-profile"),
-      0,
+      std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
+      base::UTF8ToUTF16("supervised-test-profile"), 0,
       "12345",  // supervised_user_id
       TestingProfile::TestingFactories());
 

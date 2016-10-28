@@ -22,7 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
@@ -146,8 +146,8 @@ class ExtensionDataCollectionTest : public testing::Test {
     profile_name.append(base::IntToString(++profile_number_));
 
     // Create prefs for the profile with safe browsing enabled or not.
-    std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
-        new syncable_prefs::TestingPrefServiceSyncable);
+    std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs(
+        new sync_preferences::TestingPrefServiceSyncable);
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
                       safe_browsing_opt_in == SAFE_BROWSING_OPT_IN);

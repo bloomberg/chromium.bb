@@ -14,7 +14,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 CrossDevicePromoFactory::CrossDevicePromoFactory()

@@ -32,7 +32,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/sync_util.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -355,7 +355,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   ProfileSyncService* service() { return service_.get(); }
 
-  syncable_prefs::TestingPrefServiceSyncable* prefs() {
+  sync_preferences::TestingPrefServiceSyncable* prefs() {
     return profile_sync_service_bundle_.pref_service();
   }
 

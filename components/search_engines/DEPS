@@ -11,7 +11,7 @@ include_rules = [
   "+components/prefs",
   "+components/rappor",
   "+components/sync",
-  "+components/syncable_prefs/testing_pref_service_syncable.h",
+  "+components/sync_preferences/testing_pref_service_syncable.h",
   "+components/url_formatter",
   "+components/webdata",
   "+google_apis",

@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -113,7 +113,7 @@ void MergeLists(std::vector<std::string>* dest,
 }  // anonymous namespace
 
 InputMethodSyncer::InputMethodSyncer(
-    syncable_prefs::PrefServiceSyncable* prefs,
+    sync_preferences::PrefServiceSyncable* prefs,
     scoped_refptr<input_method::InputMethodManager::State> ime_state)
     : prefs_(prefs),
       ime_state_(ime_state),

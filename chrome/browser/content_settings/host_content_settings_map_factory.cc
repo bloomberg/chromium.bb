@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -78,7 +78,7 @@ scoped_refptr<RefcountedKeyedService>
       profile->GetProfileType() == Profile::INCOGNITO_PROFILE,
       profile->GetProfileType() == Profile::GUEST_PROFILE));
 
-  syncable_prefs::PrefServiceSyncable* pref_service =
+  sync_preferences::PrefServiceSyncable* pref_service =
       PrefServiceSyncableFromProfile(profile);
   if (pref_service) {
     pref_service->RegisterMergeDataFinishedCallback(

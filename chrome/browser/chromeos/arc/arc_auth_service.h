@@ -21,8 +21,8 @@
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/syncable_prefs/pref_service_syncable_observer.h"
-#include "components/syncable_prefs/synced_pref_observer.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
+#include "components/sync_preferences/synced_pref_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class ArcAppLauncher;
@@ -53,8 +53,8 @@ class ArcAuthService : public ArcService,
                        public InstanceHolder<mojom::AuthInstance>::Observer,
                        public ArcAuthContextDelegate,
                        public ArcAuthCodeFetcherDelegate,
-                       public syncable_prefs::PrefServiceSyncableObserver,
-                       public syncable_prefs::SyncedPrefObserver {
+                       public sync_preferences::PrefServiceSyncableObserver,
+                       public sync_preferences::SyncedPrefObserver {
  public:
   enum class State {
     NOT_INITIALIZED,  // Service is not initialized.
@@ -165,10 +165,10 @@ class ArcAuthService : public ArcService,
   void EnableArc();
   void DisableArc();
 
-  // syncable_prefs::PrefServiceSyncableObserver
+  // sync_preferences::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
 
-  // syncable_prefs::SyncedPrefObserver
+  // sync_preferences::SyncedPrefObserver
   void OnSyncedPrefChanged(const std::string& path, bool from_sync) override;
 
   // ArcAuthContextDelegate:

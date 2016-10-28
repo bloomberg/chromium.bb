@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/sync/driver/sync_client.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 
 namespace syncer {
 
@@ -49,7 +49,7 @@ class FakeSyncClient : public SyncClient {
   void SetModelTypeService(ModelTypeService* model_type_service);
 
  private:
-  syncable_prefs::TestingPrefServiceSyncable pref_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   ModelTypeService* model_type_service_;
   SyncApiComponentFactory* factory_;
   std::unique_ptr<FakeSyncService> sync_service_;

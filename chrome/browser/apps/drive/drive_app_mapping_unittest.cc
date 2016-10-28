@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DriveAppMappingTest : public testing::Test {
@@ -17,7 +17,7 @@ class DriveAppMappingTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    pref_service_.reset(new syncable_prefs::TestingPrefServiceSyncable);
+    pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable);
     DriveAppMapping::RegisterProfilePrefs(pref_service_->registry());
 
     mapping_.reset(new DriveAppMapping(pref_service_.get()));
@@ -26,7 +26,7 @@ class DriveAppMappingTest : public testing::Test {
   DriveAppMapping* mapping() { return mapping_.get(); }
 
  private:
-  std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<DriveAppMapping> mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAppMappingTest);

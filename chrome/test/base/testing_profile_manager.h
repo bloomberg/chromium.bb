@@ -22,7 +22,7 @@ class ProfileAttributesStorage;
 class ProfileManager;
 class TestingBrowserProcess;
 
-namespace syncable_prefs {
+namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
@@ -55,7 +55,7 @@ class TestingProfileManager {
   // |factories| contains BCKSs to use with the newly created profile.
   TestingProfile* CreateTestingProfile(
       const std::string& profile_name,
-      std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+      std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
       const base::string16& user_name,
       int avatar_id,
       const std::string& supervised_user_id,

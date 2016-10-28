@@ -31,8 +31,8 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -100,7 +100,9 @@ class CrossDevicePromoTest : public ::testing::Test {
   TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
-  syncable_prefs::TestingPrefServiceSyncable* prefs() { return pref_service_; }
+  sync_preferences::TestingPrefServiceSyncable* prefs() {
+    return pref_service_;
+  }
   FakeGaiaCookieManagerService* cookie_manager_service() {
     return cookie_manager_service_;
   }
@@ -114,7 +116,7 @@ class CrossDevicePromoTest : public ::testing::Test {
   TestingProfile* profile_;
   FakeSigninManagerForTesting* signin_manager_;
   FakeGaiaCookieManagerService* cookie_manager_service_;
-  syncable_prefs::TestingPrefServiceSyncable* pref_service_;
+  sync_preferences::TestingPrefServiceSyncable* pref_service_;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
@@ -141,12 +143,12 @@ void CrossDevicePromoTest::SetUp() {
   factories.push_back(std::make_pair(SigninManagerFactory::GetInstance(),
                                      BuildFakeSigninManagerBase));
 
-  pref_service_ = new syncable_prefs::TestingPrefServiceSyncable();
+  pref_service_ = new sync_preferences::TestingPrefServiceSyncable();
   chrome::RegisterUserProfilePrefs(pref_service_->registry());
 
   profile_ = testing_profile_manager_.get()->CreateTestingProfile(
       "name",
-      base::WrapUnique<syncable_prefs::PrefServiceSyncable>(pref_service_),
+      base::WrapUnique<sync_preferences::PrefServiceSyncable>(pref_service_),
       base::UTF8ToUTF16("name"), 0, std::string(), factories);
 
   cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(

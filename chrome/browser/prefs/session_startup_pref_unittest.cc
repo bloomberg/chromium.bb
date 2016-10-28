@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,7 +13,7 @@
 class SessionStartupPrefTest : public testing::Test {
  public:
   void SetUp() override {
-    pref_service_.reset(new syncable_prefs::TestingPrefServiceSyncable);
+    pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable);
     SessionStartupPref::RegisterProfilePrefs(registry());
     registry()->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
   }
@@ -22,7 +22,7 @@ class SessionStartupPrefTest : public testing::Test {
     return pref_service_->registry();
   }
 
-  std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
 };
 
 TEST_F(SessionStartupPrefTest, URLListIsFixedUp) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,10 +15,10 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_value_store.h"
-#include "components/syncable_prefs/pref_model_associator.h"
-#include "components/syncable_prefs/pref_service_syncable_observer.h"
+#include "components/sync_preferences/pref_model_associator.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 PrefServiceSyncable::PrefServiceSyncable(
     PrefNotifierImpl* pref_notifier,
@@ -79,8 +79,8 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
     incognito_pref_store->RegisterOverlayPref(overlay_pref_name);
 
   scoped_refptr<user_prefs::PrefRegistrySyncable> forked_registry =
-      static_cast<user_prefs::PrefRegistrySyncable*>(
-          pref_registry_.get())->ForkForIncognito();
+      static_cast<user_prefs::PrefRegistrySyncable*>(pref_registry_.get())
+          ->ForkForIncognito();
   PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(NULL,  // managed
@@ -91,11 +91,8 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
                                             NULL,  // recommended
                                             forked_registry->defaults().get(),
                                             pref_notifier),
-      incognito_pref_store,
-      forked_registry.get(),
-      pref_sync_associator_.client(),
-      read_error_callback_,
-      false);
+      incognito_pref_store, forked_registry.get(),
+      pref_sync_associator_.client(), read_error_callback_, false);
   return incognito_service;
 }
 
@@ -189,4 +186,4 @@ void PrefServiceSyncable::ProcessPrefChange(const std::string& name) {
   priority_pref_sync_associator_.ProcessPrefChange(name);
 }
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences

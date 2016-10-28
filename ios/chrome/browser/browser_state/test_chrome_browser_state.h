@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/net/net_types.h"
 
-namespace syncable_prefs {
+namespace sync_preferences {
 class PrefServiceSyncable;
 class TestingPrefServiceSyncable;
 }
@@ -87,7 +87,7 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
   // Returns the preferences as a TestingPrefServiceSyncable if possible or
   // null. Returns null for off-the-record TestChromeBrowserState and also
   // for TestChromeBrowserState initialized with a custom pref service.
-  syncable_prefs::TestingPrefServiceSyncable* GetTestingPrefService();
+  sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
   // Helper class that allows for parameterizing the building
   // of TestChromeBrowserStates.
@@ -111,7 +111,7 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
 
     // Sets the PrefService to be used by the ChromeBrowserState.
     void SetPrefService(
-        std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs);
+        std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs);
 
     // Creates the TestChromeBrowserState using previously-set settings.
     std::unique_ptr<TestChromeBrowserState> Build();
@@ -122,7 +122,7 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
 
     // Various staging variables where values are held until Build() is invoked.
     base::FilePath state_path_;
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service_;
 
     TestingFactories testing_factories_;
     RefcountedTestingFactories refcounted_testing_factories_;
@@ -134,7 +134,7 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
   // Used to create the principal TestChromeBrowserState.
   TestChromeBrowserState(
       const base::FilePath& path,
-      std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+      std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
       const TestingFactories& testing_factories,
       const RefcountedTestingFactories& refcounted_testing_factories);
 
@@ -160,8 +160,8 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
 
   // If non-null, |testing_prefs_| points to |prefs_|. It is there to avoid
   // casting as |prefs_| may not be a TestingPrefServiceSyncable.
-  std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
-  syncable_prefs::TestingPrefServiceSyncable* testing_prefs_;
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
+  sync_preferences::TestingPrefServiceSyncable* testing_prefs_;
 
   // The incognito ChromeBrowserState instance that is associated with this
   // non-incognito ChromeBrowserState instance.

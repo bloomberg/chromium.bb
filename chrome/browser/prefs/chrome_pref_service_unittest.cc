@@ -23,8 +23,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/test/data/resource.h"
@@ -100,7 +100,7 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     // harness is not supposed to overwrite a profile if it's already created.
 
     // Set some (WebKit) user preferences.
-    syncable_prefs::TestingPrefServiceSyncable* pref_services =
+    sync_preferences::TestingPrefServiceSyncable* pref_services =
         profile()->GetTestingPrefService();
     pref_services->SetUserPref(prefs::kDefaultCharset,
                                new base::StringValue("utf8"));

@@ -23,8 +23,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/pref_service_syncable_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,7 +107,7 @@ class StateStoreTest : public PlatformStateStoreTestBase {
   void CreateProfile() {
     ASSERT_EQ(nullptr, profile_);
     // Create the testing profile with a file-backed user pref store.
-    syncable_prefs::PrefServiceSyncableFactory factory;
+    sync_preferences::PrefServiceSyncableFactory factory;
     factory.SetUserPrefsFile(GetPrefsPath(), task_runner_.get());
     user_prefs::PrefRegistrySyncable* pref_registry =
         new user_prefs::PrefRegistrySyncable();

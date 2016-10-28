@@ -25,8 +25,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/synced_pref_change_registrar.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/synced_pref_change_registrar.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "crypto/hmac.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -60,10 +60,10 @@ PrefMetricsService::PrefMetricsService(Profile* profile)
       weak_factory_(this) {
   RecordLaunchPrefs();
 
-  syncable_prefs::PrefServiceSyncable* prefs =
+  sync_preferences::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile_);
   synced_pref_change_registrar_.reset(
-      new syncable_prefs::SyncedPrefChangeRegistrar(prefs));
+      new sync_preferences::SyncedPrefChangeRegistrar(prefs));
 
   RegisterSyncedPrefObservers();
 }
@@ -205,7 +205,7 @@ void PrefMetricsService::OnPrefChanged(
     const LogHistogramValueCallback& callback,
     const std::string& path,
     bool from_sync) {
-  syncable_prefs::PrefServiceSyncable* prefs =
+  sync_preferences::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile_);
   const PrefService::Preference* pref = prefs->FindPreference(path.c_str());
   DCHECK(pref);

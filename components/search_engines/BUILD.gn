@@ -132,7 +132,7 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/sync:test_support_driver",
     "//components/sync:test_support_model",
-    "//components/syncable_prefs:test_support",
+    "//components/sync_preferences:test_support",
     "//components/webdata/common",
     "//sql",
     "//testing/gmock",

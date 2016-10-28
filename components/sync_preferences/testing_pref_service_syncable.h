@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_TESTING_PREF_SERVICE_SYNCABLE_H_
-#define COMPONENTS_SYNCABLE_PREFS_TESTING_PREF_SERVICE_SYNCABLE_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_TESTING_PREF_SERVICE_SYNCABLE_H_
+#define COMPONENTS_SYNC_PREFERENCES_TESTING_PREF_SERVICE_SYNCABLE_H_
 
 #include "base/macros.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 class PrefModelAssociatorClient;
 
@@ -41,10 +41,10 @@ class TestingPrefServiceSyncable
   DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
 template <>
-TestingPrefServiceBase<syncable_prefs::PrefServiceSyncable,
+TestingPrefServiceBase<sync_preferences::PrefServiceSyncable,
                        user_prefs::PrefRegistrySyncable>::
     TestingPrefServiceBase(TestingPrefStore* managed_prefs,
                            TestingPrefStore* user_prefs,
@@ -52,5 +52,4 @@ TestingPrefServiceBase<syncable_prefs::PrefServiceSyncable,
                            user_prefs::PrefRegistrySyncable* pref_registry,
                            PrefNotifierImpl* pref_notifier);
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_TESTING_PREF_SERVICE_SYNCABLE_H_
-
+#endif  // COMPONENTS_SYNC_PREFERENCES_TESTING_PREF_SERVICE_SYNCABLE_H_

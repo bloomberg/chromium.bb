@@ -15,11 +15,11 @@
 #include "chrome/browser/extensions/external_loader.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
-#include "components/syncable_prefs/pref_service_syncable_observer.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
 
 class Profile;
 
-namespace syncable_prefs {
+namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
@@ -30,7 +30,7 @@ namespace extensions {
 // Instances of this class are expected to be created and destroyed on the UI
 // thread and they are expecting public method calls from the UI thread.
 class ExternalPrefLoader : public ExternalLoader,
-                           public syncable_prefs::PrefServiceSyncableObserver,
+                           public sync_preferences::PrefServiceSyncableObserver,
                            public syncer::SyncServiceObserver {
  public:
   enum Options {
@@ -71,7 +71,7 @@ class ExternalPrefLoader : public ExternalLoader,
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  // syncable_prefs::PrefServiceSyncableObserver:
+  // sync_preferences::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
   // syncer::SyncServiceObserver
@@ -109,9 +109,9 @@ class ExternalPrefLoader : public ExternalLoader,
   // Needed for waiting for waiting priority sync.
   Profile* profile_;
 
-  // Used for registering observer for syncable_prefs::PrefServiceSyncable.
-  ScopedObserver<syncable_prefs::PrefServiceSyncable,
-                 syncable_prefs::PrefServiceSyncableObserver>
+  // Used for registering observer for sync_preferences::PrefServiceSyncable.
+  ScopedObserver<sync_preferences::PrefServiceSyncable,
+                 sync_preferences::PrefServiceSyncableObserver>
       syncable_pref_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);

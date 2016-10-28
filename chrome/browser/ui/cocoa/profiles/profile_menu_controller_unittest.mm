@@ -20,7 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -251,7 +251,7 @@ TEST_F(ProfileMenuControllerTest, DeleteActiveProfile) {
 TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
   TestingProfileManager* manager = testing_profile_manager();
   TestingProfile* supervised_profile = manager->CreateTestingProfile(
-      "test1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "test1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::ASCIIToUTF16("Supervised User"), 0, "TEST_ID",
       TestingProfile::TestingFactories());
   // The supervised profile is initially marked as omitted from the avatar menu

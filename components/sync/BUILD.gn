@@ -805,7 +805,7 @@ static_library("test_support_driver") {
   deps = [
     ":sync",
     ":test_support_engine",
-    "//components/syncable_prefs:test_support",
+    "//components/sync_preferences:test_support",
     "//components/version_info",
     "//google_apis",
   ]
@@ -948,8 +948,8 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync/engine_impl/attachments/proto",
-    "//components/syncable_prefs",
-    "//components/syncable_prefs:test_support",
+    "//components/sync_preferences",
+    "//components/sync_preferences:test_support",
     "//components/version_info",
     "//google_apis",
     "//google_apis:test_support",

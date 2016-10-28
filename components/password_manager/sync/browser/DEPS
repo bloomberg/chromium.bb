@@ -6,6 +6,6 @@ include_rules = [
   "+components/sync/base",
   "+components/sync/driver",
   "+components/sync/engine",
-  "+components/syncable_prefs",
+  "+components/sync_preferences",
   "+google_apis/gaia",
 ]

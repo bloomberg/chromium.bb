@@ -16,7 +16,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -33,11 +33,11 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
     ASSERT_TRUE(manager_.SetUp());
 
     manager_.CreateTestingProfile(
-        "test1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "test1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::ASCIIToUTF16("Test 1"), 1, std::string(),
         TestingProfile::TestingFactories());
     manager_.CreateTestingProfile(
-        "test2", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "test2", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::ASCIIToUTF16("Test 2"), 0, std::string(),
         TestingProfile::TestingFactories());
 
@@ -130,7 +130,7 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 
   // Now create a new profile and notify the delegate.
   manager()->CreateTestingProfile(
-      "test3", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "test3", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::ASCIIToUTF16("Test 3"), 0, std::string(),
       TestingProfile::TestingFactories());
 

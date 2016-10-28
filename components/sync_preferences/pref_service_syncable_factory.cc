@@ -2,34 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/syncable_prefs/pref_service_syncable_factory.h"
+#include "components/sync_preferences/pref_service_syncable_factory.h"
 
 #include "base/trace_event/trace_event.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/default_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 
-#if defined(SYNCABLE_PREFS_USE_POLICY)
+#if defined(SYNC_PREFERENCES_USE_POLICY)
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/common/policy_service.h"  // nogncheck
-#include "components/policy/core/common/policy_types.h"  // nogncheck
+#include "components/policy/core/common/policy_types.h"    // nogncheck
 #endif
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
-PrefServiceSyncableFactory::PrefServiceSyncableFactory() {
-}
+PrefServiceSyncableFactory::PrefServiceSyncableFactory() {}
 
-PrefServiceSyncableFactory::~PrefServiceSyncableFactory() {
-}
+PrefServiceSyncableFactory::~PrefServiceSyncableFactory() {}
 
 void PrefServiceSyncableFactory::SetManagedPolicies(
     policy::PolicyService* service,
     policy::BrowserPolicyConnector* connector) {
-#if defined(SYNCABLE_PREFS_USE_POLICY)
+#if defined(SYNC_PREFERENCES_USE_POLICY)
   set_managed_prefs(new policy::ConfigurationPolicyPrefStore(
       service, connector->GetHandlerList(), policy::POLICY_LEVEL_MANDATORY));
 #else
@@ -40,7 +38,7 @@ void PrefServiceSyncableFactory::SetManagedPolicies(
 void PrefServiceSyncableFactory::SetRecommendedPolicies(
     policy::PolicyService* service,
     policy::BrowserPolicyConnector* connector) {
-#if defined(SYNCABLE_PREFS_USE_POLICY)
+#if defined(SYNC_PREFERENCES_USE_POLICY)
   set_recommended_prefs(new policy::ConfigurationPolicyPrefStore(
       service, connector->GetHandlerList(), policy::POLICY_LEVEL_RECOMMENDED));
 #else
@@ -68,4 +66,4 @@ std::unique_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
   return pref_service;
 }
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences

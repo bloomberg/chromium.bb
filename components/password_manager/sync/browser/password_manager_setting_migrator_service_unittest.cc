@@ -19,9 +19,9 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/syncable_prefs/pref_model_associator_client.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_model_associator_client.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,7 +98,7 @@ syncer::SyncData CreatePrefSyncData(const std::string& name, bool value) {
 // kPasswordManagerSavingEnabled preference, then it's PREFERENCE data type.
 // If |name| is kCredentialsEnableService  pref, then it's PRIORITY_PREFERENCE
 // data type.
-void StartSyncingPref(syncable_prefs::PrefServiceSyncable* prefs,
+void StartSyncingPref(sync_preferences::PrefServiceSyncable* prefs,
                       const std::string& name,
                       BooleanPrefState pref_state_in_sync) {
   syncer::SyncDataList sync_data_list;
@@ -138,7 +138,7 @@ class SyncServiceMock : public syncer::FakeSyncService {
 };
 
 class TestPrefModelAssociatorClient
-    : public syncable_prefs::PrefModelAssociatorClient {
+    : public sync_preferences::PrefModelAssociatorClient {
  public:
   TestPrefModelAssociatorClient() {}
   ~TestPrefModelAssociatorClient() override {}
@@ -180,17 +180,17 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
       ASSERT_TRUE(prefs()->FindPreference(name)->IsDefaultValue());
   }
 
-  syncable_prefs::PrefServiceSyncable* prefs() { return pref_service_.get(); }
+  sync_preferences::PrefServiceSyncable* prefs() { return pref_service_.get(); }
 
   void SetupPreferenceMigrationEnvironment() {
-    syncable_prefs::PrefServiceMockFactory factory;
+    sync_preferences::PrefServiceMockFactory factory;
     factory.SetPrefModelAssociatorClient(&client_);
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry(
         new user_prefs::PrefRegistrySyncable);
     password_manager::PasswordManager::RegisterProfilePrefs(
         pref_registry.get());
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service_syncable =
-        factory.CreateSyncable(pref_registry.get());
+    std::unique_ptr<sync_preferences::PrefServiceSyncable>
+        pref_service_syncable = factory.CreateSyncable(pref_registry.get());
     migration_service_.reset(
         new PasswordManagerSettingMigratorService(pref_service_syncable.get()));
     pref_service_.reset(pref_service_syncable.release());
@@ -221,7 +221,7 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   TestPrefModelAssociatorClient client_;
   SyncServiceMock sync_service_;
-  std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service_;
   std::unique_ptr<PasswordManagerSettingMigratorService> migration_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerSettingMigratorServiceTest);

@@ -28,7 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -93,7 +93,7 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
         ChromeSigninClientFactory::GetInstance(),
         signin::BuildTestSigninClient));
     Profile* profile = testing_profile_manager_.CreateTestingProfile(
-        name, std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        name, std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16(name), 0, std::string(), testing_factories);
     // The testing manager sets the profile name manually, which counts as
     // a user-customized profile name. Reset this to match the default name

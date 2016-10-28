@@ -25,7 +25,7 @@
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,11 +110,8 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
     // Create the profile synchronously.
     Profile* profile = profile_manager_->CreateTestingProfile(
         kTestProfileName,
-        std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
-        name,
-        0,
-        supervised_user_id,
-        TestingProfile::TestingFactories());
+        std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>(), name,
+        0, supervised_user_id, TestingProfile::TestingFactories());
 
     // Set the flag used to track the state of the creation flow.
     profile_path_being_created_ = profile->GetPath();
@@ -185,11 +182,8 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
                                        BuildFakeSigninManagerBase));
     custodian_ = profile_manager_.get()->CreateTestingProfile(
         "custodian-profile",
-        std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
-        base::UTF8ToUTF16("custodian-profile"),
-        0,
-        std::string(),
-        factories);
+        std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>(),
+        base::UTF8ToUTF16("custodian-profile"), 0, std::string(), factories);
 
     // Authenticate the custodian profile.
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
@@ -221,9 +215,8 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     // The second supervised user exists on the device.
     profile_manager()->CreateTestingProfile(
         kSupervisedUsername2,
-        std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
-        base::UTF8ToUTF16(kSupervisedUsername2),
-        0,
+        std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
+        base::UTF8ToUTF16(kSupervisedUsername2), 0,
         kSupervisedUserId2,  // supervised_user_id
         TestingProfile::TestingFactories());
 

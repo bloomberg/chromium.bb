@@ -21,8 +21,8 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
 
 namespace base {
 class Time;
@@ -137,7 +137,7 @@ class ProfileSyncServiceBundle {
     return url_request_context_.get();
   }
 
-  syncable_prefs::TestingPrefServiceSyncable* pref_service() {
+  sync_preferences::TestingPrefServiceSyncable* pref_service() {
     return &pref_service_;
   }
 
@@ -169,7 +169,7 @@ class ProfileSyncServiceBundle {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
   base::SequencedWorkerPoolOwner worker_pool_owner_;
-  syncable_prefs::TestingPrefServiceSyncable pref_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;
   FakeSigninManagerType signin_manager_;

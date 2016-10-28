@@ -53,7 +53,7 @@
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/syncable/write_node.h"
 #include "components/sync/syncable/write_transaction.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/version_info/version_info.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata_services/web_data_service_test_util.h"

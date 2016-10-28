@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-static_library("syncable_prefs") {
+static_library("sync_preferences") {
   sources = [
     "pref_model_associator.cc",
     "pref_model_associator.h",
@@ -28,7 +28,7 @@ static_library("syncable_prefs") {
 
   if (enable_configuration_policy) {
     # This define is only used for compiling the .cc files in this target.
-    defines = [ "SYNCABLE_PREFS_USE_POLICY" ]
+    defines = [ "SYNC_PREFERENCES_USE_POLICY" ]
 
     deps += [ "//components/policy/core/browser" ]
   }
@@ -44,7 +44,7 @@ static_library("test_support") {
   ]
 
   deps = [
-    ":syncable_prefs",
+    ":sync_preferences",
     "//base",
     "//components/pref_registry",
     "//components/prefs:test_support",
@@ -60,7 +60,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":syncable_prefs",
+    ":sync_preferences",
     ":test_support",
     "//components/pref_registry",
     "//components/prefs",

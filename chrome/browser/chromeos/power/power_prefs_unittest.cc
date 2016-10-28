@@ -31,8 +31,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -176,8 +176,8 @@ bool PowerPrefsTest::GetExpectedAllowScreenWakeLocksForProfile(
 
 TEST_F(PowerPrefsTest, LoginScreen) {
   // Set up login profile.
-  std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>
-      login_profile_prefs(new syncable_prefs::TestingPrefServiceSyncable);
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      login_profile_prefs(new sync_preferences::TestingPrefServiceSyncable);
   chrome::RegisterLoginProfilePrefs(login_profile_prefs->registry());
   TestingProfile::Builder builder;
   builder.SetPath(

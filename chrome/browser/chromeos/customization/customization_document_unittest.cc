@@ -23,8 +23,8 @@
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/common/extension.h"
@@ -281,10 +281,10 @@ class ServicesCustomizationDocumentTest : public testing::Test {
 
   std::unique_ptr<TestingProfile> CreateProfile() {
     TestingProfile::Builder profile_builder;
-    syncable_prefs::PrefServiceMockFactory factory;
+    sync_preferences::PrefServiceMockFactory factory;
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs(
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(std::move(prefs));

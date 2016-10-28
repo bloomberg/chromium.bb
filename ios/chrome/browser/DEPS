@@ -65,7 +65,7 @@ include_rules = [
   "+components/suggestions",
   "+components/sync",
   "+components/sync_sessions",
-  "+components/syncable_prefs",
+  "+components/sync_preferences",
   "+components/translate/core",
   "+components/translate/ios",
   "+components/undo",

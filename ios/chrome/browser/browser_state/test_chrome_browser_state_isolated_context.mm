@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_isolated_context.h"
 
 #include "base/logging.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -13,7 +13,7 @@ TestChromeBrowserStateWithIsolatedContext::
     TestChromeBrowserStateWithIsolatedContext()
     : TestChromeBrowserState(
           base::FilePath(),
-          std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+          std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
           TestingFactories(),
           RefcountedTestingFactories()),
       main_context_called_(false),

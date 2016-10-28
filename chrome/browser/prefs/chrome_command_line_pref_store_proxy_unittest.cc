@@ -14,7 +14,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "url/gurl.h"
 
@@ -171,7 +171,7 @@ class ChromeCommandLinePrefStoreProxyTest
     }
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
     PrefProxyConfigTrackerImpl::RegisterPrefs(registry.get());
-    syncable_prefs::PrefServiceMockFactory factory;
+    sync_preferences::PrefServiceMockFactory factory;
     factory.set_command_line_prefs(
         new ChromeCommandLinePrefStore(&command_line_));
     pref_service_ = factory.Create(registry.get());

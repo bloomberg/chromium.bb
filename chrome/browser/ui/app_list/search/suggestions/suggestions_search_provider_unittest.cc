@@ -18,7 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/search_result.h"
 
@@ -61,7 +61,7 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
     suggestions_search_.reset(
         new SuggestionsSearchProvider(profile_.get(), NULL));
 
-    syncable_prefs::TestingPrefServiceSyncable* pref_service =
+    sync_preferences::TestingPrefServiceSyncable* pref_service =
         profile_->GetTestingPrefService();
     suggestions_store_.reset(new SuggestionsStore(pref_service));
   }

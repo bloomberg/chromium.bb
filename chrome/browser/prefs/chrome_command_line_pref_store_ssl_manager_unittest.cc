@@ -12,7 +12,7 @@
 #include "components/ssl_config/ssl_config_prefs.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/ssl_config/ssl_config_switches.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +38,7 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
   command_line.AppendSwitchASCII(switches::kSSLVersionMin, "tls1.1");
   command_line.AppendSwitchASCII(switches::kSSLVersionMax, "tls1");
 
-  syncable_prefs::PrefServiceMockFactory factory;
+  sync_preferences::PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
   factory.set_command_line_prefs(new ChromeCommandLinePrefStore(&command_line));
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;

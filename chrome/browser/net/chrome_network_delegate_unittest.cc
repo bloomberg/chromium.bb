@@ -30,7 +30,7 @@
 #include "components/data_usage/core/data_use_annotator.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_member.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"

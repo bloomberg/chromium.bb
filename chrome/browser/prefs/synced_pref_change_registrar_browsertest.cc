@@ -27,8 +27,8 @@
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/syncable_prefs/synced_pref_change_registrar.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/synced_pref_change_registrar.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_utils.h"
 
 namespace {
@@ -82,11 +82,9 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     return prefs_->GetBoolean(name.c_str());
   }
 
-  syncable_prefs::PrefServiceSyncable* prefs() const {
-    return prefs_;
-  }
+  sync_preferences::PrefServiceSyncable* prefs() const { return prefs_; }
 
-  syncable_prefs::SyncedPrefChangeRegistrar* registrar() const {
+  sync_preferences::SyncedPrefChangeRegistrar* registrar() const {
     return registrar_.get();
   }
 
@@ -107,16 +105,16 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
             new syncer::FakeSyncChangeProcessor),
         std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock));
-    registrar_.reset(new syncable_prefs::SyncedPrefChangeRegistrar(prefs_));
+    registrar_.reset(new sync_preferences::SyncedPrefChangeRegistrar(prefs_));
   }
 
   void TearDownOnMainThread() override { registrar_.reset(); }
 
-  syncable_prefs::PrefServiceSyncable* prefs_;
+  sync_preferences::PrefServiceSyncable* prefs_;
   syncer::SyncableService* syncer_;
   int next_sync_data_id_;
 
-  std::unique_ptr<syncable_prefs::SyncedPrefChangeRegistrar> registrar_;
+  std::unique_ptr<sync_preferences::SyncedPrefChangeRegistrar> registrar_;
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
 

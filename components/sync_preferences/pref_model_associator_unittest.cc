@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/syncable_prefs/pref_model_associator.h"
+#include "components/sync_preferences/pref_model_associator.h"
 
 #include <memory>
 
@@ -10,12 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/syncable_prefs/pref_model_associator_client.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_model_associator_client.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 namespace {
 
@@ -50,15 +50,12 @@ class AbstractPreferenceMergeTest : public testing::Test {
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry(
         new user_prefs::PrefRegistrySyncable);
     pref_registry->RegisterStringPref(
-        kStringPrefName,
-        std::string(),
+        kStringPrefName, std::string(),
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
     pref_registry->RegisterListPref(
-        kListPrefName,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+        kListPrefName, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
     pref_registry->RegisterDictionaryPref(
-        kDictionaryPrefName,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+        kDictionaryPrefName, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
     pref_service_ = factory.CreateSyncable(pref_registry.get());
     pref_sync_service_ = static_cast<PrefModelAssociator*>(
         pref_service_->GetSyncableService(syncer::PREFERENCES));
@@ -68,9 +65,8 @@ class AbstractPreferenceMergeTest : public testing::Test {
                          const std::string& expression,
                          int setting) {
     base::DictionaryValue* expression_dict;
-    bool found =
-        patterns_dict->GetDictionaryWithoutPathExpansion(expression,
-                                                         &expression_dict);
+    bool found = patterns_dict->GetDictionaryWithoutPathExpansion(
+        expression, &expression_dict);
     if (!found) {
       expression_dict = new base::DictionaryValue;
       patterns_dict->SetWithoutPathExpansion(expression, expression_dict);
@@ -150,7 +146,7 @@ TEST_F(ListPreferenceMergeTest, ServerNull) {
   std::unique_ptr<base::Value> merged_value(pref_sync_service_->MergePreference(
       pref->name(), *pref->GetValue(), *null_value));
   const base::ListValue* local_list_value =
-        pref_service_->GetList(kListPrefName);
+      pref_service_->GetList(kListPrefName);
   EXPECT_TRUE(merged_value->Equals(local_list_value));
 }
 
@@ -167,7 +163,7 @@ TEST_F(ListPreferenceMergeTest, ServerEmpty) {
   std::unique_ptr<base::Value> merged_value(pref_sync_service_->MergePreference(
       pref->name(), *pref->GetValue(), *empty_value));
   const base::ListValue* local_list_value =
-        pref_service_->GetList(kListPrefName);
+      pref_service_->GetList(kListPrefName);
   EXPECT_TRUE(merged_value->Equals(local_list_value));
 }
 
@@ -442,4 +438,4 @@ TEST_F(IndividualPreferenceMergeTest, ListPreference) {
 
 }  // namespace
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences

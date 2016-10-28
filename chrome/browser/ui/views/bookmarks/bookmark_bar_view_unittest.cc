@@ -27,7 +27,7 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 
@@ -339,7 +339,7 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
 TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
   CreateBookmarkModelAndBookmarkBarView();
   // By default, the pref is not managed and the apps shortcut is shown.
-  syncable_prefs::TestingPrefServiceSyncable* prefs =
+  sync_preferences::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   EXPECT_FALSE(prefs->IsManagedPreference(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar));

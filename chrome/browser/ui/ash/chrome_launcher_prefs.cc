@@ -26,7 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/string_ordinal.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -199,7 +199,7 @@ std::vector<std::string> GetActivitiesForPackage(
 // If no user-set value exists at |local_path|, the value from |synced_path| is
 // copied to |local_path|.
 void PropagatePrefToLocalIfNotSet(
-    syncable_prefs::PrefServiceSyncable* pref_service,
+    sync_preferences::PrefServiceSyncable* pref_service,
     const char* local_path,
     const char* synced_path) {
   if (!pref_service->FindPreference(local_path)->HasUserSetting())
@@ -485,7 +485,7 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefsLegacy(
 // static
 std::unique_ptr<ChromeLauncherPrefsObserver>
 ChromeLauncherPrefsObserver::CreateIfNecessary(Profile* profile) {
-  syncable_prefs::PrefServiceSyncable* prefs =
+  sync_preferences::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile);
   if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
       !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)
@@ -500,7 +500,7 @@ ChromeLauncherPrefsObserver::~ChromeLauncherPrefsObserver() {
 }
 
 ChromeLauncherPrefsObserver::ChromeLauncherPrefsObserver(
-    syncable_prefs::PrefServiceSyncable* prefs)
+    sync_preferences::PrefServiceSyncable* prefs)
     : prefs_(prefs) {
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.

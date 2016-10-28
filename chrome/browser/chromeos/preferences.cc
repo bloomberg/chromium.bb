@@ -41,7 +41,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -346,7 +346,7 @@ void Preferences::RegisterProfilePrefs(
                                 update_engine::EndOfLifeStatus::kSupported);
 }
 
-void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
+void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   prefs_ = prefs;
 
   BooleanPrefMember::NamedChangeCallback callback =
@@ -400,7 +400,7 @@ void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
   DCHECK(profile);
   DCHECK(user);
-  syncable_prefs::PrefServiceSyncable* prefs =
+  sync_preferences::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile);
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.
@@ -444,7 +444,7 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
 }
 
 void Preferences::InitUserPrefsForTesting(
-    syncable_prefs::PrefServiceSyncable* prefs,
+    sync_preferences::PrefServiceSyncable* prefs,
     const user_manager::User* user,
     scoped_refptr<input_method::InputMethodManager::State> ime_state) {
   user_ = user;

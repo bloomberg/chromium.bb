@@ -34,9 +34,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_store.h"
-#include "components/syncable_prefs/pref_service_mock_factory.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -139,20 +139,20 @@ TEST_F(PrefProviderTest, Incognito) {
   OverlayUserPrefStore* otr_user_prefs =
       new OverlayUserPrefStore(user_prefs);
 
-  syncable_prefs::PrefServiceMockFactory factory;
+  sync_preferences::PrefServiceMockFactory factory;
   factory.set_user_prefs(make_scoped_refptr(user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
-  syncable_prefs::PrefServiceSyncable* regular_prefs =
+  sync_preferences::PrefServiceSyncable* regular_prefs =
       factory.CreateSyncable(registry.get()).release();
 
   chrome::RegisterUserProfilePrefs(registry.get());
 
-  syncable_prefs::PrefServiceMockFactory otr_factory;
+  sync_preferences::PrefServiceMockFactory otr_factory;
   otr_factory.set_user_prefs(make_scoped_refptr(otr_user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> otr_registry(
       new user_prefs::PrefRegistrySyncable);
-  syncable_prefs::PrefServiceSyncable* otr_prefs =
+  sync_preferences::PrefServiceSyncable* otr_prefs =
       otr_factory.CreateSyncable(otr_registry.get()).release();
 
   chrome::RegisterUserProfilePrefs(otr_registry.get());
@@ -329,7 +329,7 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
 
 // http://crosbug.com/17760
 TEST_F(PrefProviderTest, Deadlock) {
-  syncable_prefs::TestingPrefServiceSyncable prefs;
+  sync_preferences::TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
   // Chain of events: a preference changes, |PrefProvider| notices it, and reads
@@ -388,7 +388,7 @@ TEST_F(PrefProviderTest, LastUsage) {
 }
 
 TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
-  syncable_prefs::TestingPrefServiceSyncable prefs;
+  sync_preferences::TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
   ContentSettingsPattern pattern_1 =
@@ -451,7 +451,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
 }
 
 TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
-  syncable_prefs::TestingPrefServiceSyncable prefs;
+  sync_preferences::TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
   ContentSettingsPattern pattern =

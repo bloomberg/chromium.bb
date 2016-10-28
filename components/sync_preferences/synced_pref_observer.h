@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_OBSERVER_H_
-#define COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_OBSERVER_H_
+#ifndef COMPONENTS_SYNC_PREFERENCES_SYNCED_PREF_OBSERVER_H_
+#define COMPONENTS_SYNC_PREFERENCES_SYNCED_PREF_OBSERVER_H_
 
 #include <string>
 
-namespace syncable_prefs {
+namespace sync_preferences {
 
 class SyncedPrefObserver {
  public:
   virtual void OnSyncedPrefChanged(const std::string& path, bool from_sync) = 0;
 };
 
-}  // namespace syncable_prefs
+}  // namespace sync_preferences
 
-#endif  // COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_OBSERVER_H_
+#endif  // COMPONENTS_SYNC_PREFERENCES_SYNCED_PREF_OBSERVER_H_

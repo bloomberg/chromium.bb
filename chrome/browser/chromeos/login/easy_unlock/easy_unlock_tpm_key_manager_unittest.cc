@@ -22,7 +22,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
@@ -207,14 +207,14 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
     signin_profile_ = profile_manager_.CreateTestingProfile(
         chrome::kInitialProfile,
-        std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
+        std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>(),
         base::UTF8ToUTF16(chrome::kInitialProfile), 0 /* avatar id */,
         std::string() /* supervized user id */,
         TestingProfile::TestingFactories());
 
     user_profile_ = profile_manager_.CreateTestingProfile(
         test_account_id_.GetUserEmail(),
-        std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
+        std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>(),
         base::UTF8ToUTF16(test_account_id_.GetUserEmail()), 0 /* avatar id */,
         std::string() /* supervized user id */,
         TestingProfile::TestingFactories());
