@@ -1631,6 +1631,9 @@ bool GLES2Util::IsUnsignedIntegerFormat(uint32_t internal_format) {
     case GL_RG8UI:
     case GL_RG16UI:
     case GL_RG32UI:
+    case GL_RGB8UI:
+    case GL_RGB16UI:
+    case GL_RGB32UI:
     case GL_RGBA8UI:
     case GL_RGB10_A2UI:
     case GL_RGBA16UI:
@@ -1650,6 +1653,9 @@ bool GLES2Util::IsSignedIntegerFormat(uint32_t internal_format) {
     case GL_RG8I:
     case GL_RG16I:
     case GL_RG32I:
+    case GL_RGB8I:
+    case GL_RGB16I:
+    case GL_RGB32I:
     case GL_RGBA8I:
     case GL_RGBA16I:
     case GL_RGBA32I:
