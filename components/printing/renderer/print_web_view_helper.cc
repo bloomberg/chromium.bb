@@ -234,7 +234,8 @@ void CalculatePageLayoutFromPrintParams(
   int content_height = params.content_size.height();
   // Scale the content to its normal size for purpose of computing page layout.
   // Otherwise we will get negative margins.
-  if (scale_factor > 0 && (fit_to_page || params.print_to_pdf)) {
+  if (scale_factor >= PrintWebViewHelper::kEpsilon &&
+      (fit_to_page || params.print_to_pdf)) {
     content_width =
         static_cast<int>(static_cast<double>(content_width) * scale_factor);
     content_height =
@@ -721,7 +722,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     frame->printBegin(web_print_params_, node_to_print_);
     double scale_factor = 1.0f;
 #if defined(ENABLE_PRINT_PREVIEW)
-    if (print_params.scale_factor > 0)
+    if (print_params.scale_factor >= PrintWebViewHelper::kEpsilon)
       scale_factor = print_params.scale_factor;
 #endif
     print_params = CalculatePrintParamsForCss(
@@ -1232,7 +1233,7 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
 
   PageSizeMargins default_page_layout;
   double scale_factor =
-      print_params.scale_factor > 0 ? print_params.scale_factor : 1.0f;
+      print_params.scale_factor >= kEpsilon ? print_params.scale_factor : 1.0f;
 
   ComputePageLayoutInPointsForCss(print_preview_context_.prepared_frame(), 0,
                                   print_params, ignore_css_margins_,
@@ -1828,7 +1829,7 @@ void PrintWebViewHelper::PrintPageInternal(
 
   double css_scale_factor = 1.0f;
 #if defined(ENABLE_PRINT_PREVIEW)
-    if (params.params.scale_factor > 0)
+    if (params.params.scale_factor >= kEpsilon)
       css_scale_factor = params.params.scale_factor;
 #endif
   ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,

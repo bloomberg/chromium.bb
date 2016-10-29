@@ -112,6 +112,11 @@ class PrintWebViewHelper
                      std::unique_ptr<Delegate> delegate);
   ~PrintWebViewHelper() override;
 
+  // Minimum valid value for scaling. Since scaling is originally an integer
+  // representing a percentage, it should never be less than this if it is
+  // valid.
+  static constexpr double kEpsilon = 0.01f;
+
   // Disable print preview and switch to system dialog printing even if full
   // printing is build-in. This method is used by CEF.
   static void DisablePreview();

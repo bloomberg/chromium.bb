@@ -114,7 +114,8 @@ void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
                                     PdfMetafileSkia* metafile,
                                     gfx::Size* page_size,
                                     gfx::Rect* content_rect) {
-  double scale_factor = params.scale_factor > 0 ? params.scale_factor : 1.0f;
+  double scale_factor =
+      params.scale_factor >= kEpsilon ? params.scale_factor : 1.0f;
   double webkit_shrink_factor = frame->getPrintPageShrink(page_number);
   PageSizeMargins page_layout_in_points;
   gfx::Rect content_area;
