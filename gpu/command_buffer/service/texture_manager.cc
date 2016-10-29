@@ -2290,16 +2290,18 @@ bool TextureManager::ValidateTextureParameters(
   // So the validation is not necessary for TexSubImage.
   if (tex_image_call &&
       !validators->texture_internal_format.IsValid(internal_format)) {
-    std::string msg = base::StringPrintf("invalid internal_format 0x%x",
-                                         internal_format);
+    std::string msg = std::string("invalid internal_format ") +
+        GLES2Util::GetStringEnum(internal_format);
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
                              msg.c_str());
     return false;
   }
   if (!g_format_type_validator.Get().IsValid(internal_format, format, type)) {
-    std::string msg = base::StringPrintf(
-        "invalid internalformat/format/type combination 0x%x/0x%x/0x%x",
-        internal_format, format, type);
+    std::string msg = std::string(
+        "invalid internalformat/format/type combination ") +
+        GLES2Util::GetStringEnum(internal_format) + std::string("/") +
+        GLES2Util::GetStringEnum(format) + std::string("/") +
+        GLES2Util::GetStringEnum(type);
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, function_name,
                             msg.c_str());
     return false;
