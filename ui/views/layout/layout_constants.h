@@ -81,11 +81,7 @@ const int kCheckboxIndent = 10;
 const int kItemLabelSpacing = 10;
 
 // Horizontal alignment used for a control's introductory label in a GridLayout.
-#if defined(OS_MACOSX)
-const GridLayout::Alignment kControlLabelGridAlignment = GridLayout::TRAILING;
-#else
 const GridLayout::Alignment kControlLabelGridAlignment = GridLayout::LEADING;
-#endif
 
 }  // namespace views
 
