@@ -2411,8 +2411,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)finishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
   [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
 
-  // Only load the new URL if the current entry was not created by a JavaScript
-  // window.history.pushState() call from |fromEntry|.
+  // Only load the new URL if it has a different document than |fromEntry| to
+  // prevent extra page loads from NavigationItems created by hash changes or
+  // calls to window.history.pushState().
   BOOL shouldLoadURL =
       ![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
           isSameDocumentNavigationBetweenEntry:fromEntry
