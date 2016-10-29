@@ -88,6 +88,8 @@ crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.
 
 crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
 
+crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle-invalid.html [ Timeout ]
+
 crbug.com/632000 [ Win ] fast/images/paint-subrect-grid.html [ Pass Failure ]
 
 crbug.com/636271 [ Mac ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
