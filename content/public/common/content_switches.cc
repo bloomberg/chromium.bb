@@ -163,8 +163,8 @@ const char kDisableGpuMemoryBufferCompositorResources[] =
 const char kDisableGpuMemoryBufferVideoFrames[] =
     "disable-gpu-memory-buffer-video-frames";
 
-// Disable the limit on the number of times the GPU process may be restarted
-// This switch is intended only for tests.
+// Disable the limit on the number of times the GPU process may be restarted.
+// For tests and platforms where software fallback is disabled.
 const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 
 // Disable async GL worker context. Overrides kEnableGpuAsyncWorkerContext.
