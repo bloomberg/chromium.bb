@@ -25,9 +25,9 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   NSEventType type = [native_event type];
   switch (type) {
     case NSKeyDown:
-      return ET_KEY_PRESSED;
     case NSKeyUp:
-      return ET_KEY_RELEASED;
+    case NSFlagsChanged:
+      return IsKeyUpEvent(native_event) ? ET_KEY_RELEASED : ET_KEY_PRESSED;
     case NSLeftMouseDown:
     case NSRightMouseDown:
     case NSOtherMouseDown:
@@ -53,7 +53,6 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
     case NSAppKitDefined:
     case NSSystemDefined:
       return ET_UNKNOWN;
-    case NSFlagsChanged:
     case NSApplicationDefined:
     case NSPeriodic:
     case NSCursorUpdate:

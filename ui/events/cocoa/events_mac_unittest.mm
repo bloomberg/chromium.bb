@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -494,6 +496,46 @@ TEST_F(EventsMacTest, TrackpadScrollThenFlick) {
     ui::ScrollEvent end(ns_events[5]);
     EXPECT_EQ(ui::EventMomentumPhase::END, end.momentum_phase());
     EXPECT_EQ(0, end.y_offset_ordinal());
+  }
+}
+
+// Check that NSFlagsChanged event is translated to key press or release event.
+TEST_F(EventsMacTest, HandleModifierOnlyKeyEvents) {
+  struct {
+    const char* description;
+    NSEventModifierFlags modifier_flags;
+    uint16_t key_code;
+    EventType expected_type;
+    KeyboardCode expected_key_code;
+  } test_cases[] = {
+      {"CapsLock pressed", NSAlphaShiftKeyMask, kVK_CapsLock, ET_KEY_PRESSED,
+       VKEY_CAPITAL},
+      {"CapsLock released", 0, kVK_CapsLock, ET_KEY_RELEASED, VKEY_CAPITAL},
+      {"Shift pressed", NSShiftKeyMask, kVK_Shift, ET_KEY_PRESSED, VKEY_SHIFT},
+      {"Shift released", 0, kVK_Shift, ET_KEY_RELEASED, VKEY_SHIFT},
+      {"Control pressed", NSControlKeyMask, kVK_Control, ET_KEY_PRESSED,
+       VKEY_CONTROL},
+      {"Control released", 0, kVK_Control, ET_KEY_RELEASED, VKEY_CONTROL},
+      {"Option pressed", NSAlternateKeyMask, kVK_Option, ET_KEY_PRESSED,
+       VKEY_MENU},
+      {"Option released", 0, kVK_Option, ET_KEY_RELEASED, VKEY_MENU},
+      {"Command pressed", NSCommandKeyMask, kVK_Command, ET_KEY_PRESSED,
+       VKEY_LWIN},
+      {"Command released", 0, kVK_Command, ET_KEY_RELEASED, VKEY_LWIN},
+      {"Shift pressed with CapsLock on", NSShiftKeyMask | NSAlphaShiftKeyMask,
+       kVK_Shift, ET_KEY_PRESSED, VKEY_SHIFT},
+      {"Shift released with CapsLock off", NSAlphaShiftKeyMask, kVK_Shift,
+       ET_KEY_RELEASED, VKEY_SHIFT},
+  };
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(::testing::Message() << "While checking case: "
+                                      << test_case.description);
+    NSEvent* native_event = cocoa_test_event_utils::KeyEventWithModifierOnly(
+        test_case.key_code, test_case.modifier_flags);
+    std::unique_ptr<ui::Event> event = EventFromNative(native_event);
+    EXPECT_TRUE(event);
+    EXPECT_EQ(test_case.expected_type, event->type());
+    EXPECT_EQ(test_case.expected_key_code, event->AsKeyEvent()->key_code());
   }
 }
 

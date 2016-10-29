@@ -235,6 +235,20 @@ NSEvent* KeyEventWithKeyCode(unsigned short key_code,
                            keyCode:key_code];
 }
 
+NSEvent* KeyEventWithModifierOnly(unsigned short key_code,
+                                  NSUInteger modifiers) {
+  return [NSEvent keyEventWithType:NSFlagsChanged
+                          location:NSZeroPoint
+                     modifierFlags:modifiers
+                         timestamp:TimeIntervalSinceSystemStartup()
+                      windowNumber:0
+                           context:nil
+                        characters:@""
+       charactersIgnoringModifiers:@""
+                         isARepeat:NO
+                           keyCode:key_code];
+}
+
 static NSEvent* EnterExitEventWithType(NSEventType event_type) {
   return [NSEvent enterExitEventWithType:event_type
                                 location:NSZeroPoint

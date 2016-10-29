@@ -74,6 +74,13 @@ NSEvent* KeyEventWithKeyCode(unsigned short key_code,
                              NSEventType event_type,
                              NSUInteger modifiers);
 
+// Returns a key event for pressing or releasing a modifier key (aka
+// NSFlagsChanged). For example |key_code| == kVK_Shift with (|modifiers| &
+// NSShiftKeyMask) != 0 means Shift is pressed and |key_code| == kVK_Shift
+// with (|modifiers| & NSShiftKeyMask) == 0 means Shift is released.
+NSEvent* KeyEventWithModifierOnly(unsigned short key_code,
+                                  NSUInteger modifiers);
+
 // Returns a mouse enter event.
 NSEvent* EnterEvent();
 
