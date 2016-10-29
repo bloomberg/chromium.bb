@@ -453,15 +453,6 @@ enum NotificationType {
 #if defined(USE_ASH)
   // Sent when wallpaper show animation has finished.
   NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-
-  // Sent when the Ash session has started. In its current incantation this is
-  // generated when the metro app has connected to the browser IPC channel.
-  // Used only on Windows.
-  NOTIFICATION_ASH_SESSION_STARTED,
-
-  // Sent when the Ash session ended. Currently this means the metro app exited.
-  // Used only on Windows.
-  NOTIFICATION_ASH_SESSION_ENDED,
 #endif
 
   // Protocol Handler Registry -----------------------------------------------
