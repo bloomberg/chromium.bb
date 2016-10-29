@@ -14,6 +14,7 @@
 
 namespace gpu {
 class GpuChannelHost;
+class GpuMemoryBufferManager;
 }
 
 namespace content {
@@ -29,7 +30,8 @@ class CONTENT_EXPORT RenderWidgetMusConnection
 
   // Create a cc output surface.
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   static RenderWidgetMusConnection* Get(int routing_id);
 

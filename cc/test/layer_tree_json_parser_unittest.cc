@@ -63,10 +63,8 @@ class LayerTreeJsonParserSanityCheck : public testing::Test {
 
 TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   LayerTreeImpl* tree = host_impl.active_tree();
 
   std::unique_ptr<LayerImpl> root_impl(LayerImpl::Create(tree, 1));
@@ -96,10 +94,8 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
 
 TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   LayerTreeImpl* tree = host_impl.active_tree();
 
   std::unique_ptr<LayerImpl> root_impl(LayerImpl::Create(tree, 1));

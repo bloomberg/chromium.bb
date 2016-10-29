@@ -44,12 +44,11 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
                                layer_size.height() - border.height());
 
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeUIResourceLayerTreeHostImpl host_impl(
-      &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
+  FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
+                                            &task_graph_runner);
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
 
@@ -149,12 +148,11 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
       bitmap_size.height() - image_remaining_bottom - image_remaining_top);
 
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeUIResourceLayerTreeHostImpl host_impl(
-      &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
+  FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
+                                            &task_graph_runner);
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
 

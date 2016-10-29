@@ -60,8 +60,6 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_compositor_frame_sink.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
@@ -195,7 +193,6 @@ class LayerTreeHostImplTest : public testing::Test,
       host_impl_->ReleaseCompositorFrameSink();
     host_impl_ = LayerTreeHostImpl::Create(
         settings, this, task_runner_provider, &stats_instrumentation_,
-        &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
         &task_graph_runner_,
         AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
     compositor_frame_sink_ = std::move(compositor_frame_sink);
@@ -496,8 +493,6 @@ class LayerTreeHostImplTest : public testing::Test,
   FakeImplTaskRunnerProvider task_runner_provider_;
   DebugScopedSetMainThreadBlocked always_main_thread_blocked_;
 
-  TestSharedBitmapManager shared_bitmap_manager_;
-  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestTaskGraphRunner task_graph_runner_;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
   std::unique_ptr<LayerTreeHostImpl> host_impl_;
@@ -2663,15 +2658,12 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
       TaskRunnerProvider* task_runner_provider,
-      SharedBitmapManager* manager,
       TaskGraphRunner* task_graph_runner,
       RenderingStatsInstrumentation* rendering_stats_instrumentation)
       : LayerTreeHostImpl(settings,
                           client,
                           task_runner_provider,
                           rendering_stats_instrumentation,
-                          manager,
-                          nullptr,
                           task_graph_runner,
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0) {}
@@ -2699,8 +2691,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =
         new LayerTreeHostImplOverridePhysicalTime(
-            settings, this, &task_runner_provider_, &shared_bitmap_manager_,
-            &task_graph_runner_, &stats_instrumentation_);
+            settings, this, &task_runner_provider_, &task_graph_runner_,
+            &stats_instrumentation_);
     host_impl_ = base::WrapUnique(host_impl_override_time);
     compositor_frame_sink_ = CreateCompositorFrameSink();
     host_impl_->SetVisible(true);
@@ -7435,7 +7427,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl =
       LayerTreeHostImpl::Create(
           settings, this, &task_runner_provider_, &stats_instrumentation_,
-          &shared_bitmap_manager_, NULL, &task_graph_runner_,
+          &task_graph_runner_,
           AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
   layer_tree_host_impl->SetVisible(true);
   layer_tree_host_impl->InitializeRenderer(compositor_frame_sink.get());
@@ -7558,15 +7550,14 @@ static std::unique_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
     bool partial_swap,
     LayerTreeHostImplClient* client,
     TaskRunnerProvider* task_runner_provider,
-    SharedBitmapManager* manager,
     TaskGraphRunner* task_graph_runner,
     RenderingStatsInstrumentation* stats_instrumentation,
     CompositorFrameSink* compositor_frame_sink) {
   settings.renderer_settings.partial_swap_enabled = partial_swap;
   std::unique_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
-      settings, client, task_runner_provider, stats_instrumentation, manager,
-      nullptr, task_graph_runner,
-      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
+      settings, client, task_runner_provider, stats_instrumentation,
+      task_graph_runner, AnimationHost::CreateForTesting(ThreadInstance::IMPL),
+      0);
   my_host_impl->SetVisible(true);
   my_host_impl->InitializeRenderer(compositor_frame_sink);
   my_host_impl->WillBeginImplFrame(
@@ -7629,7 +7620,6 @@ static std::unique_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
 }
 
 TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_refptr<TestContextProvider> provider(TestContextProvider::Create());
   provider->BindToCurrentThread();
@@ -7637,9 +7627,8 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
       FakeCompositorFrameSink::Create3d(provider));
   std::unique_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
-      DefaultSettings(), true, this, &task_runner_provider_,
-      &shared_bitmap_manager, &task_graph_runner, &stats_instrumentation_,
-      compositor_frame_sink.get());
+      DefaultSettings(), true, this, &task_runner_provider_, &task_graph_runner,
+      &stats_instrumentation_, compositor_frame_sink.get());
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
@@ -7660,7 +7649,6 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
 }
 
 TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_refptr<TestContextProvider> provider(TestContextProvider::Create());
   provider->BindToCurrentThread();
@@ -7669,8 +7657,7 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
       FakeCompositorFrameSink::Create3d(provider));
   std::unique_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
       DefaultSettings(), false, this, &task_runner_provider_,
-      &shared_bitmap_manager, &task_graph_runner, &stats_instrumentation_,
-      compositor_frame_sink.get());
+      &task_graph_runner, &stats_instrumentation_, compositor_frame_sink.get());
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
@@ -8040,7 +8027,7 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
       kSoftwareByteLimit, kSoftwareCutoff, kSoftwareResourceLimit);
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
-      &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
+      &task_graph_runner_,
       AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
 
   // Gpu compositing.
@@ -8155,9 +8142,8 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
 class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
  public:
   void SetUp() override {
-    fake_host_impl_ =
-        new FakeLayerTreeHostImpl(LayerTreeSettings(), &task_runner_provider_,
-                                  &shared_bitmap_manager_, &task_graph_runner_);
+    fake_host_impl_ = new FakeLayerTreeHostImpl(
+        LayerTreeSettings(), &task_runner_provider_, &task_graph_runner_);
     host_impl_.reset(fake_host_impl_);
     compositor_frame_sink_ = CreateCompositorFrameSink();
     host_impl_->SetVisible(true);
@@ -11516,7 +11502,7 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnCompositorFrameSinkChange) {
 
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
-      &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
+      &task_graph_runner_,
       AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
   host_impl_->SetVisible(true);
 

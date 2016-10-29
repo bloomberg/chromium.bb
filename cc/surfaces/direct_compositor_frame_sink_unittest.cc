@@ -57,7 +57,8 @@ class DirectCompositorFrameSinkTest : public testing::Test {
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
     compositor_frame_sink_.reset(new DirectCompositorFrameSink(
         kArbitraryFrameSinkId, &surface_manager_, display_.get(),
-        context_provider_, nullptr));
+        context_provider_, nullptr, &gpu_memory_buffer_manager_,
+        &bitmap_manager_));
 
     compositor_frame_sink_->BindToClient(&compositor_frame_sink_client_);
     display_->Resize(display_size_);

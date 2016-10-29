@@ -18,7 +18,6 @@
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"

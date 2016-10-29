@@ -261,9 +261,6 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
 
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
-  params.shared_bitmap_manager = compositor_deps_->GetSharedBitmapManager();
-  params.gpu_memory_buffer_manager =
-      compositor_deps_->GetGpuMemoryBufferManager();
   params.settings = &settings;
   params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
   params.main_task_runner =

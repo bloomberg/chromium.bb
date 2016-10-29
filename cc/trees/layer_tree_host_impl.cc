@@ -172,15 +172,12 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     LayerTreeHostImplClient* client,
     TaskRunnerProvider* task_runner_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     std::unique_ptr<AnimationHost> animation_host,
     int id) {
   return base::WrapUnique(new LayerTreeHostImpl(
       settings, client, task_runner_provider, rendering_stats_instrumentation,
-      shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner,
-      std::move(animation_host), id));
+      task_graph_runner, std::move(animation_host), id));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -188,8 +185,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     LayerTreeHostImplClient* client,
     TaskRunnerProvider* task_runner_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     std::unique_ptr<AnimationHost> animation_host,
     int id)
@@ -233,8 +228,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       animation_host_(std::move(animation_host)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
-      shared_bitmap_manager_(shared_bitmap_manager),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       task_graph_runner_(task_graph_runner),
       id_(id),
       requires_high_res_to_draw_(false),
@@ -2305,8 +2298,9 @@ bool LayerTreeHostImpl::InitializeRenderer(
   compositor_frame_sink_ = compositor_frame_sink;
   has_valid_compositor_frame_sink_ = true;
   resource_provider_ = base::MakeUnique<ResourceProvider>(
-      compositor_frame_sink_->context_provider(), shared_bitmap_manager_,
-      gpu_memory_buffer_manager_,
+      compositor_frame_sink_->context_provider(),
+      compositor_frame_sink_->shared_bitmap_manager(),
+      compositor_frame_sink_->gpu_memory_buffer_manager(),
       task_runner_provider_->blocking_main_thread_task_runner(),
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.texture_id_allocation_chunk_size,

@@ -12,7 +12,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/mock_occlusion_tracker.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -39,10 +38,8 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   //
 
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<LayerImpl> owning_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
   owning_layer->SetHasRenderSurface(true);
@@ -90,12 +87,10 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
 
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<LayerImpl> root_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
 
@@ -163,10 +158,8 @@ class TestRenderPassSink : public RenderPassSink {
 
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<LayerImpl> root_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
 

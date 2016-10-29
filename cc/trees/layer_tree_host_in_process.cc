@@ -214,8 +214,6 @@ LayerTreeHostInProcess::LayerTreeHostInProcess(
       gpu_rasterization_histogram_recorded_(false),
       did_complete_scale_animation_(false),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
-      shared_bitmap_manager_(params->shared_bitmap_manager),
-      gpu_memory_buffer_manager_(params->gpu_memory_buffer_manager),
       task_graph_runner_(params->task_graph_runner),
       image_serialization_processor_(params->image_serialization_processor) {
   DCHECK(task_graph_runner_);
@@ -562,14 +560,11 @@ LayerTreeHostInProcess::CreateLayerTreeHostImpl(
 
   std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings_, client, task_runner_provider_.get(),
-      rendering_stats_instrumentation_.get(), shared_bitmap_manager_,
-      gpu_memory_buffer_manager_, task_graph_runner_,
+      rendering_stats_instrumentation_.get(), task_graph_runner_,
       std::move(animation_host_impl), id_);
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentIsSuitableForGpuRasterization(
       content_is_suitable_for_gpu_rasterization_);
-  shared_bitmap_manager_ = NULL;
-  gpu_memory_buffer_manager_ = NULL;
   task_graph_runner_ = NULL;
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();
   return host_impl;

@@ -12,7 +12,6 @@
 
 namespace cc {
 class ContextProvider;
-class GpuMemoryBufferManager;
 class VulkanContextProvider;
 class SharedBitmapManager;
 class SurfaceManager;
@@ -82,8 +81,6 @@ class UI_ANDROID_EXPORT ContextProviderFactory {
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
   virtual cc::FrameSinkId AllocateFrameSinkId() = 0;
-
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 };

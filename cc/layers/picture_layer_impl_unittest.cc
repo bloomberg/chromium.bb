@@ -34,7 +34,6 @@
 #include "cc/test/gpu_rasterization_enabled_settings.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"

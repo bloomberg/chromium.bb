@@ -54,7 +54,9 @@ class BitmapUploader : public cc::CompositorFrameSinkClient {
  private:
   void Upload();
 
-  void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
+  void OnGpuChannelEstablished(
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   uint32_t BindTextureForSize(const gfx::Size& size);
 

@@ -12,7 +12,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -45,7 +44,6 @@ class PictureLayerImplPerfTest : public testing::Test {
         compositor_frame_sink_(FakeCompositorFrameSink::Create3d()),
         host_impl_(LayerTreeSettings(),
                    &task_runner_provider_,
-                   &shared_bitmap_manager_,
                    &task_graph_runner_),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
@@ -172,7 +170,6 @@ class PictureLayerImplPerfTest : public testing::Test {
   }
 
  protected:
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeImplTaskRunnerProvider task_runner_provider_;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;

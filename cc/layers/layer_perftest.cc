@@ -25,9 +25,7 @@ static const int kTimeCheckInterval = 10;
 class LayerPerfTest : public testing::Test {
  public:
   LayerPerfTest()
-      : host_impl_(&task_runner_provider_,
-                   &shared_bitmap_manager_,
-                   &task_graph_runner_),
+      : host_impl_(&task_runner_provider_, &task_graph_runner_),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
@@ -46,7 +44,6 @@ class LayerPerfTest : public testing::Test {
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 

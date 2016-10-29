@@ -521,10 +521,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   const float kDeviceScale = 1.666f;
 
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> sublayer_scoped_ptr(
       LayerImpl::Create(host_impl.active_tree(), 1));
@@ -3447,12 +3445,10 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -3524,12 +3520,10 @@ TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
 
 TEST_F(LayerTreeHostCommonTest, TextureLayerSnapping) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -3568,12 +3562,10 @@ TEST_F(LayerTreeHostCommonTest, TextureLayerSnapping) {
 TEST_F(LayerTreeHostCommonTest,
        OcclusionForLayerWithUninvertibleDrawTransform) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -4838,10 +4830,9 @@ TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
 
 TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   FakeLayerTreeHostImpl host_impl(host()->GetSettings(), &task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+                                  &task_graph_runner);
   host_impl.CreatePendingTree();
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.pending_tree(), 1);
@@ -4943,7 +4934,6 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
       : LayerTreeHostCommonTestBase(LCDTextTestLayerTreeSettings()),
         host_impl_(LCDTextTestLayerTreeSettings(),
                    &task_runner_provider_,
-                   &shared_bitmap_manager_,
                    &task_graph_runner_) {}
 
   scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
@@ -5002,7 +4992,6 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
   bool layers_always_allowed_lcd_text_;
 
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   scoped_refptr<AnimationTimeline> timeline_;
@@ -5160,10 +5149,8 @@ INSTANTIATE_TEST_CASE_P(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
 
   std::unique_ptr<LayerImpl> root =
@@ -5204,10 +5191,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
 
   std::unique_ptr<LayerImpl> root =
@@ -5248,10 +5233,8 @@ void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
 
   std::unique_ptr<LayerImpl> root =
@@ -5394,10 +5377,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
 
 TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
 
   std::unique_ptr<LayerImpl> root =
@@ -5904,10 +5885,8 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 12345);
@@ -6604,10 +6583,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   //       + fixed
   //
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
   std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -7635,12 +7612,11 @@ class AnimationScaleFactorTrackingLayerImpl : public LayerImpl {
 
 TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+                                  &task_graph_runner);
   std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> grand_parent =
       AnimationScaleFactorTrackingLayerImpl::Create(host_impl.active_tree(), 1);
   std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> parent =
@@ -7893,10 +7869,8 @@ static void GatherDrawnLayers(const LayerImplList* rsll,
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> grand_parent =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -8119,12 +8093,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
 TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+                                  &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -8234,12 +8207,11 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 
 TEST_F(LayerTreeHostCommonTest, AnimationScales) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+                                  &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -8313,12 +8285,11 @@ TEST_F(LayerTreeHostCommonTest,
   // Returns empty scale if layer_transforms_should_scale_layer_contents is
   // false.
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = false;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+                                  &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -8393,10 +8364,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
 
 TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   // Set two layers: the root layer clips it's child,
   // the child draws its content.
@@ -9024,10 +8993,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
 
 TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -9213,10 +9180,8 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
 
 TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   host_impl.CreatePendingTree();
   std::unique_ptr<LayerImpl> root =

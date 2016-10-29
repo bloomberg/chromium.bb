@@ -49,6 +49,8 @@ class RendererCompositorFrameSink
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       scoped_refptr<cc::ContextProvider> context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      cc::SharedBitmapManager* shared_bitmap_manager,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
   RendererCompositorFrameSink(
       int32_t routing_id,

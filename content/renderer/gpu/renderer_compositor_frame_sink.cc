@@ -32,9 +32,13 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    cc::SharedBitmapManager* shared_bitmap_manager,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : CompositorFrameSink(std::move(context_provider),
-                          std::move(worker_context_provider)),
+                          std::move(worker_context_provider),
+                          gpu_memory_buffer_manager,
+                          shared_bitmap_manager),
       compositor_frame_sink_id_(compositor_frame_sink_id),
       compositor_frame_sink_filter_(
           RenderThreadImpl::current()->compositor_message_filter()),

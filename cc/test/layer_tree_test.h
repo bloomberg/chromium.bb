@@ -31,7 +31,6 @@ class ProxyImpl;
 class ProxyMain;
 class TestContextProvider;
 class TestCompositorFrameSink;
-class TestGpuMemoryBufferManager;
 class TestTaskGraphRunner;
 class TestWebGraphicsContext3D;
 

@@ -8,7 +8,6 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +21,6 @@ class ScrollbarAnimationControllerLinearFadeTest
  public:
   ScrollbarAnimationControllerLinearFadeTest()
       : host_impl_(&task_runner_provider_,
-                   &shared_bitmap_manager_,
                    &task_graph_runner_),
         did_request_redraw_(false),
         did_request_animate_(false) {}
@@ -79,7 +77,6 @@ class ScrollbarAnimationControllerLinearFadeTest
   virtual ScrollbarOrientation orientation() const { return HORIZONTAL; }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   std::unique_ptr<ScrollbarAnimationControllerLinearFade> scrollbar_controller_;

@@ -329,6 +329,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       CompositorDependencies* deps) override {
     // This could override the GpuChannel for a CompositorFrameSink that was
     // previously being created but in that case the old GpuChannel would be
@@ -346,10 +347,9 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(
         std::move(compositor_context_provider),
-        std::move(worker_context_provider), deps->GetSharedBitmapManager(),
-        deps->GetGpuMemoryBufferManager(), settings.renderer_settings,
-        task_runner, synchronous_composite,
-        false /* force_disable_reclaim_resources */);
+        std::move(worker_context_provider), nullptr /* shared_bitmap_manager */,
+        gpu_memory_buffer_manager, settings.renderer_settings, task_runner,
+        synchronous_composite, false /* force_disable_reclaim_resources */);
     compositor_frame_sink->SetClient(this);
     compositor_frame_sinks_[routing_id] = compositor_frame_sink.get();
     return std::move(compositor_frame_sink);

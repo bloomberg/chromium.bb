@@ -27,8 +27,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
     impl_task_runner_provider_ =
         base::WrapUnique(new FakeImplTaskRunnerProvider);
     layer_tree_host_impl_ = base::MakeUnique<FakeLayerTreeHostImpl>(
-        impl_task_runner_provider_.get(), &shared_bitmap_manager_,
-        &task_graph_runner_);
+        impl_task_runner_provider_.get(), &task_graph_runner_);
 
     layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_,
                                                  &task_graph_runner_);
@@ -46,7 +45,6 @@ class MicroBenchmarkControllerTest : public testing::Test {
 
   FakeLayerTreeHostClient layer_tree_host_client_;
   TestTaskGraphRunner task_graph_runner_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   std::unique_ptr<FakeLayerTreeHostImpl> layer_tree_host_impl_;
   std::unique_ptr<FakeImplTaskRunnerProvider> impl_task_runner_provider_;

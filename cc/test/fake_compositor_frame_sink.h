@@ -18,6 +18,8 @@
 #include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 
 namespace cc {
@@ -72,6 +74,9 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   FakeCompositorFrameSink(
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
+
+  TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
+  TestSharedBitmapManager test_shared_bitmap_manager_;
 
   std::unique_ptr<CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;

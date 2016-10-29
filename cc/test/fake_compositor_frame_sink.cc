@@ -17,8 +17,15 @@ FakeCompositorFrameSink::FakeCompositorFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider)
     : CompositorFrameSink(std::move(context_provider),
-                          std::move(worker_context_provider)),
-      weak_ptr_factory_(this) {}
+                          std::move(worker_context_provider),
+                          nullptr,
+                          nullptr),
+      weak_ptr_factory_(this) {
+  gpu_memory_buffer_manager_ =
+      context_provider_ ? &test_gpu_memory_buffer_manager_ : nullptr;
+  shared_bitmap_manager_ =
+      context_provider_ ? nullptr : &test_shared_bitmap_manager_;
+}
 
 FakeCompositorFrameSink::~FakeCompositorFrameSink() = default;
 

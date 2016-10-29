@@ -44,7 +44,6 @@ class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
 class RendererSettings;
-class SharedBitmapManager;
 class SurfaceIdAllocator;
 class SurfaceManager;
 class TaskGraphRunner;
@@ -58,7 +57,6 @@ class Size;
 
 namespace gpu {
 class GpuMemoryBufferManager;
-struct Mailbox;
 }
 
 namespace ui {
@@ -125,9 +123,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Returns the OpenGL target to use for image textures.
   virtual uint32_t GetImageTextureTarget(gfx::BufferFormat format,
                                          gfx::BufferUsage usage) = 0;
-
-  // Gets the shared bitmap manager for software mode.
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
   // Gets the GPU memory buffer manager.
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;

@@ -22,7 +22,6 @@
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/fake_tile_task_manager.h"
 #include "cc/test/test_layer_tree_host_base.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
 #include "cc/tiles/tile.h"

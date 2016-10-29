@@ -10,44 +10,25 @@
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/layer_tree_settings_for_testing.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     TaskRunnerProvider* task_runner_provider,
-    SharedBitmapManager* manager,
     TaskGraphRunner* task_graph_runner)
     : FakeLayerTreeHostImpl(LayerTreeSettingsForTesting(),
                             task_runner_provider,
-                            manager,
-                            task_graph_runner,
-                            nullptr) {}
+                            task_graph_runner) {}
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     const LayerTreeSettings& settings,
     TaskRunnerProvider* task_runner_provider,
-    SharedBitmapManager* manager,
     TaskGraphRunner* task_graph_runner)
-    : FakeLayerTreeHostImpl(settings,
-                            task_runner_provider,
-                            manager,
-                            task_graph_runner,
-                            nullptr) {}
-
-FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
-    const LayerTreeSettings& settings,
-    TaskRunnerProvider* task_runner_provider,
-    SharedBitmapManager* manager,
-    TaskGraphRunner* task_graph_runner,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : LayerTreeHostImpl(settings,
                         &client_,
                         task_runner_provider,
                         &stats_instrumentation_,
-                        manager,
-                        gpu_memory_buffer_manager,
                         task_graph_runner,
                         AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                         0),

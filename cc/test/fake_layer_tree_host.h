@@ -9,7 +9,6 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -90,7 +89,6 @@ class FakeLayerTreeHost : public LayerTreeHostInProcess {
  private:
   FakeImplTaskRunnerProvider task_runner_provider_;
   FakeLayerTreeHostClient* client_;
-  TestSharedBitmapManager manager_;
   FakeLayerTreeHostImpl host_impl_;
   bool needs_commit_;
 };

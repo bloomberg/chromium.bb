@@ -117,8 +117,6 @@ BlimpEmbedderCompositor::BlimpEmbedderCompositor(
 
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
-  params.gpu_memory_buffer_manager =
-      compositor_dependencies_->GetGpuMemoryBufferManager();
   params.task_graph_runner = g_task_graph_runner.Pointer();
   cc::LayerTreeSettings settings;
   params.settings = &settings;
@@ -203,6 +201,7 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       compositor_dependencies_->GetGpuMemoryBufferManager();
+  cc::SharedBitmapManager* shared_bitmap_manager = nullptr;
 
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   auto display_output_surface =
@@ -216,7 +215,7 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
       display_output_surface->capabilities().max_frames_pending));
 
   display_ = base::MakeUnique<cc::Display>(
-      nullptr /*shared_bitmap_manager*/, gpu_memory_buffer_manager,
+      shared_bitmap_manager, gpu_memory_buffer_manager,
       host_->GetSettings().renderer_settings, std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner.get()));
@@ -226,7 +225,8 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
   // The Browser compositor and display share the same context provider.
   auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
       frame_sink_id_, compositor_dependencies_->GetSurfaceManager(),
-      display_.get(), context_provider_, nullptr);
+      display_.get(), context_provider_, nullptr, gpu_memory_buffer_manager,
+      shared_bitmap_manager);
 
   host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }

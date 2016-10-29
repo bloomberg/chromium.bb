@@ -16,7 +16,6 @@ class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
  public:
   explicit FakeUIResourceLayerTreeHostImpl(
       TaskRunnerProvider* task_runner_provider,
-      SharedBitmapManager* manager,
       TaskGraphRunner* task_graph_runner);
   ~FakeUIResourceLayerTreeHostImpl() override;
 

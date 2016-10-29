@@ -210,7 +210,6 @@ class TextureLayerTest : public testing::Test {
   TextureLayerTest()
       : compositor_frame_sink_(FakeCompositorFrameSink::Create3d()),
         host_impl_(&task_runner_provider_,
-                   &shared_bitmap_manager_,
                    &task_graph_runner_),
         test_data_(&shared_bitmap_manager_) {}
 

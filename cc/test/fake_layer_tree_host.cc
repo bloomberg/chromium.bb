@@ -37,7 +37,6 @@ FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
       client_(client),
       host_impl_(*params->settings,
                  &task_runner_provider_,
-                 &manager_,
                  params->task_graph_runner),
       needs_commit_(false) {
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner =

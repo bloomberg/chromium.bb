@@ -92,8 +92,6 @@ class TestCompositorFrameSink : public CompositorFrameSink,
 
   const bool synchronous_composite_;
   const RendererSettings renderer_settings_;
-  SharedBitmapManager* const shared_bitmap_manager_;
-  gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

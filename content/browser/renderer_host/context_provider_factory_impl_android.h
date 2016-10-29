@@ -64,7 +64,6 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) override;
   cc::SurfaceManager* GetSurfaceManager() override;
   cc::FrameSinkId AllocateFrameSinkId() override;
-  cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:

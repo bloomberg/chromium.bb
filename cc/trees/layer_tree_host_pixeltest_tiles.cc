@@ -11,7 +11,6 @@
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_test.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 

@@ -45,10 +45,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}  // namespace gpu
-
 namespace cc {
 class AnimationHost;
 class AnimationEvents;
@@ -69,7 +65,6 @@ class RemoteProtoChannel;
 class RenderingStatsInstrumentation;
 class ResourceProvider;
 class ResourceUpdateQueue;
-class SharedBitmapManager;
 class TaskGraphRunner;
 struct PendingPageScaleAnimation;
 struct RenderingStats;
@@ -85,8 +80,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   // std::move()d to the Create* functions.
   struct CC_EXPORT InitParams {
     LayerTreeHostClient* client = nullptr;
-    SharedBitmapManager* shared_bitmap_manager = nullptr;
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
     TaskGraphRunner* task_graph_runner = nullptr;
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
@@ -97,7 +90,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
     ~InitParams();
   };
 
-  // The SharedBitmapManager will be used on the compositor thread.
   static std::unique_ptr<LayerTreeHostInProcess> CreateThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
       InitParams* params);
@@ -275,15 +267,8 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   void SetUIResourceManagerForTesting(
       std::unique_ptr<UIResourceManager> ui_resource_manager);
 
-  // shared_bitmap_manager(), gpu_memory_buffer_manager(), and
-  // task_graph_runner() return valid values only until the LayerTreeHostImpl is
-  // created in CreateLayerTreeHostImpl().
-  SharedBitmapManager* shared_bitmap_manager() const {
-    return shared_bitmap_manager_;
-  }
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() const {
-    return gpu_memory_buffer_manager_;
-  }
+  // task_graph_runner() returns a valid value only until the LayerTreeHostImpl
+  // is created in CreateLayerTreeHostImpl().
   TaskGraphRunner* task_graph_runner() const { return task_graph_runner_; }
 
   void OnCommitForSwapPromises();
@@ -355,8 +340,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   bool next_commit_forces_redraw_ = false;
   bool next_commit_forces_recalculate_raster_scales_ = false;
 
-  SharedBitmapManager* shared_bitmap_manager_;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   TaskGraphRunner* task_graph_runner_;
 
   ImageSerializationProcessor* image_serialization_processor_;

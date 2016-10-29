@@ -21,7 +21,6 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
@@ -1308,12 +1307,10 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   LayerTreeSettings settings;
 
   StubLayerTreeHostClient layer_tree_host_client;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
 
   LayerTreeHostInProcess::InitParams params;
   params.client = &layer_tree_host_client;
-  params.shared_bitmap_manager = &shared_bitmap_manager;
   params.task_graph_runner = &task_graph_runner;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();

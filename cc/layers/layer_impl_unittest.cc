@@ -14,7 +14,6 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -124,12 +123,10 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // The constructor on this will fake that we are on the correct thread.
   // Create a simple LayerImpl tree:
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(compositor_frame_sink.get()));
   std::unique_ptr<LayerImpl> root_clip_ptr =
@@ -244,12 +241,10 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 
 TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(compositor_frame_sink.get()));
   host_impl.active_tree()->SetRootLayerForTesting(
@@ -374,12 +369,10 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
 
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(compositor_frame_sink.get()));
   host_impl.active_tree()->SetRootLayerForTesting(
@@ -417,7 +410,6 @@ class LayerImplScrollTest : public testing::Test {
   LayerImplScrollTest()
       : host_impl_(settings(),
                    &task_runner_provider_,
-                   &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_id_(7) {
     host_impl_.active_tree()->SetRootLayerForTesting(
@@ -460,7 +452,6 @@ class LayerImplScrollTest : public testing::Test {
 
  private:
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;

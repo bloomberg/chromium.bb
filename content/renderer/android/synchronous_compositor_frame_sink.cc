@@ -104,13 +104,16 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
 SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int routing_id,
     uint32_t compositor_frame_sink_id,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::CompositorFrameSink(std::move(context_provider),
-                              std::move(worker_context_provider)),
+                              std::move(worker_context_provider),
+                              gpu_memory_buffer_manager,
+                              nullptr),
       routing_id_(routing_id),
       compositor_frame_sink_id_(compositor_frame_sink_id),
       registry_(registry),

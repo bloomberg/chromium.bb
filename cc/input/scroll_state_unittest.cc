@@ -63,10 +63,8 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
   ScrollState scroll_state(scroll_state_data);
 
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
 
   std::unique_ptr<LayerImpl> layer_impl =
       LayerImpl::Create(host_impl.active_tree(), 1);

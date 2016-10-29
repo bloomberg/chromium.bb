@@ -50,7 +50,6 @@
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_compositor_frame_sink.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"

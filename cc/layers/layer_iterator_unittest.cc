@@ -94,10 +94,7 @@ void IterateFrontToBack(LayerImplList* render_surface_layer_list) {
 class LayerIteratorTest : public testing::Test {
  public:
   LayerIteratorTest()
-      : host_impl_(&task_runner_provider_,
-                   &shared_bitmap_manager_,
-                   &task_graph_runner_),
-        id_(1) {}
+      : host_impl_(&task_runner_provider_, &task_graph_runner_), id_(1) {}
 
   std::unique_ptr<TestLayerImpl> CreateLayer() {
     return TestLayerImpl::Create(host_impl_.active_tree(), id_++);
@@ -105,7 +102,6 @@ class LayerIteratorTest : public testing::Test {
 
  protected:
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 

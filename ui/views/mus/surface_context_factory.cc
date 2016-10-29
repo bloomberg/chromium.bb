@@ -41,9 +41,9 @@ void SurfaceContextFactory::CreateCompositorFrameSink(
   ui::mojom::CompositorFrameSinkType compositor_frame_sink_type =
       native_widget->compositor_frame_sink_type();
   auto compositor_frame_sink = window->RequestCompositorFrameSink(
-      compositor_frame_sink_type,
-      make_scoped_refptr(
-          new ui::ContextProvider(gpu_service_->EstablishGpuChannelSync())));
+      compositor_frame_sink_type, make_scoped_refptr(new ui::ContextProvider(
+                                      gpu_service_->EstablishGpuChannelSync())),
+      gpu_service_->gpu_memory_buffer_manager());
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
@@ -76,11 +76,6 @@ uint32_t SurfaceContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
                                                       gfx::BufferUsage usage) {
   // No GpuMemoryBuffer support, so just return GL_TEXTURE_2D.
   return GL_TEXTURE_2D;
-}
-
-cc::SharedBitmapManager* SurfaceContextFactory::GetSharedBitmapManager() {
-  // NOTIMPLEMENTED();
-  return nullptr;
 }
 
 gpu::GpuMemoryBufferManager*

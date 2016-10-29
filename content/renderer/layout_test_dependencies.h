@@ -14,11 +14,13 @@ namespace cc {
 class ContextProvider;
 class CopyOutputRequest;
 class CompositorFrameSink;
+class SharedBitmapManager;
 class SwapPromise;
 }
 
 namespace gpu {
 class GpuChannelHost;
+class GpuMemoryBufferManager;
 }
 
 namespace content {
@@ -33,6 +35,7 @@ class LayoutTestDependencies {
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       CompositorDependencies* deps) = 0;
 
   // Returns a SwapPromise which should be queued for the next compositor frame.

@@ -11,8 +11,6 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_picture_layer_impl.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tile_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,9 +30,7 @@ class TestLayerTreeHostBase : public testing::Test {
   virtual std::unique_ptr<FakeLayerTreeHostImpl> CreateHostImpl(
       const LayerTreeSettings& settings,
       TaskRunnerProvider* task_runner_provider,
-      SharedBitmapManager* shared_bitmap_manager,
-      TaskGraphRunner* task_graph_runner,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_);
+      TaskGraphRunner* task_graph_runner);
   virtual std::unique_ptr<TaskGraphRunner> CreateTaskGraphRunner();
   virtual void InitializeRenderer();
 
@@ -68,9 +64,7 @@ class TestLayerTreeHostBase : public testing::Test {
   void SetInitialTreePriority();
 
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<TaskGraphRunner> task_graph_runner_;
-  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
   std::unique_ptr<FakeLayerTreeHostImpl> host_impl_;
 

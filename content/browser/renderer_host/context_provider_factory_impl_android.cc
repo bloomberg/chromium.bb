@@ -138,10 +138,6 @@ cc::FrameSinkId ContextProviderFactoryImpl::AllocateFrameSinkId() {
   return cc::FrameSinkId(++next_client_id_, 0 /* sink_id */);
 }
 
-cc::SharedBitmapManager* ContextProviderFactoryImpl::GetSharedBitmapManager() {
-  return HostSharedBitmapManager::current();
-}
-
 gpu::GpuMemoryBufferManager*
 ContextProviderFactoryImpl::GetGpuMemoryBufferManager() {
   return BrowserGpuMemoryBufferManager::current();

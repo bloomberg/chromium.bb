@@ -57,7 +57,6 @@ class InProcessContextFactory : public ContextFactory {
   bool DoesCreateTestContexts() override;
   uint32_t GetImageTextureTarget(gfx::BufferFormat format,
                                  gfx::BufferUsage usage) override;
-  cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   cc::FrameSinkId AllocateFrameSinkId() override;

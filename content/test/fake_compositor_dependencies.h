@@ -7,8 +7,6 @@
 
 #include "base/macros.h"
 #include "cc/output/buffer_to_texture_target_map.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
@@ -36,8 +34,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() override;
-  cc::SharedBitmapManager* GetSharedBitmapManager() override;
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::scheduler::RendererScheduler* GetRendererScheduler() override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
@@ -45,8 +41,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsThreadedAnimationEnabled() override;
 
  private:
-  cc::TestSharedBitmapManager shared_bitmap_manager_;
-  cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   cc::TestTaskGraphRunner task_graph_runner_;
   blink::scheduler::FakeRendererScheduler renderer_scheduler_;
   cc::BufferToTextureTargetMap buffer_to_texture_target_map_;

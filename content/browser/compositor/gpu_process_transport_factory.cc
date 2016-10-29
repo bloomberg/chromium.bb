@@ -514,8 +514,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           display_output_surface =
               base::MakeUnique<MusBrowserCompositorOutputSurface>(
                   compositor->window(), context_provider,
-                  compositor->vsync_manager(), begin_frame_source.get(),
-                  std::move(validator));
+                  GetGpuMemoryBufferManager(), compositor->vsync_manager(),
+                  begin_frame_source.get(), std::move(validator));
 #else
           NOTREACHED();
 #endif
@@ -560,7 +560,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           : base::MakeUnique<cc::DirectCompositorFrameSink>(
                 compositor->frame_sink_id(), surface_manager_.get(),
                 data->display.get(), context_provider,
-                shared_worker_context_provider_);
+                shared_worker_context_provider_, GetGpuMemoryBufferManager(),
+                HostSharedBitmapManager::current());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
@@ -631,10 +632,6 @@ uint32_t GpuProcessTransportFactory::GetImageTextureTarget(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   return BrowserGpuMemoryBufferManager::GetImageTextureTarget(format, usage);
-}
-
-cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {
-  return HostSharedBitmapManager::current();
 }
 
 gpu::GpuMemoryBufferManager*

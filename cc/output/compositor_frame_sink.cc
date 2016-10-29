@@ -20,15 +20,21 @@ namespace cc {
 
 CompositorFrameSink::CompositorFrameSink(
     scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider)
+    scoped_refptr<ContextProvider> worker_context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    SharedBitmapManager* shared_bitmap_manager)
     : context_provider_(std::move(context_provider)),
-      worker_context_provider_(std::move(worker_context_provider)) {
+      worker_context_provider_(std::move(worker_context_provider)),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      shared_bitmap_manager_(shared_bitmap_manager) {
   client_thread_checker_.DetachFromThread();
 }
 
 CompositorFrameSink::CompositorFrameSink(
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : vulkan_context_provider_(vulkan_context_provider) {
+    : vulkan_context_provider_(vulkan_context_provider),
+      gpu_memory_buffer_manager_(nullptr),
+      shared_bitmap_manager_(nullptr) {
   client_thread_checker_.DetachFromThread();
 }
 

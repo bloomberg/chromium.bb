@@ -1948,7 +1948,8 @@ RenderThreadImpl::CreateCompositorFrameSink(
         RenderWidgetMusConnection::GetOrCreate(routing_id);
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
         EstablishGpuChannelSync();
-    return connection->CreateCompositorFrameSink(std::move(gpu_channel_host));
+    return connection->CreateCompositorFrameSink(std::move(gpu_channel_host),
+                                                 GetGpuMemoryBufferManager());
   }
 #endif
 
@@ -1986,8 +1987,8 @@ RenderThreadImpl::CreateCompositorFrameSink(
     DCHECK(!layout_test_mode());
     return base::MakeUnique<RendererCompositorFrameSink>(
         routing_id, compositor_frame_sink_id,
-        CreateExternalBeginFrameSource(routing_id), nullptr, nullptr,
-        std::move(frame_swap_message_queue));
+        CreateExternalBeginFrameSource(routing_id), nullptr, nullptr, nullptr,
+        shared_bitmap_manager(), std::move(frame_swap_message_queue));
   }
 
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider =
@@ -2032,14 +2033,15 @@ RenderThreadImpl::CreateCompositorFrameSink(
   if (layout_test_deps_) {
     return layout_test_deps_->CreateCompositorFrameSink(
         routing_id, std::move(gpu_channel_host), std::move(context_provider),
-        std::move(worker_context_provider), this);
+        std::move(worker_context_provider), GetGpuMemoryBufferManager(),
+        this);
   }
 
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
     return base::MakeUnique<SynchronousCompositorFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
-        routing_id, compositor_frame_sink_id,
+        GetGpuMemoryBufferManager(), routing_id, compositor_frame_sink_id,
         CreateExternalBeginFrameSource(routing_id),
         sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue));
@@ -2048,7 +2050,8 @@ RenderThreadImpl::CreateCompositorFrameSink(
   return base::WrapUnique(new RendererCompositorFrameSink(
       routing_id, compositor_frame_sink_id,
       CreateExternalBeginFrameSource(routing_id), std::move(context_provider),
-      std::move(worker_context_provider), std::move(frame_swap_message_queue)));
+      std::move(worker_context_provider), GetGpuMemoryBufferManager(),
+      nullptr, std::move(frame_swap_message_queue)));
 }
 
 AssociatedInterfaceRegistry*

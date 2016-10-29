@@ -187,9 +187,6 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
-  params.shared_bitmap_manager = context_factory_->GetSharedBitmapManager();
-  params.gpu_memory_buffer_manager =
-      context_factory_->GetGpuMemoryBufferManager();
   params.task_graph_runner = context_factory_->GetTaskGraphRunner();
   params.settings = &settings;
   params.main_task_runner = task_runner_;

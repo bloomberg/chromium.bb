@@ -36,7 +36,6 @@ class CompositorMutableStateTest : public testing::Test {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
     m_hostImpl.reset(new FakeLayerTreeHostImpl(settings, &m_taskRunnerProvider,
-                                               &m_sharedBitmapManager,
                                                &m_taskGraphRunner));
     m_hostImpl->SetVisible(true);
     EXPECT_TRUE(m_hostImpl->InitializeRenderer(m_compositorFrameSink.get()));
@@ -61,7 +60,6 @@ class CompositorMutableStateTest : public testing::Test {
   // message loop (one example is the task runner provider). We construct one
   // here so that it's installed in TLA and can be found by other cc classes.
   base::MessageLoop m_messageLoop;
-  TestSharedBitmapManager m_sharedBitmapManager;
   TestTaskGraphRunner m_taskGraphRunner;
   FakeImplTaskRunnerProvider m_taskRunnerProvider;
   std::unique_ptr<FakeCompositorFrameSink> m_compositorFrameSink;

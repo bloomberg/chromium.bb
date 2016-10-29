@@ -113,8 +113,6 @@ LayerTreeHostRemoteForTesting::Create(
     LayerTreeHostClient* client,
     std::unique_ptr<AnimationHost> animation_host,
     LayerTreeSettings const* settings,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
@@ -134,8 +132,7 @@ LayerTreeHostRemoteForTesting::Create(
 
   std::unique_ptr<LayerTreeHostRemoteForTesting> layer_tree_host =
       base::WrapUnique(new LayerTreeHostRemoteForTesting(&params));
-  layer_tree_host->Initialize(shared_bitmap_manager, gpu_memory_buffer_manager,
-                              task_graph_runner, main_task_runner,
+  layer_tree_host->Initialize(task_graph_runner, main_task_runner,
                               impl_task_runner,
                               std::move(image_serialization_processor));
   return layer_tree_host;
@@ -194,8 +191,6 @@ LayerTreeHostRemoteForTesting::GetInputHandler() const {
 }
 
 void LayerTreeHostRemoteForTesting::Initialize(
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
@@ -207,9 +202,8 @@ void LayerTreeHostRemoteForTesting::Initialize(
   remote_compositor_bridge_impl->SetRemoteHost(this);
 
   layer_tree_host_in_process_ = CreateLayerTreeHostInProcess(
-      layer_tree_host_in_process_client_.get(), shared_bitmap_manager,
-      gpu_memory_buffer_manager, task_graph_runner, GetSettings(),
-      main_task_runner, impl_task_runner);
+      layer_tree_host_in_process_client_.get(), task_graph_runner,
+      GetSettings(), main_task_runner, impl_task_runner);
 
   compositor_state_deserializer_ =
       base::MakeUnique<CompositorStateDeserializer>(
@@ -233,8 +227,6 @@ void LayerTreeHostRemoteForTesting::Initialize(
 std::unique_ptr<LayerTreeHostInProcess>
 LayerTreeHostRemoteForTesting::CreateLayerTreeHostInProcess(
     LayerTreeHostClient* client,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -242,8 +234,6 @@ LayerTreeHostRemoteForTesting::CreateLayerTreeHostInProcess(
   LayerTreeHostInProcess::InitParams params;
 
   params.client = client;
-  params.shared_bitmap_manager = shared_bitmap_manager;
-  params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.task_graph_runner = task_graph_runner;
   params.settings = &settings;
   params.main_task_runner = main_task_runner;

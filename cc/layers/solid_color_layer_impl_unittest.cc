@@ -31,8 +31,7 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, nullptr,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
@@ -56,8 +55,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, nullptr,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
@@ -84,8 +82,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, nullptr,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
@@ -111,8 +108,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, nullptr,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->SetBounds(layer_size);

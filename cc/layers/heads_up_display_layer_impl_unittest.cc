@@ -9,7 +9,6 @@
 #include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,12 +34,10 @@ void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
 
 TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());

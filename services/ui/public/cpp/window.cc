@@ -271,11 +271,13 @@ bool Window::IsDrawn() const {
 
 std::unique_ptr<WindowCompositorFrameSink> Window::RequestCompositorFrameSink(
     mojom::CompositorFrameSinkType type,
-    scoped_refptr<cc::ContextProvider> context_provider) {
+    scoped_refptr<cc::ContextProvider> context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   std::unique_ptr<WindowCompositorFrameSinkBinding>
       compositor_frame_sink_binding;
   std::unique_ptr<WindowCompositorFrameSink> compositor_frame_sink =
       WindowCompositorFrameSink::Create(std::move(context_provider),
+                                        gpu_memory_buffer_manager,
                                         &compositor_frame_sink_binding);
   AttachCompositorFrameSink(type, std::move(compositor_frame_sink_binding));
   return compositor_frame_sink;

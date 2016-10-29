@@ -233,7 +233,6 @@ class CONTENT_EXPORT RenderThreadImpl
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() override;
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::scheduler::RendererScheduler* GetRendererScheduler() override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
@@ -248,6 +247,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
+
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
 
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
       bool use_software,

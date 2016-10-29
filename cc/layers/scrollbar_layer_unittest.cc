@@ -645,8 +645,7 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
     LayerTreeSettings layer_tree_settings;
     layer_tree_settings.verify_clip_tree_calculations = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(
-        layer_tree_settings, &task_runner_provider_, &shared_bitmap_manager_,
-        &task_graph_runner_));
+        layer_tree_settings, &task_runner_provider_, &task_graph_runner_));
 
     const int kThumbThickness = 3;
     const int kTrackStart = 0;
@@ -673,7 +672,6 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
 
  protected:
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   std::unique_ptr<FakeLayerTreeHostImpl> host_impl_;
   std::unique_ptr<SolidColorScrollbarLayerImpl> horizontal_scrollbar_layer_;

@@ -21,7 +21,9 @@ class TestCompositorFrameSink : public CompositorFrameSink {
       scoped_refptr<TestContextProvider> context_provider,
       scoped_refptr<TestContextProvider> worker_context_provider)
       : CompositorFrameSink(std::move(context_provider),
-                            std::move(worker_context_provider)) {}
+                            std::move(worker_context_provider),
+                            nullptr,
+                            nullptr) {}
 
   void SubmitCompositorFrame(CompositorFrame frame) override {
     client_->DidReceiveCompositorFrameAck();

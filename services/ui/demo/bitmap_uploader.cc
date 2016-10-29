@@ -40,7 +40,8 @@ BitmapUploader::BitmapUploader(Window* window)
 
 void BitmapUploader::Init(ui::GpuService* gpu_service) {
   gpu_service->EstablishGpuChannel(base::Bind(
-      &BitmapUploader::OnGpuChannelEstablished, weak_factory_.GetWeakPtr()));
+      &BitmapUploader::OnGpuChannelEstablished, weak_factory_.GetWeakPtr(),
+      gpu_service->gpu_memory_buffer_manager()));
 }
 
 BitmapUploader::~BitmapUploader() {
@@ -173,10 +174,11 @@ void BitmapUploader::Upload() {
 }
 
 void BitmapUploader::OnGpuChannelEstablished(
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   compositor_frame_sink_ = window_->RequestCompositorFrameSink(
       mojom::CompositorFrameSinkType::DEFAULT,
-      new ContextProvider(std::move(gpu_channel)));
+      new ContextProvider(std::move(gpu_channel)), gpu_memory_buffer_manager);
   compositor_frame_sink_->BindToClient(this);
 }
 

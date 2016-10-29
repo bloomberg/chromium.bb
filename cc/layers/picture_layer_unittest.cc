@@ -27,7 +27,6 @@
 #include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -252,12 +251,10 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
 
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
-  TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<FakeCompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::CreateSoftware();
-  FakeLayerTreeHostImpl host_impl(LayerTreeSettings(),
-                                  &impl_task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(
+      LayerTreeSettings(), &impl_task_runner_provider, &task_graph_runner);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
   host_impl.CreatePendingTree();
   std::unique_ptr<FakePictureLayerImpl> layer_impl =
@@ -293,14 +290,12 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
 
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
       FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
-  FakeLayerTreeHostImpl host_impl(layer_tree_settings,
-                                  &impl_task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(
+      layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
   host_impl.CreatePendingTree();
@@ -337,14 +332,12 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
 
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
       FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
-  FakeLayerTreeHostImpl host_impl(layer_tree_settings,
-                                  &impl_task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(
+      layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
   host_impl.CreatePendingTree();
@@ -385,14 +378,12 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
-  TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
       FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
-  FakeLayerTreeHostImpl host_impl(layer_tree_settings,
-                                  &impl_task_runner_provider,
-                                  &shared_bitmap_manager, &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(
+      layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(compositor_frame_sink.get()));
 
@@ -491,7 +482,6 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   StubLayerTreeHostSingleThreadClient single_thread_client;
   FakeLayerTreeHostClient host_client1;
   FakeLayerTreeHostClient host_client2;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
 
   ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
@@ -499,7 +489,6 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
 
   LayerTreeHostInProcess::InitParams params;
   params.client = &host_client1;
-  params.shared_bitmap_manager = &shared_bitmap_manager;
   params.settings = &settings;
   params.task_graph_runner = &task_graph_runner;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
@@ -513,7 +502,6 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   // TODO(sad): InitParams will be movable.
   LayerTreeHostInProcess::InitParams params2;
   params2.client = &host_client1;
-  params2.shared_bitmap_manager = &shared_bitmap_manager;
   params2.settings = &settings;
   params2.task_graph_runner = &task_graph_runner;
   params2.main_task_runner = base::ThreadTaskRunnerHandle::Get();

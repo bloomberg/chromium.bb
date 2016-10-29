@@ -14,7 +14,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_ui_resource_layer_tree_host_impl.h"
 #include "cc/test/layer_test_common.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,12 +58,11 @@ void QuadSizeTest(std::unique_ptr<UIResourceLayerImpl> layer,
 
 TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeUIResourceLayerTreeHostImpl host_impl(
-      &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
+  FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
+                                            &task_graph_runner);
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
 
@@ -105,12 +103,11 @@ void OpaqueBoundsTest(std::unique_ptr<UIResourceLayerImpl> layer,
 
 TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeUIResourceLayerTreeHostImpl host_impl(
-      &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
+  FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
+                                            &task_graph_runner);
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
 
@@ -135,12 +132,11 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
 
 TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   FakeImplTaskRunnerProvider task_runner_provider;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
       FakeCompositorFrameSink::Create3d();
-  FakeUIResourceLayerTreeHostImpl host_impl(
-      &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
+  FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
+                                            &task_graph_runner);
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(compositor_frame_sink.get());
 

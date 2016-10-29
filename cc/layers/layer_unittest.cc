@@ -27,8 +27,6 @@
 #include "cc/test/layer_internals_for_test.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -902,7 +900,6 @@ class LayerTest : public testing::Test {
   LayerTest()
       : host_impl_(LayerTreeSettings(),
                    &task_runner_provider_,
-                   &shared_bitmap_manager_,
                    &task_graph_runner_) {
     timeline_impl_ =
         AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
@@ -992,7 +989,6 @@ class LayerTest : public testing::Test {
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 
@@ -1825,9 +1821,7 @@ class LayerTreeHostFactory {
   std::unique_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
     LayerTreeHostInProcess::InitParams params;
     params.client = &client_;
-    params.shared_bitmap_manager = &shared_bitmap_manager_;
     params.task_graph_runner = &task_graph_runner_;
-    params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
     params.settings = &settings;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
     params.animation_host =
@@ -1839,9 +1833,7 @@ class LayerTreeHostFactory {
  private:
   FakeLayerTreeHostClient client_;
   StubLayerTreeHostSingleThreadClient single_thread_client_;
-  TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 };
 
 void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {

@@ -25,6 +25,10 @@ namespace gfx {
 class Size;
 }
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace ui {
 
 class InputEventHandler;
@@ -117,7 +121,8 @@ class Window {
 
   std::unique_ptr<WindowCompositorFrameSink> RequestCompositorFrameSink(
       mojom::CompositorFrameSinkType type,
-      scoped_refptr<cc::ContextProvider> context_provider);
+      scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   void AttachCompositorFrameSink(
       mojom::CompositorFrameSinkType type,

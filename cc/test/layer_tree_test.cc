@@ -98,14 +98,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* host_impl_client,
       TaskRunnerProvider* task_runner_provider,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
       RenderingStatsInstrumentation* stats_instrumentation) {
     return base::WrapUnique(new LayerTreeHostImplForTesting(
         test_hooks, settings, host_impl_client, task_runner_provider,
-        shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner,
-        stats_instrumentation));
+        task_graph_runner, stats_instrumentation));
   }
 
  protected:
@@ -114,16 +111,12 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* host_impl_client,
       TaskRunnerProvider* task_runner_provider,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
       RenderingStatsInstrumentation* stats_instrumentation)
       : LayerTreeHostImpl(settings,
                           host_impl_client,
                           task_runner_provider,
                           stats_instrumentation,
-                          shared_bitmap_manager,
-                          gpu_memory_buffer_manager,
                           task_graph_runner,
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0),
@@ -347,16 +340,12 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
       CompositorMode mode,
       LayerTreeHostClient* client,
       LayerTreeHostSingleThreadClient* single_thread_client,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
     LayerTreeHostInProcess::InitParams params;
     params.client = client;
-    params.shared_bitmap_manager = shared_bitmap_manager;
-    params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
     params.task_graph_runner = task_graph_runner;
     params.settings = &settings;
 
@@ -391,8 +380,7 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
     std::unique_ptr<LayerTreeHostImpl> host_impl =
         LayerTreeHostImplForTesting::Create(
             test_hooks_, GetSettings(), host_impl_client,
-            GetTaskRunnerProvider(), shared_bitmap_manager(),
-            gpu_memory_buffer_manager(), task_graph_runner(),
+            GetTaskRunnerProvider(), task_graph_runner(),
             rendering_stats_instrumentation());
     input_handler_weak_ptr_ = host_impl->AsWeakPtr();
     return host_impl;
@@ -433,8 +421,6 @@ class LayerTreeHostRemoteForLayerTreeTest
       TestHooks* test_hooks,
       LayerTreeHostClient* client,
       LayerTreeSettings const* settings,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
@@ -456,9 +442,8 @@ class LayerTreeHostRemoteForLayerTreeTest
     std::unique_ptr<LayerTreeHostRemoteForLayerTreeTest> layer_tree_host =
         base::WrapUnique(
             new LayerTreeHostRemoteForLayerTreeTest(&params, test_hooks));
-    layer_tree_host->Initialize(shared_bitmap_manager,
-                                gpu_memory_buffer_manager, task_graph_runner,
-                                main_task_runner, impl_task_runner,
+    layer_tree_host->Initialize(task_graph_runner, main_task_runner,
+                                impl_task_runner,
                                 std::move(image_serialization_processor));
     return layer_tree_host;
   }
@@ -467,16 +452,13 @@ class LayerTreeHostRemoteForLayerTreeTest
 
   std::unique_ptr<LayerTreeHostInProcess> CreateLayerTreeHostInProcess(
       LayerTreeHostClient* client,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) override {
     return LayerTreeHostForTesting::Create(
         test_hooks_, CompositorMode::THREADED, client, nullptr,
-        shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner,
-        settings, main_task_runner, impl_task_runner);
+        task_graph_runner, settings, main_task_runner, impl_task_runner);
   }
 
  private:
@@ -672,8 +654,7 @@ void LayerTreeTest::DoBeginTest() {
   if (IsRemoteTest()) {
     std::unique_ptr<LayerTreeHostRemoteForLayerTreeTest>
         layer_tree_host_remote = LayerTreeHostRemoteForLayerTreeTest::Create(
-            this, client_.get(), &settings_, shared_bitmap_manager_.get(),
-            gpu_memory_buffer_manager_.get(), task_graph_runner_.get(),
+            this, client_.get(), &settings_, task_graph_runner_.get(),
             main_task_runner, impl_task_runner);
     layer_tree_host_in_process_ =
         layer_tree_host_remote->layer_tree_host_in_process();
@@ -681,10 +662,8 @@ void LayerTreeTest::DoBeginTest() {
   } else {
     std::unique_ptr<LayerTreeHostForTesting> layer_tree_host_for_testing =
         LayerTreeHostForTesting::Create(
-            this, mode_, client_.get(), client_.get(),
-            shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
-            task_graph_runner_.get(), settings_, main_task_runner,
-            impl_task_runner);
+            this, mode_, client_.get(), client_.get(), task_graph_runner_.get(),
+            settings_, main_task_runner, impl_task_runner);
     layer_tree_host_in_process_ = layer_tree_host_for_testing.get();
     layer_tree_host_ = std::move(layer_tree_host_for_testing);
   }

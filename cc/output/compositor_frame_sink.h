@@ -30,11 +30,16 @@ class Size;
 class Transform;
 }
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace cc {
 
 class CompositorFrame;
 struct ManagedMemoryPolicy;
 class CompositorFrameSinkClient;
+class SharedBitmapManager;
 
 // An interface for submitting CompositorFrames to a display compositor
 // which will compose frames from multiple CompositorFrameSinks to show
@@ -56,8 +61,16 @@ class CC_EXPORT CompositorFrameSink {
   };
 
   // Constructor for GL-based and/or software resources.
+  // gpu_memory_buffer_manager and shared_bitmap_manager must outlive the
+  // CompositorFrameSink.
+  // shared_bitmap_manager is optional (won't be used) if context_provider is
+  // present.
+  // gpu_memory_buffer_manager is optional (won't be used) if context_provider
+  // is not present.
   CompositorFrameSink(scoped_refptr<ContextProvider> context_provider,
-                      scoped_refptr<ContextProvider> worker_context_provider);
+                      scoped_refptr<ContextProvider> worker_context_provider,
+                      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                      SharedBitmapManager* shared_bitmap_manager);
 
   // Constructor for Vulkan-based resources.
   explicit CompositorFrameSink(
@@ -93,6 +106,12 @@ class CC_EXPORT CompositorFrameSink {
   VulkanContextProvider* vulkan_context_provider() const {
     return vulkan_context_provider_.get();
   }
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() const {
+    return gpu_memory_buffer_manager_;
+  }
+  SharedBitmapManager* shared_bitmap_manager() const {
+    return shared_bitmap_manager_;
+  }
 
   // If supported, this causes a ReclaimResources for all resources that are
   // currently in use.
@@ -120,6 +139,8 @@ class CC_EXPORT CompositorFrameSink {
   scoped_refptr<ContextProvider> context_provider_;
   scoped_refptr<ContextProvider> worker_context_provider_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  SharedBitmapManager* shared_bitmap_manager_;
   base::ThreadChecker client_thread_checker_;
 
  private:

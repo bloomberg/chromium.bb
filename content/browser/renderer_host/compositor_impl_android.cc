@@ -508,8 +508,6 @@ void CompositorImpl::CreateLayerTreeHost() {
 
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
-  params.shared_bitmap_manager = HostSharedBitmapManager::current();
-  params.gpu_memory_buffer_manager = BrowserGpuMemoryBufferManager::current();
   params.task_graph_runner = g_task_graph_runner.Pointer();
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = &settings;
@@ -723,12 +721,14 @@ void CompositorImpl::InitializeDisplay(
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   auto compositor_frame_sink =
-      vulkan_context_provider ? base::MakeUnique<cc::DirectCompositorFrameSink>(
-                                    frame_sink_id_, manager, display_.get(),
-                                    vulkan_context_provider)
-                              : base::MakeUnique<cc::DirectCompositorFrameSink>(
-                                    frame_sink_id_, manager, display_.get(),
-                                    context_provider, nullptr);
+      vulkan_context_provider
+          ? base::MakeUnique<cc::DirectCompositorFrameSink>(
+                frame_sink_id_, manager, display_.get(),
+                vulkan_context_provider)
+          : base::MakeUnique<cc::DirectCompositorFrameSink>(
+                frame_sink_id_, manager, display_.get(), context_provider,
+                nullptr, BrowserGpuMemoryBufferManager::current(),
+                HostSharedBitmapManager::current());
 
   display_->SetVisible(true);
   display_->Resize(size_);

@@ -28,6 +28,7 @@ class WindowCompositorFrameSink
   // static
   static std::unique_ptr<WindowCompositorFrameSink> Create(
       scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       std::unique_ptr<WindowCompositorFrameSinkBinding>*
           compositor_frame_sink_binding);
 
@@ -43,6 +44,7 @@ class WindowCompositorFrameSink
 
   WindowCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSink>
           compositor_frame_sink_info,
       cc::mojom::MojoCompositorFrameSinkClientRequest client_request);

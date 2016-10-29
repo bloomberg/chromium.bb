@@ -20,7 +20,6 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -483,7 +482,6 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
   FakeRenderingStatsInstrumentation stats_instrumentation;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   FakeLayerTreeHostImpl* host_impl = host_->host_impl();
   host_impl->CreatePendingTree();
@@ -531,7 +529,6 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
   FakeRenderingStatsInstrumentation stats_instrumentation;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   FakeLayerTreeHostImpl* host_impl = host_->host_impl();
   host_impl->CreatePendingTree();
@@ -627,7 +624,6 @@ TEST_F(TreeSynchronizerTest, RefreshPropertyTreesCachedData) {
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
   FakeRenderingStatsInstrumentation stats_instrumentation;
-  TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   FakeLayerTreeHostImpl* host_impl = host_->host_impl();
   host_impl->CreatePendingTree();

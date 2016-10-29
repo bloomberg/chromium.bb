@@ -115,8 +115,8 @@ class BlimpCompositorFrameSinkTest : public testing::Test {
     main_thread_proxy_ = base::MakeUnique<FakeBlimpCompositorFrameSinkProxy>(
         compositor_task_runner_);
     compositor_frame_sink_ = base::MakeUnique<BlimpCompositorFrameSink>(
-        TestContextProvider::Create(bind_should_fail), nullptr,
-        main_task_runner_, main_thread_proxy_->GetWeakPtr());
+        TestContextProvider::Create(bind_should_fail), nullptr, nullptr,
+        nullptr, main_task_runner_, main_thread_proxy_->GetWeakPtr());
 
     base::WaitableEvent init_event(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,

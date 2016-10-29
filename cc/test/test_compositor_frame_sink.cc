@@ -28,11 +28,11 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     bool synchronous_composite,
     bool force_disable_reclaim_resources)
     : CompositorFrameSink(std::move(compositor_context_provider),
-                          std::move(worker_context_provider)),
+                          std::move(worker_context_provider),
+                          gpu_memory_buffer_manager,
+                          shared_bitmap_manager),
       synchronous_composite_(synchronous_composite),
       renderer_settings_(renderer_settings),
-      shared_bitmap_manager_(shared_bitmap_manager),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kCompositorFrameSinkId),
       surface_manager_(new SurfaceManager),
@@ -87,7 +87,7 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   }
 
   display_.reset(
-      new Display(shared_bitmap_manager_, gpu_memory_buffer_manager_,
+      new Display(shared_bitmap_manager(), gpu_memory_buffer_manager(),
                   renderer_settings_, std::move(begin_frame_source),
                   std::move(display_output_surface), std::move(scheduler),
                   base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));

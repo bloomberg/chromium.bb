@@ -14,6 +14,10 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/common/surface_handle.h"
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace ui {
 class Window;
 class WindowCompositorFrameSink;
@@ -31,6 +35,7 @@ class MusBrowserCompositorOutputSurface
   MusBrowserCompositorOutputSurface(
       ui::Window* window,
       scoped_refptr<ContextProviderCommandBuffer> context,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
       cc::SyntheticBeginFrameSource* begin_frame_source,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>

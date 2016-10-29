@@ -32,6 +32,8 @@ class BlimpCompositorFrameSink : public cc::CompositorFrameSink,
   BlimpCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      cc::SharedBitmapManager* shared_bitmap_manager,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       base::WeakPtr<BlimpCompositorFrameSinkProxy> main_thread_proxy);
 
