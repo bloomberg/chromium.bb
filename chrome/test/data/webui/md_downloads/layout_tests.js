@@ -24,5 +24,6 @@ suite('layout tests', function() {
 
     var item = manager.$$('downloads-item');
     assertLT(item.$$('#url').offsetWidth, item.offsetWidth);
+    assertEquals(300, item.$$('#url').textContent.length);
   });
 });

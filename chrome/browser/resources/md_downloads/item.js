@@ -78,6 +78,15 @@ cr.define('downloads', function() {
       this.content = this.$.content;
     },
 
+    /**
+     * @param {string} url
+     * @return {string} A reasonably long URL.
+     * @private
+     */
+    chopUrl_: function(url) {
+      return url.slice(0, 300);
+    },
+
     /** @private */
     computeClass_: function() {
       var classes = [];
