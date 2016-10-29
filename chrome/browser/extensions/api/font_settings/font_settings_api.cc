@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/options/font_settings_utils.h"
 #include "chrome/common/extensions/api/font_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -36,14 +37,10 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 
-#if defined(OS_WIN)
-#include "ui/gfx/font.h"
-#include "ui/gfx/platform_font_win.h"
-#endif
-
 namespace extensions {
 
 namespace fonts = api::font_settings;
+using options::FontSettingsUtilities;
 
 namespace {
 
@@ -71,20 +68,6 @@ std::string GetFontNamePrefPath(fonts::GenericFamily generic_family_enum,
   return base::StringPrintf(kWebKitFontPrefFormat,
                             generic_family.c_str(),
                             script.c_str());
-}
-
-// Returns the localized name of a font so that it can be matched within the
-// list of system fonts. On Windows, the list of system fonts has names only
-// for the system locale, but the pref value may be in the English name.
-std::string MaybeGetLocalizedFontName(const std::string& font_name) {
-#if defined(OS_WIN)
-  if (!font_name.empty()) {
-    gfx::Font font(font_name, 12);  // dummy font size
-    return static_cast<gfx::PlatformFontWin*>(font.platform_font())->
-        GetLocalizedFontName();
-  }
-#endif
-  return font_name;
 }
 
 // Registers |obs| to observe per-script font prefs under the path |map_name|.
@@ -177,7 +160,7 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
     NOTREACHED();
     return;
   }
-  font_name = MaybeGetLocalizedFontName(font_name);
+  font_name = FontSettingsUtilities::MaybeGetLocalizedFontName(font_name);
 
   base::ListValue args;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -263,7 +246,7 @@ ExtensionFunction::ResponseAction FontSettingsGetFontFunction::Run() {
   std::string font_name;
   EXTENSION_FUNCTION_VALIDATE(
       pref && pref->GetValue()->GetAsString(&font_name));
-  font_name = MaybeGetLocalizedFontName(font_name);
+  font_name = FontSettingsUtilities::MaybeGetLocalizedFontName(font_name);
 
   // We don't support incognito-specific font prefs, so don't consider them when
   // getting level of control.

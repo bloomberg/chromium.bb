@@ -38,25 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "ui/gfx/font.h"
-#include "ui/gfx/platform_font_win.h"
-#endif
-
 namespace {
-
-// Returns the localized name of a font so that settings can find it within the
-// list of system fonts. On Windows, the list of system fonts has names only
-// for the system locale, but the pref value may be in the English name.
-std::string MaybeGetLocalizedFontName(const std::string& font_name) {
-#if defined(OS_WIN)
-  gfx::Font font(font_name, 12);  // dummy font size
-  return static_cast<gfx::PlatformFontWin*>(font.platform_font())->
-      GetLocalizedFontName();
-#else
-  return font_name;
-#endif
-}
 
 const char kAdvancedFontSettingsExtensionId[] =
     "caclkomlalccbpcdllchkeecicepbmbm";
@@ -210,42 +192,46 @@ void FontSettingsHandler::FontsListHasLoaded(
   }
 
   base::ListValue selected_values;
+  selected_values.AppendString(FontSettingsUtilities::MaybeGetLocalizedFontName(
+      standard_font_.GetValue()));
   selected_values.AppendString(
-      MaybeGetLocalizedFontName(standard_font_.GetValue()));
+      FontSettingsUtilities::MaybeGetLocalizedFontName(serif_font_.GetValue()));
+  selected_values.AppendString(FontSettingsUtilities::MaybeGetLocalizedFontName(
+      sans_serif_font_.GetValue()));
   selected_values.AppendString(
-      MaybeGetLocalizedFontName(serif_font_.GetValue()));
-  selected_values.AppendString(
-      MaybeGetLocalizedFontName(sans_serif_font_.GetValue()));
-  selected_values.AppendString(
-      MaybeGetLocalizedFontName(fixed_font_.GetValue()));
+      FontSettingsUtilities::MaybeGetLocalizedFontName(fixed_font_.GetValue()));
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "FontSettings.setFontsData", *list.get(), selected_values);
 }
 
 void FontSettingsHandler::SetUpStandardFontSample() {
-  base::StringValue font_value(standard_font_.GetValue());
+  base::StringValue font_value(
+      FontSettingsUtilities::ResolveFontList(standard_font_.GetValue()));
   base::FundamentalValue size_value(default_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpStandardFontSample",
                                          font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSerifFontSample() {
-  base::StringValue font_value(serif_font_.GetValue());
+  base::StringValue font_value(
+      FontSettingsUtilities::ResolveFontList(serif_font_.GetValue()));
   base::FundamentalValue size_value(default_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpSerifFontSample",
                                          font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSansSerifFontSample() {
-  base::StringValue font_value(sans_serif_font_.GetValue());
+  base::StringValue font_value(
+      FontSettingsUtilities::ResolveFontList(sans_serif_font_.GetValue()));
   base::FundamentalValue size_value(default_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe(
       "FontSettings.setUpSansSerifFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpFixedFontSample() {
-  base::StringValue font_value(fixed_font_.GetValue());
+  base::StringValue font_value(
+      FontSettingsUtilities::ResolveFontList(fixed_font_.GetValue()));
   base::FundamentalValue size_value(default_fixed_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpFixedFontSample",
                                          font_value, size_value);

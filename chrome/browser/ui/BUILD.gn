@@ -1001,6 +1001,7 @@ split_static_library("ui") {
       "webui/options/easy_unlock_handler.h",
       "webui/options/font_settings_handler.cc",
       "webui/options/font_settings_handler.h",
+      "webui/options/font_settings_utils.cc",
       "webui/options/font_settings_utils.h",
       "webui/options/font_settings_utils_linux.cc",
       "webui/options/font_settings_utils_mac.mm",

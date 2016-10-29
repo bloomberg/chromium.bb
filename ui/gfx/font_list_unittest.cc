@@ -356,4 +356,24 @@ TEST(FontListTest, MAYBE_Fonts_DeriveWithHeightUpperBound) {
   EXPECT_EQ(font_list.GetFontSize(), derived_2.GetFontSize());
 }
 
+TEST(FontListTest, FirstAvailableOrFirst) {
+  EXPECT_TRUE(FontList::FirstAvailableOrFirst("").empty());
+  EXPECT_TRUE(FontList::FirstAvailableOrFirst(std::string()).empty());
+
+  EXPECT_EQ("Arial", FontList::FirstAvailableOrFirst("Arial"));
+  EXPECT_EQ("not exist", FontList::FirstAvailableOrFirst("not exist"));
+
+  EXPECT_EQ("Arial", FontList::FirstAvailableOrFirst("Arial, not exist"));
+  EXPECT_EQ("Arial", FontList::FirstAvailableOrFirst("not exist, Arial"));
+  EXPECT_EQ("Arial",
+            FontList::FirstAvailableOrFirst("not exist, Arial, not exist"));
+
+  EXPECT_EQ("not exist",
+            FontList::FirstAvailableOrFirst("not exist, not exist 2"));
+
+  EXPECT_EQ("Arial", FontList::FirstAvailableOrFirst(", not exist, Arial"));
+  EXPECT_EQ("not exist",
+            FontList::FirstAvailableOrFirst(", not exist, not exist"));
+}
+
 }  // namespace gfx

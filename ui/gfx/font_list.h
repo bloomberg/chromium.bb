@@ -164,6 +164,12 @@ class GFX_EXPORT FontList {
   // Returns the first font in the list.
   const Font& GetPrimaryFont() const;
 
+  // Returns the first available font name. If there is no available font,
+  // returns the first font name. Empty entries are ignored.
+  // Used by Blink and webui to pick the primary standard/serif/sans/fixed/etc.
+  // fonts from region-specific IDS lists.
+  static std::string FirstAvailableOrFirst(const std::string& font_name_list);
+
  private:
   explicit FontList(FontListImpl* impl);
 

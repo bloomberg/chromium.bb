@@ -48,6 +48,7 @@
 #include "platform/tracing/web_memory_allocator_dump.h"
 #include "platform/tracing/web_process_memory_dump.h"
 #include "public/platform/Platform.h"
+#include "ui/gfx/font_list.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/PtrUtil.h"
@@ -301,6 +302,15 @@ bool FontCache::isPlatformFontAvailable(const FontDescription& fontDescription,
       fontDescription,
       FontFaceCreationParams(adjustFamilyNameToAvoidUnsupportedFonts(family)),
       checkingAlternateName);
+}
+
+String FontCache::firstAvailableOrFirst(const String& families) {
+  // The conversions involve at least two string copies, and more if non-ASCII.
+  // For now we prefer shared code over the cost because a) inputs are
+  // only from grd/xtb and all ASCII, and b) at most only a few times per
+  // setting change/script.
+  return String::fromUTF8(
+      gfx::FontList::FirstAvailableOrFirst(families.utf8().data()).c_str());
 }
 
 SimpleFontData* FontCache::getNonRetainedLastResortFallbackFont(

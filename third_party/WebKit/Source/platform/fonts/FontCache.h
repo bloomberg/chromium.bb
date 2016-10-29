@@ -99,6 +99,7 @@ class PLATFORM_EXPORT FontCache {
                                                        ShouldRetain = Retain);
   SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
   bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
+  static String firstAvailableOrFirst(const String&);
 
   // Returns the ShapeCache instance associated with the given cache key.
   // Creates a new instance as needed and as such is guaranteed not to return

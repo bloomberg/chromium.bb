@@ -30,6 +30,8 @@
 
 #include "platform/fonts/GenericFontFamilySettings.h"
 
+#include "platform/fonts/FontCache.h"
+
 namespace blink {
 
 GenericFontFamilySettings::GenericFontFamilySettings(
@@ -75,10 +77,14 @@ void GenericFontFamilySettings::setGenericFontFamilyMap(
 const AtomicString& GenericFontFamilySettings::genericFontFamilyForScript(
     const ScriptFontFamilyMap& fontMap,
     UScriptCode script) const {
-  ScriptFontFamilyMap::const_iterator it =
-      fontMap.find(static_cast<int>(script));
-  if (it != fontMap.end())
+  ScriptFontFamilyMap::iterator it =
+      const_cast<ScriptFontFamilyMap&>(fontMap).find(static_cast<int>(script));
+  if (it != fontMap.end()) {
+    // Replace with the first available font if it starts with ",".
+    if (!it->value.isEmpty() && it->value[0] == ',')
+      it->value = AtomicString(FontCache::firstAvailableOrFirst(it->value));
     return it->value;
+  }
   if (script != USCRIPT_COMMON)
     return genericFontFamilyForScript(fontMap, USCRIPT_COMMON);
   return emptyAtom;
