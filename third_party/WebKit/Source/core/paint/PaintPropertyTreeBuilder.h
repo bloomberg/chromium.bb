@@ -83,11 +83,18 @@ struct PaintPropertyTreeBuilderContext {
 class PaintPropertyTreeBuilder {
  public:
   PaintPropertyTreeBuilderContext setupInitialContext();
-  void buildTreeNodes(FrameView&, PaintPropertyTreeBuilderContext&);
-  void buildTreeNodesForSelf(const LayoutObject&,
-                             PaintPropertyTreeBuilderContext&);
-  void buildTreeNodesForChildren(const LayoutObject&,
-                                 PaintPropertyTreeBuilderContext&);
+  // Update the paint properties for |FrameView| and ensure the context is
+  // up to date.
+  void updatePropertiesAndContext(FrameView&, PaintPropertyTreeBuilderContext&);
+
+  // Update the paint properties that affect this object (e.g., properties like
+  // paint offset translation) and ensure the context is up to date.
+  void updatePropertiesAndContextForSelf(const LayoutObject&,
+                                         PaintPropertyTreeBuilderContext&);
+  // Update the paint properties that affect children of this object (e.g.,
+  // scroll offset transform) and ensure the context is up to date.
+  void updatePropertiesAndContextForChildren(const LayoutObject&,
+                                             PaintPropertyTreeBuilderContext&);
 
  private:
   static void updatePaintOffsetTranslation(const LayoutObject&,

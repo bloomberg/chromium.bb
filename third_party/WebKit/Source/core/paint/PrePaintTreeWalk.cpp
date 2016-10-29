@@ -41,8 +41,8 @@ void PrePaintTreeWalk::walk(FrameView& frameView,
     return;
 
   PrePaintTreeWalkContext localContext(context);
-  m_propertyTreeBuilder.buildTreeNodes(frameView,
-                                       localContext.treeBuilderContext);
+  m_propertyTreeBuilder.updatePropertiesAndContext(
+      frameView, localContext.treeBuilderContext);
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     m_paintInvalidator.invalidatePaintIfNeeded(
@@ -75,12 +75,12 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
     return;
   }
 
-  m_propertyTreeBuilder.buildTreeNodesForSelf(object,
-                                              localContext.treeBuilderContext);
+  m_propertyTreeBuilder.updatePropertiesAndContextForSelf(
+      object, localContext.treeBuilderContext);
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
     m_paintInvalidator.invalidatePaintIfNeeded(
         object, localContext.paintInvalidatorContext);
-  m_propertyTreeBuilder.buildTreeNodesForChildren(
+  m_propertyTreeBuilder.updatePropertiesAndContextForChildren(
       object, localContext.treeBuilderContext);
 
   for (const LayoutObject* child = object.slowFirstChild(); child;
