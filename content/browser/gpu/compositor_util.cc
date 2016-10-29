@@ -26,6 +26,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "ui/gl/gl_switches.h"
 
 namespace content {
 
@@ -42,6 +43,7 @@ const char kWebGLFeatureName[] = "webgl";
 const char kRasterizationFeatureName[] = "rasterization";
 const char kMultipleRasterThreadsFeatureName[] = "multiple_raster_threads";
 const char kNativeGpuMemoryBuffersFeatureName[] = "native_gpu_memory_buffers";
+const char kWebGL2FeatureName[] = "webgl2";
 
 const int kMinRasterThreads = 1;
 const int kMaxRasterThreads = 4;
@@ -143,14 +145,21 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      "Native GpuMemoryBuffers have been disabled, either via about:flags"
      " or command line.",
      true},
-    {"vpx_decode", manager->IsFeatureBlacklisted(
-                       gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
-                       manager->IsFeatureBlacklisted(
-                           gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+    {"vpx_decode",
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
      accelerated_vpx_disabled,
      "Accelerated VPx video decode has been disabled, either via blacklist"
      " or the command line.",
      true},
+    {kWebGL2FeatureName,
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2),
+     !command_line.HasSwitch(switches::kEnableUnsafeES3APIs) ||
+     command_line.HasSwitch(switches::kDisableES3APIs),
+     "WebGL2 has been disabled via blacklist or the command line.",
+     false},
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);

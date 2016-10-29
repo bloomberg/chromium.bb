@@ -96,6 +96,7 @@ cr.define('gpu', function() {
         'multiple_raster_threads': 'Multiple Raster Threads',
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
         'vpx_decode': 'VPx Video Decode',
+        'webgl2': 'WebGL2',
       };
 
       var statusMap =  {

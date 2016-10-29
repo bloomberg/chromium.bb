@@ -40,6 +40,8 @@ GpuBlacklist* GpuBlacklist::Create() {
                             GPU_FEATURE_TYPE_GPU_RASTERIZATION);
   list->AddSupportedFeature("accelerated_vpx_decode",
                             GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE);
+  list->AddSupportedFeature("webgl2",
+                            GPU_FEATURE_TYPE_WEBGL2);
   list->set_supports_feature_type_all(true);
   return list;
 }

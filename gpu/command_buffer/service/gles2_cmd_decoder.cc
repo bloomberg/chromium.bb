@@ -3091,7 +3091,7 @@ bool GLES2DecoderImpl::Initialize(
 
   if (feature_info_->IsWebGL2OrES3Context()) {
     if (!feature_info_->IsES3Capable()) {
-      LOG(ERROR) << "Underlying driver does not support ES3.";
+      LOG(ERROR) << "ES3 is blacklisted/disabled/unsupported by driver.";
       Destroy(true);
       return false;
     }

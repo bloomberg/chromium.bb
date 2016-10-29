@@ -87,6 +87,9 @@ const char kUseGpuInTests[] = "use-gpu-in-tests";
 // Enable OpenGL ES 3 APIs without proper service side validation.
 const char kEnableUnsafeES3APIs[] = "enable-unsafe-es3-apis";
 
+// Disable OpenGL ES 3 APIs. This in turn will disable WebGL2.
+const char kDisableES3APIs[] = "disable-es3-apis";
+
 // Enable use of the SGI_video_sync extension, which can have
 // driver/sandbox/window manager compatibility issues.
 const char kEnableSgiVideoSync[] = "enable-sgi-video-sync";
@@ -114,6 +117,7 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
     kEnableGPUServiceLogging,
     kEnableGPUServiceTracing,
     kEnableUnsafeES3APIs,
+    kDisableES3APIs,
     kEnableSgiVideoSync,
     kGpuNoContextLost,
     kDisableGLDrawingForTests,

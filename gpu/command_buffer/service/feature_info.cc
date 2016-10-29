@@ -200,7 +200,8 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
       (command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
 
   enable_unsafe_es3_apis_switch_ =
-      command_line->HasSwitch(switches::kEnableUnsafeES3APIs);
+      command_line->HasSwitch(switches::kEnableUnsafeES3APIs) &&
+      !command_line->HasSwitch(switches::kDisableES3APIs);
 
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to

@@ -83,13 +83,23 @@ bool GLVersionInfo::IsES3Capable(
     return true;
   }
 
-  // Don't try supporting ES3 on ES2, or desktop before 4.0.
-  if (is_es || !IsAtLeastGL(4, 0)) {
+  // Don't try supporting ES3 on ES2, or desktop before 3.3.
+  if (is_es || !IsAtLeastGL(3, 3)) {
     return false;
   }
 
+  bool has_transform_feedback =
+      (IsAtLeastGL(4, 0) || has_extension("GL_ARB_transform_feedback2"));
+  bool has_sampler_indexing =
+      (IsAtLeastGL(4, 0) || has_extension("GL_ARB_gpu_shader5"));
+  // tex storage is available in core spec since GL 4.2.
   bool has_tex_storage = has_extension("GL_ARB_texture_storage");
-  return has_tex_storage;
+
+  // TODO(cwallez) check for texture related extensions. See crbug.com/623577
+
+  return (has_transform_feedback &&
+          has_sampler_indexing &&
+          has_tex_storage);
 }
 
 void GLVersionInfo::ParseVersionString(const char* version_str,

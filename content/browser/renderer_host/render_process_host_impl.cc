@@ -1687,7 +1687,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kEnableTouchDragDrop,
-    switches::kEnableUnsafeES3APIs,
     switches::kEnableUseZoomForDSF,
     switches::kEnableViewport,
     switches::kEnableVp9InMp4,

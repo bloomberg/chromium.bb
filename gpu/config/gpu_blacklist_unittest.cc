@@ -137,4 +137,8 @@ GPU_BLACKLIST_FEATURE_TEST(AcceleratedVpxDecode,
                            "accelerated_vpx_decode",
                            GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE)
 
+GPU_BLACKLIST_FEATURE_TEST(WebGL2,
+                           "webgl2",
+                           GPU_FEATURE_TYPE_WEBGL2)
+
 }  // namespace gpu

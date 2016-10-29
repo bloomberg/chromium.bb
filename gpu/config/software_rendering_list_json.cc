@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.18",
+  "version": "12.0",
   "entries": [
     {
       "id": 1,
@@ -1375,6 +1375,8 @@ LONG_STRING_CONST(
         "gpu_rasterization"
       ]
     },
+)  // String split to avoid MSVC char limit.
+LONG_STRING_CONST(
     {
       "id": 125,
       "description": "VirtualBox driver is unstable on linux.",
@@ -1386,6 +1388,21 @@ LONG_STRING_CONST(
       "device_id": ["0xbeef"],
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 126,
+      "description": "Don't allow ES3 on Mac core profile < 4.1",
+      "cr_bugs": [295792],
+      "os": {
+        "type": "macosx"
+      },
+      "gl_version": {
+        "op": "<",
+        "value": "4.1"
+      },
+      "features": [
+        "webgl2"
       ]
     }
   ]
