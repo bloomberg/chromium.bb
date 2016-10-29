@@ -256,6 +256,7 @@ class TestRunner(object):
       line = line.rstrip()
       parser.ProcessLine(line)
       print line
+      sys.stdout.flush()
 
     proc.wait()
     sys.stdout.flush()
@@ -400,6 +401,8 @@ class SimulatorTestRunner(TestRunner):
           'Simulator', # Xcode 7+
           'simctl', # https://crbug.com/637429
       ])
+      # If a signal was sent, wait for the simulators to actually be killed.
+      time.sleep(5)
     except subprocess.CalledProcessError as e:
       if e.returncode != 1:
         # Ignore a 1 exit code (which means there were no simulators to kill).
