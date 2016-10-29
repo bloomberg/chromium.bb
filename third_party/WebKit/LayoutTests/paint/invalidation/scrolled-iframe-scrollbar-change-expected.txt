@@ -22,7 +22,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "incremental"
+      "reason": "border box change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='overlay'",

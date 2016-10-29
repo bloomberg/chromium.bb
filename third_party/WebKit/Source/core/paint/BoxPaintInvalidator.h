@@ -31,7 +31,6 @@ class BoxPaintInvalidator {
   PaintInvalidationReason computePaintInvalidationReason();
 
   bool incrementallyInvalidatePaint();
-  void invalidatePaintRectClippedByOldAndNewBounds(const LayoutRect&);
 
   bool needsToSavePreviousBoxSizes();
   void savePreviousBoxSizesIfNeeded();

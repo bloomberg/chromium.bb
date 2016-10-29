@@ -1606,12 +1606,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return m_previousPaintInvalidationRect;
   }
 
-  // The previous paint invalidation rect may have been expanded to whole pixels
-  // or be rotated, skewed, etc., so covers more pixels than the object covers.
-  bool previousPaintInvalidationRectCoversExtraPixels() const {
-    return m_bitfields.previousPaintInvalidationRectCoversExtraPixels();
-  }
-
   // Called when the previous paint invalidation rect(s) is no longer valid.
   virtual void clearPreviousPaintInvalidationRects();
 
@@ -1718,11 +1712,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       m_layoutObject.ensureIsReadyForPaintInvalidation();
     }
 
-    void setPreviousPaintInvalidationRect(const LayoutRect& r,
-                                          bool coversExtraPixels) {
+    void setPreviousPaintInvalidationRect(const LayoutRect& r) {
       m_layoutObject.setPreviousPaintInvalidationRect(r);
-      m_layoutObject.m_bitfields
-          .setPreviousPaintInvalidationRectCoversExtraPixels(coversExtraPixels);
     }
     void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& p) {
       m_layoutObject.setPreviousPositionFromPaintInvalidationBacking(p);
@@ -2104,7 +2095,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_mayNeedPaintInvalidationSubtree(false),
           m_mayNeedPaintInvalidationAnimatedBackgroundImage(false),
           m_shouldInvalidateSelection(false),
-          m_previousPaintInvalidationRectCoversExtraPixels(false),
           m_floating(false),
           m_isAnonymous(!node),
           m_isText(false),
@@ -2136,7 +2126,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_backgroundObscurationState(BackgroundObscurationStatusInvalid),
           m_fullPaintInvalidationReason(PaintInvalidationNone) {}
 
-    // 32 bits have been used in the first word, and 20 in the second.
+    // 32 bits have been used in the first word, and 19 in the second.
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2203,9 +2193,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidationAnimatedBackgroundImage,
                          MayNeedPaintInvalidationAnimatedBackgroundImage);
     ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
-
-    ADD_BOOLEAN_BITFIELD(previousPaintInvalidationRectCoversExtraPixels,
-                         PreviousPaintInvalidationRectCoversExtraPixels);
 
     // This boolean is the cached value of 'float'
     // (see ComputedStyle::isFloating).

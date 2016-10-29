@@ -36,6 +36,7 @@ class BoxPaintInvalidatorTest : public RenderingTest {
         "    border-width: 20px 10px;"
         "    border-style: solid;"
         "    border-color: red;"
+        "    transform-origin: 0 0"
         "  }"
         "</style>"
         "<div id='target'></div>");
@@ -91,35 +92,31 @@ TEST_F(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
   ScopedSlimmingPaintInvalidationForTest scopedSlimmingPaintInvalidation(true);
 
   Element* target = document().getElementById("target");
-  LayoutObject* targetObject = target->layoutObject();
-  EXPECT_FALSE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
 
   // Should do full invalidation if new geometry has subpixels.
   document().view()->setTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 100.6px; height: 70.3px");
   document().view()->updateAllLifecyclePhases();
-  EXPECT_TRUE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
   const auto* rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   EXPECT_EQ(2u, rasterInvalidations->size());
   EXPECT_EQ(IntRect(0, 0, 70, 140), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationBorderBoxChange, (*rasterInvalidations)[0].reason);
   EXPECT_EQ(IntRect(0, 0, 121, 111), (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationBorderBoxChange, (*rasterInvalidations)[1].reason);
   document().view()->setTracksPaintInvalidations(false);
 
   // Should do full invalidation if old geometry has subpixels.
   document().view()->setTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 50px; height: 100px");
   document().view()->updateAllLifecyclePhases();
-  EXPECT_FALSE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
   rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   EXPECT_EQ(2u, rasterInvalidations->size());
   EXPECT_EQ(IntRect(0, 0, 121, 111), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationBorderBoxChange, (*rasterInvalidations)[0].reason);
   EXPECT_EQ(IntRect(0, 0, 70, 140), (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationBoundsChange, (*rasterInvalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationBorderBoxChange, (*rasterInvalidations)[1].reason);
   document().view()->setTracksPaintInvalidations(false);
 }
 
@@ -130,7 +127,6 @@ TEST_F(BoxPaintInvalidatorTest, SubpixelChangeWithoutVisualRectChange) {
   LayoutObject* targetObject = target->layoutObject();
   EXPECT_EQ(LayoutRect(0, 0, 70, 140),
             targetObject->previousPaintInvalidationRect());
-  EXPECT_FALSE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
 
   // Should do full invalidation if new geometry has subpixels even if the paint
   // invalidation rect doesn't change.
@@ -140,7 +136,6 @@ TEST_F(BoxPaintInvalidatorTest, SubpixelChangeWithoutVisualRectChange) {
   document().view()->updateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(0, 0, 70, 140),
             targetObject->previousPaintInvalidationRect());
-  EXPECT_TRUE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
   const auto* rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   EXPECT_EQ(1u, rasterInvalidations->size());
@@ -148,22 +143,62 @@ TEST_F(BoxPaintInvalidatorTest, SubpixelChangeWithoutVisualRectChange) {
   EXPECT_EQ(PaintInvalidationLocationChange, (*rasterInvalidations)[0].reason);
   document().view()->setTracksPaintInvalidations(false);
 
-  // When changing size in subpixels keeping the paint invalidation rect
-  // unchanged, incremental incremental should cover all the changed pixels.
   document().view()->setTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr,
                        "margin-top: 0.6px; width: 49.3px; height: 98.5px");
   document().view()->updateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(0, 0, 70, 140),
             targetObject->previousPaintInvalidationRect());
-  EXPECT_TRUE(targetObject->previousPaintInvalidationRectCoversExtraPixels());
   rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  EXPECT_EQ(2u, rasterInvalidations->size());
-  EXPECT_EQ(IntRect(59, 0, 11, 140), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 119, 70, 21), (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationIncremental, (*rasterInvalidations)[1].reason);
+  EXPECT_EQ(1u, rasterInvalidations->size());
+  EXPECT_EQ(IntRect(0, 0, 70, 140), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationBorderBoxChange, (*rasterInvalidations)[0].reason);
+  document().view()->setTracksPaintInvalidations(false);
+}
+
+TEST_F(BoxPaintInvalidatorTest, ResizeRotated) {
+  ScopedSlimmingPaintInvalidationForTest scopedSlimmingPaintInvalidation(true);
+
+  Element* target = document().getElementById("target");
+  target->setAttribute(HTMLNames::styleAttr, "transform: rotate(45deg)");
+  document().view()->updateAllLifecyclePhases();
+
+  // Should do full invalidation a rotated object is resized.
+  document().view()->setTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr,
+                       "transform: rotate(45deg); width: 200px");
+  document().view()->updateAllLifecyclePhases();
+  const auto* rasterInvalidations =
+      &getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(1u, rasterInvalidations->size());
+  EXPECT_EQ(IntRect(-99, 0, 255, 255), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationBorderBoxChange, (*rasterInvalidations)[0].reason);
+  document().view()->setTracksPaintInvalidations(false);
+}
+
+TEST_F(BoxPaintInvalidatorTest, ResizeRotatedChild) {
+  ScopedSlimmingPaintInvalidationForTest scopedSlimmingPaintInvalidation(true);
+
+  Element* target = document().getElementById("target");
+  target->setAttribute(HTMLNames::styleAttr,
+                       "transform: rotate(45deg); width: 200px");
+  target->setInnerHTML(
+      "<div id=child style='width: 50px; height: 50px; background: red'></div>",
+      ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
+  Element* child = document().getElementById("child");
+
+  // Should do full invalidation a rotated object is resized.
+  document().view()->setTracksPaintInvalidations(true);
+  child->setAttribute(HTMLNames::styleAttr,
+                      "width: 100px; height: 50px; background: red");
+  document().view()->updateAllLifecyclePhases();
+  const auto* rasterInvalidations =
+      &getRasterInvalidationTracking()->trackedRasterInvalidations;
+  EXPECT_EQ(1u, rasterInvalidations->size());
+  EXPECT_EQ(IntRect(-43, 21, 107, 107), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationBorderBoxChange, (*rasterInvalidations)[0].reason);
   document().view()->setTracksPaintInvalidations(false);
 }
 

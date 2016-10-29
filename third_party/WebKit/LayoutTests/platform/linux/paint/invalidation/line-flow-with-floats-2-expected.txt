@@ -12,6 +12,11 @@
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 74, 418, 526],
+          "reason": "border box change"
+        },
+        {
           "object": "LayoutText #text",
           "rect": [13, 241, 408, 139],
           "reason": "forced by layout"
@@ -140,11 +145,11 @@
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "incremental"
+      "reason": "border box change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "incremental"
+      "reason": "border box change"
     },
     {
       "object": "LayoutText #text",

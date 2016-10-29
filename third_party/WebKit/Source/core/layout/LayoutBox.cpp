@@ -2240,25 +2240,18 @@ bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const {
 }
 
 bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // In case scrollbars got repositioned (which will typically happen if the box
-  // got resized), we cannot skip invalidation.
-  if (hasNonCompositedScrollbars())
+  if (hasNonCompositedScrollbars() || getSelectionState() != SelectionNone ||
+      hasBoxDecorationBackground() || styleRef().hasBoxDecorations() ||
+      styleRef().hasVisualOverflowingEffect())
     return false;
 
-  // Cannot skip paint invalidation if the box has real things to paint.
-  if (getSelectionState() != SelectionNone || hasBoxDecorationBackground() ||
-      styleRef().hasBoxDecorations() || styleRef().hasVisualOverflowingEffect())
-    return false;
-
-  // If the box has clip, we need issue a paint invalidation to cover the
-  // changed part of children because of change of clip when the box got
-  // resized. In theory the children should invalidate themselves when ancestor
-  // clip changes, but for now this is missing and ensuring it may hurt
-  // performance.
-  // TODO(wangxianzhu): Paint invalidation for clip change will be different in
-  //                    spv2.
-  if (hasClipRelatedProperty() || hasControlClip())
-    return false;
+  // If the box has clip or mask, we need issue paint invalidation to cover
+  // the changed part of children when the box got resized. In SPv2 this is
+  // handled by detecting paint property changes.
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (hasClipRelatedProperty() || hasControlClip() || hasMask())
+      return false;
+  }
 
   return true;
 }
