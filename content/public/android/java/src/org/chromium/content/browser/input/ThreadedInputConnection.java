@@ -115,6 +115,7 @@ public class ThreadedInputConnection extends BaseInputConnection
     private final BlockingQueue<TextInputState> mQueue = new LinkedBlockingQueue<>();
     private int mPendingAccent;
     private TextInputState mCachedTextInputState;
+    private boolean mLastInBatchEditMode;
 
     ThreadedInputConnection(View view, ImeAdapter imeAdapter, Handler handler) {
         super(view, true);
@@ -145,8 +146,12 @@ public class ThreadedInputConnection extends BaseInputConnection
         if (DEBUG_LOGS) Log.w(TAG, "updateState: %s", mCachedTextInputState);
 
         addToQueueOnUiThread(mCachedTextInputState);
-
-        if (isNonImeChange) mHandler.post(mProcessPendingInputStatesRunnable);
+        // If state update is caused by explicitly requesting the state update,
+        // or batch edit just finished, then we may need to update state to IMM.
+        if (isNonImeChange || (mLastInBatchEditMode && !inBatchEditMode)) {
+            mHandler.post(mProcessPendingInputStatesRunnable);
+            mLastInBatchEditMode = inBatchEditMode;
+        }
     }
 
     /**
