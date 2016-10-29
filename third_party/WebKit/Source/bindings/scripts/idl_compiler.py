@@ -122,21 +122,21 @@ class IdlCompiler(object):
         self.compile_and_write(idl_filename)
 
 
-def generate_bindings(code_generator_class, options, input_filename):
-    info_provider = create_component_info_provider(
-        options.info_dir, options.target_component)
+def generate_bindings(code_generator_class, info_provider, options,
+                      input_filenames):
     idl_compiler = IdlCompiler(
         output_directory=options.output_directory,
         cache_directory=options.cache_directory,
         code_generator_class=code_generator_class,
         info_provider=info_provider,
         target_component=options.target_component)
-    idl_compiler.compile_file(input_filename)
+
+    for idl_filename in input_filenames:
+        idl_compiler.compile_file(idl_filename)
 
 
-def generate_dictionary_impl(code_generator_class, options, input_filename):
-    info_provider = create_component_info_provider(
-        options.info_dir, options.target_component)
+def generate_dictionary_impl(code_generator_class, info_provider, options,
+                             input_filenames):
     idl_compiler = IdlCompiler(
         output_directory=options.impl_output_directory,
         cache_directory=options.cache_directory,
@@ -144,18 +144,12 @@ def generate_dictionary_impl(code_generator_class, options, input_filename):
         info_provider=info_provider,
         target_component=options.target_component)
 
-    idl_filenames = read_idl_files_list_from_file(input_filename,
-                                                  is_gyp_format=True)
-    for idl_filename in idl_filenames:
+    for idl_filename in input_filenames:
         idl_compiler.compile_file(idl_filename)
 
 
-def generate_union_type_containers(code_generator_class, options):
-    info_provider = create_component_info_provider(
-        options.info_dir, options.target_component)
-    if not info_provider.interfaces_info:
-        raise Exception('Interfaces info is required to generate '
-                        'union types containers')
+def generate_union_type_containers(code_generator_class, info_provider,
+                                   options):
     generator = code_generator_class(
         info_provider,
         options.cache_directory,
@@ -166,9 +160,8 @@ def generate_union_type_containers(code_generator_class, options):
         write_file(output_code, output_path)
 
 
-def generate_callback_function_impl(code_generator_class, options):
-    info_provider = create_component_info_provider(
-        options.info_dir, options.target_component)
+def generate_callback_function_impl(code_generator_class, info_provider,
+                                    options):
     generator = code_generator_class(
         info_provider,
         options.cache_directory,
@@ -181,16 +174,26 @@ def generate_callback_function_impl(code_generator_class, options):
 
 def main():
     options, input_filename = parse_options()
+    info_provider = create_component_info_provider(
+        options.info_dir, options.target_component)
     if options.generate_impl:
+        if not info_provider.interfaces_info:
+            raise Exception('Interfaces info is required to generate '
+                            'union types containers')
         # |input_filename| should be a file which contains a list of IDL
         # dictionary paths.
-        generate_dictionary_impl(CodeGeneratorDictionaryImpl, options,
-                                 input_filename)
-        generate_union_type_containers(CodeGeneratorUnionType, options)
-        generate_callback_function_impl(CodeGeneratorCallbackFunction, options)
+        input_filenames = read_idl_files_list_from_file(input_filename,
+                                                        is_gyp_format=True)
+        generate_dictionary_impl(CodeGeneratorDictionaryImpl, info_provider,
+                                 options, input_filenames)
+        generate_union_type_containers(CodeGeneratorUnionType, info_provider,
+                                       options)
+        generate_callback_function_impl(CodeGeneratorCallbackFunction,
+                                        info_provider, options)
     else:
         # |input_filename| should be a path of an IDL file.
-        generate_bindings(CodeGeneratorV8, options, input_filename)
+        generate_bindings(CodeGeneratorV8, info_provider, options,
+                          [input_filename])
 
 
 if __name__ == '__main__':

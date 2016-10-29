@@ -45,8 +45,12 @@ from code_generator_v8 import CodeGeneratorV8
 from code_generator_v8 import CodeGeneratorUnionType
 from code_generator_v8 import CodeGeneratorCallbackFunction
 from compute_interfaces_info_individual import InterfaceInfoCollector
-from compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
-from idl_compiler import IdlCompiler
+from compute_interfaces_info_overall import (compute_interfaces_info_overall,
+                                             interfaces_info)
+from idl_compiler import (generate_bindings,
+                          generate_union_type_containers,
+                          generate_dictionary_impl,
+                          generate_callback_function_impl)
 from utilities import ComponentInfoProviderCore
 from utilities import ComponentInfoProviderModules
 from utilities import write_file
@@ -189,6 +193,14 @@ def generate_interface_dependencies():
         test_component_info['modules'])
 
 
+class IdlCompilerOptions(object):
+    def __init__(self, output_directory, cache_directory, impl_output_directory,
+                 target_component):
+        self.output_directory = output_directory
+        self.cache_directory = cache_directory
+        self.impl_output_directory = impl_output_directory
+        self.target_component = target_component
+
 def bindings_tests(output_directory, verbose):
     executive = Executive()
 
@@ -271,22 +283,6 @@ def bindings_tests(output_directory, verbose):
             return False
         return True
 
-    def generate_union_type_containers(output_directory, component):
-        generator = CodeGeneratorUnionType(
-            component_info_providers[component], cache_dir=None,
-            output_dir=output_directory, target_component=component)
-        outputs = generator.generate_code()
-        for output_path, output_code in outputs:
-            write_file(output_code, output_path)
-
-    def generate_callback_function_impl(output_directory, component):
-        generator = CodeGeneratorCallbackFunction(
-            component_info_providers[component], cache_dir=None,
-            output_dir=output_directory, target_component=component)
-        outputs = generator.generate_code()
-        for output_path, output_code in outputs:
-            write_file(output_code, output_path)
-
     try:
         generate_interface_dependencies()
         for component in COMPONENT_DIRECTORY:
@@ -294,55 +290,67 @@ def bindings_tests(output_directory, verbose):
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-            generate_union_type_containers(output_dir, component)
-            generate_callback_function_impl(output_dir, component)
-
-            idl_compiler = IdlCompiler(
+            options = IdlCompilerOptions(
                 output_directory=output_dir,
-                code_generator_class=CodeGeneratorV8,
-                info_provider=component_info_providers[component],
+                impl_output_directory=output_dir,
+                cache_directory=None,
                 target_component=component)
+
             if component == 'core':
                 partial_interface_output_dir = os.path.join(output_directory,
                                                             'modules')
                 if not os.path.exists(partial_interface_output_dir):
                     os.makedirs(partial_interface_output_dir)
-                idl_partial_interface_compiler = IdlCompiler(
+                partial_interface_options = IdlCompilerOptions(
                     output_directory=partial_interface_output_dir,
-                    code_generator_class=CodeGeneratorV8,
-                    info_provider=component_info_providers['modules'],
+                    impl_output_directory=None,
+                    cache_directory=None,
                     target_component='modules')
-            else:
-                idl_partial_interface_compiler = None
-
-            dictionary_impl_compiler = IdlCompiler(
-                output_directory=output_dir,
-                info_provider=component_info_providers[component],
-                code_generator_class=CodeGeneratorDictionaryImpl,
-                target_component=component)
 
             idl_filenames = []
+            dictionary_impl_filenames = []
+            partial_interface_filenames = []
             input_directory = os.path.join(test_input_directory, component)
             for filename in os.listdir(input_directory):
                 if (filename.endswith('.idl') and
                         # Dependencies aren't built
                         # (they are used by the dependent)
                         filename not in DEPENDENCY_IDL_FILES):
-                    idl_filenames.append(
-                        os.path.realpath(
-                            os.path.join(input_directory, filename)))
-            for idl_path in idl_filenames:
-                idl_basename = os.path.basename(idl_path)
-                idl_compiler.compile_file(idl_path)
-                definition_name, _ = os.path.splitext(idl_basename)
-                if definition_name in interfaces_info:
-                    interface_info = interfaces_info[definition_name]
-                    if interface_info['is_dictionary']:
-                        dictionary_impl_compiler.compile_file(idl_path)
-                    if component == 'core' and interface_info['dependencies_other_component_full_paths']:
-                        idl_partial_interface_compiler.compile_file(idl_path)
-                if verbose:
-                    print 'Compiled: %s' % idl_path
+                    idl_path = os.path.realpath(
+                        os.path.join(input_directory, filename))
+                    idl_filenames.append(idl_path)
+                    idl_basename = os.path.basename(idl_path)
+                    definition_name, _ = os.path.splitext(idl_basename)
+                    if definition_name in interfaces_info:
+                        interface_info = interfaces_info[definition_name]
+                        if interface_info['is_dictionary']:
+                            dictionary_impl_filenames.append(idl_path)
+                        if component == 'core' and interface_info[
+                                'dependencies_other_component_full_paths']:
+                            partial_interface_filenames.append(idl_path)
+
+            generate_union_type_containers(CodeGeneratorUnionType,
+                                           component_info_providers[component],
+                                           options)
+            generate_callback_function_impl(CodeGeneratorCallbackFunction,
+                                            component_info_providers[component],
+                                            options)
+            generate_bindings(
+                CodeGeneratorV8,
+                component_info_providers[component],
+                options,
+                idl_filenames)
+            generate_bindings(
+                CodeGeneratorV8,
+                component_info_providers['modules'],
+                partial_interface_options,
+                partial_interface_filenames)
+            generate_dictionary_impl(
+                CodeGeneratorDictionaryImpl,
+                component_info_providers[component],
+                options,
+                dictionary_impl_filenames)
+
     finally:
         delete_cache_files()
 
