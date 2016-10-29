@@ -32,7 +32,7 @@ static sk_sp<SkPicture> PlaybackToPicture(
     const gfx::Size& resource_size,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
-    float scale,
+    const gfx::SizeF& scales,
     const RasterSource::PlaybackSettings& playback_settings) {
   // GPU raster doesn't do low res tiles, so should always include images.
   DCHECK(!playback_settings.skip_images);
@@ -74,7 +74,7 @@ static sk_sp<SkPicture> PlaybackToPicture(
   RasterSource::PlaybackSettings settings = playback_settings;
   settings.use_image_hijack_canvas = false;
   raster_source->PlaybackToCanvas(canvas.get(), raster_full_rect, playback_rect,
-                                  scale, settings);
+                                  scales, settings);
   canvas->restore();
   return recorder.finishRecordingAsPicture();
 }
@@ -146,13 +146,13 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
-    float scale,
+    const gfx::SizeF& scales,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0("cc", "GpuRasterBuffer::Playback");
   client_->PlaybackOnWorkerThread(&lock_, sync_token_,
                                   resource_has_previous_content_, raster_source,
                                   raster_full_rect, raster_dirty_rect,
-                                  new_content_id, scale, playback_settings);
+                                  new_content_id, scales, playback_settings);
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
@@ -244,7 +244,7 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
-    float scale,
+    const gfx::SizeF& scales,
     const RasterSource::PlaybackSettings& playback_settings) {
   ContextProvider::ScopedContextLock scoped_context(worker_context_provider_);
   gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
@@ -261,7 +261,7 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
 
   sk_sp<SkPicture> picture = PlaybackToPicture(
       raster_source, resource_has_previous_content, resource_lock->size(),
-      raster_full_rect, raster_dirty_rect, scale, playback_settings);
+      raster_full_rect, raster_dirty_rect, scales, playback_settings);
 
   // Turn on distance fields for layers that have ever animated.
   bool use_distance_field_text =

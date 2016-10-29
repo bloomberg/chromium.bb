@@ -205,12 +205,12 @@ void DiscardableImageMap::EndGeneratingMetadata() {
 
 void DiscardableImageMap::GetDiscardableImagesInRect(
     const gfx::Rect& rect,
-    float raster_scale,
+    const gfx::SizeF& raster_scales,
     std::vector<DrawImage>* images) const {
   std::vector<size_t> indices;
   images_rtree_.Search(rect, &indices);
   for (size_t index : indices)
-    images->push_back(all_images_[index].first.ApplyScale(raster_scale));
+    images->push_back(all_images_[index].first.ApplyScale(raster_scales));
 }
 
 DiscardableImageMap::ScopedMetadataGenerator::ScopedMetadataGenerator(

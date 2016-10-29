@@ -25,7 +25,7 @@ Tile::Tile(TileManager* tile_manager,
     : tile_manager_(tile_manager),
       content_rect_(info.content_rect),
       enclosing_layer_rect_(info.enclosing_layer_rect),
-      contents_scale_(info.contents_scale),
+      raster_scales_(info.raster_scales),
       layer_id_(layer_id),
       source_frame_number_(source_frame_number),
       flags_(flags),
@@ -47,7 +47,13 @@ Tile::~Tile() {
 void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), value, "cc::Tile", this);
-  value->SetDouble("contents_scale", contents_scale_);
+  // TODO(vmpstr): Update tracing to use x/y scales.
+  value->SetDouble("contents_scale", contents_scale_key());
+
+  value->BeginArray("raster_scales");
+  value->AppendDouble(raster_scales_.width());
+  value->AppendDouble(raster_scales_.height());
+  value->EndArray();
 
   MathUtil::AddToTracedValue("content_rect", content_rect_, value);
 

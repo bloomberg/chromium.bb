@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
 
@@ -33,13 +34,9 @@ class CC_EXPORT DrawImage {
   bool matrix_is_decomposable() const { return matrix_is_decomposable_; }
   const SkMatrix& matrix() const { return matrix_; }
 
-  DrawImage ApplyScale(float scale) const {
-    return ApplyScale(SkSize::Make(scale, scale));
-  }
-
-  DrawImage ApplyScale(const SkSize& scale) const {
+  DrawImage ApplyScale(const gfx::SizeF& scales) const {
     SkMatrix scaled_matrix = matrix_;
-    scaled_matrix.postScale(scale.width(), scale.height());
+    scaled_matrix.preScale(scales.width(), scales.height());
     return DrawImage(image_, src_rect_, filter_quality_, scaled_matrix);
   }
 

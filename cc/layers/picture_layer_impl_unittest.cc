@@ -343,7 +343,8 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
     MockCanvas mock_canvas(1000, 1000);
     const gfx::Rect& content_rect = (*tile_iter)->content_rect();
     updated_active_raster_source->RasterSource::PlaybackToCanvas(
-        &mock_canvas, content_rect, content_rect, 1.0f, playback_settings);
+        &mock_canvas, content_rect, content_rect, gfx::SizeF(1.f, 1.f),
+        playback_settings);
 
     // This test verifies that when drawing the contents of a specific tile
     // at content scale 1.0, the playback canvas never receives content from
@@ -2992,18 +2993,19 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
 
     EXPECT_FALSE(tile->required_for_activation());
 
-    while (std::abs(tile->contents_scale() - expected_scales[scale_index]) >
+    while (std::abs(tile->contents_scale_key() - expected_scales[scale_index]) >
            std::numeric_limits<float>::epsilon()) {
       ++scale_index;
       ASSERT_LT(scale_index, arraysize(expected_scales));
     }
 
-    EXPECT_FLOAT_EQ(tile->contents_scale(), expected_scales[scale_index]);
+    EXPECT_FLOAT_EQ(tile->contents_scale_key(), expected_scales[scale_index]);
     unique_tiles.insert(tile);
 
     if (tile->required_for_activation() ==
             last_tile.tile()->required_for_activation() &&
-        std::abs(tile->contents_scale() - last_tile.tile()->contents_scale()) <
+        std::abs(tile->contents_scale_key() -
+                 last_tile.tile()->contents_scale_key()) <
             std::numeric_limits<float>::epsilon()) {
       if (priority.distance_to_visible <=
           last_tile.priority().distance_to_visible)
@@ -3039,13 +3041,13 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
       scale_index = 0;
     }
 
-    while (std::abs(tile->contents_scale() - expected_scales[scale_index]) >
+    while (std::abs(tile->contents_scale_key() - expected_scales[scale_index]) >
            std::numeric_limits<float>::epsilon()) {
       ++scale_index;
       ASSERT_LT(scale_index, arraysize(expected_scales));
     }
 
-    EXPECT_FLOAT_EQ(tile->contents_scale(), expected_scales[scale_index]);
+    EXPECT_FLOAT_EQ(tile->contents_scale_key(), expected_scales[scale_index]);
     unique_tiles.insert(tile);
     queue->Pop();
   }
@@ -3680,8 +3682,8 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
 
           EXPECT_TRUE(tile_priority_bin < last_tile_priority_bin ||
                       tile->required_for_activation() ||
-                      tile->contents_scale() !=
-                          last_tile.tile()->contents_scale())
+                      tile->contents_scale_key() !=
+                          last_tile.tile()->contents_scale_key())
               << "line: " << source_line;
         }
       }
@@ -3959,7 +3961,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
     for (size_t j = 0; j < tiles.size(); ++j) {
       if (prioritized_tiles[tiles[j]].is_occluded()) {
         gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
-            tiles[j]->content_rect(), 1.0f / tiles[j]->contents_scale());
+            tiles[j]->content_rect(), 1.f / tiles[j]->raster_scales().width(),
+            1.f / tiles[j]->raster_scales().height());
         EXPECT_GE(scaled_content_rect.x(), occluding_layer_position.x());
         occluded_tile_count++;
       }
@@ -4023,7 +4026,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
       const Tile* tile = *iter;
 
       gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
-          tile->content_rect(), 1.0f / tile->contents_scale());
+          tile->content_rect(), 1.f / tile->raster_scales().width(),
+          1.f / tile->raster_scales().height());
       // Tiles are occluded on the active tree iff they lie beneath the
       // occluding layer.
       EXPECT_EQ(prioritized_tiles[tile].is_occluded(),
@@ -4059,7 +4063,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
           active_layer()->GetPendingOrActiveTwinTiling(tiling)->TileAt(
               iter.i(), iter.j());
       gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
-          tile->content_rect(), 1.0f / tile->contents_scale());
+          tile->content_rect(), 1.f / tile->raster_scales().height(),
+          1.f / tile->raster_scales().width());
 
       if (scaled_content_rect.Intersects(invalidation_rect)) {
         // Tiles inside the invalidation rect exist on both trees.

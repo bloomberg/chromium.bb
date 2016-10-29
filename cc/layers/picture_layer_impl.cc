@@ -272,7 +272,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         } else if (iter.resolution() == LOW_RESOLUTION) {
           color = DebugColors::LowResTileBorderColor();
           width = DebugColors::LowResTileBorderWidth(layer_tree_impl());
-        } else if (iter->contents_scale() > max_contents_scale) {
+        } else if (iter->contents_scale_key() > max_contents_scale) {
           color = DebugColors::ExtraHighResTileBorderColor();
           width = DebugColors::ExtraHighResTileBorderWidth(layer_tree_impl());
         } else {
@@ -340,8 +340,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           // complete. But if a tile is ideal scale, we don't want to consider
           // it incomplete and trying to replace it with a tile at a worse
           // scale.
-          if (iter->contents_scale() != raster_contents_scale_ &&
-              iter->contents_scale() != ideal_contents_scale_ &&
+          if (iter->contents_scale_key() != raster_contents_scale_ &&
+              iter->contents_scale_key() != ideal_contents_scale_ &&
               geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
             append_quads_data->num_incomplete_tiles++;
           }
@@ -648,12 +648,13 @@ bool PictureLayerImpl::RasterSourceUsesLCDText() const {
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
   if (layer_tree_impl()->IsActiveTree()) {
     gfx::Rect layer_damage_rect = gfx::ScaleToEnclosingRect(
-        tile->content_rect(), 1.f / tile->contents_scale());
+        tile->content_rect(), 1.f / tile->raster_scales().width(),
+        1.f / tile->raster_scales().height());
     AddDamageRect(layer_damage_rect);
   }
   if (tile->draw_info().NeedsRaster()) {
     PictureLayerTiling* tiling =
-        tilings_->FindTilingWithScale(tile->contents_scale());
+        tilings_->FindTilingWithScale(tile->contents_scale_key());
     if (tiling)
       tiling->set_all_tiles_done(false);
   }

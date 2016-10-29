@@ -34,18 +34,18 @@ class CC_EXPORT Tile {
     int tiling_j_index;
     gfx::Rect enclosing_layer_rect;
     gfx::Rect content_rect;
-    float contents_scale;
+    gfx::SizeF raster_scales;
 
     CreateInfo(int tiling_i_index,
                int tiling_j_index,
                const gfx::Rect& enclosing_layer_rect,
                const gfx::Rect& content_rect,
-               float contents_scale)
+               const gfx::SizeF& raster_scales)
         : tiling_i_index(tiling_i_index),
           tiling_j_index(tiling_j_index),
           enclosing_layer_rect(enclosing_layer_rect),
           content_rect(content_rect),
-          contents_scale(contents_scale) {}
+          raster_scales(raster_scales) {}
   };
 
   enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0, IS_OPAQUE = 1 << 1 };
@@ -77,7 +77,8 @@ class CC_EXPORT Tile {
   const TileDrawInfo& draw_info() const { return draw_info_; }
   TileDrawInfo& draw_info() { return draw_info_; }
 
-  float contents_scale() const { return contents_scale_; }
+  float contents_scale_key() const { return raster_scales_.width(); }
+  const gfx::SizeF& raster_scales() const { return raster_scales_; }
   const gfx::Rect& content_rect() const { return content_rect_; }
   const gfx::Rect& enclosing_layer_rect() const {
     return enclosing_layer_rect_;
@@ -130,7 +131,7 @@ class CC_EXPORT Tile {
   TileManager* const tile_manager_;
   const gfx::Rect content_rect_;
   const gfx::Rect enclosing_layer_rect_;
-  const float contents_scale_;
+  const gfx::SizeF raster_scales_;
 
   TileDrawInfo draw_info_;
 

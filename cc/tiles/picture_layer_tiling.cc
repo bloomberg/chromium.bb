@@ -315,8 +315,9 @@ Tile::CreateInfo PictureLayerTiling::CreateInfoForTile(int i, int j) const {
   tile_rect.set_size(tiling_data_.max_texture_size());
   gfx::Rect enclosing_layer_rect =
       gfx::ScaleToEnclosingRect(tile_rect, 1.f / contents_scale_);
+  // TODO(vmpstr): Start using different x/y scales for the raster scales.
   return Tile::CreateInfo(i, j, enclosing_layer_rect, tile_rect,
-                          contents_scale_);
+                          gfx::SizeF(contents_scale_, contents_scale_));
 }
 
 bool PictureLayerTiling::ShouldCreateTileAt(
@@ -829,7 +830,8 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
   DCHECK(raster_source()->CoversRect(tile->enclosing_layer_rect()))
       << "Recording rect: "
       << gfx::ScaleToEnclosingRect(tile->content_rect(),
-                                   1.f / tile->contents_scale())
+                                   1.f / tile->raster_scales().width(),
+                                   1.f / tile->raster_scales().height())
              .ToString();
 
   const auto& tile_priority = ComputePriorityForTile(tile, priority_rect_type);

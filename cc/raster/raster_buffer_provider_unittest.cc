@@ -82,7 +82,8 @@ class TestRasterTaskImpl : public TileTask {
 
     uint64_t new_content_id = 0;
     raster_buffer_->Playback(raster_source_.get(), gfx::Rect(1, 1),
-                             gfx::Rect(1, 1), new_content_id, 1.f, settings);
+                             gfx::Rect(1, 1), new_content_id,
+                             gfx::SizeF(1.f, 1.f), settings);
   }
 
   // Overridden from TileTask:

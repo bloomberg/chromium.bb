@@ -266,9 +266,9 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
 
 void DisplayItemList::GetDiscardableImagesInRect(
     const gfx::Rect& rect,
-    float raster_scale,
+    const gfx::SizeF& raster_scales,
     std::vector<DrawImage>* images) {
-  image_map_.GetDiscardableImagesInRect(rect, raster_scale, images);
+  image_map_.GetDiscardableImagesInRect(rect, raster_scales, images);
 }
 
 }  // namespace cc

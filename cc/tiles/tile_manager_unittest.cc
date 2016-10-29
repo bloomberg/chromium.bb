@@ -874,8 +874,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
         EXPECT_TRUE((tile_priority_bin < last_tile_priority_bin) ||
                     prioritized_tile.tile()->required_for_activation() ||
-                    (prioritized_tile.tile()->contents_scale() !=
-                     last_tile.tile()->contents_scale()));
+                    (prioritized_tile.tile()->contents_scale_key() !=
+                     last_tile.tile()->contents_scale_key()));
       }
     }
     last_tile = prioritized_tile;

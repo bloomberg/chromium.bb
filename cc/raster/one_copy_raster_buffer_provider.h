@@ -52,7 +52,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       const RasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
-      float scale,
+      const gfx::SizeF& scales,
       const RasterSource::PlaybackSettings& playback_settings,
       uint64_t previous_content_id,
       uint64_t new_content_id);
@@ -73,7 +73,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
         const gfx::Rect& raster_full_rect,
         const gfx::Rect& raster_dirty_rect,
         uint64_t new_content_id,
-        float scale,
+        const gfx::SizeF& scales,
         const RasterSource::PlaybackSettings& playback_settings) override;
 
     void set_sync_token(const gpu::SyncToken& sync_token) {
@@ -97,7 +97,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       const RasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
-      float scale,
+      const gfx::SizeF& scales,
       sk_sp<SkColorSpace> dst_color_space,
       const RasterSource::PlaybackSettings& playback_settings,
       uint64_t previous_content_id,
