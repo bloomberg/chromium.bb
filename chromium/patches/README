@@ -44,6 +44,9 @@ Current patches:
     'sidx' box processing is broken for MOV containers. http://crbug.com/568336.
     Reported: http://ffmpeg.org/pipermail/ffmpeg-devel/2015-December/185040.html
 
+    Upstream ffplay as of 134233972e7961d9a41c67d27da505e459d5edfa still
+    reproduces this problem.
+
     That revert removed a local |ret| needed by later dd34e89f, so M56 merge
     commit e4decbe7 includes a downstream declaration of |ret| in
     mov_seek_stream in mov.c.
