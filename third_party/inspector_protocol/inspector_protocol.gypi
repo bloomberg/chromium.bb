@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Note: do not remove this file, it's used by v8's gyp.
-# It will be moved out from platform/ soon.
 {
   'variables': {
     'inspector_protocol_files': [

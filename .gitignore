@@ -361,6 +361,7 @@ vs-chromium-project.txt
 /third_party/icu
 /third_party/icu4j/lib/*.jar
 /third_party/intellij/lib/*.jar
+/third_party/inspector_protocol
 /third_party/jarjar
 /third_party/javax_inject/lib/*.jar
 /third_party/jsoncpp/source

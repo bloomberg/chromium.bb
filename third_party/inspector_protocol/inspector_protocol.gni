@@ -23,9 +23,8 @@ template("inspector_protocol_generate") {
   assert(defined(invoker.config_file))
   assert(defined(invoker.out_dir))
   assert(defined(invoker.outputs))
-
-  inspector_protocol_dir =
-      "//third_party/WebKit/Source/platform/inspector_protocol"
+  assert(defined(invoker.inspector_protocol_dir))
+  inspector_protocol_dir = invoker.inspector_protocol_dir
 
   action(target_name) {
     script = "$inspector_protocol_dir/CodeGenerator.py"

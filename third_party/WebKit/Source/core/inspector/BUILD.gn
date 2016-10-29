@@ -4,9 +4,10 @@
 
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/core/core.gni")
-import(
-    "//third_party/WebKit/Source/platform/inspector_protocol/inspector_protocol.gni")
+import("//third_party/inspector_protocol/inspector_protocol.gni")
 import("//v8/gni/v8.gni")
+
+_inspector_protocol_dir = "//third_party/inspector_protocol"
 
 blink_core_sources("inspector") {
   sources = [
@@ -123,6 +124,7 @@ action("instrumentation_sources") {
 # inspector protocol -----------------------------------------------------------
 
 inspector_protocol_generate("protocol_sources") {
+  inspector_protocol_dir = _inspector_protocol_dir
   out_dir = blink_core_output_dir
 
   config_file = "inspector_protocol_config.json"
@@ -227,7 +229,7 @@ source_set("generated") {
 }
 
 action("protocol_compatibility_check") {
-  script = "../../platform/inspector_protocol/CheckProtocolCompatibility.py"
+  script = _inspector_protocol_dir + "/CheckProtocolCompatibility.py"
 
   inputs = [
     "browser_protocol.json",
@@ -250,7 +252,7 @@ action("protocol_version") {
   deps = [
     ":protocol_compatibility_check",
   ]
-  script = "../../platform/inspector_protocol/ConcatenateProtocols.py"
+  script = _inspector_protocol_dir + "/ConcatenateProtocols.py"
 
   inputs = [
     "browser_protocol.json",
