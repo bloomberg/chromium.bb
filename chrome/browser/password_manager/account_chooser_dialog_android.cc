@@ -90,20 +90,16 @@ void AvatarFetcherAndroid::OnFetchComplete(const GURL& url,
   delete this;
 }
 
-void FetchAvatars(
-    const base::android::ScopedJavaGlobalRef<jobject>& java_dialog,
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_forms,
-    int index,
-    net::URLRequestContextGetter* request_context) {
-  for (const auto& password_form : password_forms) {
-    if (!password_form->icon_url.is_valid())
-      continue;
-    // Fetcher deletes itself once fetching is finished.
-    auto* fetcher =
-        new AvatarFetcherAndroid(password_form->icon_url, index, java_dialog);
-    fetcher->Start(request_context);
-    ++index;
-  }
+void FetchAvatar(const base::android::ScopedJavaGlobalRef<jobject>& java_dialog,
+                 const autofill::PasswordForm* password_form,
+                 int index,
+                 net::URLRequestContextGetter* request_context) {
+  if (!password_form->icon_url.is_valid())
+    return;
+  // Fetcher deletes itself once fetching is finished.
+  auto* fetcher =
+      new AvatarFetcherAndroid(password_form->icon_url, index, java_dialog);
+  fetcher->Start(request_context);
 }
 
 };  // namespace
@@ -166,9 +162,11 @@ void AccountChooserDialogAndroid::ShowDialog() {
   net::URLRequestContextGetter* request_context =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext())
           ->GetRequestContext();
-  FetchAvatars(dialog_jobject_, local_credentials_forms(), 0, request_context);
-  FetchAvatars(dialog_jobject_, federation_providers_forms(),
-               local_credentials_forms().size(), request_context);
+  int avatar_index = 0;
+  for (const auto& form : local_credentials_forms())
+    FetchAvatar(dialog_jobject_, form.get(), avatar_index++, request_context);
+  for (const auto& form : federation_providers_forms())
+    FetchAvatar(dialog_jobject_, form.get(), avatar_index++, request_context);
 }
 
 void AccountChooserDialogAndroid::OnCredentialClicked(
