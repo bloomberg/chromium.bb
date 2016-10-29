@@ -82,6 +82,7 @@ namespace safe_browsing {
 
 SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
     : is_subresource(false),
+      is_subframe(false),
       threat_type(SB_THREAT_TYPE_SAFE),
       threat_source(safe_browsing::ThreatSource::UNKNOWN) {}
 
