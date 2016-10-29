@@ -167,7 +167,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> buildObjectForLayer(
 
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(
     InspectedFrames* inspectedFrames)
-    : m_inspectedFrames(inspectedFrames) {}
+    : m_inspectedFrames(inspectedFrames), m_suppressLayerPaintEvents(false) {}
 
 InspectorLayerTreeAgent::~InspectorLayerTreeAgent() {}
 
@@ -203,6 +203,8 @@ void InspectorLayerTreeAgent::layerTreeDidChange() {
 void InspectorLayerTreeAgent::didPaint(const GraphicsLayer* graphicsLayer,
                                        GraphicsContext&,
                                        const LayoutRect& rect) {
+  if (m_suppressLayerPaintEvents)
+    return;
   // Should only happen for FrameView paints when compositing is off. Consider
   // different instrumentation method for that.
   if (!graphicsLayer)
@@ -363,7 +365,9 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString,
   IntSize size = expandedIntSize(layer->size());
 
   IntRect interestRect(IntPoint(0, 0), size);
+  m_suppressLayerPaintEvents = true;
   layer->paint(&interestRect);
+  m_suppressLayerPaintEvents = false;
 
   GraphicsContext context(layer->getPaintController());
   context.beginRecording(interestRect);

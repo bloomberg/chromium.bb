@@ -134,6 +134,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
 
   typedef HashMap<String, RefPtr<PictureSnapshot>> SnapshotById;
   SnapshotById m_snapshotById;
+  bool m_suppressLayerPaintEvents;
 };
 
 }  // namespace blink
