@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SIM_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_SIM_DIALOG_DELEGATE_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -25,7 +24,9 @@ class SimDialogDelegate : public ui::WebDialogDelegate {
 
   explicit SimDialogDelegate(SimDialogMode dialog_mode);
 
-  // Shows the SIM unlock dialog box with one of the specified modes.
+  // Shows the SIM unlock dialog box with one of the specified modes. If the
+  // |owning_window| is null the dialog is placed in the appropriate modal
+  // dialog container on the primary display.
   static void ShowDialog(gfx::NativeWindow owning_window, SimDialogMode mode);
 
  private:

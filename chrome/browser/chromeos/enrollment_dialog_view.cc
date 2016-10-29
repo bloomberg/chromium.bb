@@ -5,11 +5,13 @@
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -103,7 +105,12 @@ void EnrollmentDialogView::ShowDialog(gfx::NativeWindow owning_window,
                                       const base::Closure& connect) {
   EnrollmentDialogView* dialog_view =
       new EnrollmentDialogView(network_name, profile, target_uri, connect);
-  views::DialogDelegate::CreateDialogWidget(dialog_view, NULL, owning_window);
+  if (owning_window) {
+    views::DialogDelegate::CreateDialogWidget(dialog_view, nullptr,
+                                              owning_window);
+  } else {
+    SystemTrayClient::CreateUnownedDialogWidget(dialog_view);
+  }
   dialog_view->InitDialog();
   views::Widget* widget = dialog_view->GetWidget();
   DCHECK(widget);

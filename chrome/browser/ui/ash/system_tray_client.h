@@ -14,6 +14,11 @@ namespace ash {
 enum class LoginStatus;
 }
 
+namespace views {
+class Widget;
+class WidgetDelegate;
+}
+
 // Handles method calls delegated back to chrome from ash. Also notifies ash of
 // relevant state changes in chrome.
 // TODO: Consider renaming this to SystemTrayClientChromeOS.
@@ -31,6 +36,12 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   // Returns the container id for the parent window for new dialogs. The parent
   // varies based on the current login and lock screen state.
   static int GetDialogParentContainerId();
+
+  // Creates a modal dialog in the parent window for new dialogs on the primary
+  // display. See GetDialogParentContainerId() and views::CreateDialogWidget().
+  // The returned widget is owned by its native widget.
+  static views::Widget* CreateUnownedDialogWidget(
+      views::WidgetDelegate* widget_delegate);
 
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;

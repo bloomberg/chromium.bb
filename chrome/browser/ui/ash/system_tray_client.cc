@@ -8,6 +8,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -32,10 +33,15 @@
 #include "content/public/common/service_manager_connection.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::LoginState;
+using views::Widget;
 
 namespace {
 
@@ -127,6 +133,28 @@ int SystemTrayClient::GetDialogParentContainerId() {
     return ash::kShellWindowId_LockSystemModalContainer;
 
   return ash::kShellWindowId_SystemModalContainer;
+}
+
+// static
+Widget* SystemTrayClient::CreateUnownedDialogWidget(
+    views::WidgetDelegate* widget_delegate) {
+  DCHECK(widget_delegate);
+  Widget::InitParams params = views::DialogDelegate::GetDialogWidgetInitParams(
+      widget_delegate, nullptr, nullptr, gfx::Rect());
+  // Place the dialog in the appropriate modal dialog container, either above
+  // or below the lock screen, based on the login state.
+  int container_id = GetDialogParentContainerId();
+  if (chrome::IsRunningInMash()) {
+    using ui::mojom::WindowManager;
+    params.mus_properties[WindowManager::kInitialContainerId_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
+  } else {
+    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                             container_id);
+  }
+  Widget* widget = new Widget;  // Owned by native widget.
+  widget->Init(params);
+  return widget;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,9 +36,14 @@ namespace chromeos {
 // static
 void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                    SimDialogMode mode) {
-  chrome::ShowWebDialog(owning_window,
-                        ProfileManager::GetActiveUserProfile(),
-                        new SimDialogDelegate(mode));
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (owning_window) {
+    chrome::ShowWebDialog(owning_window, profile, new SimDialogDelegate(mode));
+  } else {
+    chrome::ShowWebDialogInContainer(
+        SystemTrayClient::GetDialogParentContainerId(), profile,
+        new SimDialogDelegate(mode));
+  }
 }
 
 SimDialogDelegate::SimDialogDelegate(SimDialogMode dialog_mode)

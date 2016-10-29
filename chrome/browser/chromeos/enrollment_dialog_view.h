@@ -6,17 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_ENROLLMENT_DIALOG_VIEW_H_
 
 #include <string>
-#include <vector>
 
-#include "base/callback_forward.h"
 #include "ui/gfx/native_widget_types.h"
-
-class Profile;
 
 namespace chromeos {
 namespace enrollment {
 
-// Returns true if a dialog was successfully created.
+// Creates and shows the dialog for certificate-based network enrollment. If the
+// |owning_window| is null the dialog is placed in the appropriate modal dialog
+// dialog container on the primary display. Returns true if a dialog was
+// successfully created.
 bool CreateEnrollmentDialog(const std::string& network_id,
                             gfx::NativeWindow owning_window);
 

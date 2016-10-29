@@ -24,6 +24,8 @@ class NetworkState;
 class NetworkPortalWebDialog;
 class NetworkPortalNotificationControllerTest;
 
+// Shows a message center notification when the networking stack detects a
+// captive portal.
 class NetworkPortalNotificationController
     : public NetworkStateHandlerObserver,
       public NetworkPortalDetector::Observer {
