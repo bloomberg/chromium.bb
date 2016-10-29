@@ -30,7 +30,7 @@ Running: removeFileMapping
 Opened tabs: 
     file:///var/www/inspector/persistence/resources/foo.js
     http://127.0.0.1:8000/inspector/persistence/resources/foo.js
-SourceFrame: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+SourceFrame: file:///var/www/inspector/persistence/resources/foo.js
     selection: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":5}
     firstVisibleLine: 2
     isDirty: true

@@ -82,7 +82,7 @@ function test()
                     return
                 WebInspector.persistence.removeEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
                 dumpEditorTabs();
-                dumpSourceFrame(networkSourceFrame);
+                dumpSourceFrame(fileSystemSourceFrame);
                 next();
             }
         },
