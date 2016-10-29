@@ -38,6 +38,7 @@ crbug.com/551000 http/tests/inspector-protocol/reload-memory-cache.html [ Failur
 crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
 crbug.com/551000 http/tests/inspector/extensions-ignore-cache.html [ Failure ]
 crbug.com/551000 http/tests/inspector/extensions-network-redirect.html [ Timeout ]
+crbug.com/551000 http/tests/inspector/extensions-useragent.html [ Failure ]
 crbug.com/551000 http/tests/inspector/network/network-datareceived.html [ Failure ]
 crbug.com/551000 http/tests/inspector/network/network-document-initiator.html [ Failure ]
 crbug.com/551000 http/tests/inspector/network/network-initiator.html [ Failure ]
@@ -146,6 +147,7 @@ Bug(none) http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout 
 Bug(none) http/tests/navigation/response204.html [ Timeout ]
 Bug(none) http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
 Bug(none) http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
+Bug(none) imported/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
 Bug(none) virtual/stable/http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
 Bug(none) virtual/stable/http/tests/navigation/response204.html [ Timeout ]
 
