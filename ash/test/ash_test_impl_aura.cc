@@ -6,15 +6,15 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -87,8 +87,8 @@ bool AshTestImplAura::SetSecondaryDisplayPlacement(
     display::DisplayPlacement::Position position,
     int offset) {
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(Shell::GetInstance()->display_manager(),
-                                position, 0));
+      display::test::CreateDisplayLayout(
+          Shell::GetInstance()->display_manager(), position, 0));
   return true;
 }
 

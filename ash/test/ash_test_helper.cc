@@ -16,7 +16,6 @@
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_shell_delegate.h"
@@ -32,6 +31,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -149,7 +149,7 @@ void AshTestHelper::SetUp(bool start_session,
   shell->screen_layout_observer()->set_show_notifications_for_testing(false);
 #endif
 
-  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
       .DisableChangeDisplayUponHostResize();
   ShellTestApi(shell).DisableDisplayAnimator();
 

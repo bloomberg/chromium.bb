@@ -9,12 +9,12 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/display/display_manager.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 
 namespace ash {

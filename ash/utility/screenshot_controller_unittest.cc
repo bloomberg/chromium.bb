@@ -10,7 +10,6 @@
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/wm/window_util.h"

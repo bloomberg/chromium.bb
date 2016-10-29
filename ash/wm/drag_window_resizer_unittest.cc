@@ -8,14 +8,12 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/wm/window_positioning_utils.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,6 +27,7 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -471,8 +470,7 @@ TEST_P(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   // Layout so that all three displays touch each other.
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
   ASSERT_EQ(3u, list.size());
   ASSERT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(), list[0]);
   display::DisplayLayoutBuilder builder(list[0]);
@@ -480,18 +478,18 @@ TEST_P(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
                               display::DisplayPlacement::RIGHT, 0);
   builder.AddDisplayPlacement(list[2], list[0],
                               display::DisplayPlacement::BOTTOM, 0);
-  display_manager->SetLayoutForCurrentDisplays(builder.Build());
+  display_manager()->SetLayoutForCurrentDisplays(builder.Build());
   // Sanity check.
   ASSERT_EQ(gfx::Rect(0, 000, 400, 600),
-            display_manager->GetDisplayForId(list[0]).bounds());
+            display_manager()->GetDisplayForId(list[0]).bounds());
   ASSERT_EQ(gfx::Rect(400, 0, 400, 600),
-            display_manager->GetDisplayForId(list[1]).bounds());
+            display_manager()->GetDisplayForId(list[1]).bounds());
   ASSERT_EQ(gfx::Rect(0, 600, 800, 600),
-            display_manager->GetDisplayForId(list[2]).bounds());
+            display_manager()->GetDisplayForId(list[2]).bounds());
 
   // Create a window on 2nd display.
   window_->SetBoundsInScreen(gfx::Rect(400, 0, 100, 100),
-                             display_manager->GetDisplayForId(list[1]));
+                             display_manager()->GetDisplayForId(list[1]));
   ASSERT_EQ(root_windows[1], window_->GetRootWindow());
 
   // Hold the center of the window so that the window doesn't stick to the edge

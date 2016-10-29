@@ -5,11 +5,9 @@
 #include "ash/touch/touch_observer_hud.h"
 
 #include "ash/common/ash_switches.h"
-#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch_hud/touch_hud_renderer.h"
@@ -17,6 +15,8 @@
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -31,9 +31,9 @@ class TouchHudTestBase : public test::AshTestBase {
 
     // Initialize display infos. They should be initialized after Ash
     // environment is set up, i.e., after test::AshTestBase::SetUp().
-    internal_display_id_ =
-        test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
-            .SetFirstDisplayAsInternalDisplay();
+    internal_display_id_ = display::test::DisplayManagerTestApi(
+                               Shell::GetInstance()->display_manager())
+                               .SetFirstDisplayAsInternalDisplay();
     external_display_id_ = 10;
     mirrored_display_id_ = 11;
 
@@ -52,14 +52,14 @@ class TouchHudTestBase : public test::AshTestBase {
   void SetupSingleDisplay() {
     display_info_list_.clear();
     display_info_list_.push_back(internal_display_info_);
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   void SetupDualDisplays() {
     display_info_list_.clear();
     display_info_list_.push_back(internal_display_info_);
     display_info_list_.push_back(external_display_info_);
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   void SetInternalAsPrimary() {
@@ -75,7 +75,7 @@ class TouchHudTestBase : public test::AshTestBase {
     DCHECK_EQ(internal_display_id_, display_info_list_[0].id());
     DCHECK_EQ(external_display_id_, display_info_list_[1].id());
     display_info_list_[1] = mirrored_display_info_;
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   void UnmirrorDisplays() {
@@ -83,32 +83,32 @@ class TouchHudTestBase : public test::AshTestBase {
     DCHECK_EQ(internal_display_id_, display_info_list_[0].id());
     DCHECK_EQ(mirrored_display_id_, display_info_list_[1].id());
     display_info_list_[1] = external_display_info_;
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   void RemoveInternalDisplay() {
     DCHECK_LT(0U, display_info_list_.size());
     DCHECK_EQ(internal_display_id_, display_info_list_[0].id());
     display_info_list_.erase(display_info_list_.begin());
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   void RemoveExternalDisplay() {
     DCHECK_EQ(2U, display_info_list_.size());
     display_info_list_.pop_back();
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   void AddInternalDisplay() {
     DCHECK_EQ(0U, display_info_list_.size());
     display_info_list_.push_back(internal_display_info_);
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   void AddExternalDisplay() {
     DCHECK_EQ(1U, display_info_list_.size());
     display_info_list_.push_back(external_display_info_);
-    GetDisplayManager()->OnNativeDisplaysChanged(display_info_list_);
+    display_manager()->OnNativeDisplaysChanged(display_info_list_);
   }
 
   int64_t internal_display_id() const { return internal_display_id_; }
@@ -116,20 +116,17 @@ class TouchHudTestBase : public test::AshTestBase {
   int64_t external_display_id() const { return external_display_id_; }
 
  protected:
-  DisplayManager* GetDisplayManager() {
-    return Shell::GetInstance()->display_manager();
-  }
 
   WindowTreeHostManager* GetWindowTreeHostManager() {
     return Shell::GetInstance()->window_tree_host_manager();
   }
 
   const display::Display& GetInternalDisplay() {
-    return GetDisplayManager()->GetDisplayForId(internal_display_id_);
+    return display_manager()->GetDisplayForId(internal_display_id_);
   }
 
   const display::Display& GetExternalDisplay() {
-    return GetDisplayManager()->GetDisplayForId(external_display_id_);
+    return display_manager()->GetDisplayForId(external_display_id_);
   }
 
   aura::Window* GetInternalRootWindow() {

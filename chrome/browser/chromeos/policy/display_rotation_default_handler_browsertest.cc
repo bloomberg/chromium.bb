@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -35,17 +34,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
 
 namespace em = enterprise_management;
 
 namespace {
 
-ash::DisplayManager* GetDisplayManager() {
+display::DisplayManager* GetDisplayManager() {
   return ash::Shell::GetInstance()->display_manager();
 }
 
 display::Display::Rotation GetRotationOfFirstDisplay() {
-  const ash::DisplayManager* const display_manager = GetDisplayManager();
+  const display::DisplayManager* const display_manager = GetDisplayManager();
   const int64_t first_display_id = display_manager->first_display_id();
   const display::Display& first_display =
       display_manager->GetDisplayForId(first_display_id);
@@ -54,7 +54,7 @@ display::Display::Rotation GetRotationOfFirstDisplay() {
 
 // Fails the test and returns ROTATE_0 if there is no second display.
 display::Display::Rotation GetRotationOfSecondDisplay() {
-  const ash::DisplayManager* const display_manager = GetDisplayManager();
+  const display::DisplayManager* const display_manager = GetDisplayManager();
   if (display_manager->GetNumDisplays() < 2) {
     ADD_FAILURE()
         << "Requested rotation of second display while there was only one.";
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
   run_loop.Run();
 
   // Check the display's rotation.
-  ash::DisplayManager* const display_manager = GetDisplayManager();
+  display::DisplayManager* const display_manager = GetDisplayManager();
   const int64_t first_display_id = display_manager->first_display_id();
   const display::Display& first_display =
       display_manager->GetDisplayForId(first_display_id);

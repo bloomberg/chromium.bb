@@ -4,7 +4,6 @@
 
 #include "ash/display/cursor_window_controller.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -19,6 +18,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -127,7 +127,7 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
   // TODO(oshima): Do not updatethe composition cursor when crossing
   // display in unified desktop mode for now. crbug.com/517222.
   if (Shell::GetInstance()->display_manager()->IsInUnifiedMode() &&
-      display.id() != DisplayManager::kUnifiedDisplayId) {
+      display.id() != display::DisplayManager::kUnifiedDisplayId) {
     return;
   }
 

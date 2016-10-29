@@ -30,6 +30,14 @@ class Window;
 class WindowDelegate;
 }  // namespace aura
 
+namespace display {
+class DisplayManager;
+
+namespace test {
+class DisplayManagerTestApi;
+}  // namespace test
+}  // namespace display
+
 namespace gfx {
 class Rect;
 }
@@ -47,7 +55,6 @@ class WidgetDelegate;
 
 namespace ash {
 class AshTestImplAura;
-class DisplayManager;
 class SystemTray;
 class WmShelf;
 
@@ -115,7 +122,7 @@ class AshTestBase : public testing::Test {
   ui::test::EventGenerator& GetEventGenerator();
 
   // Convenience method to return the DisplayManager.
-  DisplayManager* display_manager();
+  display::DisplayManager* display_manager();
 
   // Test if moving a mouse to |point_in_screen| warps it to another
   // display.

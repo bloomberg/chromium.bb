@@ -39,6 +39,10 @@ namespace chromeos {
 class AudioA11yController;
 }
 
+namespace display {
+class DisplayManager;
+}
+
 namespace gfx {
 class ImageSkia;
 class Rect;
@@ -76,7 +80,6 @@ class DisplayChangeObserver;
 class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayErrorObserver;
-class DisplayManager;
 class DragDropController;
 class EventClientImpl;
 class EventRewriterEventFilter;
@@ -236,7 +239,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return accelerator_controller_delegate_.get();
   }
 
-  DisplayManager* display_manager() { return display_manager_.get(); }
+  display::DisplayManager* display_manager() { return display_manager_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
   }
@@ -489,7 +492,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // An event filter that pre-handles global accelerators.
   std::unique_ptr<::wm::AcceleratorFilter> accelerator_filter_;
 
-  std::unique_ptr<DisplayManager> display_manager_;
+  std::unique_ptr<display::DisplayManager> display_manager_;
   std::unique_ptr<DisplayConfigurationController>
       display_configuration_controller_;
 

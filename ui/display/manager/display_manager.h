@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_MANAGER_H_
-#define ASH_DISPLAY_DISPLAY_MANAGER_H_
+#ifndef UI_DISPLAY_MANAGER_DISPLAY_MANAGER_H_
+#define UI_DISPLAY_MANAGER_DISPLAY_MANAGER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -20,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/display/display.h"
+#include "ui/display/display_export.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -28,19 +28,17 @@
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
-namespace display {
-class DisplayLayoutStore;
-class DisplayObserver;
-class Screen;
-}
-
 namespace gfx {
 class Insets;
 class Rect;
 }
 
-namespace ash {
-using DisplayInfoList = std::vector<display::ManagedDisplayInfo>;
+namespace display {
+using DisplayInfoList = std::vector<ManagedDisplayInfo>;
+
+class DisplayLayoutStore;
+class DisplayObserver;
+class Screen;
 
 namespace test {
 class DisplayManagerTestApi;
@@ -48,15 +46,13 @@ class DisplayManagerTestApi;
 
 // DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
-//
-// TODO(oshima): Make this non internal.
-class ASH_EXPORT DisplayManager
+class DISPLAY_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
     : public ui::DisplayConfigurator::SoftwareMirroringController
 #endif
 {
  public:
-  class ASH_EXPORT Delegate {
+  class DISPLAY_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
 
@@ -71,7 +67,7 @@ class ASH_EXPORT DisplayManager
     // When |clear_focus| is true, the implementation should
     // deactivate the active window and set the focus window to NULL.
     virtual void PreDisplayConfigurationChange(bool clear_focus) = 0;
-    virtual void PostDisplayConfigurationChange() = 0;
+    virtual void PostDisplayConfigurationChange(bool must_clear_window) = 0;
 
 #if defined(OS_CHROMEOS)
     // Get the ui::DisplayConfigurator.
@@ -96,14 +92,14 @@ class ASH_EXPORT DisplayManager
   // The display ID for a virtual display assigned to a unified desktop.
   static int64_t kUnifiedDisplayId;
 
-  explicit DisplayManager(std::unique_ptr<display::Screen> screen);
+  explicit DisplayManager(std::unique_ptr<Screen> screen);
 #if defined(OS_CHROMEOS)
   ~DisplayManager() override;
 #else
   virtual ~DisplayManager();
 #endif
 
-  display::DisplayLayoutStore* layout_store() { return layout_store_.get(); }
+  DisplayLayoutStore* layout_store() { return layout_store_.get(); }
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
@@ -425,33 +421,33 @@ class ASH_EXPORT DisplayManager
 
   Delegate* delegate_;  // not owned.
 
-  std::unique_ptr<display::Screen> screen_;
+  std::unique_ptr<Screen> screen_;
 
-  std::unique_ptr<display::DisplayLayoutStore> layout_store_;
+  std::unique_ptr<DisplayLayoutStore> layout_store_;
 
   int64_t first_display_id_;
 
   // List of current active displays.
-  display::Displays active_display_list_;
+  Displays active_display_list_;
   // This list does not include the displays that will be removed if
   // |UpdateDisplaysWith| is under execution.
   // See https://crbug.com/632755
-  display::Displays active_only_display_list_;
+  Displays active_only_display_list_;
 
   // True if active_display_list is being modified and has displays that are not
   // presently active.
   // See https://crbug.com/632755
   bool is_updating_display_list_;
 
-  int num_connected_displays_;
+  size_t num_connected_displays_;
 
   bool force_bounds_changed_;
 
   // The mapping from the display ID to its internal data.
-  std::map<int64_t, display::ManagedDisplayInfo> display_info_;
+  std::map<int64_t, ManagedDisplayInfo> display_info_;
 
   // Selected display modes for displays. Key is the displays' ID.
-  std::map<int64_t, scoped_refptr<display::ManagedDisplayMode>> display_modes_;
+  std::map<int64_t, scoped_refptr<ManagedDisplayMode>> display_modes_;
 
   // When set to true, the host window's resize event updates
   // the display's size. This is set to true when running on
@@ -464,23 +460,23 @@ class ASH_EXPORT DisplayManager
   MultiDisplayMode current_default_multi_display_mode_;
 
   int64_t mirroring_display_id_;
-  display::Displays software_mirroring_display_list_;
+  Displays software_mirroring_display_list_;
 
   // User preference for rotation lock of the internal display.
   bool registered_internal_display_rotation_lock_;
 
   // User preference for the rotation of the internal display.
-  display::Display::Rotation registered_internal_display_rotation_;
+  Display::Rotation registered_internal_display_rotation_;
 
   bool unified_desktop_enabled_;
 
-  base::ObserverList<display::DisplayObserver> observers_;
+  base::ObserverList<DisplayObserver> observers_;
 
   base::WeakPtrFactory<DisplayManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
 
-}  // namespace ash
+}  // namespace display
 
-#endif  // ASH_DISPLAY_DISPLAY_MANAGER_H_
+#endif  // UI_DISPLAY_MANAGER_DISPLAY_MANAGER_H_

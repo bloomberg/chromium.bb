@@ -4,7 +4,6 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -12,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -54,10 +54,8 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
       const display::Display& display,
       const gfx::Size& new_resolution,
       const gfx::Size& actual_new_resolution) {
-    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-
     const display::ManagedDisplayInfo& info =
-        display_manager->GetDisplayInfo(display.id());
+        display_manager()->GetDisplayInfo(display.id());
     scoped_refptr<display::ManagedDisplayMode> old_mode(
         new display::ManagedDisplayMode(
             info.size_in_pixel(), 60 /* refresh_rate */, false /* interlaced */,
@@ -68,7 +66,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
             old_mode->native(), old_mode->ui_scale(),
             old_mode->device_scale_factor()));
 
-    if (display_manager->SetDisplayMode(display.id(), new_mode)) {
+    if (display_manager()->SetDisplayMode(display.id(), new_mode)) {
       controller()->PrepareNotification(
           display.id(), old_mode, new_mode,
           base::Bind(&ResolutionNotificationControllerTest::OnAccepted,
@@ -78,9 +76,9 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
     // OnConfigurationChanged event won't be emitted in the test environment,
     // so invoke UpdateDisplay() to emit that event explicitly.
     std::vector<display::ManagedDisplayInfo> info_list;
-    for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-      int64_t id = display_manager->GetDisplayAt(i).id();
-      display::ManagedDisplayInfo info = display_manager->GetDisplayInfo(id);
+    for (size_t i = 0; i < display_manager()->GetNumDisplays(); ++i) {
+      int64_t id = display_manager()->GetDisplayAt(i).id();
+      display::ManagedDisplayInfo info = display_manager()->GetDisplayInfo(id);
       if (display.id() == id) {
         gfx::Rect bounds = info.bounds_in_native();
         bounds.set_size(actual_new_resolution);
@@ -88,7 +86,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
       }
       info_list.push_back(info);
     }
-    display_manager->OnNativeDisplaysChanged(info_list);
+    display_manager()->OnNativeDisplaysChanged(info_list);
     RunAllPendingInMessageLoop();
   }
 
@@ -300,10 +298,8 @@ TEST_F(ResolutionNotificationControllerTest, Timeout) {
   }
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_EQ(0, accept_count());
-  ash::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
   scoped_refptr<display::ManagedDisplayMode> mode =
-      display_manager->GetSelectedModeForDisplayId(display.id());
+      display_manager()->GetSelectedModeForDisplayId(display.id());
   EXPECT_TRUE(!!mode);
   EXPECT_EQ("300x300", mode->size().ToString());
   EXPECT_EQ(59.0f, mode->refresh_rate());

@@ -22,7 +22,6 @@
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -38,6 +37,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -213,7 +213,7 @@ bool AshTestBase::SupportsMultipleDisplays() {
 
 // static
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
       .UpdateDisplay(display_specs);
 }
 
@@ -372,7 +372,7 @@ void AshTestBase::DisableIME() {
           ->input_method_event_handler());
 }
 
-DisplayManager* AshTestBase::display_manager() {
+display::DisplayManager* AshTestBase::display_manager() {
   return Shell::GetInstance()->display_manager();
 }
 

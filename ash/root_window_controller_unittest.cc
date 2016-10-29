@@ -16,12 +16,10 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/display/display_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -38,6 +36,7 @@
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -298,7 +297,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_Modal) {
 TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   if (!SupportsMultipleDisplays())
     return;
-  Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
+  display_manager()->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("500x500");
   const int kLockScreenWindowId = 1000;
@@ -339,9 +338,8 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to mirror.
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetMirrorMode(true);
-  EXPECT_TRUE(display_manager->IsInMirrorMode());
+  display_manager()->SetMirrorMode(true);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
   controller = Shell::GetPrimaryRootWindowController();
   ASSERT_EQ(lock_screen->GetNativeWindow(),
@@ -351,8 +349,8 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to unified.
-  display_manager->SetMirrorMode(false);
-  EXPECT_TRUE(display_manager->IsInUnifiedMode());
+  display_manager()->SetMirrorMode(false);
+  EXPECT_TRUE(display_manager()->IsInUnifiedMode());
 
   controller = Shell::GetPrimaryRootWindowController();
 
@@ -364,8 +362,8 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
   // Switch to single display.
   UpdateDisplay("600x500");
-  EXPECT_FALSE(display_manager->IsInUnifiedMode());
-  EXPECT_FALSE(display_manager->IsInMirrorMode());
+  EXPECT_FALSE(display_manager()->IsInUnifiedMode());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   controller = Shell::GetPrimaryRootWindowController();
 

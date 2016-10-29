@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "ash/common/ash_switches.h"
-#include "ash/display/display_manager.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
@@ -17,6 +16,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
@@ -138,7 +138,8 @@ class AshRootWindowTransformer : public RootWindowTransformer {
  public:
   AshRootWindowTransformer(aura::Window* root, const display::Display& display)
       : root_window_(root) {
-    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+    display::DisplayManager* display_manager =
+        Shell::GetInstance()->display_manager();
     display::ManagedDisplayInfo info =
         display_manager->GetDisplayInfo(display.id());
     host_insets_ = info.GetOverscanInsetsInPixel();

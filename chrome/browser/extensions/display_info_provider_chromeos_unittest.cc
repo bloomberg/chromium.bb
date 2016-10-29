@@ -8,11 +8,9 @@
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,6 +19,8 @@
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -58,7 +58,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
     return display.id() != display::Display::kInvalidDisplayID;
   }
 
-  ash::DisplayManager* GetDisplayManager() const {
+  display::DisplayManager* GetDisplayManager() const {
     return ash::Shell::GetInstance()->display_manager();
   }
 
@@ -408,8 +408,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
 TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   UpdateDisplay("600x600, 400x520");
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::test::CreateDisplayLayout(display_manager(),
-                                     display::DisplayPlacement::LEFT, -40));
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::LEFT, -40));
 
   DisplayUnitInfoList result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -419,8 +419,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1].bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::test::CreateDisplayLayout(display_manager(),
-                                     display::DisplayPlacement::TOP, 40));
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::TOP, 40));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -430,8 +430,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1].bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::test::CreateDisplayLayout(display_manager(),
-                                     display::DisplayPlacement::BOTTOM, 80));
+      display::test::CreateDisplayLayout(
+          display_manager(), display::DisplayPlacement::BOTTOM, 80));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());
@@ -1120,7 +1120,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
   UpdateDisplay("1200x600,600x1000*2");
   const int64_t internal_display_id =
-      ash::test::DisplayManagerTestApi(
+      display::test::DisplayManagerTestApi(
           ash::Shell::GetInstance()->display_manager())
           .SetFirstDisplayAsInternalDisplay();
 

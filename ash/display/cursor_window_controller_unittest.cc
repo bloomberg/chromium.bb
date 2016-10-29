@@ -8,12 +8,12 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -156,14 +156,15 @@ TEST_F(CursorWindowControllerTest, DSF) {
   UpdateDisplay("1000x500*2");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(), primary_id);
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         primary_id);
   SetCursorCompositionEnabled(true);
   ASSERT_EQ(
       2.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 
-  ASSERT_TRUE(test::DisplayManagerTestApi(display_manager())
+  ASSERT_TRUE(display::test::DisplayManagerTestApi(display_manager())
                   .SetDisplayUIScale(primary_id, 2.0f));
   ASSERT_EQ(
       1.0f,

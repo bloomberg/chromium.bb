@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/touch/touchscreen_util.h"
@@ -25,6 +24,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"

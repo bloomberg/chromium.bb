@@ -9,7 +9,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -17,6 +16,7 @@
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/chromeos/accelerometer/accelerometer_util.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -377,7 +377,8 @@ void ScreenOrientationController::HandleScreenRotation(
 }
 
 void ScreenOrientationController::LoadDisplayRotationProperties() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
   if (!display_manager->registered_internal_display_rotation_lock())
     return;
   SetDisplayRotation(display_manager->registered_internal_display_rotation(),

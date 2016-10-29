@@ -15,6 +15,7 @@ class Window;
 }
 
 namespace display {
+class DisplayManager;
 class ManagedDisplayInfo;
 }
 
@@ -25,14 +26,13 @@ class Rect;
 
 namespace ash {
 class AshWindowTreeHost;
-class DisplayManager;
 class MouseWarpController;
 
 // Creates a MouseWarpController for the current display
 // configuration. |drag_source| is the window where dragging
 // started, or nullptr otherwise.
 std::unique_ptr<MouseWarpController> CreateMouseWarpController(
-    DisplayManager* manager,
+    display::DisplayManager* manager,
     aura::Window* drag_source);
 
 // Creates edge bounds from |bounds_in_screen| that fits the edge

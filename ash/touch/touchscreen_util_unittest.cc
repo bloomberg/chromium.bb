@@ -7,10 +7,10 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/touch/touchscreen_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 
 namespace ash {
@@ -87,8 +87,8 @@ class TouchscreenUtilTest : public test::AshTestBase {
 TEST_F(TouchscreenUtilTest, NoTouchscreens) {
   std::vector<ui::TouchscreenDevice> devices;
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays_[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   for (size_t i = 0; i < displays_.size(); ++i)
@@ -108,8 +108,8 @@ TEST_F(TouchscreenUtilTest, ManyTouchscreens) {
   DisplayInfoList displays;
   displays.push_back(displays_[3]);
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays_[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays_[0].id());
   AssociateTouchscreens(&displays, devices);
 
   for (int i = 0; i < 5; ++i)
@@ -125,8 +125,8 @@ TEST_F(TouchscreenUtilTest, OneToOneMapping) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "2",
                             gfx::Size(1024, 768), 0));
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays_[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].input_devices().size());
@@ -143,8 +143,8 @@ TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "2",
                             gfx::Size(1024, 768), 0));
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays_[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].input_devices().size());
@@ -163,8 +163,8 @@ TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "2",
                             gfx::Size(1023, 768), 0));
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays_[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].input_devices().size());
@@ -188,8 +188,8 @@ TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
   displays.push_back(displays_[0]);
   displays.push_back(displays_[1]);
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays[0].id());
   AssociateTouchscreens(&displays, devices);
 
   EXPECT_EQ(0u, displays[0].input_devices().size());
@@ -211,8 +211,8 @@ TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
   displays.push_back(displays_[0]);
   displays.push_back(displays_[1]);
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays[0].id());
   AssociateTouchscreens(&displays, devices);
 
   // Internal touchscreen is always mapped to internal display.
@@ -231,8 +231,8 @@ TEST_F(TouchscreenUtilTest, MultipleInternal) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "2",
                             gfx::Size(1920, 1080), 0));
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                displays_[0].id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(2u, displays_[0].input_devices().size());
@@ -253,7 +253,7 @@ TEST_F(TouchscreenUtilTest, MultipleInternalAndExternal) {
       ui::TouchscreenDevice(3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "3",
                             gfx::Size(1024, 768), 0));
 
-  test::ScopedSetInternalDisplayId set_internal(
+  display::test::ScopedSetInternalDisplayId set_internal(
       Shell::GetInstance()->display_manager(), displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 

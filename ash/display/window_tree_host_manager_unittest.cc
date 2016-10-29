@@ -13,7 +13,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -21,7 +20,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
@@ -35,8 +33,10 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/mouse_watcher.h"
@@ -217,8 +217,9 @@ TestHelper::~TestHelper() {}
 void TestHelper::SetSecondaryDisplayLayoutAndOffset(
     display::DisplayPlacement::Position position,
     int offset) {
-  std::unique_ptr<display::DisplayLayout> layout(test::CreateDisplayLayout(
-      delegate_->display_manager(), position, offset));
+  std::unique_ptr<display::DisplayLayout> layout(
+      display::test::CreateDisplayLayout(delegate_->display_manager(), position,
+                                         offset));
   ASSERT_GT(display::Screen::GetScreen()->GetNumDisplays(), 1);
   delegate_->display_manager()->SetLayoutForCurrentDisplays(std::move(layout));
 }
@@ -622,7 +623,7 @@ TEST_P(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   const int64_t internal_display_id =
-      test::DisplayManagerTestApi(display_manager())
+      display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(1, internal_display_id);
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
@@ -732,8 +733,8 @@ TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
 
   // UI scale is eanbled only on internal display.
   int64_t secondary_id = GetSecondaryDisplay().id();
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                secondary_id);
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         secondary_id);
   // Changing internal ID display changes the DisplayIdPair (it comes
   // first), which also changes the primary display candidate.  Update
   // the primary display manually to update the primary display to
@@ -744,22 +745,22 @@ TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
       secondary_id);
   EXPECT_EQ(1, observer.CountAndReset());
 
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetDisplayUIScale(primary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetDisplayUIScale(primary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
@@ -774,8 +775,9 @@ TEST_P(WindowTreeHostManagerTest, FindNearestDisplay) {
       Shell::GetInstance()->window_tree_host_manager();
 
   UpdateDisplay("200x200,300x300");
-  display_manager()->SetLayoutForCurrentDisplays(test::CreateDisplayLayout(
-      display_manager(), display::DisplayPlacement::RIGHT, 50));
+  display_manager()->SetLayoutForCurrentDisplays(
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::RIGHT, 50));
 
   display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -840,8 +842,9 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
       display::Screen::GetScreen()->GetPrimaryDisplay();
   display::Display secondary_display = display_manager()->GetSecondaryDisplay();
 
-  display_manager()->SetLayoutForCurrentDisplays(test::CreateDisplayLayout(
-      display_manager(), display::DisplayPlacement::RIGHT, 50));
+  display_manager()->SetLayoutForCurrentDisplays(
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::RIGHT, 50));
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::Window* primary_root =
@@ -1078,8 +1081,9 @@ TEST_P(WindowTreeHostManagerTest, Rotate) {
   EXPECT_EQ(display::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
-  display_manager()->SetLayoutForCurrentDisplays(test::CreateDisplayLayout(
-      display_manager(), display::DisplayPlacement::BOTTOM, 50));
+  display_manager()->SetLayoutForCurrentDisplays(
+      display::test::CreateDisplayLayout(
+          display_manager(), display::DisplayPlacement::BOTTOM, 50));
   EXPECT_EQ("50,120 150x200",
             display_manager()->GetSecondaryDisplay().bounds().ToString());
 
@@ -1132,8 +1136,8 @@ TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
   UpdateDisplay("600x400*2@1.5,500x300");
 
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                display1.id());
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         display1.id());
 
   display::Display display2 = display_manager()->GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -1147,7 +1151,7 @@ TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetDisplayUIScale(display1.id(), 1.25f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display2 = display_manager()->GetSecondaryDisplay();
@@ -1271,7 +1275,7 @@ TEST_P(WindowTreeHostManagerTest, DockToSingle) {
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   const int64_t internal_display_id =
-      test::DisplayManagerTestApi(display_manager())
+      display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());

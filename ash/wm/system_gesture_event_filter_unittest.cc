@@ -12,10 +12,8 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/time/time.h"
@@ -25,7 +23,9 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
@@ -128,7 +128,8 @@ class SystemGestureEventFilterTest : public AshTestBase {
 
     test::AshTestBase::SetUp();
     // Enable brightness key.
-    test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+    display::test::DisplayManagerTestApi(
+        Shell::GetInstance()->display_manager())
         .SetFirstDisplayAsInternalDisplay();
   }
 

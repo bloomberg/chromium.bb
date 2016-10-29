@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/display/shared_display_edge_indicator.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -15,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
@@ -100,7 +100,7 @@ ExtendedMouseWarpController::WarpRegion::GetIndicatorBoundsForTest(
 ExtendedMouseWarpController::ExtendedMouseWarpController(
     aura::Window* drag_source)
     : drag_source_root_(drag_source), allow_non_native_event_(false) {
-  ash::DisplayManager* display_manager =
+  display::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   int64_t drag_source_id = drag_source ? GetDisplayIdFromWindow(drag_source)
                                        : display::Display::kInvalidDisplayID;

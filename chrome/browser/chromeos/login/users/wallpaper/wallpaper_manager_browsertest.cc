@@ -8,11 +8,9 @@
 
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/display_manager_test_api.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -36,6 +34,8 @@
 #include "components/wallpaper/wallpaper_files_id.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
@@ -85,9 +85,9 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override { controller_ = NULL; }
 
   // Update the display configuration as given in |display_specs|.  See
-  // ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
+  // display::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs) {
-    ash::test::DisplayManagerTestApi(
+    display::test::DisplayManagerTestApi(
         ash::Shell::GetInstance()->display_manager())
         .UpdateDisplay(display_specs);
   }

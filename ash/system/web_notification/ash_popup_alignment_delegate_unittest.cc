@@ -11,13 +11,13 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
-#include "ash/display/display_manager.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -219,12 +219,11 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
   // Emulate the docked mode; enter to an extended mode, then invoke
   // OnNativeDisplaysChanged() with the info for the secondary display only.
   UpdateDisplay("600x600,800x800");
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   std::vector<display::ManagedDisplayInfo> new_info;
-  new_info.push_back(
-      display_manager->GetDisplayInfo(display_manager->GetDisplayAt(1u).id()));
-  display_manager->OnNativeDisplaysChanged(new_info);
+  new_info.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(1u).id()));
+  display_manager()->OnNativeDisplaysChanged(new_info);
 
   EXPECT_LT(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
@@ -252,8 +251,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   SetAlignmentDelegate(
       base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
 
-  display::Display second_display =
-      Shell::GetInstance()->display_manager()->GetDisplayAt(1u);
+  display::Display second_display = display_manager()->GetDisplayAt(1u);
   WmShelf* second_shelf =
       WmLookup::Get()
           ->GetRootWindowControllerWithDisplayId(second_display.id())
@@ -269,8 +267,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
 TEST_F(AshPopupAlignmentDelegateTest, Unified) {
   if (!SupportsMultipleDisplays())
     return;
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetUnifiedDesktopEnabled(true);
+  display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Reset the delegate as the primary display's shelf will be destroyed during
   // transition.

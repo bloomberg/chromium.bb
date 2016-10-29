@@ -17,7 +17,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
-#include "ash/display/display_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
@@ -25,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
@@ -287,14 +287,13 @@ TEST_P(WebNotificationTrayTest, PopupShownOnBothDisplays) {
   // root window controller and shelf with having notifications. This code
   // verifies it doesn't cause crash and popups are still visible. See
   // http://crbug.com/263664
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   EXPECT_FALSE(GetSecondaryTray());
 
-  display_manager->SetMultiDisplayMode(DisplayManager::EXTENDED);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::EXTENDED);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   secondary_tray = GetSecondaryTray();

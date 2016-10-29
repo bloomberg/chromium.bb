@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "ui/display/manager/display_manager.h"
 
 namespace policy {
 
@@ -64,7 +64,7 @@ void DisplayRotationDefaultHandler::RotateDisplays() {
   // being called by rotations here.
   rotation_in_progress_ = true;
 
-  ash::DisplayManager* const display_manager =
+  display::DisplayManager* const display_manager =
       ash::Shell::GetInstance()->display_manager();
   const size_t num_displays = display_manager->GetNumDisplays();
   for (size_t i = 0; i < num_displays; ++i) {

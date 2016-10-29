@@ -5,11 +5,11 @@
 #include "ash/display/display_configuration_controller.h"
 
 #include "ash/display/display_animator.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "base/time/time.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/display_animator_chromeos.h"
@@ -51,7 +51,7 @@ class DisplayConfigurationController::DisplayChangeLimiter {
 };
 
 DisplayConfigurationController::DisplayConfigurationController(
-    DisplayManager* display_manager,
+    display::DisplayManager* display_manager,
     WindowTreeHostManager* window_tree_host_manager)
     : display_manager_(display_manager),
       window_tree_host_manager_(window_tree_host_manager),

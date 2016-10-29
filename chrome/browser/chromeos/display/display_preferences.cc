@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
 #include "ash/display/json_converter.h"
 #include "ash/shell.h"
@@ -25,6 +24,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/gfx/geometry/insets.h"
 #include "url/url_canon.h"
@@ -95,7 +95,7 @@ ui::ColorCalibrationProfile StringToColorProfile(const std::string& value) {
   return ui::COLOR_PROFILE_STANDARD;
 }
 
-ash::DisplayManager* GetDisplayManager() {
+display::DisplayManager* GetDisplayManager() {
   return ash::Shell::GetInstance()->display_manager();
 }
 
@@ -230,7 +230,7 @@ void StoreDisplayLayoutPref(const display::DisplayIdList& list,
 }
 
 void StoreCurrentDisplayLayoutPrefs() {
-  ash::DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   if (!UserCanSaveDisplayPreference() ||
       display_manager->num_connected_displays() < 2) {
     return;
@@ -243,7 +243,7 @@ void StoreCurrentDisplayLayoutPrefs() {
 }
 
 void StoreCurrentDisplayProperties() {
-  ash::DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   PrefService* local_state = g_browser_process->local_state();
 
   DictionaryPrefUpdate update(local_state, prefs::kDisplayProperties);

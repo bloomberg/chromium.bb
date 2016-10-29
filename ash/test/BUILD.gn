@@ -83,8 +83,6 @@ static_library("test_support_common") {
     "child_modal_window.h",
     "cursor_manager_test_api.cc",
     "cursor_manager_test_api.h",
-    "display_manager_test_api.cc",
-    "display_manager_test_api.h",
     "immersive_fullscreen_controller_test_api.cc",
     "immersive_fullscreen_controller_test_api.h",
     "mirror_window_test_api.cc",
@@ -134,6 +132,7 @@ static_library("test_support_common") {
 
   public_deps = [
     "//ash",
+    "//ui/display:display_manager_test_api",
   ]
   deps = [
     "//ash/common/test:test_support",

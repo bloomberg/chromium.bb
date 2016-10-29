@@ -48,6 +48,8 @@ component("display") {
     "manager/display_layout_builder.h",
     "manager/display_layout_store.cc",
     "manager/display_layout_store.h",
+    "manager/display_manager.cc",
+    "manager/display_manager.h",
     "manager/display_manager_utilities.cc",
     "manager/display_manager_utilities.h",
     "manager/managed_display_info.cc",
@@ -124,6 +126,26 @@ component("display") {
       "CoreGraphics.framework",
     ]
   }
+}
+
+component("display_manager_test_api") {
+  testonly = true
+  sources = [
+    "test/display_manager_test_api.cc",
+    "test/display_manager_test_api.h",
+  ]
+
+  defines = [ "DISPLAY_IMPLEMENTATION" ]
+
+  public_deps = [
+    ":display",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/display",
+    "//ui/display/types",
+  ]
 }
 
 static_library("test_support") {

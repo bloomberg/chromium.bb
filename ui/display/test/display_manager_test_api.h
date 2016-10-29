@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_DISPLAY_MANAGER_TEST_API_H_
-#define ASH_TEST_DISPLAY_MANAGER_TEST_API_H_
+#ifndef UI_DISPLAY_TEST_MANAGER_TEST_API_H_
+#define UI_DISPLAY_TEST_MANAGER_TEST_API_H_
 
 #include <stdint.h>
 
@@ -12,12 +12,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/display/display_export.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/types/display_constants.h"
-
-namespace display {
-class ManagedDisplayInfo;
-}
 
 namespace gfx {
 class Point;
@@ -30,12 +27,13 @@ class EventGenerator;
 }
 }
 
-namespace ash {
+namespace display {
 class DisplayManager;
+class ManagedDisplayInfo;
 
 namespace test {
 
-class DisplayManagerTestApi {
+class DISPLAY_EXPORT DisplayManagerTestApi {
  public:
   explicit DisplayManagerTestApi(DisplayManager* display_manager);
   virtual ~DisplayManagerTestApi();
@@ -77,7 +75,7 @@ class DisplayManagerTestApi {
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTestApi);
 };
 
-class ScopedDisable125DSFForUIScaling {
+class DISPLAY_EXPORT ScopedDisable125DSFForUIScaling {
  public:
   ScopedDisable125DSFForUIScaling();
   ~ScopedDisable125DSFForUIScaling();
@@ -86,7 +84,7 @@ class ScopedDisable125DSFForUIScaling {
   DISALLOW_COPY_AND_ASSIGN(ScopedDisable125DSFForUIScaling);
 };
 
-class ScopedSetInternalDisplayId {
+class DISPLAY_EXPORT ScopedSetInternalDisplayId {
  public:
   ScopedSetInternalDisplayId(DisplayManager* test_api, int64_t id);
   ~ScopedSetInternalDisplayId();
@@ -96,25 +94,26 @@ class ScopedSetInternalDisplayId {
 };
 
 // Sets the display mode that matches the |resolution| for |display_id|.
-bool SetDisplayResolution(DisplayManager* display_manager,
-                          int64_t display_id,
-                          const gfx::Size& resolution);
+DISPLAY_EXPORT bool SetDisplayResolution(DisplayManager* display_manager,
+                                         int64_t display_id,
+                                         const gfx::Size& resolution);
 
 // Creates the dislpay layout from position and offset for the current
 // display list. If you simply want to create a new layout that is
 // independent of current displays, use DisplayLayoutBuilder or simply
 // create a new DisplayLayout and set display id fields (primary, ids
 // in placement) manually.
-std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
+DISPLAY_EXPORT std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
     DisplayManager* display_manager,
     display::DisplayPlacement::Position position,
     int offset);
 
 // Creates the DisplayIdList from ints.
-display::DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2);
-display::DisplayIdList CreateDisplayIdListN(size_t count, ...);
+DISPLAY_EXPORT display::DisplayIdList CreateDisplayIdList2(int64_t id1,
+                                                           int64_t id2);
+DISPLAY_EXPORT display::DisplayIdList CreateDisplayIdListN(size_t count, ...);
 
 }  // namespace test
-}  // namespace ash
+}  // namespace display
 
-#endif  // ASH_TEST_DISPLAY_MANAGER_TEST_API_H_
+#endif  // UI_DISPLAY_TEST_MANAGER_TEST_API_H_

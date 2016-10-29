@@ -4,13 +4,13 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -157,8 +157,9 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
     return;
 
   UpdateDisplay("400x400,800x800*2");
-  display_manager()->SetLayoutForCurrentDisplays(test::CreateDisplayLayout(
-      display_manager(), display::DisplayPlacement::RIGHT, 0));
+  display_manager()->SetLayoutForCurrentDisplays(
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::RIGHT, 0));
   test::CursorManagerTestApi cursor_test_api(
       Shell::GetInstance()->cursor_manager());
 

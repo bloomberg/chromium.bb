@@ -63,7 +63,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
@@ -74,6 +73,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/test/event_generator.h"
 #endif
 
@@ -2247,7 +2247,7 @@ void CancelDragTabToWindowInSeparateDisplayStep3(
   ASSERT_EQ(2u, browser_list->size());
 
   // Switching display mode should cancel the drag operation.
-  ash::DisplayManager* display_manager =
+  display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   display_manager->AddRemoveDisplay();
 }

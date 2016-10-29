@@ -4,7 +4,6 @@
 
 #include "ash/touch/touch_transformer_controller.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/root_window_controller.h"
@@ -12,6 +11,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/devices/device_data_manager.h"
 
@@ -19,7 +19,7 @@ namespace ash {
 
 namespace {
 
-DisplayManager* GetDisplayManager() {
+display::DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
@@ -164,7 +164,7 @@ void TouchTransformerController::UpdateTouchTransformer() const {
 
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
-  DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->num_connected_displays() == 0) {
     return;
   } else if (display_manager->num_connected_displays() == 1 ||

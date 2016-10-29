@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_manager.h"
+#include "ui/display/manager/display_manager.h"
 
 #include <algorithm>
 #include <cmath>
@@ -36,10 +36,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"  // nogncheck
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #endif
@@ -48,7 +44,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-namespace ash {
+namespace display {
 
 namespace {
 
@@ -271,7 +267,7 @@ void DisplayManager::SetLayoutForCurrentDisplays(
   }
 
   if (delegate_)
-    delegate_->PostDisplayConfigurationChange();
+    delegate_->PostDisplayConfigurationChange(false);
 }
 
 const display::Display& DisplayManager::GetDisplayForId(int64_t id) const {
@@ -480,7 +476,7 @@ void DisplayManager::RegisterDisplayRotationProperties(
   registered_internal_display_rotation_lock_ = rotation_lock;
   registered_internal_display_rotation_ = rotation;
   if (delegate_)
-    delegate_->PostDisplayConfigurationChange();
+    delegate_->PostDisplayConfigurationChange(false);
 }
 
 scoped_refptr<display::ManagedDisplayMode>
@@ -521,7 +517,7 @@ void DisplayManager::SetColorCalibrationProfile(
                               ui::NUM_COLOR_PROFILES);
   }
   if (delegate_)
-    delegate_->PostDisplayConfigurationChange();
+    delegate_->PostDisplayConfigurationChange(false);
 #endif
 }
 
@@ -799,7 +795,7 @@ void DisplayManager::UpdateDisplaysWith(
   RefreshFontParams();
   base::AutoReset<bool> resetter(&change_display_upon_host_resize_, false);
 
-  int active_display_list_size = active_display_list_.size();
+  size_t active_display_list_size = active_display_list_.size();
   is_updating_display_list_ = true;
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
@@ -848,13 +844,14 @@ void DisplayManager::UpdateDisplaysWith(
     }
   }
 
-  if (delegate_)
-    delegate_->PostDisplayConfigurationChange();
-
+  bool must_clear_window = false;
 #if defined(USE_X11) && defined(OS_CHROMEOS)
-  if (!display_changes.empty() && base::SysInfo::IsRunningOnChromeOS())
-    ui::ClearX11DefaultRootWindow();
+  must_clear_window =
+      !display_changes.empty() && base::SysInfo::IsRunningOnChromeOS();
 #endif
+
+  if (delegate_)
+    delegate_->PostDisplayConfigurationChange(must_clear_window);
 
   // Create the mirroring window asynchronously after all displays
   // are added so that it can mirror the display newly added. This can
@@ -1435,4 +1432,4 @@ const display::Display& DisplayManager::GetSecondaryDisplay() const {
              : GetDisplayAt(0);
 }
 
-}  // namespace ash
+}  // namespace display

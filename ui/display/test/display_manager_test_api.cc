@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/display_manager_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"
 
 #include <cstdarg>
 #include <vector>
 
-#include "ash/display/display_manager.h"
-#include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
-#include "ui/events/test/event_generator.h"
 
-namespace ash {
+namespace display {
 namespace test {
 namespace {
 
@@ -205,4 +203,4 @@ display::DisplayIdList CreateDisplayIdListN(size_t count, ...) {
 }
 
 }  // namespace test
-}  // namespace ash
+}  // namespace display

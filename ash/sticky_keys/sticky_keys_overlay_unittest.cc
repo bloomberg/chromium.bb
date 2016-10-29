@@ -4,13 +4,13 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 
@@ -47,13 +47,13 @@ TEST_F(StickyKeysOverlayTest, ModifierKeyState) {
 TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   // Add a secondary display to the left of the primary one.
   UpdateDisplay("1280x1024,1980x1080");
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display::DisplayIdList display_ids =
-      display_manager->GetCurrentDisplayIdList();
+      display_manager()->GetCurrentDisplayIdList();
   int64_t primary_display_id = display_ids[0];
   int64_t secondary_display_id = display_ids[1];
-  display_manager->SetLayoutForCurrentDisplays(test::CreateDisplayLayout(
-      display_manager, display::DisplayPlacement::LEFT, 0));
+  display_manager()->SetLayoutForCurrentDisplays(
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::LEFT, 0));
 
   // The overlay should belong to the secondary root window.
   StickyKeysOverlay overlay;

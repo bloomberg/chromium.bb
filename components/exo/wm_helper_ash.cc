@@ -7,10 +7,10 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace exo {

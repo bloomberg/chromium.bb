@@ -4,19 +4,19 @@
 
 #include "ash/wm/ash_native_cursor_manager.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -184,14 +184,14 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_UIScaleShouldNotChangeCursor) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
-  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
       .SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
-  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
       .SetDisplayUIScale(display_id, 1.0f);
 
   // 2x display should keep using 2x cursor regardless of the UI scale.
@@ -200,7 +200,7 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_UIScaleShouldNotChangeCursor) {
       2.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
-  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
       .SetDisplayUIScale(display_id, 2.0f);
   EXPECT_EQ(
       1.0f,

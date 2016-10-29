@@ -7,7 +7,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/wm/root_window_finder.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -18,6 +17,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 
 namespace ash {
@@ -28,7 +28,7 @@ namespace {
 // the object in display::Screen::GetScreenByType is for shutdown.
 display::Screen* screen_for_shutdown = nullptr;
 
-DisplayManager* GetDisplayManager() {
+display::DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
@@ -128,7 +128,7 @@ display::Display ScreenAsh::GetDisplayNearestWindow(
   if (id == display::Display::kInvalidDisplayID)
     return GetPrimaryDisplay();
 
-  DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   // RootWindow needs Display to determine its device scale factor
   // for non desktop display.
   display::Display mirroring_display =
@@ -176,7 +176,7 @@ void ScreenAsh::RemoveObserver(display::DisplayObserver* observer) {
 }
 
 // static
-DisplayManager* ScreenAsh::CreateDisplayManager() {
+display::DisplayManager* ScreenAsh::CreateDisplayManager() {
   std::unique_ptr<ScreenAsh> screen(new ScreenAsh);
 
   display::Screen* current = display::Screen::GetScreen();
@@ -184,7 +184,7 @@ DisplayManager* ScreenAsh::CreateDisplayManager() {
   // use ash's screen.
   if (!current || current == screen_for_shutdown)
     display::Screen::SetScreenInstance(screen.get());
-  return new DisplayManager(std::move(screen));
+  return new display::DisplayManager(std::move(screen));
 }
 
 // static

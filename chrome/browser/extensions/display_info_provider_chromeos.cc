@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +16,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -228,7 +228,7 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
 // error message.
 bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
                               const display::Display& display,
-                              ash::DisplayManager* display_manager,
+                              display::DisplayManager* display_manager,
                               int64_t primary_display_id,
                               std::string* error) {
   int64_t id = display.id();
@@ -354,7 +354,7 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
 }
 
 system_display::DisplayMode GetDisplayMode(
-    ash::DisplayManager* display_manager,
+    display::DisplayManager* display_manager,
     const display::ManagedDisplayInfo& display_info,
     const scoped_refptr<display::ManagedDisplayMode>& display_mode) {
   system_display::DisplayMode result;
@@ -384,7 +384,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(
     const std::string& display_id_str,
     const system_display::DisplayProperties& info,
     std::string* error) {
-  ash::DisplayManager* display_manager =
+  display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ash::DisplayConfigurationController* display_configuration_controller =
       ash::Shell::GetInstance()->display_configuration_controller();
@@ -452,7 +452,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(
 
 bool DisplayInfoProviderChromeOS::SetDisplayLayout(
     const DisplayLayoutList& layouts) {
-  ash::DisplayManager* display_manager =
+  display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   display::DisplayLayoutBuilder builder(
       display_manager->GetCurrentDisplayLayout());
@@ -494,7 +494,7 @@ bool DisplayInfoProviderChromeOS::SetDisplayLayout(
 void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     const display::Display& display,
     system_display::DisplayUnitInfo* unit) {
-  ash::DisplayManager* display_manager =
+  display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());
   if (display_manager->IsInMirrorMode()) {
@@ -531,7 +531,7 @@ void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
 
 DisplayInfoProvider::DisplayUnitInfoList
 DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
-  ash::DisplayManager* display_manager =
+  display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   if (!display_manager->IsInUnifiedMode())
     return DisplayInfoProvider::GetAllDisplaysInfo();
@@ -554,7 +554,7 @@ DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
 
 DisplayInfoProvider::DisplayLayoutList
 DisplayInfoProviderChromeOS::GetDisplayLayout() {
-  ash::DisplayManager* display_manager =
+  display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   if (display_manager->num_connected_displays() < 2)

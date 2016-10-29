@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/display/display_manager.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -24,6 +23,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
@@ -44,7 +44,6 @@ namespace ash {
 class AshWindowTreeHost;
 struct AshWindowTreeHostInitParams;
 class CursorWindowController;
-class DisplayManager;
 class FocusActivationStore;
 class InputMethodEventHandler;
 class MirrorWindowController;
@@ -55,7 +54,7 @@ class RootWindowController;
 class ASH_EXPORT WindowTreeHostManager
     : public display::DisplayObserver,
       public aura::WindowTreeHostObserver,
-      public DisplayManager::Delegate,
+      public display::DisplayManager::Delegate,
       public ui::internal::InputMethodDelegate {
  public:
   // TODO(oshima): Consider moving this to display::DisplayObserver.
@@ -158,12 +157,12 @@ class ASH_EXPORT WindowTreeHostManager
   // aura::WindowTreeHostObserver overrides:
   void OnHostResized(const aura::WindowTreeHost* host) override;
 
-  // ash::DisplayManager::Delegate overrides:
+  // display::DisplayManager::Delegate overrides:
   void CreateOrUpdateMirroringDisplay(
-      const DisplayInfoList& info_list) override;
+      const display::DisplayInfoList& info_list) override;
   void CloseMirroringDisplayIfNotNecessary() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
-  void PostDisplayConfigurationChange() override;
+  void PostDisplayConfigurationChange(bool must_clear_window) override;
 #if defined(OS_CHROMEOS)
   ui::DisplayConfigurator* display_configurator() override;
 #endif

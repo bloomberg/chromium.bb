@@ -12,7 +12,6 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shared/app_types.h"
 #include "ash/shell.h"
@@ -35,6 +34,7 @@
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace {

@@ -6,10 +6,10 @@
 
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 
 namespace ash {
@@ -22,7 +22,8 @@ void ToggleTouchHudProjection() {
 }
 
 bool IsInternalDisplayZoomEnabled() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
   return display_manager->IsDisplayUIScalingEnabled() ||
          display_manager->IsInUnifiedMode();
 }
@@ -33,13 +34,15 @@ bool ZoomInternalDisplay(bool up) {
   else
     base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Down"));
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
   return display_manager->ZoomInternalDisplay(up);
 }
 
 void ResetInternalDisplayZoom() {
   base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Reset"));
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
   display_manager->ResetInternalDisplayZoom();
 }
 

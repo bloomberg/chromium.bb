@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/display/display_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -183,6 +182,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/manager/display_manager.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -3922,7 +3922,7 @@ IN_PROC_BROWSER_TEST_F(HardwareAccelerationModePolicyTest,
 // Policy is only available in ChromeOS
 IN_PROC_BROWSER_TEST_F(PolicyTest, UnifiedDesktopEnabledByDefault) {
   // Verify that Unified Desktop can be enabled by policy
-  ash::DisplayManager *display_manager =
+  display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   // The policy description promises that Unified Desktop is not available

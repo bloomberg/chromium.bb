@@ -17,7 +17,6 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_notification_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -28,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -37,7 +37,7 @@ using message_center::Notification;
 namespace ash {
 namespace {
 
-DisplayManager* GetDisplayManager() {
+display::DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
@@ -47,7 +47,7 @@ base::string16 GetDisplayName(int64_t display_id) {
 }
 
 base::string16 GetDisplaySize(int64_t display_id) {
-  DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
 
   const display::Display* display =
       &display_manager->GetDisplayForId(display_id);
@@ -103,7 +103,7 @@ void OpenSettingsFromNotification() {
 // Returns the name of the currently connected external display. This should not
 // be used when the external display is used for mirroring.
 base::string16 GetExternalDisplayName() {
-  DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   DCHECK(!display_manager->IsInMirrorMode());
 
   int64_t external_id = display::Display::kInvalidDisplayID;
@@ -141,7 +141,7 @@ base::string16 GetExternalDisplayName() {
 }
 
 base::string16 GetDisplayMessage(base::string16* additional_message_out) {
-  DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->GetNumDisplays() > 1) {
     if (display::Display::HasInternalDisplay()) {
       return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
@@ -197,7 +197,7 @@ void ScreenLayoutObserver::UpdateDisplayInfo(
     old_info->swap(display_info_);
   display_info_.clear();
 
-  DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     int64_t id = display_manager->GetDisplayAt(i).id();
     display_info_[id] = display_manager->GetDisplayInfo(id);

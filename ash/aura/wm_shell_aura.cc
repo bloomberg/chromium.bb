@@ -17,7 +17,6 @@
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
@@ -34,6 +33,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_CHROMEOS)
@@ -138,7 +138,8 @@ bool WmShellAura::IsInUnifiedMode() const {
 bool WmShellAura::IsInUnifiedModeIgnoreMirroring() const {
   return Shell::GetInstance()
              ->display_manager()
-             ->current_default_multi_display_mode() == DisplayManager::UNIFIED;
+             ->current_default_multi_display_mode() ==
+         display::DisplayManager::UNIFIED;
 }
 
 bool WmShellAura::IsForceMaximizeOnFirstRun() {

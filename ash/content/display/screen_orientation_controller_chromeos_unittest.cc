@@ -12,14 +12,12 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_environment_content.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/content/test_shell_content_state.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
@@ -31,7 +29,9 @@
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/test/webview_test_helper.h"
 #include "ui/views/view.h"
@@ -424,7 +424,7 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   Shell::GetInstance()
       ->screen_layout_observer()
       ->set_show_notifications_for_testing(true);
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
 
   message_center::MessageCenter* message_center =
@@ -477,7 +477,7 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
 // Tests that if a user has set a display rotation that it is restored upon
 // exiting maximize mode.
 TEST_F(ScreenOrientationControllerTest, ResetUserRotationUponExit) {
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
 
   SetInternalDisplayRotation(display::Display::ROTATE_90);
@@ -604,7 +604,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
 // ready, that ScreenOrientationController still begins listening to events,
 // which require an internal display to be acted upon.
 TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
-  test::DisplayManagerTestApi(display_manager())
+  display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
 
   int64_t internal_display_id = display::Display::InternalDisplayId();
@@ -651,8 +651,8 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   display_manager()->UpdateDisplaysWith(display_info_list_two_active);
   display_manager()->UpdateDisplaysWith(display_info_list_one_active);
 
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                kInternalDisplayId);
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         kInternalDisplayId);
 
   ASSERT_NE(kNewRotation, display_manager()
                               ->GetDisplayInfo(kInternalDisplayId)

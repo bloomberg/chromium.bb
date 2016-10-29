@@ -4,12 +4,10 @@
 
 #include "ash/display/mirror_window_controller.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
@@ -20,6 +18,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -76,7 +76,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
   aura::test::TestWindowDelegate test_window_delegate;
   test_window_delegate.set_window_component(HTTOP);
 
-  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
   aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
@@ -122,7 +122,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
   aura::test::TestWindowDelegate test_window_delegate;
   test_window_delegate.set_window_component(HTTOP);
 
-  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
   aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
@@ -173,7 +173,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
 // coordinates.
 TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   test::MirrorWindowTestApi test_api;
-  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
 
   // Test with device scale factor.
   UpdateDisplay("400x600*2,400x600");
@@ -214,8 +214,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   UpdateDisplay("400x400*2/r,400x400");
   int64_t primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
   int64_t secondary_display_id = display_manager()->GetSecondaryDisplay().id();
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                primary_display_id);
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         primary_display_id);
 
   // Chrome uses the internal display as the source display for software mirror
   // mode. Move the cursor to the external display.
@@ -228,7 +228,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   EXPECT_EQ(display::Display::ROTATE_0,
             cursor_test_api.GetCurrentCursorRotation());
 
-  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x400*2/r,400x400");
 
   // Entering mirror mode should have centered the cursor on the primary display
@@ -263,14 +263,14 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
       CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
   std::vector<display::ManagedDisplayInfo> display_info_list;
 
-  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
 
   // software mirroring.
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   const int64_t internal_display_id =
-      test::DisplayManagerTestApi(display_manager())
+      display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
 
@@ -281,7 +281,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   // dock mode.
   display_info_list.clear();
   display_info_list.push_back(external_display_info);
-  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
@@ -290,7 +290,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_info_list.clear();
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
-  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());

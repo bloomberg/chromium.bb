@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #include "ash/wm/ash_native_cursor_manager.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_interactive_ui_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
@@ -11,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 
 #if defined(USE_X11)
@@ -59,7 +59,6 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_CursorChangeOnEnterNotify) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   test::CursorManagerTestApi test_api(cursor_manager);
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display::ManagedDisplayInfo display_info1 =
       CreateDisplayInfo(10, gfx::Rect(0, 0, 500, 300), 1.0f);
   display::ManagedDisplayInfo display_info2 =
@@ -67,7 +66,7 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_CursorChangeOnEnterNotify) {
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.push_back(display_info1);
   display_info_list.push_back(display_info2);
-  display_manager->OnNativeDisplaysChanged(display_info_list);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
 
   MoveMouseSync(Shell::GetAllRootWindows()[0], 10, 10);
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());

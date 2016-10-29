@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/shell.h"
@@ -22,6 +21,7 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/point.h"

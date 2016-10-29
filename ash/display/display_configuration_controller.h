@@ -15,6 +15,7 @@
 
 namespace display {
 class DisplayLayout;
+class DisplayManager;
 }
 
 namespace ash {
@@ -24,7 +25,6 @@ class ShellTestApi;
 }  // namespace test
 
 class DisplayAnimator;
-class DisplayManager;
 
 // This class controls Display related configuration. Specifically it:
 // * Handles animated transitions where appropriate.
@@ -35,7 +35,7 @@ class ASH_EXPORT DisplayConfigurationController
     : public WindowTreeHostManager::Observer {
  public:
   DisplayConfigurationController(
-      DisplayManager* display_manager,
+      display::DisplayManager* display_manager,
       WindowTreeHostManager* window_tree_host_manager);
   ~DisplayConfigurationController() override;
 
@@ -78,7 +78,7 @@ class ASH_EXPORT DisplayConfigurationController
   void SetMirrorModeImpl(bool mirror);
   void SetPrimaryDisplayIdImpl(int64_t display_id);
 
-  DisplayManager* display_manager_;                  // weak ptr
+  display::DisplayManager* display_manager_;         // weak ptr
   WindowTreeHostManager* window_tree_host_manager_;  // weak ptr
   std::unique_ptr<DisplayAnimator> display_animator_;
   std::unique_ptr<DisplayChangeLimiter> limiter_;

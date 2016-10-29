@@ -7,7 +7,6 @@
 #include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
@@ -15,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -240,9 +240,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
 TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
-
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetUnifiedDesktopEnabled(true);
+  display_manager()->SetUnifiedDesktopEnabled(true);
   UpdateDisplay("1000x500,0+600-100x500");
 
   WmShelf* shelf = GetPrimaryShelf();

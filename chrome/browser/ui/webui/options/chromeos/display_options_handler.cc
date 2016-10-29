@@ -13,7 +13,6 @@
 
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
@@ -34,6 +33,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -42,7 +42,7 @@ namespace chromeos {
 namespace options {
 namespace {
 
-ash::DisplayManager* GetDisplayManager() {
+display::DisplayManager* GetDisplayManager() {
   return ash::Shell::GetInstance()->display_manager();
 }
 
@@ -305,19 +305,19 @@ void DisplayOptionsHandler::OnDisplayConfigurationChanged() {
 }
 
 void DisplayOptionsHandler::SendAllDisplayInfo() {
-  ash::DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
 
   std::vector<display::Display> displays;
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i)
     displays.push_back(display_manager->GetDisplayAt(i));
 
-  ash::DisplayManager::MultiDisplayMode display_mode;
+  display::DisplayManager::MultiDisplayMode display_mode;
   if (display_manager->IsInMirrorMode())
-    display_mode = ash::DisplayManager::MIRRORING;
+    display_mode = display::DisplayManager::MIRRORING;
   else if (display_manager->IsInUnifiedMode())
-    display_mode = ash::DisplayManager::UNIFIED;
+    display_mode = display::DisplayManager::UNIFIED;
   else
-    display_mode = ash::DisplayManager::EXTENDED;
+    display_mode = display::DisplayManager::EXTENDED;
   base::FundamentalValue mode(static_cast<int>(display_mode));
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -381,7 +381,7 @@ void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
   if (chrome::IsRunningInMash())
     return;
 
-  ash::DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   bool disable_multi_display_layout =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMultiDisplayLayout);
@@ -431,7 +431,7 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
     NOTREACHED();
   content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
 
-  ash::DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   display::DisplayLayoutBuilder builder(
       display_manager->GetCurrentDisplayLayout());
   builder.ClearPlacements();
@@ -493,7 +493,7 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
 
   content::RecordAction(
       base::UserMetricsAction("Options_DisplaySetResolution"));
-  ash::DisplayManager* display_manager = GetDisplayManager();
+  display::DisplayManager* display_manager = GetDisplayManager();
   scoped_refptr<display::ManagedDisplayMode> current_mode =
       display_manager->GetActiveModeForDisplayId(display_id);
   if (!display_manager->SetDisplayMode(display_id, mode)) {
@@ -580,7 +580,8 @@ void DisplayOptionsHandler::HandleSetUnifiedDesktopEnabled(
     NOTREACHED();
 
   GetDisplayManager()->SetDefaultMultiDisplayModeForCurrentDisplays(
-      enable ? ash::DisplayManager::UNIFIED : ash::DisplayManager::EXTENDED);
+      enable ? display::DisplayManager::UNIFIED
+             : display::DisplayManager::EXTENDED);
 }
 
 }  // namespace options

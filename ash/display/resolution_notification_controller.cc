@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/common/system/system_notifier.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -16,6 +15,7 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
@@ -138,7 +138,8 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
       new_resolution(new_resolution),
       accept_callback(accept_callback),
       timeout_count(0) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
   if (!display::Display::HasInternalDisplay() &&
       display_manager->num_connected_displays() == 1u) {
     timeout_count = kTimeoutInSec;

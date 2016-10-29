@@ -5,9 +5,7 @@
 #include <string>
 
 #include "ash/common/wm/window_positioner.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/test/display_manager_test_api.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -23,6 +21,8 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 
 namespace policy {
 
@@ -41,7 +41,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
         ash::WindowPositioner::GetForceMaximizedWidthLimit() + 100;
     // Set resolution to 1466x300.
     const std::string resolution = base::IntToString(width) + "x300";
-    ash::test::DisplayManagerTestApi(
+    display::test::DisplayManagerTestApi(
         ash::Shell::GetInstance()->display_manager())
         .UpdateDisplay(resolution);
   }

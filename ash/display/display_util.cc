@@ -9,7 +9,6 @@
 
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/null_mouse_warp_controller.h"
 #include "ash/display/unified_mouse_warp_controller.h"
@@ -23,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -73,7 +73,7 @@ void ConvertPointFromScreenToNative(aura::WindowTreeHost* host,
 }  // namespace
 
 std::unique_ptr<MouseWarpController> CreateMouseWarpController(
-    DisplayManager* manager,
+    display::DisplayManager* manager,
     aura::Window* drag_source) {
   if (manager->IsInUnifiedMode() && manager->num_connected_displays() >= 2)
     return base::MakeUnique<UnifiedMouseWarpController>();

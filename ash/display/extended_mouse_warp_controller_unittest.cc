@@ -4,15 +4,15 @@
 
 #include "ash/display/extended_mouse_warp_controller.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -62,8 +62,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
                              ->GetDisplayNearestWindow(root_windows[1])
                              .id();
 
-  std::unique_ptr<display::DisplayLayout> layout(test::CreateDisplayLayout(
-      display_manager(), display::DisplayPlacement::RIGHT, 0));
+  std::unique_ptr<display::DisplayLayout> layout(
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::RIGHT, 0));
 
   display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -135,8 +136,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
                              ->GetDisplayNearestWindow(root_windows[1])
                              .id();
 
-  std::unique_ptr<display::DisplayLayout> layout(test::CreateDisplayLayout(
-      display_manager(), display::DisplayPlacement::LEFT, 0));
+  std::unique_ptr<display::DisplayLayout> layout(
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::LEFT, 0));
   display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
 
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -177,8 +179,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
                              ->GetDisplayNearestWindow(root_windows[1])
                              .id();
 
-  std::unique_ptr<display::DisplayLayout> layout(test::CreateDisplayLayout(
-      display_manager(), display::DisplayPlacement::TOP, 0));
+  std::unique_ptr<display::DisplayLayout> layout(
+      display::test::CreateDisplayLayout(display_manager(),
+                                         display::DisplayPlacement::TOP, 0));
   display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
