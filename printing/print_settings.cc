@@ -132,12 +132,17 @@ PrintSettings::~PrintSettings() {
 
 void PrintSettings::Clear() {
   ranges_.clear();
-  margin_type_ = DEFAULT_MARGINS;
   desired_dpi_ = 72;
   selection_only_ = false;
-  title_ = base::string16();
-  url_ = base::string16();
+  margin_type_ = DEFAULT_MARGINS;
+  title_.clear();
+  url_.clear();
   display_header_footer_ = false;
+  should_print_backgrounds_ = false;
+  collate_ = false;
+  color_ = UNKNOWN_COLOR_MODEL;
+  copies_ = 0;
+  duplex_mode_ = UNKNOWN_DUPLEX_MODE;
   device_name_.clear();
   requested_media_ = RequestedMedia();
   page_setup_device_units_.Clear();
@@ -145,11 +150,6 @@ void PrintSettings::Clear() {
   scale_factor_ = 1.0f;
   landscape_ = false;
   supports_alpha_blend_ = true;
-  should_print_backgrounds_ = false;
-  collate_ = false;
-  color_ = UNKNOWN_COLOR_MODEL;
-  copies_ = 0;
-  duplex_mode_ = UNKNOWN_DUPLEX_MODE;
 #if defined(OS_WIN)
   print_text_with_gdi_ = false;
   printer_is_xps_ = false;
