@@ -166,7 +166,7 @@ INSTANTIATE_TEST_CASE_P(AppViewTests, AppViewTest, testing::Bool());
 #define MAYBE_TestAppViewGoodDataShouldSucceed TestAppViewGoodDataShouldSucceed
 #endif
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewGoodDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, MAYBE_TestAppViewGoodDataShouldSucceed) {
   RunTest("testAppViewGoodDataShouldSucceed",
           "app_view/apitest",
           "app_view/apitest/skeleton");
