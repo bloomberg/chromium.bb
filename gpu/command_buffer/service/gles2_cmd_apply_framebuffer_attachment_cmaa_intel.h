@@ -39,14 +39,12 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
 
  private:
   // Applies the CMAA algorithm to a texture.
-  void ApplyCMAAEffectTexture(GLuint source_texture,
-                              GLuint dest_texture,
-                              bool do_copy);
+  void ApplyCMAAEffectTexture(GLuint source_texture, GLuint dest_texture);
 
   void OnSize(GLint width, GLint height);
   void ReleaseTextures();
 
-  void CopyTexture(GLint dest);
+  void CopyTexture(GLint source, GLint dest, bool via_fbo);
   GLuint CreateProgram(const char* defines,
                        const char* vs_source,
                        const char* fs_source);
@@ -65,6 +63,8 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   GLint width_;
   GLint height_;
 
+  GLuint copy_to_framebuffer_shader_;
+  GLuint copy_to_image_shader_;
   GLuint edges0_shader_;
   GLuint edges1_shader_;
   GLuint edges_combine_shader_;
@@ -81,15 +81,17 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   GLuint mini4_edge_texture_;
   GLuint mini4_edge_depth_texture_;
 
-  GLuint edges0_shader_result_rgba_texture_slot1_;
-  GLuint edges0_shader_target_texture_slot2_;
-  GLuint edges1_shader_result_edge_texture_;
-  GLuint process_and_apply_shader_result_rgba_texture_slot1_;
-  GLuint edges_combine_shader_result_edge_texture_;
+  GLuint edges1_shader_result_texture_float4_slot1_;
+  GLuint edges1_shader_result_texture_;
+  GLuint edges_combine_shader_result_texture_float4_slot1_;
+  GLuint process_and_apply_shader_result_texture_float4_slot1_;
+  GLuint edges_combine_shader_result_texture_slot2_;
+  GLuint copy_to_image_shader_outTexture_;
 
   static const char vert_str_[];
   static const char cmaa_frag_s1_[];
   static const char cmaa_frag_s2_[];
+  static const char copy_frag_str_[];
 
   DISALLOW_COPY_AND_ASSIGN(ApplyFramebufferAttachmentCMAAINTELResourceManager);
 };
