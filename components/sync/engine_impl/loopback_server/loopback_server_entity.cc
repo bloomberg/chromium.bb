@@ -4,11 +4,8 @@
 
 #include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
 
-#include <stdint.h>
-
 #include <limits>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/guid.h"
@@ -19,12 +16,10 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/engine_impl/loopback_server/persistent_bookmark_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 

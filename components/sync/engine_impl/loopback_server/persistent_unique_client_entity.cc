@@ -4,14 +4,7 @@
 
 #include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
 
-#include <stdint.h>
-
-#include <memory>
-#include <string>
-
 #include "base/guid.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/syncable_util.h"

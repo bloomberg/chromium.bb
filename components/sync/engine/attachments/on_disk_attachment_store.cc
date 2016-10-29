@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"

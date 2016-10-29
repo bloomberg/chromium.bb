@@ -5,7 +5,6 @@
 #include "components/sync/engine_impl/sync_manager_impl.h"
 
 #include <cstddef>
-#include <memory>
 #include <utility>
 
 #include "base/callback.h"

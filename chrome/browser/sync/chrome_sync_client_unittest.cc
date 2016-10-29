@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/chrome_sync_client.h"
 
-#include <memory>
 #include <string>
 
 #include "chrome/common/url_constants.h"

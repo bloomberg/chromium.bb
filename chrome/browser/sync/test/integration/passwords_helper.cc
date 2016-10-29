@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 
 #include <sstream>
-#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
