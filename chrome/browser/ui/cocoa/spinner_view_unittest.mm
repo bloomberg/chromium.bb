@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/spinner_view.h"
 
+#include "base/mac/mac_util.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
@@ -22,6 +23,8 @@ class SpinnerViewTest : public ui::CocoaTest {
 TEST_VIEW(SpinnerViewTest, view_)
 
 TEST_F(SpinnerViewTest, StopAnimationOnMiniaturize) {
+  if (base::mac::IsOS10_10())
+    return;  // Fails when swarmed. http://crbug.com/660582
   EXPECT_TRUE([view_ isAnimating]);
 
   [test_window() miniaturize:nil];

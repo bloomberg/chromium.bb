@@ -17,6 +17,10 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 using extensions::AppWindowGeometryCache;
 using extensions::ResultCatcher;
 
@@ -154,6 +158,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestMaximize) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestMinimize) {
+#if defined(OS_MACOSX)
+  if (base::mac::IsOS10_10())
+    return;  // Fails when swarmed. http://crbug.com/660582
+#endif
   ASSERT_TRUE(RunAppWindowAPITest("testMinimize")) << message_;
 }
 

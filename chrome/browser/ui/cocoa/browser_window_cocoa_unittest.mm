@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -74,6 +75,8 @@ TEST_F(BrowserWindowCocoaTest, TestWindowTitle) {
 // Test that IsMaximized() returns false when the browser window goes from
 // maximized to minimized state - http://crbug/452976.
 TEST_F(BrowserWindowCocoaTest, TestMinimizeState) {
+  if (base::mac::IsOS10_10())
+    return;  // Fails when swarmed. http://crbug.com/660582
   std::unique_ptr<BrowserWindowCocoa> bwc(
       new BrowserWindowCocoa(browser(), controller_));
 
