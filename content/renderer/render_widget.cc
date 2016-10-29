@@ -907,6 +907,9 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     return;
   }
 
+  if (ime_in_batch_edit_ && change_source == ChangeSource::FROM_NON_IME)
+    return;
+
   ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
     return;  // Not considered as a text input field in WebKit/Chromium.
@@ -1619,7 +1622,7 @@ void RenderWidget::OnImeBatchEdit(bool begin) {
   ime_in_batch_edit_ = false;
   DCHECK(!ime_event_guard_);
   UpdateSelectionBounds();
-  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_IME);
+  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
 }
 #endif
 
