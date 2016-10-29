@@ -12,15 +12,11 @@
 
 class InfoBarContainerDelegate : public infobars::InfoBarContainer::Delegate {
  public:
-  // TODO(estade): make some or all of these private.
   static const int kDefaultBarTargetHeight;
-  static const int kDefaultBarTargetHeightMd;
   static const int kSeparatorLineHeight;
   static const int kDefaultArrowTargetHeight;
-  static const int kDefaultArrowTargetHeightMd;
   static const int kMaximumArrowTargetHeight;
   static const int kDefaultArrowTargetHalfWidth;
-  static const int kDefaultArrowTargetHalfWidthMd;
   static const int kMaximumArrowTargetHalfWidth;
 
   InfoBarContainerDelegate();

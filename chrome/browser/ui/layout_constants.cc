@@ -9,29 +9,23 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
-  const int kFindBarVerticalOffset[] = {1, 6, 6};
-  const int kLocationBarBorderThickness[] = {2, 1, 1};
-  const int kLocationBarBubbleFontVerticalPadding[] = {1, 2, 4};
-  const int kLocationBarBubbleHorizontalPadding[] = {1, 0, 0};
-  const int kLocationBarBubbleVerticalPadding[] = {1, 3, 3};
-  const int kLocationBarBubbleAnchorVerticalInset[] = {5, 6, 8};
-  const int kLocationBarHeight[] = {27, 28, 32};
-  const int kLocationBarHorizontalPadding[] = {3, 6, 6};
-  const int kLocationBarVerticalPadding[] = {0, 1, 1};
-  const int kOmniboxFontPixelSize[] = {16, 14, 14};
-  const int kTabFaviconTitleSpacing[] = {4, 6, 6};
-  const int kTabHeight[] = {29, 29, 33};
-  const int kTabPinnedContentWidth[] = {25, 23, 23};
-#if defined(OS_MACOSX)
-  const int kTabstripNewTabButtonOverlap[] = {8, 5, 6};
-  const int kTabstripTabOverlap[] = {19, 16, 16};
-#else
-  const int kTabstripNewTabButtonOverlap[] = {11, 5, 6};
-  const int kTabstripTabOverlap[] = {26, 16, 16};
-#endif
-  const int kToolbarStandardSpacing[] = {3, 4, 8};
-  const int kToolbarElementPadding[] = {0, 0, 8};
-  const int kToolbarLocationBarRightPadding[] = {0, 4, 8};
+  const int kFindBarVerticalOffset[] = {6, 6};
+  const int kLocationBarBorderThickness[] = {1, 1};
+  const int kLocationBarBubbleFontVerticalPadding[] = {2, 4};
+  const int kLocationBarBubbleVerticalPadding[] = {3, 3};
+  const int kLocationBarBubbleAnchorVerticalInset[] = {6, 8};
+  const int kLocationBarHeight[] = {28, 32};
+  const int kLocationBarHorizontalPadding[] = {6, 6};
+  const int kLocationBarVerticalPadding[] = {1, 1};
+  const int kOmniboxFontPixelSize[] = {14, 14};
+  const int kTabFaviconTitleSpacing[] = {6, 6};
+  const int kTabHeight[] = {29, 33};
+  const int kTabPinnedContentWidth[] = {23, 23};
+  const int kTabstripNewTabButtonOverlap[] = {5, 6};
+  const int kTabstripTabOverlap[] = {16, 16};
+  const int kToolbarStandardSpacing[] = {4, 8};
+  const int kToolbarElementPadding[] = {0, 8};
+  const int kToolbarLocationBarRightPadding[] = {4, 8};
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (constant) {
@@ -41,8 +35,6 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kLocationBarBorderThickness[mode];
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
       return kLocationBarBubbleFontVerticalPadding[mode];
-    case LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING:
-      return kLocationBarBubbleHorizontalPadding[mode];
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return kLocationBarBubbleVerticalPadding[mode];
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
@@ -79,20 +71,20 @@ int GetLayoutConstant(LayoutConstant constant) {
 }
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
-  const int kAvatarLeftPadding[] = {2, 4, 4};
-  const int kAvatarRightPadding[] = {-6, 4, 4};
-  const int kAvatarBottomPadding[] = {2, 4, 4};
-  const int kOmniboxDropdownIconPadding[] = {2, 4, 8};
-  const int kOmniboxDropdownPadding[] = {3, 4, 4};
-  const int kOmniboxDropdownTextPadding[] = {3, 3, 3};
-  const int kTabBottomPadding[] = {2, 1, 1};
-  const int kTabHorizontalPadding[] = {20, 16, 18};
-  const int kTabTopPadding[] = {4, 1, 1};
-  const int kToolbarBottomPadding[] = {5, 5, 5};
-  const int kToolbarButtonPadding[] = {2, 6, 6};
-  const int kToolbarLeftPadding[] = {3, 4, 8};
-  const int kToolbarRightPadding[] = {2, 4, 8};
-  const int kToolbarTopPadding[] = {5, 4, 4};
+  const int kAvatarLeftPadding[] = {4, 4};
+  const int kAvatarRightPadding[] = {4, 4};
+  const int kAvatarBottomPadding[] = {4, 4};
+  const int kOmniboxDropdownIconPadding[] = {4, 8};
+  const int kOmniboxDropdownPadding[] = {4, 4};
+  const int kOmniboxDropdownTextPadding[] = {3, 3};
+  const int kTabBottomPadding[] = {1, 1};
+  const int kTabHorizontalPadding[] = {16, 18};
+  const int kTabTopPadding[] = {1, 1};
+  const int kToolbarBottomPadding[] = {5, 5};
+  const int kToolbarButtonPadding[] = {6, 6};
+  const int kToolbarLeftPadding[] = {4, 8};
+  const int kToolbarRightPadding[] = {4, 8};
+  const int kToolbarTopPadding[] = {4, 4};
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
@@ -120,8 +112,8 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
 }
 
 gfx::Size GetLayoutSize(LayoutSize size) {
-  const int kNewTabButtonWidth[] = {34, 36, 39};
-  const int kNewTabButtonHeight[] = {18, 18, 21};
+  const int kNewTabButtonWidth[] = {36, 39};
+  const int kNewTabButtonHeight[] = {18, 21};
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (size) {

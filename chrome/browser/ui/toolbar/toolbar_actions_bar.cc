@@ -35,7 +35,6 @@
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -44,30 +43,6 @@ namespace {
 using WeakToolbarActions = std::vector<ToolbarActionViewController*>;
 
 enum DimensionType { WIDTH, HEIGHT };
-
-// Returns the width or height of the toolbar action icon size.
-int GetIconDimension(DimensionType type) {
-if (ui::MaterialDesignController::IsModeMaterial())
-#if defined(OS_MACOSX)
-  // On the Mac, the spec is a 24x24 button in a 28x28 space.
-    return 24;
-#else
-    return 28;
-#endif
-
-  static bool initialized = false;
-  static int icon_height = 0;
-  static int icon_width = 0;
-  if (!initialized) {
-    initialized = true;
-    gfx::ImageSkia* skia =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_BROWSER_ACTION);
-    icon_height = skia->height();
-    icon_width = skia->width();
-  }
-  return type == WIDTH ? icon_width : icon_height;
-}
 
 // Takes a reference vector |reference| of length n, where n is less than or
 // equal to the length of |to_sort|, and rearranges |to_sort| so that
@@ -155,13 +130,18 @@ ToolbarActionsBar::~ToolbarActionsBar() {
 
 // static
 int ToolbarActionsBar::IconWidth(bool include_padding) {
-  return GetIconDimension(WIDTH) +
+  return IconHeight() +
          (include_padding ? GetLayoutConstant(TOOLBAR_STANDARD_SPACING) : 0);
 }
 
 // static
 int ToolbarActionsBar::IconHeight() {
-  return GetIconDimension(HEIGHT);
+#if defined(OS_MACOSX)
+  // On the Mac, the spec is a 24x24 button in a 28x28 space.
+  return 24;
+#else
+  return 28;
+#endif
 }
 
 // static

@@ -181,7 +181,7 @@ void InfoBarView::ViewHierarchyChanged(
   }
 
   // Ensure the infobar is tall enough to display its contents.
-  int height = InfoBarContainerDelegate::kDefaultBarTargetHeightMd;
+  int height = InfoBarContainerDelegate::kDefaultBarTargetHeight;
   const int kMinimumVerticalPadding = 6;
   for (int i = 0; i < child_container_->child_count(); ++i) {
     const int child_height = child_container_->child_at(i)->height();
