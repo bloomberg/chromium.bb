@@ -877,7 +877,7 @@ TEST_F('CrSettingsRouteDynamicParametersTest', 'MAYBE_All', function() {
 });
 
 // Times out on Windows Tests (dbg). See https://crbug.com/651296.
-GEN('#if defined(OS_WIN)');
+GEN('#if defined(OS_WIN) || defined(OS_CHROMEOS)');
 GEN('#define MAYBE_MainPage_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_MainPage_All All');
