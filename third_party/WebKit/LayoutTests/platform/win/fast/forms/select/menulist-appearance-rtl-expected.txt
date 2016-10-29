@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x539
-  LayoutBlockFlow {HTML} at (0,0) size 800x539
-    LayoutBlockFlow {BODY} at (8,16) size 784x515
+layer at (0,0) size 800x540
+  LayoutBlockFlow {HTML} at (0,0) size 800x540
+    LayoutBlockFlow {BODY} at (8,16) size 784x516
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 758x35
           text run at (0,0) width 758: "This tests that bidirectional text is correctly rendered in popup controls. The order of the text below each popup button"
@@ -54,27 +54,27 @@ layer at (0,0) size 800x539
               text run at (0,0) width 23: "abc"
               text run at (22,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
       LayoutBlockFlow {HR} at (0,236) size 784x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {DIV} at (0,246) size 784x53
+      LayoutBlockFlow {DIV} at (0,246) size 784x54
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 632x17
             text run at (0,0) width 632: "The following line and the SELECT element should have same text, and no characters are lacking."
-        LayoutBlockFlow {DIV} at (0,18) size 784x15
-          LayoutText {#text} at (0,0) size 100x15
-            text run at (0,0) width 100 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
-        LayoutBlockFlow (anonymous) at (0,33) size 784x20
+        LayoutBlockFlow {DIV} at (0,18) size 784x16
+          LayoutText {#text} at (0,0) size 101x16
+            text run at (0,0) width 101 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
+        LayoutBlockFlow (anonymous) at (0,34) size 784x20
           LayoutMenuList {SELECT} at (0,0) size 115x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 113x18
               LayoutText (anonymous) at (4,1) size 82x16
                 text run at (4,1) width 82 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {HR} at (0,307) size 784x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {P} at (0,325) size 784x18
+      LayoutBlockFlow {HR} at (0,308) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,326) size 784x18
         LayoutText {#text} at (0,0) size 709x17
           text run at (0,0) width 709: "Verify that the alignment and writing direction of each selected item matches the one below the pop-up button."
-layer at (8,375) size 784x156
-  LayoutBlockFlow {DIV} at (0,359) size 784x156
+layer at (8,376) size 784x156
+  LayoutBlockFlow {DIV} at (0,360) size 784x156
     LayoutMultiColumnSet (anonymous) at (0,0) size 784x156
-layer at (8,375) size 384x312 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+layer at (8,376) size 384x312 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 384x312
     LayoutBlockFlow {DIV} at (0,0) size 384x156
       LayoutMenuList {SELECT} at (0,0) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
