@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "cc/ipc/quads.mojom.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/output/delegated_frame_data.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"

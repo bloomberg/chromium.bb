@@ -89,8 +89,7 @@ DisplayCompositorFrameSink::~DisplayCompositorFrameSink() {
 void DisplayCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame,
     const base::Callback<void()>& callback) {
-  gfx::Size frame_size =
-      frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
+  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != display_size_) {
     if (!local_frame_id_.is_null())
       factory_.Destroy(local_frame_id_);

@@ -769,8 +769,7 @@ void Surface::UpdateSurface(bool full_damage) {
   quad_state->visible_quad_layer_rect = quad_rect;
   quad_state->opacity = state_.alpha;
 
-  std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
-      new cc::DelegatedFrameData);
+  cc::CompositorFrame frame;
   if (current_resource_.id) {
     // Texture quad is only needed if buffer is not fully transparent.
     if (state_.alpha) {
@@ -791,7 +790,7 @@ void Surface::UpdateSurface(bool full_damage) {
                            false, false, state_.only_visible_on_secure_output);
       if (current_resource_.is_overlay_candidate)
         texture_quad->set_resource_size_in_pixels(current_resource_.size);
-      delegated_frame->resource_list.push_back(current_resource_);
+      frame.resource_list.push_back(current_resource_);
     }
   } else {
     cc::SolidColorDrawQuad* solid_quad =
@@ -799,9 +798,7 @@ void Surface::UpdateSurface(bool full_damage) {
     solid_quad->SetNew(quad_state, quad_rect, quad_rect, SK_ColorBLACK, false);
   }
 
-  delegated_frame->render_pass_list.push_back(std::move(render_pass));
-  cc::CompositorFrame frame;
-  frame.delegated_frame_data = std::move(delegated_frame);
+  frame.render_pass_list.push_back(std::move(render_pass));
 
   factory_owner_->surface_factory_->SubmitCompositorFrame(
       local_frame_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());

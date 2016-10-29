@@ -6977,15 +6977,12 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
       const CompositorFrame& frame) override {
     EXPECT_EQ(1, ++num_swaps_);
 
-    DelegatedFrameData* last_frame_data = frame.delegated_frame_data.get();
-    ASSERT_TRUE(frame.delegated_frame_data);
-    EXPECT_EQ(drawn_viewport_,
-              last_frame_data->render_pass_list.back()->output_rect);
+    EXPECT_EQ(drawn_viewport_, frame.render_pass_list.back()->output_rect);
     EXPECT_EQ(0.5f, frame.metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, frame.metadata.max_page_scale_factor);
 
-    EXPECT_EQ(0u, frame.delegated_frame_data->resource_list.size());
-    EXPECT_EQ(1u, frame.delegated_frame_data->render_pass_list.size());
+    EXPECT_EQ(0u, frame.resource_list.size());
+    EXPECT_EQ(1u, frame.render_pass_list.size());
 
     EndTest();
   }
@@ -7023,14 +7020,12 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
 
   void DisplayReceivedCompositorFrameOnThread(
       const CompositorFrame& frame) override {
-    ASSERT_TRUE(frame.delegated_frame_data);
-
-    EXPECT_EQ(2u, frame.delegated_frame_data->render_pass_list.size());
+    EXPECT_EQ(2u, frame.render_pass_list.size());
     // Each render pass has 10 resources in it. And the root render pass has a
     // mask resource used when drawing the child render pass. The number 10 may
     // change if AppendOneOfEveryQuadType() is updated, and the value here
     // should be updated accordingly.
-    EXPECT_EQ(21u, frame.delegated_frame_data->resource_list.size());
+    EXPECT_EQ(21u, frame.resource_list.size());
 
     EndTest();
   }

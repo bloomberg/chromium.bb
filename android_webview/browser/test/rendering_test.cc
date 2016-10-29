@@ -112,13 +112,11 @@ content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {
 std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
   std::unique_ptr<cc::CompositorFrame> compositor_frame(
       new cc::CompositorFrame);
-  std::unique_ptr<cc::DelegatedFrameData> frame(new cc::DelegatedFrameData);
   std::unique_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());
   root_pass->SetNew(cc::RenderPassId(1, 1), viewport, viewport,
                     gfx::Transform());
-  frame->render_pass_list.push_back(std::move(root_pass));
-  compositor_frame->delegated_frame_data = std::move(frame);
+  compositor_frame->render_pass_list.push_back(std::move(root_pass));
   return compositor_frame;
 }
 
@@ -127,7 +125,7 @@ std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructFrame(
   std::unique_ptr<cc::CompositorFrame> compositor_frame(ConstructEmptyFrame());
   cc::TransferableResource resource;
   resource.id = resource_id;
-  compositor_frame->delegated_frame_data->resource_list.push_back(resource);
+  compositor_frame->resource_list.push_back(resource);
   return compositor_frame;
 }
 

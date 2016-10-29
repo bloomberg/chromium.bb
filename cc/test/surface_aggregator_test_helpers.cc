@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"

@@ -309,8 +309,8 @@ void BrowserViewRenderer::ReturnUnusedResource(
     return;
 
   cc::ReturnedResourceArray resources;
-  cc::TransferableResource::ReturnResources(
-      child_frame->frame->delegated_frame_data->resource_list, &resources);
+  cc::TransferableResource::ReturnResources(child_frame->frame->resource_list,
+                                            &resources);
   content::SynchronousCompositor* compositor =
       FindCompositor(child_frame->compositor_id);
   if (compositor && !resources.empty())

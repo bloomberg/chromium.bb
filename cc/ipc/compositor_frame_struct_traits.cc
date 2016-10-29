@@ -17,9 +17,8 @@ bool StructTraits<cc::mojom::CompositorFrameDataView,
   if (!data.ReadMetadata(&out->metadata))
     return false;
 
-  out->delegated_frame_data.reset(new cc::DelegatedFrameData());
-  return data.ReadResources(&out->delegated_frame_data->resource_list) &&
-         data.ReadPasses(&out->delegated_frame_data->render_pass_list);
+  return data.ReadResources(&out->resource_list) &&
+         data.ReadPasses(&out->render_pass_list);
 }
 
 }  // namespace mojo

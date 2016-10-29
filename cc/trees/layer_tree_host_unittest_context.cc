@@ -880,24 +880,6 @@ class LayerTreeHostContextTestDontUseLostResources
   void SetupTree() override {
     gpu::gles2::GLES2Interface* gl = child_context_provider_->ContextGL();
 
-    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-
-    std::unique_ptr<RenderPass> pass_for_quad = RenderPass::Create();
-    pass_for_quad->SetNew(
-        // AppendOneOfEveryQuadType() makes a RenderPass quad with this id.
-        RenderPassId(2, 1), gfx::Rect(0, 0, 10, 10), gfx::Rect(0, 0, 10, 10),
-        gfx::Transform());
-
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
-    pass->SetNew(RenderPassId(1, 1), gfx::Rect(0, 0, 10, 10),
-                 gfx::Rect(0, 0, 10, 10), gfx::Transform());
-    gpu::SyncToken mailbox_sync_token;
-    AddOneOfEveryQuadType(pass.get(), child_resource_provider_.get(),
-                          RenderPassId(2, 1), &mailbox_sync_token);
-
-    frame_data->render_pass_list.push_back(std::move(pass_for_quad));
-    frame_data->render_pass_list.push_back(std::move(pass));
-
     ResourceId resource = child_resource_provider_->CreateResource(
         gfx::Size(4, 4), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
         gfx::ColorSpace());

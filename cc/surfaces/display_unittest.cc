@@ -9,7 +9,6 @@
 #include "base/test/null_task_runner.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/output/delegated_frame_data.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -142,11 +141,8 @@ class DisplayTest : public testing::Test {
  protected:
   void SubmitCompositorFrame(RenderPassList* pass_list,
                              const LocalFrameId& local_frame_id) {
-    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    pass_list->swap(frame_data->render_pass_list);
-
     CompositorFrame frame;
-    frame.delegated_frame_data = std::move(frame_data);
+    pass_list->swap(frame.render_pass_list);
 
     factory_.SubmitCompositorFrame(local_frame_id, std::move(frame),
                                    SurfaceFactory::DrawCallback());
@@ -345,11 +341,9 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
-    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    pass_list.swap(frame_data->render_pass_list);
 
     CompositorFrame frame;
-    frame.delegated_frame_data = std::move(frame_data);
+    pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
     factory_.SubmitCompositorFrame(local_frame_id, std::move(frame),
@@ -378,11 +372,9 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
-    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    pass_list.swap(frame_data->render_pass_list);
 
     CompositorFrame frame;
-    frame.delegated_frame_data = std::move(frame_data);
+    pass_list.swap(frame.render_pass_list);
 
     factory_.SubmitCompositorFrame(local_frame_id, std::move(frame),
                                    SurfaceFactory::DrawCallback());

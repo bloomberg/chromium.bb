@@ -53,7 +53,6 @@ class ScopedTooltipDisabler;
 namespace cc {
 class CopyOutputRequest;
 class CopyOutputResult;
-class DelegatedFrameData;
 }
 
 namespace gfx {

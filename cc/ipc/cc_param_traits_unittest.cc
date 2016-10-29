@@ -21,7 +21,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using cc::DelegatedFrameData;
+using cc::CompositorFrame;
 using cc::DebugBorderDrawQuad;
 using cc::DrawQuad;
 using cc::FilterOperation;
@@ -430,16 +430,15 @@ TEST_F(CCParamTraitsTest, AllQuads) {
     EXPECT_EQ(same_shared_quad_state_cmp, same_shared_quad_state_in);
   }
 
-  DelegatedFrameData frame_in;
+  CompositorFrame frame_in;
   frame_in.render_pass_list.push_back(std::move(child_pass_in));
   frame_in.render_pass_list.push_back(std::move(pass_in));
 
-  IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
+  IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
 
-  DelegatedFrameData frame_out;
+  CompositorFrame frame_out;
   base::PickleIterator iter(msg);
-  EXPECT_TRUE(
-      IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
+  EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
 
   // Make sure the out and cmp RenderPasses match.
   std::unique_ptr<RenderPass> child_pass_out =
@@ -523,16 +522,15 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   ASSERT_EQ(5u, pass_in->shared_quad_state_list.size());
   ASSERT_EQ(2u, pass_in->quad_list.size());
 
-  DelegatedFrameData frame_in;
+  CompositorFrame frame_in;
   frame_in.render_pass_list.push_back(std::move(pass_in));
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
+  IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
 
-  DelegatedFrameData frame_out;
+  CompositorFrame frame_out;
   base::PickleIterator iter(msg);
-  EXPECT_TRUE(
-      IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
+  EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
 
   std::unique_ptr<RenderPass> pass_out =
       std::move(frame_out.render_pass_list[0]);
@@ -596,17 +594,16 @@ TEST_F(CCParamTraitsTest, Resources) {
   renderpass_in->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
                         gfx::Transform());
 
-  DelegatedFrameData frame_in;
+  CompositorFrame frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);
   frame_in.resource_list.push_back(arbitrary_resource2);
   frame_in.render_pass_list.push_back(std::move(renderpass_in));
 
-  IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
+  IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
 
-  DelegatedFrameData frame_out;
+  CompositorFrame frame_out;
   base::PickleIterator iter(msg);
-  EXPECT_TRUE(
-      IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
+  EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
 
   ASSERT_EQ(2u, frame_out.resource_list.size());
   Compare(arbitrary_resource1, frame_out.resource_list[0]);

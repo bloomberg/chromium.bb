@@ -111,8 +111,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         new cc::SurfaceFactory(frame_sink_id_, surface_manager_, this));
   }
 
-  cc::RenderPass* root_pass =
-      frame.delegated_frame_data->render_pass_list.back().get();
+  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
   gfx::Size surface_size = root_pass->output_rect.size();
 
   if (!current_frame_ || surface_size != current_frame_->surface_size ||

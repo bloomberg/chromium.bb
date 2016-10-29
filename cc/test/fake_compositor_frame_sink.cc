@@ -40,23 +40,17 @@ void FakeCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   last_sent_frame_.reset(new CompositorFrame(std::move(frame)));
   ++num_sent_frames_;
 
-  if (last_sent_frame_->delegated_frame_data) {
-    auto* frame_data = last_sent_frame_->delegated_frame_data.get();
-    last_swap_rect_ = frame_data->render_pass_list.back()->damage_rect;
+  if (!last_sent_frame_->render_pass_list.empty()) {
+    last_swap_rect_ = last_sent_frame_->render_pass_list.back()->damage_rect;
     last_swap_rect_valid_ = true;
   } else {
     last_swap_rect_ = gfx::Rect();
     last_swap_rect_valid_ = false;
   }
 
-  if (last_sent_frame_->delegated_frame_data || !context_provider()) {
-    if (last_sent_frame_->delegated_frame_data) {
-      auto* frame_data = last_sent_frame_->delegated_frame_data.get();
-      resources_held_by_parent_.insert(resources_held_by_parent_.end(),
-                                       frame_data->resource_list.begin(),
-                                       frame_data->resource_list.end());
-    }
-  }
+  resources_held_by_parent_.insert(resources_held_by_parent_.end(),
+                                   last_sent_frame_->resource_list.begin(),
+                                   last_sent_frame_->resource_list.end());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -69,9 +63,7 @@ void FakeCompositorFrameSink::DidReceiveCompositorFrameAck() {
 }
 
 void FakeCompositorFrameSink::ReturnResourcesHeldByParent() {
-  // Check |delegated_frame_data| because we shouldn't reclaim resources
-  // for the Display which does not swap delegated frames.
-  if (last_sent_frame_ && last_sent_frame_->delegated_frame_data) {
+  if (last_sent_frame_) {
     // Return the last frame's resources immediately.
     ReturnedResourceArray resources;
     for (const auto& resource : resources_held_by_parent_)

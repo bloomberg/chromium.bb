@@ -53,8 +53,7 @@ void ServerWindowCompositorFrameSink::SetNeedsBeginFrame(
 
 void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
-  gfx::Size frame_size =
-      frame.delegated_frame_data->render_pass_list[0]->output_rect.size();
+  gfx::Size frame_size = frame.render_pass_list[0]->output_rect.size();
   // If the size of the CompostiorFrame has changed then destroy the existing
   // Surface and create a new one of the appropriate size.
   if (local_frame_id_.is_null() || frame_size != last_submitted_frame_size_) {

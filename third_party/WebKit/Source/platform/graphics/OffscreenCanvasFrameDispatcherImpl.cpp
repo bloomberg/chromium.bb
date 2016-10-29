@@ -159,7 +159,6 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   cc::CompositorFrame frame;
   // TODO(crbug.com/652931): update the device_scale_factor
   frame.metadata.device_scale_factor = 1.0f;
-  frame.delegated_frame_data.reset(new cc::DelegatedFrameData);
 
   const gfx::Rect bounds(m_width, m_height);
   const cc::RenderPassId renderPassId(1, 1);
@@ -216,7 +215,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   commitTypeHistogram.count(commitType);
 
   m_nextResourceId++;
-  frame.delegated_frame_data->resource_list.push_back(std::move(resource));
+  frame.resource_list.push_back(std::move(resource));
 
   cc::TextureDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
@@ -237,7 +236,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
                SK_ColorTRANSPARENT, vertexOpacity, yflipped, nearestNeighbor,
                false);
 
-  frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
+  frame.render_pass_list.push_back(std::move(pass));
 
   double elapsedTime = WTF::monotonicallyIncreasingTime() - commitStartTime;
   switch (commitType) {

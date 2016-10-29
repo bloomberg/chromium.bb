@@ -907,7 +907,7 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  if (!frame.delegated_frame_data)
+  if (frame.render_pass_list.empty())
     return;
 
   cc::Selection<gfx::SelectionBound> selection = frame.metadata.selection;

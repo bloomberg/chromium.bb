@@ -397,7 +397,8 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
 
   // Create a CompostiorFrame with two RenderPasses.
   gfx::Rect root_rect(300, 300);
-  RenderPassList render_pass_list;
+  CompositorFrame root_frame;
+  RenderPassList& render_pass_list = root_frame.render_pass_list;
 
   // Create a child RenderPass.
   RenderPassId child_render_pass_id(1, 3);
@@ -416,9 +417,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
                    &render_pass_list);
 
   RenderPass* root_pass = nullptr;
-  CompositorFrame root_frame =
-      CreateCompositorFrameWithRenderPassList(&render_pass_list);
-  root_pass = root_frame.delegated_frame_data->render_pass_list.back().get();
+  root_pass = root_frame.render_pass_list.back().get();
 
   // Create a RenderPassDrawQuad.
   gfx::Rect render_pass_quad_rect(100, 100);
@@ -429,8 +428,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
                            child_render_pass_id);
 
   // Add a solid quad in the child render pass.
-  RenderPass* child_render_pass =
-      root_frame.delegated_frame_data->render_pass_list.front().get();
+  RenderPass* child_render_pass = root_frame.render_pass_list.front().get();
   gfx::Rect child_solid_quad_rect(100, 100);
   CreateSolidColorDrawQuad(child_render_pass,
                            gfx::Transform(),

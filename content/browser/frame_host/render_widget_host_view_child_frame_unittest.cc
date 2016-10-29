@@ -149,12 +149,11 @@ cc::CompositorFrame CreateDelegatedFrame(float scale_factor,
                                          const gfx::Rect& damage) {
   cc::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
-  frame.delegated_frame_data.reset(new cc::DelegatedFrameData);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(cc::RenderPassId(1, 1), gfx::Rect(size), damage,
                gfx::Transform());
-  frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
+  frame.render_pass_list.push_back(std::move(pass));
   return frame;
 }
 

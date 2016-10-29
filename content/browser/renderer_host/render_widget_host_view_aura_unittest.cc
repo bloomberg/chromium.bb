@@ -1663,16 +1663,15 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
                                        gfx::Rect damage) {
   cc::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
-  frame.delegated_frame_data.reset(new cc::DelegatedFrameData);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(
       cc::RenderPassId(1, 1), gfx::Rect(size), damage, gfx::Transform());
-  frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
+  frame.render_pass_list.push_back(std::move(pass));
   if (!size.IsEmpty()) {
     cc::TransferableResource resource;
     resource.id = 1;
-    frame.delegated_frame_data->resource_list.push_back(std::move(resource));
+    frame.resource_list.push_back(std::move(resource));
   }
   return frame;
 }

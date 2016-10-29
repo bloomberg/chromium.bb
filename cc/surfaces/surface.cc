@@ -31,8 +31,8 @@ Surface::Surface(const SurfaceId& id, SurfaceFactory* factory)
 
 Surface::~Surface() {
   ClearCopyRequests();
-  if (current_frame_.delegated_frame_data && factory_) {
-    UnrefFrameResources(current_frame_.delegated_frame_data.get());
+  if (current_frame_ && factory_) {
+    UnrefFrameResources(*current_frame_);
   }
   if (!draw_callback_.is_null())
     draw_callback_.Run();
@@ -48,32 +48,28 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
   DCHECK(factory_);
   ClearCopyRequests();
 
-  if (frame.delegated_frame_data) {
-    TakeLatencyInfo(&frame.metadata.latency_info);
-  }
+  TakeLatencyInfo(&frame.metadata.latency_info);
 
-  CompositorFrame previous_frame = std::move(current_frame_);
+  base::Optional<CompositorFrame> previous_frame = std::move(current_frame_);
   current_frame_ = std::move(frame);
 
-  if (current_frame_.delegated_frame_data) {
-    factory_->ReceiveFromChild(
-        current_frame_.delegated_frame_data->resource_list);
+  if (current_frame_) {
+    factory_->ReceiveFromChild(current_frame_->resource_list);
   }
 
   // Empty frames shouldn't be drawn and shouldn't contribute damage, so don't
   // increment frame index for them.
-  if (current_frame_.delegated_frame_data &&
-      !current_frame_.delegated_frame_data->render_pass_list.empty()) {
+  if (current_frame_ && !current_frame_->render_pass_list.empty()) {
     ++frame_index_;
   }
 
   previous_frame_surface_id_ = surface_id();
 
   std::vector<SurfaceId> new_referenced_surfaces;
-  new_referenced_surfaces = current_frame_.metadata.referenced_surfaces;
+  new_referenced_surfaces = current_frame_->metadata.referenced_surfaces;
 
-  if (previous_frame.delegated_frame_data)
-    UnrefFrameResources(previous_frame.delegated_frame_data.get());
+  if (previous_frame)
+    UnrefFrameResources(*previous_frame);
 
   if (!draw_callback_.is_null())
     draw_callback_.Run();
@@ -83,7 +79,7 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
       (referenced_surfaces_ != new_referenced_surfaces);
   referenced_surfaces_ = new_referenced_surfaces;
   std::vector<uint32_t> satisfies_sequences =
-      std::move(current_frame_.metadata.satisfies_sequences);
+      std::move(current_frame_->metadata.satisfies_sequences);
 
   if (referenced_surfaces_changed || !satisfies_sequences.empty()) {
     // Notify the manager that sequences were satisfied either if some new
@@ -96,11 +92,9 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
 
 void Surface::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> copy_request) {
-  if (current_frame_.delegated_frame_data &&
-      !current_frame_.delegated_frame_data->render_pass_list.empty()) {
+  if (current_frame_ && !current_frame_->render_pass_list.empty()) {
     std::vector<std::unique_ptr<CopyOutputRequest>>& copy_requests =
-        current_frame_.delegated_frame_data->render_pass_list.back()
-            ->copy_requests;
+        current_frame_->render_pass_list.back()->copy_requests;
 
     if (void* source = copy_request->source()) {
       // Remove existing CopyOutputRequests made on the Surface by the same
@@ -122,9 +116,8 @@ void Surface::TakeCopyOutputRequests(
     std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
         copy_requests) {
   DCHECK(copy_requests->empty());
-  if (current_frame_.delegated_frame_data) {
-    for (const auto& render_pass :
-         current_frame_.delegated_frame_data->render_pass_list) {
+  if (current_frame_) {
+    for (const auto& render_pass : current_frame_->render_pass_list) {
       for (auto& request : render_pass->copy_requests) {
         copy_requests->insert(
             std::make_pair(render_pass->id, std::move(request)));
@@ -135,20 +128,21 @@ void Surface::TakeCopyOutputRequests(
 }
 
 const CompositorFrame& Surface::GetEligibleFrame() {
-  return current_frame_;
+  DCHECK(current_frame_);
+  return current_frame_.value();
 }
 
 void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
-  if (!current_frame_.delegated_frame_data)
+  if (!current_frame_)
     return;
   if (latency_info->empty()) {
-    current_frame_.metadata.latency_info.swap(*latency_info);
+    current_frame_->metadata.latency_info.swap(*latency_info);
     return;
   }
-  std::copy(current_frame_.metadata.latency_info.begin(),
-            current_frame_.metadata.latency_info.end(),
+  std::copy(current_frame_->metadata.latency_info.begin(),
+            current_frame_->metadata.latency_info.end(),
             std::back_inserter(*latency_info));
-  current_frame_.metadata.latency_info.clear();
+  current_frame_->metadata.latency_info.clear();
 }
 
 void Surface::RunDrawCallbacks() {
@@ -176,9 +170,9 @@ void Surface::SatisfyDestructionDependencies(
       destruction_dependencies_.end());
 }
 
-void Surface::UnrefFrameResources(DelegatedFrameData* frame_data) {
+void Surface::UnrefFrameResources(const CompositorFrame& frame) {
   ReturnedResourceArray resources;
-  TransferableResource::ReturnResources(frame_data->resource_list, &resources);
+  TransferableResource::ReturnResources(frame.resource_list, &resources);
   // No point in returning same sync token to sender.
   for (auto& resource : resources)
     resource.sync_token.Clear();
@@ -186,9 +180,8 @@ void Surface::UnrefFrameResources(DelegatedFrameData* frame_data) {
 }
 
 void Surface::ClearCopyRequests() {
-  if (current_frame_.delegated_frame_data) {
-    for (const auto& render_pass :
-         current_frame_.delegated_frame_data->render_pass_list) {
+  if (current_frame_) {
+    for (const auto& render_pass : current_frame_->render_pass_list) {
       for (const auto& copy_request : render_pass->copy_requests)
         copy_request->SendEmptyResult();
     }

@@ -5,7 +5,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/delegated_frame_data.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/surfaces/surface_aggregator.h"
@@ -54,14 +53,14 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       LocalFrameId local_frame_id(i, 0);
       factory_.Create(local_frame_id);
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
-      std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+      CompositorFrame frame;
 
       SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
       for (int j = 0; j < num_textures; j++) {
         TransferableResource resource;
         resource.id = j;
         resource.is_software = true;
-        frame_data->resource_list.push_back(resource);
+        frame.resource_list.push_back(resource);
 
         TextureDrawQuad* quad =
             pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -93,9 +92,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
             SurfaceId(kArbitraryFrameSinkId, LocalFrameId(i - 1, 0)));
       }
 
-      frame_data->render_pass_list.push_back(std::move(pass));
-      CompositorFrame frame;
-      frame.delegated_frame_data = std::move(frame_data);
+      frame.render_pass_list.push_back(std::move(pass));
       factory_.SubmitCompositorFrame(local_frame_id, std::move(frame),
                                      SurfaceFactory::DrawCallback());
     }
@@ -104,7 +101,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     timer_.Reset();
     do {
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
-      std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+      CompositorFrame frame;
 
       SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
       SurfaceDrawQuad* surface_quad =
@@ -118,9 +115,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       else
         pass->damage_rect = gfx::Rect(0, 0, 1, 1);
 
-      frame_data->render_pass_list.push_back(std::move(pass));
-      CompositorFrame frame;
-      frame.delegated_frame_data = std::move(frame_data);
+      frame.render_pass_list.push_back(std::move(pass));
       factory_.SubmitCompositorFrame(LocalFrameId(num_surfaces + 1, 0),
                                      std::move(frame),
                                      SurfaceFactory::DrawCallback());

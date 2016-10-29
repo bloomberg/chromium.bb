@@ -404,16 +404,14 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
 
 void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
                                             cc::CompositorFrame frame) {
-  DCHECK(frame.delegated_frame_data.get());
 #if defined(OS_CHROMEOS)
   DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
 #endif
-  cc::DelegatedFrameData* frame_data = frame.delegated_frame_data.get();
   float frame_device_scale_factor = frame.metadata.device_scale_factor;
 
-  DCHECK(!frame_data->render_pass_list.empty());
+  DCHECK(!frame.render_pass_list.empty());
 
-  cc::RenderPass* root_pass = frame_data->render_pass_list.back().get();
+  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
 
   gfx::Size frame_size = root_pass->output_rect.size();
   gfx::Size frame_size_in_dip =
@@ -426,8 +424,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
 
   if (ShouldSkipFrame(frame_size_in_dip)) {
     cc::ReturnedResourceArray resources;
-    cc::TransferableResource::ReturnResources(frame_data->resource_list,
-                                              &resources);
+    cc::TransferableResource::ReturnResources(frame.resource_list, &resources);
 
     skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
                                       frame.metadata.latency_info.begin(),
@@ -445,7 +442,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
     damage_rect_in_dip = gfx::Rect(frame_size_in_dip);
 
     // Give the same damage rect to the compositor.
-    cc::RenderPass* root_pass = frame_data->render_pass_list.back().get();
+    cc::RenderPass* root_pass = frame.render_pass_list.back().get();
     root_pass->damage_rect = damage_rect;
   }
 
@@ -472,7 +469,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
   background_color_ = frame.metadata.root_background_color;
 
   if (frame_size.IsEmpty()) {
-    DCHECK(frame_data->resource_list.empty());
+    DCHECK(frame.resource_list.empty());
     EvictDelegatedFrame();
   } else {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();

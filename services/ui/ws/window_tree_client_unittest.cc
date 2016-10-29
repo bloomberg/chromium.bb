@@ -2157,14 +2157,11 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
       window_2_101, mojom::CompositorFrameSinkType::DEFAULT,
       mojo::GetProxy(&surface_ptr), std::move(surface_client_ptr));
   cc::CompositorFrame compositor_frame;
-  compositor_frame.delegated_frame_data =
-      base::MakeUnique<cc::DelegatedFrameData>();
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   gfx::Rect frame_rect(0, 0, 100, 100);
   render_pass->SetNew(cc::RenderPassId(1, 1), frame_rect, frame_rect,
                       gfx::Transform());
-  compositor_frame.delegated_frame_data->render_pass_list.push_back(
-      std::move(render_pass));
+  compositor_frame.render_pass_list.push_back(std::move(render_pass));
   surface_ptr->SubmitCompositorFrame(std::move(compositor_frame));
   // Make sure the parent connection gets the surface ID.
   wt_client1()->WaitForChangeCount(1);

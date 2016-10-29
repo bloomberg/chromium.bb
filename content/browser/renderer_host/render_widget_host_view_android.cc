@@ -1083,7 +1083,6 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  DCHECK(frame.delegated_frame_data);
   DCHECK(delegated_frame_host_);
 
   if (locks_on_frame_count_ > 0) {
@@ -1092,10 +1091,9 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     return;
   }
 
-  DCHECK(!frame.delegated_frame_data->render_pass_list.empty());
+  DCHECK(!frame.render_pass_list.empty());
 
-  cc::RenderPass* root_pass =
-      frame.delegated_frame_data->render_pass_list.back().get();
+  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
   current_surface_size_ = root_pass->output_rect.size();
   bool is_transparent = root_pass->has_transparent_background;
 
