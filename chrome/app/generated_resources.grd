@@ -14995,6 +14995,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_MERGE_KEY_CHAR_EVENTS_DESCRIPTION" desc="Description for the flag to enable/disable merging the key event with char event.">
         If disabled, Chrome will handle WM_KEY* and WM_CHAR separatedly.
       </message>
+      <message name="IDS_FLAGS_USE_WINRT_MIDI_API_NAME" desc="Name for the flag to use Windows Runtime MIDI API.">
+        Use Windows Runtime MIDI API
+      </message>
+      <message name="IDS_FLAGS_USE_WINRT_MIDI_API_DESCRIPTION" desc="Description for the flag to use Windows Runtime MIDI API.">
+        Use Windows Runtime MIDI API for WebMIDI (effective only on Windows 10 or later).
+      </message>
       <message name="IDS_FLAGS_DISABLE_WINRT_MIDI_API_NAME" desc="Name for the flag to disable Windows Runtime MIDI API.">
         Disable Windows Runtime MIDI API
       </message>

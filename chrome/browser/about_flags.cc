@@ -1683,6 +1683,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MERGE_KEY_CHAR_EVENTS_DESCRIPTION, kOsWin,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMergeKeyCharEvents,
                                switches::kDisableMergeKeyCharEvents)},
+    {"use-winrt-midi-api", IDS_FLAGS_USE_WINRT_MIDI_API_NAME,
+     IDS_FLAGS_USE_WINRT_MIDI_API_DESCRIPTION, kOsWin,
+     FEATURE_VALUE_TYPE(midi::features::kMidiManagerWinrt)},
 #endif  // OS_WIN
 #if BUILDFLAG(ENABLE_BACKGROUND)
     {"enable-push-api-background-mode", IDS_FLAGS_PUSH_API_BACKGROUND_MODE_NAME,
@@ -2036,11 +2039,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ARC_BOOT_COMPLETED_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
 #endif  // OS_CHROMEOS
-#if defined(OS_WIN)
-    {"disable-winrt-midi-api", IDS_FLAGS_DISABLE_WINRT_MIDI_API_NAME,
-     IDS_FLAGS_DISABLE_WINRT_MIDI_API_DESCRIPTION, kOsWin,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWinrtMidiApi)},
-#endif  // OS_WIN
     {"saveas-menu-text-experiment", IDS_FLAGS_SAVEAS_MENU_LABEL_EXPERIMENT_NAME,
      IDS_FLAGS_SAVEAS_MENU_LABEL_EXPERIMENT_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableSaveAsMenuLabelExperiment)},

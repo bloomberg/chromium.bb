@@ -12,9 +12,15 @@ namespace switches {
 const char kUseAndroidMidiApi[] = "use-android-midi-api";
 #endif
 
+}  // namespace switches
+
+namespace midi {
+namespace features {
+
 #if defined(OS_WIN)
-// Disable Windows Runtime Midi API for WebMIDI
-const char kDisableWinrtMidiApi[] = "disable-winrt-midi-api";
+const base::Feature kMidiManagerWinrt{"MidiManagerWinrt",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-}  // namespace switches
+}  // namespace features
+}  // namespace midi
