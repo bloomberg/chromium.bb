@@ -17,11 +17,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [23, 61, 85, 10],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [58, 45, 50, 26],
           "reason": "forced by layout"
@@ -35,10 +30,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutSVGText text id='target'",
       "reason": "full"

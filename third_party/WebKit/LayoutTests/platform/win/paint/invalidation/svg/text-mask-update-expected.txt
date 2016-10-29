@@ -17,11 +17,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [10, 2, 46, 22],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGText text id='text1'",
           "rect": [10, 2, 46, 22],
           "reason": "style change"
@@ -40,11 +35,6 @@
           "object": "LayoutSVGRect rect",
           "rect": [10, 32, 43, 18],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [10, 32, 43, 18],
-          "reason": "bounds change"
         }
       ]
     }
@@ -53,10 +43,6 @@
     {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGText text id='text1'",

@@ -15,25 +15,11 @@
           "object": "LayoutSVGPath polygon id='polygon'",
           "rect": [264, 218, 164, 107],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [265, 259, 163, 65],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [265, 219, 162, 105],
-          "reason": "bounds change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGPath polygon id='polygon'",
       "reason": "full"

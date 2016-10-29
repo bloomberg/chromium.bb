@@ -37,11 +37,6 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [10, 63, 306, 374],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGTSpan tspan",
           "rect": [10, 63, 306, 374],
           "reason": "forced by layout"
@@ -68,10 +63,6 @@
     {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGRoot (positioned) svg",
-      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGText text",

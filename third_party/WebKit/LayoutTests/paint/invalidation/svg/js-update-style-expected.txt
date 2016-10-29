@@ -30,20 +30,11 @@
           "object": "LayoutSVGContainer g",
           "rect": [6, 6, 158, 238],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [6, 6, 158, 238],
-          "reason": "bounds change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGContainer g",
       "reason": "style change"

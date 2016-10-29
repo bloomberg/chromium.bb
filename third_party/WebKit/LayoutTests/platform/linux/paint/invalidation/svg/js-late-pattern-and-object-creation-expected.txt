@@ -12,11 +12,6 @@
           "reason": "became visible"
         },
         {
-          "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [0, 15, 680, 364],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 247, 680, 132],
           "reason": "layoutObject insertion"
@@ -93,10 +88,6 @@
     {
       "object": "LayoutSVGRect rect",
       "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGRoot svg id='svg-root'",
-      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g id='content'",

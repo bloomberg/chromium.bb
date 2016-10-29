@@ -10,20 +10,11 @@
           "object": "LayoutSVGPath polygon id='polygon'",
           "rect": [264, 218, 164, 107],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [265, 219, 162, 105],
-          "reason": "became visible"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "became visible"
-    },
     {
       "object": "LayoutSVGPath polygon id='polygon'",
       "reason": "full"

@@ -1,18 +1,11 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
-        {
-          "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [59, 43, 95, 123],
-          "reason": "bounds change"
-        },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 143, 95, 23],
@@ -51,7 +44,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 43, 95, 23],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGTSpan tspan",
@@ -68,14 +61,30 @@
           "rect": [59, 43, 95, 23],
           "reason": "full"
         }
+      ],
+      "underPaintInvalidations": [
+        {
+          "x": 155,
+          "y": 55,
+          "oldPixel": "#FFFFFF",
+          "newPixel": "#008800"
+        },
+        {
+          "x": 155,
+          "y": 56,
+          "oldPixel": "#FFFFFF",
+          "newPixel": "#008800"
+        },
+        {
+          "x": 155,
+          "y": 57,
+          "oldPixel": "#FFFFFF",
+          "newPixel": "#008800"
+        }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot (positioned) svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGViewportContainer svg id='inner1'",
       "reason": "full"
@@ -114,7 +123,7 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='inner2'",

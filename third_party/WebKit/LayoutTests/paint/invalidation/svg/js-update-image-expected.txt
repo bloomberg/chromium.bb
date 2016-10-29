@@ -10,20 +10,11 @@
           "object": "LayoutSVGImage image id='image'",
           "rect": [0, 0, 75, 75],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [0, 0, 75, 75],
-          "reason": "became visible"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "became visible"
-    },
     {
       "object": "LayoutSVGImage image id='image'",
       "reason": "full"

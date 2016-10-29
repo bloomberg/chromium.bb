@@ -10,20 +10,11 @@
           "object": "LayoutSVGImage image",
           "rect": [8, 8, 200, 200],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [108, 8, 100, 200],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutSVGImage image",
       "reason": "full"

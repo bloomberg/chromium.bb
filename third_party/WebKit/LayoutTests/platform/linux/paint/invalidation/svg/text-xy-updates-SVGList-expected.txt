@@ -12,11 +12,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGRoot svg:svg",
-          "rect": [208, 13, 161, 19],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGText text id='ttt'",
           "rect": [208, 13, 161, 19],
           "reason": "full"
@@ -27,11 +22,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGRoot svg:svg",
-          "rect": [18, 193, 161, 19],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGText text id='ttt'",
           "rect": [18, 193, 161, 19],
           "reason": "full"
@@ -40,10 +30,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg:svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGText text id='ttt'",
       "reason": "full"

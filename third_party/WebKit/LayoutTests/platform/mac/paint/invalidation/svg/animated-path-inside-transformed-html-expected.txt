@@ -8,16 +8,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [187, 104, 310, 390],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [90, 83, 275, 248],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [203, 335, 121, 43],
           "reason": "forced by layout"
@@ -61,10 +51,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGRect rect id='rect'",
       "reason": "full"

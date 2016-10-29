@@ -12,19 +12,9 @@
           "reason": "SVG resource change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [40, 40, 120, 120],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 110, 110],
           "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [0, 0, 110, 110],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGEllipse circle id='circle'",
@@ -40,10 +30,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGContainer g",
       "reason": "SVG resource change"

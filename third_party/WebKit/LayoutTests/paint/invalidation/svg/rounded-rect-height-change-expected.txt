@@ -10,20 +10,11 @@
           "object": "LayoutSVGRect rect",
           "rect": [8, 8, 100, 200],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [8, 108, 100, 100],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutSVGRect rect",
       "reason": "bounds change"

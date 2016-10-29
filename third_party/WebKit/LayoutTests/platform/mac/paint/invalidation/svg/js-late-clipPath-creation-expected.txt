@@ -22,11 +22,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [334, 39, 466, 174],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [0, 0, 334, 500],
           "reason": "layoutObject insertion"
@@ -35,10 +30,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg id='svg-root'",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutSVGContainer g id='content'",
       "reason": "bounds change"

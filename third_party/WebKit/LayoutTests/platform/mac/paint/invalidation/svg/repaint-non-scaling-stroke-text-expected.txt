@@ -17,11 +17,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [9, 12, 48, 30],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGText text id='t'",
           "rect": [9, 12, 48, 30],
           "reason": "style change"
@@ -30,10 +25,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGContainer g",
       "reason": "bounds change"

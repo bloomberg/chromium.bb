@@ -78,7 +78,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   void paint(const PaintInfo&, const LayoutPoint&) const override;
 
   // Replaced objects often have contents to paint.
-  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
     return false;
   }
 

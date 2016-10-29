@@ -27,11 +27,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [50, 54, 561, 86],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutSVGTSpan tspan",
           "rect": [50, 54, 561, 86],
           "reason": "layoutObject insertion"
@@ -50,10 +45,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "became visible"
-    },
     {
       "object": "LayoutSVGContainer g",
       "reason": "became visible"

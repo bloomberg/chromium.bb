@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [174, 30, 126, 90],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [50, 30, 126, 90],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGPath path id='path'",
           "rect": [199, 49, 102, 52],
           "reason": "full"
@@ -30,10 +20,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGPath path id='path'",
       "reason": "full"

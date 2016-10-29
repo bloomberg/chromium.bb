@@ -54,7 +54,7 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect",

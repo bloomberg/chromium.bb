@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [0, 0, 154, 166],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 143, 95, 23],
           "reason": "forced by layout"
@@ -100,10 +95,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot (positioned) svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGViewportContainer svg id='inner1'",
       "reason": "full"

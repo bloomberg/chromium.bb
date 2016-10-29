@@ -27,11 +27,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [11, 11, 380, 180],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 285, 135],
           "reason": "forced by layout"
@@ -45,11 +40,6 @@
           "object": "LayoutView #document",
           "rect": [0, 135, 285, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [10, 10, 275, 125],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -139,7 +129,7 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect",

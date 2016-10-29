@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [7, 7, 736, 573],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [389, 37, 316, 82],
           "reason": "layoutObject insertion"
@@ -989,10 +984,6 @@
     {
       "object": "LayoutSVGHiddenContainer g id='oversizeContent'",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g id='tabgroupRect'",

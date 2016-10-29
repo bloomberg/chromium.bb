@@ -25,20 +25,11 @@
           "object": "LayoutSVGRect rect id='rect1'",
           "rect": [10, 10, 200, 100],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [120, 10, 110, 350],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutSVGContainer g id='box'",
       "reason": "bounds change"

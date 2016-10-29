@@ -17,28 +17,14 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [0, 40, 76, 36],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [-1, -1, 42, 42],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [40, 0, 36, 76],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutSVGContainer g id='group'",
       "reason": "full"

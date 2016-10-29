@@ -136,6 +136,11 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   LayoutRect localOverflowRectForPaintInvalidation() const override;
 
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
+    // The rule is the same as LayoutBox's instead of LayoutReplaced's.
+    return LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize();
+  }
+
   void mapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,
       TransformState&,

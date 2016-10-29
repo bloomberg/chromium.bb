@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [18, 18, 20, 30],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGRect rect id='move'",
           "rect": [28, 38, 10, 10],
           "reason": "full"
@@ -25,10 +20,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGRect rect id='move'",
       "reason": "full"

@@ -68,7 +68,6 @@ crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
 crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
-crbug.com/619103 [ Win ] paint/invalidation/svg/text-viewbox-rescale.html [ Pass Failure ]
 crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
 
 # TODO(fmalita): re-enable

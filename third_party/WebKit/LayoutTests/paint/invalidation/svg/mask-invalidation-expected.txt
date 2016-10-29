@@ -27,11 +27,6 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [50, 50, 453, 299],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [100, 100, 403, 249],
           "reason": "layoutObject insertion"
@@ -43,10 +38,6 @@
     {
       "object": "LayoutSVGRect rect",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGRect rect id='maskRect'",

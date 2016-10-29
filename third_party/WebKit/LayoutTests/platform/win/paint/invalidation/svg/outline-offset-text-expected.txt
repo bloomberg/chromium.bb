@@ -25,25 +25,11 @@
           "object": "LayoutSVGText text",
           "rect": [63, 25, 160, 114],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [118, 40, 130, 84],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [78, 40, 130, 84],
-          "reason": "bounds change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGText text",
       "reason": "full"

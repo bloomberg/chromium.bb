@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [0, 13, 402, 187],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [0, 0, 402, 163],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGContainer g id='text2g'",
           "rect": [0, 63, 402, 100],
           "reason": "full"
@@ -205,10 +195,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot (positioned) svg",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutSVGContainer g id='text1g'",
       "reason": "full"

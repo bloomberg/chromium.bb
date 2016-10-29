@@ -27,11 +27,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [16, 39, 784, 174],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [16, 39, 784, 174],
           "reason": "style change"
@@ -42,11 +37,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [334, 39, 466, 174],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [0, 0, 334, 500],
           "reason": "layoutObject insertion"
@@ -55,10 +45,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg id='svg-root'",
-      "reason": "became visible"
-    },
     {
       "object": "LayoutSVGContainer g id='content'",
       "reason": "became visible"
@@ -78,10 +64,6 @@
     {
       "object": "InlineTextBox 'Clipped. INVISIBLE.'",
       "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGRoot svg id='svg-root'",
-      "reason": "incremental"
     },
     {
       "object": "LayoutSVGContainer g id='content'",
