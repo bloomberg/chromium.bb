@@ -34,10 +34,12 @@ Running: complexScriptFormatting
 function formatted1() {
     var variable1 = 0;
 }
+
 function withComments() {
     // comment
     return "functionWithComments";
 }
+
 try {
     onmessage = function(event) {
         var source = event.data;
@@ -89,6 +91,7 @@ try {
     importScripts("UglifyJS/process.js");
     var process = exports;
 } catch (e) {}
+
 function formatted2() {
     var variable2 = 0;
 }

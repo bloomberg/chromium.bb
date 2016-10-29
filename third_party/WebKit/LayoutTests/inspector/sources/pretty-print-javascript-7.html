@@ -40,6 +40,12 @@ function test()
             var mappingQueries = ["||", "null", ";"];
             testJSFormatter("1||null;", mappingQueries, next);
         },
+
+        function squashMultipleNewlines(next)
+        {
+            var mappingQueries = ["a", "b"];
+            testJSFormatter("a();\n\n\n\n\n\n\n\n\nb();", mappingQueries, next);
+        },
     ]);
 }
 

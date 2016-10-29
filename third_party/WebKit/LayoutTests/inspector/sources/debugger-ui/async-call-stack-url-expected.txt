@@ -2,7 +2,7 @@ Tests that call stack sidebar contains correct urls for call frames.
 
 Set timer for test function.
 Script execution paused.
-f3unformatted-asy…s:formatted:11
+f3unformatted-asy…s:formatted:12
 setTimeout (async)
 f2unformatted-asy…js:formatted:8
 setTimeout (async)

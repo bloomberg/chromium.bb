@@ -69,3 +69,13 @@ Correct mapping for <||>
 Correct mapping for <null>
 Correct mapping for <;>
 
+Running: squashMultipleNewlines
+====== 8< ------
+a();
+
+b();
+
+------ >8 ======
+Correct mapping for <a>
+Correct mapping for <b>
+
