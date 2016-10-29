@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -44,7 +46,6 @@ const char* const kChromeSettingsSubPages[] = {
     chrome::kAutofillSubPage,
     chrome::kClearBrowserDataSubPage,
     chrome::kContentSettingsSubPage,
-    chrome::kContentSettingsExceptionsSubPage,
     chrome::kImportDataSubPage,
     chrome::kLanguageOptionsSubPage,
     chrome::kPasswordManagerSubPage,
@@ -181,6 +182,13 @@ std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
   for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++) {
     builtins.push_back(settings +
                        base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
+    builtins.push_back(
+        settings +
+        base::ASCIIToUTF16(
+            chrome::kDeprecatedOptionsContentSettingsExceptionsSubPage));
   }
 #endif
 

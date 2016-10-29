@@ -173,7 +173,7 @@
         </settings-subpage>
       </template>
 </if>
-      <template is="dom-if" route-path="/siteSettings">
+      <template is="dom-if" route-path="/content">
         <settings-subpage
             associated-control="[[$$('#site-settings-subpage-trigger')]]"
             id="site-settings"
@@ -183,13 +183,12 @@
         </settings-subpage>
       </template>
 
-      <template is="dom-if" route-path="/siteSettings/all" no-search>
+      <template is="dom-if" route-path="/content/all" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryAllSites}">
           <all-sites selected-site="{{selectedSite}}"></all-sites>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/automaticDownloads"
-          no-search>
+      <template is="dom-if" route-path="/content/automaticDownloads" no-search>
         <settings-subpage page-title="$i18n{siteSettingsAutomaticDownloads}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -199,7 +198,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/backgroundSync" no-search>
+      <template is="dom-if" route-path="/content/backgroundSync" no-search>
           no-search>
         <settings-subpage page-title="$i18n{siteSettingsBackgroundSync}">
           <button class="icon-help subpage-title-extra"
@@ -210,7 +209,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/camera" no-search>
+      <template is="dom-if" route-path="/content/camera" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryCamera}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -221,7 +220,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/cookies" no-search>
+      <template is="dom-if" route-path="/content/cookies" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -239,7 +238,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/images" no-search>
+      <template is="dom-if" route-path="/content/images" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -249,7 +248,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/location" no-search>
+      <template is="dom-if" route-path="/content/location" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryLocation}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -264,12 +263,12 @@
           <protocol-handlers></protocol-handlers>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/zoomLevels" no-search>
+      <template is="dom-if" route-path="/content/zoomLevels" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryZoomLevels}">
           <zoom-levels></zoom-levels>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/javascript" no-search>
+      <template is="dom-if" route-path="/content/javascript" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryJavascript}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -279,7 +278,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/keygen" no-search>
+      <template is="dom-if" route-path="/content/keygen" no-search>
         <settings-subpage page-title="$i18n{siteSettingsKeygen}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -289,7 +288,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/microphone" no-search>
+      <template is="dom-if" route-path="/content/microphone" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryMicrophone}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -300,7 +299,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/notifications" no-search>
+      <template is="dom-if" route-path="/content/notifications" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryNotifications}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -310,7 +309,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/flash" no-search>
+      <template is="dom-if" route-path="/content/flash" no-search>
         <settings-subpage page-title="$i18n{siteSettingsFlash}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -320,7 +319,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/popups" no-search>
+      <template is="dom-if" route-path="/content/popups" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -330,8 +329,7 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/unsandboxedPlugins"
-          no-search>
+      <template is="dom-if" route-path="/content/unsandboxedPlugins" no-search>
         <settings-subpage page-title="$i18n{siteSettingsUnsandboxedPlugins}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
@@ -341,12 +339,12 @@
           </site-settings-category>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/usbDevices" no-search>
+      <template is="dom-if" route-path="/content/usbDevices" no-search>
         <settings-subpage page-title="$i18n{siteSettingsUsbDevices}">
           <usb-devices></usb-devices>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteSettings/siteDetails" no-search>
+      <template is="dom-if" route-path="/content/siteDetails" no-search>
         <settings-subpage page-title="$i18n{siteSettingsSiteDetails}">
           <site-details site="[[selectedSite]]"></site-details>
         </settings-subpage>

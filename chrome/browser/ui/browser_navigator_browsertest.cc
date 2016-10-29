@@ -53,7 +53,7 @@ GURL GetSettingsURL() {
 }
 
 GURL GetContentSettingsURL() {
-  return GetSettingsURL().Resolve(chrome::kContentSettingsExceptionsSubPage);
+  return GetSettingsURL().Resolve(chrome::kContentSettingsSubPage);
 }
 
 GURL GetClearBrowsingDataURL() {

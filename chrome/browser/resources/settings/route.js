@@ -137,10 +137,10 @@ cr.define('settings', function() {
   r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
   r.CERTIFICATES = r.PRIVACY.createChild('/certificates');
 
-  r.SITE_SETTINGS = r.PRIVACY.createChild('/siteSettings');
+  r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
   r.SITE_SETTINGS_SITE_DETAILS =
-      r.SITE_SETTINGS_ALL.createChild('/siteSettings/siteDetails');
+      r.SITE_SETTINGS_ALL.createChild('/content/siteDetails');
 
   r.SITE_SETTINGS_HANDLERS = r.SITE_SETTINGS.createChild('/handlers');
 

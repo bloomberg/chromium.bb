@@ -326,9 +326,9 @@ extern const char kChromeUICastHost[];
 // Options sub-pages.
 extern const char kAutofillSubPage[];
 extern const char kClearBrowserDataSubPage[];
-extern const char kContentSettingsExceptionsSubPage[];
 extern const char kContentSettingsSubPage[];
 extern const char kCreateProfileSubPage[];
+extern const char kDeprecatedOptionsContentSettingsExceptionsSubPage[];
 extern const char kExtensionsSubPage[];
 extern const char kHandlerSettingsSubPage[];
 extern const char kImportDataSubPage[];
