@@ -691,6 +691,10 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 }
 
 - (void)goDelta:(int)delta {
+  // Store the navigation index at the start of this function, as |-goForward|
+  // and |-goBack| will incrementally reset |_previousNavigationIndex| each time
+  // they are called.
+  NSInteger previousNavigationIndex = self.currentNavigationIndex;
   if (delta < 0) {
     while ([self canGoBack] && delta < 0) {
       [self goBack];
@@ -702,6 +706,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
       --delta;
     }
   }
+  _previousNavigationIndex = previousNavigationIndex;
 }
 
 - (void)goToEntry:(CRWSessionEntry*)entry {
