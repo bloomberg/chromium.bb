@@ -12,6 +12,7 @@
 function test()
 {
     var delegate = new WebInspector.FilteredUISourceCodeListDelegate();
+    delegate.populate();
 
     InspectorTest.runTestSuite([
         function testRenderingInNameOnly(next)
