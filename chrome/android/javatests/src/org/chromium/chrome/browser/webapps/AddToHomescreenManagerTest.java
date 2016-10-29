@@ -70,12 +70,6 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     private static final String MANIFEST_PATH = "/chrome/test/data/banners/manifest_test_page.html";
     private static final String MANIFEST_TITLE = "Web app banner test page";
 
-    private static final String MANIFEST_TIMES_OUT_NO_SERVICE_WORKER_HTML =
-            UrlUtils.encodeHtmlDataUri("<html><head>"
-                    + "<title>" + MANIFEST_TITLE + "</title>"
-                    + "<link rel=\"manifest\" href=\"../../../../slow?10000\" />"
-                    + "</head></html>");
-
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
         public Intent mBroadcastedIntent;
 
