@@ -10,6 +10,7 @@
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/Forward.h"
 #include "components/ui_devtools/Protocol.h"
+#include "components/ui_devtools/devtools_base_agent.h"
 
 namespace ui {
 namespace devtools {
@@ -27,7 +28,9 @@ class UiDevToolsClient : public protocol::FrontendChannel {
   UiDevToolsClient(const std::string& name, UiDevToolsServer* server);
   ~UiDevToolsClient() override;
 
-  void AddDOMBackend(std::unique_ptr<protocol::DOM::Backend> dom_backend);
+  void AddAgent(std::unique_ptr<UiDevToolsAgent> agent);
+  // TODO(mhashmi): Remove when ash is updated to use the new base agent
+  void AddDOMBackend(std::unique_ptr<protocol::DOM::Backend> backend);
   void Dispatch(const std::string& data);
 
   bool connected() const;
@@ -43,6 +46,7 @@ class UiDevToolsClient : public protocol::FrontendChannel {
   std::string name_;
   int connection_id_;
 
+  std::vector<std::unique_ptr<UiDevToolsAgent>> agents_;
   std::unique_ptr<protocol::DOM::Backend> dom_backend_;
   protocol::UberDispatcher dispatcher_;
   UiDevToolsServer* server_;
