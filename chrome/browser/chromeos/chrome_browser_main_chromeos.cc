@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_connect_delegate_chromeos.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
+#include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -412,6 +413,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   DeviceOAuth2TokenServiceFactory::Initialize();
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
+  network_throttling_observer_.reset(
+      new NetworkThrottlingObserver(g_browser_process->local_state()));
 
   arc_service_launcher_.reset(new arc::ArcServiceLauncher());
   arc_service_launcher_->Initialize();
@@ -800,6 +803,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_prefs_.reset();
   renderer_freezer_.reset();
   wake_on_wifi_manager_.reset();
+  network_throttling_observer_.reset();
   ScreenLocker::ShutDownClass();
   keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();

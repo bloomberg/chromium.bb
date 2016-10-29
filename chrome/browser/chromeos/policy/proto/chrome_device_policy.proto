@@ -743,6 +743,12 @@ message LoginVideoCaptureAllowedUrlsProto {
   repeated string urls = 1;
 }
 
+message NetworkThrottlingEnabledProto {
+  optional bool enabled = 1 [default = false];
+  optional int32 upload_rate_kbits = 2 [default = 0];
+  optional int32 download_rate_kbits = 3 [default = 0];
+}
+
 // A list of app-ids to install from the webstore on the login page.
 message LoginAppsProto {
   repeated string login_apps = 1;
@@ -801,4 +807,5 @@ message ChromeDeviceSettingsProto {
   optional LoginVideoCaptureAllowedUrlsProto login_video_capture_allowed_urls =
       45;
   optional LoginAppsProto login_apps = 46;
+  optional NetworkThrottlingEnabledProto network_throttling = 47;
 }

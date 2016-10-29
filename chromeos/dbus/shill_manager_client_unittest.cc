@@ -52,6 +52,21 @@ void ExpectStringArgumentsFollowedByObjectPath(
   EXPECT_FALSE(reader->HasMoreData());
 }
 
+void ExpectThrottlingArguments(bool throttling_enabled_expected,
+                               uint32_t upload_rate_kbits_expected,
+                               uint32_t download_rate_kbits_expected,
+                               dbus::MessageReader* reader) {
+  bool throttling_enabled_actual;
+  uint32_t upload_rate_kbits_actual;
+  uint32_t download_rate_kbits_actual;
+  ASSERT_TRUE(reader->PopBool(&throttling_enabled_actual));
+  EXPECT_EQ(throttling_enabled_actual, throttling_enabled_expected);
+  ASSERT_TRUE(reader->PopUint32(&upload_rate_kbits_actual));
+  EXPECT_EQ(upload_rate_kbits_expected, upload_rate_kbits_actual);
+  ASSERT_TRUE(reader->PopUint32(&download_rate_kbits_actual));
+  EXPECT_EQ(download_rate_kbits_expected, download_rate_kbits_actual);
+  EXPECT_FALSE(reader->HasMoreData());
+}
 
 }  // namespace
 
@@ -242,6 +257,30 @@ TEST_F(ShillManagerClientTest, EnableTechnology) {
   client_->EnableTechnology(shill::kTypeWifi,
                             mock_closure.GetCallback(),
                             mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ShillManagerClientTest, NetworkThrottling) {
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  // Set expectations.
+  const bool enabled = true;
+  const uint32_t upload_rate = 1200;
+  const uint32_t download_rate = 2000;
+  PrepareForMethodCall(shill::kSetNetworkThrottlingFunction,
+                       base::Bind(&ExpectThrottlingArguments, enabled,
+                                  upload_rate, download_rate),
+                       response.get());
+  // Call method.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
+  client_->SetNetworkThrottlingStatus(enabled, upload_rate, download_rate,
+                                      mock_closure.GetCallback(),
+                                      mock_error_callback.GetCallback());
   EXPECT_CALL(mock_closure, Run()).Times(1);
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 

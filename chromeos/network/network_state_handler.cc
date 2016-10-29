@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -382,6 +383,18 @@ void NetworkStateHandler::SetCheckPortalList(
 void NetworkStateHandler::SetWakeOnLanEnabled(bool enabled) {
   NET_LOG_EVENT("SetWakeOnLanEnabled", enabled ? "true" : "false");
   shill_property_handler_->SetWakeOnLanEnabled(enabled);
+}
+
+void NetworkStateHandler::SetNetworkThrottlingStatus(
+    bool enabled,
+    uint32_t upload_rate_kbits,
+    uint32_t download_rate_kbits) {
+  NET_LOG_EVENT("SetNetworkThrottlingStatus",
+                enabled ? ("true :" + base::IntToString(upload_rate_kbits) +
+                           ", " + base::IntToString(download_rate_kbits))
+                        : "false");
+  shill_property_handler_->SetNetworkThrottlingStatus(
+      enabled, upload_rate_kbits, download_rate_kbits);
 }
 
 const NetworkState* NetworkStateHandler::GetEAPForEthernet(

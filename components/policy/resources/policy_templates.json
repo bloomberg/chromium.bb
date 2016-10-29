@@ -139,7 +139,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 349
+#   For your editing convenience: highest ID currently used: 350
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8786,6 +8786,44 @@
       'example_value': True,
       'tags': [],
       'id': 327,
+    },
+    {
+      'name': 'NetworkThrottlingEnabled',
+      'device_only': True,
+      'caption': '''Enables throttling network bandwidth''',
+      'desc': '''Allows choosing whether network throttling is enabled or not.
+      This applies to all users, and to all interfaces on the device. Once set,
+      the throttling persists until the policy is changed to disable it.
+
+      If set to false, there is no throttling.
+      If set to true, the system is throttled to achieve the provided upload and download rates (in kbits/s).''',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'enabled': {
+            'description': 'A boolean flag indicating if throttling is enabled.',
+            'type': 'boolean'
+          },
+          'upload_rate_kbits': {
+            'description': 'Desired upload rate in kbits/s.',
+            'type': 'integer'
+          },
+          'download_rate_kbits': {
+            'description': 'Desired download rate in kbits/s.',
+            'type': 'integer'
+          }
+        },
+        'required': ['enabled', 'upload_rate_kbits', 'download_rate_kbits']
+      },
+      'supported_on': ['chrome_os:56-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [{'enabled': 'true', 'upload_rate_kbits': '5600', 'download_rate_kbits': '5600'}],
+      'tags': [],
+      'id': 350,
     },
     {
       'name': 'LoginVideoCaptureAllowedUrls',

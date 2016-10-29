@@ -229,6 +229,18 @@ void ShillPropertyHandler::SetWakeOnLanEnabled(bool enabled) {
                  network_handler::ErrorCallback()));
 }
 
+void ShillPropertyHandler::SetNetworkThrottlingStatus(
+    bool throttling_enabled,
+    uint32_t upload_rate_kbits,
+    uint32_t download_rate_kbits) {
+  shill_manager_->SetNetworkThrottlingStatus(
+      throttling_enabled, upload_rate_kbits, download_rate_kbits,
+      base::Bind(&base::DoNothing),
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 "SetNetworkThrottlingStatus failed", "Manager",
+                 network_handler::ErrorCallback()));
+}
+
 void ShillPropertyHandler::RequestScan() const {
   shill_manager_->RequestScan(
       "", base::Bind(&base::DoNothing),

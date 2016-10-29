@@ -586,6 +586,13 @@ void FakeShillManagerClient::SetBestServiceToConnect(
   best_service_ = service_path;
 }
 
+void FakeShillManagerClient::SetNetworkThrottlingStatus(
+    bool enabled,
+    uint32_t upload_rate_kbits,
+    uint32_t download_rate_kbits,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {}
+
 void FakeShillManagerClient::SetupDefaultEnvironment() {
   // Bail out from setup if there is no message loop. This will be the common
   // case for tests that are not testing Shill.

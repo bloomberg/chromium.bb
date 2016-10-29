@@ -224,6 +224,17 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
   virtual void ConnectToBestServices(const base::Closure& callback,
                                      const ErrorCallback& error_callback) = 0;
 
+  // Enable or disable network bandwidth throttling, on all interfaces on the
+  // system. If |enabled| is true, |upload_rate_kbits| and |download_rate_kbits|
+  // are the desired rates (in kbits/s) to throttle to. If |enabled| is false,
+  // throttling is off, and the rates are ignored.
+  virtual void SetNetworkThrottlingStatus(
+      bool enabled,
+      uint32_t upload_rate_kbits,
+      uint32_t download_rate_kbits,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
   // Returns an interface for testing (stub only), or returns NULL.
   virtual TestInterface* GetTestInterface() = 0;
 
