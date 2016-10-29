@@ -404,7 +404,6 @@ crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [
 crbug.com/520170 [ Win ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/520174 fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass ]
-crbug.com/520184 http/tests/history/frameset-repeated-name.html [ Failure Pass ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]

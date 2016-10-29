@@ -10270,4 +10270,18 @@ TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
   webViewHelper.webView()->handleInputEvent(endEvent);
 }
 
+TEST_F(WebFrameTest, UniqueNames) {
+  registerMockedHttpURLLoad("frameset-repeated-name.html");
+  registerMockedHttpURLLoad("frameset-dest.html");
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initializeAndLoad(m_baseURL + "frameset-repeated-name.html");
+  Frame* mainFrame = webViewHelper.webView()->mainFrameImpl()->frame();
+  HashSet<AtomicString> names;
+  for (Frame* frame = mainFrame->tree().firstChild(); frame;
+       frame = frame->tree().traverseNext()) {
+    EXPECT_TRUE(names.add(frame->tree().uniqueName()).isNewEntry);
+  }
+  EXPECT_EQ(10u, names.size());
+}
+
 }  // namespace blink
