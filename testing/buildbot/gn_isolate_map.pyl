@@ -804,6 +804,14 @@
       "../../",
     ],
   },
+  "cc_perftests": {
+    "label": "//cc:cc_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "cc_perftests",
+    ],
+  },
   "mus_ime_unittests": {
     "label": "//services/ui/ime:mus_ime_unittests",
     "type": "windowed_test_launcher",
