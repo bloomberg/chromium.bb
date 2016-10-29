@@ -4,26 +4,19 @@
 
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 
-#include <bitset>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_install_error_menu_item_id_provider.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -67,69 +60,6 @@ namespace {
 static const int kIconSize = extension_misc::EXTENSION_ICON_SMALL;
 
 }  // namespace
-
-// ExtensionDisabledDialogDelegate --------------------------------------------
-
-class ExtensionDisabledDialogDelegate {
- public:
-  ExtensionDisabledDialogDelegate(
-      ExtensionService* service,
-      std::unique_ptr<ExtensionInstallPrompt> install_ui,
-      const Extension* extension);
-
- private:
-  ~ExtensionDisabledDialogDelegate();
-
-  void InstallPromptDone(ExtensionInstallPrompt::Result result);
-
-  // The UI for showing the install dialog when enabling.
-  std::unique_ptr<ExtensionInstallPrompt> install_ui_;
-
-  ExtensionService* service_;
-  const Extension* extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionDisabledDialogDelegate);
-};
-
-ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
-    ExtensionService* service,
-    std::unique_ptr<ExtensionInstallPrompt> install_ui,
-    const Extension* extension)
-    : install_ui_(std::move(install_ui)),
-      service_(service),
-      extension_(extension) {
-  ExtensionInstallPrompt::PromptType type =
-      ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
-          service_->profile(), extension);
-  // Unretained() is safe since this object manages its own lifetime and deletes
-  // itself only once the prompt finishes.
-  install_ui_->ShowDialog(
-      base::Bind(&ExtensionDisabledDialogDelegate::InstallPromptDone,
-                 base::Unretained(this)),
-      extension_, nullptr,
-      base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-}
-
-ExtensionDisabledDialogDelegate::~ExtensionDisabledDialogDelegate() {
-}
-
-void ExtensionDisabledDialogDelegate::InstallPromptDone(
-    ExtensionInstallPrompt::Result result) {
-  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
-    service_->GrantPermissionsAndEnableExtension(extension_);
-  } else {
-    const char* histogram_name =
-        result == ExtensionInstallPrompt::Result::USER_CANCELED
-            ? "ReEnableCancel"
-            : "ReEnableAbort";
-    ExtensionService::RecordPermissionMessagesHistogram(extension_,
-                                                        histogram_name);
-    // Do nothing. The extension will remain disabled.
-  }
-
-  delete this;
-}
 
 // ExtensionDisabledGlobalError -----------------------------------------------
 
@@ -471,16 +401,6 @@ void AddExtensionDisabledError(ExtensionService* service,
                                   service->AsWeakPtr(),
                                   extension->id(),
                                   is_remote_install));
-}
-
-void ShowExtensionDisabledDialog(ExtensionService* service,
-                                 content::WebContents* web_contents,
-                                 const Extension* extension) {
-  std::unique_ptr<ExtensionInstallPrompt> install_ui(
-      new ExtensionInstallPrompt(web_contents));
-  // This object manages its own lifetime.
-  new ExtensionDisabledDialogDelegate(service, std::move(install_ui),
-                                      extension);
 }
 
 }  // namespace extensions
