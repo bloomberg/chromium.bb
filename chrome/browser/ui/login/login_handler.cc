@@ -48,6 +48,10 @@
 #include "extensions/browser/view_type_utils.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
+#endif
+
 using autofill::PasswordForm;
 using content::BrowserThread;
 using content::NavigationController;
@@ -332,6 +336,10 @@ void LoginHandler::AddObservers() {
                   content::NotificationService::AllBrowserContextsAndSources());
   registrar_->Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
                   content::NotificationService::AllBrowserContextsAndSources());
+
+#if !defined(OS_ANDROID)
+  dialog_helper_.reset(new AppModalDialogHelper(GetWebContentsForLogin()));
+#endif
 }
 
 void LoginHandler::RemoveObservers() {
@@ -439,6 +447,9 @@ void LoginHandler::CloseContentsDeferred() {
   CloseDialog();
   if (interstitial_delegate_)
     interstitial_delegate_->Proceed();
+#if !defined(OS_ANDROID)
+  dialog_helper_.reset();
+#endif
 }
 
 // static
