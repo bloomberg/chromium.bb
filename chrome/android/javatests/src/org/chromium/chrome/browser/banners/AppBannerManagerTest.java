@@ -21,7 +21,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -475,10 +474,9 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
                 WEB_APP_SHORT_TITLE);
     }
 
-    /*@SmallTest
+    @SmallTest
     @Feature({"AppBanners"})
-    @RetryOnFailure*/
-    @DisabledTest(message = "http://crbug.com/660237")
+    @RetryOnFailure
     public void testWebAppSplashscreenIsDownloaded() throws Exception {
         // Sets the overriden factory to observer splash screen update.
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
