@@ -12,7 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/browser_thread.h"
 

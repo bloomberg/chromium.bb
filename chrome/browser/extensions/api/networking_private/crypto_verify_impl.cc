@@ -15,7 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
-#include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/api/networking_private/networking_private_service_client.h"

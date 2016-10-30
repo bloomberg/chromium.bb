@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 
 #include <stddef.h>
 

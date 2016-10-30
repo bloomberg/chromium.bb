@@ -29,7 +29,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 #include "chrome/utility/media_galleries/itunes_pref_parser_win.h"
 #include "components/wifi/wifi_service.h"
 #endif  // defined(OS_WIN)

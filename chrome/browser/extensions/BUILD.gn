@@ -1058,6 +1058,16 @@ static_library("extensions") {
     deps += [ "//components/wifi" ]
   }
 
+  if (is_win || is_mac || is_chromeos) {
+    sources += [
+      "api/networking_private/networking_private_crypto.cc",
+      "api/networking_private/networking_private_crypto.h",
+    ]
+
+    # networking_private_crypto.cc depends on boringssl.
+    public_deps += [ "//third_party/boringssl" ]
+  }
+
   if (is_win) {
     deps += [
       "//third_party/iaccessible2",

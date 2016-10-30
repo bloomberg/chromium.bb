@@ -352,15 +352,6 @@ static_library("common") {
       "media_galleries/pmp_constants.h",
     ]
   }
-  if (is_win || is_mac || is_chromeos) {
-    sources += [
-      "extensions/api/networking_private/networking_private_crypto.cc",
-      "extensions/api/networking_private/networking_private_crypto.h",
-    ]
-
-    # networking_private_crypto.cc depends on boringssl.
-    public_deps += [ "//third_party/boringssl" ]
-  }
   if (is_mac) {
     public_deps += [ ":app_mode_app_support" ]
   }

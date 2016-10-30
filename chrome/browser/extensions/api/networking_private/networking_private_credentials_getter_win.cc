@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
