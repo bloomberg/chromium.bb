@@ -21,6 +21,8 @@ blink_core_sources("layout") {
     "CounterNode.h",
     "DepthOrderedLayoutObjectList.cpp",
     "DepthOrderedLayoutObjectList.h",
+    "FlexibleBoxAlgorithm.cpp",
+    "FlexibleBoxAlgorithm.h",
     "FloatingObjects.cpp",
     "FloatingObjects.h",
     "FragmentainerIterator.cpp",
