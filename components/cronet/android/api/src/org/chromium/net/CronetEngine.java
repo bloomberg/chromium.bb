@@ -8,7 +8,6 @@ import android.content.Context;
 import android.net.http.HttpResponseCache;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
@@ -31,10 +30,6 @@ public abstract class CronetEngine {
     // NOTE(kapishnikov): In order to avoid breaking the existing API clients, all future methods
     // added to this class and other API classes must have default implementation.
     public static class Builder {
-        // The class name of the Cronet Engine Builder implementation.
-        private static final String CRONET_ENGINE_BUILDER_IMPL =
-                "org.chromium.net.impl.CronetEngineBuilderImpl";
-
         /**
          * A class which provides a method for loading the cronet native library. Apps needing to
          * implement custom library loading logic can inherit from this class and pass an instance
@@ -61,19 +56,7 @@ public abstract class CronetEngine {
          * @param context Android {@link Context} for engine to use.
          */
         public Builder(Context context) {
-            try {
-                Class<? extends ICronetEngineBuilder> delegateImplClass =
-                        Class.forName(CRONET_ENGINE_BUILDER_IMPL)
-                                .asSubclass(ICronetEngineBuilder.class);
-                Constructor<? extends ICronetEngineBuilder> ctor =
-                        delegateImplClass.getConstructor(Context.class);
-                mBuilderDelegate = ctor.newInstance(context);
-            } catch (Exception e) {
-                throw new RuntimeException(
-                        "Unable to construct the implementation of the Cronet Engine Builder: "
-                                + CRONET_ENGINE_BUILDER_IMPL,
-                        e);
-            }
+            mBuilderDelegate = ImplLoader.load(context);
         }
 
         /**
