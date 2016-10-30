@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_
-#define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_BRIDGE_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_BRIDGE_H_
 
 #include <map>
 #include <memory>
@@ -30,18 +30,19 @@ namespace syncer {
 class ModelTypeChangeProcessor;
 class SyncError;
 
-// USS service implementation for DEVICE_INFO model type. Handles storage of
+// Sync bridge implementation for DEVICE_INFO model type. Handles storage of
 // device info and associated sync metadata, applying/merging foreign changes,
 // and allows public read access.
-class DeviceInfoService : public ModelTypeSyncBridge, public DeviceInfoTracker {
+class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
+                             public DeviceInfoTracker {
  public:
   typedef base::Callback<void(const ModelTypeStore::InitCallback& callback)>
       StoreFactoryFunction;
 
-  DeviceInfoService(LocalDeviceInfoProvider* local_device_info_provider,
-                    const StoreFactoryFunction& callback,
-                    const ChangeProcessorFactory& change_processor_factory);
-  ~DeviceInfoService() override;
+  DeviceInfoSyncBridge(LocalDeviceInfoProvider* local_device_info_provider,
+                       const StoreFactoryFunction& callback,
+                       const ChangeProcessorFactory& change_processor_factory);
+  ~DeviceInfoSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
@@ -67,7 +68,7 @@ class DeviceInfoService : public ModelTypeSyncBridge, public DeviceInfoTracker {
   int CountActiveDevices() const override;
 
  private:
-  friend class DeviceInfoServiceTest;
+  friend class DeviceInfoSyncBridgeTest;
 
   // Cache of all syncable and local data, stored by device cache guid.
   using ClientIdToSpecifics =
@@ -150,9 +151,9 @@ class DeviceInfoService : public ModelTypeSyncBridge, public DeviceInfoTracker {
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceInfoService);
+  DISALLOW_COPY_AND_ASSIGN(DeviceInfoSyncBridge);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_BRIDGE_H_

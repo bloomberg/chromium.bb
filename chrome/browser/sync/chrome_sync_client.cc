@@ -430,7 +430,7 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
       return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetDeviceInfoService()
+          ->GetDeviceInfoSyncBridge()
           ->AsWeakPtr();
     default:
       NOTREACHED();

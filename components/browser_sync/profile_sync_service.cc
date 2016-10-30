@@ -45,7 +45,7 @@
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/system_encryptor.h"
 #include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/device_info_service.h"
+#include "components/sync/device_info/device_info_sync_bridge.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/backend_migrator.h"
@@ -95,7 +95,7 @@ using syncer::ChangeProcessor;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
 using syncer::DataTypeStatusTable;
-using syncer::DeviceInfoService;
+using syncer::DeviceInfoSyncBridge;
 using syncer::DeviceInfoSyncService;
 using syncer::JsBackend;
 using syncer::JsController;
@@ -292,7 +292,7 @@ void ProfileSyncService::Initialize() {
     // TODO(skym): Stop creating leveldb files when signed out.
     // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
     // as the Local State file is guaranteed to be UTF-8.
-    device_info_service_ = base::MakeUnique<DeviceInfoService>(
+    device_info_service_ = base::MakeUnique<DeviceInfoSyncBridge>(
         local_device_.get(),
         base::Bind(&ModelTypeStore::CreateStore, syncer::DEVICE_INFO,
                    directory_path_.Append(base::FilePath(kLevelDBFolderName))
@@ -2370,7 +2370,7 @@ syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
   return device_info_sync_service_.get();
 }
 
-syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoService() {
+syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoSyncBridge() {
   return device_info_service_.get();
 }
 

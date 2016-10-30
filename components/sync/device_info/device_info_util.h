@@ -16,7 +16,7 @@ class DeviceInfoSpecifics;
 namespace syncer {
 
 // This class contains constants and static helper functions that are shared
-// between DeviceInfoSyncService and DeviceInfoService.
+// between DeviceInfoSyncService and DeviceInfoSyncBridge.
 class DeviceInfoUtil {
  public:
   // The prefix to be appended before the cache guid when creating tags. This is

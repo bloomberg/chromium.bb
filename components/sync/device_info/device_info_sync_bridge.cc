@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/device_info/device_info_service.h"
+#include "components/sync/device_info/device_info_sync_bridge.h"
 
 #include <stdint.h>
 
@@ -84,7 +84,7 @@ std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
 
 }  // namespace
 
-DeviceInfoService::DeviceInfoService(
+DeviceInfoSyncBridge::DeviceInfoSyncBridge(
     LocalDeviceInfoProvider* local_device_info_provider,
     const StoreFactoryFunction& callback,
     const ChangeProcessorFactory& change_processor_factory)
@@ -97,23 +97,23 @@ DeviceInfoService::DeviceInfoService(
   if (local_device_info_provider->GetLocalDeviceInfo()) {
     OnProviderInitialized();
   } else {
-    subscription_ =
-        local_device_info_provider->RegisterOnInitializedCallback(base::Bind(
-            &DeviceInfoService::OnProviderInitialized, base::Unretained(this)));
+    subscription_ = local_device_info_provider->RegisterOnInitializedCallback(
+        base::Bind(&DeviceInfoSyncBridge::OnProviderInitialized,
+                   base::Unretained(this)));
   }
 
   callback.Run(
-      base::Bind(&DeviceInfoService::OnStoreCreated, base::AsWeakPtr(this)));
+      base::Bind(&DeviceInfoSyncBridge::OnStoreCreated, base::AsWeakPtr(this)));
 }
 
-DeviceInfoService::~DeviceInfoService() {}
+DeviceInfoSyncBridge::~DeviceInfoSyncBridge() {}
 
 std::unique_ptr<MetadataChangeList>
-DeviceInfoService::CreateMetadataChangeList() {
+DeviceInfoSyncBridge::CreateMetadataChangeList() {
   return base::MakeUnique<SimpleMetadataChangeList>();
 }
 
-SyncError DeviceInfoService::MergeSyncData(
+SyncError DeviceInfoSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
   DCHECK(has_provider_initialized_);
@@ -122,7 +122,7 @@ SyncError DeviceInfoService::MergeSyncData(
   // Local data should typically be near empty, with the only possible value
   // corresponding to this device. This is because on signout all device info
   // data is blown away. However, this simplification is being ignored here and
-  // a full difference is going to be calculated to explore what other service
+  // a full difference is going to be calculated to explore what other bridge
   // implementations may look like.
   std::set<std::string> local_guids_to_put;
   for (const auto& kv : all_data_) {
@@ -167,7 +167,7 @@ SyncError DeviceInfoService::MergeSyncData(
   return SyncError();
 }
 
-SyncError DeviceInfoService::ApplySyncChanges(
+SyncError DeviceInfoSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   DCHECK(has_provider_initialized_);
@@ -199,8 +199,8 @@ SyncError DeviceInfoService::ApplySyncChanges(
   return SyncError();
 }
 
-void DeviceInfoService::GetData(StorageKeyList storage_keys,
-                                DataCallback callback) {
+void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
+                                   DataCallback callback) {
   auto batch = base::MakeUnique<MutableDataBatch>();
   for (const auto& key : storage_keys) {
     const auto& iter = all_data_.find(key);
@@ -212,7 +212,7 @@ void DeviceInfoService::GetData(StorageKeyList storage_keys,
   callback.Run(SyncError(), std::move(batch));
 }
 
-void DeviceInfoService::GetAllData(DataCallback callback) {
+void DeviceInfoSyncBridge::GetAllData(DataCallback callback) {
   auto batch = base::MakeUnique<MutableDataBatch>();
   for (const auto& kv : all_data_) {
     batch->Put(kv.first, CopyToEntityData(*kv.second));
@@ -220,17 +220,17 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
   callback.Run(SyncError(), std::move(batch));
 }
 
-std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
+std::string DeviceInfoSyncBridge::GetClientTag(const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_device_info());
   return DeviceInfoUtil::SpecificsToTag(entity_data.specifics.device_info());
 }
 
-std::string DeviceInfoService::GetStorageKey(const EntityData& entity_data) {
+std::string DeviceInfoSyncBridge::GetStorageKey(const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_device_info());
   return entity_data.specifics.device_info().cache_guid();
 }
 
-void DeviceInfoService::DisableSync() {
+void DeviceInfoSyncBridge::DisableSync() {
   // TODO(skym, crbug.com/659263): Would it be reasonable to pulse_timer_.Stop()
   // or subscription_.reset() here?
 
@@ -248,18 +248,18 @@ void DeviceInfoService::DisableSync() {
     }
     store_->CommitWriteBatch(
         std::move(batch),
-        base::Bind(&DeviceInfoService::OnCommit, base::AsWeakPtr(this)));
+        base::Bind(&DeviceInfoSyncBridge::OnCommit, base::AsWeakPtr(this)));
 
     all_data_.clear();
     NotifyObservers();
   }
 }
 
-bool DeviceInfoService::IsSyncing() const {
+bool DeviceInfoSyncBridge::IsSyncing() const {
   return !all_data_.empty();
 }
 
-std::unique_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
+std::unique_ptr<DeviceInfo> DeviceInfoSyncBridge::GetDeviceInfo(
     const std::string& client_id) const {
   const ClientIdToSpecifics::const_iterator iter = all_data_.find(client_id);
   if (iter == all_data_.end()) {
@@ -268,8 +268,8 @@ std::unique_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
   return SpecificsToModel(*iter->second);
 }
 
-std::vector<std::unique_ptr<DeviceInfo>> DeviceInfoService::GetAllDeviceInfo()
-    const {
+std::vector<std::unique_ptr<DeviceInfo>>
+DeviceInfoSyncBridge::GetAllDeviceInfo() const {
   std::vector<std::unique_ptr<DeviceInfo>> list;
   for (ClientIdToSpecifics::const_iterator iter = all_data_.begin();
        iter != all_data_.end(); ++iter) {
@@ -278,24 +278,24 @@ std::vector<std::unique_ptr<DeviceInfo>> DeviceInfoService::GetAllDeviceInfo()
   return list;
 }
 
-void DeviceInfoService::AddObserver(Observer* observer) {
+void DeviceInfoSyncBridge::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void DeviceInfoService::RemoveObserver(Observer* observer) {
+void DeviceInfoSyncBridge::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-int DeviceInfoService::CountActiveDevices() const {
+int DeviceInfoSyncBridge::CountActiveDevices() const {
   return CountActiveDevices(Time::Now());
 }
 
-void DeviceInfoService::NotifyObservers() {
+void DeviceInfoSyncBridge::NotifyObservers() {
   for (auto& observer : observers_)
     observer.OnDeviceInfoChange();
 }
 
-void DeviceInfoService::StoreSpecifics(
+void DeviceInfoSyncBridge::StoreSpecifics(
     std::unique_ptr<DeviceInfoSpecifics> specifics,
     WriteBatch* batch) {
   const std::string guid = specifics->cache_guid();
@@ -303,8 +303,8 @@ void DeviceInfoService::StoreSpecifics(
   all_data_[guid] = std::move(specifics);
 }
 
-bool DeviceInfoService::DeleteSpecifics(const std::string& guid,
-                                        WriteBatch* batch) {
+bool DeviceInfoSyncBridge::DeleteSpecifics(const std::string& guid,
+                                           WriteBatch* batch) {
   ClientIdToSpecifics::const_iterator iter = all_data_.find(guid);
   if (iter != all_data_.end()) {
     store_->DeleteData(batch, guid);
@@ -315,8 +315,8 @@ bool DeviceInfoService::DeleteSpecifics(const std::string& guid,
   }
 }
 
-void DeviceInfoService::OnProviderInitialized() {
-  // Now that the provider has initialized, remove the subscription. The service
+void DeviceInfoSyncBridge::OnProviderInitialized() {
+  // Now that the provider has initialized, remove the subscription. The bridge
   // should only need to give the processor metadata upon initialization. If
   // sync is disabled and enabled, our provider will try to retrigger this
   // event, but we do not want to send any more metadata to the processor.
@@ -326,19 +326,21 @@ void DeviceInfoService::OnProviderInitialized() {
   LoadMetadataIfReady();
 }
 
-void DeviceInfoService::OnStoreCreated(Result result,
-                                       std::unique_ptr<ModelTypeStore> store) {
+void DeviceInfoSyncBridge::OnStoreCreated(
+    Result result,
+    std::unique_ptr<ModelTypeStore> store) {
   if (result == Result::SUCCESS) {
     std::swap(store_, store);
-    store_->ReadAllData(
-        base::Bind(&DeviceInfoService::OnReadAllData, base::AsWeakPtr(this)));
+    store_->ReadAllData(base::Bind(&DeviceInfoSyncBridge::OnReadAllData,
+                                   base::AsWeakPtr(this)));
   } else {
     ReportStartupErrorToSync("ModelTypeStore creation failed.");
   }
 }
 
-void DeviceInfoService::OnReadAllData(Result result,
-                                      std::unique_ptr<RecordList> record_list) {
+void DeviceInfoSyncBridge::OnReadAllData(
+    Result result,
+    std::unique_ptr<RecordList> record_list) {
   if (result != Result::SUCCESS) {
     ReportStartupErrorToSync("Initial load of data failed.");
     return;
@@ -358,14 +360,14 @@ void DeviceInfoService::OnReadAllData(Result result,
   LoadMetadataIfReady();
 }
 
-void DeviceInfoService::LoadMetadataIfReady() {
+void DeviceInfoSyncBridge::LoadMetadataIfReady() {
   if (has_data_loaded_ && has_provider_initialized_) {
-    store_->ReadAllMetadata(base::Bind(&DeviceInfoService::OnReadAllMetadata,
+    store_->ReadAllMetadata(base::Bind(&DeviceInfoSyncBridge::OnReadAllMetadata,
                                        base::AsWeakPtr(this)));
   }
 }
 
-void DeviceInfoService::OnReadAllMetadata(
+void DeviceInfoSyncBridge::OnReadAllMetadata(
     Result result,
     std::unique_ptr<RecordList> metadata_records,
     const std::string& global_metadata) {
@@ -396,14 +398,14 @@ void DeviceInfoService::OnReadAllMetadata(
   ReconcileLocalAndStored();
 }
 
-void DeviceInfoService::OnCommit(Result result) {
+void DeviceInfoSyncBridge::OnCommit(Result result) {
   if (result != Result::SUCCESS) {
     change_processor()->CreateAndUploadError(FROM_HERE,
                                              "Failed a write to store.");
   }
 }
 
-void DeviceInfoService::ReconcileLocalAndStored() {
+void DeviceInfoSyncBridge::ReconcileLocalAndStored() {
   // On initial syncing we will have a change processor here, but it will not be
   // tracking changes. We need to persist a copy of our local device info to
   // disk, but the Put call to the processor will be ignored. That should be
@@ -423,7 +425,7 @@ void DeviceInfoService::ReconcileLocalAndStored() {
         GetLastUpdateTime(*iter->second), Time::Now()));
     if (!pulse_delay.is_zero()) {
       pulse_timer_.Start(FROM_HERE, pulse_delay,
-                         base::Bind(&DeviceInfoService::SendLocalData,
+                         base::Bind(&DeviceInfoSyncBridge::SendLocalData,
                                     base::Unretained(this)));
       return;
     }
@@ -431,7 +433,7 @@ void DeviceInfoService::ReconcileLocalAndStored() {
   SendLocalData();
 }
 
-void DeviceInfoService::SendLocalData() {
+void DeviceInfoSyncBridge::SendLocalData() {
   DCHECK(has_provider_initialized_);
 
   // It is possible that the provider no longer has data for us, such as when
@@ -456,10 +458,10 @@ void DeviceInfoService::SendLocalData() {
 
   pulse_timer_.Start(
       FROM_HERE, DeviceInfoUtil::kPulseInterval,
-      base::Bind(&DeviceInfoService::SendLocalData, base::Unretained(this)));
+      base::Bind(&DeviceInfoSyncBridge::SendLocalData, base::Unretained(this)));
 }
 
-void DeviceInfoService::CommitAndNotify(
+void DeviceInfoSyncBridge::CommitAndNotify(
     std::unique_ptr<WriteBatch> batch,
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     bool should_notify) {
@@ -467,13 +469,13 @@ void DeviceInfoService::CommitAndNotify(
       ->TransferChanges(store_.get(), batch.get());
   store_->CommitWriteBatch(
       std::move(batch),
-      base::Bind(&DeviceInfoService::OnCommit, base::AsWeakPtr(this)));
+      base::Bind(&DeviceInfoSyncBridge::OnCommit, base::AsWeakPtr(this)));
   if (should_notify) {
     NotifyObservers();
   }
 }
 
-int DeviceInfoService::CountActiveDevices(const Time now) const {
+int DeviceInfoSyncBridge::CountActiveDevices(const Time now) const {
   return std::count_if(all_data_.begin(), all_data_.end(),
                        [now](ClientIdToSpecifics::const_reference pair) {
                          return DeviceInfoUtil::IsActive(
@@ -481,7 +483,7 @@ int DeviceInfoService::CountActiveDevices(const Time now) const {
                        });
 }
 
-void DeviceInfoService::ReportStartupErrorToSync(const std::string& msg) {
+void DeviceInfoSyncBridge::ReportStartupErrorToSync(const std::string& msg) {
   // TODO(skym): Shouldn't need to log this here, reporting should always log.
   LOG(WARNING) << msg;
   change_processor()->OnMetadataLoaded(

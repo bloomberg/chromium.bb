@@ -72,7 +72,7 @@ namespace syncer {
 class BackendMigrator;
 class BaseTransaction;
 class DataTypeManager;
-class DeviceInfoService;
+class DeviceInfoSyncBridge;
 class DeviceInfoSyncService;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
@@ -346,7 +346,7 @@ class ProfileSyncService : public syncer::SyncService,
   virtual syncer::SyncableService* GetDeviceInfoSyncableService();
 
   // Returns the ModelTypeSyncBridge for syncer::DEVICE_INFO.
-  virtual syncer::ModelTypeSyncBridge* GetDeviceInfoService();
+  virtual syncer::ModelTypeSyncBridge* GetDeviceInfoSyncBridge();
 
   // Returns synced devices tracker.
   virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;
@@ -961,7 +961,7 @@ class ProfileSyncService : public syncer::SyncService,
   // Locally owned SyncableService and ModelTypeSyncBridge implementations.
   std::unique_ptr<sync_sessions::SessionsSyncManager> sessions_sync_manager_;
   std::unique_ptr<syncer::DeviceInfoSyncService> device_info_sync_service_;
-  std::unique_ptr<syncer::DeviceInfoService> device_info_service_;
+  std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_service_;
 
   std::unique_ptr<syncer::NetworkResources> network_resources_;
 

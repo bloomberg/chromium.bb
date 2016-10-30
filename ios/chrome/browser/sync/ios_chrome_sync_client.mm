@@ -333,7 +333,7 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
     case syncer::DEVICE_INFO:
       return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
                  browser_state_)
-          ->GetDeviceInfoService()
+          ->GetDeviceInfoSyncBridge()
           ->AsWeakPtr();
     default:
       NOTREACHED();
