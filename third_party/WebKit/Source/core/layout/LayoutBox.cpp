@@ -706,6 +706,15 @@ void LayoutBox::updateLayerTransformAfterLayout() {
     layer()->updateTransformationMatrix();
 }
 
+LayoutUnit LayoutBox::logicalHeightIncludingOverflow() const {
+  if (!m_overflow)
+    return logicalHeight();
+  LayoutRect overflow = layoutOverflowRect();
+  if (style()->isHorizontalWritingMode())
+    return overflow.maxY();
+  return overflow.maxX();
+}
+
 LayoutUnit LayoutBox::constrainLogicalWidthByMinMax(LayoutUnit logicalWidth,
                                                     LayoutUnit availableWidth,
                                                     LayoutBlock* cb) const {
@@ -4695,23 +4704,59 @@ bool LayoutBox::hasNonCompositedScrollbars() const {
   return false;
 }
 
+void LayoutBox::updateFragmentationInfoForChild(LayoutBox& child) {
+  LayoutState* layoutState = view()->layoutState();
+  DCHECK(layoutState->isPaginated());
+  child.setOffsetToNextPage(LayoutUnit());
+  if (!pageLogicalHeightForOffset(child.logicalTop()))
+    return;
+
+  LayoutUnit logicalTop = child.logicalTop();
+  LayoutUnit logicalHeight = child.logicalHeightIncludingOverflow();
+  LayoutUnit spaceLeft =
+      pageRemainingLogicalHeightForOffset(logicalTop, AssociateWithLatterPage);
+  if (spaceLeft < logicalHeight)
+    child.setOffsetToNextPage(spaceLeft);
+}
+
 void LayoutBox::markChildForPaginationRelayoutIfNeeded(
     LayoutBox& child,
     SubtreeLayoutScope& layoutScope) {
   DCHECK(!child.needsLayout());
   LayoutState* layoutState = view()->layoutState();
-  if (layoutState->paginationStateChanged()) {
+  // TODO(mstensho): Should try to get this to work for floats too, instead of
+  // just marking and bailing here.
+  if (layoutState->paginationStateChanged() || child.isFloating()) {
     layoutScope.setChildNeedsLayout(&child);
     return;
   }
   if (!layoutState->isPaginated())
     return;
 
-  if (layoutState->pageLogicalHeightChanged() ||
-      (layoutState->pageLogicalHeight() &&
-       layoutState->pageLogicalOffset(child, child.logicalTop()) !=
-           child.pageLogicalOffset()))
-    layoutScope.setChildNeedsLayout(&child);
+  LayoutUnit logicalTop = child.logicalTop();
+  if (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalTop)) {
+    // Figure out if we really need to force re-layout of the child. We only
+    // need to do this if there's a chance that we need to recalculate
+    // pagination struts inside.
+    LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
+        logicalTop, AssociateWithLatterPage);
+    LayoutUnit logicalHeight = child.logicalHeightIncludingOverflow();
+    if ((!child.offsetToNextPage() && logicalHeight <= remainingSpace) ||
+        child.offsetToNextPage() == remainingSpace) {
+      // We don't need to relayout this child, either because the child wasn't
+      // previously fragmented, and won't be fragmented now either, or because
+      // it would fragment at the exact same position as before.
+      //
+      // We want to skip layout of this child, but we need to ask the flow
+      // thread for permission first. We currently cannot skip over objects
+      // containing column spanners.
+      LayoutFlowThread* flowThread = child.flowThreadContainingBlock();
+      if (!flowThread || flowThread->canSkipLayout(child))
+        return;
+    }
+  }
+
+  layoutScope.setChildNeedsLayout(&child);
 }
 
 void LayoutBox::markOrthogonalWritingModeRoot() {
@@ -5278,10 +5323,10 @@ LayoutUnit LayoutBox::offsetFromLogicalTopOfFirstPage() const {
   return containerBlock->offsetFromLogicalTopOfFirstPage() + logicalTop();
 }
 
-void LayoutBox::setPageLogicalOffset(LayoutUnit offset) {
+void LayoutBox::setOffsetToNextPage(LayoutUnit offset) {
   if (!m_rareData && !offset)
     return;
-  ensureRareData().m_pageLogicalOffset = offset;
+  ensureRareData().m_offsetToNextPage = offset;
 }
 
 void LayoutBox::logicalExtentAfterUpdatingLogicalWidth(

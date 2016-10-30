@@ -32,6 +32,7 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutState.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/PaintLayer.h"
@@ -1859,6 +1860,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(
   LayoutUnit maxAscent, maxDescent;  // Used when align-items: baseline.
   LayoutUnit maxChildCrossAxisExtent;
   bool shouldFlipMainAxis = !isColumnFlow() && !isLeftToRightFlow();
+  bool isPaginated = view()->layoutState()->isPaginated();
   for (size_t i = 0; i < children.size(); ++i) {
     const FlexItem& flexItem = children[i];
     LayoutBox* child = flexItem.box;
@@ -1940,6 +1942,9 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(
 
     mainAxisOffset += justifyContentSpaceBetweenChildren(
         availableFreeSpace, distribution, children.size());
+
+    if (isPaginated)
+      updateFragmentationInfoForChild(*child);
   }
 
   if (isColumnFlow())

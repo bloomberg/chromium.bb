@@ -432,6 +432,8 @@ void LayoutTable::layoutCaption(LayoutTableCaption& caption,
       collapsedMarginBeforeForChild(caption) + logicalHeight();
   caption.setLogicalLocation(
       LayoutPoint(caption.marginStart(), captionLogicalTop));
+  if (view()->layoutState()->isPaginated())
+    updateFragmentationInfoForChild(caption);
 
   if (!selfNeedsLayout())
     caption.setMayNeedPaintInvalidation();
@@ -452,6 +454,8 @@ void LayoutTable::layoutSection(LayoutTableSection& section,
   section.layoutIfNeeded();
   int sectionLogicalHeight = section.calcRowLogicalHeight();
   section.setLogicalHeight(LayoutUnit(sectionLogicalHeight));
+  if (view()->layoutState()->isPaginated())
+    updateFragmentationInfoForChild(section);
   setLogicalHeight(logicalHeight() + sectionLogicalHeight);
 }
 

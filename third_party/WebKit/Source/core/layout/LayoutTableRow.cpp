@@ -32,6 +32,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/paint/TableRowPainter.h"
 #include "core/style/StyleInheritedData.h"
@@ -189,6 +190,7 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild) {
 void LayoutTableRow::layout() {
   ASSERT(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
+  bool paginated = view()->layoutState()->isPaginated();
 
   for (LayoutTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
     SubtreeLayoutScope layouter(*cell);
@@ -197,6 +199,8 @@ void LayoutTableRow::layout() {
       section()->markChildForPaginationRelayoutIfNeeded(*cell, layouter);
     if (cell->needsLayout())
       cell->layout();
+    if (paginated)
+      section()->updateFragmentationInfoForChild(*cell);
   }
 
   m_overflow.reset();

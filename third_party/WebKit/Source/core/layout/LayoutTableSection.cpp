@@ -990,14 +990,14 @@ void LayoutTableSection::layout() {
     }
 
     if (LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject) {
-      if (state.isPaginated()) {
+      if (state.isPaginated())
         rowLayoutObject->setLogicalTop(rowLogicalTop);
-        if (!rowLayoutObject->needsLayout())
-          markChildForPaginationRelayoutIfNeeded(*rowLayoutObject, layouter);
-      }
+      if (!rowLayoutObject->needsLayout())
+        markChildForPaginationRelayoutIfNeeded(*rowLayoutObject, layouter);
       rowLayoutObject->layoutIfNeeded();
       if (state.isPaginated()) {
         adjustRowForPagination(*rowLayoutObject, layouter);
+        updateFragmentationInfoForChild(*rowLayoutObject);
         rowLogicalTop = rowLayoutObject->logicalBottom();
         rowLogicalTop += LayoutUnit(table()->vBorderSpacing());
       }
@@ -1203,9 +1203,6 @@ void LayoutTableSection::layoutRows() {
       LayoutRect oldCellRect = cell->frameRect();
 
       setLogicalPositionForCell(cell, c);
-
-      if (!cell->needsLayout())
-        markChildForPaginationRelayoutIfNeeded(*cell, layouter);
 
       cell->layoutIfNeeded();
 

@@ -455,11 +455,6 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
   while (!done)
     done = layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
 
-  LayoutView* layoutView = view();
-  if (layoutView->layoutState()->pageLogicalHeight())
-    setPageLogicalOffset(
-        layoutView->layoutState()->pageLogicalOffset(*this, logicalTop()));
-
   updateLayerTransformAfterLayout();
 
   updateAfterLayout();
@@ -780,10 +775,12 @@ bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(
     }
   }
 
-  if (!child.needsLayout())
-    return false;
-  child.layout();
-  return true;
+  bool neededLayout = child.needsLayout();
+  if (neededLayout)
+    child.layout();
+  if (view()->layoutState()->isPaginated())
+    updateFragmentationInfoForChild(child);
+  return neededLayout;
 }
 
 void LayoutBlockFlow::insertForcedBreakBeforeChildIfNeeded(

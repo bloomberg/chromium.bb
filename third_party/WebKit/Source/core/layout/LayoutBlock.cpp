@@ -827,6 +827,9 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
     if (!layoutChanged && needsBlockDirectionLocationSetBeforeLayout &&
         logicalTopEstimate != logicalTopForChild(*positionedObject))
       positionedObject->forceChildLayout();
+
+    if (isPaginated)
+      updateFragmentationInfoForChild(*positionedObject);
   }
 }
 

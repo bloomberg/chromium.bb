@@ -81,7 +81,8 @@ struct LayoutBoxRareData {
   LayoutUnit m_overrideContainingBlockContentLogicalWidth;
   LayoutUnit m_overrideContainingBlockContentLogicalHeight;
 
-  LayoutUnit m_pageLogicalOffset;
+  LayoutUnit m_offsetToNextPage;
+
   LayoutUnit m_paginationStrut;
 
   LayoutBlock* m_percentHeightContainer;
@@ -250,6 +251,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return style()->isHorizontalWritingMode() ? m_frameRect.height()
                                               : m_frameRect.width();
   }
+  LayoutUnit logicalHeightIncludingOverflow() const;
 
   LayoutUnit constrainLogicalWidthByMinMax(LayoutUnit,
                                            LayoutUnit,
@@ -762,13 +764,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutUnit offsetFromLogicalTopOfFirstPage() const;
 
-  // The page logical offset is the object's offset from the top of the page in
-  // the page progression direction (so an x-offset in vertical text and a
-  // y-offset for horizontal text).
-  LayoutUnit pageLogicalOffset() const {
-    return m_rareData ? m_rareData->m_pageLogicalOffset : LayoutUnit();
+  // The block offset from the logical top of this object to the end of the
+  // first fragmentainer it lives in. If it only lives in one fragmentainer, 0
+  // is returned.
+  LayoutUnit offsetToNextPage() const {
+    return m_rareData ? m_rareData->m_offsetToNextPage : LayoutUnit();
   }
-  void setPageLogicalOffset(LayoutUnit);
+  void setOffsetToNextPage(LayoutUnit);
 
   // Specify which page or column to associate with an offset, if said offset is
   // exactly at a page or column boundary.
@@ -776,6 +778,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
   LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit,
                                                  PageBoundaryRule) const;
+
   bool crossesPageBoundary(LayoutUnit offset, LayoutUnit logicalHeight) const;
 
   // Calculate the strut to insert in order fit content of size
@@ -1091,6 +1094,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool shrinkToAvoidFloats() const;
   virtual bool avoidsFloats() const;
+
+  void updateFragmentationInfoForChild(LayoutBox& child);
 
   void markChildForPaginationRelayoutIfNeeded(LayoutBox& child,
                                               SubtreeLayoutScope&);
