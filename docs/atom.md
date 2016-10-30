@@ -8,7 +8,7 @@ A typical Atom workflow consists of the following.
 
 1. Use `Ctrl-Shift-R` to find a symbol in the `.tags` file or `Ctrl-P` to find
    a file by name.
-2. Switch between the header and the source using `Alt-O`.
+2. Switch between the header and the source using `Alt-O`(`Ctrl-Opt-S` on OSX).
 3. While editing, `you-complete-me` package helps with C++ auto-completion and
    shows compile errors through `lint` package.
 4. Press `Ctrl-Shift-P` and type `format<Enter>` to format the code.
@@ -22,7 +22,7 @@ To setup this workflow, install Atom packages for Chrome development.
 
 ```
 $ apm install build-ninja clang-format \
-    linter linter-eslint switch-header-source you-complete-me
+    linter linter-cpplint linter-eslint switch-header-source you-complete-me
 ```
 
 ## Autocomplete
