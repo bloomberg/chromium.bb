@@ -8673,7 +8673,7 @@
 
       If this policy is set, the user cannot change or override it.
 
-      After enabling Bluetooth, the device must be rebooted for the changes to take effect (no need to reboot the device when disabling Bluetooth).''',
+      After enabling Bluetooth, the user must log out and log back in for the changes to take effect (no need for this when disabling Bluetooth).''',
     },
     {
       'name': 'SuppressUnsupportedOSWarning',
