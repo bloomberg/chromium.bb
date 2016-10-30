@@ -137,6 +137,8 @@
          rebind_transform_feedback_before_resume)            \
   GPU_OP(REGENERATE_STRUCT_NAMES,                            \
          regenerate_struct_names)                            \
+  GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
+         dont_remove_invariant_for_fragment_input)           \
   GPU_OP(REMOVE_POW_WITH_CONSTANT_EXPONENT,                  \
          remove_pow_with_constant_exponent)                  \
   GPU_OP(RESET_BASE_MIPMAP_LEVEL_BEFORE_TEXSTORAGE,          \

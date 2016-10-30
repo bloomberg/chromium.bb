@@ -3801,6 +3801,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_EMULATE_ISNAN_FLOAT_FUNCTION;
   if (workarounds().use_unused_standard_shared_blocks)
     driver_bug_workarounds |= SH_USE_UNUSED_STANDARD_SHARED_BLOCKS;
+  if (workarounds().dont_remove_invariant_for_fragment_input)
+    driver_bug_workarounds |= SH_DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT;
 
   resources.WEBGL_debug_shader_precision =
       group_->gpu_preferences().emulate_shader_precision;
