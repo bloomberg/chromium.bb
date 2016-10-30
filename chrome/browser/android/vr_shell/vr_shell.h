@@ -39,6 +39,7 @@ class VrController;
 class VrInputManager;
 class VrShellDelegate;
 class VrShellRenderer;
+class VrWebContentsObserver;
 struct ContentRectangle;
 
 enum UiAction {
@@ -158,6 +159,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   content::WebContents* main_contents_;
   std::unique_ptr<VrCompositor> ui_compositor_;
   content::WebContents* ui_contents_;
+  std::unique_ptr<VrWebContentsObserver> vr_web_contents_observer_;
 
   VrShellDelegate* delegate_ = nullptr;
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;

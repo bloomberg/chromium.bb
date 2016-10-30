@@ -39,6 +39,8 @@ static_library("vr_common") {
     "vr_shell_delegate.h",
     "vr_shell_renderer.cc",
     "vr_shell_renderer.h",
+    "vr_web_contents_observer.cc",
+    "vr_web_contents_observer.h",
   ]
 
   if (enable_vr_shell_ui_dev) {

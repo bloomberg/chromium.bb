@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/values.h"
 
+class GURL;
+
 namespace vr_shell {
 
 class UiCommandHandler {
@@ -29,6 +31,8 @@ class UiInterface {
 
   void SetMode(Mode mode);
   void SetSecureOrigin(bool secure);
+  void SetLoading(bool loading);
+  void SetURL(const GURL& url);
 
   // Called by WebUI when starting VR.
   void OnDomContentsLoaded();

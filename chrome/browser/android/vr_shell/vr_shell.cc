@@ -14,6 +14,7 @@
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
+#include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -143,6 +144,8 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
   html_interface_.reset(new UiInterface);
   content_compositor_.reset(new VrCompositor(content_window, false));
   ui_compositor_.reset(new VrCompositor(ui_window, true));
+  vr_web_contents_observer_.reset(
+      new VrWebContentsObserver(main_contents, html_interface_.get()));
 
   LoadUIContent();
 
@@ -690,6 +693,8 @@ base::WeakPtr<VrShell> VrShell::GetWeakPtr(
 }
 
 void VrShell::OnDomContentsLoaded() {
+  html_interface_->SetURL(main_contents_->GetVisibleURL());
+  html_interface_->SetLoading(main_contents_->IsLoading());
   html_interface_->OnDomContentsLoaded();
 }
 
@@ -796,6 +801,7 @@ void VrShell::DoUiAction(const UiAction action) {
       ui_contents_->GetController().Reload(false);
       html_interface_.reset(new UiInterface);
       html_interface_->SetMode(UiInterface::Mode::STANDARD);
+      vr_web_contents_observer_->SetUiInterface(html_interface_.get());
       break;
 #endif
     case ZOOM_OUT:  // Not handled yet.
