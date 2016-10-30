@@ -23,6 +23,7 @@ class CC_EXPORT ScrollbarAnimationControllerClient {
                                                  base::TimeDelta delay) = 0;
   virtual void SetNeedsRedrawForScrollbarAnimation() = 0;
   virtual void SetNeedsAnimateForScrollbarAnimation() = 0;
+  virtual void DidChangeScrollbarVisibility() = 0;
   virtual ScrollbarSet ScrollbarsFor(int scroll_layer_id) const = 0;
 
  protected:
@@ -45,6 +46,7 @@ class CC_EXPORT ScrollbarAnimationController {
   virtual void DidMouseUp() {}
   virtual void DidMouseLeave() {}
   virtual void DidMouseMoveNear(float distance) {}
+  virtual bool ScrollbarsHidden() const;
 
  protected:
   ScrollbarAnimationController(int scroll_layer_id,
@@ -62,6 +64,8 @@ class CC_EXPORT ScrollbarAnimationController {
   ScrollbarAnimationControllerClient* client_;
 
   void PostDelayedAnimationTask(bool on_resize);
+
+  int scroll_layer_id() const { return scroll_layer_id_; }
 
  private:
   // Returns how far through the animation we are as a progress value from

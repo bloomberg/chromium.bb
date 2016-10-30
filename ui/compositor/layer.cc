@@ -927,6 +927,7 @@ Layer::TakeDebugInfo(cc::Layer* layer) {
 }
 
 void Layer::didUpdateMainThreadScrollingReasons() {}
+void Layer::didChangeScrollbarsHidden(bool) {}
 
 void Layer::CollectAnimators(
     std::vector<scoped_refptr<LayerAnimator>>* animators) {

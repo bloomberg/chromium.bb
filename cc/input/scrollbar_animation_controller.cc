@@ -42,6 +42,10 @@ bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
   return true;
 }
 
+bool ScrollbarAnimationController::ScrollbarsHidden() const {
+  return false;
+}
+
 float ScrollbarAnimationController::AnimationProgressAtTime(
     base::TimeTicks now) {
   base::TimeDelta delta = now - last_awaken_time_;

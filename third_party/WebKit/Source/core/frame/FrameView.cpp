@@ -3736,7 +3736,8 @@ void FrameView::updateScrollbarGeometry() {
     if (oldRect != horizontalScrollbar()->frameRect())
       setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
 
-    horizontalScrollbar()->setEnabled(contentsWidth() > clientWidth);
+    horizontalScrollbar()->setEnabled(contentsWidth() > clientWidth &&
+                                      !scrollbarsHidden());
     horizontalScrollbar()->setProportion(clientWidth, contentsWidth());
     horizontalScrollbar()->offsetDidChange();
   }
@@ -3754,7 +3755,8 @@ void FrameView::updateScrollbarGeometry() {
     if (oldRect != verticalScrollbar()->frameRect())
       setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
 
-    verticalScrollbar()->setEnabled(contentsHeight() > clientHeight);
+    verticalScrollbar()->setEnabled(contentsHeight() > clientHeight &&
+                                    !scrollbarsHidden());
     verticalScrollbar()->setProportion(clientHeight, contentsHeight());
     verticalScrollbar()->offsetDidChange();
   }
@@ -3820,6 +3822,10 @@ void FrameView::updateScrollbarsIfNeeded() {
   if (m_needsScrollbarsUpdate || needsScrollbarReconstruction() ||
       scrollOriginChanged())
     updateScrollbars();
+}
+
+void FrameView::didChangeScrollbarsHidden() {
+  updateScrollbars();
 }
 
 void FrameView::updateScrollbars() {

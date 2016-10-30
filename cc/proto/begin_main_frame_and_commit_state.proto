@@ -16,11 +16,17 @@ message ScrollUpdateInfo {
   optional Vector2d scroll_delta = 2;
 }
 
+message ScrollbarsUpdateInfo {
+  optional int64 layer_id = 1;
+  optional bool hidden = 2;
+}
+
 message ScrollAndScaleSet {
   repeated ScrollUpdateInfo scrolls = 1;
   optional float page_scale_delta = 2;
   optional Vector2dF elastic_overscroll_delta = 3;
   optional float top_controls_delta = 4;
+  repeated ScrollbarsUpdateInfo scrollbars = 5;
 
   // TODO(khushalsagar): Do we need to send swap promises?
   // See crbug/576999.

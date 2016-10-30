@@ -2215,6 +2215,10 @@ LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
   return viewport()->MainScrollLayer();
 }
 
+void LayerTreeHostImpl::DidChangeScrollbarVisibility() {
+  client_->SetNeedsCommitOnImplThread();
+}
+
 void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   ClearUIResources();
   tile_manager_.FinishTasksAndCleanUp();
@@ -3343,14 +3347,26 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
           ? tree_impl->InnerViewportScrollLayer()->id()
           : Layer::INVALID_ID;
 
-  return tree_impl->property_trees()->scroll_tree.CollectScrollDeltas(
+  tree_impl->property_trees()->scroll_tree.CollectScrollDeltas(
       scroll_info, inner_viewport_layer_id);
+}
+
+static void CollectScrollbarUpdates(
+    ScrollAndScaleSet* scroll_info,
+    std::unordered_map<int, std::unique_ptr<ScrollbarAnimationController>>*
+        controllers) {
+  scroll_info->scrollbars.reserve(controllers->size());
+  for (auto& pair : *controllers) {
+    scroll_info->scrollbars.push_back(LayerTreeHostCommon::ScrollbarsUpdateInfo(
+        pair.first, pair.second->ScrollbarsHidden()));
+  }
 }
 
 std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
 
   CollectScrollDeltas(scroll_info.get(), active_tree_.get());
+  CollectScrollbarUpdates(scroll_info.get(), &scrollbar_animation_controllers_);
   scroll_info->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
   scroll_info->top_controls_delta =

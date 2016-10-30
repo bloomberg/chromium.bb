@@ -502,6 +502,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // layer id for the corresponding Layer on the engine.
   void SetLayerIdForTesting(int id);
 
+  void SetScrollbarsHiddenFromImplSide(bool hidden);
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;

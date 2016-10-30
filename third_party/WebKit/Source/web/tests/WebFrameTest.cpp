@@ -275,6 +275,12 @@ class WebFrameTest : public ::testing::Test {
     element->remove();
   }
 
+  // Both sets the inner html and runs the document lifecycle.
+  void initializeWithHTML(LocalFrame& frame, const String& htmlContent) {
+    frame.document()->body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
+    frame.document()->view()->updateAllLifecyclePhases();
+  }
+
   std::string m_baseURL;
   std::string m_notBaseURL;
   std::string m_chromeURL;
@@ -10268,6 +10274,57 @@ TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
   webViewHelper.webView()->handleInputEvent(beginEvent);
   webViewHelper.webView()->handleInputEvent(updateEvent);
   webViewHelper.webView()->handleInputEvent(endEvent);
+}
+
+TEST_F(WebFrameTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initialize(true);
+  webViewHelper.resize(WebSize(800, 600));
+  WebViewImpl* webView = webViewHelper.webView();
+
+  initializeWithHTML(
+      *webView->mainFrameImpl()->frame(),
+      "<!DOCTYPE html>"
+      "<style>"
+      "  #scroller { overflow: scroll; width: 1000px; height: 1000px }"
+      "  #spacer { width: 2000px; height: 2000px }"
+      "</style>"
+      "<div id='scroller'>"
+      "  <div id='spacer'></div>"
+      "</div>");
+
+  Document* document = webView->mainFrameImpl()->frame()->document();
+  FrameView* frameView = webView->mainFrameImpl()->frameView();
+  Element* scroller = document->getElementById("scroller");
+  ScrollableArea* scrollerArea =
+      toLayoutBox(scroller->layoutObject())->getScrollableArea();
+
+  ASSERT_TRUE(scrollerArea->horizontalScrollbar());
+  ASSERT_TRUE(scrollerArea->verticalScrollbar());
+  ASSERT_TRUE(frameView->horizontalScrollbar());
+  ASSERT_TRUE(frameView->verticalScrollbar());
+
+  EXPECT_FALSE(frameView->scrollbarsHidden());
+  EXPECT_TRUE(frameView->horizontalScrollbar()->enabled());
+  EXPECT_TRUE(frameView->verticalScrollbar()->enabled());
+
+  EXPECT_FALSE(scrollerArea->scrollbarsHidden());
+  EXPECT_TRUE(scrollerArea->horizontalScrollbar()->enabled());
+  EXPECT_TRUE(scrollerArea->verticalScrollbar()->enabled());
+
+  frameView->setScrollbarsHidden(true);
+  EXPECT_FALSE(frameView->horizontalScrollbar()->enabled());
+  EXPECT_FALSE(frameView->verticalScrollbar()->enabled());
+  frameView->setScrollbarsHidden(false);
+  EXPECT_TRUE(frameView->horizontalScrollbar()->enabled());
+  EXPECT_TRUE(frameView->verticalScrollbar()->enabled());
+
+  scrollerArea->setScrollbarsHidden(true);
+  EXPECT_FALSE(scrollerArea->horizontalScrollbar()->enabled());
+  EXPECT_FALSE(scrollerArea->verticalScrollbar()->enabled());
+  scrollerArea->setScrollbarsHidden(false);
+  EXPECT_TRUE(scrollerArea->horizontalScrollbar()->enabled());
+  EXPECT_TRUE(scrollerArea->verticalScrollbar()->enabled());
 }
 
 TEST_F(WebFrameTest, UniqueNames) {

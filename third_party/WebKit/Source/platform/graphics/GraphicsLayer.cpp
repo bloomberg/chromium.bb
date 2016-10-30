@@ -1163,6 +1163,11 @@ void GraphicsLayer::didUpdateMainThreadScrollingReasons() {
       platformLayer()->mainThreadScrollingReasons());
 }
 
+void GraphicsLayer::didChangeScrollbarsHidden(bool hidden) {
+  if (m_scrollableArea)
+    m_scrollableArea->setScrollbarsHidden(hidden);
+}
+
 PaintController& GraphicsLayer::getPaintController() {
   RELEASE_ASSERT(drawsContent());
   if (!m_paintController)

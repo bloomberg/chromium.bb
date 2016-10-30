@@ -579,6 +579,7 @@ class CC_EXPORT LayerImpl {
   bool scrolls_drawn_descendant_ : 1;
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;
+  bool scrollbars_hidden_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

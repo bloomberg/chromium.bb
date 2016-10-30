@@ -405,6 +405,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   typedef std::unordered_map<int, scoped_refptr<SyncedScrollOffset>>
       ScrollOffsetMap;
+  typedef std::unordered_map<int, bool> ScrollbarsEnabledMap;
 
   gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
   void OnScrollOffsetAnimated(int layer_id,
@@ -453,6 +454,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
  private:
   int currently_scrolling_node_id_;
   ScrollOffsetMap layer_id_to_scroll_offset_map_;
+  ScrollbarsEnabledMap layer_id_to_scrollbars_enabled_map_;
 
   SyncedScrollOffset* synced_scroll_offset(int layer_id);
   const SyncedScrollOffset* synced_scroll_offset(int layer_id) const;

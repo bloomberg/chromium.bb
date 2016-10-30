@@ -50,7 +50,7 @@ struct SameSizeAsScrollableArea {
   VerifyEagerFinalization verifyEager;
 #endif
   Member<void*> pointer[2];
-  unsigned bitfields : 16;
+  unsigned bitfields : 17;
   IntPoint origin;
 };
 
@@ -78,7 +78,8 @@ ScrollableArea::ScrollableArea()
       m_scrollOriginChanged(false),
       m_horizontalScrollbarNeedsPaintInvalidation(false),
       m_verticalScrollbarNeedsPaintInvalidation(false),
-      m_scrollCornerNeedsPaintInvalidation(false) {}
+      m_scrollCornerNeedsPaintInvalidation(false),
+      m_scrollbarsHidden(false) {}
 
 ScrollableArea::~ScrollableArea() {}
 
@@ -528,6 +529,17 @@ bool ScrollableArea::shouldScrollOnMainThread() const {
               ~MainThreadScrollingReason::kHandlingScrollFromMainThread);
   }
   return true;
+}
+
+bool ScrollableArea::scrollbarsHidden() const {
+  return hasOverlayScrollbars() && m_scrollbarsHidden;
+}
+
+void ScrollableArea::setScrollbarsHidden(bool hidden) {
+  if (m_scrollbarsHidden == static_cast<unsigned>(hidden))
+    return;
+  m_scrollbarsHidden = hidden;
+  didChangeScrollbarsHidden();
 }
 
 IntRect ScrollableArea::visibleContentRect(

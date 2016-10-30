@@ -261,6 +261,7 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
       cc::Layer*) override;
   void didUpdateMainThreadScrollingReasons() override;
+  void didChangeScrollbarsHidden(bool);
 
   PaintController& getPaintController();
 

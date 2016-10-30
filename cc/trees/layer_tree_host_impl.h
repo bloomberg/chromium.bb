@@ -354,6 +354,7 @@ class CC_EXPORT LayerTreeHostImpl
   void SetNeedsAnimateForScrollbarAnimation() override;
   void SetNeedsRedrawForScrollbarAnimation() override;
   ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override;
+  void DidChangeScrollbarVisibility() override;
 
   // VideoBeginFrameSource implementation.
   void AddVideoFrameController(VideoFrameController* controller) override;

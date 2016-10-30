@@ -762,6 +762,8 @@ class CORE_EXPORT FrameView final
   void updateScrollbars();
   void updateScrollbarsIfNeeded();
 
+  void didChangeScrollbarsHidden() override;
+
   class InUpdateScrollbarsScope {
     STACK_ALLOCATED();
 

@@ -253,6 +253,11 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool usesCompositedScrolling() const { return false; }
   virtual bool shouldScrollOnMainThread() const;
 
+  // Overlay scrollbars can "fade-out" when inactive.
+  virtual bool scrollbarsHidden() const;
+  virtual void setScrollbarsHidden(bool);
+  virtual void didChangeScrollbarsHidden(){};
+
   // Returns true if the GraphicsLayer tree needs to be rebuilt.
   virtual bool updateAfterCompositingChange() { return false; }
 
@@ -398,6 +403,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   unsigned m_horizontalScrollbarNeedsPaintInvalidation : 1;
   unsigned m_verticalScrollbarNeedsPaintInvalidation : 1;
   unsigned m_scrollCornerNeedsPaintInvalidation : 1;
+  unsigned m_scrollbarsHidden : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll
   // origin will be non-zero in the x or y axis if there is any reversed

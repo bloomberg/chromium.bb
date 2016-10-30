@@ -41,6 +41,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   void DidMouseUp() override;
   void DidMouseLeave() override;
   void DidMouseMoveNear(float distance) override;
+  bool ScrollbarsHidden() const override;
 
  protected:
   ScrollbarAnimationControllerThinning(

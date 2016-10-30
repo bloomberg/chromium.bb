@@ -39,6 +39,7 @@ class ScrollbarAnimationControllerLinearFadeTest
   ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override {
     return host_impl_.ScrollbarsFor(scroll_layer_id);
   }
+  void DidChangeScrollbarVisibility() override {}
 
  protected:
   void SetUp() override {

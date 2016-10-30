@@ -184,6 +184,30 @@ void LayerTreeHostCommon::ScrollUpdateInfo::FromProtobuf(
   scroll_delta = ProtoToVector2d(proto.scroll_delta());
 }
 
+LayerTreeHostCommon::ScrollbarsUpdateInfo::ScrollbarsUpdateInfo()
+    : layer_id(Layer::INVALID_ID), hidden(true) {}
+
+LayerTreeHostCommon::ScrollbarsUpdateInfo::ScrollbarsUpdateInfo(int layer_id,
+                                                                bool hidden)
+    : layer_id(layer_id), hidden(hidden) {}
+
+bool LayerTreeHostCommon::ScrollbarsUpdateInfo::operator==(
+    const LayerTreeHostCommon::ScrollbarsUpdateInfo& other) const {
+  return layer_id == other.layer_id && hidden == other.hidden;
+}
+
+void LayerTreeHostCommon::ScrollbarsUpdateInfo::ToProtobuf(
+    proto::ScrollbarsUpdateInfo* proto) const {
+  proto->set_layer_id(layer_id);
+  proto->set_hidden(hidden);
+}
+
+void LayerTreeHostCommon::ScrollbarsUpdateInfo::FromProtobuf(
+    const proto::ScrollbarsUpdateInfo& proto) {
+  layer_id = proto.layer_id();
+  hidden = proto.hidden();
+}
+
 ScrollAndScaleSet::ScrollAndScaleSet()
     : page_scale_delta(1.f), top_controls_delta(0.f) {
 }

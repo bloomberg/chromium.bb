@@ -28,6 +28,7 @@ namespace cc {
 
 namespace proto {
 class ScrollUpdateInfo;
+class ScrollbarsUpdateInfo;
 class ScrollAndScaleSet;
 }
 
@@ -142,7 +143,7 @@ class CC_EXPORT LayerTreeHostCommon {
   struct CC_EXPORT ScrollUpdateInfo {
     int layer_id;
     // TODO(miletus): Use ScrollOffset once LayerTreeHost/Blink fully supports
-    // franctional scroll offset.
+    // fractional scroll offset.
     gfx::Vector2d scroll_delta;
 
     ScrollUpdateInfo();
@@ -151,6 +152,24 @@ class CC_EXPORT LayerTreeHostCommon {
 
     void ToProtobuf(proto::ScrollUpdateInfo* proto) const;
     void FromProtobuf(const proto::ScrollUpdateInfo& proto);
+  };
+
+  // Used to communicate scrollbar visibility from Impl thread to Blink.
+  // Scrollbar input is handled by Blink but the compositor thread animates
+  // opacity on scrollbars to fade them out when they're overlay. Blink needs
+  // to be told when they're faded out so it can stop handling input for
+  // invisible scrollbars.
+  struct CC_EXPORT ScrollbarsUpdateInfo {
+    int layer_id;
+    bool hidden;
+
+    ScrollbarsUpdateInfo();
+    ScrollbarsUpdateInfo(int layer_id, bool hidden);
+
+    bool operator==(const ScrollbarsUpdateInfo& other) const;
+
+    void ToProtobuf(proto::ScrollbarsUpdateInfo* proto) const;
+    void FromProtobuf(const proto::ScrollbarsUpdateInfo& proto);
   };
 };
 
@@ -168,6 +187,7 @@ struct CC_EXPORT ScrollAndScaleSet {
   float page_scale_delta;
   gfx::Vector2dF elastic_overscroll_delta;
   float top_controls_delta;
+  std::vector<LayerTreeHostCommon::ScrollbarsUpdateInfo> scrollbars;
   std::vector<std::unique_ptr<SwapPromise>> swap_promises;
 
   bool EqualsForTesting(const ScrollAndScaleSet& other) const;

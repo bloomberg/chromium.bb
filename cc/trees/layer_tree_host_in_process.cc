@@ -868,6 +868,12 @@ void LayerTreeHostInProcess::ApplyScrollAndScale(ScrollAndScaleSet* info) {
           layer->scroll_offset(), info->scrolls[i].scroll_delta));
       SetNeedsUpdateLayers();
     }
+    for (size_t i = 0; i < info->scrollbars.size(); ++i) {
+      Layer* layer = layer_tree_->LayerById(info->scrollbars[i].layer_id);
+      if (!layer)
+        continue;
+      layer->SetScrollbarsHiddenFromImplSide(info->scrollbars[i].hidden);
+    }
   }
 
   // This needs to happen after scroll deltas have been sent to prevent top

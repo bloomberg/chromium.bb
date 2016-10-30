@@ -1611,6 +1611,11 @@ void Layer::SetMayContainVideo(bool yes) {
   SetNeedsPushProperties();
 }
 
+void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
+  if (inputs_.client)
+    inputs_.client->didChangeScrollbarsHidden(hidden);
+}
+
 bool Layer::FilterIsAnimating() const {
   return GetAnimationHost()->IsAnimatingFilterProperty(
       element_id(), GetElementTypeForAnimation());

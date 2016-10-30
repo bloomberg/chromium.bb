@@ -321,6 +321,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void updateAfterLayout();
   void clampScrollOffsetsAfterLayout();
 
+  void didChangeScrollbarsHidden() override;
+
   void updateAfterStyleChange(const ComputedStyle*);
   void updateAfterOverflowRecalc();
 
@@ -474,6 +476,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
  private:
   explicit PaintLayerScrollableArea(PaintLayer&);
+
+  void updateScrollbarsEnabledState();
 
   bool hasHorizontalOverflow() const;
   bool hasVerticalOverflow() const;

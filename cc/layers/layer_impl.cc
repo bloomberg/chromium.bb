@@ -82,7 +82,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       has_preferred_raster_bounds_(false),
       scrolls_drawn_descendant_(false),
       has_will_change_transform_hint_(false),
-      needs_push_properties_(false) {
+      needs_push_properties_(false),
+      scrollbars_hidden_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -355,6 +356,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->scroll_tree_index_ = scroll_tree_index_;
   layer->sorting_context_id_ = sorting_context_id_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
+  layer->scrollbars_hidden_ = scrollbars_hidden_;
 
   if (layer_property_changed_) {
     layer->layer_tree_impl()->set_needs_update_draw_properties();

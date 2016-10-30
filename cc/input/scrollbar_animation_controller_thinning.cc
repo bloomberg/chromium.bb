@@ -164,6 +164,10 @@ void ScrollbarAnimationControllerThinning::DidMouseMoveNear(float distance) {
   StartAnimation();
 }
 
+bool ScrollbarAnimationControllerThinning::ScrollbarsHidden() const {
+  return opacity_ == 0.0f;
+}
+
 float ScrollbarAnimationControllerThinning::ThumbThicknessScaleAt(
     float progress) {
   if (thickness_change_ == NONE)
@@ -213,7 +217,13 @@ void ScrollbarAnimationControllerThinning::ApplyOpacity(float opacity) {
     }
   }
 
+  bool previouslyVisible = opacity_ > 0.0f;
+  bool currentlyVisible = opacity > 0.0f;
+
   opacity_ = opacity;
+
+  if (previouslyVisible != currentlyVisible)
+    client_->DidChangeScrollbarVisibility();
 }
 
 void ScrollbarAnimationControllerThinning::ApplyThumbThicknessScale(
