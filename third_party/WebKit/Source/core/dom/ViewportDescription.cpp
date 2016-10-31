@@ -289,7 +289,7 @@ void ViewportDescription::reportMobilePageStats(
   } else if (type == ViewportDescription::HandheldFriendlyMeta) {
     metaTagTypeHistogram.count(MetaHandheldFriendly);
   } else if (type == ViewportDescription::MobileOptimizedMeta) {
-    metaTagTypeHistogram.count(MobileOptimizedMeta);
+    metaTagTypeHistogram.count(MetaMobileOptimized);
   }
 #endif
 }
