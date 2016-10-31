@@ -209,12 +209,19 @@ class PLATFORM_EXPORT ImageDecoder {
   bool ignoresColorSpace() const { return m_ignoreColorSpace; }
   static void setTargetColorProfile(const WebVector<char>&);
 
-  // Note that hasColorSpace refers to the existence of a not-ignored
-  // embedded color space, and is independent of whether or not that
-  // space's transform has been baked into the pixel values.
-  bool hasColorSpace() const { return m_srcSpace.get(); }
-  void setColorSpaceAndComputeTransform(const char* iccData,
-                                        unsigned iccLength);
+  // This returns the color space of this image. If the image had no embedded
+  // color profile, this will return sRGB. Returns nullptr if color correct
+  // rendering is not enabled.
+  sk_sp<SkColorSpace> colorSpace() const;
+
+  // This returns whether or not the image included a not-ignored embedded
+  // color space. This is independent of whether or not that space's transform
+  // has been baked into the pixel values.
+  bool hasEmbeddedColorSpace() const { return m_embeddedColorSpace.get(); }
+
+  // Set the embedded color space directly or via ICC profile.
+  void setColorProfileAndComputeTransform(const char* iccData,
+                                          unsigned iccLength);
   void setColorSpaceAndComputeTransform(sk_sp<SkColorSpace> srcSpace);
 
   // Transformation from encoded color space to target color space.
@@ -301,9 +308,6 @@ class PLATFORM_EXPORT ImageDecoder {
   // Decodes the requested frame.
   virtual void decode(size_t) = 0;
 
-  // Returns the embedded image color space.
-  sk_sp<SkColorSpace> colorSpace() const { return m_srcSpace; }
-
   RefPtr<SegmentReader> m_data;  // The encoded data.
   Vector<ImageFrame, 1> m_frameBufferCache;
   const bool m_premultiplyAlpha;
@@ -342,7 +346,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool m_isAllDataReceived = false;
   bool m_failed = false;
 
-  sk_sp<SkColorSpace> m_srcSpace = nullptr;
+  sk_sp<SkColorSpace> m_embeddedColorSpace = nullptr;
   std::unique_ptr<SkColorSpaceXform> m_sourceToOutputDeviceColorTransform;
 };
 

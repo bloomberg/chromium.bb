@@ -119,8 +119,9 @@ class PLATFORM_EXPORT ImageFrame final {
   }
 
   // Allocates space for the pixel data.  Must be called before any pixels
-  // are written.  Must only be called once.  Returns whether allocation
-  // succeeded.
+  // are written.  Must only be called once. The specified color space may
+  // be nullptr if and only if color correct rendering is enabled. Returns
+  // whether allocation succeeded.
   bool setSizeAndColorSpace(int newWidth, int newHeight, sk_sp<SkColorSpace>);
 
   bool hasAlpha() const;
@@ -244,6 +245,10 @@ class PLATFORM_EXPORT ImageFrame final {
   bool m_premultiplyAlpha;
   // True if the pixels changed, but the bitmap has not yet been notified.
   bool m_pixelsChanged;
+
+  // The color space of the image. This will never be null. If a color profile
+  // was not embedded in the image, this will be set to sRGB.
+  sk_sp<SkColorSpace> m_colorSpace;
 
   // The frame that must be decoded before this frame can be decoded.
   // WTF::kNotFound if this frame doesn't require any previous frame.

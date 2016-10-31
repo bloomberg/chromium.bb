@@ -342,7 +342,7 @@ void WEBPImageDecoder::readColorProfile() {
       reinterpret_cast<const char*>(chunkIterator.chunk.bytes);
   size_t profileSize = chunkIterator.chunk.size;
 
-  setColorSpaceAndComputeTransform(profileData, profileSize);
+  setColorProfileAndComputeTransform(profileData, profileSize);
 
   WebPDemuxReleaseChunkIterator(&chunkIterator);
 }

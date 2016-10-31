@@ -73,7 +73,7 @@ bool ImageSource::isSizeAvailable() {
 }
 
 bool ImageSource::hasColorProfile() const {
-  return m_decoder && m_decoder->hasColorSpace();
+  return m_decoder && m_decoder->hasEmbeddedColorSpace();
 }
 
 IntSize ImageSource::size(

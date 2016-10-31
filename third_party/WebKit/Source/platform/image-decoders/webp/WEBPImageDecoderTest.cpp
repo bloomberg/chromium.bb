@@ -152,14 +152,14 @@ void testByteByByteSizeAvailable(const char* webpFile,
     if (length < frameOffset) {
       EXPECT_FALSE(decoder->isSizeAvailable());
       EXPECT_TRUE(decoder->size().isEmpty());
-      EXPECT_FALSE(decoder->hasColorSpace());
+      EXPECT_FALSE(decoder->hasEmbeddedColorSpace());
       EXPECT_EQ(0u, decoder->frameCount());
       EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
       EXPECT_FALSE(decoder->frameBufferAtIndex(0));
     } else {
       EXPECT_TRUE(decoder->isSizeAvailable());
       EXPECT_FALSE(decoder->size().isEmpty());
-      EXPECT_EQ(decoder->hasColorSpace(), hasColorSpace);
+      EXPECT_EQ(decoder->hasEmbeddedColorSpace(), hasColorSpace);
       EXPECT_EQ(1u, decoder->frameCount());
       EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount());
     }

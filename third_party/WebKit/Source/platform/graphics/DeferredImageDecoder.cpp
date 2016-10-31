@@ -90,7 +90,6 @@ DeferredImageDecoder::DeferredImageDecoder(
     : m_allDataReceived(false),
       m_actualDecoder(std::move(actualDecoder)),
       m_repetitionCount(cAnimationNone),
-      m_hasColorSpace(false),
       m_canYUVDecode(false),
       m_hasHotSpot(false) {}
 
@@ -179,8 +178,9 @@ bool DeferredImageDecoder::isSizeAvailable() {
   return m_actualDecoder ? m_actualDecoder->isSizeAvailable() : true;
 }
 
-bool DeferredImageDecoder::hasColorSpace() const {
-  return m_actualDecoder ? m_actualDecoder->hasColorSpace() : m_hasColorSpace;
+bool DeferredImageDecoder::hasEmbeddedColorSpace() const {
+  return m_actualDecoder ? m_actualDecoder->hasEmbeddedColorSpace()
+                         : m_hasEmbeddedColorSpace;
 }
 
 IntSize DeferredImageDecoder::size() const {
@@ -266,7 +266,7 @@ void DeferredImageDecoder::activateLazyDecoding() {
   // future.)
   m_canYUVDecode = RuntimeEnabledFeatures::decodeToYUVEnabled() &&
                    (m_filenameExtension == "jpg");
-  m_hasColorSpace = m_actualDecoder->hasColorSpace();
+  m_hasEmbeddedColorSpace = m_actualDecoder->hasEmbeddedColorSpace();
 
   const bool isSingleFrame =
       m_actualDecoder->repetitionCount() == cAnimationNone ||
@@ -274,7 +274,8 @@ void DeferredImageDecoder::activateLazyDecoding() {
   const SkISize decodedSize =
       SkISize::Make(m_actualDecoder->decodedSize().width(),
                     m_actualDecoder->decodedSize().height());
-  m_frameGenerator = ImageFrameGenerator::create(decodedSize, !isSingleFrame);
+  m_frameGenerator = ImageFrameGenerator::create(
+      decodedSize, m_actualDecoder->colorSpace(), !isSingleFrame);
 }
 
 void DeferredImageDecoder::prepareLazyDecodedFrames() {
@@ -311,13 +312,6 @@ void DeferredImageDecoder::prepareLazyDecodedFrames() {
   }
 }
 
-inline SkImageInfo imageInfoFrom(const SkISize& decodedSize,
-                                 bool knownToBeOpaque) {
-  return SkImageInfo::MakeN32(
-      decodedSize.width(), decodedSize.height(),
-      knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-}
-
 sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
     size_t index,
     bool knownToBeOpaque) {
@@ -328,9 +322,14 @@ sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
   sk_sp<SkROBuffer> roBuffer(m_rwBuffer->newRBufferSnapshot());
   RefPtr<SegmentReader> segmentReader =
       SegmentReader::createFromSkROBuffer(std::move(roBuffer));
+
+  SkImageInfo info = SkImageInfo::MakeN32(
+      decodedSize.width(), decodedSize.height(),
+      knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
+      m_frameGenerator->getColorSpace());
+
   DecodingImageGenerator* generator = new DecodingImageGenerator(
-      m_frameGenerator, imageInfoFrom(decodedSize, knownToBeOpaque),
-      segmentReader.release(), m_allDataReceived, index,
+      m_frameGenerator, info, segmentReader.release(), m_allDataReceived, index,
       m_frameData[index].m_uniqueID);
   sk_sp<SkImage> image = SkImage::MakeFromGenerator(
       generator);  // SkImage takes ownership of the generator.

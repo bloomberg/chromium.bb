@@ -104,8 +104,10 @@ static bool updateYUVComponentSizes(ImageDecoder* decoder,
 }
 
 ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize,
+                                         sk_sp<SkColorSpace> colorSpace,
                                          bool isMultiFrame)
     : m_fullSize(fullSize),
+      m_colorSpace(std::move(colorSpace)),
       m_isMultiFrame(isMultiFrame),
       m_decodeFailed(false),
       m_yuvDecodingFailed(false),

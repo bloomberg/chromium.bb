@@ -230,14 +230,14 @@ void PNGImageDecoder::headerAvailable() {
       png_uint_32 profileLength = 0;
       if (png_get_iCCP(png, info, &profileName, &compressionType, &profile,
                        &profileLength)) {
-        setColorSpaceAndComputeTransform(reinterpret_cast<char*>(profile),
-                                         profileLength);
+        setColorProfileAndComputeTransform(reinterpret_cast<char*>(profile),
+                                           profileLength);
       }
     }
 #endif  // PNG_iCCP_SUPPORTED
   }
 
-  if (!hasColorSpace()) {
+  if (!hasEmbeddedColorSpace()) {
     // TODO (msarett):
     // Applying the transfer function (gamma) should be handled by
     // SkColorSpaceXform.  Here we always convert to a transfer function that

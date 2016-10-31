@@ -358,16 +358,33 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
   BitmapImageMetrics::countGamma(gTargetColorSpace);
 }
 
-void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
-                                                    unsigned iccLength) {
-  setColorSpaceAndComputeTransform(SkColorSpace::NewICC(iccData, iccLength));
+sk_sp<SkColorSpace> ImageDecoder::colorSpace() const {
+  // TODO(ccameron): This should always return a non-null SkColorSpace. This is
+  // disabled for now because specifying a non-renderable color space results in
+  // errors.
+  // https://bugs.chromium.org/p/skia/issues/detail?id=5907
+  if (!RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+    return nullptr;
+
+  if (m_embeddedColorSpace)
+    return m_embeddedColorSpace;
+  return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+}
+
+void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
+                                                      unsigned iccLength) {
+  sk_sp<SkColorSpace> colorSpace = SkColorSpace::NewICC(iccData, iccLength);
+  if (!colorSpace)
+    DLOG(ERROR) << "Failed to parse image ICC profile";
+  setColorSpaceAndComputeTransform(colorSpace);
 }
 
 void ImageDecoder::setColorSpaceAndComputeTransform(
-    sk_sp<SkColorSpace> srcSpace) {
+    sk_sp<SkColorSpace> colorSpace) {
   DCHECK(!m_ignoreColorSpace);
 
-  m_srcSpace = srcSpace;
+  m_embeddedColorSpace = colorSpace;
+
   m_sourceToOutputDeviceColorTransform = nullptr;
 
   // With color correct rendering, we do not transform to the output color space
@@ -376,7 +393,7 @@ void ImageDecoder::setColorSpaceAndComputeTransform(
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
     return;
 
-  if (!m_srcSpace)
+  if (!m_embeddedColorSpace)
     return;
 
   // Take a lock around initializing and accessing the global device color
@@ -390,12 +407,12 @@ void ImageDecoder::setColorSpaceAndComputeTransform(
         SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named).release();
   }
 
-  if (SkColorSpace::Equals(srcSpace.get(), gTargetColorSpace)) {
+  if (SkColorSpace::Equals(m_embeddedColorSpace.get(), gTargetColorSpace)) {
     return;
   }
 
   m_sourceToOutputDeviceColorTransform =
-      SkColorSpaceXform::New(srcSpace.get(), gTargetColorSpace);
+      SkColorSpaceXform::New(m_embeddedColorSpace.get(), gTargetColorSpace);
 }
 
 }  // namespace blink

@@ -448,7 +448,7 @@ class JPEGImageReader final {
           JOCTET* profile = nullptr;
           unsigned profileLength = 0;
           if (read_icc_profile(info(), &profile, &profileLength)) {
-            decoder()->setColorSpaceAndComputeTransform(
+            decoder()->setColorProfileAndComputeTransform(
                 reinterpret_cast<char*>(profile), profileLength);
             free(profile);
           }

@@ -106,15 +106,19 @@ bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other) {
 bool ImageFrame::setSizeAndColorSpace(int newWidth,
                                       int newHeight,
                                       sk_sp<SkColorSpace> colorSpace) {
-  // setSizeAndColorProfile() should only be called once, it leaks memory
+  // setSizeAndColorSpace() should only be called once, it leaks memory
   // otherwise.
-  ASSERT(!width() && !height());
+  DCHECK(!width() && !height());
 
+  // The image must specify a color space.
+  // TODO(ccameron): This should be set unconditionally, but specifying a
+  // non-renderable SkColorSpace results in errors.
+  // https://bugs.chromium.org/p/skia/issues/detail?id=5907
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    if (!colorSpace)
-      colorSpace = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+    DCHECK(colorSpace);
+    m_colorSpace = std::move(colorSpace);
   } else {
-    colorSpace = nullptr;
+    DCHECK(!colorSpace);
   }
 
   m_bitmap.setInfo(SkImageInfo::MakeN32(
