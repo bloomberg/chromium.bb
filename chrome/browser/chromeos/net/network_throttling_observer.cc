@@ -47,8 +47,7 @@ void NetworkThrottlingObserver::OnPreferenceChanged(
   bool enabled = false;
   uint32_t upload_rate = 0, download_rate = 0;
   if (throttling_policy) {
-    int upload_rate_read = 0;
-    int download_rate_read = 0;
+    int upload_rate_read, download_rate_read;
 
     throttling_policy->GetBoolean("enabled", &enabled);
 
