@@ -535,14 +535,14 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
       property_trees()->inner_viewport_container_bounds_delta();
   gfx::Vector2dF outer_viewport_bounds_delta =
       property_trees()->outer_viewport_container_bounds_delta();
-  if (node->affected_by_inner_viewport_bounds_delta_x)
+  if (node->moved_by_inner_viewport_bounds_delta_x)
     fixed_position_adjustment.set_x(inner_viewport_bounds_delta.x());
-  else if (node->affected_by_outer_viewport_bounds_delta_x)
+  else if (node->moved_by_outer_viewport_bounds_delta_x)
     fixed_position_adjustment.set_x(outer_viewport_bounds_delta.x());
 
-  if (node->affected_by_inner_viewport_bounds_delta_y)
+  if (node->moved_by_inner_viewport_bounds_delta_y)
     fixed_position_adjustment.set_y(inner_viewport_bounds_delta.y());
-  else if (node->affected_by_outer_viewport_bounds_delta_y)
+  else if (node->moved_by_outer_viewport_bounds_delta_y)
     fixed_position_adjustment.set_y(outer_viewport_bounds_delta.y());
 
   transform.Translate(node->source_to_parent.x() - node->scroll_offset.x() +

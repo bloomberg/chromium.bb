@@ -31,10 +31,10 @@ TransformNode::TransformNode()
       node_and_ancestors_have_only_integer_translation(true),
       scrolls(false),
       should_be_snapped(false),
-      affected_by_inner_viewport_bounds_delta_x(false),
-      affected_by_inner_viewport_bounds_delta_y(false),
-      affected_by_outer_viewport_bounds_delta_x(false),
-      affected_by_outer_viewport_bounds_delta_y(false),
+      moved_by_inner_viewport_bounds_delta_x(false),
+      moved_by_inner_viewport_bounds_delta_y(false),
+      moved_by_outer_viewport_bounds_delta_x(false),
+      moved_by_outer_viewport_bounds_delta_y(false),
       in_subtree_of_page_scale_layer(false),
       transform_changed(false),
       post_local_scale_factor(1.0f) {}
@@ -65,14 +65,14 @@ bool TransformNode::operator==(const TransformNode& other) const {
              other.node_and_ancestors_have_only_integer_translation &&
          scrolls == other.scrolls &&
          should_be_snapped == other.should_be_snapped &&
-         affected_by_inner_viewport_bounds_delta_x ==
-             other.affected_by_inner_viewport_bounds_delta_x &&
-         affected_by_inner_viewport_bounds_delta_y ==
-             other.affected_by_inner_viewport_bounds_delta_y &&
-         affected_by_outer_viewport_bounds_delta_x ==
-             other.affected_by_outer_viewport_bounds_delta_x &&
-         affected_by_outer_viewport_bounds_delta_y ==
-             other.affected_by_outer_viewport_bounds_delta_y &&
+         moved_by_inner_viewport_bounds_delta_x ==
+             other.moved_by_inner_viewport_bounds_delta_x &&
+         moved_by_inner_viewport_bounds_delta_y ==
+             other.moved_by_inner_viewport_bounds_delta_y &&
+         moved_by_outer_viewport_bounds_delta_x ==
+             other.moved_by_outer_viewport_bounds_delta_x &&
+         moved_by_outer_viewport_bounds_delta_y ==
+             other.moved_by_outer_viewport_bounds_delta_y &&
          in_subtree_of_page_scale_layer ==
              other.in_subtree_of_page_scale_layer &&
          transform_changed == other.transform_changed &&
@@ -140,14 +140,14 @@ void TransformNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_scrolls(scrolls);
   data->set_should_be_snapped(should_be_snapped);
 
-  data->set_affected_by_inner_viewport_bounds_delta_x(
-      affected_by_inner_viewport_bounds_delta_x);
-  data->set_affected_by_inner_viewport_bounds_delta_y(
-      affected_by_inner_viewport_bounds_delta_y);
-  data->set_affected_by_outer_viewport_bounds_delta_x(
-      affected_by_outer_viewport_bounds_delta_x);
-  data->set_affected_by_outer_viewport_bounds_delta_y(
-      affected_by_outer_viewport_bounds_delta_y);
+  data->set_moved_by_inner_viewport_bounds_delta_x(
+      moved_by_inner_viewport_bounds_delta_x);
+  data->set_moved_by_inner_viewport_bounds_delta_y(
+      moved_by_inner_viewport_bounds_delta_y);
+  data->set_moved_by_outer_viewport_bounds_delta_x(
+      moved_by_outer_viewport_bounds_delta_x);
+  data->set_moved_by_outer_viewport_bounds_delta_y(
+      moved_by_outer_viewport_bounds_delta_y);
 
   data->set_in_subtree_of_page_scale_layer(in_subtree_of_page_scale_layer);
   data->set_transform_changed(transform_changed);
@@ -197,14 +197,14 @@ void TransformNode::FromProtobuf(const proto::TreeNode& proto) {
   scrolls = data.scrolls();
   should_be_snapped = data.should_be_snapped();
 
-  affected_by_inner_viewport_bounds_delta_x =
-      data.affected_by_inner_viewport_bounds_delta_x();
-  affected_by_inner_viewport_bounds_delta_y =
-      data.affected_by_inner_viewport_bounds_delta_y();
-  affected_by_outer_viewport_bounds_delta_x =
-      data.affected_by_outer_viewport_bounds_delta_x();
-  affected_by_outer_viewport_bounds_delta_y =
-      data.affected_by_outer_viewport_bounds_delta_y();
+  moved_by_inner_viewport_bounds_delta_x =
+      data.moved_by_inner_viewport_bounds_delta_x();
+  moved_by_inner_viewport_bounds_delta_y =
+      data.moved_by_inner_viewport_bounds_delta_y();
+  moved_by_outer_viewport_bounds_delta_x =
+      data.moved_by_outer_viewport_bounds_delta_x();
+  moved_by_outer_viewport_bounds_delta_y =
+      data.moved_by_outer_viewport_bounds_delta_y();
 
   in_subtree_of_page_scale_layer = data.in_subtree_of_page_scale_layer();
   transform_changed = data.transform_changed();

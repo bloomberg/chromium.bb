@@ -98,10 +98,10 @@ struct CC_EXPORT TransformNode {
 
   // These are used to position nodes wrt the right or bottom of the inner or
   // outer viewport.
-  bool affected_by_inner_viewport_bounds_delta_x : 1;
-  bool affected_by_inner_viewport_bounds_delta_y : 1;
-  bool affected_by_outer_viewport_bounds_delta_x : 1;
-  bool affected_by_outer_viewport_bounds_delta_y : 1;
+  bool moved_by_inner_viewport_bounds_delta_x : 1;
+  bool moved_by_inner_viewport_bounds_delta_y : 1;
+  bool moved_by_outer_viewport_bounds_delta_x : 1;
+  bool moved_by_outer_viewport_bounds_delta_y : 1;
 
   // Layer scale factor is used as a fallback when we either cannot adjust
   // raster scale or if the raster scale cannot be extracted from the screen

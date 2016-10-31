@@ -37,10 +37,10 @@ TEST(PropertyTreeSerializationTest, TransformNodeSerialization) {
   original.node_and_ancestors_are_flat = false;
   original.node_and_ancestors_have_only_integer_translation = false;
   original.scrolls = false;
-  original.affected_by_inner_viewport_bounds_delta_x = false;
-  original.affected_by_inner_viewport_bounds_delta_y = false;
-  original.affected_by_outer_viewport_bounds_delta_x = false;
-  original.affected_by_outer_viewport_bounds_delta_y = false;
+  original.moved_by_inner_viewport_bounds_delta_x = false;
+  original.moved_by_inner_viewport_bounds_delta_y = false;
+  original.moved_by_outer_viewport_bounds_delta_x = false;
+  original.moved_by_outer_viewport_bounds_delta_y = false;
   original.in_subtree_of_page_scale_layer = false;
   original.post_local_scale_factor = 0.5f;
   original.scroll_offset = gfx::ScrollOffset(1.5f, 1.5f);

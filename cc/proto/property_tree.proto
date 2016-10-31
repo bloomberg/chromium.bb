@@ -43,10 +43,10 @@ message TranformNodeData {
   optional bool node_and_ancestors_have_only_integer_translation = 21;
   optional bool scrolls = 22;
   optional bool should_be_snapped = 43;
-  optional bool affected_by_inner_viewport_bounds_delta_x = 24;
-  optional bool affected_by_inner_viewport_bounds_delta_y = 25;
-  optional bool affected_by_outer_viewport_bounds_delta_x = 26;
-  optional bool affected_by_outer_viewport_bounds_delta_y = 27;
+  optional bool moved_by_inner_viewport_bounds_delta_x = 24;
+  optional bool moved_by_inner_viewport_bounds_delta_y = 25;
+  optional bool moved_by_outer_viewport_bounds_delta_x = 26;
+  optional bool moved_by_outer_viewport_bounds_delta_y = 27;
   optional bool in_subtree_of_page_scale_layer = 28;
   optional bool transform_changed = 40;
   optional float post_local_scale_factor = 29;

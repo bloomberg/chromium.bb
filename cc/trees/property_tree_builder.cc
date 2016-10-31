@@ -669,22 +669,22 @@ bool AddTransformNodeIfNeeded(
 
   if (is_fixed) {
     if (data_from_ancestor.affected_by_inner_viewport_bounds_delta) {
-      node->affected_by_inner_viewport_bounds_delta_x =
+      node->moved_by_inner_viewport_bounds_delta_x =
           PositionConstraint(layer).is_fixed_to_right_edge();
-      node->affected_by_inner_viewport_bounds_delta_y =
+      node->moved_by_inner_viewport_bounds_delta_y =
           PositionConstraint(layer).is_fixed_to_bottom_edge();
-      if (node->affected_by_inner_viewport_bounds_delta_x ||
-          node->affected_by_inner_viewport_bounds_delta_y) {
+      if (node->moved_by_inner_viewport_bounds_delta_x ||
+          node->moved_by_inner_viewport_bounds_delta_y) {
         data_for_children->property_trees->transform_tree
             .AddNodeAffectedByInnerViewportBoundsDelta(node->id);
       }
     } else if (data_from_ancestor.affected_by_outer_viewport_bounds_delta) {
-      node->affected_by_outer_viewport_bounds_delta_x =
+      node->moved_by_outer_viewport_bounds_delta_x =
           PositionConstraint(layer).is_fixed_to_right_edge();
-      node->affected_by_outer_viewport_bounds_delta_y =
+      node->moved_by_outer_viewport_bounds_delta_y =
           PositionConstraint(layer).is_fixed_to_bottom_edge();
-      if (node->affected_by_outer_viewport_bounds_delta_x ||
-          node->affected_by_outer_viewport_bounds_delta_y) {
+      if (node->moved_by_outer_viewport_bounds_delta_x ||
+          node->moved_by_outer_viewport_bounds_delta_y) {
         data_for_children->property_trees->transform_tree
             .AddNodeAffectedByOuterViewportBoundsDelta(node->id);
       }
@@ -703,9 +703,19 @@ bool AddTransformNodeIfNeeded(
     ScrollNode* scroll_ancestor =
         data_for_children->property_trees->scroll_tree.Node(
             sticky_data->scroll_ancestor);
-    if (scroll_ancestor->is_inner_viewport_scroll_layer) {
-      data_for_children->property_trees->transform_tree
-          .AddNodeAffectedByInnerViewportBoundsDelta(node->id);
+    if (sticky_data->constraints.is_anchored_right ||
+        sticky_data->constraints.is_anchored_bottom) {
+      // Sticky nodes whose ancestor scroller is the inner / outer viewport
+      // need to have their local transform updated when the inner / outer
+      // viewport bounds change, but do not unconditionally move by that delta
+      // like fixed position nodes.
+      if (scroll_ancestor->is_inner_viewport_scroll_layer) {
+        data_for_children->property_trees->transform_tree
+            .AddNodeAffectedByInnerViewportBoundsDelta(node->id);
+      } else if (scroll_ancestor->is_outer_viewport_scroll_layer) {
+        data_for_children->property_trees->transform_tree
+            .AddNodeAffectedByOuterViewportBoundsDelta(node->id);
+      }
     }
     sticky_data->main_thread_offset =
         layer->position().OffsetFromOrigin() -
