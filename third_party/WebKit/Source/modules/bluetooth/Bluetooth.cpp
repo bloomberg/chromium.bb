@@ -133,6 +133,37 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options,
   }
 }
 
+class RequestDeviceCallback : public WebBluetoothRequestDeviceCallbacks {
+ public:
+  RequestDeviceCallback(Bluetooth* bluetooth, ScriptPromiseResolver* resolver)
+      : m_bluetooth(bluetooth), m_resolver(resolver) {}
+
+  void onSuccess(std::unique_ptr<WebBluetoothDeviceInit> deviceInit) override {
+    if (!m_resolver->getExecutionContext() ||
+        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      return;
+
+    BluetoothDevice* device = m_bluetooth->getBluetoothDeviceRepresentingDevice(
+        std::move(deviceInit), m_resolver);
+
+    m_resolver->resolve(device);
+  }
+
+  void onError(
+      int32_t
+          error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
+      override {
+    if (!m_resolver->getExecutionContext() ||
+        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      return;
+    m_resolver->reject(BluetoothError::take(m_resolver, error));
+  }
+
+ private:
+  Persistent<Bluetooth> m_bluetooth;
+  Persistent<ScriptPromiseResolver> m_resolver;
+};
+
 // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetooth-requestdevice
 ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
                                        const RequestDeviceOptions& options,
@@ -173,10 +204,27 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
   // Subsequent steps are handled in the browser process.
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
-  webbluetooth->requestDevice(
-      webOptions,
-      new CallbackPromiseAdapter<BluetoothDevice, BluetoothError>(resolver));
+  webbluetooth->requestDevice(webOptions,
+                              new RequestDeviceCallback(this, resolver));
   return promise;
+}
+
+DEFINE_TRACE(Bluetooth) {
+  visitor->trace(m_deviceInstanceMap);
+}
+
+BluetoothDevice* Bluetooth::getBluetoothDeviceRepresentingDevice(
+    std::unique_ptr<WebBluetoothDeviceInit> deviceInit,
+    ScriptPromiseResolver* resolver) {
+  BluetoothDevice* device = m_deviceInstanceMap.get(deviceInit->id);
+  if (!device) {
+    String deviceId = deviceInit->id;
+    device = BluetoothDevice::take(resolver, std::move(deviceInit));
+
+    auto result = m_deviceInstanceMap.add(deviceId, device);
+    DCHECK(result.isNewEntry);
+  }
+  return device;
 }
 
 }  // namespace blink
