@@ -512,7 +512,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
 
-  EXPECT_TRUE(new_sync_entries.size() == expected.size());
+  EXPECT_EQ(expected.size(), new_sync_entries.size());
   for (history::URLRows::iterator entry = new_sync_entries.begin();
        entry != new_sync_entries.end(); ++entry) {
     EXPECT_TRUE(URLsEqual(expected[entry->url().spec()], *entry));

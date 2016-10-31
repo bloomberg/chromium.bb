@@ -527,8 +527,7 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   // CheckInitialState() assumes that no windows are open at startup.
   browsers_[index] = new Browser(Browser::CreateParams(GetProfile(index)));
 
-  EXPECT_FALSE(GetBrowser(index) == nullptr) << "Could not create Browser "
-                                             << index << ".";
+  EXPECT_NE(nullptr, GetBrowser(index)) << "Could not create Browser " << index;
 
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
@@ -553,8 +552,7 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
                                         username_,
                                         password_,
                                         singin_type);
-  EXPECT_FALSE(GetClient(index) == nullptr) << "Could not create Client "
-                                            << index << ".";
+  EXPECT_NE(nullptr, GetClient(index)) << "Could not create Client " << index;
   InitializeInvalidations(index);
 }
 
@@ -793,7 +791,7 @@ void SyncTest::SetupMockGaiaResponses() {
 void SyncTest::SetOAuth2TokenResponse(const std::string& response_data,
                                       net::HttpStatusCode response_code,
                                       net::URLRequestStatus::Status status) {
-  ASSERT_TRUE(nullptr != fake_factory_.get());
+  ASSERT_NE(nullptr, fake_factory_.get());
   fake_factory_->SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                                  response_data, response_code, status);
 }
@@ -933,11 +931,11 @@ bool SyncTest::SetUpLocalTestServer() {
   const int kNumIntervals = 15;
   if (WaitForTestServerToStart(kMaxWaitTime, kNumIntervals)) {
     DVLOG(1) << "Started local test server at "
-             << cl->GetSwitchValueASCII(switches::kSyncServiceURL) << ".";
+             << cl->GetSwitchValueASCII(switches::kSyncServiceURL);
     return true;
   } else {
     LOG(ERROR) << "Could not start local test server at "
-               << cl->GetSwitchValueASCII(switches::kSyncServiceURL) << ".";
+               << cl->GetSwitchValueASCII(switches::kSyncServiceURL);
     return false;
   }
 }

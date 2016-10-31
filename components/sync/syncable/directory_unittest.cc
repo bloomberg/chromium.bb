@@ -224,10 +224,10 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans,
   Entry e(trans, GET_BY_ID, TestIdFactory::FromNumber(id));
   ASSERT_TRUE(e.good());
   if (check_name)
-    ASSERT_TRUE(name == e.GetNonUniqueName());
-  ASSERT_TRUE(base_version == e.GetBaseVersion());
-  ASSERT_TRUE(server_version == e.GetServerVersion());
-  ASSERT_TRUE(is_del == e.GetIsDel());
+    ASSERT_EQ(name, e.GetNonUniqueName());
+  ASSERT_EQ(base_version, e.GetBaseVersion());
+  ASSERT_EQ(server_version, e.GetServerVersion());
+  ASSERT_EQ(is_del, e.GetIsDel());
 }
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
@@ -261,7 +261,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
   Directory::SaveChangesSnapshot snapshot1;
   base::AutoLock scoped_lock(dir()->kernel()->save_changes_mutex);
   dir()->TakeSnapshotForSaveChanges(&snapshot1);
-  EXPECT_TRUE(expected_purges == snapshot1.metahandles_to_purge);
+  EXPECT_EQ(expected_purges, snapshot1.metahandles_to_purge);
 
   to_purge.Clear();
   to_purge.Put(PREFERENCES);
@@ -271,7 +271,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
 
   Directory::SaveChangesSnapshot snapshot2;
   dir()->TakeSnapshotForSaveChanges(&snapshot2);
-  EXPECT_TRUE(all_handles == snapshot2.metahandles_to_purge);
+  EXPECT_EQ(all_handles, snapshot2.metahandles_to_purge);
 }
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
@@ -727,7 +727,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
     ASSERT_EQ(1u, handles.size());
-    ASSERT_TRUE(handle1 == handles[0]);
+    ASSERT_EQ(handle1, handles[0]);
 
     MutableEntry e4(&trans, GET_BY_HANDLE, handle2);
     ASSERT_TRUE(e4.good());
@@ -739,10 +739,10 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
     ASSERT_EQ(2u, handles.size());
     if (handle1 == handles[0]) {
-      ASSERT_TRUE(handle2 == handles[1]);
+      ASSERT_EQ(handle2, handles[1]);
     } else {
-      ASSERT_TRUE(handle2 == handles[0]);
-      ASSERT_TRUE(handle1 == handles[1]);
+      ASSERT_EQ(handle2, handles[0]);
+      ASSERT_EQ(handle1, handles[1]);
     }
 
     MutableEntry e5(&trans, GET_BY_HANDLE, handle1);
@@ -756,7 +756,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnsyncedMetaHandles(&trans, &handles);
     ASSERT_EQ(1u, handles.size());
-    ASSERT_TRUE(handle2 == handles[0]);
+    ASSERT_EQ(handle2, handles[0]);
   }
 }
 
@@ -801,7 +801,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
     ASSERT_EQ(1u, handles.size());
-    ASSERT_TRUE(handle1 == handles[0]);
+    ASSERT_EQ(handle1, handles[0]);
 
     MutableEntry e4(&trans, GET_BY_HANDLE, handle2);
     ASSERT_TRUE(e4.good());
@@ -813,10 +813,10 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
     ASSERT_EQ(2u, handles.size());
     if (handle1 == handles[0]) {
-      ASSERT_TRUE(handle2 == handles[1]);
+      ASSERT_EQ(handle2, handles[1]);
     } else {
-      ASSERT_TRUE(handle2 == handles[0]);
-      ASSERT_TRUE(handle1 == handles[1]);
+      ASSERT_EQ(handle2, handles[0]);
+      ASSERT_EQ(handle1, handles[1]);
     }
 
     MutableEntry e5(&trans, GET_BY_HANDLE, handle1);
@@ -828,7 +828,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     dir()->GetUnappliedUpdateMetaHandles(&trans, all_types, &handles);
     ASSERT_EQ(1u, handles.size());
-    ASSERT_TRUE(handle2 == handles[0]);
+    ASSERT_EQ(handle2, handles[0]);
   }
 }
 
@@ -952,8 +952,8 @@ TEST_F(SyncableDirectoryTest, TestEntryIsInFolder) {
     Entry entry(&trans, GET_BY_ID, entry_id);
     ASSERT_TRUE(entry.good());
     EXPECT_EQ(entry_handle, entry.GetMetahandle());
-    EXPECT_TRUE(entry.GetNonUniqueName() == entry_name);
-    EXPECT_TRUE(entry.GetParentId() == folder_id);
+    EXPECT_EQ(entry_name, entry.GetNonUniqueName());
+    EXPECT_EQ(folder_id, entry.GetParentId());
   }
 }
 

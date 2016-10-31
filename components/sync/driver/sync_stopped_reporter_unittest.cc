@@ -146,9 +146,9 @@ TEST_F(SyncStoppedReporterTest, DestructionDuringRequestHandler) {
     SyncStoppedReporter ssr(test_url(), user_agent(), request_context(),
                             callback());
     ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
-    EXPECT_FALSE(factory.GetFetcherByID(0) == nullptr);
+    EXPECT_NE(nullptr, factory.GetFetcherByID(0));
   }
-  EXPECT_TRUE(factory.GetFetcherByID(0) == nullptr);
+  EXPECT_EQ(nullptr, factory.GetFetcherByID(0));
 }
 
 TEST_F(SyncStoppedReporterTest, Timeout) {

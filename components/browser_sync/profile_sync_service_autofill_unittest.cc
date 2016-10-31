@@ -848,8 +848,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeEntriesEmptySync) {
   std::vector<AutofillEntry> sync_entries;
   std::vector<AutofillProfile> sync_profiles;
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&sync_entries, &sync_profiles));
-  ASSERT_EQ(1U, entries.size());
-  EXPECT_TRUE(entries[0] == sync_entries[0]);
+  ASSERT_EQ(1U, sync_entries.size());
+  EXPECT_EQ(entries[0], sync_entries[0]);
   EXPECT_EQ(0U, sync_profiles.size());
 }
 
@@ -931,7 +931,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
   std::set<AutofillEntry> new_sync_entries_set(new_sync_entries.begin(),
                                                new_sync_entries.end());
 
-  EXPECT_TRUE(expected_entries == new_sync_entries_set);
+  EXPECT_EQ(expected_entries, new_sync_entries_set);
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
@@ -960,7 +960,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
   ASSERT_TRUE(
       GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_entries.size());
-  EXPECT_TRUE(merged_entry == new_sync_entries[0]);
+  EXPECT_EQ(merged_entry, new_sync_entries[0]);
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
@@ -1326,7 +1326,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
   ASSERT_TRUE(
       GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_entries.size());
-  EXPECT_TRUE(added_entry == new_sync_entries[0]);
+  EXPECT_EQ(added_entry, new_sync_entries[0]);
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
@@ -1383,7 +1383,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
   ASSERT_TRUE(
       GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_entries.size());
-  EXPECT_TRUE(updated_entry == new_sync_entries[0]);
+  EXPECT_EQ(updated_entry, new_sync_entries[0]);
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {

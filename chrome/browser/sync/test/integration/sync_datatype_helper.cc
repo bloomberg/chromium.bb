@@ -16,13 +16,13 @@ static SyncTest* test = nullptr;
 namespace sync_datatype_helper {
 
 void AssociateWithTest(SyncTest* test) {
-  ASSERT_TRUE(test != nullptr) << "Cannot associate with null test.";
-  ASSERT_TRUE(::test == nullptr) << "Already associated with a test.";
+  ASSERT_NE(nullptr, test) << "Cannot associate with null test.";
+  ASSERT_EQ(nullptr, ::test) << "Already associated with a test.";
   ::test = test;
 }
 
 SyncTest* test() {
-  EXPECT_TRUE(::test != nullptr) << "Must call AssociateWithTest first.";
+  EXPECT_NE(nullptr, ::test) << "Must call AssociateWithTest first.";
   return ::test;
 }
 

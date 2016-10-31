@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
 
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_TRUE(pdm != nullptr);
+  ASSERT_NE(nullptr, pdm);
   std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
 
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
 
   // Make sure the card is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_TRUE(pdm != nullptr);
+  ASSERT_NE(nullptr, pdm);
   std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
 
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
 
   // Make sure the card is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_TRUE(pdm != nullptr);
+  ASSERT_NE(nullptr, pdm);
   std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
 
@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Make sure the card is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_TRUE(pdm != nullptr);
+  ASSERT_NE(nullptr, pdm);
   std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
 

@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   const BookmarkNode* bar = GetBookmarkBarNode(kSingleProfileIndex);
   const BookmarkNode* cnn = AddURL(
       kSingleProfileIndex, bar, 0, "CNN", GURL("http://www.cnn.com"));
-  ASSERT_TRUE(cnn != nullptr);
+  ASSERT_NE(nullptr, cnn);
   Move(kSingleProfileIndex, tier1_a, bar, 1);
 
   // Wait for the bookmark position change to sync.
@@ -160,12 +160,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   const BookmarkNode* boa = AddURL(
       kSingleProfileIndex, bar, bar->child_count(),
       "Bank of America", GURL("https://www.bankofamerica.com"));
-  ASSERT_TRUE(boa != nullptr);
+  ASSERT_NE(nullptr, boa);
   Move(kSingleProfileIndex, tier1_a_url0, top, top->child_count());
   const BookmarkNode* bubble = AddURL(
       kSingleProfileIndex, bar, bar->child_count(), "Seattle Bubble",
           GURL("http://seattlebubble.com"));
-  ASSERT_TRUE(bubble != nullptr);
+  ASSERT_NE(nullptr, bubble);
   const BookmarkNode* wired = AddURL(
       kSingleProfileIndex, bar, 2, "Wired News", GURL("http://www.wired.com"));
   const BookmarkNode* tier2_b = AddFolder(

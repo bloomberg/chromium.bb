@@ -78,8 +78,8 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
     for (auto iter = expected_configure_types_.begin();
          iter != expected_configure_types_.end(); ++iter) {
       if (!iter->second.Empty()) {
-        EXPECT_TRUE(iter->second ==
-                    GetDataTypesInState(iter->first, config_state_map))
+        EXPECT_EQ(iter->second,
+                  GetDataTypesInState(iter->first, config_state_map))
             << "State " << iter->first << " : "
             << ModelTypeSetToString(iter->second) << " v.s. "
             << ModelTypeSetToString(

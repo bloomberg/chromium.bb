@@ -81,7 +81,7 @@ class SyncAuthTest : public SyncTest {
     int bookmark_index = GetNextBookmarkIndex();
     std::string title = base::StringPrintf("Bookmark %d", bookmark_index);
     GURL url = GURL(base::StringPrintf("http://www.foo%d.com", bookmark_index));
-    EXPECT_TRUE(AddURL(0, title, url) != nullptr);
+    EXPECT_NE(nullptr, AddURL(0, title, url));
 
     // Run until the bookmark is committed or an auth error is encountered.
     TestForAuthError(GetSyncService(0)).Wait();

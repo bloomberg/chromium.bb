@@ -455,8 +455,7 @@ class SyncerTest : public testing::Test,
       }
     }
     EXPECT_TRUE(SyncShareNudge());
-    ASSERT_TRUE(expected_positions.size() ==
-                mock_server_->committed_ids().size());
+    ASSERT_EQ(expected_positions.size(), mock_server_->committed_ids().size());
     // If this test starts failing, be aware other sort orders could be valid.
     for (size_t i = 0; i < expected_positions.size(); ++i) {
       SCOPED_TRACE(i);
@@ -1951,7 +1950,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
 
     Entry entry_b(&rtrans, GET_BY_HANDLE, meta_handle_b);
     EXPECT_TRUE(entry_b.GetId().ServerKnows());
-    EXPECT_TRUE(parent2.GetId() == entry_b.GetParentId());
+    EXPECT_EQ(parent2.GetId(), entry_b.GetParentId());
   }
 }
 
@@ -2105,13 +2104,13 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
     EXPECT_EQ(root, rename.GetParentId());
     EXPECT_EQ("new_name", rename.GetNonUniqueName());
     EXPECT_FALSE(rename.GetIsUnappliedUpdate());
-    EXPECT_TRUE(ids_.FromNumber(1) == rename.GetId());
+    EXPECT_EQ(ids_.FromNumber(1), rename.GetId());
     EXPECT_EQ(20u, rename.GetBaseVersion());
 
     Entry name_clash(&trans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(name_clash.good());
     EXPECT_EQ(root, name_clash.GetParentId());
-    EXPECT_TRUE(ids_.FromNumber(2) == name_clash.GetId());
+    EXPECT_EQ(ids_.FromNumber(2), name_clash.GetId());
     EXPECT_EQ(10u, name_clash.GetBaseVersion());
     EXPECT_EQ("in_root", name_clash.GetNonUniqueName());
 
