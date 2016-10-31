@@ -20,9 +20,13 @@ using testing::UnorderedElementsAre;
 namespace blimp {
 namespace {
 
-const char kBlobId[] = "blob-1";
+const char kBlobId[] =
+    "\x20\x1e\x33\xb2\x2a\xa4\xf5\x5a\x98\xfc\x6b\x5b\x14\xc6\xab\x2b"
+    "\x99\xbc\xcc\x1b\x1c\xa0\xa1\x8a\xf0\x45\x4a\x04\x7f\x6b\x06\x72";
 const char kBlobPayload[] = "blob-1-payload";
-const char kBlobId2[] = "blob-2";
+const char kBlobId2[] =
+    "\x90\x11\x3f\xcf\x1f\xc0\xef\x0a\x72\x11\xe0\x8d\xe4\x74\xd6\xdf"
+    "\x04\x04\x8d\x61\xf0\xa1\xdf\xc2\xc6\xd3\x86\x9f\xfd\x92\x97\xf1";
 
 // Helper function for creating a cache payload vector from a string.
 BlobDataPtr CreatePayload(const std::string& input) {
