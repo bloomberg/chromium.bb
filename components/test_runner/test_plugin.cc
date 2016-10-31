@@ -275,9 +275,7 @@ void TestPlugin::updateGeometry(
 
     gpu::SyncToken sync_token;
     gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-    texture_mailbox_ =
-        cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D,
-                           gfx::Rect(rect_).size(), false, false);
+    texture_mailbox_ = cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
   } else {
     std::unique_ptr<cc::SharedBitmap> bitmap =
         delegate_->GetSharedBitmapManager()->AllocateSharedBitmap(

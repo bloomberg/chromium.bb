@@ -379,24 +379,6 @@ VideoResourceUpdater::NewHalfFloatMaker(int bits_per_channel) {
   }
 }
 
-ResourceFormat VideoResourceUpdater::YuvResourceFormat(int bits) const {
-  if (!context_provider_)
-    return LUMINANCE_8;
-
-  const auto caps = context_provider_->ContextCapabilities();
-  if (caps.disable_one_component_textures)
-    return RGBA_8888;
-
-  ResourceFormat yuv_resource_format = caps.texture_rg ? RED_8 : LUMINANCE_8;
-  if (bits <= 8)
-    return yuv_resource_format;
-
-  if (caps.texture_half_float_linear)
-    return LUMINANCE_F16;
-
-  return yuv_resource_format;
-}
-
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     scoped_refptr<media::VideoFrame> video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForSoftwarePlanes");
@@ -452,21 +434,18 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   // Only YUV software video frames are supported.
   DCHECK(media::IsYuvPlanar(input_frame_format));
 
-  const bool software_compositor = context_provider_ == nullptr;
-  bool disable_one_component_textures = true;
-  if (!software_compositor) {
-    const auto caps = context_provider_->ContextCapabilities();
-    disable_one_component_textures = caps.disable_one_component_textures;
-  }
+  const bool software_compositor = context_provider_ == NULL;
 
-  ResourceFormat output_resource_format = YuvResourceFormat(bits_per_channel);
+  ResourceFormat output_resource_format =
+      resource_provider_->YuvResourceFormat(bits_per_channel);
 
   // If GPU compositing is enabled, but the output resource format
   // returned by the resource provider is RGBA_8888, then a GPU driver
   // bug workaround requires that YUV frames must be converted to RGB
   // before texture upload.
   bool texture_needs_rgb_conversion =
-      !software_compositor && disable_one_component_textures;
+      !software_compositor &&
+      output_resource_format == ResourceFormat::RGBA_8888;
   size_t output_plane_count = media::VideoFrame::NumPlanes(input_frame_format);
 
   // TODO(skaslev): If we're in software compositing mode, we do the YUV -> RGB
@@ -542,9 +521,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           upload_pixels_.resize(needed_size);
 
         media::SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
-            video_frame.get(),
-            media::SkCanvasVideoRenderer::ConvertingSize::CODED,
-            &upload_pixels_[0], bytes_per_row);
+            video_frame.get(), &upload_pixels_[0], bytes_per_row);
 
         resource_provider_->CopyToResource(plane_resource.resource_id(),
                                            &upload_pixels_[0],
@@ -564,8 +541,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // a sync token is not required.
       TextureMailbox mailbox(plane_resource.mailbox(), gpu::SyncToken(),
                              resource_provider_->GetResourceTextureTarget(
-                                 plane_resource.resource_id()),
-                             plane_resource.resource_size(), false, false);
+                                 plane_resource.resource_id()));
       mailbox.set_color_space(video_frame->ColorSpace());
       external_resources.mailboxes.push_back(mailbox);
       external_resources.release_callbacks.push_back(base::Bind(
@@ -576,7 +552,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   }
 
   std::unique_ptr<HalfFloatMaker> half_float_maker;
-  if (YuvResourceFormat(bits_per_channel) == LUMINANCE_F16) {
+  if (resource_provider_->YuvResourceFormat(bits_per_channel) ==
+      LUMINANCE_F16) {
     half_float_maker = NewHalfFloatMaker(bits_per_channel);
     external_resources.offset = half_float_maker->Offset();
     external_resources.multiplier = half_float_maker->Multiplier();
@@ -586,7 +563,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     PlaneResource& plane_resource = *plane_resources[i];
     // Update each plane's resource id with its content.
     DCHECK_EQ(plane_resource.resource_format(),
-              YuvResourceFormat(bits_per_channel));
+              resource_provider_->YuvResourceFormat(bits_per_channel));
 
     if (!plane_resource.Matches(video_frame->unique_id(), i)) {
       // TODO(hubbe): Move all conversion (and upload?) code to media/.

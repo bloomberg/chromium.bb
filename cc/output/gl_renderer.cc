@@ -81,20 +81,6 @@ Float4 UVTransform(const TextureDrawQuad* quad) {
   return xform;
 }
 
-Float4 UVClampRect(gfx::RectF uv_clamp_rect,
-                   const gfx::Size& texture_size,
-                   SamplerType sampler) {
-  gfx::SizeF half_texel(0.5f, 0.5f);
-  if (sampler != SAMPLER_TYPE_2D_RECT) {
-    half_texel.Scale(1.f / texture_size.width(), 1.f / texture_size.height());
-  } else {
-    uv_clamp_rect.Scale(texture_size.width(), texture_size.height());
-  }
-  uv_clamp_rect.Inset(half_texel.width(), half_texel.height());
-  return {{uv_clamp_rect.x(), uv_clamp_rect.y(), uv_clamp_rect.right(),
-           uv_clamp_rect.bottom()}};
-}
-
 Float4 PremultipliedColor(SkColor color) {
   const float factor = 1.0f / 255.0f;
   const float alpha = SkColorGetA(color) * factor;
@@ -2499,15 +2485,8 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
 
   gl_->Uniform1i(program->fragment_shader().sampler_location(), 0);
 
-  gfx::Size texture_size = lock.size();
-  gfx::Vector2dF uv = quad->matrix.Scale2d();
-  gfx::RectF uv_clamp_rect(0, 0, uv.x(), uv.y());
-  const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
-  Float4 tex_clamp_rect = UVClampRect(uv_clamp_rect, texture_size, sampler);
-  gl_->Uniform4f(program->fragment_shader().tex_clamp_rect_location(),
-                 tex_clamp_rect.data[0], tex_clamp_rect.data[1],
-                 tex_clamp_rect.data[2], tex_clamp_rect.data[3]);
-
+  SetShaderOpacity(quad->shared_quad_state->opacity,
+                   program->fragment_shader().alpha_location());
   if (!clip_region) {
     DrawQuadGeometry(frame->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
@@ -2550,12 +2529,9 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
     tex_transform_location = program->vertex_shader().tex_transform_location();
     vertex_opacity_location =
         program->vertex_shader().vertex_opacity_location();
-    tex_clamp_rect_location =
-        program->fragment_shader().tex_clamp_rect_location();
   }
   int tex_transform_location;
   int vertex_opacity_location;
-  int tex_clamp_rect_location;
 };
 
 void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
@@ -2595,11 +2571,6 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   gl_->Uniform4fv(static_cast<int>(draw_cache_.uv_xform_location),
                   static_cast<int>(draw_cache_.uv_xform_data.size()),
                   reinterpret_cast<float*>(&draw_cache_.uv_xform_data.front()));
-
-  gl_->Uniform4fv(
-      draw_cache_.tex_clamp_rect_location,
-      static_cast<int>(draw_cache_.tex_clamp_rect_data.size()),
-      reinterpret_cast<float*>(&draw_cache_.tex_clamp_rect_data.front()));
 
   if (draw_cache_.background_color != SK_ColorTRANSPARENT) {
     Float4 background_color = PremultipliedColor(draw_cache_.background_color);
@@ -2644,7 +2615,6 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Clear the cache.
   draw_cache_.program_id = -1;
   draw_cache_.uv_xform_data.resize(0);
-  draw_cache_.tex_clamp_rect_data.resize(0);
   draw_cache_.vertex_opacity_data.resize(0);
   draw_cache_.matrix_data.resize(0);
 
@@ -2709,7 +2679,6 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
     draw_cache_.background_color = quad->background_color;
 
     draw_cache_.uv_xform_location = binding.tex_transform_location;
-    draw_cache_.tex_clamp_rect_location = binding.tex_clamp_rect_location;
     draw_cache_.background_color_location = binding.background_color_location;
     draw_cache_.vertex_opacity_location = binding.vertex_opacity_location;
     draw_cache_.matrix_location = binding.matrix_location;
@@ -2729,23 +2698,6 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
     uv_transform.data[3] *= texture_size.height();
   }
   draw_cache_.uv_xform_data.push_back(uv_transform);
-
-  if (draw_cache_.tex_clamp_rect_location != -1) {
-    // VideoLayerImpl always set background color to transparent.
-    DCHECK(quad->background_color == SK_ColorTRANSPARENT);
-    gfx::Size texture_size = lock.size();
-    if (texture_size.IsEmpty()) {
-      // TODO(dshwang): correct all code coming to here. crbug.com/615325
-      texture_size = quad->rect.size();
-    }
-    gfx::RectF uv_clamp_rect(quad->uv_top_left.x(), quad->uv_top_left.y(),
-                             quad->uv_bottom_right.x() - quad->uv_top_left.x(),
-                             quad->uv_bottom_right.y() - quad->uv_top_left.y());
-    Float4 tex_clamp_rect = UVClampRect(uv_clamp_rect, texture_size, sampler);
-    draw_cache_.tex_clamp_rect_data.push_back(tex_clamp_rect);
-    DCHECK_EQ(draw_cache_.uv_xform_data.size(),
-              draw_cache_.tex_clamp_rect_data.size());
-  }
 
   // Generate the vertex opacity
   const float opacity = quad->shared_quad_state->opacity;
