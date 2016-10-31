@@ -25,18 +25,22 @@ class GpuService;
 
 namespace demo {
 
-// A simple MUS Demo. It connects to the service:ui, creates a new window and
-// draws a spinning square in the center of the window. Provides a simple way
-// to demonstrate that the graphic stack works as intended.
-class MusDemo : public WindowTreeClientDelegate,
+// A simple MUS Demo service. This service connects to the service:ui, creates a
+// new window and draws a spinning square in the center of the window. Provides
+// a simple way to demonstrate that the graphic stack works as intended.
+class MusDemo : public service_manager::Service,
+                public WindowTreeClientDelegate,
                 public WindowManagerDelegate {
  public:
   MusDemo();
   ~MusDemo() override;
 
-  void Start(service_manager::Connector* connector);
-
  private:
+  // service_manager::Service:
+  void OnStart(const service_manager::ServiceInfo& info) override;
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                 service_manager::InterfaceRegistry* registry) override;
+
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
   void OnEmbedRootDestroyed(Window* root) override;
