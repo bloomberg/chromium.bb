@@ -397,28 +397,6 @@ ToProtoVideoDecoderConfigColorSpace(::media::ColorSpace value) {
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<::media::BufferingState> ToMediaBufferingState(
-    pb::RendererClientOnBufferingStateChange::State value) {
-  using OriginType = pb::RendererClientOnBufferingStateChange;
-  using OtherType = ::media::BufferingState;
-  switch (value) {
-    CASE_RETURN_OTHER(BUFFERING_HAVE_NOTHING);
-    CASE_RETURN_OTHER(BUFFERING_HAVE_ENOUGH);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::RendererClientOnBufferingStateChange::State>
-ToProtoMediaBufferingState(::media::BufferingState value) {
-  using OriginType = ::media::BufferingState;
-  using OtherType = pb::RendererClientOnBufferingStateChange;
-  switch (value) {
-    CASE_RETURN_OTHER(BUFFERING_HAVE_NOTHING);
-    CASE_RETURN_OTHER(BUFFERING_HAVE_ENOUGH);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
 base::Optional<::media::CdmKeyInformation::KeyStatus>
 ToMediaCdmKeyInformationKeyStatus(pb::CdmKeyInformation::KeyStatus value) {
   using OriginType = pb::CdmKeyInformation;
@@ -570,7 +548,7 @@ base::Optional<::media::DemuxerStream::Status> ToDemuxerStreamStatus(
 }
 
 base::Optional<pb::DemuxerStreamReadUntilCallback::Status>
-ToProtoDemuxerStreamStatus(::media::DemuxerStream::Status value) {
+ToProtoToDemuxerStreamStatus(::media::DemuxerStream::Status value) {
   using OriginType = ::media::DemuxerStream;
   using OtherType = pb::DemuxerStreamReadUntilCallback;
   switch (value) {

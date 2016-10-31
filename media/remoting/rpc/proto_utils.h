@@ -28,6 +28,12 @@ namespace remoting {
 
 class CdmPromiseResult;
 
+// Predefined invalid handle value RPC message.
+constexpr int kInvalidHandle = -1;
+
+// Predefined handle value for RPC messages related to initialization.
+constexpr int kReceiverHandle = 0;
+
 // Utility class to convert data between ::media::DecoderBuffer and byte array.
 // It is to serialize ::media::DecoderBuffer structure except for actual data
 // into pb::DecoderBuffer followed by byte array of decoder buffer. The reason

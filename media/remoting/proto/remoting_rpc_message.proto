@@ -282,6 +282,7 @@ enum MediaKeysSessionType {
   PERSISTENT_RELEASE_MESSAGE_SESSION = 2;
 };
 
+// Custom proto data structure
 message RendererInitialize {
   optional int32 client_handle = 1;
   optional int32 audio_demuxer_handle = 2;
@@ -303,16 +304,6 @@ message RendererSetCdm {
 message RendererClientOnTimeUpdate {
   optional int64 time_usec = 1;
   optional int64 max_time_usec = 2;
-}
-
-message RendererClientOnBufferingStateChange {
-  // Should align with ::media::BufferingState
-  enum State {
-    BUFFERING_HAVE_NOTHING = 0;
-    BUFFERING_HAVE_ENOUGH = 1;
-  };
-
-  optional State state = 1;
 }
 
 message DemuxerStreamReadUntil {
@@ -493,6 +484,7 @@ message RpcMessage {
     // RPC_ACQUIRE_RENDERER_DONE
     // RPC_ACQUIRE_CDM
     // RPC_ACQUIRE_CDM_DONE
+    // RPC_RC_ONBUFFERINGSTATECHANGE
     // RPC_DS_INITIALIZE_CALLBACK
     // RPC_DS_READ
     // RPC_CDM_SETCLIENT
@@ -530,9 +522,6 @@ message RpcMessage {
     Size rendererclient_onvideonatualsizechange_rpc = 201;
     // RPC_RC_ONSTATISTICSUPDATE
     PipelineStatistics rendererclient_onstatisticsupdate_rpc = 202;
-    // RPC_RC_ONTIMEUPDATE
-    RendererClientOnBufferingStateChange
-        rendererclient_onbufferingstatechange_rpc = 203;
 
     // RPC_DS_READUNTIL
     DemuxerStreamReadUntil demuxerstream_readuntil_rpc = 300;
