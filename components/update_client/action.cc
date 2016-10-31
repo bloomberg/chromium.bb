@@ -53,12 +53,9 @@ void ActionImpl::Run(UpdateContext* update_context, Action::Callback callback) {
 CrxUpdateItem* ActionImpl::FindUpdateItemById(const std::string& id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto it(std::find_if(
-      update_context_->update_items.begin(),
-      update_context_->update_items.end(),
-      [&id](const CrxUpdateItem* item) { return item->id == id; }));
+  const auto it = update_context_->update_items.find(id);
 
-  return it != update_context_->update_items.end() ? *it : nullptr;
+  return it != update_context_->update_items.end() ? it->second.get() : nullptr;
 }
 
 void ActionImpl::ChangeItemState(CrxUpdateItem* item, CrxUpdateItem::State to) {
@@ -102,9 +99,9 @@ size_t ActionImpl::ChangeAllItemsState(CrxUpdateItem::State from,
                                        CrxUpdateItem::State to) {
   DCHECK(thread_checker_.CalledOnValidThread());
   size_t count = 0;
-  for (auto* item : update_context_->update_items) {
-    if (item->state == from) {
-      ChangeItemState(item, to);
+  for (const auto& item : update_context_->update_items) {
+    if (item.second->state == from) {
+      ChangeItemState(item.second.get(), to);
       ++count;
     }
   }

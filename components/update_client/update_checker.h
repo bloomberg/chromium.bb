@@ -40,7 +40,8 @@ class UpdateChecker {
   // provides a way to customize the <request> element. This value is inserted
   // as-is, therefore it must be well-formed as an XML attribute string.
   virtual bool CheckForUpdates(
-      const std::vector<CrxUpdateItem*>& items_to_check,
+      const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
+          items_to_check,
       const std::string& additional_attributes,
       bool enabled_component_updates,
       const UpdateCheckCallback& update_check_callback) = 0;

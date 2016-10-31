@@ -47,9 +47,10 @@ update_client::InstallerAttributes SanitizeInstallerAttributes(
 }
 
 // Returns true if at least one item requires network encryption.
-bool IsEncryptionRequired(const std::vector<CrxUpdateItem*>& items) {
-  for (const auto* item : items) {
-    if (item->component.requires_network_encryption)
+bool IsEncryptionRequired(
+    const std::map<std::string, std::unique_ptr<CrxUpdateItem>>& items) {
+  for (const auto& item : items) {
+    if (item.second->component.requires_network_encryption)
       return true;
   }
   return false;
@@ -69,15 +70,16 @@ bool IsEncryptionRequired(const std::vector<CrxUpdateItem*>& items) {
 //        <package fp="abcd"/>
 //      </packages>
 //    </app>
-std::string BuildUpdateCheckRequest(const Configurator& config,
-                                    const std::vector<CrxUpdateItem*>& items,
-                                    PersistedData* metadata,
-                                    const std::string& additional_attributes,
-                                    bool enabled_component_updates) {
+std::string BuildUpdateCheckRequest(
+    const Configurator& config,
+    const std::map<std::string, std::unique_ptr<CrxUpdateItem>>& items,
+    PersistedData* metadata,
+    const std::string& additional_attributes,
+    bool enabled_component_updates) {
   const std::string brand(SanitizeBrand(config.GetBrand()));
   std::string app_elements;
-  for (size_t i = 0; i != items.size(); ++i) {
-    const CrxUpdateItem* item = items[i];
+  for (const auto& item_pair : items) {
+    const CrxUpdateItem* item = item_pair.second.get();
     const update_client::InstallerAttributes installer_attributes(
         SanitizeInstallerAttributes(item->component.installer_attributes));
     std::string app("<app ");
@@ -138,7 +140,8 @@ class UpdateCheckerImpl : public UpdateChecker {
 
   // Overrides for UpdateChecker.
   bool CheckForUpdates(
-      const std::vector<CrxUpdateItem*>& items_to_check,
+      const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
+          items_to_check,
       const std::string& additional_attributes,
       bool enabled_component_updates,
       const UpdateCheckCallback& update_check_callback) override;
@@ -168,7 +171,7 @@ UpdateCheckerImpl::~UpdateCheckerImpl() {
 }
 
 bool UpdateCheckerImpl::CheckForUpdates(
-    const std::vector<CrxUpdateItem*>& items_to_check,
+    const std::map<std::string, std::unique_ptr<CrxUpdateItem>>& items_to_check,
     const std::string& additional_attributes,
     bool enabled_component_updates,
     const UpdateCheckCallback& update_check_callback) {
@@ -187,8 +190,8 @@ bool UpdateCheckerImpl::CheckForUpdates(
 
   std::unique_ptr<std::vector<std::string>> ids_checked(
       new std::vector<std::string>());
-  for (auto* crx : items_to_check)
-    ids_checked->push_back(crx->id);
+  for (const auto& item : items_to_check)
+    ids_checked->push_back(item.second->id);
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
       config_->EnabledCupSigning(),

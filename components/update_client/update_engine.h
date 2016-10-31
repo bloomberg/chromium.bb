@@ -6,6 +6,7 @@
 #define COMPONENTS_UPDATE_CLIENT_UPDATE_ENGINE_H_
 
 #include <list>
+#include <map>
 #include <memory>
 #include <queue>
 #include <set>
@@ -146,8 +147,8 @@ struct UpdateContext {
 
   std::unique_ptr<Action> current_action;
 
-  // TODO(sorin): use a map instead of vector.
-  std::vector<CrxUpdateItem*> update_items;
+  // Map of id to item.
+  std::map<std::string, std::unique_ptr<CrxUpdateItem>> update_items;
 
   // Contains the ids of the items to update.
   std::queue<std::string> queue;

@@ -43,9 +43,7 @@ UpdateContext::UpdateContext(
       ping_manager(ping_manager),
       retry_after_sec_(0) {}
 
-UpdateContext::~UpdateContext() {
-  base::STLDeleteElements(&update_items);
-}
+UpdateContext::~UpdateContext() {}
 
 UpdateEngine::UpdateEngine(
     const scoped_refptr<Configurator>& config,
@@ -69,12 +67,9 @@ bool UpdateEngine::GetUpdateState(const std::string& id,
   DCHECK(thread_checker_.CalledOnValidThread());
   for (const auto* context : update_contexts_) {
     const auto& update_items = context->update_items;
-    const auto it = std::find_if(update_items.begin(), update_items.end(),
-                                 [id](const CrxUpdateItem* update_item) {
-                                   return id == update_item->id;
-                                 });
+    const auto it = update_items.find(id);
     if (it != update_items.end()) {
-      *update_item = **it;
+      *update_item = *it->second.get();
       return true;
     }
   }

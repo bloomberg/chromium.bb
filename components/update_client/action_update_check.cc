@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -58,10 +59,8 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
   vector<CrxComponent> crx_components;
   update_context_->crx_data_callback.Run(update_context_->ids, &crx_components);
 
-  update_context_->update_items.reserve(crx_components.size());
-
   for (size_t i = 0; i != crx_components.size(); ++i) {
-    std::unique_ptr<CrxUpdateItem> item(new CrxUpdateItem);
+    std::unique_ptr<CrxUpdateItem> item = base::MakeUnique<CrxUpdateItem>();
     const CrxComponent& crx_component = crx_components[i];
 
     item->id = GetCrxComponentID(crx_component);
@@ -83,10 +82,10 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
     item->diff_extra_code1 = 0;
     item->download_metrics.clear();
 
-    update_context_->update_items.push_back(item.get());
+    CrxUpdateItem* item_ptr = item.get();
+    update_context_->update_items[item_ptr->id] = std::move(item);
 
-    ChangeItemState(item.get(), CrxUpdateItem::State::kChecking);
-    ignore_result(item.release());
+    ChangeItemState(item_ptr, CrxUpdateItem::State::kChecking);
   }
 
   update_checker_->CheckForUpdates(
