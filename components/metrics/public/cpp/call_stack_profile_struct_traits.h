@@ -115,21 +115,10 @@ struct StructTraits<metrics::mojom::CallStackProfileDataView,
 
   static bool Read(metrics::mojom::CallStackProfileDataView data,
                    base::StackSamplingProfiler::CallStackProfile* out) {
-    std::vector<base::StackSamplingProfiler::Module> modules;
-    std::vector<base::StackSamplingProfiler::Sample> samples;
-    base::TimeDelta profile_duration, sampling_period;
-    if (!data.ReadModules(&modules) || !data.ReadSamples(&samples) ||
-        !data.ReadProfileDuration(&profile_duration) ||
-        !data.ReadSamplingPeriod(&sampling_period) ||
-        !ValidateSamples(samples, modules.size()))
-      return false;
-
-    *out = base::StackSamplingProfiler::CallStackProfile();
-    out->modules = std::move(modules);
-    out->samples = std::move(samples);
-    out->profile_duration = profile_duration;
-    out->sampling_period = sampling_period;
-    return true;
+    return data.ReadModules(&out->modules) && data.ReadSamples(&out->samples) &&
+        data.ReadProfileDuration(&out->profile_duration) &&
+        data.ReadSamplingPeriod(&out->sampling_period) &&
+        ValidateSamples(out->samples, out->modules.size());
   }
 };
 
