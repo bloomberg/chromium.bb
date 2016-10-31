@@ -285,23 +285,6 @@ WebUIController* NewWebUI<WelcomeWin10UI>(WebUI* web_ui, const GURL& url) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(ENABLE_EXTENSIONS)
-// Only create ExtensionWebUI for URLs that are allowed extension bindings,
-// hosted by actual tabs.
-bool NeedsExtensionWebUI(Profile* profile, const GURL& url) {
-  if (!profile)
-    return false;
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().
-          GetExtensionOrAppByURL(url);
-  // Allow bindings for all packaged extensions and component hosted apps.
-  return extension &&
-      (!extension->is_hosted_app() ||
-       extension->location() == extensions::Manifest::COMPONENT);
-}
-#endif
-
 bool IsAboutUI(const GURL& url) {
   return (url.host() == chrome::kChromeUIChromeURLsHost ||
           url.host() == chrome::kChromeUICreditsHost ||
@@ -329,7 +312,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
                                              Profile* profile,
                                              const GURL& url) {
 #if defined(ENABLE_EXTENSIONS)
-  if (NeedsExtensionWebUI(profile, url))
+  if (ExtensionWebUI::NeedsExtensionWebUI(profile, url))
     return &NewWebUI<ExtensionWebUI>;
 #endif
 
@@ -692,7 +675,7 @@ bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
   // Extensions are rendered via WebUI in tabs, but don't actually need WebUI
   // bindings (see the ExtensionWebUI constructor).
   needs_extensions_web_ui =
-      NeedsExtensionWebUI(Profile::FromBrowserContext(browser_context), url);
+      ExtensionWebUI::NeedsExtensionWebUI(browser_context, url);
 #endif
   return !needs_extensions_web_ui && UseWebUIForURL(browser_context, url);
 }
