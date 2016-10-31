@@ -71,8 +71,10 @@ void FullscreenNotificationBlocker::CheckState() {
 
 bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
     const message_center::Notification& notification) const {
-  bool enabled = !is_fullscreen_mode_ ||
-      notification.delegate()->ShouldDisplayOverFullscreen();
+  bool enabled = !is_fullscreen_mode_;
+  if (is_fullscreen_mode_ && notification.delegate())
+    enabled = notification.delegate()->ShouldDisplayOverFullscreen();
+
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance())
     enabled = enabled || ash::system_notifier::ShouldAlwaysShowPopups(
