@@ -70,7 +70,7 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
   void RunPostedTask(invalidation::Closure* task);
 
   // Holds all posted tasks that have not yet been run.
-  std::set<invalidation::Closure*> posted_tasks_;
+  std::set<std::unique_ptr<invalidation::Closure>> posted_tasks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> const created_on_task_runner_;
   bool is_started_;
@@ -159,12 +159,10 @@ class INVALIDATION_EXPORT SyncNetworkChannel
   bool DeliverIncomingMessage(const std::string& message);
 
  private:
-  typedef std::vector<invalidation::NetworkStatusCallback*>
-      NetworkStatusReceiverList;
-
   // Callbacks into invalidation library
   std::unique_ptr<invalidation::MessageCallback> incoming_receiver_;
-  NetworkStatusReceiverList network_status_receivers_;
+  std::vector<std::unique_ptr<invalidation::NetworkStatusCallback>>
+      network_status_receivers_;
 
   // Last network status for new network status receivers.
   bool last_network_status_;

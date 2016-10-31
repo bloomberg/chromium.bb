@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -65,7 +66,6 @@ RegistrationManager::RegistrationManager(
 
 RegistrationManager::~RegistrationManager() {
   DCHECK(CalledOnValidThread());
-  base::STLDeleteValues(&registration_statuses_);
 }
 
 ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
@@ -87,8 +87,8 @@ ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
   for (ObjectIdSet::const_iterator it = to_register.begin();
        it != to_register.end(); ++it) {
     if (!base::ContainsKey(registration_statuses_, *it)) {
-      registration_statuses_.insert(
-          std::make_pair(*it, new RegistrationStatus(*it, this)));
+      registration_statuses_[*it] =
+          base::MakeUnique<RegistrationStatus>(*it, this);
     }
     if (!IsIdRegistered(*it)) {
       TryRegisterId(*it, false /* is-retry */);
@@ -101,7 +101,7 @@ ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
 void RegistrationManager::MarkRegistrationLost(
     const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
-  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     DVLOG(1) << "Attempt to mark non-existent registration for "
              << ObjectIdToString(id) << " as lost";
@@ -117,8 +117,7 @@ void RegistrationManager::MarkRegistrationLost(
 
 void RegistrationManager::MarkAllRegistrationsLost() {
   DCHECK(CalledOnValidThread());
-  for (RegistrationStatusMap::const_iterator it =
-           registration_statuses_.begin();
+  for (auto it = registration_statuses_.begin();
        it != registration_statuses_.end(); ++it) {
     if (IsIdRegistered(it->first)) {
       MarkRegistrationLost(it->first);
@@ -128,7 +127,7 @@ void RegistrationManager::MarkAllRegistrationsLost() {
 
 void RegistrationManager::DisableId(const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
-  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     DVLOG(1) << "Attempt to disable non-existent registration for "
              << ObjectIdToString(id);
@@ -164,11 +163,9 @@ RegistrationManager::PendingRegistrationMap
     RegistrationManager::GetPendingRegistrationsForTest() const {
   DCHECK(CalledOnValidThread());
   PendingRegistrationMap pending_registrations;
-  for (RegistrationStatusMap::const_iterator it =
-           registration_statuses_.begin();
-       it != registration_statuses_.end(); ++it) {
-    const invalidation::ObjectId& id = it->first;
-    RegistrationStatus* status = it->second;
+  for (const auto& status_pair : registration_statuses_) {
+    const invalidation::ObjectId& id = status_pair.first;
+    RegistrationStatus* status = status_pair.second.get();
     if (status->registration_timer.IsRunning()) {
       pending_registrations[id].last_registration_request =
           status->last_registration_request;
@@ -184,11 +181,9 @@ RegistrationManager::PendingRegistrationMap
 
 void RegistrationManager::FirePendingRegistrationsForTest() {
   DCHECK(CalledOnValidThread());
-  for (RegistrationStatusMap::const_iterator it =
-           registration_statuses_.begin();
-       it != registration_statuses_.end(); ++it) {
-    if (it->second->registration_timer.IsRunning()) {
-      it->second->DoRegister();
+  for (const auto& status_pair : registration_statuses_) {
+    if (status_pair.second->registration_timer.IsRunning()) {
+      status_pair.second->DoRegister();
     }
   }
 }
@@ -204,13 +199,13 @@ double RegistrationManager::GetJitter() {
 void RegistrationManager::TryRegisterId(const invalidation::ObjectId& id,
                                         bool is_retry) {
   DCHECK(CalledOnValidThread());
-  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     NOTREACHED() << "TryRegisterId called on " << ObjectIdToString(id)
                  << " which is not in the registration map";
     return;
   }
-  RegistrationStatus* status = it->second;
+  RegistrationStatus* status = it->second.get();
   if (!status->enabled) {
     // Disabled, so do nothing.
     return;
@@ -258,7 +253,7 @@ void RegistrationManager::TryRegisterId(const invalidation::ObjectId& id,
 void RegistrationManager::DoRegisterId(const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
   invalidation_client_->Register(id);
-  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     NOTREACHED() << "DoRegisterId called on " << ObjectIdToString(id)
                  << " which is not in the registration map";
@@ -271,13 +266,12 @@ void RegistrationManager::DoRegisterId(const invalidation::ObjectId& id) {
 void RegistrationManager::UnregisterId(const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
   invalidation_client_->Unregister(id);
-  RegistrationStatusMap::iterator it = registration_statuses_.find(id);
+  auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     NOTREACHED() << "UnregisterId called on " << ObjectIdToString(id)
                  << " which is not in the registration map";
     return;
   }
-  delete it->second;
   registration_statuses_.erase(it);
 }
 
@@ -285,11 +279,9 @@ void RegistrationManager::UnregisterId(const invalidation::ObjectId& id) {
 ObjectIdSet RegistrationManager::GetRegisteredIds() const {
   DCHECK(CalledOnValidThread());
   ObjectIdSet ids;
-  for (RegistrationStatusMap::const_iterator it =
-           registration_statuses_.begin();
-       it != registration_statuses_.end(); ++it) {
-    if (IsIdRegistered(it->first)) {
-      ids.insert(it->first);
+  for (const auto& status_pair : registration_statuses_) {
+    if (IsIdRegistered(status_pair.first)) {
+      ids.insert(status_pair.first);
     }
   }
   return ids;
@@ -298,8 +290,7 @@ ObjectIdSet RegistrationManager::GetRegisteredIds() const {
 bool RegistrationManager::IsIdRegistered(
     const invalidation::ObjectId& id) const {
   DCHECK(CalledOnValidThread());
-  RegistrationStatusMap::const_iterator it =
-      registration_statuses_.find(id);
+  auto it = registration_statuses_.find(id);
   return it != registration_statuses_.end() &&
       it->second->state == invalidation::InvalidationListener::REGISTERED;
 }
