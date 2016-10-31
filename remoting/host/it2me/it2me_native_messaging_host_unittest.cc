@@ -169,6 +169,7 @@ void MockIt2MeHost::Connect() {
                             access_code, lifetime));
 
   RunSetState(kReceivedAccessCode);
+  RunSetState(kConnecting);
 
   std::string client_username(kTestClientUsername);
   host_context()->ui_task_runner()->PostTask(
@@ -401,10 +402,11 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
   bool starting_received = false;
   bool requestedAccessCode_received = false;
   bool receivedAccessCode_received = false;
+  bool connecting_received = false;
   bool connected_received = false;
 
-  // We expect a total of 5 messages: 1 connectResponse and 4 hostStateChanged.
-  for (int i = 0; i < 5; ++i) {
+  // We expect a total of 6 messages: 1 connectResponse and 5 hostStateChanged.
+  for (int i = 0; i < 6; ++i) {
     std::unique_ptr<base::DictionaryValue> response =
         ReadMessageFromOutputPipe();
     ASSERT_TRUE(response);
@@ -440,6 +442,10 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
         EXPECT_TRUE(
             response->GetInteger("accessCodeLifetime", &accessCodeLifetime));
         EXPECT_EQ(kTestAccessCodeLifetimeInSeconds, accessCodeLifetime);
+      } else if (state ==
+                 It2MeNativeMessagingHost::HostStateToString(kConnecting)) {
+        EXPECT_FALSE(connecting_received);
+        connecting_received = true;
       } else if (state ==
                  It2MeNativeMessagingHost::HostStateToString(kConnected)) {
         EXPECT_FALSE(connected_received);
@@ -500,8 +506,9 @@ void It2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message,
 
   VerifyHelloResponse(1);
 
-  if (expect_error_response)
+  if (expect_error_response) {
     VerifyErrorResponse();
+  }
 
   std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_FALSE(response);
@@ -606,8 +613,9 @@ TEST_F(It2MeNativeMessagingHostTest, Connect) {
   // A new It2MeHost instance is created for every it2me session. The native
   // messaging host, on the other hand, is long lived. This test verifies
   // multiple It2Me host startup and shutdowns.
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i) {
     TestConnect();
+  }
 }
 
 // Verify non-Dictionary requests are rejected.

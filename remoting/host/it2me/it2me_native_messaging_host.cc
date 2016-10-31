@@ -51,6 +51,7 @@ const remoting::protocol::NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
     {kConnected, "CONNECTED"},
     {kError, "ERROR"},
     {kInvalidDomainError, "INVALID_DOMAIN_ERROR"},
+    {kConnecting, "CONNECTING"},
 };
 
 #if defined(OS_WIN)

@@ -37,16 +37,17 @@ class PolicyWatcher;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
 
-// These state values are duplicated in host_session.js and the Android Java
-// It2MeObserver class. Remember to update all copies when making changes.
+// These state values are duplicated in host_session.js.  Remember to update
+// both copies when making changes.
 enum It2MeHostState {
   kDisconnected,
   kStarting,
   kRequestedAccessCode,
   kReceivedAccessCode,
+  kConnecting,
   kConnected,
   kError,
-  kInvalidDomainError
+  kInvalidDomainError,
 };
 
 // Internal implementation of the plugin's It2Me host function.
@@ -115,8 +116,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Updates state of the host. Can be called only on the network thread.
   void SetState(It2MeHostState state, const std::string& error_message);
 
-  // Returns true if the host is connected.
-  bool IsConnected() const;
+  // Returns true if the host is in a post-starting, non-error state.
+  bool IsRunning() const;
 
   // Processes the result of the confirmation dialog.
   void OnConfirmationResult(

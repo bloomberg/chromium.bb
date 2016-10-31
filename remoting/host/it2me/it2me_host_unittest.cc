@@ -166,6 +166,16 @@ void It2MeHostTest::RunValidationCallback(const std::string& remote_jid) {
 
   network_task_runner_->PostTask(
       FROM_HERE,
+      base::Bind(&It2MeHost::SetStateForTesting, it2me_host_.get(),
+                 It2MeHostState::kRequestedAccessCode, std::string()));
+
+  network_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&It2MeHost::SetStateForTesting, it2me_host_.get(),
+                 It2MeHostState::kReceivedAccessCode, std::string()));
+
+  network_task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(it2me_host_->GetValidationCallbackForTesting(), remote_jid,
                  base::Bind(&It2MeHostTest::OnValidationComplete,
                             base::Unretained(this), run_loop.QuitClosure())));

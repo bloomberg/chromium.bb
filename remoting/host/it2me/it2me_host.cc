@@ -345,7 +345,7 @@ void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
 
   // When transitioning from enabled to disabled, force disconnect any
   // existing session.
-  if (nat_traversal_enabled_ && !nat_traversal_enabled && IsConnected()) {
+  if (nat_traversal_enabled_ && !nat_traversal_enabled && IsRunning()) {
     DisconnectOnNetworkThread();
   }
 
@@ -363,7 +363,7 @@ void It2MeHost::UpdateHostDomainPolicy(const std::string& host_domain) {
   VLOG(2) << "UpdateHostDomainPolicy: " << host_domain;
 
   // When setting a host domain policy, force disconnect any existing session.
-  if (!host_domain.empty() && IsConnected()) {
+  if (!host_domain.empty() && IsRunning()) {
     DisconnectOnNetworkThread();
   }
 
@@ -376,7 +376,7 @@ void It2MeHost::UpdateClientDomainPolicy(const std::string& client_domain) {
   VLOG(2) << "UpdateClientDomainPolicy: " << client_domain;
 
   // When setting a client  domain policy, disconnect any existing session.
-  if (!client_domain.empty() && IsConnected()) {
+  if (!client_domain.empty() && IsRunning()) {
     DisconnectOnNetworkThread();
   }
 
@@ -404,6 +404,11 @@ void It2MeHost::SetState(It2MeHostState state,
              state == kError) << state;
       break;
     case kReceivedAccessCode:
+      DCHECK(state == kConnecting ||
+             state == kDisconnected ||
+             state == kError) << state;
+      break;
+    case kConnecting:
       DCHECK(state == kConnected ||
              state == kDisconnected ||
              state == kError) << state;
@@ -428,9 +433,9 @@ void It2MeHost::SetState(It2MeHostState state,
                             state, error_message));
 }
 
-bool It2MeHost::IsConnected() const {
+bool It2MeHost::IsRunning() const {
   return state_ == kRequestedAccessCode || state_ == kReceivedAccessCode ||
-      state_ == kConnected;
+         state_ == kConnected || state_ == kConnecting;
 }
 
 void It2MeHost::OnReceivedSupportID(
@@ -510,6 +515,9 @@ void It2MeHost::ValidateConnectionDetails(
       return;
     }
   }
+
+  HOST_LOG << "Client " << client_username << " connecting.";
+  SetState(kConnecting, std::string());
 
   // Show a confirmation dialog to the user to allow them to confirm/reject it.
   confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
