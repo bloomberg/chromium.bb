@@ -224,7 +224,7 @@ void SocketsTcpServerDisconnectFunction::Work() {
     return;
   }
 
-  socket->Disconnect();
+  socket->Disconnect(false /* socket_destroying */);
   results_ = sockets_tcp_server::Disconnect::Results::Create();
 }
 

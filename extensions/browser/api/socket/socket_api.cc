@@ -359,7 +359,7 @@ bool SocketDisconnectFunction::Prepare() {
 void SocketDisconnectFunction::Work() {
   Socket* socket = GetSocket(socket_id_);
   if (socket)
-    socket->Disconnect();
+    socket->Disconnect(false /* socket_destroying */);
   else
     error_ = kSocketNotFoundError;
   SetResult(base::Value::CreateNullValue());
@@ -505,7 +505,7 @@ void SocketReadFunction::AsyncWorkStart() {
   Socket* socket = GetSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
-    OnCompleted(-1, NULL);
+    OnCompleted(-1, nullptr, false /* socket_destroying */);
     return;
   }
 
@@ -514,7 +514,8 @@ void SocketReadFunction::AsyncWorkStart() {
 }
 
 void SocketReadFunction::OnCompleted(int bytes_read,
-                                     scoped_refptr<net::IOBuffer> io_buffer) {
+                                     scoped_refptr<net::IOBuffer> io_buffer,
+                                     bool socket_destroying) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
@@ -580,7 +581,7 @@ void SocketRecvFromFunction::AsyncWorkStart() {
   Socket* socket = GetSocket(params_->socket_id);
   if (!socket || socket->GetSocketType() != Socket::TYPE_UDP) {
     error_ = kSocketNotFoundError;
-    OnCompleted(-1, NULL, std::string(), 0);
+    OnCompleted(-1, nullptr, false /* socket_destroying*/, std::string(), 0);
     return;
   }
 
@@ -590,6 +591,7 @@ void SocketRecvFromFunction::AsyncWorkStart() {
 
 void SocketRecvFromFunction::OnCompleted(int bytes_read,
                                          scoped_refptr<net::IOBuffer> io_buffer,
+                                         bool socket_destroying,
                                          const std::string& address,
                                          uint16_t port) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());

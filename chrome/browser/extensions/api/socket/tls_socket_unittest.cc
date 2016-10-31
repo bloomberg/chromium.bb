@@ -112,8 +112,10 @@ class CompleteHandler {
  public:
   CompleteHandler() {}
   MOCK_METHOD1(OnComplete, void(int result_code));
-  MOCK_METHOD2(OnReadComplete,
-               void(int result_code, scoped_refptr<net::IOBuffer> io_buffer));
+  MOCK_METHOD3(OnReadComplete,
+               void(int result_code,
+                    scoped_refptr<net::IOBuffer> io_buffer,
+                    bool socket_destroying));
   MOCK_METHOD2(OnAccept, void(int, net::TCPClientSocket*));
 
  private:
@@ -150,7 +152,7 @@ TEST_F(TLSSocketTest, TestTLSSocketRead) {
   CompleteHandler handler;
 
   EXPECT_CALL(*ssl_socket_, Read(_, _, _)).Times(1);
-  EXPECT_CALL(handler, OnReadComplete(_, _)).Times(1);
+  EXPECT_CALL(handler, OnReadComplete(_, _, _)).Times(1);
 
   const int count = 512;
   socket_->Read(

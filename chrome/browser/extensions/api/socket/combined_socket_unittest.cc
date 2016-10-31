@@ -107,7 +107,9 @@ class CombinedSocketTest : public testing::Test {
     EXPECT_EQ(buffer, io_buffer_);
   }
 
-  void OnRead(int count, scoped_refptr<net::IOBuffer> io_buffer) {
+  void OnRead(int count,
+              scoped_refptr<net::IOBuffer> io_buffer,
+              bool socket_destroying) {
     count_ = count;
     io_buffer_ = io_buffer.get();
   }

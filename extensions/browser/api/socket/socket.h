@@ -33,15 +33,17 @@ class Socket;
 
 namespace extensions {
 
-typedef base::Callback<void(int)> CompletionCallback;
-typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
-    ReadCompletionCallback;
-typedef base::Callback<void(int,
-                            scoped_refptr<net::IOBuffer> io_buffer,
-                            const std::string&,
-                            uint16_t)> RecvFromCompletionCallback;
-typedef base::Callback<void(int, std::unique_ptr<net::TCPClientSocket>)>
-    AcceptCompletionCallback;
+using CompletionCallback = base::Callback<void(int)>;
+using ReadCompletionCallback = base::Callback<
+    void(int, scoped_refptr<net::IOBuffer> io_buffer, bool socket_destroying)>;
+using RecvFromCompletionCallback =
+    base::Callback<void(int,
+                        scoped_refptr<net::IOBuffer> io_buffer,
+                        bool socket_destroying,
+                        const std::string&,
+                        uint16_t)>;
+using AcceptCompletionCallback =
+    base::Callback<void(int, std::unique_ptr<net::TCPClientSocket>)>;
 
 // A Socket wraps a low-level socket and includes housekeeping information that
 // we need to manage it in the context of an extension.
@@ -75,7 +77,9 @@ class Socket : public ApiResource {
   // must also supply the hostname of the endpoint via set_hostname().
   virtual void Connect(const net::AddressList& address,
                        const CompletionCallback& callback) = 0;
-  virtual void Disconnect() = 0;
+  // |socket_destroying| is true if disconnect is due to destruction of the
+  // socket.
+  virtual void Disconnect(bool socket_destroying) = 0;
   virtual int Bind(const std::string& address, uint16_t port) = 0;
 
   // The |callback| will be called with the number of bytes read into the

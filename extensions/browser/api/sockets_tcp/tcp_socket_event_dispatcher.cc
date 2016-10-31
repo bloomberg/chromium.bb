@@ -118,7 +118,8 @@ void TCPSocketEventDispatcher::StartRead(const ReadParams& params) {
 void TCPSocketEventDispatcher::ReadCallback(
     const ReadParams& params,
     int bytes_read,
-    scoped_refptr<net::IOBuffer> io_buffer) {
+    scoped_refptr<net::IOBuffer> io_buffer,
+    bool socket_destroying) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   // If |bytes_read| == 0, the connection has been closed by the peer.
@@ -163,12 +164,14 @@ void TCPSocketEventDispatcher::ReadCallback(
                   sockets_tcp::OnReceiveError::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
 
-    // Since we got an error, the socket is now "paused" until the application
-    // "resumes" it.
-    ResumableTCPSocket* socket =
-        params.sockets->Get(params.extension_id, params.socket_id);
-    if (socket) {
-      socket->set_paused(true);
+    // Do not try to access |socket| when we are destroying it.
+    if (!socket_destroying) {
+      // Since we got an error, the socket is now "paused" until the application
+      // "resumes" it.
+      ResumableTCPSocket* socket =
+          params.sockets->Get(params.extension_id, params.socket_id);
+      if (socket)
+        socket->set_paused(true);
     }
   }
 }

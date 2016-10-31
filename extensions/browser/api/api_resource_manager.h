@@ -333,8 +333,17 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     void Cleanup() {
       DCHECK(sequence_checker_.CalledOnValidSequence());
 
-      api_resource_map_.clear();
-      extension_resource_map_.clear();
+      // Subtle: Move |api_resource_map_| to a temporary and clear that.
+      // |api_resource_map_| will become empty and any destructors called
+      // transitively from clearing |local_api_resource_map| will see empty
+      // |api_resource_map_| instead of trying to access being-destroyed map.
+      ApiResourceMap local_api_resource_map;
+      api_resource_map_.swap(local_api_resource_map);
+      local_api_resource_map.clear();
+      // Do the same as above for |extension_resource_map_|.
+      ExtensionToResourceMap local_extension_resource_map;
+      extension_resource_map_.swap(local_extension_resource_map);
+      local_extension_resource_map.clear();
     }
 
     int GenerateId() { return next_id_++; }

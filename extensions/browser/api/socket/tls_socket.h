@@ -52,7 +52,7 @@ class TLSSocket : public ResumableTCPSocket {
   void Connect(const net::AddressList& address,
                const CompletionCallback& callback) override;
   // Forwards.
-  void Disconnect() override;
+  void Disconnect(bool socket_destroying) override;
 
   // Attempts to read |count| bytes of decrypted data from the TLS socket,
   // invoking |callback| with the actual number of bytes read, or a network

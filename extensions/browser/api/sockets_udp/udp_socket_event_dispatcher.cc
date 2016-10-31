@@ -104,6 +104,7 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     const ReceiveParams& params,
     int bytes_read,
     scoped_refptr<net::IOBuffer> io_buffer,
+    bool socket_destroying,
     const std::string& address,
     uint16_t port) {
   DCHECK_CURRENTLY_ON(params.thread_id);
@@ -151,12 +152,14 @@ void UDPSocketEventDispatcher::ReceiveCallback(
                   sockets_udp::OnReceiveError::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
 
-    // Since we got an error, the socket is now "paused" until the application
-    // "resumes" it.
-    ResumableUDPSocket* socket =
-        params.sockets->Get(params.extension_id, params.socket_id);
-    if (socket) {
-      socket->set_paused(true);
+    // Do not try to access |socket| when we are destroying it.
+    if (!socket_destroying) {
+      // Since we got an error, the socket is now "paused" until the application
+      // "resumes" it.
+      ResumableUDPSocket* socket =
+          params.sockets->Get(params.extension_id, params.socket_id);
+      if (socket)
+        socket->set_paused(true);
     }
   }
 }

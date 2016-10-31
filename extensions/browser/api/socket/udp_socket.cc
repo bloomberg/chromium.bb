@@ -36,7 +36,9 @@ UDPSocket::UDPSocket(const std::string& owner_extension_id)
               NULL,
               net::NetLogSource()) {}
 
-UDPSocket::~UDPSocket() { Disconnect(); }
+UDPSocket::~UDPSocket() {
+  Disconnect(true /* socket_destroying */);
+}
 
 void UDPSocket::Connect(const net::AddressList& address,
                         const CompletionCallback& callback) {
@@ -81,14 +83,15 @@ int UDPSocket::Bind(const std::string& address, uint16_t port) {
   return result;
 }
 
-void UDPSocket::Disconnect() {
+void UDPSocket::Disconnect(bool socket_destroying) {
   is_connected_ = false;
   socket_.Close();
   read_callback_.Reset();
   // TODO(devlin): Should we do this for all callbacks?
   if (!recv_from_callback_.is_null()) {
     base::ResetAndReturn(&recv_from_callback_)
-        .Run(net::ERR_CONNECTION_CLOSED, nullptr, std::string(), 0);
+        .Run(net::ERR_CONNECTION_CLOSED, nullptr, true /* socket_destroying */,
+             std::string(), 0);
   }
   send_to_callback_.Reset();
   multicast_groups_.clear();
@@ -98,7 +101,7 @@ void UDPSocket::Read(int count, const ReadCompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
   if (!read_callback_.is_null()) {
-    callback.Run(net::ERR_IO_PENDING, NULL);
+    callback.Run(net::ERR_IO_PENDING, nullptr, false /* socket_destroying */);
     return;
   } else {
     read_callback_ = callback;
@@ -143,7 +146,8 @@ void UDPSocket::RecvFrom(int count,
   DCHECK(!callback.is_null());
 
   if (!recv_from_callback_.is_null()) {
-    callback.Run(net::ERR_IO_PENDING, NULL, std::string(), 0);
+    callback.Run(net::ERR_IO_PENDING, nullptr, false /* socket_destroying */,
+                 std::string(), 0);
     return;
   } else {
     recv_from_callback_ = callback;
@@ -224,7 +228,7 @@ Socket::SocketType UDPSocket::GetSocketType() const { return Socket::TYPE_UDP; }
 void UDPSocket::OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
                                int result) {
   DCHECK(!read_callback_.is_null());
-  read_callback_.Run(result, io_buffer);
+  read_callback_.Run(result, io_buffer, false /* socket_destroying */);
   read_callback_.Reset();
 }
 
@@ -237,7 +241,8 @@ void UDPSocket::OnRecvFromComplete(scoped_refptr<net::IOBuffer> io_buffer,
   if (result > 0 && address.get()) {
     IPEndPointToStringAndPort(address->data, &ip, &port);
   }
-  recv_from_callback_.Run(result, io_buffer, ip, port);
+  recv_from_callback_.Run(result, io_buffer, false /* socket_destroying */, ip,
+                          port);
   recv_from_callback_.Reset();
 }
 

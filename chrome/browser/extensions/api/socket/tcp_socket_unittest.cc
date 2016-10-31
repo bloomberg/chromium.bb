@@ -58,8 +58,10 @@ class CompleteHandler {
  public:
   CompleteHandler() {}
   MOCK_METHOD1(OnComplete, void(int result_code));
-  MOCK_METHOD2(OnReadComplete, void(int result_code,
-      scoped_refptr<net::IOBuffer> io_buffer));
+  MOCK_METHOD3(OnReadComplete,
+               void(int result_code,
+                    scoped_refptr<net::IOBuffer> io_buffer,
+                    bool socket_destroying));
 
   // MOCK_METHOD cannot mock a scoped_ptr argument.
   MOCK_METHOD2(OnAcceptMock, void(int, net::TCPClientSocket*));
@@ -81,8 +83,7 @@ TEST(SocketTest, TestTCPSocketRead) {
 
   EXPECT_CALL(*tcp_client_socket, Read(_, _, _))
       .Times(1);
-  EXPECT_CALL(handler, OnReadComplete(_, _))
-      .Times(1);
+  EXPECT_CALL(handler, OnReadComplete(_, _, _)).Times(1);
 
   std::unique_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
       std::move(tcp_client_socket), FAKE_ID, true));

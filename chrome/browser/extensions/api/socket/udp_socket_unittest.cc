@@ -33,6 +33,7 @@ static void OnConnected(int result) {
 
 static void OnCompleted(int bytes_read,
                         scoped_refptr<net::IOBuffer> io_buffer,
+                        bool socket_destroying,
                         const std::string& address,
                         uint16_t port) {
   // Do nothing; don't care.
@@ -114,7 +115,8 @@ static void SendMulticastPacket(const base::Closure& quit_run_loop,
 static void OnMulticastReadCompleted(const base::Closure& quit_run_loop,
                                      bool* packet_received,
                                      int count,
-                                     scoped_refptr<net::IOBuffer> io_buffer) {
+                                     scoped_refptr<net::IOBuffer> io_buffer,
+                                     bool socket_destroying) {
   EXPECT_EQ(test_message_length, count);
   EXPECT_EQ(0, strncmp(io_buffer->data(), test_message, test_message_length));
   *packet_received = true;

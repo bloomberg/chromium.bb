@@ -79,7 +79,9 @@ TCPSocket* TCPSocket::CreateServerSocketForTesting(
   return new TCPSocket(std::move(tcp_server_socket), owner_extension_id);
 }
 
-TCPSocket::~TCPSocket() { Disconnect(); }
+TCPSocket::~TCPSocket() {
+  Disconnect(true /* socket_destroying */);
+}
 
 void TCPSocket::Connect(const net::AddressList& address,
                         const CompletionCallback& callback) {
@@ -111,7 +113,7 @@ void TCPSocket::Connect(const net::AddressList& address,
     OnConnectComplete(result);
 }
 
-void TCPSocket::Disconnect() {
+void TCPSocket::Disconnect(bool socket_destroying) {
   is_connected_ = false;
   if (socket_.get())
     socket_->Disconnect();
@@ -120,7 +122,7 @@ void TCPSocket::Disconnect() {
   // TODO(devlin): Should we do this for all callbacks?
   if (!read_callback_.is_null()) {
     base::ResetAndReturn(&read_callback_)
-        .Run(net::ERR_CONNECTION_CLOSED, nullptr);
+        .Run(net::ERR_CONNECTION_CLOSED, nullptr, socket_destroying);
   }
   accept_callback_.Reset();
   accept_socket_.reset(NULL);
@@ -133,25 +135,26 @@ int TCPSocket::Bind(const std::string& address, uint16_t port) {
 void TCPSocket::Read(int count, const ReadCompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
+  const bool socket_destroying = false;
   if (socket_mode_ != CLIENT) {
-    callback.Run(net::ERR_FAILED, NULL);
+    callback.Run(net::ERR_FAILED, nullptr, socket_destroying);
     return;
   }
 
   if (!read_callback_.is_null() || !connect_callback_.is_null()) {
     // It's illegal to read a net::TCPSocket while a pending Connect or Read is
     // already in progress.
-    callback.Run(net::ERR_IO_PENDING, NULL);
+    callback.Run(net::ERR_IO_PENDING, nullptr, socket_destroying);
     return;
   }
 
   if (count < 0) {
-    callback.Run(net::ERR_INVALID_ARGUMENT, NULL);
+    callback.Run(net::ERR_INVALID_ARGUMENT, nullptr, socket_destroying);
     return;
   }
 
   if (!socket_.get() || !is_connected_) {
-    callback.Run(net::ERR_SOCKET_NOT_CONNECTED, NULL);
+    callback.Run(net::ERR_SOCKET_NOT_CONNECTED, nullptr, socket_destroying);
     return;
   }
 
@@ -169,7 +172,8 @@ void TCPSocket::Read(int count, const ReadCompletionCallback& callback) {
 
 void TCPSocket::RecvFrom(int count,
                          const RecvFromCompletionCallback& callback) {
-  callback.Run(net::ERR_FAILED, NULL, NULL, 0);
+  callback.Run(net::ERR_FAILED, nullptr, false /* socket_destroying */, nullptr,
+               0);
 }
 
 void TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
@@ -279,7 +283,7 @@ void TCPSocket::RefreshConnectionStatus() {
   if (server_socket_)
     return;
   if (!socket_->IsConnected()) {
-    Disconnect();
+    Disconnect(false /* socket_destroying */);
   }
 }
 
@@ -298,7 +302,7 @@ void TCPSocket::OnConnectComplete(int result) {
 void TCPSocket::OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
                                int result) {
   DCHECK(!read_callback_.is_null());
-  read_callback_.Run(result, io_buffer);
+  read_callback_.Run(result, io_buffer, false /* socket_destroying */);
   read_callback_.Reset();
 }
 
@@ -364,7 +368,7 @@ ResumableTCPSocket::~ResumableTCPSocket() {
   // before ResumableTCPSocket is destroyed, because we have some extra
   // state that relies on the socket being ResumableTCPSocket, like
   // read_callback_.
-  Disconnect();
+  Disconnect(true /* socket_destroying */);
 }
 
 bool ResumableTCPSocket::IsPersistent() const { return persistent(); }

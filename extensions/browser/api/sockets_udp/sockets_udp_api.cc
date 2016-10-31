@@ -305,7 +305,7 @@ void SocketsUdpCloseFunction::Work() {
     return;
   }
 
-  socket->Disconnect();
+  socket->Disconnect(false /* socket_destroying */);
   RemoveSocket(params_->socket_id);
   results_ = sockets_udp::Close::Results::Create();
 }

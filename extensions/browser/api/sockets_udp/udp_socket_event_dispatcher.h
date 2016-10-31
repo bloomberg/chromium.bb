@@ -75,6 +75,7 @@ class UDPSocketEventDispatcher
   static void ReceiveCallback(const ReceiveParams& params,
                               int bytes_read,
                               scoped_refptr<net::IOBuffer> io_buffer,
+                              bool socket_destroying,
                               const std::string& address,
                               uint16_t port);
 
