@@ -239,8 +239,8 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
   }
 
   // Dialog will default to the primary display.
-  chromeos::NetworkConfigView::ShowInContainer(network_id,
-                                               GetDialogParentContainerId());
+  chromeos::NetworkConfigView::ShowForNetworkId(network_id,
+                                                nullptr /* parent */);
 }
 
 void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
@@ -249,7 +249,7 @@ void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
     chromeos::ChooseMobileNetworkDialog::ShowDialogInContainer(container_id);
     return;
   }
-  chromeos::NetworkConfigView::ShowForTypeInContainer(type, container_id);
+  chromeos::NetworkConfigView::ShowForType(type, nullptr /* parent */);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

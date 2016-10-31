@@ -246,7 +246,7 @@ void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
     return;
   }
 
-  NetworkConfigView::ShowInParent(guid, GetNativeWindow());
+  NetworkConfigView::ShowForNetworkId(guid, GetNativeWindow());
 }
 
 }  // namespace options

@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -17,6 +15,7 @@
 #include "chrome/browser/chromeos/options/wimax_config_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -27,8 +26,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/user.h"
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,7 +51,11 @@ NetworkConfigView* g_instance = nullptr;
 
 gfx::NativeWindow GetParentForUnhostedDialog() {
   if (LoginDisplayHost::default_host()) {
-    return LoginDisplayHost::default_host()->GetNativeWindow();
+    // TODO(jamescook): LoginDisplayHost has the wrong native window in mash.
+    // This will fix itself when mash converts from ui::Window to aura::Window.
+    // http://crbug.com/659155
+    if (!chrome::IsRunningInMash())
+      return LoginDisplayHost::default_host()->GetNativeWindow();
   } else {
     Browser* browser = chrome::FindTabbedBrowser(
         ProfileManager::GetPrimaryUserProfile(), true);
@@ -112,79 +113,44 @@ NetworkConfigView::~NetworkConfigView() {
 }
 
 // static
-void NetworkConfigView::ShowInParent(const std::string& network_id,
-                                     gfx::NativeWindow parent) {
-  DCHECK(parent);
-  NetworkConfigView* view = CreateForNetworkId(network_id);
-  if (view)
-    view->ShowDialog(parent);
-}
-
-// static
-void NetworkConfigView::ShowInContainer(const std::string& network_id,
-                                        int container_id) {
-  DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
-  NetworkConfigView* view = CreateForNetworkId(network_id);
-  if (view)
-    view->ShowDialogInContainer(container_id);
-}
-
-// static
-NetworkConfigView* NetworkConfigView::CreateForNetworkId(
-    const std::string& network_id) {
+void NetworkConfigView::ShowForNetworkId(const std::string& network_id,
+                                         gfx::NativeWindow parent) {
   if (g_instance)
-    return nullptr;
+    return;
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           network_id);
   if (!network) {
     LOG(ERROR)
-        << "NetworkConfigView::CreateForNetworkId called with invalid network";
-    return nullptr;
+        << "NetworkConfigView::ShowForNetworkId called with invalid network";
+    return;
   }
   NetworkConfigView* view = new NetworkConfigView();
   if (!view->InitWithNetworkState(network)) {
-    LOG(ERROR) << "NetworkConfigView::CreateForNetworkId called with invalid "
+    LOG(ERROR) << "NetworkConfigView::ShowForNetworkId called with invalid "
                   "network type: "
                << network->type();
     delete view;
-    return nullptr;
+    return;
   }
-  NET_LOG(USER) << "NetworkConfigView::CreateForNetworkId: " << network->path();
-  return view;
+  NET_LOG(USER) << "NetworkConfigView::ShowForNetworkId: " << network->path();
+  view->ShowDialog(parent);
 }
 
 // static
 void NetworkConfigView::ShowForType(const std::string& type,
                                     gfx::NativeWindow parent) {
-  // |parent| may be null.
-  NetworkConfigView* view = CreateForType(type);
-  if (view)
-    view->ShowDialog(parent);
-}
-
-// static
-void NetworkConfigView::ShowForTypeInContainer(const std::string& type,
-                                               int container_id) {
-  DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
-  NetworkConfigView* view = CreateForType(type);
-  if (view)
-    view->ShowDialogInContainer(container_id);
-}
-
-// static
-NetworkConfigView* NetworkConfigView::CreateForType(const std::string& type) {
   if (g_instance)
-    return nullptr;
+    return;
   NetworkConfigView* view = new NetworkConfigView();
   if (!view->InitWithType(type)) {
-    LOG(ERROR) << "NetworkConfigView::CreateForType called with invalid type: "
+    LOG(ERROR) << "NetworkConfigView::ShowForType called with invalid type: "
                << type;
     delete view;
-    return nullptr;
+    return;
   }
-  NET_LOG(USER) << "NetworkConfigView::CreateForType: " << type;
-  return view;
+  NET_LOG(USER) << "NetworkConfigView::ShowForType: " << type;
+  view->ShowDialog(parent);
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
@@ -306,32 +272,18 @@ void NetworkConfigView::ViewHierarchyChanged(
 }
 
 void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
+  // Attempt to find a fallback parent window.
   if (parent == nullptr)
     parent = GetParentForUnhostedDialog();
-  // Failed connections may result in a pop-up with no natural parent window,
-  // so provide a fallback context on the primary display. This is necessary
-  // becase one of parent or context must be non nullptr.
-  gfx::NativeWindow context =
-      parent ? nullptr : ash::Shell::GetPrimaryRootWindow();
-  Widget* window = DialogDelegate::CreateDialogWidget(this, context, parent);
-  window->SetAlwaysOnTop(true);
-  window->Show();
-}
 
-void NetworkConfigView::ShowDialogInContainer(int container_id) {
-  DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
-  Widget::InitParams params = DialogDelegate::GetDialogWidgetInitParams(
-      this, nullptr, nullptr, gfx::Rect());
-  Widget* window = new Widget;
-  if (chrome::IsRunningInMash()) {
-    using ui::mojom::WindowManager;
-    params.mus_properties[WindowManager::kInitialContainerId_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
+  Widget* window = nullptr;
+  if (parent) {
+    // Create as a child of |parent|.
+    window = DialogDelegate::CreateDialogWidget(this, nullptr, parent);
   } else {
-    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                             container_id);
+    // Fall back to default window container on primary display.
+    window = SystemTrayClient::CreateUnownedDialogWidget(this);
   }
-  window->Init(params);
   window->SetAlwaysOnTop(true);
   window->Show();
 }
