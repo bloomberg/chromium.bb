@@ -19,7 +19,7 @@ class PLATFORM_EXPORT BeginCompositingDisplayItem final
     : public PairedBeginDisplayItem {
  public:
   BeginCompositingDisplayItem(const DisplayItemClient& client,
-                              const SkXfermode::Mode xferMode,
+                              const SkBlendMode xferMode,
                               const float opacity,
                               const FloatRect* bounds,
                               ColorFilter colorFilter = ColorFilterNone)
@@ -59,7 +59,7 @@ class PLATFORM_EXPORT BeginCompositingDisplayItem final
                    .m_colorFilter;
   }
 
-  const SkXfermode::Mode m_xferMode;
+  const SkBlendMode m_xferMode;
   const float m_opacity;
   bool m_hasBounds;
   FloatRect m_bounds;

@@ -256,7 +256,7 @@ bool ThemePainterMac::paintProgressBar(const LayoutObject& layoutObject,
     imageBuffer->draw(
         paintInfo.context,
         FloatRect(rect.location(), FloatSize(imageBuffer->size())), nullptr,
-        SkXfermode::kSrcOver_Mode);
+        SkBlendMode::kSrcOver);
   return false;
 }
 

@@ -170,7 +170,7 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(
   SkLayerDrawLooper::LayerInfo layer_info;
   layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
   layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
-  layer_info.fColorMode = SkXfermode::kSrc_Mode;
+  layer_info.fColorMode = SkBlendMode::kSrc;
 
   for (size_t i = 0; i < shadows.size(); ++i) {
     const ShadowValue& shadow = shadows[i];
@@ -187,8 +187,7 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(
         kNormal_SkBlurStyle, DeprecatedRadiusToSigma(shadow.blur() / 2),
         SkBlurMaskFilter::kHighQuality_BlurFlag));
     paint->setColorFilter(
-        SkColorFilter::MakeModeFilter(shadow.color(),
-                                      SkXfermode::kSrcIn_Mode));
+        SkColorFilter::MakeModeFilter(shadow.color(), SkBlendMode::kSrcIn));
   }
 
   return looper_builder.detach();
@@ -206,7 +205,7 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooperCorrectBlur(
   SkLayerDrawLooper::LayerInfo layer_info;
   layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
   layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
-  layer_info.fColorMode = SkXfermode::kSrc_Mode;
+  layer_info.fColorMode = SkBlendMode::kSrc;
 
   for (size_t i = 0; i < shadows.size(); ++i) {
     const ShadowValue& shadow = shadows[i];
@@ -221,8 +220,7 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooperCorrectBlur(
         kNormal_SkBlurStyle, RadiusToSigma(shadow.blur() / 2),
         SkBlurMaskFilter::kHighQuality_BlurFlag));
     paint->setColorFilter(
-        SkColorFilter::MakeModeFilter(shadow.color(),
-                                      SkXfermode::kSrcIn_Mode));
+        SkColorFilter::MakeModeFilter(shadow.color(), SkBlendMode::kSrcIn));
   }
 
   return looper_builder.detach();

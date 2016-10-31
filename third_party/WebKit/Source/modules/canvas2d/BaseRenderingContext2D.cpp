@@ -355,7 +355,7 @@ void BaseRenderingContext2D::setGlobalCompositeOperation(
   WebBlendMode blendMode = WebBlendModeNormal;
   if (!parseCompositeAndBlendOperator(operation, op, blendMode))
     return;
-  SkXfermode::Mode xfermode = WebCoreCompositeToSkiaComposite(op, blendMode);
+  SkBlendMode xfermode = WebCoreCompositeToSkiaComposite(op, blendMode);
   if (state().globalComposite() == xfermode)
     return;
   modifiableState().setGlobalComposite(xfermode);
@@ -553,12 +553,12 @@ static bool validateRectForCanvas(double& x,
   return true;
 }
 
-bool BaseRenderingContext2D::isFullCanvasCompositeMode(SkXfermode::Mode op) {
+bool BaseRenderingContext2D::isFullCanvasCompositeMode(SkBlendMode op) {
   // See 4.8.11.1.3 Compositing
   // CompositeSourceAtop and CompositeDestinationOut are not listed here as the
   // platforms already implement the specification's behavior.
-  return op == SkXfermode::kSrcIn_Mode || op == SkXfermode::kSrcOut_Mode ||
-         op == SkXfermode::kDstIn_Mode || op == SkXfermode::kDstATop_Mode;
+  return op == SkBlendMode::kSrcIn || op == SkBlendMode::kSrcOut ||
+         op == SkBlendMode::kDstIn || op == SkBlendMode::kDstATop;
 }
 
 static bool isPathExpensive(const Path& path) {

@@ -42,7 +42,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -61,11 +60,11 @@ enum {
   kMaxSkiaDim = 32767  // Maximum width/height in CSS pixels.
 };
 
-SkXfermode::Mode PLATFORM_EXPORT
+SkBlendMode PLATFORM_EXPORT
     WebCoreCompositeToSkiaComposite(CompositeOperator,
                                     WebBlendMode = WebBlendModeNormal);
-CompositeOperator PLATFORM_EXPORT compositeOperatorFromSkia(SkXfermode::Mode);
-WebBlendMode PLATFORM_EXPORT blendModeFromSkia(SkXfermode::Mode);
+CompositeOperator PLATFORM_EXPORT compositeOperatorFromSkia(SkBlendMode);
+WebBlendMode PLATFORM_EXPORT blendModeFromSkia(SkBlendMode);
 
 // Map alpha values from [0, 1] to [0, 256] for alpha blending.
 int PLATFORM_EXPORT clampedAlphaForBlending(float);

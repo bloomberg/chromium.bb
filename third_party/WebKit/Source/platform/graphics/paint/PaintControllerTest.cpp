@@ -2213,8 +2213,7 @@ class PaintControllerUnderInvalidationTest : public PaintControllerTestBase {
 
     {
       SubsequenceRecorder subsequence(context, container);
-      CompositingRecorder compositing(context, content, SkXfermode::kSrc_Mode,
-                                      0.5);
+      CompositingRecorder compositing(context, content, SkBlendMode::kSrc, 0.5);
       drawRect(context, content, backgroundDrawingType,
                FloatRect(100, 100, 300, 300));
     }
@@ -2226,8 +2225,7 @@ class PaintControllerUnderInvalidationTest : public PaintControllerTestBase {
       EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(
           context, container));
       SubsequenceRecorder subsequence(context, container);
-      CompositingRecorder compositing(context, content, SkXfermode::kSrc_Mode,
-                                      0.5);
+      CompositingRecorder compositing(context, content, SkBlendMode::kSrc, 0.5);
       drawRect(context, content, backgroundDrawingType,
                FloatRect(100, 100, 300, 300));
     }

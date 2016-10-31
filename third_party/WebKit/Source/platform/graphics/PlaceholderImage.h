@@ -49,7 +49,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
                    const FloatRect& srcRect,
                    const FloatSize& scale,
                    const FloatPoint& phase,
-                   SkXfermode::Mode,
+                   SkBlendMode,
                    const FloatRect& destRect,
                    const FloatSize& repeatSpacing) override;
 

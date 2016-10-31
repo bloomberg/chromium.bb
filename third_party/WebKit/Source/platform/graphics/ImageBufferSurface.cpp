@@ -74,7 +74,7 @@ void ImageBufferSurface::clear() {
 void ImageBufferSurface::draw(GraphicsContext& context,
                               const FloatRect& destRect,
                               const FloatRect& srcRect,
-                              SkXfermode::Mode op) {
+                              SkBlendMode op) {
   sk_sp<SkImage> snapshot =
       newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
   if (!snapshot)

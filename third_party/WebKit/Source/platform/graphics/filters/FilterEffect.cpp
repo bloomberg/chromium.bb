@@ -124,7 +124,7 @@ bool FilterEffect::inputsTaintOrigin() const {
 sk_sp<SkImageFilter> FilterEffect::createTransparentBlack() const {
   SkImageFilter::CropRect rect = getCropRect();
   sk_sp<SkColorFilter> colorFilter =
-      SkColorFilter::MakeModeFilter(0, SkXfermode::kClear_Mode);
+      SkColorFilter::MakeModeFilter(0, SkBlendMode::kClear);
   return SkColorFilterImageFilter::Make(std::move(colorFilter), nullptr, &rect);
 }
 

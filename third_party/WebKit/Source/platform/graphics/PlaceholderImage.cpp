@@ -72,7 +72,7 @@ void PlaceholderImage::drawPattern(GraphicsContext& destContext,
                                    const FloatRect& srcRect,
                                    const FloatSize& scale,
                                    const FloatPoint& phase,
-                                   SkXfermode::Mode compositeOp,
+                                   SkBlendMode compositeOp,
                                    const FloatRect& destRect,
                                    const FloatSize& repeatSpacing) {
   Image::drawPattern(destContext, srcRect, scale, phase, compositeOp, destRect,

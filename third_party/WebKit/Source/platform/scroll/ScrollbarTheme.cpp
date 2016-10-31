@@ -141,7 +141,7 @@ bool ScrollbarTheme::paint(const Scrollbar& scrollbar,
       FloatRect floatThumbRect(thumbRect);
       floatThumbRect.inflate(1);  // some themes inflate thumb bounds
       compositingRecorder.emplace(graphicsContext, scrollbar,
-                                  SkXfermode::kSrcOver_Mode, opacity,
+                                  SkBlendMode::kSrcOver, opacity,
                                   &floatThumbRect);
     }
 

@@ -270,7 +270,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
                                        const FloatRect& srcRect,
                                        const FloatSize& tileScale,
                                        const FloatPoint& phase,
-                                       SkXfermode::Mode compositeOp,
+                                       SkBlendMode compositeOp,
                                        const FloatRect& dstRect,
                                        const FloatSize& repeatSpacing,
                                        const KURL& url) {

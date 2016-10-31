@@ -15,7 +15,7 @@ namespace blink {
 
 CompositingRecorder::CompositingRecorder(GraphicsContext& graphicsContext,
                                          const DisplayItemClient& client,
-                                         const SkXfermode::Mode xferMode,
+                                         const SkBlendMode xferMode,
                                          const float opacity,
                                          const FloatRect* bounds,
                                          ColorFilter colorFilter)
@@ -30,7 +30,7 @@ CompositingRecorder::~CompositingRecorder() {
 
 void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext,
                                            const DisplayItemClient& client,
-                                           const SkXfermode::Mode xferMode,
+                                           const SkBlendMode xferMode,
                                            const float opacity,
                                            const FloatRect* bounds,
                                            ColorFilter colorFilter) {

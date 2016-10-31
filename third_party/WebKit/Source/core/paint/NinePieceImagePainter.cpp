@@ -24,7 +24,7 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext,
                                   const LayoutRect& rect,
                                   const ComputedStyle& style,
                                   const NinePieceImage& ninePieceImage,
-                                  SkXfermode::Mode op) const {
+                                  SkBlendMode op) const {
   StyleImage* styleImage = ninePieceImage.image();
   if (!styleImage)
     return false;

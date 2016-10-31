@@ -155,12 +155,12 @@ std::unique_ptr<base::Value> AsValue(const SkColorFilter& filter) {
   }
 
   SkColor color;
-  SkXfermode::Mode mode;
+  SkBlendMode mode;
   if (filter.asColorMode(&color, &mode)) {
     std::unique_ptr<base::DictionaryValue> color_mode_val(
         new base::DictionaryValue());
     color_mode_val->Set("color", AsValue(color));
-    color_mode_val->Set("mode", AsValue(static_cast<SkBlendMode>(mode)));
+    color_mode_val->Set("mode", AsValue(mode));
 
     val->Set("color_mode", std::move(color_mode_val));
   }

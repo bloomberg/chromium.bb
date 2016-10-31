@@ -77,7 +77,7 @@ class LoggingCanvas : public InterceptingCanvasBase {
                               const SkPoint vertices[],
                               const SkPoint texs[],
                               const SkColor colors[],
-                              SkXfermode* xmode,
+                              SkBlendMode bmode,
                               const uint16_t indices[],
                               int indexCount,
                               const SkPaint&) override;

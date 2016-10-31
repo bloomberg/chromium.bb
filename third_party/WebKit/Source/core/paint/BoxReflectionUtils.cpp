@@ -66,7 +66,7 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer,
                                       maskBoundingFloatRect);
       NinePieceImagePainter(*layer.layoutObject())
           .paint(recorder.context(), maskRect, style, maskNinePiece,
-                 SkXfermode::kSrcOver_Mode);
+                 SkBlendMode::kSrcOver);
     }
     mask = recorder.endRecording();
   }

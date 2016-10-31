@@ -9,7 +9,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -22,7 +22,7 @@ class PLATFORM_EXPORT CompositingRecorder {
  public:
   CompositingRecorder(GraphicsContext&,
                       const DisplayItemClient&,
-                      const SkXfermode::Mode,
+                      const SkBlendMode,
                       const float opacity,
                       const FloatRect* bounds = 0,
                       ColorFilter = ColorFilterNone);
@@ -33,7 +33,7 @@ class PLATFORM_EXPORT CompositingRecorder {
   //        and should be removed once slimming paint is enabled by default.
   static void beginCompositing(GraphicsContext&,
                                const DisplayItemClient&,
-                               const SkXfermode::Mode,
+                               const SkBlendMode,
                                const float opacity,
                                const FloatRect* bounds = 0,
                                ColorFilter = ColorFilterNone);

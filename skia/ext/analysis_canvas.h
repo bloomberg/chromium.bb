@@ -74,7 +74,7 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkPicture::AbortCallback {
                       const SkPoint vertices[],
                       const SkPoint texs[],
                       const SkColor colors[],
-                      SkXfermode*,
+                      SkBlendMode,
                       const uint16_t indices[],
                       int indexCount,
                       const SkPaint&) override;

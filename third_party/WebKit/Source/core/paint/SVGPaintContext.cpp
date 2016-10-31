@@ -100,9 +100,10 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
   }
 
   if (!isIsolationInstalled() &&
-      SVGLayoutSupport::isIsolationRequired(&m_object))
+      SVGLayoutSupport::isIsolationRequired(&m_object)) {
     m_compositingRecorder = wrapUnique(new CompositingRecorder(
-        paintInfo().context, m_object, SkXfermode::kSrcOver_Mode, 1));
+        paintInfo().context, m_object, SkBlendMode::kSrcOver, 1));
+  }
 
   return true;
 }

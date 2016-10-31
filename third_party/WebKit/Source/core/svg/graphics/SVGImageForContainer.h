@@ -87,7 +87,7 @@ class SVGImageForContainer final : public Image {
                    const FloatRect&,
                    const FloatSize&,
                    const FloatPoint&,
-                   SkXfermode::Mode,
+                   SkBlendMode,
                    const FloatRect&,
                    const FloatSize& repeatSpacing) override;
 

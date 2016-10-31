@@ -154,8 +154,8 @@ class CanvasRenderingContext2DState final
   void setGlobalAlpha(double);
   double globalAlpha() const { return m_globalAlpha; }
 
-  void setGlobalComposite(SkXfermode::Mode);
-  SkXfermode::Mode globalComposite() const;
+  void setGlobalComposite(SkBlendMode);
+  SkBlendMode globalComposite() const;
 
   void setImageSmoothingEnabled(bool);
   bool imageSmoothingEnabled() const;

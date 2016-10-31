@@ -544,10 +544,10 @@ void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r) {
   m_context->paintRenderingResultsToCanvas(FrontBuffer);
   if (hasImageBuffer()) {
     if (!context.contextDisabled()) {
-      SkXfermode::Mode compositeOperator =
+      SkBlendMode compositeOperator =
           !m_context || m_context->creationAttributes().alpha()
-              ? SkXfermode::kSrcOver_Mode
-              : SkXfermode::kSrc_Mode;
+              ? SkBlendMode::kSrcOver
+              : SkBlendMode::kSrc;
       buffer()->draw(context, pixelSnappedIntRect(r), 0, compositeOperator);
     }
   } else {

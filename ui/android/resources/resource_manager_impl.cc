@@ -141,7 +141,7 @@ ResourceManager::Resource* ResourceManagerImpl::GetStaticResourceWithTint(
   // alpha of the original image.
   SkPaint color_filter;
   color_filter.setColorFilter(
-      SkColorFilter::MakeModeFilter(tint_color, SkXfermode::kModulate_Mode));
+      SkColorFilter::MakeModeFilter(tint_color, SkBlendMode::kModulate));
 
   // Draw the resource and make it immutable.
   base_image->ui_resource->GetBitmap(base_image->ui_resource->id(), false)

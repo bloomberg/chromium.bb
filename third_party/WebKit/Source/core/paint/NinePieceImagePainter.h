@@ -6,7 +6,7 @@
 #define NinePieceImagePainter_h
 
 #include "platform/heap/Heap.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {
 
@@ -26,7 +26,7 @@ class NinePieceImagePainter {
              const LayoutRect&,
              const ComputedStyle&,
              const NinePieceImage&,
-             SkXfermode::Mode) const;
+             SkBlendMode) const;
 
  private:
   const LayoutBoxModelObject& m_layoutObject;

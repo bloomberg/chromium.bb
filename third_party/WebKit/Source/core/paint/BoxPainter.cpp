@@ -299,7 +299,7 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo,
                                  const FillLayer& fillLayer,
                                  const LayoutRect& rect,
                                  BackgroundBleedAvoidance bleedAvoidance,
-                                 SkXfermode::Mode op,
+                                 SkBlendMode op,
                                  const LayoutObject* backgroundObject) {
   // TODO(trchen): Box shadow optimization and background color are concepts
   // that only apply to background layers. Ideally we should refactor those out
@@ -522,15 +522,15 @@ class ImagePaintContext {
                     GraphicsContext& context,
                     const FillLayer& layer,
                     const StyleImage& styleImage,
-                    SkXfermode::Mode op,
+                    SkBlendMode op,
                     const LayoutObject* backgroundObject,
                     const LayoutSize& containerSize)
       : m_context(context),
         m_previousInterpolationQuality(context.imageInterpolationQuality()) {
-    SkXfermode::Mode bgOp =
+    SkBlendMode bgOp =
         WebCoreCompositeToSkiaComposite(layer.composite(), layer.blendMode());
     // if op != SkBlendMode::kSrcOver, a mask is being painted.
-    m_compositeOp = (op == SkXfermode::kSrcOver_Mode) ? bgOp : op;
+    m_compositeOp = (op == SkBlendMode::kSrcOver) ? bgOp : op;
 
     const LayoutObject& imageClient =
         backgroundObject ? *backgroundObject : obj;
@@ -553,12 +553,12 @@ class ImagePaintContext {
 
   Image* image() const { return m_image.get(); }
 
-  SkXfermode::Mode compositeOp() const { return m_compositeOp; }
+  SkBlendMode compositeOp() const { return m_compositeOp; }
 
  private:
   RefPtr<Image> m_image;
   GraphicsContext& m_context;
-  SkXfermode::Mode m_compositeOp;
+  SkBlendMode m_compositeOp;
   InterpolationQuality m_interpolationQuality;
   InterpolationQuality m_previousInterpolationQuality;
 };
@@ -571,7 +571,7 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
                                  BackgroundBleedAvoidance bleedAvoidance,
                                  const InlineFlowBox* box,
                                  const LayoutSize& boxSize,
-                                 SkXfermode::Mode op,
+                                 SkBlendMode op,
                                  const LayoutObject* backgroundObject,
                                  Optional<BackgroundImageGeometry>& geometry) {
   // Complex cases not handled on the fast path.
@@ -673,7 +673,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
                                 BackgroundBleedAvoidance bleedAvoidance,
                                 const InlineFlowBox* box,
                                 const LayoutSize& boxSize,
-                                SkXfermode::Mode op,
+                                SkBlendMode op,
                                 const LayoutObject* backgroundObject) {
   GraphicsContext& context = paintInfo.context;
   if (rect.isEmpty())
@@ -831,7 +831,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
 
   if (bgLayer.clip() == TextFillBox) {
     // Create the text mask layer.
-    context.beginLayer(1, SkXfermode::kDstIn_Mode);
+    context.beginLayer(1, SkBlendMode::kDstIn);
 
     // Now draw the text into the mask. We do this by painting using a special
     // paint phase that signals to
@@ -898,7 +898,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo,
 
     allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
 
-    paintInfo.context.beginLayer(1, SkXfermode::kDstIn_Mode);
+    paintInfo.context.beginLayer(1, SkBlendMode::kDstIn);
   }
 
   if (allMaskImagesLoaded) {
@@ -949,7 +949,7 @@ bool BoxPainter::paintNinePieceImage(const LayoutBoxModelObject& obj,
                                      const LayoutRect& rect,
                                      const ComputedStyle& style,
                                      const NinePieceImage& ninePieceImage,
-                                     SkXfermode::Mode op) {
+                                     SkBlendMode op) {
   NinePieceImagePainter ninePieceImagePainter(obj);
   return ninePieceImagePainter.paint(graphicsContext, rect, style,
                                      ninePieceImage, op);

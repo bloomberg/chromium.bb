@@ -311,7 +311,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(
 void ImageBuffer::draw(GraphicsContext& context,
                        const FloatRect& destRect,
                        const FloatRect* srcPtr,
-                       SkXfermode::Mode op) {
+                       SkBlendMode op) {
   if (!isSurfaceValid())
     return;
 

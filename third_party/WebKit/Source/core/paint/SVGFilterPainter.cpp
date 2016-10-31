@@ -78,8 +78,8 @@ static void paintFilteredContent(GraphicsContext& context,
   // Clip drawing of filtered image to the minimum required paint rect.
   context.clipRect(lastEffect->mapRect(object.strokeBoundingBox()));
 
-  context.beginLayer(1, SkXfermode::kSrcOver_Mode, &filterBounds,
-                     ColorFilterNone, std::move(imageFilter));
+  context.beginLayer(1, SkBlendMode::kSrcOver, &filterBounds, ColorFilterNone,
+                     std::move(imageFilter));
   context.endLayer();
   context.restore();
 

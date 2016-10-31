@@ -51,7 +51,7 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
                    const FloatRect&,
                    const FloatSize&,
                    const FloatPoint&,
-                   SkXfermode::Mode,
+                   SkBlendMode,
                    const FloatRect&,
                    const FloatSize& repeatSpacing) final;
 

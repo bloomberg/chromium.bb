@@ -706,8 +706,7 @@ SkBitmap SkBitmapOperations::CreateColorMask(const SkBitmap& bitmap,
   SkCanvas canvas(color_mask);
 
   SkPaint paint;
-  paint.setColorFilter(
-      SkColorFilter::MakeModeFilter(c, SkXfermode::kSrcIn_Mode));
+  paint.setColorFilter(SkColorFilter::MakeModeFilter(c, SkBlendMode::kSrcIn));
   canvas.drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
   return color_mask;
 }

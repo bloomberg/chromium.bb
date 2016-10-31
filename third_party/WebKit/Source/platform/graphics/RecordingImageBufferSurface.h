@@ -75,7 +75,7 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   void draw(GraphicsContext&,
             const FloatRect& destRect,
             const FloatRect& srcRect,
-            SkXfermode::Mode) override;
+            SkBlendMode) override;
   bool isExpensiveToPaint() override;
   void setHasExpensiveOp() override { m_currentFrameHasExpensiveOp = true; }
 

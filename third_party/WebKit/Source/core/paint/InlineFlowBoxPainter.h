@@ -45,12 +45,12 @@ class InlineFlowBoxPainter {
                        const Color&,
                        const FillLayer&,
                        const LayoutRect&,
-                       SkXfermode::Mode op = SkXfermode::kSrcOver_Mode);
+                       SkBlendMode op = SkBlendMode::kSrcOver);
   void paintFillLayer(const PaintInfo&,
                       const Color&,
                       const FillLayer&,
                       const LayoutRect&,
-                      SkXfermode::Mode op);
+                      SkBlendMode op);
   void paintBoxShadow(const PaintInfo&,
                       const ComputedStyle&,
                       ShadowStyle,

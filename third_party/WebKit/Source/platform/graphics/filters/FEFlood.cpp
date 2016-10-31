@@ -68,8 +68,7 @@ sk_sp<SkImageFilter> FEFlood::createImageFilter() {
   Color color = floodColor().combineWithAlpha(floodOpacity());
   SkImageFilter::CropRect rect = getCropRect();
   return SkColorFilterImageFilter::Make(
-      SkColorFilter::MakeModeFilter(color.rgb(), SkXfermode::kSrc_Mode), 0,
-      &rect);
+      SkColorFilter::MakeModeFilter(color.rgb(), SkBlendMode::kSrc), 0, &rect);
 }
 
 TextStream& FEFlood::externalRepresentation(TextStream& ts, int indent) const {

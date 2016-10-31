@@ -173,7 +173,7 @@ void ImagePainter::paintIntoRect(GraphicsContext& context,
       context.imageInterpolationQuality();
   context.setImageInterpolationQuality(interpolationQuality);
   context.drawImage(
-      image.get(), pixelSnappedDestRect, &srcRect, SkXfermode::kSrcOver_Mode,
+      image.get(), pixelSnappedDestRect, &srcRect, SkBlendMode::kSrcOver,
       LayoutObject::shouldRespectImageOrientation(&m_layoutImage));
   context.setImageInterpolationQuality(previousInterpolationQuality);
 }

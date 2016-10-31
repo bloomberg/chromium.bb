@@ -357,7 +357,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                              const String& windingRuleString);
   bool isPointInStrokeInternal(const Path&, const double x, const double y);
 
-  static bool isFullCanvasCompositeMode(SkXfermode::Mode);
+  static bool isFullCanvasCompositeMode(SkBlendMode);
 
   template <typename DrawFunc>
   void compositedDraw(const DrawFunc&,
@@ -395,7 +395,7 @@ bool BaseRenderingContext2D::draw(
       stateHasFilter()) {
     compositedDraw(drawFunc, drawingCanvas(), paintType, imageType);
     didDraw(clipBounds);
-  } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
+  } else if (state().globalComposite() == SkBlendMode::kSrc) {
     clearCanvas();  // takes care of checkOverdraw()
     const SkPaint* paint =
         state().getPaint(paintType, DrawForegroundOnly, imageType);

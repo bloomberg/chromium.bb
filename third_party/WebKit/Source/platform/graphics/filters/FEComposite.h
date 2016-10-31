@@ -23,7 +23,7 @@
 #ifndef FEComposite_h
 #define FEComposite_h
 
-#include "SkXfermode.h"
+#include "SkBlendMode.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {

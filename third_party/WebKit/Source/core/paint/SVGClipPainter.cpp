@@ -82,8 +82,8 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
   clipperState = ClipperState::AppliedMask;
 
   // Begin compositing the clip mask.
-  CompositingRecorder::beginCompositing(
-      context, target, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
+  CompositingRecorder::beginCompositing(context, target, SkBlendMode::kSrcOver,
+                                        1, &paintInvalidationRect);
   {
     if (!drawClipAsMask(context, target, targetBoundingBox,
                         paintInvalidationRect, animatedLocalTransform,
@@ -95,8 +95,8 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
   }
 
   // Masked content layer start.
-  CompositingRecorder::beginCompositing(
-      context, target, SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
+  CompositingRecorder::beginCompositing(context, target, SkBlendMode::kSrcIn, 1,
+                                        &paintInvalidationRect);
 
   return true;
 }

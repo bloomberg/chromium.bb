@@ -113,7 +113,7 @@ class InterceptingCanvasBase : public SkCanvas {
                       const SkPoint vertices[],
                       const SkPoint texs[],
                       const SkColor colors[],
-                      SkXfermode* xmode,
+                      SkBlendMode bmode,
                       const uint16_t indices[],
                       int indexCount,
                       const SkPaint&) override = 0;
@@ -257,13 +257,13 @@ class InterceptingCanvas : public InterceptingCanvasBase {
                       const SkPoint vertices[],
                       const SkPoint texs[],
                       const SkColor colors[],
-                      SkXfermode* xmode,
+                      SkBlendMode bmode,
                       const uint16_t indices[],
                       int indexCount,
                       const SkPaint& paint) override {
     Interceptor interceptor(this);
     this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors,
-                                   xmode, indices, indexCount, paint);
+                                   bmode, indices, indexCount, paint);
   }
 
   void onDrawDRRect(const SkRRect& outer,

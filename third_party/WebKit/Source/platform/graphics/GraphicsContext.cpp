@@ -227,7 +227,7 @@ void GraphicsContext::concat(const SkMatrix& matrix) {
 }
 
 void GraphicsContext::beginLayer(float opacity,
-                                 SkXfermode::Mode xfermode,
+                                 SkBlendMode xfermode,
                                  const FloatRect* bounds,
                                  ColorFilter colorFilter,
                                  sk_sp<SkImageFilter> imageFilter) {
@@ -305,7 +305,7 @@ void GraphicsContext::drawPicture(const SkPicture* picture) {
 void GraphicsContext::compositePicture(sk_sp<SkPicture> picture,
                                        const FloatRect& dest,
                                        const FloatRect& src,
-                                       SkXfermode::Mode op) {
+                                       SkBlendMode op) {
   if (contextDisabled() || !picture)
     return;
   ASSERT(m_canvas);
@@ -798,7 +798,7 @@ void GraphicsContext::drawImage(
     Image* image,
     const FloatRect& dest,
     const FloatRect* srcPtr,
-    SkXfermode::Mode op,
+    SkBlendMode op,
     RespectImageOrientationEnum shouldRespectImageOrientation) {
   if (contextDisabled() || !image)
     return;
@@ -819,7 +819,7 @@ void GraphicsContext::drawImageRRect(
     Image* image,
     const FloatRoundedRect& dest,
     const FloatRect& srcRect,
-    SkXfermode::Mode op,
+    SkBlendMode op,
     RespectImageOrientationEnum respectOrientation) {
   if (contextDisabled() || !image)
     return;
@@ -895,7 +895,7 @@ void GraphicsContext::drawTiledImage(Image* image,
                                      const FloatRect& destRect,
                                      const FloatPoint& srcPoint,
                                      const FloatSize& tileSize,
-                                     SkXfermode::Mode op,
+                                     SkBlendMode op,
                                      const FloatSize& repeatSpacing) {
   if (contextDisabled() || !image)
     return;
@@ -908,7 +908,7 @@ void GraphicsContext::drawTiledImage(Image* image,
                                      const FloatSize& tileScaleFactor,
                                      Image::TileRule hRule,
                                      Image::TileRule vRule,
-                                     SkXfermode::Mode op) {
+                                     SkBlendMode op) {
   if (contextDisabled() || !image)
     return;
 
@@ -969,13 +969,13 @@ void GraphicsContext::fillRect(const FloatRect& rect) {
 
 void GraphicsContext::fillRect(const FloatRect& rect,
                                const Color& color,
-                               SkXfermode::Mode xferMode) {
+                               SkBlendMode xferMode) {
   if (contextDisabled())
     return;
 
   SkPaint paint = immutableState()->fillPaint();
   paint.setColor(color.rgb());
-  paint.setBlendMode(static_cast<SkBlendMode>(xferMode));
+  paint.setBlendMode(xferMode);
 
   drawRect(rect, paint);
 }

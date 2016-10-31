@@ -436,14 +436,14 @@ void CanvasRenderingContext2DState::setFilter(const CSSValue* filterValue) {
   m_resolvedFilter.reset();
 }
 
-void CanvasRenderingContext2DState::setGlobalComposite(SkXfermode::Mode mode) {
-  m_strokePaint.setBlendMode(static_cast<SkBlendMode>(mode));
-  m_fillPaint.setBlendMode(static_cast<SkBlendMode>(mode));
-  m_imagePaint.setBlendMode(static_cast<SkBlendMode>(mode));
+void CanvasRenderingContext2DState::setGlobalComposite(SkBlendMode mode) {
+  m_strokePaint.setBlendMode(mode);
+  m_fillPaint.setBlendMode(mode);
+  m_imagePaint.setBlendMode(mode);
 }
 
-SkXfermode::Mode CanvasRenderingContext2DState::globalComposite() const {
-  return (SkXfermode::Mode)m_strokePaint.getBlendMode();
+SkBlendMode CanvasRenderingContext2DState::globalComposite() const {
+  return m_strokePaint.getBlendMode();
 }
 
 void CanvasRenderingContext2DState::setImageSmoothingEnabled(bool enabled) {

@@ -137,13 +137,13 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   SkLayerDrawLooper::LayerInfo layer_info;
   layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
   layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
-  layer_info.fColorMode = SkXfermode::kDst_Mode;
+  layer_info.fColorMode = SkBlendMode::kDst;
   layer_info.fOffset.set(0, 1);
   SkPaint* layer_paint = looper_builder.addLayer(layer_info);
   layer_paint->setMaskFilter(SkBlurMaskFilter::Make(
       kNormal_SkBlurStyle, 0.5, SkBlurMaskFilter::kHighQuality_BlurFlag));
   layer_paint->setColorFilter(
-      SkColorFilter::MakeModeFilter(color, SkXfermode::kSrcIn_Mode));
+      SkColorFilter::MakeModeFilter(color, SkBlendMode::kSrcIn));
 
   return looper_builder.detach();
 }

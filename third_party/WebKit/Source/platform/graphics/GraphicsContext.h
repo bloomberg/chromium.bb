@@ -174,7 +174,7 @@ class PLATFORM_EXPORT GraphicsContext {
   void fillRect(const FloatRect&);
   void fillRect(const FloatRect&,
                 const Color&,
-                SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
+                SkBlendMode = SkBlendMode::kSrcOver);
   void fillRoundedRect(const FloatRoundedRect&, const Color&);
   void fillDRRect(const FloatRoundedRect&,
                   const FloatRoundedRect&,
@@ -186,24 +186,24 @@ class PLATFORM_EXPORT GraphicsContext {
   void compositePicture(sk_sp<SkPicture>,
                         const FloatRect& dest,
                         const FloatRect& src,
-                        SkXfermode::Mode);
+                        SkBlendMode);
 
   void drawImage(Image*,
                  const FloatRect& destRect,
                  const FloatRect* srcRect = nullptr,
-                 SkXfermode::Mode = SkXfermode::kSrcOver_Mode,
+                 SkBlendMode = SkBlendMode::kSrcOver,
                  RespectImageOrientationEnum = DoNotRespectImageOrientation);
   void drawImageRRect(
       Image*,
       const FloatRoundedRect& dest,
       const FloatRect& srcRect,
-      SkXfermode::Mode = SkXfermode::kSrcOver_Mode,
+      SkBlendMode = SkBlendMode::kSrcOver,
       RespectImageOrientationEnum = DoNotRespectImageOrientation);
   void drawTiledImage(Image*,
                       const FloatRect& destRect,
                       const FloatPoint& srcPoint,
                       const FloatSize& tileSize,
-                      SkXfermode::Mode = SkXfermode::kSrcOver_Mode,
+                      SkBlendMode = SkBlendMode::kSrcOver,
                       const FloatSize& repeatSpacing = FloatSize());
   void drawTiledImage(Image*,
                       const FloatRect& destRect,
@@ -211,7 +211,7 @@ class PLATFORM_EXPORT GraphicsContext {
                       const FloatSize& tileScaleFactor,
                       Image::TileRule hRule = Image::StretchTile,
                       Image::TileRule vRule = Image::StretchTile,
-                      SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
+                      SkBlendMode = SkBlendMode::kSrcOver);
 
   // These methods write to the canvas.
   // Also drawLine(const IntPoint& point1, const IntPoint& point2) and
@@ -273,10 +273,10 @@ class PLATFORM_EXPORT GraphicsContext {
                                  DocumentMarkerLineStyle);
 
   // beginLayer()/endLayer() behave like save()/restore() for CTM and clip
-  // states. Apply SkXfermode::Mode when the layer is composited on the backdrop
+  // states. Apply SkBlendMode when the layer is composited on the backdrop
   // (i.e. endLayer()).
   void beginLayer(float opacity = 1.0f,
-                  SkXfermode::Mode = SkXfermode::kSrcOver_Mode,
+                  SkBlendMode = SkBlendMode::kSrcOver,
                   const FloatRect* = 0,
                   ColorFilter = ColorFilterNone,
                   sk_sp<SkImageFilter> = nullptr);

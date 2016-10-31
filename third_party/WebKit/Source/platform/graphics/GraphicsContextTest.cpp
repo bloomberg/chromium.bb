@@ -77,14 +77,13 @@ TEST(GraphicsContextTest, pictureRecording) {
   FloatRect bounds(0, 0, 100, 100);
 
   context.beginRecording(bounds);
-  context.fillRect(FloatRect(0, 0, 50, 50), opaque, SkXfermode::kSrcOver_Mode);
+  context.fillRect(FloatRect(0, 0, 50, 50), opaque, SkBlendMode::kSrcOver);
   sk_sp<const SkPicture> picture = context.endRecording();
   canvas.drawPicture(picture.get());
   EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
 
   context.beginRecording(bounds);
-  context.fillRect(FloatRect(0, 0, 100, 100), opaque,
-                   SkXfermode::kSrcOver_Mode);
+  context.fillRect(FloatRect(0, 0, 100, 100), opaque, SkBlendMode::kSrcOver);
   picture = context.endRecording();
   // Make sure the opaque region was unaffected by the rect drawn during Picture
   // recording.
@@ -121,8 +120,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   context.setLineDash(dashArray, 0);
 
   // Make the device opaque in 10,10 40x40.
-  context.fillRect(FloatRect(10, 10, 40, 40), opaque,
-                   SkXfermode::kSrcOver_Mode);
+  context.fillRect(FloatRect(10, 10, 40, 40), opaque, SkBlendMode::kSrcOver);
   sk_sp<const SkPicture> picture = context.endRecording();
   canvas.drawPicture(picture.get());
   EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(10, 10, 40, 40));

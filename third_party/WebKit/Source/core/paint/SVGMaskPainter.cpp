@@ -28,7 +28,7 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object,
     return false;
 
   context.getPaintController().createAndAppend<BeginCompositingDisplayItem>(
-      object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
+      object, SkBlendMode::kSrcOver, 1, &paintInvalidationRect);
   return true;
 }
 
@@ -44,9 +44,9 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object,
         m_mask.style()->svgStyle().maskType() == MT_LUMINANCE
             ? ColorFilterLuminanceToAlpha
             : ColorFilterNone;
-    CompositingRecorder maskCompositing(
-        context, object, SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect,
-        maskLayerFilter);
+    CompositingRecorder maskCompositing(context, object, SkBlendMode::kDstIn, 1,
+                                        &paintInvalidationRect,
+                                        maskLayerFilter);
     drawMaskForLayoutObject(context, object, object.objectBoundingBox(),
                             paintInvalidationRect);
   }

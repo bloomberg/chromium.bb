@@ -80,7 +80,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
   virtual void draw(GraphicsContext&,
                     const FloatRect& destRect,
                     const FloatRect& srcRect,
-                    SkXfermode::Mode);
+                    SkBlendMode);
   virtual void setHasExpensiveOp() {}
   virtual GLuint getBackingTextureHandleForOverwrite() { return 0; }
 

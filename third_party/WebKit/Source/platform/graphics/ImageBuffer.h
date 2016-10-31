@@ -169,10 +169,7 @@ class PLATFORM_EXPORT ImageBuffer {
 
   sk_sp<SkPicture> getPicture() { return m_surface->getPicture(); }
 
-  void draw(GraphicsContext&,
-            const FloatRect&,
-            const FloatRect*,
-            SkXfermode::Mode);
+  void draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkBlendMode);
 
   void updateGPUMemoryUsage() const;
   static intptr_t getGlobalGPUMemoryUsage() { return s_globalGPUMemoryUsage; }

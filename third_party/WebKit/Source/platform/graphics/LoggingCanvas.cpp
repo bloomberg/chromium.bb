@@ -726,7 +726,7 @@ void LoggingCanvas::onDrawVertices(VertexMode vmode,
                                    const SkPoint vertices[],
                                    const SkPoint texs[],
                                    const SkColor colors[],
-                                   SkXfermode* xmode,
+                                   SkBlendMode bmode,
                                    const uint16_t indices[],
                                    int indexCount,
                                    const SkPaint& paint) {
@@ -734,7 +734,7 @@ void LoggingCanvas::onDrawVertices(VertexMode vmode,
   JSONObject* params = logger.logItemWithParams("drawVertices");
   params->setObject("paint", objectForSkPaint(paint));
   this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors,
-                                 xmode, indices, indexCount, paint);
+                                 bmode, indices, indexCount, paint);
 }
 
 void LoggingCanvas::onDrawDRRect(const SkRRect& outer,

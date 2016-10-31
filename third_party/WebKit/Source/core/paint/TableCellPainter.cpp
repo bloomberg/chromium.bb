@@ -229,7 +229,7 @@ void TableCellPainter::paintBackground(const PaintInfo& paintInfo,
     }
     BoxPainter(m_layoutTableCell)
         .paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone,
-                         SkXfermode::kSrcOver_Mode, &backgroundObject);
+                         SkBlendMode::kSrcOver, &backgroundObject);
   }
 }
 

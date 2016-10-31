@@ -322,7 +322,7 @@ void AnalysisCanvas::onDrawVertices(SkCanvas::VertexMode,
                                     const SkPoint verts[],
                                     const SkPoint texs[],
                                     const SkColor colors[],
-                                    SkXfermode* xmode,
+                                    SkBlendMode bmode,
                                     const uint16_t indices[],
                                     int index_count,
                                     const SkPaint& paint) {

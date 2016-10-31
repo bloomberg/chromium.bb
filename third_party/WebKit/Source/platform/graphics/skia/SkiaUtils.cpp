@@ -37,44 +37,44 @@ namespace blink {
 
 static const struct CompositOpToXfermodeMode {
   CompositeOperator mCompositOp;
-  SkXfermode::Mode m_xfermodeMode;
+  SkBlendMode m_xfermodeMode;
 } gMapCompositOpsToXfermodeModes[] = {
-    {CompositeClear, SkXfermode::kClear_Mode},
-    {CompositeCopy, SkXfermode::kSrc_Mode},
-    {CompositeSourceOver, SkXfermode::kSrcOver_Mode},
-    {CompositeSourceIn, SkXfermode::kSrcIn_Mode},
-    {CompositeSourceOut, SkXfermode::kSrcOut_Mode},
-    {CompositeSourceAtop, SkXfermode::kSrcATop_Mode},
-    {CompositeDestinationOver, SkXfermode::kDstOver_Mode},
-    {CompositeDestinationIn, SkXfermode::kDstIn_Mode},
-    {CompositeDestinationOut, SkXfermode::kDstOut_Mode},
-    {CompositeDestinationAtop, SkXfermode::kDstATop_Mode},
-    {CompositeXOR, SkXfermode::kXor_Mode},
-    {CompositePlusLighter, SkXfermode::kPlus_Mode}};
+    {CompositeClear, SkBlendMode::kClear},
+    {CompositeCopy, SkBlendMode::kSrc},
+    {CompositeSourceOver, SkBlendMode::kSrcOver},
+    {CompositeSourceIn, SkBlendMode::kSrcIn},
+    {CompositeSourceOut, SkBlendMode::kSrcOut},
+    {CompositeSourceAtop, SkBlendMode::kSrcATop},
+    {CompositeDestinationOver, SkBlendMode::kDstOver},
+    {CompositeDestinationIn, SkBlendMode::kDstIn},
+    {CompositeDestinationOut, SkBlendMode::kDstOut},
+    {CompositeDestinationAtop, SkBlendMode::kDstATop},
+    {CompositeXOR, SkBlendMode::kXor},
+    {CompositePlusLighter, SkBlendMode::kPlus}};
 
 // Keep this array in sync with the WebBlendMode enum in
 // public/platform/WebBlendMode.h.
-static const SkXfermode::Mode gMapBlendOpsToXfermodeModes[] = {
-    SkXfermode::kClear_Mode,       // WebBlendModeNormal
-    SkXfermode::kMultiply_Mode,    // WebBlendModeMultiply
-    SkXfermode::kScreen_Mode,      // WebBlendModeScreen
-    SkXfermode::kOverlay_Mode,     // WebBlendModeOverlay
-    SkXfermode::kDarken_Mode,      // WebBlendModeDarken
-    SkXfermode::kLighten_Mode,     // WebBlendModeLighten
-    SkXfermode::kColorDodge_Mode,  // WebBlendModeColorDodge
-    SkXfermode::kColorBurn_Mode,   // WebBlendModeColorBurn
-    SkXfermode::kHardLight_Mode,   // WebBlendModeHardLight
-    SkXfermode::kSoftLight_Mode,   // WebBlendModeSoftLight
-    SkXfermode::kDifference_Mode,  // WebBlendModeDifference
-    SkXfermode::kExclusion_Mode,   // WebBlendModeExclusion
-    SkXfermode::kHue_Mode,         // WebBlendModeHue
-    SkXfermode::kSaturation_Mode,  // WebBlendModeSaturation
-    SkXfermode::kColor_Mode,       // WebBlendModeColor
-    SkXfermode::kLuminosity_Mode   // WebBlendModeLuminosity
+static const SkBlendMode gMapBlendOpsToXfermodeModes[] = {
+    SkBlendMode::kClear,       // WebBlendModeNormal
+    SkBlendMode::kMultiply,    // WebBlendModeMultiply
+    SkBlendMode::kScreen,      // WebBlendModeScreen
+    SkBlendMode::kOverlay,     // WebBlendModeOverlay
+    SkBlendMode::kDarken,      // WebBlendModeDarken
+    SkBlendMode::kLighten,     // WebBlendModeLighten
+    SkBlendMode::kColorDodge,  // WebBlendModeColorDodge
+    SkBlendMode::kColorBurn,   // WebBlendModeColorBurn
+    SkBlendMode::kHardLight,   // WebBlendModeHardLight
+    SkBlendMode::kSoftLight,   // WebBlendModeSoftLight
+    SkBlendMode::kDifference,  // WebBlendModeDifference
+    SkBlendMode::kExclusion,   // WebBlendModeExclusion
+    SkBlendMode::kHue,         // WebBlendModeHue
+    SkBlendMode::kSaturation,  // WebBlendModeSaturation
+    SkBlendMode::kColor,       // WebBlendModeColor
+    SkBlendMode::kLuminosity   // WebBlendModeLuminosity
 };
 
-SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op,
-                                                 WebBlendMode blendMode) {
+SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
+                                            WebBlendMode blendMode) {
   ASSERT(op == CompositeSourceOver || blendMode == WebBlendModeNormal);
   if (blendMode != WebBlendModeNormal) {
     if (static_cast<uint8_t>(blendMode) >=
@@ -83,7 +83,7 @@ SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op,
           ("GraphicsContext::setPlatformCompositeOperation unknown "
            "WebBlendMode %d\n",
            blendMode));
-      return SkXfermode::kSrcOver_Mode;
+      return SkBlendMode::kSrcOver;
     }
     return gMapBlendOpsToXfermodeModes[static_cast<uint8_t>(blendMode)];
   }
@@ -95,37 +95,37 @@ SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op,
         ("GraphicsContext::setPlatformCompositeOperation unknown "
          "CompositeOperator %d\n",
          op));
-    return SkXfermode::kSrcOver_Mode;
+    return SkBlendMode::kSrcOver;
   }
   SkASSERT(table[static_cast<uint8_t>(op)].mCompositOp == op);
   return table[static_cast<uint8_t>(op)].m_xfermodeMode;
 }
 
-CompositeOperator compositeOperatorFromSkia(SkXfermode::Mode xferMode) {
+CompositeOperator compositeOperatorFromSkia(SkBlendMode xferMode) {
   switch (xferMode) {
-    case SkXfermode::kClear_Mode:
+    case SkBlendMode::kClear:
       return CompositeClear;
-    case SkXfermode::kSrc_Mode:
+    case SkBlendMode::kSrc:
       return CompositeCopy;
-    case SkXfermode::kSrcOver_Mode:
+    case SkBlendMode::kSrcOver:
       return CompositeSourceOver;
-    case SkXfermode::kSrcIn_Mode:
+    case SkBlendMode::kSrcIn:
       return CompositeSourceIn;
-    case SkXfermode::kSrcOut_Mode:
+    case SkBlendMode::kSrcOut:
       return CompositeSourceOut;
-    case SkXfermode::kSrcATop_Mode:
+    case SkBlendMode::kSrcATop:
       return CompositeSourceAtop;
-    case SkXfermode::kDstOver_Mode:
+    case SkBlendMode::kDstOver:
       return CompositeDestinationOver;
-    case SkXfermode::kDstIn_Mode:
+    case SkBlendMode::kDstIn:
       return CompositeDestinationIn;
-    case SkXfermode::kDstOut_Mode:
+    case SkBlendMode::kDstOut:
       return CompositeDestinationOut;
-    case SkXfermode::kDstATop_Mode:
+    case SkBlendMode::kDstATop:
       return CompositeDestinationAtop;
-    case SkXfermode::kXor_Mode:
+    case SkBlendMode::kXor:
       return CompositeXOR;
-    case SkXfermode::kPlus_Mode:
+    case SkBlendMode::kPlus:
       return CompositePlusLighter;
     default:
       break;
@@ -133,39 +133,39 @@ CompositeOperator compositeOperatorFromSkia(SkXfermode::Mode xferMode) {
   return CompositeSourceOver;
 }
 
-WebBlendMode blendModeFromSkia(SkXfermode::Mode xferMode) {
+WebBlendMode blendModeFromSkia(SkBlendMode xferMode) {
   switch (xferMode) {
-    case SkXfermode::kSrcOver_Mode:
+    case SkBlendMode::kSrcOver:
       return WebBlendModeNormal;
-    case SkXfermode::kMultiply_Mode:
+    case SkBlendMode::kMultiply:
       return WebBlendModeMultiply;
-    case SkXfermode::kScreen_Mode:
+    case SkBlendMode::kScreen:
       return WebBlendModeScreen;
-    case SkXfermode::kOverlay_Mode:
+    case SkBlendMode::kOverlay:
       return WebBlendModeOverlay;
-    case SkXfermode::kDarken_Mode:
+    case SkBlendMode::kDarken:
       return WebBlendModeDarken;
-    case SkXfermode::kLighten_Mode:
+    case SkBlendMode::kLighten:
       return WebBlendModeLighten;
-    case SkXfermode::kColorDodge_Mode:
+    case SkBlendMode::kColorDodge:
       return WebBlendModeColorDodge;
-    case SkXfermode::kColorBurn_Mode:
+    case SkBlendMode::kColorBurn:
       return WebBlendModeColorBurn;
-    case SkXfermode::kHardLight_Mode:
+    case SkBlendMode::kHardLight:
       return WebBlendModeHardLight;
-    case SkXfermode::kSoftLight_Mode:
+    case SkBlendMode::kSoftLight:
       return WebBlendModeSoftLight;
-    case SkXfermode::kDifference_Mode:
+    case SkBlendMode::kDifference:
       return WebBlendModeDifference;
-    case SkXfermode::kExclusion_Mode:
+    case SkBlendMode::kExclusion:
       return WebBlendModeExclusion;
-    case SkXfermode::kHue_Mode:
+    case SkBlendMode::kHue:
       return WebBlendModeHue;
-    case SkXfermode::kSaturation_Mode:
+    case SkBlendMode::kSaturation:
       return WebBlendModeSaturation;
-    case SkXfermode::kColor_Mode:
+    case SkBlendMode::kColor:
       return WebBlendModeColor;
-    case SkXfermode::kLuminosity_Mode:
+    case SkBlendMode::kLuminosity:
       return WebBlendModeLuminosity;
     default:
       break;

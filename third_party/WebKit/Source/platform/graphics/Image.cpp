@@ -91,7 +91,7 @@ void Image::drawTiled(GraphicsContext& ctxt,
                       const FloatRect& destRect,
                       const FloatPoint& srcPoint,
                       const FloatSize& scaledTileSize,
-                      SkXfermode::Mode op,
+                      SkBlendMode op,
                       const FloatSize& repeatSpacing) {
   FloatSize intrinsicTileSize = FloatSize(size());
   if (hasRelativeSize()) {
@@ -130,7 +130,7 @@ void Image::drawTiled(GraphicsContext& ctxt,
                       const FloatSize& providedTileScaleFactor,
                       TileRule hRule,
                       TileRule vRule,
-                      SkXfermode::Mode op) {
+                      SkBlendMode op) {
   // FIXME: We do not support 'space' yet. For now just map it to 'repeat'.
   if (hRule == SpaceTile)
     hRule = RepeatTile;
@@ -219,7 +219,7 @@ void Image::drawPattern(GraphicsContext& context,
                         const FloatRect& floatSrcRect,
                         const FloatSize& scale,
                         const FloatPoint& phase,
-                        SkXfermode::Mode compositeOp,
+                        SkBlendMode compositeOp,
                         const FloatRect& destRect,
                         const FloatSize& repeatSpacing) {
   TRACE_EVENT0("skia", "Image::drawPattern");

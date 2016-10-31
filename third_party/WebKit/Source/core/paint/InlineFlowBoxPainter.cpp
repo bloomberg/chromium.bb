@@ -61,7 +61,7 @@ void InlineFlowBoxPainter::paintFillLayers(const PaintInfo& paintInfo,
                                            const Color& c,
                                            const FillLayer& fillLayer,
                                            const LayoutRect& rect,
-                                           SkXfermode::Mode op) {
+                                           SkBlendMode op) {
   // FIXME: This should be a for loop or similar. It's a little non-trivial to
   // do so, however, since the layers need to be painted in reverse order.
   if (fillLayer.next())
@@ -73,7 +73,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo,
                                           const Color& c,
                                           const FillLayer& fillLayer,
                                           const LayoutRect& rect,
-                                          SkXfermode::Mode op) {
+                                          SkBlendMode op) {
   LayoutBoxModelObject* boxModel = toLayoutBoxModelObject(
       LineLayoutAPIShim::layoutObjectFrom(m_inlineFlowBox.boxModelObject()));
   StyleImage* img = fillLayer.image();
@@ -343,7 +343,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
       m_inlineFlowBox.boxModelObject().layer()->hasCompositedMask();
   bool flattenCompositingLayers =
       paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
-  SkXfermode::Mode compositeOp = SkXfermode::kSrcOver_Mode;
+  SkBlendMode compositeOp = SkBlendMode::kSrcOver;
   if (!compositedMask || flattenCompositingLayers) {
     if ((maskBoxImage &&
          m_inlineFlowBox.getLineLayoutItem()
@@ -352,7 +352,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
              .hasImage()) ||
         m_inlineFlowBox.getLineLayoutItem().style()->maskLayers().next()) {
       pushTransparencyLayer = true;
-      paintInfo.context.beginLayer(1.0f, SkXfermode::kDstIn_Mode);
+      paintInfo.context.beginLayer(1.0f, SkBlendMode::kDstIn);
     } else {
       // TODO(fmalita): passing a dst-in xfer mode down to
       // paintFillLayers/paintNinePieceImage seems dangerous: it is only correct
@@ -360,7 +360,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
       // presumably ensures that is the case, this approach seems super fragile.
       // We should investigate dropping this optimization in favour of the more
       // robust layer branch above.
-      compositeOp = SkXfermode::kDstIn_Mode;
+      compositeOp = SkBlendMode::kDstIn;
     }
   }
 

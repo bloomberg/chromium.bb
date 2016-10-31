@@ -14,7 +14,7 @@ void BeginFilterDisplayItem::replay(GraphicsContext& context) const {
   imageFilterBounds.move(-m_origin.x(), -m_origin.y());
   context.save();
   context.translate(m_origin.x(), m_origin.y());
-  context.beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds,
+  context.beginLayer(1, SkBlendMode::kSrcOver, &imageFilterBounds,
                      ColorFilterNone, m_imageFilter);
   context.translate(-m_origin.x(), -m_origin.y());
 }

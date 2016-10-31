@@ -321,7 +321,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(
 void RecordingImageBufferSurface::draw(GraphicsContext& context,
                                        const FloatRect& destRect,
                                        const FloatRect& srcRect,
-                                       SkXfermode::Mode op) {
+                                       SkBlendMode op) {
   if (m_fallbackSurface) {
     m_fallbackSurface->draw(context, destRect, srcRect, op);
     return;
