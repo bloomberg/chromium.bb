@@ -542,6 +542,17 @@ class SimulatorTestRunner(TestRunner):
     cmd.extend(args)
     return cmd
 
+  def get_launch_env(self):
+    """Returns a dict of environment variables to use to launch the test app.
+
+    Returns:
+      A dict of environment variables.
+    """
+    env = super(SimulatorTestRunner, self).get_launch_env()
+    if self.xctest_path:
+      env['NSUnbufferedIO'] = 'YES'
+    return env
+
 
 class DeviceTestRunner(TestRunner):
   """Class for running tests on devices."""
