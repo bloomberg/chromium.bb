@@ -1018,6 +1018,7 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
 
   // This call would not be expected if we were not sharing data.
   EXPECT_CALL(host2, SetTotalBytes(response_generator_->content_length()));
+  EXPECT_CALL(host2, AddBufferedByteRange(0, kDataSize * 2));
   source2.Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
                                 base::Unretained(this)));
   base::RunLoop().RunUntilIdle();

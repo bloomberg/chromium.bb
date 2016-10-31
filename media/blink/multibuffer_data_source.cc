@@ -177,6 +177,14 @@ void MultibufferDataSource::Initialize(const InitializeCB& init_cb) {
     render_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&MultibufferDataSource::StartCallback, weak_ptr_));
+
+    // When the entire file is already in the cache, we won't get any more
+    // progress callbacks, which breaks some expectations. Post a task to
+    // make sure that the client gets at least one call each for the progress
+    // and loading callbacks.
+    render_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&MultibufferDataSource::UpdateProgress,
+                              weak_factory_.GetWeakPtr()));
   } else {
     reader_->Wait(1,
                   base::Bind(&MultibufferDataSource::StartCallback, weak_ptr_));
@@ -504,14 +512,6 @@ void MultibufferDataSource::StartCallback() {
   render_task_runner_->PostTask(
       FROM_HERE, base::Bind(base::ResetAndReturn(&init_cb_), success));
 
-  // When we tell our clients that we're loading below, it's possible that
-  // the entire file is already cashed. If that's true, then we won't get
-  // any progress callbacks later, so we'll never tell the client that we
-  // stopped loading. Post a task to make sure that we check the loading
-  // state at least once.
-  render_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MultibufferDataSource::UpdateLoadingState,
-                            weak_factory_.GetWeakPtr()));
   // Even if data is cached, say that we're loading at this point for
   // compatibility.
   UpdateLoadingState_Locked(true);
@@ -559,10 +559,13 @@ void MultibufferDataSource::UpdateLoadingState_Locked(bool force_loading) {
   }
 }
 
-void MultibufferDataSource::UpdateLoadingState() {
+void MultibufferDataSource::UpdateProgress() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(lock_);
-  UpdateLoadingState_Locked(false);
+  if (reader_) {
+    uint64_t available = reader_->Available();
+    uint64_t pos = reader_->Tell();
+    ProgressCallback(pos, pos + available);
+  }
 }
 
 void MultibufferDataSource::UpdateBufferSizes() {
