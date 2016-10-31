@@ -109,6 +109,11 @@ bool CursorRendererAura::SnapshotCursorState(const gfx::Rect& region_in_frame) {
       return false;
     }
     aura::Window* active_window = activation_client->GetActiveWindow();
+    if (!active_window) {
+      DVLOG(2) << "Skipping update as there is no active window";
+      Clear();
+      return false;
+    }
     if (!active_window->Contains(window_)) {
       // Return early if the target window is not active.
       DVLOG(2) << "Skipping update on an inactive window";
