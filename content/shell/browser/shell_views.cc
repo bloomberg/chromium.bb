@@ -349,14 +349,15 @@ void Shell::PlatformExit() {
 
   delete test_screen_;
   test_screen_ = nullptr;
-#elif defined(USE_AURA)
-  delete wm_state_;
-  wm_state_ = nullptr;
 #endif
   delete views_delegate_;
   views_delegate_ = nullptr;
   delete platform_;
   platform_ = nullptr;
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  delete wm_state_;
+  wm_state_ = nullptr;
+#endif
 }
 
 void Shell::PlatformCleanUp() {
