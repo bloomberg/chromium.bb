@@ -17,6 +17,15 @@ import subprocess
 import sys
 import traceback
 
+# If the script is run in a virtualenv (https://virtualenv.pypa.io/en/stable/),
+# then no google.protobuf library should be brought in from site-packages.
+# Passing -S into the interpreter in a virtualenv actually destroys the ability
+# to import standard library functions like optparse, so this script should not
+# be wrapped if we're in a virtualenv.
+def IsInVirtualEnv():
+  # This is the way used by pip and other software to detect virtualenv.
+  return hasattr(sys, 'real_prefix')
+
 
 def ImportProtoModules(paths):
   """Import the protobuf modiles we need. |paths| is list of import paths"""
@@ -208,8 +217,12 @@ def main():
     parser.print_help()
     return 1
 
-  if opts.wrap:
-    # Run this script again with different args to the interpreter.
+  if opts.wrap and not IsInVirtualEnv():
+    # Run this script again with different args to the interpreter to suppress
+    # the inclusion of libraries, like google.protobuf, from site-packages,
+    # which is checked before sys.path when resolving imports. We want to
+    # specifically import the libraries injected into the sys.path in
+    # ImportProtoModules().
     command = [sys.executable, '-S', '-s', sys.argv[0]]
     if opts.type is not None:
       command += ['-t', opts.type]
