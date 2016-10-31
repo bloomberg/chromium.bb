@@ -226,7 +226,6 @@
 	so it is valid to destroy the pool immediately after creating
 	a buffer from it.
       </description>
-
       <arg name="id" type="new_id" interface="wl_buffer" summary="buffer to create"/>
       <arg name="offset" type="int" summary="buffer byte offset within the pool"/>
       <arg name="width" type="int" summary="buffer width, in pixels"/>
@@ -252,7 +251,6 @@
 	created, but using the new size.  This request can only be
 	used to make the pool bigger.
       </description>
-
       <arg name="size" type="int" summary="new size of the pool, in bytes"/>
     </request>
   </interface>
@@ -359,7 +357,6 @@
 	objects.  The server will mmap size bytes of the passed file
         descriptor, to use as backing memory for the pool.
       </description>
-
       <arg name="id" type="new_id" interface="wl_shm_pool" summary="pool to create"/>
       <arg name="fd" type="fd" summary="file descriptor for the pool"/>
       <arg name="size" type="int" summary="pool size, in bytes"/>
@@ -449,7 +446,6 @@
 	wl_data_source.cancelled. Clients may still use this event in
 	conjunction with wl_data_source.action for feedback.
       </description>
-
       <arg name="serial" type="uint" summary="serial number of the accept request"/>
       <arg name="mime_type" type="string" allow-null="true" summary="mime type accepted by the client"/>
     </request>
@@ -487,7 +483,6 @@
 	Sent immediately after creating the wl_data_offer object.  One
 	event per offered mime type.
       </description>
-
       <arg name="mime_type" type="string" summary="offered mime type"/>
     </event>
 
@@ -635,7 +630,6 @@
 
 	Used for feedback during drag-and-drop.
       </description>
-
       <arg name="mime_type" type="string" allow-null="true" summary="mime type accepted by the target"/>
     </event>
 
@@ -645,7 +639,6 @@
 	specified mime type over the passed file descriptor, then
 	close it.
       </description>
-
       <arg name="mime_type" type="string" summary="mime type for the data"/>
       <arg name="fd" type="fd" summary="file descriptor for the data"/>
     </event>
@@ -823,7 +816,6 @@
 	object will send out data_offer.offer events to describe the
 	mime types it offers.
       </description>
-
       <arg name="id" type="new_id" interface="wl_data_offer" summary="the new data_offer object"/>
     </event>
 
@@ -834,7 +826,6 @@
 	enter time is provided by the x and y arguments, in surface-local
 	coordinates.
       </description>
-
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="client surface entered"/>
       <arg name="x" type="fixed" summary="surface-local x coordinate"/>
@@ -1090,7 +1081,6 @@
 
 	The flags argument controls details of the transient behaviour.
       </description>
-
       <arg name="parent" type="object" interface="wl_surface" summary="parent surface"/>
       <arg name="x" type="int" summary="surface-local x coordinate"/>
       <arg name="y" type="int" summary="surface-local y coordinate"/>
@@ -1173,7 +1163,6 @@
 	corner of the surface relative to the upper left corner of the
 	parent surface, in surface-local coordinates.
       </description>
-
       <arg name="seat" type="object" interface="wl_seat" summary="seat whose pointer is used"/>
       <arg name="serial" type="uint" summary="serial number of the implicit grab on the pointer"/>
       <arg name="parent" type="object" interface="wl_surface" summary="parent surface"/>
@@ -1260,7 +1249,6 @@
 	The width and height arguments specify the size of the window
 	in surface-local coordinates.
       </description>
-
       <arg name="edges" type="uint" enum="resize" summary="how the surface was resized"/>
       <arg name="width" type="int" summary="new width of the surface"/>
       <arg name="height" type="int" summary="new height of the surface"/>
@@ -1374,7 +1362,6 @@
 	If wl_surface.attach is sent with a NULL wl_buffer, the
 	following wl_surface.commit will remove the surface content.
       </description>
-
       <arg name="buffer" type="object" interface="wl_buffer" allow-null="true"
 	   summary="buffer of surface contents"/>
       <arg name="x" type="int" summary="surface-local x coordinate"/>
@@ -1405,7 +1392,6 @@
 	which uses buffer coordinates instead of surface coordinates,
 	and is probably the preferred and intuitive way of doing this.
       </description>
-
       <arg name="x" type="int" summary="surface-local x coordinate"/>
       <arg name="y" type="int" summary="surface-local y coordinate"/>
       <arg name="width" type="int" summary="width of damage rectangle"/>
@@ -1447,7 +1433,6 @@
 	The callback_data passed in the callback is the current time, in
 	milliseconds, with an undefined base.
       </description>
-
       <arg name="callback" type="new_id" interface="wl_callback" summary="callback object for the frame request"/>
     </request>
 
@@ -1478,7 +1463,6 @@
 	destroyed immediately. A NULL wl_region causes the pending opaque
 	region to be set to empty.
       </description>
-
       <arg name="region" type="object" interface="wl_region" allow-null="true"
 	   summary="opaque region of the surface"/>
     </request>
@@ -1508,7 +1492,6 @@
 	immediately. A NULL wl_region causes the input region to be set
 	to infinite.
       </description>
-
       <arg name="region" type="object" interface="wl_region" allow-null="true"
 	   summary="input region of the surface"/>
     </request>
@@ -1661,7 +1644,6 @@
 	two requests separately and only transform from one to the other
 	after receiving the wl_surface.commit.
       </description>
-
       <arg name="x" type="int" summary="buffer-local x coordinate"/>
       <arg name="y" type="int" summary="buffer-local y coordinate"/>
       <arg name="width" type="int" summary="width of damage rectangle"/>
@@ -1828,7 +1810,6 @@
 	cursor ends, the current and pending input regions become
 	undefined, and the wl_surface is unmapped.
       </description>
-
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"
 	   summary="pointer surface"/>
@@ -1845,7 +1826,6 @@
 	is undefined and a client should respond to this event by setting
 	an appropriate pointer image with the set_cursor request.
       </description>
-
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="surface entered by the pointer"/>
       <arg name="surface_x" type="fixed" summary="surface-local x coordinate"/>
@@ -1870,7 +1850,6 @@
 	surface_x and surface_y are the location relative to the
 	focused surface.
       </description>
-
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="surface_x" type="fixed" summary="surface-local x coordinate"/>
       <arg name="surface_y" type="fixed" summary="surface-local y coordinate"/>
@@ -1894,7 +1873,6 @@
         The time argument is a timestamp with millisecond
         granularity, with an undefined base.
       </description>
-
       <arg name="serial" type="uint" summary="serial number of the button event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="button" type="uint" summary="button that produced the event"/>
@@ -1928,7 +1906,6 @@
 	When applicable, a client can transform its content relative to the
 	scroll distance.
       </description>
-
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="axis" type="uint" enum="axis" summary="axis type"/>
       <arg name="value" type="fixed" summary="length of vector in surface-local coordinate space"/>
@@ -2155,7 +2132,6 @@
         The time argument is a timestamp with millisecond
         granularity, with an undefined base.
       </description>
-
       <arg name="serial" type="uint" summary="serial number of the key event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="key" type="uint" summary="key that produced the event"/>
@@ -2167,7 +2143,6 @@
 	Notifies clients that the modifier and/or group state has
 	changed, and it should update its local state.
       </description>
-
       <arg name="serial" type="uint" summary="serial number of the modifiers event"/>
       <arg name="mods_depressed" type="uint" summary="depressed modifiers"/>
       <arg name="mods_latched" type="uint" summary="latched modifiers"/>
@@ -2198,7 +2173,6 @@
         so clients should continue listening for the event past the creation
         of wl_keyboard.
       </description>
-
       <arg name="rate" type="int"
            summary="the rate of repeating keys in characters per second"/>
       <arg name="delay" type="int"
@@ -2315,7 +2289,6 @@
 	compositor will still be able to scan out directly from client
 	surfaces.
       </description>
-
       <entry name="normal" value="0" summary="no transform"/>
       <entry name="90" value="1" summary="90 degrees counter-clockwise"/>
       <entry name="180" value="2" summary="180 degrees counter-clockwise"/>
@@ -2447,7 +2420,6 @@
       <description summary="add rectangle to region">
 	Add the specified rectangle to the region.
       </description>
-
       <arg name="x" type="int" summary="region-local x coordinate"/>
       <arg name="y" type="int" summary="region-local y coordinate"/>
       <arg name="width" type="int" summary="rectangle width"/>
@@ -2458,7 +2430,6 @@
       <description summary="subtract rectangle from region">
 	Subtract the specified rectangle from the region.
       </description>
-
       <arg name="x" type="int" summary="region-local x coordinate"/>
       <arg name="y" type="int" summary="region-local y coordinate"/>
       <arg name="width" type="int" summary="rectangle width"/>
@@ -2512,7 +2483,6 @@
 	must not have an existing wl_subsurface object. Otherwise a protocol
 	error is raised.
       </description>
-
       <arg name="id" type="new_id" interface="wl_subsurface"
            summary="the new sub-surface object ID"/>
       <arg name="surface" type="object" interface="wl_surface"
@@ -2609,7 +2579,6 @@
 
 	The initial position is 0, 0.
       </description>
-
       <arg name="x" type="int" summary="x coordinate in the parent surface"/>
       <arg name="y" type="int" summary="y coordinate in the parent surface"/>
     </request>
@@ -2632,7 +2601,6 @@
 	A new sub-surface is initially added as the top-most in the stack
 	of its siblings and parent.
       </description>
-
       <arg name="sibling" type="object" interface="wl_surface"
            summary="the reference surface"/>
     </request>
@@ -2642,7 +2610,6 @@
 	The sub-surface is placed just below the reference surface.
 	See wl_subsurface.place_above.
       </description>
-
       <arg name="sibling" type="object" interface="wl_surface"
            summary="the reference surface"/>
     </request>
