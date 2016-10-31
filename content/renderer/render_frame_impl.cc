@@ -3314,8 +3314,7 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
       case WebCachePolicy::ReturnCacheDataDontLoad:  // Don't re-post.
         document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_ONLY);
         break;
-      case WebCachePolicy::ReturnCacheDataIfValid:
-        // This policy is currently only used in subresource loading.
+      default:
         NOTREACHED();
     }
   }

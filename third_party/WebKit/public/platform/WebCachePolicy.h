@@ -15,7 +15,6 @@ enum class WebCachePolicy {
                             // data
   ReturnCacheDataDontLoad,  // results of a post - allow stale data and only use
                             // cache
-  ReturnCacheDataIfValid,   // for cache-aware loading - disallow stale data
 };
 
 }  // namespace blink
