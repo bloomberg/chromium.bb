@@ -83,7 +83,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       // Eventually, for subsequent phases of http://bit.ly/project-oldspice,
       // turn off focus stealing for other dialog types.
       *did_suppress_message = true;
-      callback.Run(false, base::string16());
       return;
     }
 
