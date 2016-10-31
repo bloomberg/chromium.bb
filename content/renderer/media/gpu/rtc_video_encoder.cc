@@ -41,14 +41,10 @@ media::VideoCodecProfile WebRTCVideoCodecToVideoCodecProfile(
   switch (type) {
     case webrtc::kVideoCodecVP8:
       return media::VP8PROFILE_ANY;
-    case webrtc::kVideoCodecH264: {
-      switch (codec_settings->H264().profile) {
-        case webrtc::kProfileBase:
-          return media::H264PROFILE_BASELINE;
-        case webrtc::kProfileMain:
-          return media::H264PROFILE_MAIN;
-      }
-    }
+    case webrtc::kVideoCodecH264:
+      // TODO(magjed): WebRTC is only using Baseline profile for now. Update
+      // once http://crbug/webrtc/6337 is fixed.
+      return media::H264PROFILE_BASELINE;
     default:
       NOTREACHED() << "Unrecognized video codec type";
       return media::VIDEO_CODEC_PROFILE_UNKNOWN;
