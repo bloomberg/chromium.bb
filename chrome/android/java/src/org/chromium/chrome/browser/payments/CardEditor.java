@@ -11,7 +11,6 @@ import android.util.Pair;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.CreditCardScanner;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -363,8 +362,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         editor.addField(mIconHint);
 
         // Card scanner is expensive to query.
-        if (mCardScanner == null
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.SCAN_CARDS_IN_WEB_PAYMENTS)) {
+        if (mCardScanner == null) {
             mCardScanner = CreditCardScanner.create(mContext,
                     ContentViewCore.fromWebContents(mWebContents).getWindowAndroid(),
                     this);

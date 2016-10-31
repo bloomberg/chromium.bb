@@ -1975,9 +1975,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_NAME,
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPayIntegrationV1)},
-    {"scan-cards-in-web-payments", IDS_FLAGS_SCAN_CARDS_IN_WEB_PAYMENTS_NAME,
-     IDS_FLAGS_SCAN_CARDS_IN_WEB_PAYMENTS_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kScanCardsInWebPayments)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"disable-eol-notification", IDS_FLAGS_EOL_NOTIFICATION_NAME,
