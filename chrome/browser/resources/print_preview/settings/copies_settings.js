@@ -190,11 +190,14 @@ cr.define('print_preview', function() {
      */
     onTextfieldBlur_: function() {
       if (this.inputField_.value == '') {
-        // Do it asynchronously to avoid moving focus to Print button in
-        // PrintHeader.onTicketChange_.
-        setTimeout((function() {
-          this.copiesTicketItem_.updateValue('1');
-        }).bind(this), 0);
+        if (this.copiesTicketItem_.getValue() == '1') {
+          // No need to update the ticket, but change the display to match.
+          this.inputField_.value = '1';
+        } else {
+          setTimeout((function() {
+            this.copiesTicketItem_.updateValue('1');
+          }).bind(this), 0);
+        }
       }
     },
 
