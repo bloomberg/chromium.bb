@@ -14,6 +14,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -369,12 +372,31 @@ public class MediaNotificationManager {
 
         int largeIconSizePx = getMaximumLargeIconSize();
 
-        if (icon.getWidth() > largeIconSizePx || icon.getHeight() > largeIconSizePx) {
-            return icon.createScaledBitmap(
-                    icon, largeIconSizePx, largeIconSizePx, true /* filter */);
+        if (icon.getWidth() > largeIconSizePx || icon.getHeight() > largeIconSizePx
+                || icon.getWidth() != icon.getHeight()) {
+            return scaleIconInternal(icon, largeIconSizePx);
         }
 
         return icon;
+    }
+
+    private static Bitmap scaleIconInternal(Bitmap icon, int targetSize) {
+        Matrix m = new Matrix();
+        int dominantLength = Math.max(icon.getWidth(), icon.getHeight());
+        // Move the center to (0,0).
+        m.postTranslate(icon.getWidth() / -2.0f, icon.getHeight() / -2.0f);
+        // Scale to desired size.
+        float scale = 1.0f * targetSize / dominantLength;
+        m.postScale(scale, scale);
+        // Move to the desired place.
+        m.postTranslate(targetSize / 2.0f, targetSize / 2.0f);
+
+        // Draw the image.
+        Bitmap paddedBitmap = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(paddedBitmap);
+        Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+        canvas.drawBitmap(icon, m, paint);
+        return paddedBitmap;
     }
 
     /**

@@ -32,13 +32,17 @@ import java.util.Locale;
  * - The type score lies in [0, 1] and is based on the image MIME type/file extension.
  *   - PNG and JPEG are prefered than others.
  *   - If unspecified, use the default type score (0.6).
- * - The size score lies in [0, 1] and is computed using |mMimumSize| and |mIdealSize|
- *   - If size < |mMinimumSize| (too small), the size score is 0.
- *   - If size > 4 * |mIdealSize| (too large), the size score lies is 0.
- *   - If |mMinimumSize| <= size <= |mIdealSize|, the score increases linearly from 0.2 to 1.
- *   - If |mIdealSize| < size <= 4 * |mIdealSize|, the score drops linearly from 1 to 0.6.
- *   - When the size is "any", the size score is 0.8.
- *   - If unspecified, use the default size score (0.4).
+ * - The size score lies in [0, 1] and is computed by multiplying the dominant size score and aspect
+ *   ratio score:
+ *   - The dominant size score lies in [0, 1] and is computed using |mMinimumSize| and |mIdealSize|:
+ *     - If size < |mMinimumSize| (too small), the size score is 0.
+ *     - If size > 4 * |mIdealSize| (too large), the size score lies is 0.
+ *     - If |mMinimumSize| <= size <= |mIdealSize|, the score increases linearly from 0.2 to 1.
+ *     - If |mIdealSize| < size <= 4 * |mIdealSize|, the score drops linearly from 1 to 0.6.
+ *     - When the size is "any", the size score is 0.8.
+ *     - If unspecified, use the default size score (0.4).
+ *   - The aspect ratio score lies in [0, 1] and is computed by dividing the short edge length by
+ *     the long edge.
  */
 public class MediaImageManager implements ImageDownloadCallback {
     // The default score of unknown image size.
@@ -193,7 +197,12 @@ public class MediaImageManager implements ImageDownloadCallback {
     }
 
     private double getImageSizeScore(Rect size) {
-        int dominantSize = Math.max(size.width(), size.height());
+        return getImageDominantSizeScore(size.width(), size.height())
+                * getImageAspectRatioScore(size.width(), size.height());
+    }
+
+    private double getImageDominantSizeScore(int width, int height) {
+        int dominantSize = Math.max(width, height);
 
         // When the size is "any".
         if (dominantSize == 0) return 0.8;
@@ -206,6 +215,12 @@ public class MediaImageManager implements ImageDownloadCallback {
             return 0.8 * (dominantSize - mMinimumSize) / (mIdealSize - mMinimumSize) + 0.2;
         }
         return 0.4 * (dominantSize - mIdealSize) / (3 * mIdealSize) + 0.6;
+    }
+
+    private double getImageAspectRatioScore(int width, int height) {
+        double longEdge = Math.max(width, height);
+        double shortEdge = Math.min(width, height);
+        return shortEdge / longEdge;
     }
 
     private double getImageTypeScore(String url, String type) {

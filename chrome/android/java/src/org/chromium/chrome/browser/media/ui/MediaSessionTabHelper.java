@@ -352,7 +352,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
     @Override
     public void onImageDownloaded(Bitmap image) {
-        mPageMediaImage = image;
+        mPageMediaImage = MediaNotificationManager.scaleIconForDisplay(image);
         updateNotificationImage();
     }
 
