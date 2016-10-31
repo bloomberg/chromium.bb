@@ -3237,7 +3237,9 @@ button {
         <button is="paper-icon-button-light" id="checkbox" on-mousedown="onCheckboxMousedown_" on-click="onCheckboxSelected_" disabled="[[selectionNotAllowed_()]]" role="checkbox" aria-checked$="[[getAriaChecked_(selected)]]" aria-label$="[[getEntrySummary_(item)]]">
           <div id="checkmark"></div>
         </button>
-        <span id="time-accessed">[[item.readableTimestamp]]</span>
+        <span id="time-accessed" on-mouseover="addTimeTitle_">
+          [[item.readableTimestamp]]
+        </span>
         <div class="website-icon" id="icon"></div>
         <div id="title-and-domain">
           <a href="[[item.url]]" id="title" class="website-title" title="[[item.title]]" on-click="onLinkClick_" on-contextmenu="onLinkRightClick_">

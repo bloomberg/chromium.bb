@@ -300,6 +300,13 @@ cr.define('md_history', function() {
         return this.item.dateRelativeDay;
       return HistoryItem.searchResultsTitle(numberOfItems, search);
     },
+
+    /** @private */
+    addTimeTitle_: function() {
+      var el = this.$['time-accessed'];
+      el.setAttribute('title', new Date(this.item.time).toString());
+      this.unlisten(el, 'mouseover', 'addTimeTitle_');
+    },
   });
 
   /**
