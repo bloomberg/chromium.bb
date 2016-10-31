@@ -4,7 +4,6 @@
 
 #include "components/invalidation/impl/sync_system_resources.h"
 
-#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -15,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -93,7 +93,7 @@ void SyncInvalidationScheduler::Stop() {
   is_stopped_ = true;
   is_started_ = false;
   weak_factory_.InvalidateWeakPtrs();
-  posted_tasks_.clear();
+  base::STLDeleteElements(&posted_tasks_);
 }
 
 void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
@@ -106,7 +106,7 @@ void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
     return;
   }
 
-  posted_tasks_.insert(base::WrapUnique(task));
+  posted_tasks_.insert(task);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&SyncInvalidationScheduler::RunPostedTask,
                             weak_factory_.GetWeakPtr(), task),
@@ -130,12 +130,8 @@ void SyncInvalidationScheduler::SetSystemResources(
 void SyncInvalidationScheduler::RunPostedTask(invalidation::Closure* task) {
   CHECK(IsRunningOnThread());
   task->Run();
-  auto it =
-      std::find_if(posted_tasks_.begin(), posted_tasks_.end(),
-                   [task](const std::unique_ptr<invalidation::Closure>& ptr) {
-                     return ptr.get() == task;
-                   });
-  posted_tasks_.erase(it);
+  posted_tasks_.erase(task);
+  delete task;
 }
 
 SyncNetworkChannel::SyncNetworkChannel()
@@ -143,6 +139,7 @@ SyncNetworkChannel::SyncNetworkChannel()
       received_messages_count_(0) {}
 
 SyncNetworkChannel::~SyncNetworkChannel() {
+  base::STLDeleteElements(&network_status_receivers_);
 }
 
 void SyncNetworkChannel::SetMessageReceiver(
@@ -153,8 +150,7 @@ void SyncNetworkChannel::SetMessageReceiver(
 void SyncNetworkChannel::AddNetworkStatusReceiver(
     invalidation::NetworkStatusCallback* network_status_receiver) {
   network_status_receiver->Run(last_network_status_);
-  network_status_receivers_.push_back(
-      base::WrapUnique(network_status_receiver));
+  network_status_receivers_.push_back(network_status_receiver);
 }
 
 void SyncNetworkChannel::SetSystemResources(
@@ -188,8 +184,10 @@ void SyncNetworkChannel::NotifyNetworkStatusChange(bool online) {
   // Remember network state for future NetworkStatusReceivers.
   last_network_status_ = online;
   // Notify NetworkStatusReceivers in cacheinvalidation.
-  for (const auto& receiver : network_status_receivers_) {
-    receiver->Run(online);
+  for (NetworkStatusReceiverList::const_iterator it =
+           network_status_receivers_.begin();
+       it != network_status_receivers_.end(); ++it) {
+    (*it)->Run(online);
   }
 }
 
@@ -232,7 +230,7 @@ void SyncStorage::WriteKey(const std::string& key, const std::string& value,
   cached_state_ = value;
   // According to the cache invalidation API folks, we can do this as
   // long as we make sure to clear the persistent state that we start
-  // up the cache invalidation client with.  However, we mustn't do it
+  // up the cache invalidation client with.  However, we musn't do it
   // right away, as we may be called under a lock that the callback
   // uses.
   scheduler_->Schedule(
