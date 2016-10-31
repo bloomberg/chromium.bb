@@ -21,10 +21,6 @@ class RequestCoordinator;
 // A factory to create one unique RequestCoordinator.
 class RequestCoordinatorFactory : public BrowserContextKeyedServiceFactory {
  public:
-#if !defined(OFFICIAL_BUILD)
-  static std::unique_ptr<KeyedService> GetTestingFactory(
-      content::BrowserContext* context);
-#endif
   static RequestCoordinatorFactory* GetInstance();
   static RequestCoordinator* GetForBrowserContext(
       content::BrowserContext* context);

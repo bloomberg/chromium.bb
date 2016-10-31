@@ -30,6 +30,8 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
                                     public RequestCoordinator::Observer {
  public:
   static bool Register(JNIEnv* env);
+  static std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
+      content::BrowserContext* context);
 
   OfflinePageEvaluationBridge(JNIEnv* env,
                               content::BrowserContext* browser_context,
