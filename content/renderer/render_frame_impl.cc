@@ -2748,6 +2748,9 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   blink::WebURL url = source.getAsURL();
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // Render thread may not exist in tests, returning nullptr if it does not.
+  if (!render_thread)
+    return nullptr;
 
   scoped_refptr<media::SwitchableAudioRendererSink> audio_renderer_sink =
       AudioDeviceFactory::NewSwitchableAudioRendererSink(

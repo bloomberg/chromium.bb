@@ -72,6 +72,8 @@ scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
     const std::string& device_id,
     const url::Origin& security_origin) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
+                        << "GetOutputDeviceInfo() is called on a wrong thread ";
   return scoped_refptr<media::AudioRendererMixerInput>(
       render_thread->GetAudioRendererMixerManager()->CreateInput(
           render_frame_id, session_id, device_id, security_origin,
