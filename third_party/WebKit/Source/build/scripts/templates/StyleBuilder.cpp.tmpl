@@ -12,42 +12,46 @@
 
 namespace blink {
 
-void StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, const CSSValue& value, bool isInitial, bool isInherit) {
-    switch(property) {
+void StyleBuilder::applyProperty(CSSPropertyID property,
+                                 StyleResolverState& state,
+                                 const CSSValue& value,
+                                 bool isInitial,
+                                 bool isInherit) {
+  switch(property) {
     {% for property_id, property in properties.items()
-        if property.should_declare_functions or property.use_handlers_for %}
+    if property.should_declare_functions or property.use_handlers_for %}
     {% set used_property = properties[property.use_handlers_for] or property %}
     {% set used_property_id = used_property.property_id %}
     case {{property_id}}:
-        if (isInitial)
-            StyleBuilderFunctions::applyInitial{{used_property_id}}(state);
-        else if (isInherit)
-            StyleBuilderFunctions::applyInherit{{used_property_id}}(state);
-        else
-            StyleBuilderFunctions::applyValue{{used_property_id}}(state, value);
-        return;
+      if (isInitial)
+        StyleBuilderFunctions::applyInitial{{used_property_id}}(state);
+      else if (isInherit)
+        StyleBuilderFunctions::applyInherit{{used_property_id}}(state);
+      else
+        StyleBuilderFunctions::applyValue{{used_property_id}}(state, value);
+      return;
 
     {% endfor %}
     case CSSPropertyVariable:
-        ASSERT(!isInitial && !isInherit);
-        StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
-        return;
+      ASSERT(!isInitial && !isInherit);
+      StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
+      return;
     {% for property_id, property in properties.items() if property.direction_aware %}
     case {{property_id}}:
     {% endfor %}
     {
-        CSSPropertyID resolvedProperty = CSSProperty::resolveDirectionAwareProperty(property, state.style()->direction(), state.style()->getWritingMode());
-        ASSERT(resolvedProperty != property);
-        applyProperty(resolvedProperty, state, value);
-        return;
+      CSSPropertyID resolvedProperty = CSSProperty::resolveDirectionAwareProperty(property, state.style()->direction(), state.style()->getWritingMode());
+      ASSERT(resolvedProperty != property);
+      applyProperty(resolvedProperty, state, value);
+      return;
     }
     {% for property_id, property in properties.items() if property.builder_skip %}
     case {{property_id}}:
     {% endfor %}
-        return;
+      return;
     default:
-        ASSERT_NOT_REACHED();
-    }
+      ASSERT_NOT_REACHED();
+  }
 }
 
 } // namespace blink

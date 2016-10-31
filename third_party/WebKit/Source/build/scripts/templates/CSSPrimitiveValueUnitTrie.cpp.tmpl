@@ -10,25 +10,25 @@ namespace blink {
 namespace {
 
 template<typename CharacterType>
-CSSPrimitiveValue::UnitType cssPrimitiveValueUnitFromTrie(const CharacterType* data, unsigned length)
-{
-    DCHECK(data);
-    DCHECK(length);
-    {% macro trie_return_statement(unit_name) %}CSSPrimitiveValue::UnitType::{{unit_name}}{% endmacro %}
-    {{ trie_length_switch(length_tries, trie_return_statement, True) | indent(4) }}
-    return CSSPrimitiveValue::UnitType::Unknown;
+CSSPrimitiveValue::UnitType cssPrimitiveValueUnitFromTrie(
+    const CharacterType* data, unsigned length) {
+  DCHECK(data);
+  DCHECK(length);
+  {% macro trie_return_statement(unit_name) %}CSSPrimitiveValue::UnitType::{{unit_name}}{% endmacro %}
+  {{ trie_length_switch(length_tries, trie_return_statement, True) | indent(4) }}
+  return CSSPrimitiveValue::UnitType::Unknown;
 }
 
 } // namespace
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(const LChar* characters8, unsigned length)
-{
-    return cssPrimitiveValueUnitFromTrie(characters8, length);
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(
+    const LChar* characters8, unsigned length) {
+  return cssPrimitiveValueUnitFromTrie(characters8, length);
 }
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(const UChar* characters16, unsigned length)
-{
-    return cssPrimitiveValueUnitFromTrie(characters16, length);
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(
+    const UChar* characters16, unsigned length) {
+  return cssPrimitiveValueUnitFromTrie(characters16, length);
 }
 
 } // namespace blink

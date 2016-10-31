@@ -17,100 +17,95 @@ namespace blink {
 // The generated portion of ComputedStyle. For more info, see the header comment
 // in ComputedStyle.h.
 class CORE_EXPORT ComputedStyleBase {
-public:
-    ALWAYS_INLINE ComputedStyleBase() :
+ public:
+  ALWAYS_INLINE ComputedStyleBase() :
+  {% for field in fields %}
+      {% set trailing_comma = "," if field != fields[-1] else "" %}
+      {{field.name}}({{default_value(field)}}){{trailing_comma}}
+  {% endfor %}
+  {}
+  ~ComputedStyleBase() {}
+
+  ALWAYS_INLINE ComputedStyleBase(const ComputedStyleBase& o) :
+  {% for field in fields %}
+      {% set trailing_comma = "," if field != fields[-1] else "" %}
+      {{field.name}}(o.{{field.name}}){{trailing_comma}}
+  {% endfor %}
+  {}
+
+  bool operator==(const ComputedStyleBase& o) const {
+    return true &&
     {% for field in fields %}
-        {% set trailing_comma = "," if field != fields[-1] else "" %}
-        {{field.name}}({{default_value(field)}}){{trailing_comma}}
+        {{field.name}} == o.{{field.name}} &&
     {% endfor %}
-    {}
-    ~ComputedStyleBase() {}
+        true;
+  }
 
-    ALWAYS_INLINE ComputedStyleBase(const ComputedStyleBase& o) :
+  bool operator!=(const ComputedStyleBase& o) const { return !(*this == o); }
+
+  inline bool inheritedEqual(const ComputedStyleBase& o) const {
+    return true &&
+    {% for field in fields if field.property['inherited'] %}
+        {{field.name}} == o.{{field.name}} &&
+    {% endfor %}
+        true;
+  }
+
+  inline bool independentInheritedEqual(const ComputedStyleBase& o) const {
+    return true &&
+    {% for field in fields if field.property['inherited'] and field.property['independent'] %}
+        {{field.name}} == o.{{field.name}} &&
+    {% endfor %}
+        true;
+  }
+
+  inline bool nonIndependentInheritedEqual(const ComputedStyleBase& o) const {
+    return true &&
+    {% for field in fields if field.property['inherited'] and not field.property['independent'] %}
+        {{field.name}} == o.{{field.name}} &&
+    {% endfor %}
+        true;
+  }
+
+  inline bool nonInheritedEqual(const ComputedStyleBase& o) const {
+    return true &&
+    {% for field in fields if not field.property['inherited'] %}
+        {{field.name}} == o.{{field.name}} &&
+    {% endfor %}
+        true;
+  }
+
+  void setBitDefaults() {
     {% for field in fields %}
-        {% set trailing_comma = "," if field != fields[-1] else "" %}
-        {{field.name}}(o.{{field.name}}){{trailing_comma}}
+    {{field.resetter_method_name}}();
     {% endfor %}
-    {}
+  }
 
-    bool operator==(const ComputedStyleBase& o) const
-    {
-        return true
-        {% for field in fields %}
-            && {{field.name}} == o.{{field.name}}
-        {% endfor %}
-            && true;
-    }
+  enum IsAtShadowBoundary {
+    AtShadowBoundary,
+    NotAtShadowBoundary,
+  };
+  void inheritFrom(const ComputedStyleBase& inheritParent,
+                   IsAtShadowBoundary isAtShadowBoundary = NotAtShadowBoundary);
 
-    bool operator!=(const ComputedStyleBase& o) const { return !(*this == o); }
+  void copyNonInheritedFromCached(const ComputedStyleBase& other);
 
-    inline bool inheritedEqual(const ComputedStyleBase& o) const
-    {
-        return true
-        {% for field in fields if field.property['inherited'] %}
-            && {{field.name}} == o.{{field.name}}
-        {% endfor %}
-            && true;
-    }
+  // Fields.
+  // TODO(sashab): Remove initialFoo() static methods and update callers to
+  // use resetFoo(), which can be more efficient.
+  {% for field in fields %}
+  // {{field.property['name']}}
+  inline static {{field.type}} {{field.initial_method_name}}() { return {{field.default_value}}; }
+  {{field.type}} {{field.getter_method_name}}() const { return static_cast<{{field.type}}>({{field.name}}); }
+  void {{field.setter_method_name}}({{field.type}} v) { {{field.name}} = static_cast<unsigned>(v); }
+  inline void {{field.resetter_method_name}}() { {{field.name}} = {{default_value(field)}}; }
 
-    inline bool independentInheritedEqual(const ComputedStyleBase& o) const
-    {
-        return true
-        {% for field in fields if field.property['inherited'] and field.property['independent'] %}
-            && {{field.name}} == o.{{field.name}}
-        {% endfor %}
-            && true;
-    }
-
-    inline bool nonIndependentInheritedEqual(const ComputedStyleBase& o) const
-    {
-        return true
-        {% for field in fields if field.property['inherited'] and not field.property['independent'] %}
-            && {{field.name}} == o.{{field.name}}
-        {% endfor %}
-            && true;
-    }
-
-    inline bool nonInheritedEqual(const ComputedStyleBase& o) const
-    {
-        return true
-        {% for field in fields if not field.property['inherited'] %}
-            && {{field.name}} == o.{{field.name}}
-        {% endfor %}
-            && true;
-    }
-
-    void setBitDefaults()
-    {
-        {% for field in fields %}
-        {{field.resetter_method_name}}();
-        {% endfor %}
-    }
-
-    enum IsAtShadowBoundary {
-        AtShadowBoundary,
-        NotAtShadowBoundary,
-    };
-    void inheritFrom(const ComputedStyleBase& inheritParent, IsAtShadowBoundary isAtShadowBoundary = NotAtShadowBoundary);
-
-    void copyNonInheritedFromCached(const ComputedStyleBase& other);
-
-    // Fields.
-    // TODO(sashab): Remove initialFoo() static methods and update callers to
-    // use resetFoo(), which can be more efficient.
-    {% for field in fields %}
-    // {{field.property['name']}}
-    inline static {{field.type}} {{field.initial_method_name}}() { return {{field.default_value}}; }
-    {{field.type}} {{field.getter_method_name}}() const { return static_cast<{{field.type}}>({{field.name}}); }
-    void {{field.setter_method_name}}({{field.type}} v) { {{field.name}} = static_cast<unsigned>(v); }
-    inline void {{field.resetter_method_name}}() { {{field.name}} = {{default_value(field)}}; }
-
-    {% endfor %}
-protected:
-    // Storage.
-    {% for field in fields %}
-    unsigned {{field.name}} : {{field.size}}; // {{field.type}}
-    {% endfor %}
+  {% endfor %}
+ protected:
+  // Storage.
+  {% for field in fields %}
+  unsigned {{field.name}} : {{field.size}}; // {{field.type}}
+  {% endfor %}
 };
 
 } // namespace blink

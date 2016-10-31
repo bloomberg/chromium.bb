@@ -11,13 +11,12 @@ namespace blink {
 
 using namespace {{namespace}}Names;
 
-StringImpl* lookup{{namespace}}Tag(const UChar* data, unsigned length)
-{
-    DCHECK(data);
-    DCHECK(length);
-    {% macro trie_return_statement(tag) %}{{tag}}Tag.localName().impl(){% endmacro %}
-    {{ trie_length_switch(length_tries, trie_return_statement, false) | indent(4) }}
-    return nullptr;
+StringImpl* lookup{{namespace}}Tag(const UChar* data, unsigned length) {
+  DCHECK(data);
+  DCHECK(length);
+  {% macro trie_return_statement(tag) %}{{tag}}Tag.localName().impl(){% endmacro %}
+  {{ trie_length_switch(length_tries, trie_return_statement, false) | indent(4) }}
+  return nullptr;
 }
 
 } // namespace blink

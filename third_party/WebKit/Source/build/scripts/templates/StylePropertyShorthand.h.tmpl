@@ -29,29 +29,27 @@ namespace blink {
 
 class StylePropertyShorthand {
     USING_FAST_MALLOC(StylePropertyShorthand);
-public:
-    StylePropertyShorthand()
-        : m_properties(0)
-        , m_length(0)
-        , m_shorthandID(CSSPropertyInvalid)
-    {
-    }
+ public:
+  StylePropertyShorthand()
+      : m_properties(0),
+        m_length(0),
+        m_shorthandID(CSSPropertyInvalid) {}
 
-    StylePropertyShorthand(CSSPropertyID id, const CSSPropertyID* properties, unsigned numProperties)
-        : m_properties(properties)
-        , m_length(numProperties)
-        , m_shorthandID(id)
-    {
-    }
+  StylePropertyShorthand(CSSPropertyID id,
+                         const CSSPropertyID* properties,
+                         unsigned numProperties)
+      : m_properties(properties),
+        m_length(numProperties),
+        m_shorthandID(id) {}
 
-    const CSSPropertyID* properties() const { return m_properties; }
-    unsigned length() const { return m_length; }
-    CSSPropertyID id() const { return m_shorthandID; }
+  const CSSPropertyID* properties() const { return m_properties; }
+  unsigned length() const { return m_length; }
+  CSSPropertyID id() const { return m_shorthandID; }
 
-private:
-    const CSSPropertyID* m_properties;
-    unsigned m_length;
-    CSSPropertyID m_shorthandID;
+ private:
+  const CSSPropertyID* m_properties;
+  unsigned m_length;
+  CSSPropertyID m_shorthandID;
 };
 
 {% for property_id, property in properties.items() %}
@@ -66,9 +64,11 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID);
 
 // Return the list of shorthands for a given longhand.
 // The client must pass in an empty result vector.
-void getMatchingShorthandsForLonghand(CSSPropertyID, Vector<StylePropertyShorthand, 4>* result);
+void getMatchingShorthandsForLonghand(
+    CSSPropertyID, Vector<StylePropertyShorthand, 4>* result);
 
-unsigned indexOfShorthandForLonghand(CSSPropertyID, const Vector<StylePropertyShorthand, 4>&);
+unsigned indexOfShorthandForLonghand(CSSPropertyID,
+                                     const Vector<StylePropertyShorthand, 4>&);
 
 bool isShorthandProperty(CSSPropertyID);
 

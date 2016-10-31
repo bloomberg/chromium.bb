@@ -41,18 +41,17 @@ static {{namespace}}Element* {{tag|symbol}}Constructor(
     {% if namespace == 'HTML' %}
     HTMLFormElement* formElement,
     {% endif %}
-    CreateElementFlags flags)
-{
-    {% if tag.runtimeEnabled %}
-    if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
-        return {{fallback_interface}}::create({{tag|symbol}}Tag, document);
-    {% endif %}
-    return {{tag.interface}}::create(
-        {%- if tag.multipleTagNames %}{{tag|symbol}}Tag, {% endif -%}
-        document
-        {%- if namespace == 'HTML' and tag.constructorNeedsFormElement %}, formElement{% endif -%}
-        {%- if tag.constructorNeedsCreatedByParser %}, flags & CreatedByParser{% endif -%}
-    );
+    CreateElementFlags flags) {
+  {% if tag.runtimeEnabled %}
+  if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
+    return {{fallback_interface}}::create({{tag|symbol}}Tag, document);
+  {% endif %}
+  return {{tag.interface}}::create(
+      {%- if tag.multipleTagNames %}{{tag|symbol}}Tag, {% endif -%}
+      document
+      {%- if namespace == 'HTML' and tag.constructorNeedsFormElement %}, formElement{% endif -%}
+      {%- if tag.constructorNeedsCreatedByParser %}, flags & CreatedByParser{% endif -%}
+  );
 }
 {% endfor %}
 
@@ -61,19 +60,18 @@ struct Create{{namespace}}FunctionMapData {
   ConstructorFunction func;
 };
 
-static void create{{namespace}}FunctionMap()
-{
-    ASSERT(!g_constructors);
-    g_constructors = new FunctionMap;
-    // Empty array initializer lists are illegal [dcl.init.aggr] and will not
-    // compile in MSVC. If tags list is empty, add check to skip this.
-    static const Create{{namespace}}FunctionMapData data[] = {
-    {% for tag in tags|sort if not tag.noConstructor %}
-        { {{tag|symbol}}Tag, {{tag|symbol}}Constructor },
-    {% endfor %}
-    };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(data); i++)
-        g_constructors->set(data[i].tag.localName(), data[i].func);
+static void create{{namespace}}FunctionMap() {
+  ASSERT(!g_constructors);
+  g_constructors = new FunctionMap;
+  // Empty array initializer lists are illegal [dcl.init.aggr] and will not
+  // compile in MSVC. If tags list is empty, add check to skip this.
+  static const Create{{namespace}}FunctionMapData data[] = {
+  {% for tag in tags|sort if not tag.noConstructor %}
+    { {{tag|symbol}}Tag, {{tag|symbol}}Constructor },
+  {% endfor %}
+  };
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(data); i++)
+    g_constructors->set(data[i].tag.localName(), data[i].func);
 }
 
 {{namespace}}Element* {{namespace}}ElementFactory::create{{namespace}}Element(
@@ -82,34 +80,35 @@ static void create{{namespace}}FunctionMap()
     {% if namespace == 'HTML' %}
     HTMLFormElement* formElement,
     {% endif %}
-    CreateElementFlags flags)
-{
-    if (!g_constructors)
-        create{{namespace}}FunctionMap();
-    if (ConstructorFunction function = g_constructors->get(localName))
-        return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}flags);
+    CreateElementFlags flags) {
+  if (!g_constructors)
+    create{{namespace}}FunctionMap();
+  if (ConstructorFunction function = g_constructors->get(localName))
+    return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}flags);
 
-    {% if namespace == 'HTML' %}
-    // createElement handles custom element creation itself in order to
-    // transmit exceptions.
-    // TODO(dominicc): When the HTML parser can pass an error
-    // reporting ExceptionState, and "v0" custom elements have been
-    // removed, consolidate custom element creation into one place.
-    if (flags != CreatedByCreateElement && CustomElement::shouldCreateCustomElement(localName)) {
-        QualifiedName tagName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI);
-        if (flags & AsynchronousCustomElements)
-            return CustomElement::createCustomElementAsync(document, tagName);
-        return CustomElement::createCustomElementSync(document, tagName);
-    }
-    {% endif %}
+  {% if namespace == 'HTML' %}
+  // createElement handles custom element creation itself in order to
+  // transmit exceptions.
+  // TODO(dominicc): When the HTML parser can pass an error
+  // reporting ExceptionState, and "v0" custom elements have been
+  // removed, consolidate custom element creation into one place.
+  if (flags != CreatedByCreateElement && CustomElement::shouldCreateCustomElement(localName)) {
+    QualifiedName tagName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI);
+    if (flags & AsynchronousCustomElements)
+      return CustomElement::createCustomElementAsync(document, tagName);
+    return CustomElement::createCustomElementSync(document, tagName);
+  }
+  {% endif %}
 
-    if (document.registrationContext() && V0CustomElement::isValidName(localName)) {
-        Element* element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
-        SECURITY_DCHECK(element->is{{namespace}}Element());
-        return to{{namespace}}Element(element);
-    }
+  if (document.registrationContext() &&
+      V0CustomElement::isValidName(localName)) {
+    Element* element = document.registrationContext()->createCustomTagElement(
+        document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
+    SECURITY_DCHECK(element->is{{namespace}}Element());
+    return to{{namespace}}Element(element);
+  }
 
-    return {{fallback_interface}}::create(QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI), document);
+  return {{fallback_interface}}::create(QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI), document);
 }
 
 } // namespace blink

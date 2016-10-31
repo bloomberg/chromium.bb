@@ -16,32 +16,30 @@ RuntimeEnabledFeatures::Backup::Backup()
 {
 }
 
-void RuntimeEnabledFeatures::Backup::restore()
-{
-    {% for feature in standard_features %}
-    RuntimeEnabledFeatures::set{{feature.name}}Enabled(m_{{feature.first_lowered_name}});
-    {% endfor %}
+void RuntimeEnabledFeatures::Backup::restore() {
+  {% for feature in standard_features %}
+  RuntimeEnabledFeatures::set{{feature.name}}Enabled(m_{{feature.first_lowered_name}});
+  {% endfor %}
 }
 
 {% for feature_set in feature_sets %}
-void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool enable)
-{
-    {% for feature in features if feature.status == feature_set %}
-    set{{feature.name}}Enabled(enable);
-    {% endfor %}
+void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool enable) {
+  {% for feature in features if feature.status == feature_set %}
+  set{{feature.name}}Enabled(enable);
+  {% endfor %}
 }
 
 {% endfor %}
 
-void RuntimeEnabledFeatures::setFeatureEnabledFromString(const std::string& name, bool isEnabled)
-{
-    {% for feature in standard_features %}
-    if (name == "{{feature.name}}") {
-        set{{feature.name}}Enabled(isEnabled);
-        return;
-    }
-    {% endfor %}
-    DLOG(ERROR) << "RuntimeEnabledFeature not recognized: " << name;
+void RuntimeEnabledFeatures::setFeatureEnabledFromString(
+    const std::string& name, bool isEnabled) {
+  {% for feature in standard_features %}
+  if (name == "{{feature.name}}") {
+    set{{feature.name}}Enabled(isEnabled);
+    return;
+  }
+  {% endfor %}
+  DLOG(ERROR) << "RuntimeEnabledFeature not recognized: " << name;
 }
 
 {% for feature in standard_features %}

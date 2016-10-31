@@ -28,50 +28,49 @@
 namespace blink {
 {% for property_id, property in properties.items() %}
 
-const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand()
-{
-    static const CSSPropertyID {{property.lower_camel_name}}Properties[] = {
-        {% for longhand_id in property.longhand_property_ids %}
-        {{longhand_id}},
-        {% endfor %}
-    };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, {{property.lower_camel_name}}Longhands, ({{property_id}}, {{property.lower_camel_name}}Properties, WTF_ARRAY_LENGTH({{property.lower_camel_name}}Properties)));
-    return {{property.lower_camel_name}}Longhands;
+const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand() {
+  static const CSSPropertyID {{property.lower_camel_name}}Properties[] = {
+    {% for longhand_id in property.longhand_property_ids %}
+    {{longhand_id}},
+    {% endfor %}
+  };
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, {{property.lower_camel_name}}Longhands, ({{property_id}}, {{property.lower_camel_name}}Properties, WTF_ARRAY_LENGTH({{property.lower_camel_name}}Properties)));
+  return {{property.lower_camel_name}}Longhands;
 }
 {% endfor %}
 
 // Returns an empty list if the property is not a shorthand
-const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
-{
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
-    if (propertyID == CSSPropertyTextDecoration && !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-        return emptyShorthand;
-    switch (propertyID) {
-        {% for property_id, property in properties.items() %}
-        case {{property_id}}:
-            return {{property.lower_camel_name}}Shorthand();
-        {% endfor %}
+const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
+  if (propertyID == CSSPropertyTextDecoration &&
+      !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
+    return emptyShorthand;
+  switch (propertyID) {
+    {% for property_id, property in properties.items() %}
+    case {{property_id}}:
+      return {{property.lower_camel_name}}Shorthand();
+    {% endfor %}
     default: {
-        return emptyShorthand;
+      return emptyShorthand;
     }
-    }
+  }
 }
 
-void getMatchingShorthandsForLonghand(CSSPropertyID propertyID, Vector<StylePropertyShorthand, 4>* result)
-{
-    ASSERT(!result->size());
-    switch (propertyID) {
-    {% for longhand_id, shorthands in longhands_dictionary.items() %}
+void getMatchingShorthandsForLonghand(
+    CSSPropertyID propertyID, Vector<StylePropertyShorthand, 4>* result) {
+  ASSERT(!result->size());
+  switch (propertyID) {
+  {% for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{longhand_id}}: {
-        {% for shorthand in shorthands %}
-        result->uncheckedAppend({{shorthand.lower_camel_name}}Shorthand());
-        {% endfor %}
-        break;
+      {% for shorthand in shorthands %}
+      result->uncheckedAppend({{shorthand.lower_camel_name}}Shorthand());
+      {% endfor %}
+      break;
     }
     {% endfor %}
     default:
-        break;
-    }
+      break;
+  }
 }
 
 } // namespace blink

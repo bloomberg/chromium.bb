@@ -13,28 +13,33 @@
 
 namespace blink {
 
-class InternalRuntimeFlags : public GarbageCollected<InternalRuntimeFlags>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static InternalRuntimeFlags* create()
-    {
-        return new InternalRuntimeFlags;
-    }
+class InternalRuntimeFlags :
+    public GarbageCollected<InternalRuntimeFlags>,
+    public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+ public:
+  static InternalRuntimeFlags* create() {
+    return new InternalRuntimeFlags;
+  }
 
-    // These are reset between layout tests from Internals::resetToConsistentState
-    // using RuntimeEnabledFeatures::Backup.
-    {% for feature in standard_features if feature.settable_from_internals %}
-    void set{{feature.name}}Enabled(bool isEnabled) { RuntimeEnabledFeatures::set{{feature.name}}Enabled(isEnabled); }
-    {% endfor %}
+  // These are reset between layout tests from Internals::resetToConsistentState
+  // using RuntimeEnabledFeatures::Backup.
+  {% for feature in standard_features if feature.settable_from_internals %}
+  void set{{feature.name}}Enabled(bool isEnabled) {
+    RuntimeEnabledFeatures::set{{feature.name}}Enabled(isEnabled);
+  }
+  {% endfor %}
 
-    {% for feature in standard_features %}
-    bool {{feature.first_lowered_name}}Enabled() { return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled(); }
-    {% endfor %}
+  {% for feature in standard_features %}
+  bool {{feature.first_lowered_name}}Enabled() {
+    return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled();
+  }
+  {% endfor %}
 
-    DEFINE_INLINE_TRACE() { }
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    InternalRuntimeFlags() { }
+ private:
+  InternalRuntimeFlags() {}
 };
 
 } // namespace blink

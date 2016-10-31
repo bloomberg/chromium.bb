@@ -11,9 +11,9 @@ namespace blink {
 
 {% for enum_name, enum_values in enums.items() %}
 enum class {{enum_name}} : unsigned {
-    {% for enum_value in enum_values %}
-    {{enum_value}},
-    {% endfor %}
+  {% for enum_value in enum_values %}
+  {{enum_value}},
+  {% endfor %}
 };
 
 {% endfor %}

@@ -14,48 +14,47 @@ namespace {
 
 using KeywordTable = HashMap<CSSPropertyID, Vector<CSSValueID>>;
 
-KeywordTable createKeywordTable()
-{
-    KeywordTable table;
+KeywordTable createKeywordTable() {
+  KeywordTable table;
 
-    {% for property_id, property in properties.items() if property.keywordIDs %}
-    {
-        Vector<CSSValueID> {{property.lower_camel_name}}Keywords;
-        {% for keywordValueID in property.keywordIDs %}
-        {{property.lower_camel_name}}Keywords.append({{keywordValueID}});
-        {% endfor %}
-        table.set({{property_id}}, {{property.lower_camel_name}}Keywords);
-    }
+  {% for property_id, property in properties.items() if property.keywordIDs %}
+  {
+    Vector<CSSValueID> {{property.lower_camel_name}}Keywords;
+    {% for keywordValueID in property.keywordIDs %}
+    {{property.lower_camel_name}}Keywords.append({{keywordValueID}});
     {% endfor %}
-    return table;
+    table.set({{property_id}}, {{property.lower_camel_name}}Keywords);
+  }
+  {% endfor %}
+  return table;
 }
 
-KeywordTable& keywordTable()
-{
-    DEFINE_STATIC_LOCAL(KeywordTable, keywordTable, (createKeywordTable()));
-    return keywordTable;
+KeywordTable& keywordTable() {
+  DEFINE_STATIC_LOCAL(KeywordTable, keywordTable, (createKeywordTable()));
+  return keywordTable;
 }
 
 } // namespace
 
-bool CSSOMKeywords::validKeywordForProperty(CSSPropertyID id, const CSSKeywordValue& keyword)
-{
-    CSSValueID valueID = keyword.keywordValueID();
-    if (valueID == CSSValueInvalid) {
-        return false;
-    }
+bool CSSOMKeywords::validKeywordForProperty(CSSPropertyID id,
+                                            const CSSKeywordValue& keyword) {
+  CSSValueID valueID = keyword.keywordValueID();
+  if (valueID == CSSValueInvalid) {
+    return false;
+  }
 
-    if (valueID == CSSValueInherit || valueID == CSSValueInitial || valueID == CSSValueUnset) {
-        // These are css-wide keywords that are valid for all properties.
-        return true;
-    }
+  if (valueID == CSSValueInherit || valueID == CSSValueInitial ||
+      valueID == CSSValueUnset) {
+    // These are css-wide keywords that are valid for all properties.
+    return true;
+  }
 
-    const KeywordTable::iterator tableIterator = keywordTable().find(id);
-    if (tableIterator == keywordTable().end()) {
-        return false;
-    }
+  const KeywordTable::iterator tableIterator = keywordTable().find(id);
+  if (tableIterator == keywordTable().end()) {
+    return false;
+  }
 
-    return tableIterator->value.contains(valueID);
+  return tableIterator->value.contains(valueID);
 }
 
 } // namespace blink

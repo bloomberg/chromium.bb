@@ -32,38 +32,36 @@
 
 #define SETTINGS_SETTER_BODIES \
 {% for setting in settings %}
-void Settings::set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}) \
-{ \
-    if (m_{{setting.name}} == {{setting.name}}) \
-        return; \
-    m_{{setting.name}} = {{setting.name}}; \
-    {% if setting.invalidate %}
-    invalidate(SettingsDelegate::{{setting.invalidate}}Change); \
-    {% endif  %}
+void Settings::set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}) { \
+  if (m_{{setting.name}} == {{setting.name}}) \
+    return; \
+  m_{{setting.name}} = {{setting.name}}; \
+  {% if setting.invalidate %}
+  invalidate(SettingsDelegate::{{setting.invalidate}}Change); \
+  {% endif  %}
 } \
 {% endfor %}
-void Settings::setFromStrings(const String& name, const String& value) \
-{ \
-    {% for setting in settings %}
-    if (name == "{{setting.name}}") { \
-        set{{setting.name|upper_first}}( \
-            {% if setting.type == 'String' %}
-            value \
-            {% elif setting.type == 'bool' %}
-            value.isEmpty() || value == "true" \
-            {% elif setting.type == 'int' %}
-            value.toInt() \
-            {% elif setting.type == 'float' %}
-            value.toFloat() \
-            {% elif setting.type == 'double' %}
-            value.toDouble() \
-            {% else %}
-            static_cast<{{setting.type}}>(value.toInt()) \
-            {% endif %}
-        ); \
-        return; \
-    } \
-    {% endfor %}
+void Settings::setFromStrings(const String& name, const String& value) { \
+  {% for setting in settings %}
+  if (name == "{{setting.name}}") { \
+    set{{setting.name|upper_first}}( \
+      {% if setting.type == 'String' %}
+      value \
+      {% elif setting.type == 'bool' %}
+      value.isEmpty() || value == "true" \
+      {% elif setting.type == 'int' %}
+      value.toInt() \
+      {% elif setting.type == 'float' %}
+      value.toFloat() \
+      {% elif setting.type == 'double' %}
+      value.toDouble() \
+      {% else %}
+      static_cast<{{setting.type}}>(value.toInt()) \
+      {% endif %}
+    ); \
+    return; \
+  } \
+  {% endfor %}
 }
 // End of SETTINGS_SETTER_BODIES.
 

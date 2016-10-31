@@ -13,21 +13,20 @@
 
 namespace blink {
 
-{{namespace}}* {{namespace}}{{suffix}}Factory::create(ExecutionContext* executionContext, const String& type)
-{
-    {% for event in events if event|script_name|create_event_whitelist or event|script_name|create_event_legacy_whitelist %}
-    {% if event|script_name|create_event_whitelist %}
-    if (equalIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
-    {% else %}
-    if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
+{{namespace}}* {{namespace}}{{suffix}}Factory::create(ExecutionContext* executionContext, const String& type) {
+  {% for event in events if event|script_name|create_event_whitelist or event|script_name|create_event_legacy_whitelist %}
+  {% if event|script_name|create_event_whitelist %}
+  if (equalIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
+  {% else %}
+  if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
+  {% endif %}
+    {% if not event|script_name|create_event_whitelist %}
+    UseCounter::count(executionContext, UseCounter::{{event|script_name|measure_name}});
     {% endif %}
-        {% if not event|script_name|create_event_whitelist %}
-        UseCounter::count(executionContext, UseCounter::{{event|script_name|measure_name}});
-        {% endif %}
-        return {{event|cpp_name}}::create();
-    }
-    {% endfor %}
-    return nullptr;
+    return {{event|cpp_name}}::create();
+  }
+  {% endfor %}
+  return nullptr;
 }
 
 } // namespace blink
