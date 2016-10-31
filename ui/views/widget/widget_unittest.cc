@@ -3632,6 +3632,22 @@ TEST_F(WidgetTest, WidgetRemovalsObserverCalledWhenMovingBetweenWidgets) {
   widget->RemoveRemovalsObserver(&removals_observer);
 }
 
+// Test dispatch of ui::ET_MOUSEWHEEL.
+TEST_F(WidgetTest, MouseWheelEvent) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->SetBounds(gfx::Rect(0, 0, 600, 600));
+  EventCountView* event_count_view = new EventCountView();
+  widget->GetContentsView()->AddChildView(event_count_view);
+  event_count_view->SetBounds(0, 0, 600, 600);
+  widget->Show();
+
+  ui::test::EventGenerator event_generator(GetContext(),
+                                           widget->GetNativeWindow());
+
+  event_generator.MoveMouseWheel(1, 1);
+  EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSEWHEEL));
+}
+
 #if defined(OS_WIN)
 
 namespace {

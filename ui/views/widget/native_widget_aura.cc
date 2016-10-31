@@ -920,8 +920,7 @@ void NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
   if (event->type() == ui::ET_MOUSEWHEEL) {
     delegate_->OnMouseEvent(event);
-    if (event->handled())
-      return;
+    return;
   }
 
   if (tooltip_manager_.get())

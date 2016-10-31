@@ -217,6 +217,17 @@ NSEvent* CreateMouseEventInWindow(NSWindow* window,
                             pressure:1.0];
 }
 
+NSEvent* CreateMouseWheelEventInWindow(NSWindow* window,
+                                       const ui::MouseEvent* mouse_event) {
+  DCHECK_EQ(mouse_event->type(), ui::ET_MOUSEWHEEL);
+  const ui::MouseWheelEvent* mouse_wheel_event =
+      mouse_event->AsMouseWheelEvent();
+  return cocoa_test_event_utils::TestScrollEvent(
+      ConvertRootPointToTarget(window, mouse_wheel_event->location()), window,
+      mouse_wheel_event->x_offset(), mouse_wheel_event->y_offset(), false,
+      NSEventPhaseNone, NSEventPhaseNone);
+}
+
 // Implementation of ui::test::EventGeneratorDelegate for Mac. Everything
 // defined inline is just a stub. Interesting overrides are defined below the
 // class.
@@ -349,10 +360,12 @@ EventGeneratorDelegateMac::GetChildIterator() const {
 }
 
 void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
-  NSEvent* ns_event = CreateMouseEventInWindow(window_,
-                                               event->type(),
-                                               event->location(),
-                                               event->changed_button_flags());
+  NSEvent* ns_event =
+      event->type() == ui::ET_MOUSEWHEEL
+          ? CreateMouseWheelEventInWindow(window_, event)
+          : CreateMouseEventInWindow(window_, event->type(), event->location(),
+                                     event->changed_button_flags());
+
   if (owner_->targeting_application())
     [NSApp sendEvent:ns_event];
   else
