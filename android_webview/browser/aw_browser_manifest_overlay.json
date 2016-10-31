@@ -5,7 +5,8 @@
       "provides": {
         "renderer": [
           "autofill::mojom::AutofillDriver",
-          "autofill::mojom::PasswordManagerDriver"
+          "autofill::mojom::PasswordManagerDriver",
+          "web_restrictions::mojom::WebRestrictions"
         ]
       }
     }
