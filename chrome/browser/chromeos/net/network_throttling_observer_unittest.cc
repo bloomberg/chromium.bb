@@ -37,10 +37,10 @@ class NetworkThrottlingObserverTest : public ::testing::Test {
     local_state_ = new TestingPrefServiceSimple();
     local_state_->registry()->RegisterDictionaryPref(
         prefs::kNetworkThrottlingEnabled);
-    observer_.reset(new NetworkThrottlingObserver(local_state_));
+    observer_ = base::MakeUnique<NetworkThrottlingObserver>(local_state_);
   }
 
-  ~NetworkThrottlingObserverTest() override { delete mock_manager_client_; }
+  ~NetworkThrottlingObserverTest() override { DBusThreadManager::Shutdown(); }
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<NetworkThrottlingObserver> observer_;
