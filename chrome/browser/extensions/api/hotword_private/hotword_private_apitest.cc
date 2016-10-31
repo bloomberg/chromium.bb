@@ -379,7 +379,12 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnHotwordTriggered) {
   EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnDeleteSpeakerModel) {
+#if defined(OS_LINUX)
+#define MAYBE_OnDeleteSpeakerModel DISABLED_OnDeleteSpeakerModel
+#else
+#define MAYBE_OnDeleteSpeakerModel OnDeleteSpeakerModel
+#endif
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, MAYBE_OnDeleteSpeakerModel) {
   MockWebHistoryService* web_history = new MockWebHistoryService(profile());
   MockAudioHistoryHandler* handler =
       new MockAudioHistoryHandler(profile(), web_history);
