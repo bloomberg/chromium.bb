@@ -1383,7 +1383,8 @@ void FrameLoader::restoreScrollPositionAndViewState() {
     if (visualViewportOffset.width() == -1 &&
         visualViewportOffset.height() == -1) {
       visualViewportOffset =
-          m_currentItem->scrollOffset() - view->scrollOffset();
+          m_currentItem->scrollOffset() -
+          view->layoutViewportScrollableArea()->scrollOffset();
     }
 
     VisualViewport& visualViewport = m_frame->host()->visualViewport();

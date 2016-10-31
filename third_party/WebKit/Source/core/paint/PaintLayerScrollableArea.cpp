@@ -488,6 +488,8 @@ IntSize PaintLayerScrollableArea::maximumScrollOffsetInt() const {
     // based on stale layout overflow data (http://crbug.com/576933).
     contentSize = contentSize.expandedTo(visibleSize);
   }
+  if (box().isLayoutView())
+    visibleSize += toLayoutView(box()).frameView()->browserControlsSize();
   return toIntSize(-scrollOrigin() + (contentSize - visibleSize));
 }
 
