@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/common/login_status.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -433,7 +434,10 @@ void UserCardView::AddUserContent(LoginStatus login_status, int user_index) {
 views::View* UserCardView::CreateIcon(LoginStatus login_status,
                                       int user_index) {
   RoundedImageView* icon =
-      new RoundedImageView(kTrayRoundedBorderRadius, user_index == 0);
+      new RoundedImageView(MaterialDesignController::IsSystemTrayMenuMaterial()
+                               ? kTrayItemSize / 2
+                               : kTrayRoundedBorderRadius,
+                           user_index == 0);
   if (login_status == LoginStatus::GUEST) {
     icon->SetImage(*ui::ResourceBundle::GetSharedInstance()
                         .GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON)

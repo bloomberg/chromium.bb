@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/popup_message.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -25,12 +26,14 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 
@@ -162,14 +165,25 @@ void AddUserView::AddContent() {
       views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
   AddChildViewAt(add_user_, 0);
 
-  // Add the [+] icon which is also the anchor for messages.
-  RoundedImageView* icon = new RoundedImageView(kTrayRoundedBorderRadius, true);
-  anchor_ = icon;
-  icon->SetImage(*ui::ResourceBundle::GetSharedInstance()
-                      .GetImageNamed(IDR_AURA_UBER_TRAY_ADD_MULTIPROFILE_USER)
-                      .ToImageSkia(),
-                 gfx::Size(kTrayItemSize, kTrayItemSize));
-  add_user_->AddChildView(icon);
+  // Add the icon which is also the anchor for messages.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    views::ImageView* icon = new views::ImageView();
+    icon->SetImage(
+        gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kMenuIconColor));
+    icon->SetBorder(views::Border::CreateEmptyBorder(
+        gfx::Insets((kTrayItemSize - icon->GetPreferredSize().width()) / 2)));
+    anchor_ = icon;
+    add_user_->AddChildView(icon);
+  } else {
+    RoundedImageView* icon =
+        new RoundedImageView(kTrayRoundedBorderRadius, true);
+    anchor_ = icon;
+    icon->SetImage(*ui::ResourceBundle::GetSharedInstance()
+                        .GetImageNamed(IDR_AURA_UBER_TRAY_ADD_MULTIPROFILE_USER)
+                        .ToImageSkia(),
+                   gfx::Size(kTrayItemSize, kTrayItemSize));
+    add_user_->AddChildView(icon);
+  }
 
   // Add the command text.
   views::Label* command_label = new views::Label(
@@ -196,8 +210,6 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
         login == LoginStatus::PUBLIC ? kPublicAccountBackgroundColor
                                      : kBackgroundColor));
   }
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                                        kTrayPopupPaddingBetweenItems));
   // The logout button must be added before the user card so that the user card
   // can correctly calculate the remaining available width.
   // Note that only the current multiprofile user gets a button.
@@ -233,7 +245,12 @@ gfx::Rect UserView::GetBoundsInScreenOfUserButtonForTest() {
 }
 
 gfx::Size UserView::GetPreferredSize() const {
-  gfx::Size size = views::View::GetPreferredSize();
+  // The width is more or less ignored (set by other rows in the system menu).
+  gfx::Size size;
+  if (user_card_view_)
+    size = user_card_view_->GetPreferredSize();
+  if (logout_button_)
+    size.SetToMax(logout_button_->GetPreferredSize());
   // Only the active user panel will be forced to a certain height.
   if (!user_index_) {
     size.set_height(std::max(
@@ -355,15 +372,18 @@ void UserView::AddLogoutButton(LoginStatus login) {
 
 void UserView::AddUserCard(LoginStatus login) {
   // Add padding around the panel.
+  // TODO(estade): share this constant?
+  const int kSidePadding = MaterialDesignController::IsSystemTrayMenuMaterial()
+                               ? 12
+                               : kTrayPopupPaddingHorizontal;
   SetBorder(views::Border::CreateEmptyBorder(
-      kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal,
-      kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal));
+      kTrayPopupUserCardVerticalPadding, kSidePadding,
+      kTrayPopupUserCardVerticalPadding, kSidePadding));
 
   views::TrayBubbleView* bubble_view =
       owner_->system_tray()->GetSystemBubble()->bubble_view();
-  int max_card_width =
-      bubble_view->GetMaximumSize().width() -
-      (2 * kTrayPopupPaddingHorizontal + kTrayPopupPaddingBetweenItems);
+  int max_card_width = bubble_view->GetMaximumSize().width() -
+                       (2 * kSidePadding + kTrayPopupPaddingBetweenItems);
   if (logout_button_)
     max_card_width -= logout_button_->GetPreferredSize().width();
   user_card_view_ = new UserCardView(login, max_card_width, user_index_);
@@ -377,8 +397,8 @@ void UserView::AddUserCard(LoginStatus login) {
     if (!user_index_) {
       SetBorder(views::Border::CreateEmptyBorder(
           kTrayPopupUserCardVerticalPadding,
-          kTrayPopupPaddingHorizontal - kTrayUserTileHoverBorderInset,
-          kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal));
+          kSidePadding - kTrayUserTileHoverBorderInset,
+          kTrayPopupUserCardVerticalPadding, kSidePadding));
       user_card_view_->SetBorder(views::Border::CreateEmptyBorder(
           0, kTrayUserTileHoverBorderInset, 0, 0));
     }
@@ -390,15 +410,16 @@ void UserView::AddUserCard(LoginStatus login) {
       // but keeping the offsets of the content.
       contents_view = new views::View();
       contents_view->SetBorder(views::Border::CreateEmptyBorder(
-          kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal,
-          kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal));
+          kTrayPopupUserCardVerticalPadding, kSidePadding,
+          kTrayPopupUserCardVerticalPadding, kSidePadding));
       contents_view->SetLayoutManager(new views::FillLayout());
       SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
       contents_view->AddChildView(user_card_view_);
       insets = gfx::Insets(1, 1, 1, 3);
     }
-    auto* button =
-        new ButtonFromView(contents_view, this, !user_index_, insets);
+    bool highlight = !MaterialDesignController::IsSystemTrayMenuMaterial() &&
+                     user_index_ == 0;
+    auto* button = new ButtonFromView(contents_view, this, highlight, insets);
     user_card_view_ = button;
     is_user_card_button_ = true;
   }

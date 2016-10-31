@@ -185,7 +185,7 @@ TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
 // will be one panel for each user plus one additional separator at the end.
 // Note: the mouse watcher (for automatic closing upon leave) cannot be tested
 // here since it does not work with the event system in unit tests.
-TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
+TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
   InitializeParameters(1, true);
 
   // Move the mouse over the status area and click to open the status menu.
@@ -245,7 +245,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
 }
 
 // Make sure that user changing gets properly executed.
-TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
+TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
   // Have two users.
   InitializeParameters(2, true);
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -256,7 +256,7 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   const user_manager::UserInfo* active_user = delegate()->GetActiveUserInfo();
   const user_manager::UserInfo* second_user = delegate()->GetUserInfo(1);
   EXPECT_EQ(active_user->GetAccountId(), second_user->GetAccountId());
-  // Since the name is capitalized, the email should be different then the
+  // Since the name is capitalized, the email should be different than the
   // user_id.
   EXPECT_NE(active_user->GetAccountId().GetUserEmail(),
             second_user->GetEmail());
