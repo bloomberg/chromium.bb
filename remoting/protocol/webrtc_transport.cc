@@ -155,9 +155,18 @@ class WebrtcTransport::PeerConnectionWrapper
     webrtc::FakeConstraints constraints;
     constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                              webrtc::MediaConstraintsInterface::kValueTrue);
+
+    webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
+
+    // Set bundle_policy and rtcp_mux_policy to ensure that all channels are
+    // multiplexed over a single channel.
+    rtc_config.bundle_policy =
+        webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle;
+    rtc_config.rtcp_mux_policy =
+        webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
+
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-        webrtc::PeerConnectionInterface::RTCConfiguration(), &constraints,
-        std::move(port_allocator), nullptr, this);
+        rtc_config, &constraints, std::move(port_allocator), nullptr, this);
   }
   virtual ~PeerConnectionWrapper() { peer_connection_->Close(); }
 
