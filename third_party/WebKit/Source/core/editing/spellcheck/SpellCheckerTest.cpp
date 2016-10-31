@@ -51,12 +51,10 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   VisibleSelection oldSelection = document().frame()->selection().selection();
 
   Position newPosition(input->innerEditorElement()->firstChild(), 3);
-  VisibleSelection newSelection = createVisibleSelection(
-      SelectionInDOMTree::Builder().collapse(newPosition).build());
   document().frame()->selection().setSelection(
-      newSelection, FrameSelection::CloseTyping |
-                        FrameSelection::ClearTypingStyle |
-                        FrameSelection::DoNotUpdateAppearance);
+      SelectionInDOMTree::Builder().collapse(newPosition).build(),
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
+          FrameSelection::DoNotUpdateAppearance);
   ASSERT_EQ(3, input->selectionStart());
 
   Persistent<SpellChecker> spellChecker(SpellChecker::create(page().frame()));

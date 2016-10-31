@@ -222,16 +222,9 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {
     return;
   }
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term, we should change FrameSelection::setSelection to take a
-  // parameter that does not require clean layout, so that modifying selection
-  // no longer performs synchronous layout by itself.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
   SelectionInDOMTree::Builder builder;
   builder.collapse(selection.end());
-  frame()->selection().setSelection(createVisibleSelection(builder.build()));
+  frame()->selection().setSelection(builder.build());
 }
 
 void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
@@ -246,16 +239,9 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
     return;
   }
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term, we should change FrameSelection::setSelection to take a
-  // parameter that does not require clean layout, so that modifying selection
-  // no longer performs synchronous layout by itself.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
   SelectionInDOMTree::Builder builder;
   builder.collapse(selection.start());
-  frame()->selection().setSelection(createVisibleSelection(builder.build()));
+  frame()->selection().setSelection(builder.build());
 }
 
 void DOMSelection::empty() {

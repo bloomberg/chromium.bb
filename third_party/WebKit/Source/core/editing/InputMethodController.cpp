@@ -177,9 +177,8 @@ void InputMethodController::selectComposition() const {
 
   // The composition can start inside a composed character sequence, so we have
   // to override checks. See <http://bugs.webkit.org/show_bug.cgi?id=15781>
-  VisibleSelection selection;
-  selection.setWithoutValidation(range.startPosition(), range.endPosition());
-  frame().selection().setSelection(selection, 0);
+  frame().selection().setSelection(
+      SelectionInDOMTree::Builder().setBaseAndExtent(range).build(), 0);
 }
 
 bool InputMethodController::finishComposingText(
@@ -478,11 +477,10 @@ void InputMethodController::setCompositionWithIncrementalText(
         compositionStart + composing.length() - commonSuffixLength;
     const EphemeralRange& deletionRange =
         PlainTextRange(deletionStart, deletionEnd).createRange(*editable);
-    VisibleSelection selection;
-    selection.setWithoutValidation(deletionRange.startPosition(),
-                                   deletionRange.endPosition());
     Document* const currentDocument = frame().document();
-    frame().selection().setSelection(selection, 0);
+    frame().selection().setSelection(
+        SelectionInDOMTree::Builder().setBaseAndExtent(deletionRange).build(),
+        0);
     clear();
 
     // FrameSeleciton::setSelection() can change document associate to |frame|.
