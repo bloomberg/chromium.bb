@@ -38,6 +38,7 @@ namespace blink {
 class AbstractInlineTextBox;
 class AXObject;
 class FrameView;
+class HTMLCanvasElement;
 class HTMLOptionElement;
 class HTMLSelectElement;
 class LayoutMenuList;

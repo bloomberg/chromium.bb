@@ -58,6 +58,7 @@ class ElementRareData;
 class ElementShadow;
 class ExceptionState;
 class Image;
+class InputDeviceCapabilities;
 class IntSize;
 class Locale;
 class MutableStylePropertySet;
