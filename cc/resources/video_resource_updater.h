@@ -103,6 +103,8 @@ class CC_EXPORT VideoResourceUpdater
   static std::unique_ptr<HalfFloatMaker> NewHalfFloatMaker(
       int bits_per_channel);
 
+  ResourceFormat YuvResourceFormat(int bits) const;
+
  private:
   class PlaneResource {
    public:

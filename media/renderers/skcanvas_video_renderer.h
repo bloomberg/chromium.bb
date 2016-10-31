@@ -58,10 +58,12 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
             SkCanvas* canvas,
             const Context3D& context_3d);
 
+  enum class ConvertingSize { VISUAL, CODED };
   // Convert the contents of |video_frame| to raw RGB pixels. |rgb_pixels|
   // should point into a buffer large enough to hold as many 32 bit RGBA pixels
   // as are in the visible_rect() area of the frame.
   static void ConvertVideoFrameToRGBPixels(const media::VideoFrame* video_frame,
+                                           ConvertingSize size_type,
                                            void* rgb_pixels,
                                            size_t row_bytes);
 

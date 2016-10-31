@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_split.h"
 #include "cc/base/math_util.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/quads/draw_quad.h"
@@ -16,6 +17,7 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/pixel_test.h"
+#include "cc/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -217,72 +219,85 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
                video_frame->rows(media::VideoFrame::kAPlane));
   }
 
-  VideoFrameExternalResources resources =
+  VideoFrameExternalResources external_resources =
       video_resource_updater->CreateExternalResourcesFromVideoFrame(
           video_frame);
 
-  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
-  EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
-            resources.mailboxes.size());
-  EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
-            resources.release_callbacks.size());
-
-  ResourceId y_resource = resource_provider->CreateResourceFromTextureMailbox(
-      resources.mailboxes[media::VideoFrame::kYPlane],
-      SingleReleaseCallbackImpl::Create(
-          resources.release_callbacks[media::VideoFrame::kYPlane]));
-  ResourceId u_resource = resource_provider->CreateResourceFromTextureMailbox(
-      resources.mailboxes[media::VideoFrame::kUPlane],
-      SingleReleaseCallbackImpl::Create(
-          resources.release_callbacks[media::VideoFrame::kUPlane]));
-  ResourceId v_resource = resource_provider->CreateResourceFromTextureMailbox(
-      resources.mailboxes[media::VideoFrame::kVPlane],
-      SingleReleaseCallbackImpl::Create(
-          resources.release_callbacks[media::VideoFrame::kVPlane]));
-  ResourceId a_resource = 0;
-  if (with_alpha) {
-    a_resource = resource_provider->CreateResourceFromTextureMailbox(
-        resources.mailboxes[media::VideoFrame::kAPlane],
-        SingleReleaseCallbackImpl::Create(
-            resources.release_callbacks[media::VideoFrame::kAPlane]));
+  ResourceProvider::ResourceIdArray resource_ids;
+  resource_ids.reserve(external_resources.mailboxes.size());
+  for (size_t i = 0; i < external_resources.mailboxes.size(); ++i) {
+    ResourceId resource_id =
+        resource_provider->CreateResourceFromTextureMailbox(
+            external_resources.mailboxes[i],
+            SingleReleaseCallbackImpl::Create(
+                external_resources.release_callbacks[i]),
+            external_resources.read_lock_fences_enabled);
+    resource_ids.push_back(resource_id);
   }
 
-  const gfx::Size ya_tex_size = video_frame->coded_size();
-  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
-      video_frame->format(), media::VideoFrame::kUPlane,
-      video_frame->coded_size());
-  DCHECK(uv_tex_size == media::VideoFrame::PlaneSize(
-                            video_frame->format(), media::VideoFrame::kVPlane,
-                            video_frame->coded_size()));
-  if (with_alpha) {
-    DCHECK(ya_tex_size == media::VideoFrame::PlaneSize(
-                              video_frame->format(), media::VideoFrame::kAPlane,
-                              video_frame->coded_size()));
+  switch (external_resources.type) {
+    case VideoFrameExternalResources::YUV_RESOURCE: {
+      EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
+                external_resources.mailboxes.size());
+      EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
+                external_resources.release_callbacks.size());
+      const gfx::Size ya_tex_size = video_frame->coded_size();
+      const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
+          video_frame->format(), media::VideoFrame::kUPlane,
+          video_frame->coded_size());
+      DCHECK(uv_tex_size ==
+             media::VideoFrame::PlaneSize(video_frame->format(),
+                                          media::VideoFrame::kVPlane,
+                                          video_frame->coded_size()));
+      if (with_alpha) {
+        DCHECK(ya_tex_size ==
+               media::VideoFrame::PlaneSize(video_frame->format(),
+                                            media::VideoFrame::kAPlane,
+                                            video_frame->coded_size()));
+      }
+      gfx::RectF ya_tex_coord_rect(
+          tex_coord_rect.x() * ya_tex_size.width(),
+          tex_coord_rect.y() * ya_tex_size.height(),
+          tex_coord_rect.width() * ya_tex_size.width(),
+          tex_coord_rect.height() * ya_tex_size.height());
+      gfx::RectF uv_tex_coord_rect(
+          tex_coord_rect.x() * uv_tex_size.width(),
+          tex_coord_rect.y() * uv_tex_size.height(),
+          tex_coord_rect.width() * uv_tex_size.width(),
+          tex_coord_rect.height() * uv_tex_size.height());
+
+      YUVVideoDrawQuad* yuv_quad =
+          render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+      yuv_quad->SetNew(
+          shared_state, rect, opaque_rect, visible_rect, ya_tex_coord_rect,
+          uv_tex_coord_rect, ya_tex_size, uv_tex_size, resource_ids[0],
+          resource_ids[1],
+          resource_ids.size() > 2 ? resource_ids[2] : resource_ids[1],
+          resource_ids.size() > 3 ? resource_ids[3] : 0, color_space,
+          video_color_space, external_resources.offset,
+          external_resources.multiplier, external_resources.bits_per_channel);
+      break;
+    }
+    case VideoFrameExternalResources::RGBA_RESOURCE: {
+      EXPECT_EQ(1u, external_resources.mailboxes.size());
+      EXPECT_EQ(1u, external_resources.release_callbacks.size());
+      float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+      TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      texture_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
+                           resource_ids[0], false, tex_coord_rect.origin(),
+                           tex_coord_rect.bottom_right(), SK_ColorTRANSPARENT,
+                           opacity, false, false, false);
+      break;
+    }
+    case VideoFrameExternalResources::NONE:
+    case VideoFrameExternalResources::RGB_RESOURCE:
+    case VideoFrameExternalResources::RGBA_PREMULTIPLIED_RESOURCE:
+    case VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE:
+    case VideoFrameExternalResources::SOFTWARE_RESOURCE:
+      NOTREACHED();
+      break;
   }
-
-  gfx::RectF ya_tex_coord_rect(tex_coord_rect.x() * ya_tex_size.width(),
-                               tex_coord_rect.y() * ya_tex_size.height(),
-                               tex_coord_rect.width() * ya_tex_size.width(),
-                               tex_coord_rect.height() * ya_tex_size.height());
-  gfx::RectF uv_tex_coord_rect(tex_coord_rect.x() * uv_tex_size.width(),
-                               tex_coord_rect.y() * uv_tex_size.height(),
-                               tex_coord_rect.width() * uv_tex_size.width(),
-                               tex_coord_rect.height() * uv_tex_size.height());
-
-  YUVVideoDrawQuad* yuv_quad =
-      render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
-  uint32_t bits_per_channel = 8;
-  if (video_frame->format() == media::PIXEL_FORMAT_YUV420P10 ||
-      video_frame->format() == media::PIXEL_FORMAT_YUV422P10 ||
-      video_frame->format() == media::PIXEL_FORMAT_YUV444P10) {
-    bits_per_channel = 10;
-  }
-
-  yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                   ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
-                   uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, video_color_space, 0.0f, 1.0f,
-                   bits_per_channel);
 }
 
 // Upshift video frame to 10 bit.
@@ -343,6 +358,8 @@ void CreateTestYUVVideoDrawQuad_Striped(
     ResourceProvider* resource_provider) {
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
       format, rect.size(), rect, rect.size(), base::TimeDelta());
+  video_frame->metadata()->SetInteger(media::VideoFrameMetadata::COLOR_SPACE,
+                                      media::COLOR_SPACE_JPEG);
 
   // YUV values representing a striped pattern, for validating texture
   // coordinates for sampling.
@@ -486,6 +503,7 @@ void CreateTestYUVVideoDrawQuad_Solid(
 void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
                                      media::ColorSpace video_frame_color_space,
                                      const gfx::ColorSpace& video_color_space,
+                                     ResourceFormat y_format,
                                      const gfx::RectF& tex_coord_rect,
                                      uint8_t y,
                                      uint8_t u,
@@ -505,8 +523,8 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
       media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane, rect.size());
 
   ResourceId y_resource = resource_provider->CreateResource(
-      rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
-      resource_provider->YuvResourceFormat(8), gfx::ColorSpace());
+      rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT, y_format,
+      gfx::ColorSpace());
   ResourceId u_resource = resource_provider->CreateResource(
       uv_tex_size, ResourceProvider::TEXTURE_HINT_DEFAULT, RGBA_8888,
       gfx::ColorSpace());
@@ -1094,12 +1112,71 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
         output_surface_->context_provider(), resource_provider_.get()));
   }
 
+  void DisableOneComponentTextures() {
+    TestInProcessContextProvider* context_provider =
+        GetTestInProcessContextProvider();
+    context_provider->SetDisableOneComponentTextures(true);
+  }
+
   std::unique_ptr<VideoResourceUpdater> video_resource_updater_;
+
+ protected:
+  TestInProcessContextProvider* GetTestInProcessContextProvider() {
+    return static_cast<TestInProcessContextProvider*>(
+        output_surface_->context_provider());
+  }
+};
+
+enum class HighbitTexture {
+  Y8,
+  RGBA_8888,
+  LUMINANCE_F16,  // need --use-gpu-in-tests
 };
 
 class VideoGLRendererPixelHiLoTest
     : public VideoGLRendererPixelTest,
-      public ::testing::WithParamInterface<bool> {};
+      public ::testing::WithParamInterface<
+          ::testing::tuple<bool, HighbitTexture>> {
+ public:
+  void SetSupportHighbitTexture(HighbitTexture texture) {
+    TestInProcessContextProvider* context_provider =
+        GetTestInProcessContextProvider();
+    switch (texture) {
+      case HighbitTexture::Y8:
+        context_provider->SetDisableOneComponentTextures(false);
+        context_provider->SetSupportTextureHalfFloatLinear(false);
+        break;
+      case HighbitTexture::RGBA_8888:
+        context_provider->SetDisableOneComponentTextures(true);
+        context_provider->SetSupportTextureHalfFloatLinear(false);
+        break;
+      case HighbitTexture::LUMINANCE_F16:
+        context_provider->SetDisableOneComponentTextures(false);
+        context_provider->SetSupportTextureHalfFloatLinear(true);
+        break;
+    }
+  }
+
+  bool IsHalfFloatLinearSupported() {
+    if (extensions_.empty())
+      InitializeExtensions();
+
+    return extensions_.find("GL_OES_texture_half_float_linear") !=
+           extensions_.end();
+  }
+
+ private:
+  void InitializeExtensions() {
+    std::string extensions = GetTestInProcessContextProvider()
+                                 ->ContextGL()
+                                 ->GetRequestableExtensionsCHROMIUM();
+    std::vector<std::string> tokens = base::SplitString(
+        extensions, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    extensions_.insert(tokens.begin(), tokens.end());
+  }
+
+  std::set<std::string> extensions_;
+};
 
 TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -1110,7 +1187,12 @@ TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  bool highbit = GetParam();
+  const bool highbit = testing::get<0>(GetParam());
+  const HighbitTexture format = testing::get<1>(GetParam());
+  if (format == HighbitTexture::LUMINANCE_F16 && !IsHalfFloatLinearSupported())
+    return;
+
+  SetSupportHighbitTexture(format);
   CreateTestYUVVideoDrawQuad_Striped(
       shared_state, media::PIXEL_FORMAT_YV12, false, highbit,
       gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
@@ -1119,10 +1201,19 @@ TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
-  EXPECT_TRUE(
-      this->RunPixelTest(&pass_list,
-                         base::FilePath(FILE_PATH_LITERAL("yuv_stripes.png")),
-                         FuzzyPixelOffByOneComparator(true)));
+  base::FilePath file_path =
+      base::FilePath(FILE_PATH_LITERAL("yuv_stripes.png"));
+  // TODO(dshwang): investigate why results per configuraion are so different.
+  // crbug.com/622133
+  if (format == HighbitTexture::RGBA_8888) {
+    // Color space is so different, because this path doesn't respect video
+    // color profile.
+    file_path = base::FilePath(FILE_PATH_LITERAL("yuv_stripes_rgba.png"));
+  }
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, file_path,
+      // All pixels can be off by two, but any more than that is an error.
+      FuzzyPixelComparator(true, 100.f, 0.f, 2.f, 2, 0)));
 }
 
 TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
@@ -1136,7 +1227,12 @@ TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), viewport, pass.get());
 
-  bool highbit = GetParam();
+  const bool highbit = testing::get<0>(GetParam());
+  const HighbitTexture format = testing::get<1>(GetParam());
+  if (format == HighbitTexture::LUMINANCE_F16 && !IsHalfFloatLinearSupported())
+    return;
+
+  SetSupportHighbitTexture(format);
   CreateTestYUVVideoDrawQuad_Striped(
       shared_state, media::PIXEL_FORMAT_YV12, false, highbit,
       gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
@@ -1145,9 +1241,16 @@ TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
+  base::FilePath file_path =
+      base::FilePath(FILE_PATH_LITERAL("yuv_stripes_clipped.png"));
+  if (format == HighbitTexture::RGBA_8888) {
+    file_path =
+        base::FilePath(FILE_PATH_LITERAL("yuv_stripes_clipped_rgba.png"));
+  }
   EXPECT_TRUE(this->RunPixelTest(
-      &pass_list, base::FilePath(FILE_PATH_LITERAL("yuv_stripes_clipped.png")),
-      FuzzyPixelOffByOneComparator(true)));
+      &pass_list, file_path,
+      // All pixels can be off by two, but any more than that is an error.
+      FuzzyPixelComparator(true, 100.f, 0.f, 2.f, 2, 0)));
 }
 
 TEST_F(VideoGLRendererPixelHiLoTest, OffsetYUVRect) {
@@ -1199,7 +1302,13 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
 }
 
 // First argument (test case prefix) is intentionally left empty.
-INSTANTIATE_TEST_CASE_P(, VideoGLRendererPixelHiLoTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    ,
+    VideoGLRendererPixelHiLoTest,
+    ::testing::Combine(::testing::Bool(),
+                       ::testing::Values(HighbitTexture::Y8,
+                                         HighbitTexture::LUMINANCE_F16,
+                                         HighbitTexture::RGBA_8888)));
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -1233,11 +1342,13 @@ TEST_F(VideoGLRendererPixelTest, SimpleNV12JRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
+  ResourceFormat y_format = video_resource_updater_->YuvResourceFormat(8);
+
   // YUV of (149,43,21) should be green (0,255,0) in RGB.
   CreateTestYUVVideoDrawQuad_NV12(
       shared_state, media::COLOR_SPACE_JPEG, gfx::ColorSpace::CreateJpeg(),
-      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(), rect, rect,
-      resource_provider_.get());
+      y_format, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(),
+      rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -1261,6 +1372,18 @@ TEST_F(VideoGLRendererPixelTest, YUVEdgeBleed) {
 TEST_F(VideoGLRendererPixelTest, YUVAEdgeBleed) {
   RenderPassList pass_list;
   CreateEdgeBleedPass(media::PIXEL_FORMAT_YV12A, media::COLOR_SPACE_UNSPECIFIED,
+                      &pass_list);
+  EXPECT_TRUE(this->RunPixelTest(&pass_list,
+                                 base::FilePath(FILE_PATH_LITERAL("green.png")),
+                                 FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_F(VideoGLRendererPixelTest, TextureQuadEdgeBleed) {
+  // VideoResourceUpdater::CreateForSoftwarePlanes() converts YUV frame to RGBA
+  // texture.
+  DisableOneComponentTextures();
+  RenderPassList pass_list;
+  CreateEdgeBleedPass(media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_JPEG,
                       &pass_list);
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
