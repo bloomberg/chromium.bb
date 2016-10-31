@@ -49,18 +49,6 @@ def CheckChangeOnUpload(input_api, output_api):
   else:
     return ()
 """
-  presubmit_tryslave = """
-def GetPreferredTrySlaves():
-  return %s
-"""
-
-  presubmit_tryslave_project = """
-def GetPreferredTrySlaves(project):
-  if project == %s:
-    return %s
-  else:
-    return %s
-"""
 
   presubmit_trymaster = """
 def GetPreferredTryMasters(project, change):
@@ -170,9 +158,9 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AffectedFile', 'Change', 'DoGetTrySlaves',
+      'AffectedFile', 'Change',
       'DoPostUploadExecuter', 'DoPresubmitChecks', 'GetPostUploadExecuter',
-      'GetTrySlavesExecuter', 'GitAffectedFile', 'CallCommand', 'CommandData',
+      'GitAffectedFile', 'CallCommand', 'CommandData',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'main',
       'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
@@ -962,131 +950,6 @@ def CheckChangeOnCommit(input_api, output_api):
                        'http://tracker.com/42\n'
                        '\n'
                        'Presubmit checks passed.\n'))
-
-  def testGetTrySlavesExecuter(self):
-    self.mox.ReplayAll()
-    change = presubmit.Change(
-        'foo',
-        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
-        self.fake_root_dir,
-        None,
-        0,
-        0,
-        None)
-    executer = presubmit.GetTrySlavesExecuter()
-    self.assertEqual([], executer.ExecPresubmitScript('', '', '', change))
-    self.assertEqual([],
-        executer.ExecPresubmitScript('def foo():\n  return\n', '', '', change))
-
-    # bad results
-    starts_with_space_result = ['  starts_with_space']
-    not_list_result1 = "'foo'"
-    not_list_result2 = "('a', 'tuple')"
-    mixed_old_and_new = ['bot', ('bot2', set(['test']))]
-    not_set = [('bot2', ['test'])]
-    for result in (
-        starts_with_space_result, not_list_result1, not_list_result2,
-        mixed_old_and_new, not_set):
-      self.assertRaises(presubmit.PresubmitFailure,
-                        executer.ExecPresubmitScript,
-                        self.presubmit_tryslave % result, '', '', change)
-
-    # good results
-    expected_result = ['1', '2', '3']
-    empty_result = []
-    space_in_name_result = ['foo bar', '1\t2 3']
-    new_style = [('bot', set(['cool', 'tests']))]
-    for result in (
-        expected_result, empty_result, space_in_name_result, new_style):
-      self.assertEqual(
-          result,
-          executer.ExecPresubmitScript(
-              self.presubmit_tryslave % result, '', '', change))
-
-  def testGetTrySlavesExecuterWithProject(self):
-    self.mox.ReplayAll()
-
-    change = presubmit.Change(
-        'foo',
-        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
-        self.fake_root_dir,
-        None,
-        0,
-        0,
-        None)
-
-    executer = presubmit.GetTrySlavesExecuter()
-    expected_result1 = ['1', '2']
-    expected_result2 = ['a', 'b', 'c']
-    script = self.presubmit_tryslave_project % (
-        repr('foo'), repr(expected_result1), repr(expected_result2))
-    self.assertEqual(
-        expected_result1, executer.ExecPresubmitScript(script, '', 'foo',
-                                                       change))
-    self.assertEqual(
-        expected_result2, executer.ExecPresubmitScript(script, '', 'bar',
-                                                       change))
-
-  def testDoGetTrySlaves(self):
-    join = presubmit.os.path.join
-    filename = 'foo.cc'
-    filename_linux = join('linux_only', 'penguin.cc')
-    root_presubmit = join(self.fake_root_dir, 'PRESUBMIT.py')
-    linux_presubmit = join(self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
-
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(root_presubmit).AndReturn(True)
-    presubmit.gclient_utils.FileRead(root_presubmit, 'rU').AndReturn(
-        self.presubmit_tryslave % '["win"]')
-
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(root_presubmit).AndReturn(True)
-    presubmit.os.listdir(join(self.fake_root_dir, 'linux_only')).AndReturn(
-        ['PRESUBMIT.py'])
-    presubmit.os.path.isfile(linux_presubmit).AndReturn(True)
-    presubmit.gclient_utils.FileRead(root_presubmit, 'rU').AndReturn(
-        self.presubmit_tryslave % '["win"]')
-    presubmit.gclient_utils.FileRead(linux_presubmit, 'rU').AndReturn(
-        self.presubmit_tryslave % '["linux"]')
-    self.mox.ReplayAll()
-
-    change = presubmit.Change(
-        'mychange', '', self.fake_root_dir, [], 0, 0, None)
-
-    output = StringIO.StringIO()
-    self.assertEqual(['win'],
-                     presubmit.DoGetTrySlaves(change, [filename],
-                                              self.fake_root_dir,
-                                              None, None, False, output))
-    output = StringIO.StringIO()
-    self.assertEqual(['win', 'linux'],
-                     presubmit.DoGetTrySlaves(change,
-                                              [filename, filename_linux],
-                                              self.fake_root_dir, None, None,
-                                              False, output))
-
-  def testGetTrySlavesExecuter_ok(self):
-    script_text = (
-        'def GetPreferredTrySlaves():\n'
-        '  return ["foo", "bar"]\n')
-    results = presubmit.GetTrySlavesExecuter.ExecPresubmitScript(
-        script_text, 'path', 'project', None)
-    self.assertEquals(['foo', 'bar'], results)
-
-  def testGetTrySlavesExecuter_comma(self):
-    script_text = (
-        'def GetPreferredTrySlaves():\n'
-        '  return ["foo,bar"]\n')
-    try:
-      presubmit.GetTrySlavesExecuter.ExecPresubmitScript(
-          script_text, 'path', 'project', None)
-      self.fail()
-    except presubmit.PresubmitFailure:
-      pass
 
   def testGetTryMastersExecuter(self):
     self.mox.ReplayAll()

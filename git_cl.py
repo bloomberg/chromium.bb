@@ -349,8 +349,8 @@ def _get_bucket_map(changelist, options, option_parser):
   if not options.bot:
     change = changelist.GetChange(
         changelist.GetCommonAncestorWithUpstream(), None)
-
-    masters = presubmit_support.DoGetTryMasters(
+    # Get try masters from PRESUBMIT.py files.
+    return presubmit_support.DoGetTryMasters(
         change=change,
         changed_files=change.LocalPaths(),
         repository_root=settings.GetRoot(),
@@ -359,26 +359,6 @@ def _get_bucket_map(changelist, options, option_parser):
         verbose=options.verbose,
         output_stream=sys.stdout)
 
-    if masters:
-      return masters
-
-    # Fall back to deprecated method: get try slaves from PRESUBMIT.py
-    # files.
-    # TODO(qyearsley): Remove this.
-    options.bot = presubmit_support.DoGetTrySlaves(
-        change=change,
-        changed_files=change.LocalPaths(),
-        repository_root=settings.GetRoot(),
-        default_presubmit=None,
-        project=None,
-        verbose=options.verbose,
-        output_stream=sys.stdout)
-
-    if not options.bot:
-      return {}
-
-  # If a bucket or master is passed, then we assume all bots are under
-  # that one master.
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
   if options.master:

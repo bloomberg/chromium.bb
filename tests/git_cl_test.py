@@ -1885,9 +1885,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.presubmit_support, 'DoGetTryMasters',
               lambda *_, **__: (
                 self._mocked_call(['DoGetTryMasters'])))
-    self.mock(git_cl.presubmit_support, 'DoGetTrySlaves',
-              lambda *_, **__: (
-                self._mocked_call(['DoGetTrySlaves'])))
     self.mock(git_cl._RietveldChangelistImpl, 'SetCQState',
               lambda _, s: self._mocked_call(['SetCQState', s]))
     self.calls = [
@@ -1906,7 +1903,6 @@ class TestGitCl(TestCase):
            '', '', '', '', '', '', '', '')),
         ((['git', 'rev-parse', '--show-cdup'],), '../'),
         ((['DoGetTryMasters'], ), None),
-        ((['DoGetTrySlaves'], ), None),
         ((['SetCQState', git_cl._CQState.DRY_RUN], ), None),
     ]
     out = StringIO.StringIO()
