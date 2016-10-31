@@ -889,10 +889,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Turn on Data Saver
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_SNACKBAR_TEXT_MB" desc="Text to be displayed in the data reduction promo snackbar that lets the user know they saved a certain amount of data in MB">
-        Chrome just saved you <ph name="megabytes">%1$d<ex>100</ex></ph> MB
+        Chrome has saved you <ph name="megabytes">%1$d<ex>100</ex></ph> MB
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_SNACKBAR_TEXT_GB" desc="Text to be displayed in the data reduction promo snackbar that lets the user know they saved a certain amount of data in GB">
-        Chrome just saved you <ph name="gigabytes">%1$d<ex>10</ex></ph> GB
+        Chrome has saved you <ph name="gigabytes">%1$d<ex>10</ex></ph> GB
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_SNACKBAR_BUTTON" desc="Text to be displayed in the data reduction promo snackbar view button that takes the user to the data reduction settings page">
         View
