@@ -92,7 +92,7 @@ function test()
 {
     InspectorTest.changeExecutionContext("myIFrame");
 
-    WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("", "myGlob", false, checkCompletions.bind(this));
+    WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("", "myGlob").then(checkCompletions.bind(this));
     function checkCompletions(completions)
     {
         InspectorTest.addResult("myGlob completions:")
@@ -103,7 +103,7 @@ function test()
     function requestIFrameCompletions()
     {
         InspectorTest.changeExecutionContext("top");
-        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("myIFrame.", "", false, checkIframeCompletions.bind(this));
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("myIFrame.", "").then(checkIframeCompletions.bind(this));
     }
 
     function checkIframeCompletions(completions)
@@ -117,7 +117,7 @@ function test()
     function requestProxyCompletions()
     {
         InspectorTest.changeExecutionContext("top");
-        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("window.proxy2.",  "", false, checkProxyCompletions.bind(this));
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("window.proxy2.",  "").then(checkProxyCompletions.bind(this));
     }
 
     function checkProxyCompletions(completions)
@@ -137,7 +137,7 @@ function test()
     function requestMyClassWithMixinCompletions()
     {
         InspectorTest.changeExecutionContext("top");
-        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("window.x.", "", false, checkMyClassWithMixinCompletions.bind(this));
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("window.x.", "").then(checkMyClassWithMixinCompletions.bind(this));
     }
 
     function checkMyClassWithMixinCompletions(completions)
@@ -151,7 +151,7 @@ function test()
     function requestObjectCompletions()
     {
         InspectorTest.changeExecutionContext("top");
-        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("Object.",  "", false, checkObjectCompletions.bind(this));
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("Object.",  "").then(checkObjectCompletions.bind(this));
     }
 
     function checkObjectCompletions(completions)
