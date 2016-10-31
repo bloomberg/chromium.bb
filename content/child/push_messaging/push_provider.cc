@@ -38,6 +38,34 @@ int64_t GetServiceWorkerRegistrationId(
 
 }  // namespace
 
+blink::WebPushError PushRegistrationStatusToWebPushError(
+    PushRegistrationStatus status) {
+  blink::WebPushError::ErrorType error_type =
+      blink::WebPushError::ErrorTypeAbort;
+  switch (status) {
+    case PUSH_REGISTRATION_STATUS_PERMISSION_DENIED:
+      error_type = blink::WebPushError::ErrorTypeNotAllowed;
+      break;
+    case PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE:
+    case PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER:
+    case PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
+    case PUSH_REGISTRATION_STATUS_LIMIT_REACHED:
+    case PUSH_REGISTRATION_STATUS_SERVICE_ERROR:
+    case PUSH_REGISTRATION_STATUS_NO_SENDER_ID:
+    case PUSH_REGISTRATION_STATUS_STORAGE_ERROR:
+    case PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE:
+    case PUSH_REGISTRATION_STATUS_NETWORK_ERROR:
+    case PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED:
+    case PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE:
+    case PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING:
+      error_type = blink::WebPushError::ErrorTypeAbort;
+      break;
+  }
+  return blink::WebPushError(
+      error_type,
+      blink::WebString::fromUTF8(PushRegistrationStatusToString(status)));
+}
+
 static base::LazyInstance<base::ThreadLocalPointer<PushProvider>>::Leaky
     g_push_provider_tls = LAZY_INSTANCE_INITIALIZER;
 
@@ -181,14 +209,7 @@ void PushProvider::OnSubscribeFromWorkerError(int request_id,
   if (!callbacks)
     return;
 
-  blink::WebPushError::ErrorType error_type =
-      status == PUSH_REGISTRATION_STATUS_PERMISSION_DENIED
-          ? blink::WebPushError::ErrorTypeNotAllowed
-          : blink::WebPushError::ErrorTypeAbort;
-
-  callbacks->onError(blink::WebPushError(
-      error_type,
-      blink::WebString::fromUTF8(PushRegistrationStatusToString(status))));
+  callbacks->onError(PushRegistrationStatusToWebPushError(status));
 
   subscription_callbacks_.Remove(request_id);
 }

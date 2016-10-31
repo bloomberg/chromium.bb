@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/push_messaging/push_provider.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/common/push_messaging_messages.h"
 #include "content/renderer/manifest/manifest_manager.h"
@@ -136,14 +137,7 @@ void PushMessagingDispatcher::OnSubscribeFromDocumentError(
       subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
-  blink::WebPushError::ErrorType error_type =
-      status == PUSH_REGISTRATION_STATUS_PERMISSION_DENIED
-          ? blink::WebPushError::ErrorTypeNotAllowed
-          : blink::WebPushError::ErrorTypeAbort;
-
-  callbacks->onError(blink::WebPushError(
-      error_type,
-      blink::WebString::fromUTF8(PushRegistrationStatusToString(status))));
+  callbacks->onError(PushRegistrationStatusToWebPushError(status));
 
   subscription_callbacks_.Remove(request_id);
 }

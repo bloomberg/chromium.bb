@@ -29,6 +29,9 @@ namespace content {
 class ThreadSafeSender;
 struct PushSubscriptionOptions;
 
+blink::WebPushError PushRegistrationStatusToWebPushError(
+    PushRegistrationStatus status);
+
 class PushProvider : public blink::WebPushProvider,
                      public WorkerThread::Observer {
  public:
