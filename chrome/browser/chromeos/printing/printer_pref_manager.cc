@@ -74,6 +74,7 @@ void PrinterPrefManager::RegisterProfilePrefs(
   // sync is implemented.
   registry->RegisterListPref(prefs::kPrintingDevices,
                              PrefRegistry::NO_REGISTRATION_FLAGS);
+  registry->RegisterListPref(prefs::kRecommendedNativePrinters);
 }
 
 std::vector<std::unique_ptr<Printer>> PrinterPrefManager::GetPrinters() const {

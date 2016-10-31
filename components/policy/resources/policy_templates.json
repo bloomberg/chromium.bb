@@ -9081,6 +9081,77 @@
       If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, or does not significantly alter the behavior of the browser, or is critical for its security will not be disabled.
       Examples of such components include the certificate revocation lists and safe browsing data. ''',
     },
+    {
+      'name': 'NativePrinters',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'id': 'PrinterType',
+          'properties': {
+            'display_name': { 'type': 'string' },
+            'description': { 'type': 'string' },
+            'manufacturer': { 'type': 'string' },
+            'model': { 'type': 'string' },
+            'uri': { 'type': 'string' },
+            'uuid': { 'type': 'string' },
+            'ppd_resource': {
+              'type': 'object',
+              'id': 'PpdResource',
+              'properties': {
+                'effective_manufacturer': { 'type': 'string' },
+                'effective_model': { 'type': 'string' }
+              }
+            }
+          }
+        }
+      },
+      'supported_on': [ 'chrome_os:56-' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [{
+        "display_name": "Color Laser",
+        "description": "The printer next to the water cooler.",
+        "manufacturer": "Printer Manufacturer",
+        "model": "Color Laser 2004",
+        "uri": "ipps://print-server.intranet.example.com:443/ipp/cl2k4",
+        "uuid": "1c395fdb-5d93-4904-b246-b2c046e79d12",
+        "ppd_resource": {
+          "effective_manufacturer": "MakesPrinters",
+          "effective_model": "ColorLaser2k4"
+        }
+      }],
+      'id': 350,
+      'caption': '''Native Printing''',
+      'tags': [],
+      'desc': '''Configures a list of printers.
+
+      This policy allows administrators to provide printer configurations for
+      their users.
+
+      <ph name="PRINTER_DISPLAY_NAME">display_name</ph> and <ph
+      name="PRINTER_DESCRIPTION">description</ph> are free form strings that
+      can be customized for ease of printer selection. <ph
+      name="PRINTER_MANUFACTURER">manufacturer</ph> and <ph
+      name="PRINTER_MODEL">model</ph> should match one of the <ph
+      name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported
+      printers.  <ph name="PRINTER_URI">uri</ph> should be an address reachable
+      from a client computer including the <ph name="URI_SCHEME">scheme</ph>,
+      <ph name="URI_PORT">port</ph>, and <ph name="URI_QUEUE">queue</ph>.  <ph
+      name="PRINTER_UUID">uuid</ph> is optional.  If provided, it is used to
+      help deduplicate <ph name="ZEROCONF_DISCOVERY">zeroconf</ph> printers.
+
+      Printer setup is completed upon the first use of a printer.  PPDs are not
+      downloaded until the printer is used.  After that time, frequently used
+      PPDs are cached.
+
+      This policy has no effect on whether users can configure printers on
+      individual devices.  It is intended to be supplementary to the
+      configuration of printers by individual users.''',
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.

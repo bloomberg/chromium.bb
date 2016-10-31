@@ -1148,6 +1148,10 @@ const char kPrintPreviewDefaultDestinationSelectionRules[] =
 #if defined(OS_CHROMEOS)
 // List of all printers that the user has configured.
 const char kPrintingDevices[] = "printing.devices";
+
+// List of printers configured by policy.
+const char kRecommendedNativePrinters[] =
+    "native_printing.recommended_printers";
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content

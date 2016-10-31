@@ -536,6 +536,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportArcStatusEnabled,
     prefs::kReportArcStatusEnabled,
     base::Value::TYPE_BOOLEAN },
+  { key::kNativePrinters,
+    prefs::kRecommendedNativePrinters,
+    base::Value::TYPE_LIST },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

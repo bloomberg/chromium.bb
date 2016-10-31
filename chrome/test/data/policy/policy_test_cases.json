@@ -279,6 +279,29 @@
     ]
   },
 
+  "NativePrinters": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "NativePrinters": [
+        {
+          "display_name": "Break Room",
+          "description": "The blue one",
+          "manufacturer": "PrtrMfgr",
+          "model": "MegaLazer",
+          "uri": "ipps://192.168.2.14",
+          "uuid": "aaaa-aaaa-eeee-eeee-1234",
+          "ppd_resource": {
+            "effective_manufacturer": "Printers, Ink",
+            "effective_model": "LaserMaster 2100"
+          }
+        }
+      ]
+    },
+    "pref_mappings": [
+      { "pref": "native_printing.recommended_printers" }
+    ]
+  },
+
   "SafeBrowsingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

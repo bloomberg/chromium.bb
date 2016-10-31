@@ -393,6 +393,7 @@ extern const char kPrintPreviewDefaultDestinationSelectionRules[];
 
 #if defined(OS_CHROMEOS)
 extern const char kPrintingDevices[];
+extern const char kRecommendedNativePrinters[];
 #endif  // OS_CHROMEOS
 
 extern const char kDefaultSupervisedUserFilteringBehavior[];
