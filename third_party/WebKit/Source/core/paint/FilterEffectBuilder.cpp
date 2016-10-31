@@ -148,16 +148,17 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
       case FilterOperation::REFERENCE: {
         ReferenceFilterOperation& referenceOperation =
             toReferenceFilterOperation(*filterOperation);
-        if (Filter* referenceFilter =
-                buildReferenceFilter(referenceOperation, previousEffect)) {
+        Filter* referenceFilter =
+            buildReferenceFilter(referenceOperation, previousEffect);
+        if (referenceFilter) {
+          effect = referenceFilter->lastEffect();
           // TODO(fs): This is essentially only needed for the
           // side-effects (mapRect). The filter differs from the one
           // computed just above in what the SourceGraphic is, and how
           // it's connected to the filter-chain.
-          referenceOperation.setFilter(
-              buildReferenceFilter(referenceOperation, nullptr));
-          effect = referenceFilter->lastEffect();
+          referenceFilter = buildReferenceFilter(referenceOperation, nullptr);
         }
+        referenceOperation.setFilter(referenceFilter);
         break;
       }
       case FilterOperation::GRAYSCALE: {
@@ -308,7 +309,6 @@ CompositorFilterOperations FilterEffectBuilder::buildFilterOperations(
         Filter* referenceFilter =
             buildReferenceFilter(referenceOperation, nullptr);
         if (referenceFilter && referenceFilter->lastEffect()) {
-          referenceOperation.setFilter(referenceFilter);
           SkiaImageFilterBuilder::populateSourceGraphicImageFilters(
               referenceFilter->getSourceGraphic(), nullptr, currentColorSpace);
 
@@ -317,6 +317,7 @@ CompositorFilterOperations FilterEffectBuilder::buildFilterOperations(
           filters.appendReferenceFilter(
               SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
         }
+        referenceOperation.setFilter(referenceFilter);
         break;
       }
       case FilterOperation::GRAYSCALE:
