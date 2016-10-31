@@ -160,12 +160,15 @@ void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
 APIBinding::APIPerContextData::APIPerContextData() {}
 APIBinding::APIPerContextData::~APIPerContextData() {}
 
-APIBinding::APIBinding(const std::string& name,
+APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue& function_definitions,
-                       const base::ListValue& type_definitions,
+                       const base::ListValue* type_definitions,
                        const APIMethodCallback& callback,
                        ArgumentSpec::RefMap* type_refs)
-    : method_callback_(callback), type_refs_(type_refs), weak_factory_(this) {
+    : api_name_(api_name),
+      method_callback_(callback),
+      type_refs_(type_refs),
+      weak_factory_(this) {
   DCHECK(!method_callback_.is_null());
   for (const auto& func : function_definitions) {
     const base::DictionaryValue* func_dict = nullptr;
@@ -175,15 +178,17 @@ APIBinding::APIBinding(const std::string& name,
     std::unique_ptr<APISignature> spec = GetAPISignature(*func_dict);
     signatures_[name] = std::move(spec);
   }
-  for (const auto& type : type_definitions) {
-    const base::DictionaryValue* type_dict = nullptr;
-    CHECK(type->GetAsDictionary(&type_dict));
-    std::string id;
-    CHECK(type_dict->GetString("id", &id));
-    DCHECK(type_refs->find(id) == type_refs->end());
-    // TODO(devlin): refs are sometimes preceeded by the API namespace; we might
-    // need to take that into account.
-    (*type_refs)[id] = base::MakeUnique<ArgumentSpec>(*type_dict);
+  if (type_definitions) {
+    for (const auto& type : *type_definitions) {
+      const base::DictionaryValue* type_dict = nullptr;
+      CHECK(type->GetAsDictionary(&type_dict));
+      std::string id;
+      CHECK(type_dict->GetString("id", &id));
+      DCHECK(type_refs->find(id) == type_refs->end());
+      // TODO(devlin): refs are sometimes preceeded by the API namespace; we
+      // might need to take that into account.
+      (*type_refs)[id] = base::MakeUnique<ArgumentSpec>(*type_dict);
+    }
   }
 }
 
@@ -206,9 +211,11 @@ v8::Local<v8::Object> APIBinding::CreateInstance(v8::Local<v8::Context> context,
                                   api_data.release());
   }
   for (const auto& sig : signatures_) {
+    std::string full_method_name =
+        base::StringPrintf("%s.%s", api_name_.c_str(), sig.first.c_str());
     auto handler_callback = base::MakeUnique<HandlerCallback>(
         base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
-                   sig.first, sig.second.get()));
+                   full_method_name, sig.second.get()));
     // TODO(devlin): We should be able to cache these in a function template.
     v8::MaybeLocal<v8::Function> maybe_function =
         v8::Function::New(context, &CallbackHelper,

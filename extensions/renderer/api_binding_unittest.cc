@@ -198,7 +198,7 @@ TEST_F(APIBindingTest, Test) {
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions, base::ListValue(),
+      "test", *functions, nullptr,
       base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
       &refs);
   EXPECT_TRUE(refs.empty());
@@ -300,7 +300,7 @@ TEST_F(APIBindingTest, TypeRefsTest) {
   ASSERT_TRUE(types);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions, *types,
+      "test", *functions, types.get(),
       base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
       &refs);
   EXPECT_EQ(2u, refs.size());
@@ -325,60 +325,6 @@ TEST_F(APIBindingTest, TypeRefsTest) {
   ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']");
   ExpectPass(binding_object, "obj.takesRefEnum('beta')", "['beta']");
   ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
-}
-
-// TODO(devlin): Once we have an object that encompasses all these pieces (the
-// APIBinding, ArgumentSpec::RefMap, and APIRequestHandler), we should move this
-// test.
-TEST_F(APIBindingTest, Callbacks) {
-  const char kTestCall[] =
-      "obj.functionWithCallback('foo', function() {\n"
-      "  this.callbackArguments = Array.from(arguments);\n"
-      "});";
-
-  const char kFunctionSpec[] =
-      "[{"
-      "  'name': 'functionWithCallback',"
-      "  'parameters': [{"
-      "    'name': 'str',"
-      "    'type': 'string'"
-      "  }, {"
-      "    'name': 'callback',"
-      "    'type': 'function'"
-      "  }]"
-      "}]";
-
-  std::unique_ptr<base::ListValue> functions =
-      ListValueFromString(kFunctionSpec);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", *functions, base::ListValue(),
-      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
-      &refs);
-
-  v8::Isolate* isolate = instance_->isolate();
-
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
-
-  v8::Local<v8::Object> binding_object =
-      binding.CreateInstance(context, isolate);
-
-  ExpectPass(binding_object, kTestCall, "['foo']");
-  ASSERT_FALSE(last_request_id().empty());
-  const char kResponseArgsJson[] = "['response',1,{'key':42}]";
-  std::unique_ptr<base::ListValue> expected_args =
-      ListValueFromString(kResponseArgsJson);
-  request_handler()->CompleteRequest(last_request_id(), *expected_args);
-
-  v8::Local<v8::Value> res =
-      GetPropertyFromObject(context->Global(), context, "callbackArguments");
-
-  std::unique_ptr<base::Value> out_val = V8ToBaseValue(res, context);
-  ASSERT_TRUE(out_val);
-  EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson), ValueToString(*out_val));
 }
 
 }  // namespace extensions

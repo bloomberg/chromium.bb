@@ -50,9 +50,10 @@ class APIBinding {
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
   // The ArgumentSpec::RefMap is required to outlive this object.
+  // |type_definitions| may be null if the API does not specify any types.
   APIBinding(const std::string& name,
              const base::ListValue& function_definitions,
-             const base::ListValue& type_definitions,
+             const base::ListValue* type_definitions,
              const APIMethodCallback& callback,
              ArgumentSpec::RefMap* type_refs);
   ~APIBinding();
@@ -79,6 +80,9 @@ class APIBinding {
   void HandleCall(const std::string& name,
                   const APISignature* signature,
                   gin::Arguments* args);
+
+  // The root name of the API, e.g. "tabs" for chrome.tabs.
+  std::string api_name_;
 
   // A map from method name to expected signature.
   std::map<std::string, std::unique_ptr<APISignature>> signatures_;
