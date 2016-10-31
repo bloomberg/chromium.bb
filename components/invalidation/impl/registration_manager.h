@@ -9,6 +9,7 @@
 #define COMPONENTS_INVALIDATION_IMPL_REGISTRATION_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
@@ -147,10 +148,6 @@ class INVALIDATION_EXPORT RegistrationManager : public base::NonThreadSafe {
 
     DISALLOW_COPY_AND_ASSIGN(RegistrationStatus);
   };
-  typedef std::map<invalidation::ObjectId,
-                   RegistrationStatus*,
-                   ObjectIdLessThan>
-      RegistrationStatusMap;
 
   // Does nothing if the given id is disabled.  Otherwise, if
   // |is_retry| is not set, registers the given type immediately and
@@ -175,7 +172,10 @@ class INVALIDATION_EXPORT RegistrationManager : public base::NonThreadSafe {
   // Returns true iff the given object ID is registered.
   bool IsIdRegistered(const invalidation::ObjectId& id) const;
 
-  RegistrationStatusMap registration_statuses_;
+  std::map<invalidation::ObjectId,
+           std::unique_ptr<RegistrationStatus>,
+           ObjectIdLessThan>
+      registration_statuses_;
   // Weak pointer.
   invalidation::InvalidationClient* invalidation_client_;
 
