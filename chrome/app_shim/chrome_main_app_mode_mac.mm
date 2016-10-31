@@ -480,11 +480,11 @@ void AppShimController::SendSetAppHidden(bool hidden) {
   base::Callback<void(bool)> onReply_;
   AEDesc replyEvent_;
 }
-// Sends an Apple Event to the process identified by |psn|, and calls |replyFn|
-// when the reply is received. Internally this creates a ReplyEventHandler,
-// which will delete itself once the reply event has been received.
-+ (void)pingProcess:(const ProcessSerialNumber&)psn
-            andCall:(base::Callback<void(bool)>)replyFn;
+// Sends an Apple Event to the process identified by the bundle identifier,
+// and calls |replyFn| when the reply is received. Internally this
+// creates a ReplyEventHandler, which will delete itself once the reply event
+// has been received.
++ (void)pingProcessAndCall:(base::Callback<void(bool)>)replyFn;
 @end
 
 @interface ReplyEventHandler (PrivateMethods)
@@ -493,9 +493,9 @@ void AppShimController::SendSetAppHidden(bool hidden) {
 // Apple Event reply arrives.
 - (id)initWithCallback:(base::Callback<void(bool)>)replyFn;
 
-// Sends an Apple Event ping to the process identified by |psn| and registers
-// to listen for a reply.
-- (void)pingProcess:(const ProcessSerialNumber&)psn;
+// Sends an Apple Event ping to the process identified by the bundle
+// identifier and registers to listen for a reply.
+- (void)pingProcess;
 
 // Called when a response is received from the target process for the ping sent
 // by |-pingProcess:|.
@@ -508,13 +508,12 @@ void AppShimController::SendSetAppHidden(bool hidden) {
 @end
 
 @implementation ReplyEventHandler
-+ (void)pingProcess:(const ProcessSerialNumber&)psn
-            andCall:(base::Callback<void(bool)>)replyFn {
++ (void)pingProcessAndCall:(base::Callback<void(bool)>)replyFn {
   // The object will release itself when the reply arrives, or possibly earlier
   // if an unrecoverable error occurs.
   ReplyEventHandler* handler =
       [[ReplyEventHandler alloc] initWithCallback:replyFn];
-  [handler pingProcess:psn];
+  [handler pingProcess];
 }
 @end
 
@@ -526,31 +525,33 @@ void AppShimController::SendSetAppHidden(bool hidden) {
   return self;
 }
 
-- (void)pingProcess:(const ProcessSerialNumber&)psn {
+- (void)pingProcess {
   // Register the reply listener.
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em setEventHandler:self
           andSelector:@selector(message:withReply:)
-        forEventClass:'aevt'
-           andEventID:'ansr'];
+        forEventClass:kCoreEventClass
+           andEventID:kAEAnswer];
+
   // Craft the Apple Event to send.
+  NSString* chromeBundleId = [base::mac::OuterBundle() bundleIdentifier];
   NSAppleEventDescriptor* target = [NSAppleEventDescriptor
-      descriptorWithDescriptorType:typeProcessSerialNumber
-                             bytes:&psn
-                            length:sizeof(psn)];
-  NSAppleEventDescriptor* initial_event =
-      [NSAppleEventDescriptor
-          appleEventWithEventClass:app_mode::kAEChromeAppClass
-                           eventID:app_mode::kAEChromeAppPing
-                  targetDescriptor:target
-                          returnID:kAutoGenerateReturnID
-                     transactionID:kAnyTransactionID];
+      descriptorWithDescriptorType:typeApplicationBundleID
+                              data:[chromeBundleId
+                                       dataUsingEncoding:NSUTF8StringEncoding]];
+
+  NSAppleEventDescriptor* initialEvent = [NSAppleEventDescriptor
+      appleEventWithEventClass:app_mode::kAEChromeAppClass
+                       eventID:app_mode::kAEChromeAppPing
+              targetDescriptor:target
+                      returnID:kAutoGenerateReturnID
+                 transactionID:kAnyTransactionID];
 
   // Note that AESendMessage effectively ignores kAEDefaultTimeout, because this
   // call does not pass kAEWantReceipt (which is deprecated and unsupported on
   // Mac). Instead, rely on OnPingChromeTimeout().
-  OSStatus status = AESendMessage(
-      [initial_event aeDesc], &replyEvent_, kAEQueueReply, kAEDefaultTimeout);
+  OSStatus status = AESendMessage([initialEvent aeDesc], &replyEvent_,
+                                  kAEQueueReply, kAEDefaultTimeout);
   if (status != noErr) {
     OSSTATUS_LOG(ERROR, status) << "AESendMessage";
     [self closeWithSuccess:false];
@@ -565,7 +566,7 @@ void AppShimController::SendSetAppHidden(bool hidden) {
 - (void)closeWithSuccess:(bool)success {
   onReply_.Run(success);
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em removeEventHandlerForEventClass:'aevt' andEventID:'ansr'];
+  [em removeEventHandlerForEventClass:kCoreEventClass andEventID:kAEAnswer];
   [self release];
 }
 @end
@@ -668,7 +669,6 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           app_mode::kLaunchedForTest)) {
     // Launch Chrome if it isn't already running.
-    ProcessSerialNumber psn;
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     command_line.AppendSwitch(switches::kSilentLaunch);
 
@@ -683,21 +683,16 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
 
     base::Process app = base::mac::OpenApplicationWithPath(
         base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault);
-
-    // TODO(crbug.com/652563): Do not use deprecated GetProcessForPID. Change
-    // |ReplyEventHandler| to take |pid_t| instead of |ProcessSerialNumber|.
-    if (!app.IsValid() || GetProcessForPID(app.Pid(), &psn) != noErr)
+    if (!app.IsValid())
       return 1;
 
-    base::Callback<void(bool)> on_ping_chrome_reply =
-        base::Bind(&AppShimController::OnPingChromeReply,
-                   base::Unretained(&controller));
+    base::Callback<void(bool)> on_ping_chrome_reply = base::Bind(
+        &AppShimController::OnPingChromeReply, base::Unretained(&controller));
 
     // This code abuses the fact that Apple Events sent before the process is
     // fully initialized don't receive a reply until its run loop starts. Once
     // the reply is received, Chrome will have opened its IPC port, guaranteed.
-    [ReplyEventHandler pingProcess:psn
-                           andCall:on_ping_chrome_reply];
+    [ReplyEventHandler pingProcessAndCall:on_ping_chrome_reply];
 
     main_message_loop.task_runner()->PostDelayedTask(
         FROM_HERE, base::Bind(&AppShimController::OnPingChromeTimeout,
