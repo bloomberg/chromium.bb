@@ -312,7 +312,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool isInsertionPoint() const { return getFlag(IsInsertionPointFlag); }
 
   bool canParticipateInFlatTree() const;
-  bool isSlotOrActiveInsertionPoint() const;
+  bool isActiveSlotOrActiveInsertionPoint() const;
   // A re-distribution across v0 and v1 shadow trees is not supported.
   bool isSlotable() const {
     return isTextNode() || (isElementNode() && !isInsertionPoint());

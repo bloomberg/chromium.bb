@@ -48,7 +48,7 @@ namespace blink {
 LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element,
                                                          ComputedStyle* style)
     : LayoutTreeBuilder(element, nullptr), m_style(style) {
-  DCHECK(!element.isSlotOrActiveInsertionPoint());
+  DCHECK(!element.isActiveSlotOrActiveInsertionPoint());
   if (element.isFirstLetterPseudoElement()) {
     if (LayoutObject* nextLayoutObject =
             FirstLetterPseudoElement::firstLetterTextLayoutObject(element))

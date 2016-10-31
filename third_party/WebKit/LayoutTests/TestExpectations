@@ -587,6 +587,7 @@ crbug.com/505364 imported/wpt/shadow-dom/untriaged/styles/test-003.html [ Failur
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
 crbug.com/505364 imported/wpt/custom-elements/v0/instantiating/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-display-override.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-fallback.html [ Failure ]
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-style.html [ Failure ]
 
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]

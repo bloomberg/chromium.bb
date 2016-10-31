@@ -583,14 +583,17 @@ TEST_F(FlatTreeTraversalTest, v1SlotInDocumentTree) {
   setupDocumentTree(mainHTML);
   Element* body = document().body();
   Element* parent = body->querySelector("#parent");
+  Element* slot = body->querySelector("slot");
   Element* child1 = body->querySelector("#child1");
   Element* child2 = body->querySelector("#child2");
 
-  EXPECT_EQ(child1, FlatTreeTraversal::firstChild(*parent));
+  EXPECT_EQ(slot, FlatTreeTraversal::firstChild(*parent));
+  EXPECT_EQ(child1, FlatTreeTraversal::firstChild(*slot));
   EXPECT_EQ(child2, FlatTreeTraversal::nextSibling(*child1));
   EXPECT_EQ(nullptr, FlatTreeTraversal::nextSibling(*child2));
-  EXPECT_EQ(parent, FlatTreeTraversal::parent(*child1));
-  EXPECT_EQ(parent, FlatTreeTraversal::parent(*child2));
+  EXPECT_EQ(slot, FlatTreeTraversal::parent(*child1));
+  EXPECT_EQ(slot, FlatTreeTraversal::parent(*child2));
+  EXPECT_EQ(parent, FlatTreeTraversal::parent(*slot));
 }
 
 }  // namespace blink

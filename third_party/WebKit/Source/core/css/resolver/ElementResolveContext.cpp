@@ -46,7 +46,7 @@ ElementResolveContext::ElementResolveContext(Element& element)
       m_distributedToInsertionPoint(false) {
   LayoutTreeBuilderTraversal::ParentDetails parentDetails;
   m_parentNode =
-      element.isSlotOrActiveInsertionPoint()
+      element.isActiveSlotOrActiveInsertionPoint()
           ? nullptr
           : LayoutTreeBuilderTraversal::parent(element, &parentDetails);
   m_distributedToInsertionPoint = parentDetails.insertionPoint();

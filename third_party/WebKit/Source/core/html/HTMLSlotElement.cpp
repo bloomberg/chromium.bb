@@ -68,18 +68,20 @@ const HeapVector<Member<Node>> HTMLSlotElement::assignedNodesForBinding(
     const AssignedNodesOptions& options) {
   updateDistribution();
   if (options.hasFlatten() && options.flatten())
-    return getDistributedNodes();
+    return getDistributedNodesForBinding();
   return m_assignedNodes;
 }
 
-void HTMLSlotElement::updateDistributedNodesManually() {
-  DCHECK(!supportsDistribution());
-  // A slot is unlikely to be used outside of a shadow tree.
-  // We do not need to optimize this case in most cases.
-  // TODO(hayato): If this path causes a performance issue, we should move
-  // ShadowRoot::m_slotAssignment into TreeScopreRareData-ish and
-  // update the distribution code so it considers a document tree too.
-  clearDistribution();
+const HeapVector<Member<Node>>
+HTMLSlotElement::getDistributedNodesForBinding() {
+  DCHECK(!needsDistributionRecalc());
+  if (supportsDistribution())
+    return m_distributedNodes;
+
+  // If a slot does not support distribution, its m_distributedNodes should not
+  // be used.  Instead, calculate distribution manually here. This happens only
+  // in a slot in non-shadow trees, so its assigned nodes are always empty.
+  HeapVector<Member<Node>> distributedNodes;
   Node* child = NodeTraversal::firstChild(*this);
   while (child) {
     if (!child->isSlotable()) {
@@ -89,18 +91,16 @@ void HTMLSlotElement::updateDistributedNodesManually() {
     if (isHTMLSlotElement(child)) {
       child = NodeTraversal::next(*child, this);
     } else {
-      m_distributedNodes.append(child);
+      distributedNodes.append(child);
       child = NodeTraversal::nextSkippingChildren(*child, this);
     }
   }
+  return distributedNodes;
 }
 
 const HeapVector<Member<Node>>& HTMLSlotElement::getDistributedNodes() {
   DCHECK(!needsDistributionRecalc());
-  // m_distributedNodes of slots in non-shadow trees are not updated in recalc
-  // distribution flow.
-  if (!supportsDistribution())
-    updateDistributedNodesManually();
+  DCHECK(supportsDistribution() || m_distributedNodes.isEmpty());
   return m_distributedNodes;
 }
 
@@ -156,6 +156,7 @@ void HTMLSlotElement::dispatchSlotChangeEvent() {
 }
 
 Node* HTMLSlotElement::distributedNodeNextTo(const Node& node) const {
+  DCHECK(supportsDistribution());
   const auto& it = m_distributedIndices.find(&node);
   if (it == m_distributedIndices.end())
     return nullptr;
@@ -166,6 +167,7 @@ Node* HTMLSlotElement::distributedNodeNextTo(const Node& node) const {
 }
 
 Node* HTMLSlotElement::distributedNodePreviousTo(const Node& node) const {
+  DCHECK(supportsDistribution());
   const auto& it = m_distributedIndices.find(&node);
   if (it == m_distributedIndices.end())
     return nullptr;
@@ -180,18 +182,20 @@ AtomicString HTMLSlotElement::name() const {
 }
 
 void HTMLSlotElement::attachLayoutTree(const AttachContext& context) {
-  for (auto& node : getDistributedNodes()) {
-    if (node->needsAttach())
-      node->attachLayoutTree(context);
+  if (supportsDistribution()) {
+    for (auto& node : m_distributedNodes) {
+      if (node->needsAttach())
+        node->attachLayoutTree(context);
+    }
   }
-
   HTMLElement::attachLayoutTree(context);
 }
 
 void HTMLSlotElement::detachLayoutTree(const AttachContext& context) {
-  for (auto& node : m_distributedNodes)
-    node->lazyReattachIfAttached();
-
+  if (supportsDistribution()) {
+    for (auto& node : m_distributedNodes)
+      node->lazyReattachIfAttached();
+  }
   HTMLElement::detachLayoutTree(context);
 }
 

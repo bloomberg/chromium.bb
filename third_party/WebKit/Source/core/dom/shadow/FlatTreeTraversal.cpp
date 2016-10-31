@@ -68,14 +68,13 @@ Node* FlatTreeTraversal::resolveDistributionStartingAt(
                       : sibling->previousSibling())) {
     if (isHTMLSlotElement(*sibling)) {
       const HTMLSlotElement& slot = toHTMLSlotElement(*sibling);
-      if (!slot.supportsDistribution()) {
-        const_cast<HTMLSlotElement&>(slot).updateDistributedNodesManually();
+      if (slot.supportsDistribution()) {
+        if (Node* found = (direction == TraversalDirectionForward
+                               ? slot.firstDistributedNode()
+                               : slot.lastDistributedNode()))
+          return found;
+        continue;
       }
-      if (Node* found = (direction == TraversalDirectionForward
-                             ? slot.firstDistributedNode()
-                             : slot.lastDistributedNode()))
-        return found;
-      continue;
     }
     if (node->isInV0ShadowTree())
       return v0ResolveDistributionStartingAt(*sibling, direction);
@@ -87,7 +86,8 @@ Node* FlatTreeTraversal::resolveDistributionStartingAt(
 Node* FlatTreeTraversal::v0ResolveDistributionStartingAt(
     const Node& node,
     TraversalDirection direction) {
-  DCHECK(!isHTMLSlotElement(node));
+  DCHECK(!isHTMLSlotElement(node) ||
+         !toHTMLSlotElement(node).supportsDistribution());
   for (const Node* sibling = &node; sibling;
        sibling = (direction == TraversalDirectionForward
                       ? sibling->nextSibling()
@@ -195,9 +195,11 @@ ContainerNode* FlatTreeTraversal::traverseParent(
   Element* parent = node.parentElement();
   if (parent && isHTMLSlotElement(parent)) {
     HTMLSlotElement& slot = toHTMLSlotElement(*parent);
-    if (!slot.assignedNodes().isEmpty())
-      return nullptr;
-    return traverseParent(slot, details);
+    if (slot.supportsDistribution()) {
+      if (!slot.assignedNodes().isEmpty())
+        return nullptr;
+      return traverseParent(slot, details);
+    }
   }
 
   if (canBeDistributedToInsertionPoint(node))

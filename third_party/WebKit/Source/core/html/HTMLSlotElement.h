@@ -46,14 +46,17 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   const HeapVector<Member<Node>>& assignedNodes();
   const HeapVector<Member<Node>>& getDistributedNodes();
+  const HeapVector<Member<Node>> getDistributedNodesForBinding();
   const HeapVector<Member<Node>> assignedNodesForBinding(
       const AssignedNodesOptions&);
 
   Node* firstDistributedNode() const {
+    DCHECK(supportsDistribution());
     return m_distributedNodes.isEmpty() ? nullptr
                                         : m_distributedNodes.first().get();
   }
   Node* lastDistributedNode() const {
+    DCHECK(supportsDistribution());
     return m_distributedNodes.isEmpty() ? nullptr
                                         : m_distributedNodes.last().get();
   }
@@ -93,8 +96,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void clearDistribution();
   void saveAndClearDistribution();
 
-  bool supportsDistribution() const { return isInShadowTree(); }
-  void updateDistributedNodesManually();
+  bool supportsDistribution() const { return isInV1ShadowTree(); }
 
   static AtomicString normalizeSlotName(const AtomicString&);
 

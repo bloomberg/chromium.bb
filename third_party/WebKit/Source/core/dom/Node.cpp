@@ -993,11 +993,13 @@ bool Node::isStyledElement() const {
 
 bool Node::canParticipateInFlatTree() const {
   // TODO(hayato): Return false for pseudo elements.
-  return !isShadowRoot() && !isSlotOrActiveInsertionPoint();
+  return !isShadowRoot() && !isActiveSlotOrActiveInsertionPoint();
 }
 
-bool Node::isSlotOrActiveInsertionPoint() const {
-  return isHTMLSlotElement(*this) || isActiveInsertionPoint(*this);
+bool Node::isActiveSlotOrActiveInsertionPoint() const {
+  return (isHTMLSlotElement(*this) &&
+          toHTMLSlotElement(*this).supportsDistribution()) ||
+         isActiveInsertionPoint(*this);
 }
 
 AtomicString Node::slotName() const {

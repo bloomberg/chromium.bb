@@ -507,7 +507,7 @@ PositionInFlatTree toPositionInFlatTree(const Position& pos) {
   if (pos.isOffsetInAnchor()) {
     if (anchor->isCharacterDataNode())
       return PositionInFlatTree(anchor, pos.computeOffsetInContainerNode());
-    DCHECK(!anchor->isSlotOrActiveInsertionPoint());
+    DCHECK(!anchor->isActiveSlotOrActiveInsertionPoint());
     int offset = pos.computeOffsetInContainerNode();
     Node* child = NodeTraversal::childAt(*anchor, offset);
     if (!child) {
@@ -517,7 +517,7 @@ PositionInFlatTree toPositionInFlatTree(const Position& pos) {
       return PositionInFlatTree(anchor, PositionAnchorType::AfterChildren);
     }
     child->updateDistribution();
-    if (child->isSlotOrActiveInsertionPoint()) {
+    if (child->isActiveSlotOrActiveInsertionPoint()) {
       if (anchor->isShadowRoot())
         return PositionInFlatTree(anchor->ownerShadowHost(), offset);
       return PositionInFlatTree(anchor, offset);

@@ -1665,7 +1665,7 @@ void Element::attachLayoutTree(const AttachContext& context) {
     data->clearComputedStyle();
   }
 
-  if (!isSlotOrActiveInsertionPoint())
+  if (!isActiveSlotOrActiveInsertionPoint())
     LayoutTreeBuilderForElement(*this, context.resolvedStyle)
         .createLayoutObjectIfNeeded();
 
