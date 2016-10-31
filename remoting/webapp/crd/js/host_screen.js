@@ -170,6 +170,11 @@ function onHostStateChanged_(state) {
       remoting.cancelShare();
     }
 
+  } else if (state == remoting.HostSession.State.CONNECTING) {
+    console.log('Host state: CONNECTING');
+    remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_ACCEPT);
+    disableTimeoutCountdown_();
+
   } else if (state == remoting.HostSession.State.CONNECTED) {
     console.log('Host state: CONNECTED');
     var element = document.getElementById('host-shared-message');

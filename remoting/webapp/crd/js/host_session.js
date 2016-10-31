@@ -25,8 +25,8 @@ remoting.HostSession = function() {
   this.hostFacade_ = null;
 };
 
-// Note that these values are copied directly from host_script_object.h and
-// must be kept in sync.
+// Note that these values are copied directly from it2me_host.h and must be kept
+// in sync.
 /** @enum {number} */
 remoting.HostSession.State = {
   UNKNOWN: -1,
@@ -34,10 +34,11 @@ remoting.HostSession.State = {
   STARTING: 1,
   REQUESTED_ACCESS_CODE: 2,
   RECEIVED_ACCESS_CODE: 3,
-  CONNECTED: 4,
-  DISCONNECTING: 5,
-  ERROR: 6,
-  INVALID_DOMAIN_ERROR: 7
+  CONNECTING: 4,
+  CONNECTED: 5,
+  DISCONNECTING: 6,
+  ERROR: 7,
+  INVALID_DOMAIN_ERROR: 8,
 };
 
 remoting.HostSession.prototype.dispose = function() {

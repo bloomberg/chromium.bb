@@ -870,7 +870,10 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         To begin sharing your desktop, give the access code below to the person who will be assisting you.
       </message>
       <message desc="Instructions shown below the access code when it is ready to be conveyed to the client." name="IDS_INSTRUCTIONS_SHARE_BELOW">
-        Once they enter the code your sharing session will begin.
+        Once they enter the code, you will be prompted to accept the connection and begin the sharing session.
+      </message>
+      <message desc="Instructions shown when the local user must accept or reject the incoming connection request."  name="IDS_INSTRUCTIONS_SHARE_PROMPT">
+        Please select '<ph name="SHARE">$1<ex>Share</ex></ph>' on the connection dialog box to complete the process.
       </message>
       <message desc="An error message displayed if the user enters an invalid PIN while setting up a host." name="IDS_INVALID_PIN">
         Please enter a PIN consisting of six or more digits.

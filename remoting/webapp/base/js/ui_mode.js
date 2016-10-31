@@ -29,6 +29,7 @@ remoting.AppMode = {
     HOST: 'home.host',
       HOST_WAITING_FOR_CODE: 'home.host.waiting-for-code',
       HOST_WAITING_FOR_CONNECTION: 'home.host.waiting-for-connection',
+      HOST_WAITING_FOR_ACCEPT: 'home.host.waiting-for-accept',
       HOST_SHARED: 'home.host.shared',
       HOST_SHARE_FAILED: 'home.host.share-failed',
       HOST_SHARE_FINISHED: 'home.host.share-finished',
