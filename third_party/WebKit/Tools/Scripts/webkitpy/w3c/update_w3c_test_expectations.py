@@ -313,7 +313,6 @@ class W3CExpectationsLineAdder(object):
                 'rebaseline-cl',
                 '--verbose',
                 '--no-trigger-jobs',
-                '--only-changed-tests',
             ] + tests_to_rebaseline)
         return tests_results
 
