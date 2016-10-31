@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <string>
 #include <utility>
 
 #include "base/files/dir_reader_posix.h"
@@ -401,6 +402,14 @@ bool SynchronizedMinidumpManager::HasDumps() {
   }
 
   return false;
+}
+
+bool SynchronizedMinidumpManager::InitializeFileState() {
+  if (!AcquireLockFile())
+    return false;  // Error logged
+
+  ReleaseLockFile();
+  return true;
 }
 
 }  // namespace chromecast

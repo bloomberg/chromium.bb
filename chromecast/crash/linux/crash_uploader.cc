@@ -51,17 +51,12 @@ int main(int argc, char** argv) {
       command_line->GetSwitchValueASCII(switches::kCrashServerUrl));
   chromecast::MinidumpUploader uploader(sys_info.get(), server_url);
   while (true) {
-    bool successful = uploader.UploadAllMinidumps();
+    if (!uploader.UploadAllMinidumps())
+      LOG(ERROR) << "Failed to process minidumps";
+
     if (uploader.reboot_scheduled())
       chromecast::RebootUtil::RebootNow(
           chromecast::RebootShlib::CRASH_UPLOADER);
-
-    if (successful) {
-      LOG(INFO) << "Dump files successfully managed.";
-    } else {
-      LOG(ERROR) << "Critical MinidumpUploader failure.";
-      return EXIT_FAILURE;
-    }
 
     base::PlatformThread::Sleep(
         base::TimeDelta::FromSeconds(kUploadRetryIntervalDefault));

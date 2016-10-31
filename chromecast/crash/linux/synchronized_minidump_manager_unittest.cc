@@ -15,6 +15,7 @@
 
 #include <fstream>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -70,6 +71,9 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
 
   // Accessors for testing.
   bool HasDumps() { return SynchronizedMinidumpManager::HasDumps(); }
+  bool InitializeFileState() {
+    return SynchronizedMinidumpManager::InitializeFileState();
+  }
   const std::string& dump_path() { return dump_path_.value(); }
   const std::string& lockfile_path() { return lockfile_path_; }
   bool work_done() { return work_done_; }
@@ -120,7 +124,7 @@ class FakeSynchronizedMinidumpUploader : public SynchronizedMinidumpManager {
 class SleepySynchronizedMinidumpManagerSimple
     : public SynchronizedMinidumpManagerSimple {
  public:
-  SleepySynchronizedMinidumpManagerSimple(int sleep_duration_ms)
+  explicit SleepySynchronizedMinidumpManagerSimple(int sleep_duration_ms)
       : SynchronizedMinidumpManagerSimple(),
         sleep_duration_ms_(sleep_duration_ms) {}
   ~SleepySynchronizedMinidumpManagerSimple() override {}
@@ -174,19 +178,19 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
 };
 
 // Have |producer| generate |num_dumps| while checking there are no errors.
-void produce_dumps(SynchronizedMinidumpManagerSimple& producer, int num_dumps) {
+void produce_dumps(SynchronizedMinidumpManagerSimple* producer, int num_dumps) {
   for (int i = 0; i < num_dumps; ++i) {
-    ASSERT_TRUE(producer.DoWorkLocked());
-    ASSERT_TRUE(producer.add_entry_return_code());
+    ASSERT_TRUE(producer->DoWorkLocked());
+    ASSERT_TRUE(producer->add_entry_return_code());
   }
 }
 
 // Have |consumer| remove and process |num_dumps| while checking there are no
 // errors.
-void consume_dumps(FakeSynchronizedMinidumpUploader& consumer, int num_dumps) {
+void consume_dumps(FakeSynchronizedMinidumpUploader* consumer, int num_dumps) {
   for (int i = 0; i < num_dumps; ++i) {
-    ASSERT_TRUE(consumer.DoWorkLocked());
-    ASSERT_TRUE(consumer.can_upload_return_val());
+    ASSERT_TRUE(consumer->DoWorkLocked());
+    ASSERT_TRUE(consumer->can_upload_return_val());
   }
 }
 
@@ -392,8 +396,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
       base::MakeUnique<DumpInfo>("dump1", "log1", now, params));
 
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
-  produce_dumps(producer, max_dumps);
-  consume_dumps(uploader, max_dumps);
+  produce_dumps(&producer, max_dumps);
+  consume_dumps(&uploader, max_dumps);
 }
 
 TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
@@ -408,8 +412,8 @@ TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
       base::MakeUnique<DumpInfo>("dump1", "log1", now, params));
 
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
-  produce_dumps(producer, max_dumps + 1);
-  consume_dumps(uploader, max_dumps);
+  produce_dumps(&producer, max_dumps + 1);
+  consume_dumps(&uploader, max_dumps);
 
   // Should fail with too many dumps
   ASSERT_TRUE(uploader.DoWorkLocked());
@@ -431,8 +435,8 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
 
   for (int i = 0; i < iters; ++i) {
-    produce_dumps(producer, max_dumps + 1);
-    consume_dumps(uploader, max_dumps);
+    produce_dumps(&producer, max_dumps + 1);
+    consume_dumps(&uploader, max_dumps);
 
     // Should fail with too many dumps
     ASSERT_TRUE(uploader.DoWorkLocked());
@@ -443,7 +447,7 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
     base::Time now = base::Time::Now();
 
     // Half period shouldn't trigger reset
-    produce_dumps(producer, 1);
+    produce_dumps(&producer, 1);
     SetRatelimitPeriodStart(metadata_.value(), now - period / 2);
     ASSERT_TRUE(uploader.DoWorkLocked());
     ASSERT_FALSE(uploader.can_upload_return_val());
@@ -452,8 +456,8 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
     SetRatelimitPeriodStart(metadata_.value(), now - period);
   }
 
-  produce_dumps(producer, 1);
-  consume_dumps(uploader, 1);
+  produce_dumps(&producer, 1);
+  consume_dumps(&uploader, 1);
 }
 
 TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithoutDumps) {
@@ -475,13 +479,13 @@ TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithDumps) {
 
   const int kNumDumps = 3;
   for (int i = 0; i < kNumDumps; ++i) {
-    produce_dumps(producer, 1);
+    produce_dumps(&producer, 1);
     ASSERT_TRUE(uploader.HasDumps());
   }
 
   for (int i = 0; i < kNumDumps; ++i) {
     ASSERT_TRUE(uploader.HasDumps());
-    consume_dumps(uploader, 1);
+    consume_dumps(&uploader, 1);
   }
 
   ASSERT_FALSE(uploader.HasDumps());
@@ -499,6 +503,19 @@ TEST_F(SynchronizedMinidumpManagerTest, HasDumpsNotInLockFile) {
             WriteFile(path, kFileContents, sizeof(kFileContents)));
 
   ASSERT_TRUE(manager.HasDumps());
+}
+
+TEST_F(SynchronizedMinidumpManagerTest, InitializeFileState) {
+  SynchronizedMinidumpManagerSimple manager;
+  ASSERT_TRUE(base::DeleteFile(lockfile_, false));
+  ASSERT_TRUE(base::DeleteFile(metadata_, false));
+  ASSERT_FALSE(base::PathExists(lockfile_));
+  ASSERT_FALSE(base::PathExists(metadata_));
+  EXPECT_TRUE(manager.InitializeFileState());
+  base::File lockfile(lockfile_, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  EXPECT_TRUE(lockfile.IsValid());
+  base::File metadata(lockfile_, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  EXPECT_TRUE(metadata.IsValid());
 }
 
 }  // namespace chromecast

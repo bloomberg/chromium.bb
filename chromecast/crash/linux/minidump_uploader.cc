@@ -84,6 +84,7 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
                                   : kCrashServerProduction)),
       last_upload_ratelimited_(true),
       reboot_scheduled_(false),
+      filestate_initialized_(false),
       uploader_(uploader),
       pref_service_generator_(callback) {}
 
@@ -97,6 +98,10 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
 MinidumpUploader::~MinidumpUploader() {}
 
 bool MinidumpUploader::UploadAllMinidumps() {
+  // Create the lockfile if it doesn't exist.
+  if (!filestate_initialized_)
+    filestate_initialized_ = InitializeFileState();
+
   if (HasDumps())
     return AcquireLockAndDoWork();
 

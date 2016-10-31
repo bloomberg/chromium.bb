@@ -50,7 +50,7 @@ bool DumpsAreEqual(const DumpInfo& l, const DumpInfo& r) {
 
 class MockCastCrashdumpUploader : public CastCrashdumpUploader {
  public:
-  MockCastCrashdumpUploader(const CastCrashdumpData& data)
+  explicit MockCastCrashdumpUploader(const CastCrashdumpData& data)
       : CastCrashdumpUploader(data) {}
 
   MOCK_METHOD2(AddAttachment,
@@ -126,12 +126,30 @@ class MinidumpUploaderTest : public testing::Test {
 };
 
 TEST_F(MinidumpUploaderTest, AvoidsLockingWithoutDumps) {
+  class LockingTest : public SynchronizedMinidumpManager {
+   public:
+    explicit LockingTest(MinidumpUploader* minidump_uploader)
+        : minidump_uploader_(minidump_uploader) {}
+    ~LockingTest() override = default;
+
+    bool Run() { return AcquireLockAndDoWork(); }
+
+    // SynchronizedMinidumpManager implementation:
+    bool DoWork() override {
+      // This should fail if it attempts to get the lock.
+      return minidump_uploader_->UploadAllMinidumps();
+    }
+
+   private:
+    MinidumpUploader* const minidump_uploader_;
+  };
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
                             base::Bind(&CreateFakePrefService, true));
-
-  // Ensure the uploader did not initialize files unnecessarily.
+  // Will lock for the first run to initialize file state.
   ASSERT_TRUE(uploader.UploadAllMinidumps());
-  ASSERT_TRUE(base::IsDirectoryEmpty(minidump_dir_));
+
+  LockingTest lt(&uploader);
+  EXPECT_TRUE(lt.Run());
 }
 
 TEST_F(MinidumpUploaderTest, RemovesDumpsWithoutOptIn) {
@@ -368,6 +386,17 @@ TEST_F(MinidumpUploaderTest, SchedulesRebootWhenRatelimited) {
 
   ASSERT_TRUE(base::GetFileSize(lockfile_, &size));
   ASSERT_EQ(size, 0);
+}
+
+TEST_F(MinidumpUploaderTest, UploadInitializesFileState) {
+  MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
+                            base::Bind(&CreateFakePrefService, true));
+  ASSERT_TRUE(base::IsDirectoryEmpty(minidump_dir_));
+  ASSERT_TRUE(uploader.UploadAllMinidumps());
+  base::File lockfile(lockfile_, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  EXPECT_TRUE(lockfile.IsValid());
+  base::File metadata(lockfile_, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  EXPECT_TRUE(metadata.IsValid());
 }
 
 }  // namespace

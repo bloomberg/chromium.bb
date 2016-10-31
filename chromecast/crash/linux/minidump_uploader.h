@@ -64,6 +64,9 @@ class MinidumpUploader : public SynchronizedMinidumpManager {
   // Whether or not a reboot should be scheduled.
   bool reboot_scheduled_;
 
+  // True if file state has been initialized.
+  bool filestate_initialized_;
+
   // Used for injecting mocks/inducing different behavior in unittests.
   CastCrashdumpUploader* const uploader_;
   const PrefServiceGeneratorCallback pref_service_generator_;

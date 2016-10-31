@@ -102,6 +102,10 @@ class SynchronizedMinidumpManager {
   // Used to avoid unnecessary file locks in consumers.
   bool HasDumps();
 
+  // Ensures that the lockfile and metadata are in a valid state. This requires
+  // obtaining the lockfile. Will fail if lockfile already held.
+  bool InitializeFileState();
+
   // Cached path for the minidumps directory.
   const base::FilePath dump_path_;
 
