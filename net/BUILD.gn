@@ -1626,6 +1626,8 @@ source_set("net_fuzzer_test_support") {
 
   sources = [
     "base/fuzzer_test_support.cc",
+    "filter/fuzzed_source_stream.cc",
+    "filter/fuzzed_source_stream.h",
     "socket/fuzzed_socket.cc",
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
@@ -1844,6 +1846,18 @@ fuzzer_test("net_http_stream_parser_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_http_stream_parser_fuzzer.dict"
+}
+
+fuzzer_test("net_gzip_source_stream_fuzzer") {
+  sources = [
+    "filter/gzip_source_stream_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
 }
 
 fuzzer_test("net_ftp_ctrl_response_fuzzer") {
