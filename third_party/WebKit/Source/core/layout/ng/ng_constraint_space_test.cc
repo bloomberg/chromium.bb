@@ -13,6 +13,18 @@ namespace blink {
 
 namespace {
 
+NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
+                                            NGDirection direction,
+                                            NGPhysicalSize size) {
+  return new NGConstraintSpace(
+      writing_mode, direction,
+      new NGPhysicalConstraintSpace(
+          size, /* fixed_width */ true, /* fixed_height */ false,
+          /* width_direction_triggers_scrollbar */ true,
+          /* height_direction_triggers_scrollbar */ false, FragmentNone,
+          FragmentColumn, /* is_new_fc */ false));
+}
+
 TEST(NGConstraintSpaceTest, WritingMode) {
   NGPhysicalConstraintSpace* phy_space = new NGPhysicalConstraintSpace(
       NGPhysicalSize(LayoutUnit(200), LayoutUnit(100)), /* fixed_width */ true,
@@ -56,10 +68,9 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
-  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
-  auto* space =
-      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
 
+  auto* space =
+      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight, physical_size);
   auto* iterator = space->LayoutOpportunities();
 
   EXPECT_EQ("0,0 600x400", OpportunityToString(iterator->Next()));
@@ -70,14 +81,13 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
-  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
 
-  // Add a 100x100 exclusion in the top right corner.
-  physical_space->AddExclusion(new NGExclusion(
-      LayoutUnit(0), LayoutUnit(600), LayoutUnit(100), LayoutUnit(500)));
-
+  // Create a space with a 100x100 exclusion in the top right corner.
   auto* space =
-      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight, physical_size);
+  space->AddExclusion(new NGExclusion(LayoutUnit(0), LayoutUnit(600),
+                                      LayoutUnit(100), LayoutUnit(500)));
+
   auto* iterator = space->LayoutOpportunities();
 
   // First opportunity should be to the left of the exclusion.
@@ -94,14 +104,13 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
-  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
 
-  // Add a 100x100 exclusion in the top left corner.
-  physical_space->AddExclusion(new NGExclusion(LayoutUnit(0), LayoutUnit(100),
-                                               LayoutUnit(100), LayoutUnit(0)));
-
+  // Create a space with a 100x100 exclusion in the top left corner.
   auto* space =
-      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight, physical_size);
+  space->AddExclusion(new NGExclusion(LayoutUnit(0), LayoutUnit(100),
+                                      LayoutUnit(100), LayoutUnit(0)));
+
   auto* iterator = space->LayoutOpportunities();
 
   // First opportunity should be to the right of the exclusion.
@@ -141,16 +150,16 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
-  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
-
-  // Add exclusions
-  physical_space->AddExclusion(new NGExclusion(
-      LayoutUnit(200), LayoutUnit(250), LayoutUnit(300), LayoutUnit(150)));
-  physical_space->AddExclusion(new NGExclusion(
-      LayoutUnit(350), LayoutUnit(550), LayoutUnit(400), LayoutUnit(500)));
 
   auto* space =
-      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight, physical_size);
+
+  // Add exclusions
+  space->AddExclusion(new NGExclusion(LayoutUnit(200), LayoutUnit(250),
+                                      LayoutUnit(300), LayoutUnit(150)));
+  space->AddExclusion(new NGExclusion(LayoutUnit(350), LayoutUnit(550),
+                                      LayoutUnit(400), LayoutUnit(500)));
+
   auto* iterator = space->LayoutOpportunities();
 
   // 1st Start point
@@ -189,16 +198,16 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOrigin) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
-  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
-
-  // Add exclusions
-  physical_space->AddExclusion(new NGExclusion(
-      LayoutUnit(200), LayoutUnit(250), LayoutUnit(300), LayoutUnit(150)));
-  physical_space->AddExclusion(new NGExclusion(
-      LayoutUnit(350), LayoutUnit(550), LayoutUnit(400), LayoutUnit(500)));
 
   auto* space =
-      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight, physical_size);
+
+  // Add exclusions
+  space->AddExclusion(new NGExclusion(LayoutUnit(200), LayoutUnit(250),
+                                      LayoutUnit(300), LayoutUnit(150)));
+  space->AddExclusion(new NGExclusion(LayoutUnit(350), LayoutUnit(550),
+                                      LayoutUnit(400), LayoutUnit(500)));
+
   const NGLogicalOffset origin_point = {LayoutUnit(0), LayoutUnit(200)};
   auto* iterator = new NGLayoutOpportunityIterator(space, origin_point);
 
@@ -240,11 +249,10 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(100);
 
-  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
-  physical_space->AddExclusion(new NGExclusion(LayoutUnit(150), LayoutUnit(100),
-                                               LayoutUnit(200), LayoutUnit(0)));
   auto* space =
-      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight, physical_size);
+  space->AddExclusion(new NGExclusion(LayoutUnit(150), LayoutUnit(100),
+                                      LayoutUnit(200), LayoutUnit(0)));
 
   auto* iterator = space->LayoutOpportunities();
 
