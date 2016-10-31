@@ -263,6 +263,7 @@ Polymer({
 
   properties: {
     printerName: String,
+    dialogTitle: String,
   },
 
   /** @override */
@@ -303,6 +304,8 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    configuringDialogTitle: String,
 
     /** @private {string} */
     previousDialog_: String,
@@ -390,10 +393,14 @@ Polymer({
     this.switchDialog_(this.currentDialog_, AddPrinterDialogs.CONFIGURING,
                        'showConfiguringDialog_');
     if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
+      this.configuringDialogTitle =
+          loadTimeData.getString('addPrintersNearbyTitle');
       settings.CupsPrintersBrowserProxyImpl.getInstance().
           addCupsPrinter(this.selectedPrinter);
     } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY ||
                this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+      this.configuringDialogTitle =
+          loadTimeData.getString('addPrintersManuallyTitle');
       settings.CupsPrintersBrowserProxyImpl.getInstance().
           addCupsPrinter(this.newPrinter);
     }

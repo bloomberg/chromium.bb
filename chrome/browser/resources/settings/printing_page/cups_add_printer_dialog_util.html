@@ -77,6 +77,10 @@
 <dom-module id="add-printer-dialog">
   <template>
     <style include="settings-shared">
+      #dialog {
+        width: 525px;
+      }
+      
       #dialog .body {
         -webkit-padding-end: 0;
         -webkit-padding-start: 0;
@@ -96,7 +100,9 @@
     </style>
 
     <dialog is="cr-dialog" id="dialog">
-      <div class="title">$i18n{addPrinterTitle}</div>
+      <div class="title">
+        <content select=".dialog-title"></content>
+      </div>
       <div class="body">
         <content select=".dialog-body"></content>
       </div>

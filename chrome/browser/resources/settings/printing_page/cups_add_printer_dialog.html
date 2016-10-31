@@ -44,6 +44,7 @@
       }
     </style>
     <add-printer-dialog>
+      <div class="dialog-title">$i18n{addPrintersNearbyTitle}</div>
       <div class="dialog-body">
         <add-printer-list printers="[[discoveredPrinters]]"
             selected-printer="{{selectedPrinter}}">
@@ -132,6 +133,7 @@
       }
     </style>
     <add-printer-dialog>
+      <div class="dialog-title">$i18n{addPrintersManuallyTitle}</div>
       <div class="dialog-body">
         <div class="settings-box first two-line">
           <div class="start">
@@ -262,6 +264,7 @@
       }
     </style>
     <add-printer-dialog>
+      <div class="dialog-title">$i18n{addPrintersManuallyTitle}</div>
       <div class="dialog-body">
         <div class="settings-box first">
           $i18n{selectManufacturerModelMessage}
@@ -328,6 +331,7 @@
       }
     </style>
     <add-printer-dialog>
+      <div class="dialog-title">[[dialogTitle]]</div>
       <div class="dialog-body">
         <paper-spinner active></paper-spinner>
         <div id="configuringMessage">$i18n{printerConfiguringMessage}</div>
@@ -360,7 +364,8 @@
     <!-- Configuring Printer Dialog -->
     <template is="dom-if" if="[[showConfiguringDialog_]]" restamp>
       <add-printer-configuring-dialog
-          printer-name="[[getConfiguringPrinterName_()]]">
+          printer-name="[[getConfiguringPrinterName_()]]"
+          dialog-title="[[configuringDialogTitle]]">
       </add-printer-configuring-dialog>
     </template>
 
