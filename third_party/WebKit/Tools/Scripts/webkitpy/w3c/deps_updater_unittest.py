@@ -11,35 +11,6 @@ from webkitpy.common.system.filesystem_mock import MockFileSystem
 
 class DepsUpdaterTest(unittest.TestCase):
 
-    def test_is_manual_test_regular_test(self):
-        # TODO(qyearsley): Refactor these tests to re-use the MockFileSystem from the MockHost.
-        updater = DepsUpdater(MockHost())
-        fs = updater.host.filesystem
-        dirname = '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/a'
-        self.assertFalse(updater.is_manual_test(fs, dirname, 'test.html'))
-        self.assertFalse(updater.is_manual_test(fs, dirname, 'manual-foo.htm'))
-        self.assertFalse(updater.is_manual_test(fs, dirname, 'script.js'))
-        self.assertFalse(updater.is_manual_test(fs, dirname, 'foo'))
-
-    def test_is_manual_test_no_automation_file(self):
-        updater = DepsUpdater(MockHost())
-        fs = updater.host.filesystem
-        dirname = '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/a'
-        self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.html'))
-        self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.htm'))
-        self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.xht'))
-
-    def test_is_manual_test_with_corresponding_automation_file(self):
-        updater = DepsUpdater(MockHost())
-        imported_dir = '/mock-checkout/third_party/WebKit/LayoutTests/imported/'
-        fs = updater.host.filesystem
-        fs.files = {
-            imported_dir + 'wpt_automation/a/x-manual-input.js': '',
-            imported_dir + 'wpt_automation/a/y-manual-automation.js': '',
-        }
-        self.assertTrue(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'x-manual.html'))
-        self.assertFalse(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'y-manual.html'))
-
     def test_generate_email_list(self):
         updater = DepsUpdater(MockHost())
         changed_files = [

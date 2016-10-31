@@ -11,6 +11,168 @@
     "deleted_reftests": {},
     "items": {
       "manual": {
+        "fullscreen/api/document-exit-fullscreen-manual.html": [
+          {
+            "path": "fullscreen/api/document-exit-fullscreen-manual.html",
+            "url": "/fullscreen/api/document-exit-fullscreen-manual.html"
+          }
+        ],
+        "fullscreen/api/document-fullscreen-element-manual.html": [
+          {
+            "path": "fullscreen/api/document-fullscreen-element-manual.html",
+            "url": "/fullscreen/api/document-fullscreen-element-manual.html"
+          }
+        ],
+        "fullscreen/api/document-onfullscreenchange-manual.html": [
+          {
+            "path": "fullscreen/api/document-onfullscreenchange-manual.html",
+            "url": "/fullscreen/api/document-onfullscreenchange-manual.html"
+          }
+        ],
+        "fullscreen/api/element-ready-check-containing-iframe-manual.html": [
+          {
+            "path": "fullscreen/api/element-ready-check-containing-iframe-manual.html",
+            "url": "/fullscreen/api/element-ready-check-containing-iframe-manual.html"
+          }
+        ],
+        "fullscreen/api/element-ready-check-enabled-flag-not-set-manual.html": [
+          {
+            "path": "fullscreen/api/element-ready-check-enabled-flag-not-set-manual.html",
+            "url": "/fullscreen/api/element-ready-check-enabled-flag-not-set-manual.html"
+          }
+        ],
+        "fullscreen/api/element-ready-check-fullscreen-element-sibling-manual.html": [
+          {
+            "path": "fullscreen/api/element-ready-check-fullscreen-element-sibling-manual.html",
+            "url": "/fullscreen/api/element-ready-check-fullscreen-element-sibling-manual.html"
+          }
+        ],
+        "fullscreen/api/element-ready-check-fullscreen-iframe-child-manual.html": [
+          {
+            "path": "fullscreen/api/element-ready-check-fullscreen-iframe-child-manual.html",
+            "url": "/fullscreen/api/element-ready-check-fullscreen-iframe-child-manual.html"
+          }
+        ],
+        "fullscreen/api/element-ready-check-iframe-child-manual.html": [
+          {
+            "path": "fullscreen/api/element-ready-check-iframe-child-manual.html",
+            "url": "/fullscreen/api/element-ready-check-iframe-child-manual.html"
+          }
+        ],
+        "fullscreen/api/element-ready-check-not-in-document-manual.html": [
+          {
+            "path": "fullscreen/api/element-ready-check-not-in-document-manual.html",
+            "url": "/fullscreen/api/element-ready-check-not-in-document-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-non-top-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-non-top-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-non-top-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-svg-rect-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-svg-rect-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-svg-rect-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-svg-svg-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-svg-svg-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-svg-svg-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-top-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-top-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-top-manual.html"
+          }
+        ],
+        "fullscreen/model/remove-child-manual.html": [
+          {
+            "path": "fullscreen/model/remove-child-manual.html",
+            "url": "/fullscreen/model/remove-child-manual.html"
+          }
+        ],
+        "fullscreen/model/remove-first-manual.html": [
+          {
+            "path": "fullscreen/model/remove-first-manual.html",
+            "url": "/fullscreen/model/remove-first-manual.html"
+          }
+        ],
+        "fullscreen/model/remove-last-manual.html": [
+          {
+            "path": "fullscreen/model/remove-last-manual.html",
+            "url": "/fullscreen/model/remove-last-manual.html"
+          }
+        ],
+        "fullscreen/model/remove-parent-manual.html": [
+          {
+            "path": "fullscreen/model/remove-parent-manual.html",
+            "url": "/fullscreen/model/remove-parent-manual.html"
+          }
+        ],
+        "fullscreen/model/remove-single-manual.html": [
+          {
+            "path": "fullscreen/model/remove-single-manual.html",
+            "url": "/fullscreen/model/remove-single-manual.html"
+          }
+        ],
+        "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-locationbar-manual.html": [
+          {
+            "path": "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-locationbar-manual.html",
+            "url": "/html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-locationbar-manual.html"
+          }
+        ],
+        "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-menubar-manual.html": [
+          {
+            "path": "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-menubar-manual.html",
+            "url": "/html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-menubar-manual.html"
+          }
+        ],
+        "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-personalbar-manual.html": [
+          {
+            "path": "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-personalbar-manual.html",
+            "url": "/html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-personalbar-manual.html"
+          }
+        ],
+        "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-scrollbars-manual.html": [
+          {
+            "path": "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-scrollbars-manual.html",
+            "url": "/html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-scrollbars-manual.html"
+          }
+        ],
+        "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-statusbar-manual.html": [
+          {
+            "path": "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-statusbar-manual.html",
+            "url": "/html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-statusbar-manual.html"
+          }
+        ],
+        "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-toolbar-manual.html": [
+          {
+            "path": "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-toolbar-manual.html",
+            "url": "/html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-toolbar-manual.html"
+          }
+        ],
+        "html/semantics/embedded-content/media-elements/loading-the-media-resource/stable-state-dialogs-manual.html": [
+          {
+            "path": "html/semantics/embedded-content/media-elements/loading-the-media-resource/stable-state-dialogs-manual.html",
+            "url": "/html/semantics/embedded-content/media-elements/loading-the-media-resource/stable-state-dialogs-manual.html"
+          }
+        ],
+        "html/webappapis/system-state-and-capabilities/the-navigator-object/get-navigatorlanguage-manual.html": [
+          {
+            "path": "html/webappapis/system-state-and-capabilities/the-navigator-object/get-navigatorlanguage-manual.html",
+            "url": "/html/webappapis/system-state-and-capabilities/the-navigator-object/get-navigatorlanguage-manual.html"
+          }
+        ],
         "pointerevents/pointerevent_attributes_hoverable_pointers-manual.html": [
           {
             "path": "pointerevents/pointerevent_attributes_hoverable_pointers-manual.html",
@@ -333,6 +495,18 @@
           {
             "path": "pointerevents/pointerevent_touch-action-table-test_touch-manual.html",
             "url": "/pointerevents/pointerevent_touch-action-table-test_touch-manual.html"
+          }
+        ],
+        "uievents/keyboard/key-manual.css": [
+          {
+            "path": "uievents/keyboard/key-manual.css",
+            "url": "/uievents/keyboard/key-manual.css"
+          }
+        ],
+        "uievents/keyboard/key-manual.js": [
+          {
+            "path": "uievents/keyboard/key-manual.js",
+            "url": "/uievents/keyboard/key-manual.js"
           }
         ],
         "uievents/order-of-events/focus-events/focus-manual.html": [
@@ -5116,11 +5290,11 @@
         "console/console-is-a-namespace.any.js": [
           {
             "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.worker"
+            "url": "/console/console-is-a-namespace.any.html"
           },
           {
             "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.html"
+            "url": "/console/console-is-a-namespace.any.worker"
           }
         ],
         "custom-elements/CustomElementRegistry.html": [

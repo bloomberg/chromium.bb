@@ -193,11 +193,6 @@ class DepsUpdater(object):
 
         self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest_dir_name])
 
-        self.print_('## Deleting manual tests.')
-        files_to_delete = self.fs.files_under(dest_path, file_filter=self.is_manual_test)
-        for subpath in files_to_delete:
-            self.remove('LayoutTests', 'imported', subpath)
-
         self.print_('## Deleting any orphaned baselines.')
         previous_baselines = self.fs.files_under(dest_path, file_filter=self.is_baseline)
         for subpath in previous_baselines:
@@ -235,21 +230,6 @@ class DepsUpdater(object):
         else:
             self.print_('## Done: no changes to import.')
             return False
-
-    def is_manual_test(self, fs, dirname, basename):
-        """Returns True if the file should be removed because it's a manual test.
-
-        Tests with "-manual" in the name are not considered manual tests
-        if there is a corresponding JS automation file.
-        """
-        basename_without_extension, _ = self.fs.splitext(basename)
-        if not basename_without_extension.endswith('-manual'):
-            return False
-        dir_from_wpt = fs.relpath(dirname, self.path_from_webkit_base('LayoutTests', 'imported', 'wpt'))
-        automation_dir = self.path_from_webkit_base('LayoutTests', 'imported', 'wpt_automation', dir_from_wpt)
-        if fs.isfile(fs.join(automation_dir, '%s-automation.js' % basename_without_extension)):
-            return False
-        return True
 
     # Callback for FileSystem.files_under; not all arguments used - pylint: disable=unused-argument
     def is_baseline(self, fs, dirname, basename):
