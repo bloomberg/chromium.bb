@@ -313,6 +313,7 @@
 
     'chromium.perf': {
       'Android Builder': 'official_goma_minimal_symbols_android',
+      'Android Compile': 'official_goma_minimal_symbols_android',
       'Android arm64 Builder': 'official_goma_minimal_symbols_android_arm64',
       'Linux Builder': 'official_goma',
       'Mac Builder': 'official_goma',
