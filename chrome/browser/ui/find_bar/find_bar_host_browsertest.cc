@@ -406,8 +406,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanAndListsSearchable) {
                                       kFwd, kIgnoreCase, NULL, NULL));
 }
 
+#if defined(OS_WIN)
+#define MAYBE_LargePage DISABLED_LargePage
+#else
+#define MAYBE_LargePage LargePage
+#endif
 // Find in a very large page.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, LargePage) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_LargePage) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));
