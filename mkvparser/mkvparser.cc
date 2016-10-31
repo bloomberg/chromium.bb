@@ -1528,15 +1528,19 @@ long SeekHead::Parse() {
   if (pos != stop)
     return E_FILE_FORMAT_INVALID;
 
-  m_entries = new (std::nothrow) Entry[entry_count];
+  if (entry_count > 0) {
+    m_entries = new (std::nothrow) Entry[entry_count];
 
-  if (m_entries == NULL)
-    return -1;
+    if (m_entries == NULL)
+      return -1;
+  }
 
-  m_void_elements = new (std::nothrow) VoidElement[void_element_count];
+  if (void_element_count > 0) {
+    m_void_elements = new (std::nothrow) VoidElement[void_element_count];
 
-  if (m_void_elements == NULL)
-    return -1;
+    if (m_void_elements == NULL)
+      return -1;
+  }
 
   // now parse the entries and void elements
 
@@ -1555,14 +1559,14 @@ long SeekHead::Parse() {
     if (status < 0)  // error
       return status;
 
-    if (id == libwebm::kMkvSeek) {
+    if (id == libwebm::kMkvSeek && entry_count > 0) {
       if (ParseEntry(pReader, pos, size, pEntry)) {
         Entry& e = *pEntry++;
 
         e.element_start = idpos;
         e.element_size = (pos + size) - idpos;
       }
-    } else if (id == libwebm::kMkvVoid) {
+    } else if (id == libwebm::kMkvVoid && void_element_count > 0) {
       VoidElement& e = *pVoidElement++;
 
       e.element_start = idpos;
