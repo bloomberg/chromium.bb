@@ -1,182 +1,56 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+
 <script>
-description('For Bug 72939: Asynchronous SpellChecker should consider multiple requests.');
-
-jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
-
-var testRoot = document.createElement("div");
-document.body.insertBefore(testRoot, document.body.firstChild);
-
-var source1 = document.createElement("div");
-source1.innerHTML = "foo bar";
-testRoot.appendChild(source1);
-
-var source2 = document.createElement("div");
-source2.innerHTML = "zz apple orange";
-testRoot.appendChild(source2);
-
-function createInput(testRoot) {
-    var e = document.createElement('input');
-    e.setAttribute("type", "text");
-    testRoot.appendChild(e);
-
-    return e;
-}
-
-function createTextArea(testRoot) {
-    var e = document.createElement("textarea");
-    testRoot.appendChild(e);
-
-    return e;
-}
-
-function createContentEditable(testRoot) {
-    var e = document.createElement("div");
-    e.setAttribute("contentEditable", "true");
-    testRoot.appendChild(e);
-
-    return e;
-}
-
-var destinations = [
-    createInput(testRoot),
-    createTextArea(testRoot),
-    createContentEditable(testRoot),
-    createInput(testRoot),
-    createTextArea(testRoot),
-    createContentEditable(testRoot),
-    createInput(testRoot),
-    createTextArea(testRoot),
-    createContentEditable(testRoot),
-];
-
-var sel = window.getSelection();
-
-var tests = [];
-for (var i = 0; i < destinations.length; ++i) {
-    var t = function(i) {
-        return function() { verify(source2, destinations[i], ["zz"]); }
-    }(i);
-    tests.push(t);
-}
-
-function verifyIfAny()
-{
-    var next = tests.shift();
-    if (next) {
-        next();
-        return;
-    }
-
-    testRoot.style.display = "none";
-    finishJSTest();
-}
-
-function findFirstTextNode(node)
-{
-    function iterToFindFirstTextNode(node)
-    {
-        if (node instanceof Text)
-            return node;
-
-        var childNodes = node.childNodes;
-        for (var i = 0; i < childNodes.length; ++i) {
-            var n = iterToFindFirstTextNode(childNodes[i]);
-            if (n)
-                return n;
-        }
-
-        return null;
-    }
-
-
-    if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement)
-        return iterToFindFirstTextNode(internals.shadowRoot(node));
-    else
-        return iterToFindFirstTextNode(node);
-}
-
-function verifyMarker(node, expectedMarked)
-{
-    if (!window.testRunner || !window.internals)
-        return false;
-
-    var textNode = findFirstTextNode(node);
-
-    var num = internals.markerCountForNode(textNode, "spelling");
-    if (num != expectedMarked.length)
-        return false;
-    for (var i = 0; i < num; ++i) {
-        var range = internals.markerRangeForNode(textNode, "spelling", i);
-        if (range.toString() != expectedMarked[i])
-            return false;
-    }
-
-    return true;
-}
-
-function copyAndPaste(source, dest)
-{
-    sel.selectAllChildren(source);
-    document.execCommand("Copy");
-
-    if (dest instanceof HTMLInputElement || dest instanceof HTMLTextAreaElement) {
-        dest.value = "";
-        dest.focus();
+function pasteToAllChildren(text, container) {
+  const document = container.ownerDocument;
+  const selection = document.getSelection();
+  selection.setClipboardData(text);
+  container.childNodes.forEach(child => {
+    if (child.nodeName === 'DIV') {
+      selection.selectAllChildren(child);
     } else {
-        dest.innerHTML = "";
-        sel.selectAllChildren(dest);
+      child.value = '';
+      child.focus();
     }
-    document.execCommand("Paste");
+    document.execCommand('paste');
+  });
 }
 
-function verify(source, dest, expectedMarked)
-{
-    var nretry = 10;
-    var nsleep = 1;
-    function trial() {
-        var verified = verifyMarker(dest, expectedMarked);
-        if (verified) {
-            testPassed(dest.tagName + " has a marker on '" + source.innerHTML + "'");
-            verifyIfAny();
-            return;
-        }
-
-        nretry--;
-        if (0 == nretry) {
-            testFailed(dest.tagName + " should have a marker on for '" + source.innerHTML + "'");
-            verifyIfAny();
-            return;
-        }
-
-        nsleep *= 2;
-        window.setTimeout(trial, nsleep);
-    };
-    trial();
-}
-
-
-// paste "foo bar"
-for (var i = 0; i < destinations.length; ++i)
-    copyAndPaste(source1, destinations[i]);
-
-// paste "zz apple orange"
-for (var i = 0; i < destinations.length; ++i)
-    copyAndPaste(source2, destinations[i]);
-
-verifyIfAny();
-
-var successfullyParsed = true;
-
+spellcheck_test(
+  [
+    '<div id="container">',
+      '<input>',
+      '<textarea></textarea>',
+      '<div contenteditable></div>',
+      '<input>',
+      '<textarea></textarea>',
+      '<div contenteditable></div>',
+      '<input>',
+      '<textarea></textarea>',
+      '<div contenteditable></div>',
+    '</div>'
+  ].join(''),
+  document => {
+    const container = document.getElementById('container');
+    pasteToAllChildren('foo bar', container);
+    pasteToAllChildren('zz apple orange', container);
+  },
+  [
+    '<div id="container">',
+      '<input value="#zz# apple orange">',
+      '<textarea>#zz# apple orange</textarea>',
+      '<div contenteditable>#zz# apple orange</div>',
+      '<input value="#zz# apple orange">',
+      '<textarea>#zz# apple orange</textarea>',
+      '<div contenteditable>#zz# apple orange</div>',
+      '<input value="#zz# apple orange">',
+      '<textarea>#zz# apple orange</textarea>',
+      '<div contenteditable>#zz# apple orange</div>',
+    '</div>'
+  ].join(''),
+  'Spellchecker handles multiple requests.');
 </script>
-</body>
-</html>
