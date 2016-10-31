@@ -834,10 +834,11 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   // replicated correctly.
   replication_state.origin = url::Origin();
   TestRenderFrame* child_frame2 = static_cast<TestRenderFrame*>(
-      RenderFrame::FromWebFrame(web_frame->lastChild()));
+      RenderFrame::FromWebFrame(web_frame->firstChild()->nextSibling()));
   child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);
-  EXPECT_TRUE(web_frame->lastChild()->isWebRemoteFrame());
-  EXPECT_TRUE(web_frame->lastChild()->getSecurityOrigin().isUnique());
+  EXPECT_TRUE(web_frame->firstChild()->nextSibling()->isWebRemoteFrame());
+  EXPECT_TRUE(
+      web_frame->firstChild()->nextSibling()->getSecurityOrigin().isUnique());
 }
 
 // Test for https://crbug.com/568676, where a parent detaches a remote child

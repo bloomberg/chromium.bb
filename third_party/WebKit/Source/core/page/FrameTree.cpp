@@ -123,12 +123,6 @@ Frame* FrameTree::top() const {
   return candidate ? candidate : m_thisFrame.get();
 }
 
-Frame* FrameTree::previousSibling() const {
-  if (!m_thisFrame->client())
-    return nullptr;
-  return m_thisFrame->client()->previousSibling();
-}
-
 Frame* FrameTree::nextSibling() const {
   if (!m_thisFrame->client())
     return nullptr;
@@ -139,12 +133,6 @@ Frame* FrameTree::firstChild() const {
   if (!m_thisFrame->client())
     return nullptr;
   return m_thisFrame->client()->firstChild();
-}
-
-Frame* FrameTree::lastChild() const {
-  if (!m_thisFrame->client())
-    return nullptr;
-  return m_thisFrame->client()->lastChild();
 }
 
 bool FrameTree::uniqueNameExists(const String& uniqueNameCandidate) const {
@@ -226,9 +214,9 @@ String FrameTree::generateFramePosition(Frame* child) const {
 
   while (child->tree().parent()) {
     int numberOfSiblingsBeforeChild = 0;
-    Frame* sibling = child->tree().previousSibling();
-    while (sibling) {
-      sibling = sibling->tree().previousSibling();
+    Frame* sibling = child->tree().parent()->tree().firstChild();
+    while (sibling != child) {
+      sibling = sibling->tree().nextSibling();
       numberOfSiblingsBeforeChild++;
     }
 
@@ -403,15 +391,6 @@ unsigned FrameTree::childCount() const {
   return count;
 }
 
-Frame* FrameTree::child(const AtomicString& name) const {
-  for (Frame* child = firstChild(); child;
-       child = child->tree().nextSibling()) {
-    if (child->tree().name() == name)
-      return child;
-  }
-  return nullptr;
-}
-
 Frame* FrameTree::find(const AtomicString& name) const {
   if (name == "_self" || name == "_current" || name.isEmpty())
     return m_thisFrame;
@@ -507,42 +486,6 @@ Frame* FrameTree::traverseNext(const Frame* stayWithin) const {
   }
 
   return nullptr;
-}
-
-Frame* FrameTree::traverseNextWithWrap(bool wrap) const {
-  if (Frame* result = traverseNext())
-    return result;
-
-  if (wrap)
-    return m_thisFrame->page()->mainFrame();
-
-  return nullptr;
-}
-
-Frame* FrameTree::traversePreviousWithWrap(bool wrap) const {
-  // FIXME: besides the wrap feature, this is just the traversePreviousNode
-  // algorithm
-
-  if (Frame* prevSibling = previousSibling())
-    return prevSibling->tree().deepLastChild();
-  if (Frame* parentFrame = parent())
-    return parentFrame;
-
-  // no siblings, no parent, self==top
-  if (wrap)
-    return deepLastChild();
-
-  // Top view is always the last one in this ordering, so prev is nil without
-  // wrap.
-  return nullptr;
-}
-
-Frame* FrameTree::deepLastChild() const {
-  Frame* result = m_thisFrame;
-  for (Frame* last = lastChild(); last; last = last->tree().lastChild())
-    result = last;
-
-  return result;
 }
 
 DEFINE_TRACE(FrameTree) {

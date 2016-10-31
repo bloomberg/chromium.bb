@@ -389,8 +389,7 @@ blink::WebDocument PhishingDOMFeatureExtractor::GetNextDocument() {
   blink::WebFrame* frame = cur_document_.frame();
   // Advance to the next frame that contains a document, with no wrapping.
   if (frame) {
-    for (frame = frame->traverseNext(false); frame;
-         frame = frame->traverseNext(false)) {
+    for (frame = frame->traverseNext(); frame; frame = frame->traverseNext()) {
       if (!frame->document().isNull()) {
         return frame->document();
       }

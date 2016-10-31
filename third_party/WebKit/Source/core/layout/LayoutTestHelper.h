@@ -82,7 +82,6 @@ class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
   }
 
   Frame* firstChild() const override { return m_child.get(); }
-  Frame* lastChild() const override { return m_child.get(); }
 
   void setChild(Frame* child) { m_child = child; }
 

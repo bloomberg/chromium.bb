@@ -87,20 +87,12 @@ Frame* RemoteFrameClientImpl::top() const {
   return toCoreFrame(m_webFrame->top());
 }
 
-Frame* RemoteFrameClientImpl::previousSibling() const {
-  return toCoreFrame(m_webFrame->previousSibling());
-}
-
 Frame* RemoteFrameClientImpl::nextSibling() const {
   return toCoreFrame(m_webFrame->nextSibling());
 }
 
 Frame* RemoteFrameClientImpl::firstChild() const {
   return toCoreFrame(m_webFrame->firstChild());
-}
-
-Frame* RemoteFrameClientImpl::lastChild() const {
-  return toCoreFrame(m_webFrame->lastChild());
 }
 
 void RemoteFrameClientImpl::frameFocused() const {

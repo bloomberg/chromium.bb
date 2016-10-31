@@ -225,21 +225,14 @@ class WebFrame {
   // Returns the top-most frame in the hierarchy containing this frame.
   BLINK_EXPORT WebFrame* top() const;
 
-  // Returns the first/last child frame.
+  // Returns the first child frame.
   BLINK_EXPORT WebFrame* firstChild() const;
-  BLINK_EXPORT WebFrame* lastChild() const;
 
-  // Returns the previous/next sibling frame.
-  BLINK_EXPORT WebFrame* previousSibling() const;
+  // Returns the next sibling frame.
   BLINK_EXPORT WebFrame* nextSibling() const;
 
-  // Returns the previous/next frame in "frame traversal order",
-  // optionally wrapping around.
-  BLINK_EXPORT WebFrame* traversePrevious(bool wrap) const;
-  BLINK_EXPORT WebFrame* traverseNext(bool wrap) const;
-
-  // Returns the child frame identified by the given name.
-  BLINK_EXPORT WebFrame* findChildByName(const WebString& name) const;
+  // Returns the next frame in "frame traversal order".
+  BLINK_EXPORT WebFrame* traverseNext() const;
 
   // Content ------------------------------------------------------------
 
@@ -489,6 +482,7 @@ class WebFrame {
  private:
 #if BLINK_IMPLEMENTATION
   friend class OpenedFrameTracker;
+  friend class WebFrameTest;
 
   static void traceFrame(Visitor*, WebFrame*);
   static void traceFrame(InlinedGlobalMarkingVisitor, WebFrame*);

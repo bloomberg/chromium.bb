@@ -281,6 +281,23 @@ class WebFrameTest : public ::testing::Test {
     frame.document()->view()->updateAllLifecyclePhases();
   }
 
+  WebFrame* lastChild(WebFrame* frame) { return frame->m_lastChild; }
+  WebFrame* previousSibling(WebFrame* frame) {
+    return frame->m_previousSibling;
+  }
+  void swapAndVerifyFirstChildConsistency(const char* const message,
+                                          WebFrame* parent,
+                                          WebFrame* newChild);
+  void swapAndVerifyMiddleChildConsistency(const char* const message,
+                                           WebFrame* parent,
+                                           WebFrame* newChild);
+  void swapAndVerifyLastChildConsistency(const char* const message,
+                                         WebFrame* parent,
+                                         WebFrame* newChild);
+  void swapAndVerifySubframeConsistency(const char* const message,
+                                        WebFrame* parent,
+                                        WebFrame* newChild);
+
   std::string m_baseURL;
   std::string m_notBaseURL;
   std::string m_chromeURL;
@@ -4520,7 +4537,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
     frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
                                                  options, true);
 
@@ -4583,7 +4600,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
     frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
                                                  options, true);
 
@@ -4592,7 +4609,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   mainFrame->stopFinding(WebLocalFrame::StopFindActionClearSelection);
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
     frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
                                                  options, true);
 
@@ -4607,7 +4624,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
     frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchTextNew,
                                                  options, true);
 
@@ -4634,7 +4651,7 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame) {
   WebString searchText = WebString::fromUTF8(kFindString);
   WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
   WebLocalFrameImpl* secondFrame =
-      toWebLocalFrameImpl(mainFrame->traverseNext(false));
+      toWebLocalFrameImpl(mainFrame->traverseNext());
 
   // Detach the frame before finding.
   removeElementById(mainFrame, "frame");
@@ -4648,7 +4665,7 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
     frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
                                                  options, true);
 
@@ -4674,7 +4691,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings) {
   WebString searchText = WebString::fromUTF8(kFindString);
   WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
 
-  for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+  for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext())
     EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText,
                                                options, false));
 
@@ -4687,7 +4704,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
     frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
                                                  options, true);
 
@@ -4713,7 +4730,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings) {
   WebString searchText = WebString::fromUTF8(kFindString);
   WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
 
-  for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+  for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext())
     EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText,
                                                options, false));
 
@@ -4723,7 +4740,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
     frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
                                                  options, true);
 
@@ -4753,9 +4770,9 @@ TEST_P(ParameterizedWebFrameTest, ResetMatchCount) {
   WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
 
   // Check that child frame exists.
-  EXPECT_TRUE(!!mainFrame->traverseNext(false));
+  EXPECT_TRUE(!!mainFrame->traverseNext());
 
-  for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+  for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext())
     EXPECT_FALSE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText,
                                                 options, false));
 
@@ -7867,8 +7884,8 @@ TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnVisibleFrames) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   WebViewImpl* webViewImpl =
       webViewHelper.initializeAndLoad(m_baseURL + "visible_frames.html");
-  for (WebFrame* frame = webViewImpl->mainFrameImpl()->traverseNext(false);
-       frame; frame = frame->traverseNext(false)) {
+  for (WebFrame* frame = webViewImpl->mainFrameImpl()->traverseNext(); frame;
+       frame = frame->traverseNext()) {
     EXPECT_TRUE(frame->hasVisibleContent());
   }
 }
@@ -7878,8 +7895,8 @@ TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnHiddenFrames) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   WebViewImpl* webViewImpl =
       webViewHelper.initializeAndLoad(m_baseURL + "hidden_frames.html");
-  for (WebFrame* frame = webViewImpl->mainFrameImpl()->traverseNext(false);
-       frame; frame = frame->traverseNext(false)) {
+  for (WebFrame* frame = webViewImpl->mainFrameImpl()->traverseNext(); frame;
+       frame = frame->traverseNext()) {
     EXPECT_FALSE(frame->hasVisibleContent());
   }
 }
@@ -8261,17 +8278,17 @@ TEST_F(WebFrameTest, SwapMainFrameWhileLoading) {
                                   &frameClient);
 }
 
-void swapAndVerifyFirstChildConsistency(const char* const message,
-                                        WebFrame* parent,
-                                        WebFrame* newChild) {
+void WebFrameTest::swapAndVerifyFirstChildConsistency(const char* const message,
+                                                      WebFrame* parent,
+                                                      WebFrame* newChild) {
   SCOPED_TRACE(message);
   parent->firstChild()->swap(newChild);
 
   EXPECT_EQ(newChild, parent->firstChild());
   EXPECT_EQ(newChild->parent(), parent);
   EXPECT_EQ(newChild,
-            parent->lastChild()->previousSibling()->previousSibling());
-  EXPECT_EQ(newChild->nextSibling(), parent->lastChild()->previousSibling());
+            parent->m_lastChild->m_previousSibling->m_previousSibling);
+  EXPECT_EQ(newChild->nextSibling(), parent->m_lastChild->m_previousSibling);
 }
 
 TEST_F(WebFrameSwapTest, SwapFirstChild) {
@@ -8300,19 +8317,20 @@ TEST_F(WebFrameSwapTest, SwapFirstChild) {
   remoteFrame->close();
 }
 
-void swapAndVerifyMiddleChildConsistency(const char* const message,
-                                         WebFrame* parent,
-                                         WebFrame* newChild) {
+void WebFrameTest::swapAndVerifyMiddleChildConsistency(
+    const char* const message,
+    WebFrame* parent,
+    WebFrame* newChild) {
   SCOPED_TRACE(message);
   parent->firstChild()->nextSibling()->swap(newChild);
 
   EXPECT_EQ(newChild, parent->firstChild()->nextSibling());
-  EXPECT_EQ(newChild, parent->lastChild()->previousSibling());
+  EXPECT_EQ(newChild, parent->m_lastChild->m_previousSibling);
   EXPECT_EQ(newChild->parent(), parent);
   EXPECT_EQ(newChild, parent->firstChild()->nextSibling());
-  EXPECT_EQ(newChild->previousSibling(), parent->firstChild());
-  EXPECT_EQ(newChild, parent->lastChild()->previousSibling());
-  EXPECT_EQ(newChild->nextSibling(), parent->lastChild());
+  EXPECT_EQ(newChild->m_previousSibling, parent->firstChild());
+  EXPECT_EQ(newChild, parent->m_lastChild->m_previousSibling);
+  EXPECT_EQ(newChild->nextSibling(), parent->m_lastChild);
 }
 
 TEST_F(WebFrameSwapTest, SwapMiddleChild) {
@@ -8342,16 +8360,16 @@ TEST_F(WebFrameSwapTest, SwapMiddleChild) {
   remoteFrame->close();
 }
 
-void swapAndVerifyLastChildConsistency(const char* const message,
-                                       WebFrame* parent,
-                                       WebFrame* newChild) {
+void WebFrameTest::swapAndVerifyLastChildConsistency(const char* const message,
+                                                     WebFrame* parent,
+                                                     WebFrame* newChild) {
   SCOPED_TRACE(message);
-  parent->lastChild()->swap(newChild);
+  lastChild(parent)->swap(newChild);
 
-  EXPECT_EQ(newChild, parent->lastChild());
+  EXPECT_EQ(newChild, lastChild(parent));
   EXPECT_EQ(newChild->parent(), parent);
   EXPECT_EQ(newChild, parent->firstChild()->nextSibling()->nextSibling());
-  EXPECT_EQ(newChild->previousSibling(), parent->firstChild()->nextSibling());
+  EXPECT_EQ(newChild->m_previousSibling, parent->firstChild()->nextSibling());
 }
 
 TEST_F(WebFrameSwapTest, SwapLastChild) {
@@ -8380,16 +8398,16 @@ TEST_F(WebFrameSwapTest, SwapLastChild) {
   remoteFrame->close();
 }
 
-void swapAndVerifySubframeConsistency(const char* const message,
-                                      WebFrame* oldFrame,
-                                      WebFrame* newFrame) {
+void WebFrameTest::swapAndVerifySubframeConsistency(const char* const message,
+                                                    WebFrame* oldFrame,
+                                                    WebFrame* newFrame) {
   SCOPED_TRACE(message);
 
   EXPECT_TRUE(oldFrame->firstChild());
   oldFrame->swap(newFrame);
 
   EXPECT_FALSE(newFrame->firstChild());
-  EXPECT_FALSE(newFrame->lastChild());
+  EXPECT_FALSE(newFrame->m_lastChild);
 }
 
 TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren) {
@@ -8486,7 +8504,7 @@ TEST_F(WebFrameSwapTest, SwapInitializesGlobal) {
 
   FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
   WebRemoteFrame* remoteFrame = remoteClient.frame();
-  mainFrame()->lastChild()->swap(remoteFrame);
+  WebFrameTest::lastChild(mainFrame())->swap(remoteFrame);
   remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
   v8::Local<v8::Value> remoteWindowTop =
       mainFrame()->executeScriptAndReturnValue(WebScriptSource("saved.top"));
@@ -8510,7 +8528,7 @@ TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable) {
 
   FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
   WebRemoteFrame* remoteFrame = remoteClient.frame();
-  mainFrame()->lastChild()->swap(remoteFrame);
+  lastChild(mainFrame())->swap(remoteFrame);
   remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
   v8::Local<v8::Value> remoteWindow =
       mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2]"));
@@ -8528,7 +8546,7 @@ TEST_F(WebFrameSwapTest, RemoteFrameLengthAccess) {
 
   FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
   WebRemoteFrame* remoteFrame = remoteClient.frame();
-  mainFrame()->lastChild()->swap(remoteFrame);
+  lastChild(mainFrame())->swap(remoteFrame);
   remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
   v8::Local<v8::Value> remoteWindowLength =
       mainFrame()->executeScriptAndReturnValue(
@@ -8547,7 +8565,7 @@ TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess) {
   // a named property doesn't crash.
   FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
   WebRemoteFrame* remoteFrame = remoteClient.frame();
-  mainFrame()->lastChild()->swap(remoteFrame);
+  lastChild(mainFrame())->swap(remoteFrame);
   remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
   v8::Local<v8::Value> remoteWindowProperty =
       mainFrame()->executeScriptAndReturnValue(
@@ -9232,18 +9250,18 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling) {
       FrameTestHelpers::createLocalChild(parent, "name1"));
 
   EXPECT_EQ(firstFrame, parent->firstChild());
-  EXPECT_EQ(nullptr, firstFrame->previousSibling());
+  EXPECT_EQ(nullptr, previousSibling(firstFrame));
   EXPECT_EQ(secondFrame, firstFrame->nextSibling());
 
-  EXPECT_EQ(firstFrame, secondFrame->previousSibling());
+  EXPECT_EQ(firstFrame, previousSibling(secondFrame));
   EXPECT_EQ(thirdFrame, secondFrame->nextSibling());
 
-  EXPECT_EQ(secondFrame, thirdFrame->previousSibling());
+  EXPECT_EQ(secondFrame, previousSibling(thirdFrame));
   EXPECT_EQ(fourthFrame, thirdFrame->nextSibling());
 
-  EXPECT_EQ(thirdFrame, fourthFrame->previousSibling());
+  EXPECT_EQ(thirdFrame, previousSibling(fourthFrame));
   EXPECT_EQ(nullptr, fourthFrame->nextSibling());
-  EXPECT_EQ(fourthFrame, parent->lastChild());
+  EXPECT_EQ(fourthFrame, lastChild(parent));
 
   EXPECT_EQ(parent, firstFrame->parent());
   EXPECT_EQ(parent, secondFrame->parent());
@@ -9796,7 +9814,7 @@ class WebFrameVisibilityChangeTest : public WebFrameTest {
   }
 
   void swapLocalFrameToRemoteFrame() {
-    mainFrame()->lastChild()->swap(remoteFrame());
+    lastChild(mainFrame())->swap(remoteFrame());
     remoteFrame()->setReplicatedOrigin(SecurityOrigin::createUnique());
   }
 

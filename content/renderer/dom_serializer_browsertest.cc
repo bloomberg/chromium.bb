@@ -128,7 +128,7 @@ class DomSerializerTests : public ContentBrowserTest,
 
   WebFrame* FindSubFrameByURL(const GURL& url) {
     for (WebFrame* frame = GetWebView()->mainFrame(); frame;
-        frame = frame->traverseNext(false)) {
+         frame = frame->traverseNext()) {
       if (GURL(frame->document().url()) == url)
         return frame;
     }

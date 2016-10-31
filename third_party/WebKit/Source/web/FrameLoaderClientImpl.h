@@ -82,10 +82,8 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
   void setOpener(Frame*) override;
   Frame* parent() const override;
   Frame* top() const override;
-  Frame* previousSibling() const override;
   Frame* nextSibling() const override;
   Frame* firstChild() const override;
-  Frame* lastChild() const override;
   void willBeDetached() override;
   void detached(FrameDetachType) override;
   void dispatchWillSendRequest(ResourceRequest&) override;

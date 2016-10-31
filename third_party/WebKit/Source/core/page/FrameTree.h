@@ -56,17 +56,12 @@ class CORE_EXPORT FrameTree final {
 
   Frame* parent() const;
   Frame* top() const;
-  Frame* previousSibling() const;
   Frame* nextSibling() const;
   Frame* firstChild() const;
-  Frame* lastChild() const;
 
   bool isDescendantOf(const Frame* ancestor) const;
-  Frame* traversePreviousWithWrap(bool) const;
   Frame* traverseNext(const Frame* stayWithin = nullptr) const;
-  Frame* traverseNextWithWrap(bool) const;
 
-  Frame* child(const AtomicString& name) const;
   Frame* find(const AtomicString& name) const;
   unsigned childCount() const;
 
@@ -82,8 +77,6 @@ class CORE_EXPORT FrameTree final {
       const AtomicString& fallbackName = nullAtom) const;
 
  private:
-  Frame* deepLastChild() const;
-
   // Returns true if one of frames in the tree already has unique name equal
   // to |uniqueNameCandidate|.
   bool uniqueNameExists(const String& uniqueNameCandidate) const;

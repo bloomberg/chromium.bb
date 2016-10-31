@@ -51,7 +51,7 @@ void ContentWatcher::OnWatchPages(
       // TODO(dcheng): This should be rewritten to be frame-oriented. It
       // probably breaks declarative content for OOPI.
       for (blink::WebFrame* frame = view->GetWebView()->mainFrame(); frame;
-           frame = frame->traverseNext(/*wrap=*/false)) {
+           frame = frame->traverseNext()) {
         if (frame->isWebRemoteFrame())
           continue;
         frame->toWebLocalFrame()->document().watchCSSSelectors(css_selectors_);
@@ -100,7 +100,7 @@ void ContentWatcher::NotifyBrowserOfChange(
 
   std::set<base::StringPiece> transitive_selectors;
   for (blink::WebFrame* frame = top_frame; frame;
-       frame = frame->traverseNext(/*wrap=*/false)) {
+       frame = frame->traverseNext()) {
     if (top_origin.canAccess(frame->getSecurityOrigin())) {
       std::map<blink::WebFrame*, std::set<std::string> >::const_iterator
           frame_selectors = matching_selectors_.find(frame);

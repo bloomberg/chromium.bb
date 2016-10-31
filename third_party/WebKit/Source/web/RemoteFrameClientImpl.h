@@ -24,10 +24,8 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void setOpener(Frame*) override;
   Frame* parent() const override;
   Frame* top() const override;
-  Frame* previousSibling() const override;
   Frame* nextSibling() const override;
   Frame* firstChild() const override;
-  Frame* lastChild() const override;
   void frameFocused() const override;
 
   // RemoteFrameClient overrides:

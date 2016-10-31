@@ -2527,8 +2527,7 @@ void RenderViewImpl::RenderWidgetDidFlushPaint() {
     return;
 
   WebFrame* main_frame = webview()->mainFrame();
-  for (WebFrame* frame = main_frame; frame;
-       frame = frame->traverseNext(false)) {
+  for (WebFrame* frame = main_frame; frame; frame = frame->traverseNext()) {
     // TODO(nasko): This is a hack for the case in which the top-level
     // frame is being rendered in another process. It will not
     // behave correctly for out of process iframes.

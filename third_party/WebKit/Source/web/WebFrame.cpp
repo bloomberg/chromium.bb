@@ -228,37 +228,14 @@ WebFrame* WebFrame::firstChild() const {
   return m_firstChild;
 }
 
-WebFrame* WebFrame::lastChild() const {
-  return m_lastChild;
-}
-
-WebFrame* WebFrame::previousSibling() const {
-  return m_previousSibling;
-}
-
 WebFrame* WebFrame::nextSibling() const {
   return m_nextSibling;
 }
 
-WebFrame* WebFrame::traversePrevious(bool wrap) const {
+WebFrame* WebFrame::traverseNext() const {
   if (Frame* frame = toImplBase()->frame())
-    return fromFrame(frame->tree().traversePreviousWithWrap(wrap));
-  return 0;
-}
-
-WebFrame* WebFrame::traverseNext(bool wrap) const {
-  if (Frame* frame = toImplBase()->frame())
-    return fromFrame(frame->tree().traverseNextWithWrap(wrap));
-  return 0;
-}
-
-WebFrame* WebFrame::findChildByName(const WebString& name) const {
-  Frame* frame = toImplBase()->frame();
-  if (!frame)
-    return 0;
-  // FIXME: It's not clear this should ever be called to find a remote frame.
-  // Perhaps just disallow that completely?
-  return fromFrame(frame->tree().child(name));
+    return fromFrame(frame->tree().traverseNext());
+  return nullptr;
 }
 
 WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement) {

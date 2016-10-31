@@ -243,10 +243,8 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
 
   Frame* parent() const override { return 0; }
   Frame* top() const override { return 0; }
-  Frame* previousSibling() const override { return 0; }
   Frame* nextSibling() const override { return 0; }
   Frame* firstChild() const override { return 0; }
-  Frame* lastChild() const override { return 0; }
   void willBeDetached() override {}
   void detached(FrameDetachType) override {}
   void frameFocused() const override {}

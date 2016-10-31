@@ -322,20 +322,12 @@ Frame* FrameLoaderClientImpl::top() const {
   return toCoreFrame(m_webFrame->top());
 }
 
-Frame* FrameLoaderClientImpl::previousSibling() const {
-  return toCoreFrame(m_webFrame->previousSibling());
-}
-
 Frame* FrameLoaderClientImpl::nextSibling() const {
   return toCoreFrame(m_webFrame->nextSibling());
 }
 
 Frame* FrameLoaderClientImpl::firstChild() const {
   return toCoreFrame(m_webFrame->firstChild());
-}
-
-Frame* FrameLoaderClientImpl::lastChild() const {
-  return toCoreFrame(m_webFrame->lastChild());
 }
 
 void FrameLoaderClientImpl::willBeDetached() {

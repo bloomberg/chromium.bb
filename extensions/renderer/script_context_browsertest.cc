@@ -47,25 +47,32 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   frame->loadHTMLString(frame_html, top_url);
   content::FrameLoadWaiter(content::RenderFrame::FromWebFrame(frame)).Wait();
 
-  WebFrame* frame1 = frame->findChildByName("frame1");
+  WebFrame* frame1 = frame->firstChild();
   ASSERT_TRUE(frame1);
-  WebFrame* frame1_1 = frame1->findChildByName("frame1_1");
+  ASSERT_EQ("frame1", frame1->uniqueName());
+  WebFrame* frame1_1 = frame1->firstChild();
   ASSERT_TRUE(frame1_1);
-  WebFrame* frame1_2 = frame1->findChildByName("frame1_2");
+  ASSERT_EQ("frame1_1", frame1_1->uniqueName());
+  WebFrame* frame1_2 = frame1_1->nextSibling();
   ASSERT_TRUE(frame1_2);
-  WebFrame* frame2 = frame->findChildByName("frame2");
+  ASSERT_EQ("frame1_2", frame1_2->uniqueName());
+  WebFrame* frame2 = frame1->nextSibling();
   ASSERT_TRUE(frame2);
-  WebFrame* frame2_1 = frame2->findChildByName("frame2_1");
+  ASSERT_EQ("frame2", frame2->uniqueName());
+  WebFrame* frame2_1 = frame2->firstChild();
   ASSERT_TRUE(frame2_1);
-  WebFrame* frame3 = frame->findChildByName("frame3");
+  ASSERT_EQ("frame2_1", frame2_1->uniqueName());
+  WebFrame* frame3 = frame2->nextSibling();
   ASSERT_TRUE(frame3);
+  ASSERT_EQ("frame3", frame3->uniqueName());
 
   // Load a blank document in a frame from a different origin.
   frame3->loadHTMLString(frame3_html, different_url);
   content::FrameLoadWaiter(content::RenderFrame::FromWebFrame(frame3)).Wait();
 
-  WebFrame* frame3_1 = frame->findChildByName("frame3");
+  WebFrame* frame3_1 = frame3->firstChild();
   ASSERT_TRUE(frame3_1);
+  ASSERT_EQ("frame3_1", frame3_1->uniqueName());
 
   // Top-level frame
   EXPECT_EQ(GetEffectiveDocumentURL(frame), top_url);
