@@ -355,6 +355,12 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
                                         "yet. See https://goo.gl/J6ASzs"));
 #endif  // OS(MACOSX)
 
+  if (!gatt()->connected()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(NetworkError, kGATTServerNotConnected));
+  }
+
   WebBluetooth* webbluetooth =
       BluetoothSupplement::fromScriptState(scriptState);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
