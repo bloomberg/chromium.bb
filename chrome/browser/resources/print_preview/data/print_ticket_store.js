@@ -456,9 +456,6 @@ cr.define('print_preview', function() {
           }
         }
       }
-      if (this.scaling.isCapabilityAvailable() && this.scaling.isUserEdited()) {
-        cjt.print.scaling = {scaling: this.scaling.getValueAsNumber()};
-      }
       if (this.copies.isCapabilityAvailable() && this.copies.isUserEdited()) {
         cjt.print.copies = {copies: this.copies.getValueAsNumber()};
       }
