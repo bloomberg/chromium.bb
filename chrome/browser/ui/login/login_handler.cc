@@ -116,14 +116,14 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
 
   AddRef();  // matched by LoginHandler::ReleaseSoon().
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginHandler::AddObservers, this));
-
   const content::ResourceRequestInfo* info =
       ResourceRequestInfo::ForRequest(request);
   DCHECK(info);
   web_contents_getter_ = info->GetWebContentsGetterForRequest();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&LoginHandler::AddObservers, this));
 }
 
 void LoginHandler::OnRequestCancelled() {
@@ -338,7 +338,9 @@ void LoginHandler::AddObservers() {
                   content::NotificationService::AllBrowserContextsAndSources());
 
 #if !defined(OS_ANDROID)
-  dialog_helper_.reset(new AppModalDialogHelper(GetWebContentsForLogin()));
+  WebContents* requesting_contents = GetWebContentsForLogin();
+  if (requesting_contents)
+    dialog_helper_.reset(new AppModalDialogHelper(requesting_contents));
 #endif
 }
 
