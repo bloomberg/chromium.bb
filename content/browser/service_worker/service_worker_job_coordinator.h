@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
@@ -56,7 +57,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
   class JobQueue {
    public:
     JobQueue();
-    JobQueue(const JobQueue& other);
+    JobQueue(JobQueue&&);
     ~JobQueue();
 
     // Adds a job to the queue. If an identical job is already at the end of the
@@ -87,15 +88,15 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
     void ClearForShutdown();
 
    private:
-    std::deque<ServiceWorkerRegisterJobBase*> jobs_;
-  };
+    std::deque<std::unique_ptr<ServiceWorkerRegisterJobBase>> jobs_;
 
-  typedef std::map<GURL, JobQueue> RegistrationJobMap;
+    DISALLOW_COPY_AND_ASSIGN(JobQueue);
+  };
 
   // The ServiceWorkerContextCore object should always outlive the
   // job coordinator, the core owns the coordinator.
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  RegistrationJobMap job_queues_;
+  std::map<GURL, JobQueue> job_queues_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerJobCoordinator);
 };
