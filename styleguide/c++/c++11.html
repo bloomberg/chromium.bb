@@ -205,6 +205,14 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 </tr>
 
 <tr>
+<td>Noexcept Specifier</td>
+<td><code>void f() noexcept</code></td>
+<td>Specifies that a function will not throw exceptions</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/noexcept_spec">noexcept specifier</a></td>
+<td>Chromium compiles without exception support, but there are still cases where explicitly marking a function as <code>noexcept</code> may be necessary to compile, or for performance reasons. Usage should be rare. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Non-Static Class Member Initializers</td>
 <td><code>class C {<br />
 &nbsp;&nbsp;<i>type</i> <i>var</i> = <i>value</i>;<br />
@@ -609,6 +617,14 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 </tr>
 
 <tr>
+<td>Exceptions</td>
+<td><code>&lt;exception&gt;</code></td>
+<td>Enhancements to exception throwing and handling</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/exception">Standard library header &lt;exception&gt;</a></td>
+<td>Exceptions are banned by the <a href="https://google.github.io/styleguide/cppguide.html#Exceptions">Google Style Guide</a> and disabled in Chromium compiles. Note that the <code>noexcept</code> specifier is explicitly allowed above. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Regular Expressions</td>
 <td><code>&lt;regex&gt;</code></td>
 <td>A standard regular expressions library</td>
@@ -669,14 +685,6 @@ work in all our compilers yet.</p>
 <td>Attaches properties to declarations that specific compiler implementations may use.</td>
 <td><a href="http://www.codesynthesis.com/~boris/blog/2012/04/18/cxx11-generalized-attributes/">C++11 generalized attributes</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Exceptions</td>
-<td><code>noexcept</code> and features in <code>&lt;exception&gt;</code></td>
-<td>Enhancements to exception throwing and handling</td>
-<td><a href="http://en.cppreference.com/w/cpp/header/exception">Standard library header &lt;exception&gt;</a></td>
-<td>Exceptions are banned by the <a href="https://google.github.io/styleguide/cppguide.html#Exceptions">Google Style Guide</a> and disabled in Chromium compiles. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
 </tr>
 
 <tr>
