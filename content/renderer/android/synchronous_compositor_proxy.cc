@@ -313,8 +313,8 @@ void SynchronousCompositorProxy::DoDemandDrawSw(
   if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))
     return;
   SkCanvas canvas(bitmap);
-  canvas.concat(params.transform.matrix());
   canvas.clipRect(gfx::RectToSkRect(params.clip));
+  canvas.concat(params.transform.matrix());
 
   compositor_frame_sink_->DemandDrawSw(&canvas);
 }
