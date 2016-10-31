@@ -204,10 +204,11 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
     case WebCachePolicy::ReturnCacheDataDontLoad:
       load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
       break;
+    case WebCachePolicy::ReturnCacheDataIfValid:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      break;
     case WebCachePolicy::UseProtocolCachePolicy:
       break;
-    default:
-      NOTREACHED();
   }
 
   if (!request.allowStoredCredentials()) {

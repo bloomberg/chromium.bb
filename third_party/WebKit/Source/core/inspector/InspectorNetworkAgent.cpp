@@ -512,7 +512,8 @@ DEFINE_TRACE(InspectorNetworkAgent) {
 
 bool InspectorNetworkAgent::shouldBlockRequest(const ResourceRequest& request) {
   if (m_state->booleanProperty(NetworkAgentState::cacheDisabled, false) &&
-      request.getCachePolicy() == WebCachePolicy::ReturnCacheDataDontLoad) {
+      (request.getCachePolicy() == WebCachePolicy::ReturnCacheDataDontLoad ||
+       request.getCachePolicy() == WebCachePolicy::ReturnCacheDataIfValid)) {
     return true;
   }
 
