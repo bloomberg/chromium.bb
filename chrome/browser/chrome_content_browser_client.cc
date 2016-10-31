@@ -3018,6 +3018,8 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(
     id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;
   else if (name == content::kGpuServiceName)
     id = IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY;
+  else if (name == content::kPluginServiceName)
+    id = IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY;
   else if (name == content::kRendererServiceName)
     id = IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY;
   else if (name == content::kUtilityServiceName)

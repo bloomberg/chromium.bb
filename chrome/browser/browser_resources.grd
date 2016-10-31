@@ -605,6 +605,7 @@
       </if>
       <include name="IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY" file="chrome_content_browser_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY" file="chrome_content_gpu_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY" file="chrome_content_plugin_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY" file="chrome_content_renderer_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY" file="chrome_content_utility_manifest_overlay.json" type="BINDATA" />
     </includes>

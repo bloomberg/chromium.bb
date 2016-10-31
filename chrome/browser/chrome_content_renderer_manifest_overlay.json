@@ -1,6 +1,13 @@
 {
   "display_name": "Chrome Render Process",
   "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "browser": [
+          "mojom::ResourceUsageReporter"
+        ]
+      }
+    },
     "navigation:frame": {
       "provides": {
         "browser": [

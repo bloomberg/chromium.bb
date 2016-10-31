@@ -1,11 +1,9 @@
 {
-  "name": "service:content_gpu",
+  "name": "service:content_plugin",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "arc::mojom::VideoAcceleratorService",
-          "arc::mojom::VideoAcceleratorServiceClient",
           "mojom::ResourceUsageReporter"
         ]
       }

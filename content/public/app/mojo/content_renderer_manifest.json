@@ -10,7 +10,6 @@
           "content::mojom::FrameFactory",
           "content::mojom::RenderWidgetWindowTreeClientFactory",
           "IPC::mojom::ChannelBootstrap",
-          "mojom::ResourceUsageReporter",
           "visitedlink::mojom::VisitedLinkNotificationSink",
           "web_cache::mojom::WebCache"
         ],

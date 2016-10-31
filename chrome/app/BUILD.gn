@@ -370,6 +370,17 @@ if (use_aura) {
     ]
   }
 
+  service_manifest("chrome_content_plugin_manifest") {
+    name = "content_plugin"
+    output_name = "chrome_content_plugin"
+    source = "${root_out_dir}/Packages/content_plugin/manifest.json"
+    overlays =
+        [ "//chrome/browser/chrome_content_plugin_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:plugin_manifest",
+    ]
+  }
+
   service_manifest("chrome_content_renderer_manifest") {
     name = "content_renderer"
     output_name = "chrome_content_renderer"
@@ -396,6 +407,7 @@ if (use_aura) {
     data_deps = [
       ":chrome_content_browser_manifest",
       ":chrome_content_gpu_manifest",
+      ":chrome_content_plugin_manifest",
       ":chrome_content_renderer_manifest",
       ":chrome_content_utility_manifest",
     ]

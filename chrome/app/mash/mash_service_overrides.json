@@ -6,6 +6,9 @@
   "service:content_gpu": {
     "package_name": "chrome_content_gpu"
   },
+  "service:content_plugin": {
+    "package_name": "chrome_content_plugin"
+  },
   "service:content_renderer": {
     "package_name": "chrome_content_renderer"
   },
