@@ -469,6 +469,25 @@ def is_broken_repo_dir(repo_dir):
   return not path.exists(os.path.join(repo_dir, '.git', 'config'))
 
 
+def _maybe_break_locks(checkout_path):
+  """This removes all .lock files from this repo's .git directory.
+
+  In particular, this will cleanup index.lock files, as well as ref lock
+  files.
+  """
+  git_dir = os.path.join(checkout_path, '.git')
+  for dirpath, _, filenames in os.walk(git_dir):
+    for filename in filenames:
+      if filename.endswith('.lock'):
+        to_break = os.path.join(dirpath, filename)
+        print 'breaking lock: %s' % to_break
+        try:
+          os.remove(to_break)
+        except OSError as ex:
+          print 'FAILED to break lock: %s: %s' % (to_break, ex)
+          raise
+
+
 def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
   build_dir = os.getcwd()
   # Before we do anything, break all git_cache locks.
@@ -521,6 +540,18 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
         for ref in refs:
           refspec = '%s:%s' % (ref, ref.lstrip('+'))
           git('fetch', 'origin', refspec, cwd=sln_dir)
+
+        # Windows sometimes has trouble deleting files.
+        # This can make git commands that rely on locks fail.
+        # Try a few times in case Windows has trouble again (and again).
+        if sys.platform.startswith('win'):
+          tries = 3
+          while tries:
+            try:
+              _maybe_break_locks(sln_dir)
+              break
+            except Exception:
+              tries -= 1
 
         revision = get_target_revision(name, url, revisions) or 'HEAD'
         force_revision(sln_dir, revision)
