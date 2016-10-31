@@ -342,31 +342,20 @@ INSTANTIATE_TEST_CASE_P(
     WebRtcVideoQualityBrowserTest,
     testing::ValuesIn(kVideoConfigurations));
 
-// Video quality tests are flaky on Windows. See http://crbug.com/webrtc/6484.
-#if defined(OS_WIN)
-#define MAYBE_TestVideoQualityVp8 DISABLED_TestVideoQualityVp8
-#define MAYBE_TestVideoQualityVp9 DISABLED_TestVideoQualityVp9
-#define MAYBE_TestVideoQualityH264 DISABLED_TestVideoQualityH264
-#else
-#define MAYBE_TestVideoQualityVp8 MANUAL_TestVideoQualityVp8
-#define MAYBE_TestVideoQualityVp9 MANUAL_TestVideoQualityVp9
-#define MAYBE_TestVideoQualityH264 MANUAL_TestVideoQualityH264
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MAYBE_TestVideoQualityVp8) {
+                       MANUAL_TestVideoQualityVp8) {
   TestVideoQuality("VP8");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MAYBE_TestVideoQualityVp9) {
+                       MANUAL_TestVideoQualityVp9) {
   TestVideoQuality("VP9");
 }
 
 #if BUILDFLAG(RTC_USE_H264)
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MAYBE_TestVideoQualityH264) {
+                       MANUAL_TestVideoQualityH264) {
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
