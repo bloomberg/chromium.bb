@@ -51,15 +51,24 @@ int ProcUtil::CountOpenFds(int proc_fd) {
   CHECK(dir);
 
   int count = 0;
-  struct dirent e;
   struct dirent* de;
+#if defined(OS_NACL_NONSFI)
+  // NaCl has not implemented readdir.
+  struct dirent e;
   while (!readdir_r(dir.get(), &e, &de) && de) {
-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
+#else
+  // In all implementations of the C library that Chromium can run with,
+  // concurrent calls to readdir that specify different directory streams are
+  // thread-safe. This is the case here, since the directory stream is scoped to
+  // the current function. See https://codereview.chromium.org/2411833004/#msg3
+  for (de = readdir(dir.get()); de; de = readdir(dir.get())) {
+#endif
+    if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
       continue;
     }
 
     int fd_num;
-    CHECK(base::StringToInt(e.d_name, &fd_num));
+    CHECK(base::StringToInt(de->d_name, &fd_num));
     if (fd_num == proc_fd || fd_num == proc_self_fd) {
       continue;
     }
@@ -81,22 +90,31 @@ bool ProcUtil::HasOpenDirectory(int proc_fd) {
   ScopedDIR dir(fdopendir(proc_self_fd));
   CHECK(dir);
 
-  struct dirent e;
   struct dirent* de;
+#if defined(OS_NACL_NONSFI)
+  // NaCl has not implemented readdir.
+  struct dirent e;
   while (!readdir_r(dir.get(), &e, &de) && de) {
-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
+#else
+  // In all implementations of the C library that Chromium can run with,
+  // concurrent calls to readdir that specify different directory streams are
+  // thread-safe. This is the case here, since the directory stream is scoped to
+  // the current function. See https://codereview.chromium.org/2411833004/#msg3
+  for (de = readdir(dir.get()); de; de = readdir(dir.get())) {
+#endif
+    if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
       continue;
     }
 
     int fd_num;
-    CHECK(base::StringToInt(e.d_name, &fd_num));
+    CHECK(base::StringToInt(de->d_name, &fd_num));
     if (fd_num == proc_fd || fd_num == proc_self_fd) {
       continue;
     }
 
     struct stat s;
     // It's OK to use proc_self_fd here, fstatat won't modify it.
-    CHECK(fstatat(proc_self_fd, e.d_name, &s, 0) == 0);
+    CHECK(fstatat(proc_self_fd, de->d_name, &s, 0) == 0);
     if (S_ISDIR(s.st_mode)) {
       return true;
     }

@@ -34,18 +34,22 @@ bool SimpleIndexFile::TraverseCacheDirectory(
     PLOG(ERROR) << "opendir " << cache_path.value();
     return false;
   }
-  dirent entry, *result;
-  while (readdir_r(dir.get(), &entry, &result) == 0) {
-    if (!result)
-      return true;  // The traversal completed successfully.
-    const std::string file_name(result->d_name);
+  // In all implementations of the C library that Chromium can run with,
+  // concurrent calls to readdir that specify different directory streams are
+  // thread-safe. This is the case here, since the directory stream is scoped to
+  // the current function. See https://codereview.chromium.org/2411833004/#msg3
+  errno = 0;
+  for (dirent* entry = readdir(dir.get()); entry; entry = readdir(dir.get())) {
+    const std::string file_name(entry->d_name);
     if (file_name == "." || file_name == "..")
       continue;
     const base::FilePath file_path = cache_path.Append(
         base::FilePath(file_name));
     entry_file_callback.Run(file_path);
   }
-  PLOG(ERROR) << "readdir_r " << cache_path.value();
+  if (!errno)
+    return true;  // The traversal completed successfully.
+  PLOG(ERROR) << "readdir " << cache_path.value();
   return false;
 }
 
