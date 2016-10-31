@@ -4170,13 +4170,11 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
         transition_type | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   }
 
-  GURL request_url(request.url());
   GURL new_url;
   if (GetContentClient()->renderer()->WillSendRequest(
           frame,
           transition_type,
-          request_url,
-          request.firstPartyForCookies(),
+          request.url(),
           &new_url)) {
     request.setURL(WebURL(new_url));
   }

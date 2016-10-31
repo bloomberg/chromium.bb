@@ -210,16 +210,16 @@ bool ChromeExtensionsRendererClient::AllowPopup() {
 bool ChromeExtensionsRendererClient::WillSendRequest(
     blink::WebFrame* frame,
     ui::PageTransition transition_type,
-    const GURL& url,
+    const blink::WebURL& url,
     GURL* new_url) {
-  if (url.SchemeIs(extensions::kExtensionScheme) &&
-      !resource_request_policy_->CanRequestResource(url, frame,
+  if (url.protocolIs(extensions::kExtensionScheme) &&
+      !resource_request_policy_->CanRequestResource(GURL(url), frame,
                                                     transition_type)) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     return true;
   }
 
-  if (url.SchemeIs(extensions::kExtensionResourceScheme) &&
+  if (url.protocolIs(extensions::kExtensionResourceScheme) &&
       !resource_request_policy_->CanRequestExtensionResourceScheme(url,
                                                                    frame)) {
     *new_url = GURL(chrome::kExtensionResourceInvalidRequestURL);

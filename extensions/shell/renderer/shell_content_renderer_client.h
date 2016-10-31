@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "content/public/renderer/content_renderer_client.h"
 
+namespace blink {
+class WebURL;
+}  // namespace blink
+
 namespace extensions {
 
 class Dispatcher;
@@ -39,8 +43,7 @@ class ShellContentRendererClient : public content::ContentRendererClient {
       const base::FilePath& plugin_path) override;
   bool WillSendRequest(blink::WebFrame* frame,
                        ui::PageTransition transition_type,
-                       const GURL& url,
-                       const GURL& first_party_for_cookies,
+                       const blink::WebURL& url,
                        GURL* new_url) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   bool ShouldGatherSiteIsolationStats() const override;

@@ -48,6 +48,7 @@ class WebRTCPeerConnectionHandlerClient;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebThemeEngine;
+class WebURL;
 class WebURLResponse;
 class WebURLRequest;
 class WebWorkerContentSettingsClientProxy;
@@ -245,8 +246,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // |url|.  If the function returns true, the url is changed to |new_url|.
   virtual bool WillSendRequest(blink::WebFrame* frame,
                                ui::PageTransition transition_type,
-                               const GURL& url,
-                               const GURL& first_party_for_cookies,
+                               const blink::WebURL& url,
                                GURL* new_url);
 
   // Returns true if the request is associated with a document that is in

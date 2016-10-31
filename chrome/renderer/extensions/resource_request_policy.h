@@ -12,6 +12,7 @@ class GURL;
 
 namespace blink {
 class WebFrame;
+class WebURL;
 }
 
 namespace extensions {
@@ -34,7 +35,7 @@ class ResourceRequestPolicy {
 
   // Returns true if the chrome-extension-resource:// |resource_url| can be
   // requested from |frame_url|.
-  bool CanRequestExtensionResourceScheme(const GURL& resource_url,
+  bool CanRequestExtensionResourceScheme(const blink::WebURL& resource_url,
                                          blink::WebFrame* frame);
 
  private:

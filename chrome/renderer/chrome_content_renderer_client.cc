@@ -1121,11 +1121,10 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
 bool ChromeContentRendererClient::WillSendRequest(
     WebFrame* frame,
     ui::PageTransition transition_type,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
+    const blink::WebURL& url,
     GURL* new_url) {
-  // Check whether the request should be allowed. If not allowed, we reset the
-  // URL to something invalid to prevent the request and cause an error.
+// Check whether the request should be allowed. If not allowed, we reset the
+// URL to something invalid to prevent the request and cause an error.
 #if defined(ENABLE_EXTENSIONS)
   if (ChromeExtensionsRendererClient::GetInstance()->WillSendRequest(
           frame, transition_type, url, new_url)) {
@@ -1133,18 +1132,23 @@ bool ChromeContentRendererClient::WillSendRequest(
   }
 #endif
 
+  if (!url.protocolIs(chrome::kChromeSearchScheme))
+    return false;
+
   const content::RenderView* render_view =
       content::RenderView::FromWebView(frame->view());
   SearchBox* search_box = SearchBox::Get(render_view);
-  if (search_box && url.SchemeIs(chrome::kChromeSearchScheme)) {
+  if (search_box) {
+    // Note: this GURL copy could be avoided if host() were added to WebURL.
+    GURL gurl(url);
     SearchBox::ImageSourceType type = SearchBox::NONE;
-    if (url.host() == chrome::kChromeUIFaviconHost)
+    if (gurl.host_piece() == chrome::kChromeUIFaviconHost)
       type = SearchBox::FAVICON;
-    else if (url.host() == chrome::kChromeUILargeIconHost)
+    else if (gurl.host_piece() == chrome::kChromeUILargeIconHost)
       type = SearchBox::LARGE_ICON;
-    else if (url.host() == chrome::kChromeUIFallbackIconHost)
+    else if (gurl.host_piece() == chrome::kChromeUIFallbackIconHost)
       type = SearchBox::FALLBACK_ICON;
-    else if (url.host() == chrome::kChromeUIThumbnailHost)
+    else if (gurl.host_piece() == chrome::kChromeUIThumbnailHost)
       type = SearchBox::THUMB;
 
     if (type != SearchBox::NONE)

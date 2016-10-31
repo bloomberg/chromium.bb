@@ -18,6 +18,7 @@
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -114,16 +115,16 @@ bool ResourceRequestPolicy::CanRequestResource(
 }
 
 bool ResourceRequestPolicy::CanRequestExtensionResourceScheme(
-    const GURL& resource_url,
+    const blink::WebURL& resource_url,
     blink::WebFrame* frame) {
-  CHECK(resource_url.SchemeIs(kExtensionResourceScheme));
+  CHECK(resource_url.protocolIs(kExtensionResourceScheme));
 
   GURL frame_url = frame->document().url();
   if (!frame_url.is_empty() && !frame_url.SchemeIs(kExtensionScheme)) {
     std::string message = base::StringPrintf(
         "Denying load of %s. chrome-extension-resources:// can only be "
         "loaded from extensions.",
-      resource_url.spec().c_str());
+        resource_url.string().utf8().c_str());
     frame->addMessageToConsole(
         blink::WebConsoleMessage(blink::WebConsoleMessage::LevelError,
                                   blink::WebString::fromUTF8(message)));
