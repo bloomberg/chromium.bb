@@ -40,14 +40,12 @@ function test()
     embed.name = 1;
     embed.width = 1;
     embed.type = 1; // setting the type attribute should not effect the plugin once loaded
-    embed.src = 1; // setting the source attribute should not effect the plugin once loaded
 
     shouldBe("embed.getAttribute('align')", 1);
     shouldBe("embed.getAttribute('height')", 1);
     shouldBe("embed.getAttribute('name')", 1);
     shouldBe("embed.getAttribute('width')", 1);
     shouldBe("embed.getAttribute('type')", 1);
-    shouldBe("embed.getAttribute('src')", 1);
     shouldBe("typeof embed.postMessage", "function");
 
     print("----------");

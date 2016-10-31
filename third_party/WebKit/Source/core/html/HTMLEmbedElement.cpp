@@ -117,6 +117,14 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name,
       if (!m_imageLoader)
         m_imageLoader = HTMLImageLoader::create(this);
       m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
+    } else if (layoutObject()) {
+      // Check if this Embed can transition from potentially-active to active
+      if (fastHasAttribute(typeAttr)) {
+        setNeedsWidgetUpdate(true);
+        lazyReattachIfNeeded();
+      }
+    } else {
+      requestPluginCreationWithoutLayoutObjectIfPossible();
     }
   } else {
     HTMLPlugInElement::parseAttribute(name, oldValue, value);
