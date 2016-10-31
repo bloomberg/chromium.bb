@@ -22,9 +22,9 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/transient_window_client_observer.h"
+#include "ui/aura/mus/capture_synchronizer_delegate.h"
 #include "ui/aura/mus/drag_drop_controller_host.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_manager_delegate.h"
@@ -43,9 +43,9 @@ class Connector;
 }
 
 namespace aura {
+class CaptureSynchronizer;
 class DragDropControllerMus;
 class InFlightBoundsChange;
-class InFlightCaptureChange;
 class InFlightChange;
 class InFlightFocusChange;
 class InFlightPropertyChange;
@@ -76,10 +76,10 @@ using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
 class AURA_EXPORT WindowTreeClient
     : NON_EXPORTED_BASE(public ui::mojom::WindowTreeClient),
       NON_EXPORTED_BASE(public ui::mojom::WindowManager),
+      public CaptureSynchronizerDelegate,
       public DragDropControllerHost,
       public WindowManagerClient,
       public WindowTreeHostMusDelegate,
-      public client::CaptureClientObserver,
       public client::FocusChangeObserver,
       public client::TransientWindowClientObserver {
  public:
@@ -138,10 +138,6 @@ class AURA_EXPORT WindowTreeClient
   // Returns the root of this connection.
   std::set<Window*> GetRoots();
 
-  // Returns the Window with input capture; null if no window has requested
-  // input capture, or if another app has capture.
-  Window* GetCaptureWindow();
-
   // Returns the focused window; null if focus is not yet known or another app
   // is focused.
   Window* GetFocusedWindow();
@@ -172,7 +168,6 @@ class AURA_EXPORT WindowTreeClient
 
  private:
   friend class InFlightBoundsChange;
-  friend class InFlightCaptureChange;
   friend class InFlightFocusChange;
   friend class InFlightPropertyChange;
   friend class InFlightVisibleChange;
@@ -194,8 +189,6 @@ class AURA_EXPORT WindowTreeClient
   void SetFocusFromServer(WindowMus* window);
   void SetFocusFromServerImpl(client::FocusClient* focus_client,
                               WindowMus* window);
-
-  void SetCaptureFromServer(WindowMus* window);
 
   // Returns the oldest InFlightChange that matches |change|.
   InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
@@ -239,6 +232,9 @@ class AURA_EXPORT WindowTreeClient
 
   // Sets the ui::mojom::WindowTree implementation.
   void SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr);
+
+  // Called when the connection to the server is established.
+  void WindowTreeConnectionEstablished(ui::mojom::WindowTree* window_tree);
 
   // Called when the ui::mojom::WindowTree connection is lost, deletes this.
   void OnConnectionLost();
@@ -430,9 +426,6 @@ class AURA_EXPORT WindowTreeClient
   // Overriden from client::FocusChangeObserver:
   void OnWindowFocused(Window* gained_focus, Window* lost_focus) override;
 
-  // Overriden from client::CaptureClientObserver:
-  void OnCaptureChanged(Window* lost_capture, Window* gained_capture) override;
-
   // Overriden from WindowTreeHostMusDelegate:
   void SetRootWindowBounds(Window* window, gfx::Rect* bounds) override;
 
@@ -444,6 +437,9 @@ class AURA_EXPORT WindowTreeClient
 
   // Overriden from DragDropControllerHost:
   uint32_t CreateChangeIdForDrag(WindowMus* window) override;
+
+  // Overrided from CaptureSynchronizerDelegate:
+  uint32_t CreateChangeIdForCapture(WindowMus* window) override;
 
   // The one int in |cursor_location_mapping_|. When we read from this
   // location, we must always read from it atomically.
@@ -472,9 +468,7 @@ class AURA_EXPORT WindowTreeClient
   IdToWindowMap windows_;
   std::map<ClientSpecificId, std::set<Window*>> embedded_windows_;
 
-  bool setting_capture_ = false;
-  WindowMus* window_setting_capture_to_ = nullptr;
-  WindowMus* capture_window_ = nullptr;
+  std::unique_ptr<CaptureSynchronizer> capture_synchronizer_;
 
   bool setting_focus_ = false;
   WindowMus* window_setting_focus_to_ = nullptr;

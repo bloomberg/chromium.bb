@@ -16,10 +16,10 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/drag_drop_controller_mus.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
@@ -152,7 +152,6 @@ WindowTreeClient::WindowTreeClient(
   if (request.is_pending())
     binding_.Bind(std::move(request));
   delegate_->GetFocusClient()->AddObserver(this);
-  delegate_->GetCaptureClient()->AddObserver(this);
   client::GetTransientWindowClient()->AddObserver(this);
   if (window_manager_delegate)
     window_manager_delegate->SetWindowManagerClient(this);
@@ -187,8 +186,9 @@ WindowTreeClient::~WindowTreeClient() {
   for (WindowTreeClientObserver& observer : observers_)
     observer.OnDidDestroyClient(this);
 
+  capture_synchronizer_.reset();
+
   client::GetTransientWindowClient()->RemoveObserver(this);
-  delegate_->GetCaptureClient()->RemoveObserver(this);
   delegate_->GetFocusClient()->RemoveObserver(this);
 }
 
@@ -346,20 +346,6 @@ void WindowTreeClient::SetFocusFromServerImpl(client::FocusClient* focus_client,
   focus_client->FocusWindow(window ? window->GetWindow() : nullptr);
 }
 
-void WindowTreeClient::SetCaptureFromServer(WindowMus* window) {
-  // In order for us to get here we had to have exposed a window, which implies
-  // we got a client.
-  DCHECK(tree_);
-  if (capture_window_ == window)
-    return;
-  DCHECK(!setting_capture_);
-  base::AutoReset<bool> capture_reset(&setting_capture_, true);
-  base::AutoReset<WindowMus*> window_setting_capture_to_reset(
-      &window_setting_capture_to_, window);
-  delegate_->GetCaptureClient()->SetCapture(window ? window->GetWindow()
-                                                   : nullptr);
-}
-
 InFlightChange* WindowTreeClient::GetOldestInFlightChangeMatching(
     const InFlightChange& change) {
   for (const auto& pair : in_flight_map_) {
@@ -498,10 +484,7 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
 
 void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
   tree_ptr_ = std::move(window_tree_ptr);
-  tree_ = tree_ptr_.get();
-
-  drag_drop_controller_ = base::MakeUnique<DragDropControllerMus>(this, tree_);
-
+  WindowTreeConnectionEstablished(tree_ptr_.get());
   tree_ptr_->GetCursorLocationMemory(
       base::Bind(&WindowTreeClient::OnReceivedCursorLocationMemory,
                  weak_factory_.GetWeakPtr()));
@@ -513,6 +496,15 @@ void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
     tree_ptr_->GetWindowManagerClient(GetProxy(&window_manager_internal_client_,
                                                tree_ptr_.associated_group()));
   }
+}
+
+void WindowTreeClient::WindowTreeConnectionEstablished(
+    ui::mojom::WindowTree* window_tree) {
+  tree_ = window_tree;
+
+  drag_drop_controller_ = base::MakeUnique<DragDropControllerMus>(this, tree_);
+  capture_synchronizer_ = base::MakeUnique<CaptureSynchronizer>(
+      this, tree_, delegate_->GetCaptureClient());
 }
 
 void WindowTreeClient::OnConnectionLost() {
@@ -547,8 +539,8 @@ void WindowTreeClient::OnEmbedImpl(ui::mojom::WindowTree* window_tree,
                                    bool drawn) {
   // WARNING: this is only called if WindowTreeClient was created as the
   // result of an embedding.
-  tree_ = window_tree;
   client_id_ = client_id;
+  WindowTreeConnectionEstablished(window_tree);
 
   DCHECK(roots_.empty());
   Window* root = CreateWindowTreeHost(RootWindowType::EMBED, root_data,
@@ -975,11 +967,12 @@ void WindowTreeClient::OnCaptureChanged(Id new_capture_window_id,
   if (!new_capture_window && !lost_capture_window)
     return;
 
-  InFlightCaptureChange change(this, new_capture_window);
+  InFlightCaptureChange change(this, capture_synchronizer_.get(),
+                               new_capture_window);
   if (ApplyServerChangeToExistingInFlightChange(change))
     return;
 
-  SetCaptureFromServer(new_capture_window);
+  capture_synchronizer_->SetCaptureFromServer(new_capture_window);
 }
 
 void WindowTreeClient::OnTopLevelCreated(uint32_t change_id,
@@ -1140,10 +1133,6 @@ void WindowTreeClient::OnWindowReordered(Id window_id,
 
 void WindowTreeClient::OnWindowDeleted(Id window_id) {
   delete GetWindowByServerId(window_id)->GetWindow();
-}
-
-Window* WindowTreeClient::GetCaptureWindow() {
-  return capture_window_ ? capture_window_->GetWindow() : nullptr;
 }
 
 void WindowTreeClient::OnWindowVisibilityChanged(Id window_id, bool visible) {
@@ -1618,24 +1607,6 @@ void WindowTreeClient::OnWindowFocused(Window* gained_focus,
                                              : kInvalidServerId);
 }
 
-void WindowTreeClient::OnCaptureChanged(Window* lost_capture,
-                                        Window* gained_capture) {
-  WindowMus* gained_capture_mus = WindowMus::Get(gained_capture);
-  if (setting_capture_ && gained_capture_mus == window_setting_capture_to_) {
-    capture_window_ = gained_capture_mus;
-    return;
-  }
-
-  const uint32_t change_id = ScheduleInFlightChange(
-      base::MakeUnique<InFlightCaptureChange>(this, capture_window_));
-  WindowMus* old_capture_window = capture_window_;
-  capture_window_ = gained_capture_mus;
-  if (capture_window_)
-    tree_->SetCapture(change_id, capture_window_->server_id());
-  else
-    tree_->ReleaseCapture(change_id, old_capture_window->server_id());
-}
-
 void WindowTreeClient::SetRootWindowBounds(Window* window, gfx::Rect* bounds) {
   WindowTreeHostMus* window_tree_host = GetWindowTreeHostMus(window);
   switch (window_tree_host->root_window_type()) {
@@ -1692,6 +1663,11 @@ void WindowTreeClient::OnTransientChildWindowRemoved(Window* parent,
 uint32_t WindowTreeClient::CreateChangeIdForDrag(WindowMus* window) {
   return ScheduleInFlightChange(
       base::MakeUnique<InFlightDragChange>(window, ChangeType::DRAG_LOOP));
+}
+
+uint32_t WindowTreeClient::CreateChangeIdForCapture(WindowMus* window) {
+  return ScheduleInFlightChange(base::MakeUnique<InFlightCaptureChange>(
+      this, capture_synchronizer_.get(), window));
 }
 
 }  // namespace aura

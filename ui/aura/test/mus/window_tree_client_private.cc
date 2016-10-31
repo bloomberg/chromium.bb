@@ -66,7 +66,7 @@ void WindowTreeClientPrivate::CallOnCaptureChanged(Window* new_capture,
 void WindowTreeClientPrivate::SetTreeAndClientId(
     ui::mojom::WindowTree* window_tree,
     ClientSpecificId client_id) {
-  tree_client_impl_->tree_ = window_tree;
+  tree_client_impl_->WindowTreeConnectionEstablished(window_tree);
   tree_client_impl_->client_id_ = client_id;
 }
 

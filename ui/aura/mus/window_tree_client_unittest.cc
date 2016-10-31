@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
@@ -1070,9 +1071,10 @@ TEST_F(WindowTreeClientWmTest, OnWindowTreeCaptureChanged) {
   // Deleting a window with capture should notify observers as well.
   child1.reset();
 
-  // Deletion implicitly releases focus.
-  ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
-      WindowTreeChangeType::CAPTURE, true));
+  // No capture change is sent during deletion (the server side sees the window
+  // deletion too and resets internal state).
+  EXPECT_EQ(
+      0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::CAPTURE));
 
   EXPECT_EQ(1, capture_recorder.capture_changed_count());
   EXPECT_EQ(0, capture_recorder.last_gained_capture_window_id());
