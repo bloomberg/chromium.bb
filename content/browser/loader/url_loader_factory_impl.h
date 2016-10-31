@@ -31,6 +31,18 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
                 const ResourceRequest& request,
                 const SyncLoadCallback& callback) override;
 
+  static void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+                                   int32_t routing_id,
+                                   int32_t request_id,
+                                   const ResourceRequest& url_request,
+                                   mojom::URLLoaderClientPtr client,
+                                   ResourceMessageFilter* filter);
+  static void SyncLoad(int32_t routing_id,
+                       int32_t request_id,
+                       const ResourceRequest& request,
+                       const SyncLoadCallback& callback,
+                       ResourceMessageFilter* filter);
+
   // Creates a URLLoaderFactoryImpl instance. The instance is held by the
   // StrongBinding in it, so this function doesn't return the instance.
   CONTENT_EXPORT static void Create(

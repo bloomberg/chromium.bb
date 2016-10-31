@@ -7,6 +7,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_context.h"
@@ -23,6 +24,7 @@ ResourceMessageFilter::ResourceMessageFilter(
     ServiceWorkerContextWrapper* service_worker_context,
     const GetContextsCallback& get_contexts_callback)
     : BrowserMessageFilter(ResourceMsgStart),
+      BrowserAssociatedInterface<mojom::URLLoaderFactory>(this, this),
       child_id_(child_id),
       process_type_(process_type),
       appcache_service_(appcache_service),
@@ -30,11 +32,9 @@ ResourceMessageFilter::ResourceMessageFilter(
       file_system_context_(file_system_context),
       service_worker_context_(service_worker_context),
       get_contexts_callback_(get_contexts_callback),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
-ResourceMessageFilter::~ResourceMessageFilter() {
-}
+ResourceMessageFilter::~ResourceMessageFilter() {}
 
 void ResourceMessageFilter::OnChannelClosing() {
   // Unhook us from all pending network requests so they don't get sent to a
@@ -63,6 +63,25 @@ void ResourceMessageFilter::GetContexts(
 base::WeakPtr<ResourceMessageFilter> ResourceMessageFilter::GetWeakPtr() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void ResourceMessageFilter::CreateLoaderAndStart(
+    mojom::URLLoaderRequest request,
+    int32_t routing_id,
+    int32_t request_id,
+    const ResourceRequest& url_request,
+    mojom::URLLoaderClientPtr client) {
+  URLLoaderFactoryImpl::CreateLoaderAndStart(std::move(request), routing_id,
+                                             request_id, url_request,
+                                             std::move(client), this);
+}
+
+void ResourceMessageFilter::SyncLoad(int32_t routing_id,
+                                     int32_t request_id,
+                                     const ResourceRequest& url_request,
+                                     const SyncLoadCallback& callback) {
+  URLLoaderFactoryImpl::SyncLoad(routing_id, request_id, url_request, callback,
+                                 this);
 }
 
 }  // namespace content

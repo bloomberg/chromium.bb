@@ -50,23 +50,43 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t request_id,
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  rdh->OnRequestResourceWithMojo(routing_id, request_id, url_request,
-                                 std::move(request), std::move(client),
-                                 resource_message_filter_.get());
+  CreateLoaderAndStart(std::move(request), routing_id, request_id, url_request,
+                       std::move(client), resource_message_filter_.get());
 }
 
 void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
                                     int32_t request_id,
                                     const ResourceRequest& url_request,
                                     const SyncLoadCallback& callback) {
+  SyncLoad(routing_id, request_id, url_request, callback,
+           resource_message_filter_.get());
+}
+
+// static
+void URLLoaderFactoryImpl::CreateLoaderAndStart(
+    mojom::URLLoaderRequest request,
+    int32_t routing_id,
+    int32_t request_id,
+    const ResourceRequest& url_request,
+    mojom::URLLoaderClientPtr client,
+    ResourceMessageFilter* filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  rdh->OnSyncLoadWithMojo(routing_id, request_id, url_request,
-                          resource_message_filter_.get(),
+  rdh->OnRequestResourceWithMojo(routing_id, request_id, url_request,
+                                 std::move(request), std::move(client), filter);
+}
+
+// static
+void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
+                                    int32_t request_id,
+                                    const ResourceRequest& url_request,
+                                    const SyncLoadCallback& callback,
+                                    ResourceMessageFilter* filter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
+  rdh->OnSyncLoadWithMojo(routing_id, request_id, url_request, filter,
                           base::Bind(&DispatchSyncLoadResult, callback));
 }
 

@@ -81,6 +81,7 @@
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
@@ -308,13 +309,13 @@ void RendererBlinkPlatformImpl::Shutdown() {
 //------------------------------------------------------------------------------
 
 blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
-  if (!url_loader_factory_)
-    interfaceProvider()->getInterface(mojo::GetProxy(&url_loader_factory_));
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
+  if (!url_loader_factory_ && child_thread)
+    child_thread->channel()->GetRemoteAssociatedInterface(&url_loader_factory_);
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return new content::WebURLLoaderImpl(
-      child_thread ? child_thread->resource_dispatcher() : NULL,
+      child_thread ? child_thread->resource_dispatcher() : nullptr,
       url_loader_factory_.get());
 }
 

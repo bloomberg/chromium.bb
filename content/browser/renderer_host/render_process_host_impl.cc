@@ -1269,8 +1269,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&DeviceMotionHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
-  registry->AddInterface(
-      base::Bind(&URLLoaderFactoryImpl::Create, resource_message_filter_));
 
   registry->AddInterface(
       base::Bind(&VideoCaptureHost::Create,

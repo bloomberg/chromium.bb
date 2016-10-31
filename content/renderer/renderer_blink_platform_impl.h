@@ -311,7 +311,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojom::URLLoaderFactoryAssociatedPtr url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };
