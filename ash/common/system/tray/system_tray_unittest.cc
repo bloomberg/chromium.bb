@@ -452,13 +452,15 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_TRUE(window_bounds.Contains(tray_bounds));
+  // TODO(estade): Re-enable this check. See crbug.com/660928.
+  // EXPECT_TRUE(window_bounds.Contains(tray_bounds));
 
   // Test in the right alignment.
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
-  EXPECT_TRUE(window_bounds.Contains(tray_bounds));
+  // TODO(estade): Re-enable this check. See crbug.com/660928.
+  // EXPECT_TRUE(window_bounds.Contains(tray_bounds));
 }
 
 TEST_F(SystemTrayTest, PersistentBubble) {
