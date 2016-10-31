@@ -218,11 +218,7 @@ void BootstrapSandbox::HandleChildCheckIn() {
 
   // Call mach_msg_destroy to clean up the reply send-once right.
   ScopedCallMachMsgDestroy message_destroyer(&msg.request.header);
-
-  pid_t client_pid;
-  audit_token_to_au32(msg.trailer.msgh_audit, nullptr, nullptr, nullptr,
-      nullptr, nullptr, &client_pid, nullptr, nullptr);
-
+  pid_t client_pid = audit_token_to_pid(msg.trailer.msgh_audit);
   {
     base::AutoLock lock(lock_);
 

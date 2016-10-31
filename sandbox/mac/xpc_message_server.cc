@@ -53,10 +53,7 @@ void XPCMessageServer::Shutdown() {
 pid_t XPCMessageServer::GetMessageSenderPID(IPCMessage request) {
   audit_token_t token;
   xpc_dictionary_get_audit_token(request.xpc, &token);
-  // TODO(rsesek): In the 10.7 SDK, there's audit_token_to_pid().
-  pid_t sender_pid;
-  audit_token_to_au32(token,
-      NULL, NULL, NULL, NULL, NULL, &sender_pid, NULL, NULL);
+  pid_t sender_pid = audit_token_to_pid(token);
   return sender_pid;
 }
 

@@ -87,10 +87,9 @@ pid_t MachMessageServer::GetMessageSenderPID(IPCMessage request) {
       reinterpret_cast<mach_msg_audit_trailer_t*>(
           reinterpret_cast<vm_address_t>(request.mach) +
               round_msg(request.mach->msgh_size));
-  // TODO(rsesek): In the 10.7 SDK, there's audit_token_to_pid().
-  pid_t sender_pid;
-  audit_token_to_au32(trailer->msgh_audit,
-      NULL, NULL, NULL, NULL, NULL, &sender_pid, NULL, NULL);
+
+  pid_t sender_pid = audit_token_to_pid(trailer->msgh_audit);
+
   return sender_pid;
 }
 
