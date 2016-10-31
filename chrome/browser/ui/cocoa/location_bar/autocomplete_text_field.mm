@@ -463,8 +463,8 @@ const CGFloat kAnimationDuration = 0.2;
   BOOL doAccept = [super becomeFirstResponder];
   if (doAccept) {
     [[BrowserWindowController browserWindowControllerForView:self]
-        lockBarVisibilityForOwner:self
-                    withAnimation:YES];
+        lockToolbarVisibilityForOwner:self
+                        withAnimation:YES];
 
     // Tells the observer that we get the focus.
     // But we can't call observer_->OnKillFocus() in resignFirstResponder:,
@@ -481,8 +481,8 @@ const CGFloat kAnimationDuration = 0.2;
   BOOL doResign = [super resignFirstResponder];
   if (doResign) {
     [[BrowserWindowController browserWindowControllerForView:self]
-        releaseBarVisibilityForOwner:self
-                       withAnimation:YES];
+        releaseToolbarVisibilityForOwner:self
+                           withAnimation:YES];
   }
   return doResign;
 }

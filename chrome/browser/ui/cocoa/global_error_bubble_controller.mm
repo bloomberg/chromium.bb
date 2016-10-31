@@ -127,7 +127,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 - (void)showWindow:(id)sender {
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:[self parentWindow]];
-  [bwc lockBarVisibilityForOwner:self withAnimation:NO];
+  [bwc lockToolbarVisibilityForOwner:self withAnimation:NO];
   [super showWindow:sender];
 }
 
@@ -137,7 +137,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
   bridge_.reset();
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:[self parentWindow]];
-  [bwc releaseBarVisibilityForOwner:self withAnimation:YES];
+  [bwc releaseToolbarVisibilityForOwner:self withAnimation:YES];
   [super close];
 }
 

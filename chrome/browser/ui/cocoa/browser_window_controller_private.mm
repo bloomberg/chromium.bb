@@ -366,9 +366,6 @@ willPositionSheet:(NSWindow*)sheet
   base::scoped_nsobject<FocusTracker> focusTracker(
       [[FocusTracker alloc] initWithWindow:sourceWindow]);
 
-  // While we move views (and focus) around, disable any bar visibility changes.
-  [self disableBarVisibilityUpdates];
-
   // Retain the tab strip view while we remove it from its superview.
   base::scoped_nsobject<NSView> tabStripView;
   if ([self hasTabStrip]) {
@@ -442,9 +439,6 @@ willPositionSheet:(NSWindow*)sheet
     [self focusTabContents];
   }
   [sourceWindow orderOut:self];
-
-  // We're done moving focus, so re-enable bar visibility changes.
-  [self enableBarVisibilityUpdates];
 }
 
 - (void)updatePermissionBubbleAnchor {
@@ -600,8 +594,6 @@ willPositionSheet:(NSWindow*)sheet
   // |-windowDidEnterFullScreen:|, so arrange to do that work then instead.
   if (enteringAppKitFullscreen_)
     return;
-
-  [self hideOverlayIfPossibleWithAnimation:NO];
 
   switch (exclusiveAccessController_->bubble_type()) {
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
@@ -833,35 +825,6 @@ willPositionSheet:(NSWindow*)sheet
     style = FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN;
 
   [self adjustUIForSlidingFullscreenStyle:style];
-}
-
-- (void)enableBarVisibilityUpdates {
-  // Early escape if there's nothing to do.
-  if (barVisibilityUpdatesEnabled_)
-    return;
-
-  barVisibilityUpdatesEnabled_ = YES;
-
-  if ([barVisibilityLocks_ count])
-    [fullscreenToolbarController_ ensureOverlayShownWithAnimation:NO];
-  else
-    [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:NO];
-}
-
-- (void)disableBarVisibilityUpdates {
-  // Early escape if there's nothing to do.
-  if (!barVisibilityUpdatesEnabled_)
-    return;
-
-  barVisibilityUpdatesEnabled_ = NO;
-  [fullscreenToolbarController_ cancelAnimationAndTimer];
-}
-
-- (void)hideOverlayIfPossibleWithAnimation:(BOOL)animation {
-  if (!barVisibilityUpdatesEnabled_ || [barVisibilityLocks_ count])
-    return;
-
-  [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animation];
 }
 
 - (CGFloat)toolbarDividerOpacity {
@@ -1237,6 +1200,11 @@ willPositionSheet:(NSWindow*)sheet
       browser_->exclusive_access_manager()->fullscreen_controller();
   return controller->IsWindowFullscreenForTabOrPending() ||
          controller->IsExtensionFullscreenOrPending();
+}
+
+- (FullscreenToolbarVisibilityLockController*)
+    fullscreenToolbarVisibilityLockController {
+  return [fullscreenToolbarController_ visibilityLockController];
 }
 
 - (void)windowWillBeginSheet:(NSNotification*)notification {

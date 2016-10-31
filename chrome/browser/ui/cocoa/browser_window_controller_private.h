@@ -87,16 +87,6 @@ class WebContents;
 - (void)registerForContentViewResizeNotifications;
 - (void)deregisterForContentViewResizeNotifications;
 
-// Allows/prevents bar visibility locks and releases from updating the visual
-// state. Enabling makes changes instantaneously; disabling cancels any
-// timers/animation.
-- (void)enableBarVisibilityUpdates;
-- (void)disableBarVisibilityUpdates;
-
-// If there are no visibility locks and bar visibity updates are enabled, hides
-// the bar with |animation|.  Otherwise, does nothing.
-- (void)hideOverlayIfPossibleWithAnimation:(BOOL)animation;
-
 // The opacity for the toolbar divider; 0 means that it shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
 
@@ -186,6 +176,11 @@ class WebContents;
 
 // Returns YES if the fullscreen is for tab content or an extension.
 - (BOOL)isFullscreenForTabContentOrExtension;
+
+// Accessor for the controller managing the fullscreen toolbar visibility
+// locks.
+- (FullscreenToolbarVisibilityLockController*)
+    fullscreenToolbarVisibilityLockController;
 
 @end  // @interface BrowserWindowController(Private)
 

@@ -151,8 +151,9 @@ bool ProfileUpdateObserver::HasAvatarError() {
   NSWindowController* wc =
       [browser_->window()->GetNativeWindow() windowController];
   if ([wc isKindOfClass:[BrowserWindowController class]]) {
-    [static_cast<BrowserWindowController*>(wc) lockBarVisibilityForOwner:self
-                                                           withAnimation:NO];
+    [static_cast<BrowserWindowController*>(wc)
+        lockToolbarVisibilityForOwner:self
+                        withAnimation:NO];
   }
 
   // The new avatar bubble does not have an arrow, and it should be anchored
@@ -227,8 +228,8 @@ bool ProfileUpdateObserver::HasAvatarError() {
       [browser_->window()->GetNativeWindow() windowController];
   if ([wc isKindOfClass:[BrowserWindowController class]]) {
     [static_cast<BrowserWindowController*>(wc)
-        releaseBarVisibilityForOwner:self
-                       withAnimation:YES];
+        releaseToolbarVisibilityForOwner:self
+                           withAnimation:YES];
   }
   menuController_ = nil;
 }

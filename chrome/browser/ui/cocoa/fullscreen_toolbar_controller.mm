@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -67,6 +68,10 @@ const CGFloat kToolbarVerticalOffset = 22;
     systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
     slidingStyle_ = style;
     animationController_.reset(new FullscreenToolbarAnimationController(self));
+    visibilityLockController_.reset(
+        [[FullscreenToolbarVisibilityLockController alloc]
+            initWithFullscreenToolbarController:self
+                            animationController:animationController_.get()]);
   }
 
   return self;
@@ -127,14 +132,6 @@ const CGFloat kToolbarVerticalOffset = 22;
   [self updateMenuBarAndDockVisibility];
 }
 
-- (void)ensureOverlayShownWithAnimation:(BOOL)animate {
-  animationController_->AnimateToolbarIn();
-}
-
-- (void)ensureOverlayHiddenWithAnimation:(BOOL)animate {
-  animationController_->AnimateToolbarOutIfPossible();
-}
-
 // Cancels any running animation and timers.
 - (void)cancelAnimationAndTimer {
   animationController_->StopAnimationAndTimer();
@@ -174,6 +171,10 @@ const CGFloat kToolbarVerticalOffset = 22;
 
 - (BrowserWindowController*)browserWindowController {
   return browserController_;
+}
+
+- (FullscreenToolbarVisibilityLockController*)visibilityLockController {
+  return visibilityLockController_.get();
 }
 
 // This method works, but is fragile.
@@ -230,7 +231,7 @@ const CGFloat kToolbarVerticalOffset = 22;
   FullscreenMenubarState menubarState = [menubarTracker_ state];
   return menubarState == FullscreenMenubarState::SHOWN ||
          [mouseTracker_ mouseInsideTrackingArea] ||
-         [browserController_ isBarVisibilityLockedForOwner:nil];
+         [visibilityLockController_ isToolbarVisibilityLocked];
 }
 
 - (BOOL)isFullscreenTransitionInProgress {

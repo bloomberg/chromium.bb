@@ -2809,7 +2809,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       ![self isAnimatingToState:BookmarkBar::DETACHED]) {
     BrowserWindowController* browserController =
         [BrowserWindowController browserWindowControllerForView:[self view]];
-    [browserController lockBarVisibilityForOwner:child withAnimation:NO];
+    [browserController lockToolbarVisibilityForOwner:child withAnimation:NO];
   }
 }
 
@@ -2818,7 +2818,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // mode.
   BrowserWindowController* browserController =
       [BrowserWindowController browserWindowControllerForView:[self view]];
-  [browserController releaseBarVisibilityForOwner:child withAnimation:NO];
+  [browserController releaseToolbarVisibilityForOwner:child withAnimation:NO];
 }
 
 // Add a new folder controller as triggered by the given folder button.
@@ -2829,8 +2829,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   BrowserWindowController* browserController =
       [BrowserWindowController browserWindowControllerForView:[self view]];
   // Confirm we're not re-locking with ourself as an owner before locking.
-  DCHECK([browserController isBarVisibilityLockedForOwner:self] == NO);
-  [browserController lockBarVisibilityForOwner:self withAnimation:NO];
+  DCHECK([browserController isToolbarVisibilityLockedForOwner:self] == NO);
+  [browserController lockToolbarVisibilityForOwner:self withAnimation:NO];
 
   if (folderController_)
     [self closeAllBookmarkFolders];
@@ -2849,7 +2849,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self watchForExitEvent:YES];
 
   // No longer need to hold the lock; the folderController_ now owns it.
-  [browserController releaseBarVisibilityForOwner:self withAnimation:NO];
+  [browserController releaseToolbarVisibilityForOwner:self withAnimation:NO];
 }
 
 - (void)openAll:(const BookmarkNode*)node

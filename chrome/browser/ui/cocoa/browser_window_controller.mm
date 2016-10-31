@@ -59,6 +59,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
@@ -245,10 +246,6 @@ bool IsTabDetachingInFullscreenEnabled() {
       NSMakeSize(400, 272) : NSMakeSize(100, 122);
     [[self window] setMinSize:minSize];
 
-    // Create the bar visibility lock set; 10 is arbitrary, but should hopefully
-    // be big enough to hold all locks that'll ever be needed.
-    barVisibilityLocks_.reset([[NSMutableSet setWithCapacity:10] retain]);
-
     // Lion will attempt to automagically save and restore the UI. This
     // functionality appears to be leaky (or at least interacts badly with our
     // architecture) and thus BrowserWindowController never gets released. This
@@ -346,9 +343,6 @@ bool IsTabDetachingInFullscreenEnabled() {
     // |-awakeFromNib|.
     windowShim_->BookmarkBarStateChanged(
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-
-    // Allow bar visibility to be changed.
-    [self enableBarVisibilityUpdates];
 
     [self updateFullscreenCollectionBehavior];
 
@@ -1938,32 +1932,24 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [self layoutSubviews];
 }
 
-- (BOOL)isBarVisibilityLockedForOwner:(id)owner {
-  DCHECK(barVisibilityLocks_);
-  return owner ? [barVisibilityLocks_ containsObject:owner]
-               : [barVisibilityLocks_ count];
+- (BOOL)isToolbarVisibilityLockedForOwner:(id)owner {
+  FullscreenToolbarVisibilityLockController* visibilityController =
+      [self fullscreenToolbarVisibilityLockController];
+  return [visibilityController isToolbarVisibilityLockedForOwner:owner];
 }
 
-- (void)lockBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
-  if (![self isBarVisibilityLockedForOwner:owner]) {
-    [barVisibilityLocks_ addObject:owner];
-
-    // If enabled, show the overlay if necessary (and if the fullscreen
-    // toolbar is hidden).
-    if (barVisibilityUpdatesEnabled_)
-      [fullscreenToolbarController_ ensureOverlayShownWithAnimation:animate];
-  }
+- (void)lockToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
+  FullscreenToolbarVisibilityLockController* visibilityController =
+      [self fullscreenToolbarVisibilityLockController];
+  [visibilityController lockToolbarVisibilityForOwner:owner
+                                        withAnimation:animate];
 }
 
-- (void)releaseBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
-  if ([self isBarVisibilityLockedForOwner:owner]) {
-    [barVisibilityLocks_ removeObject:owner];
-
-    // If enabled, hide the overlay if necessary (and if the fullscreen
-    // toolbar is hidden).
-    if (barVisibilityUpdatesEnabled_ && ![barVisibilityLocks_ count])
-      [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animate];
-  }
+- (void)releaseToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
+  FullscreenToolbarVisibilityLockController* visibilityController =
+      [self fullscreenToolbarVisibilityLockController];
+  [visibilityController releaseToolbarVisibilityForOwner:owner
+                                           withAnimation:animate];
 }
 
 - (BOOL)floatingBarHasFocus {

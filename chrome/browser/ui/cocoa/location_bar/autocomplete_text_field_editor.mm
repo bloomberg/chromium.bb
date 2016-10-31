@@ -324,8 +324,8 @@ BOOL ThePasteboardIsTooDamnBig() {
     // responder dance between the field and the field editor is a little
     // weird.)
     [[BrowserWindowController browserWindowControllerForView:field]
-        lockBarVisibilityForOwner:field
-                    withAnimation:YES];
+        lockToolbarVisibilityForOwner:field
+                        withAnimation:YES];
   }
   return doAccept;
 }
@@ -338,8 +338,8 @@ BOOL ThePasteboardIsTooDamnBig() {
   if (doResign && field) {
     // Give the text field ownership of the visibility lock.
     [[BrowserWindowController browserWindowControllerForView:field]
-        releaseBarVisibilityForOwner:field
-                       withAnimation:YES];
+        releaseToolbarVisibilityForOwner:field
+                           withAnimation:YES];
 
     AutocompleteTextFieldObserver* observer = [self observer];
     if (observer)

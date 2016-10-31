@@ -197,7 +197,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
     NSWindow* window = [[self delegate] browserWindow];
     visibilityDelegate_ =
         [BrowserWindowController browserWindowControllerForWindow:window];
-    [visibilityDelegate_ lockBarVisibilityForOwner:self withAnimation:NO];
+    [visibilityDelegate_ lockToolbarVisibilityForOwner:self withAnimation:NO];
   }
   const BookmarkNode* node = [self bookmarkNode];
   const BookmarkNode* parent = node->parent();
@@ -256,7 +256,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
   gDraggedButton = nil;
 
   // visibilityDelegate_ can be nil if we're detached, and that's fine.
-  [visibilityDelegate_ releaseBarVisibilityForOwner:self withAnimation:YES];
+  [visibilityDelegate_ releaseToolbarVisibilityForOwner:self withAnimation:YES];
   visibilityDelegate_ = nil;
 
   return kDraggableButtonImplUseBase;

@@ -2648,6 +2648,8 @@ split_static_library("ui") {
         "cocoa/fullscreen/fullscreen_toolbar_animation_controller.mm",
         "cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h",
         "cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.mm",
+        "cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h",
+        "cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.mm",
         "cocoa/fullscreen_low_power_coordinator.h",
         "cocoa/fullscreen_low_power_coordinator.mm",
         "cocoa/fullscreen_toolbar_controller.h",

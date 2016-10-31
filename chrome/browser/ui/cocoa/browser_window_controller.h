@@ -43,13 +43,14 @@ class ExclusiveAccessController;
 class ExclusiveAccessContext;
 @class FindBarCocoaController;
 @class FullscreenModeController;
+@class FullscreenToolbarController;
+@class FullscreenToolbarVisibilityLockController;
 @class FullscreenWindow;
 class FullscreenLowPowerCoordinatorCocoa;
 @class InfoBarContainerController;
 class LocationBarViewMac;
 @class OverlayableContentsController;
 class PermissionBubbleCocoa;
-@class FullscreenToolbarController;
 class StatusBubbleMac;
 @class TabStripController;
 @class TabStripView;
@@ -180,17 +181,6 @@ class Command;
 
   // The proportion of the floating bar which is shown.
   CGFloat floatingBarShownFraction_;
-
-  // Various UI elements/events may want to ensure that the floating bar is
-  // visible (in presentation mode), e.g., because of where the mouse is or
-  // where keyboard focus is. Whenever an object requires bar visibility, it has
-  // itself added to |barVisibilityLocks_|. When it no longer requires bar
-  // visibility, it has itself removed.
-  base::scoped_nsobject<NSMutableSet> barVisibilityLocks_;
-
-  // Bar visibility locks and releases only result (when appropriate) in changes
-  // in visible state when the following is |YES|.
-  BOOL barVisibilityUpdatesEnabled_;
 
   // If this ivar is set to YES, layoutSubviews calls will be ignored. This is
   // used in fullscreen transition to prevent spurious resize messages from
@@ -567,11 +557,11 @@ class Command;
 // owner are ignored. If |animate:| is YES, then an animation may be
 // performed. In the case of multiple calls, later calls have precedence with
 // the rule that |animate:NO| has precedence over |animate:YES|. If |owner| is
-// nil in isBarVisibilityLockedForOwner, the method returns YES if there are
+// nil in isToolbarVisibilityLockedForOwner, the method returns YES if there are
 // any locks.
-- (BOOL)isBarVisibilityLockedForOwner:(id)owner;
-- (void)lockBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
-- (void)releaseBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
+- (BOOL)isToolbarVisibilityLockedForOwner:(id)owner;
+- (void)lockToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
+- (void)releaseToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
 
 // Returns YES if any of the views in the floating bar currently has focus.
 - (BOOL)floatingBarHasFocus;

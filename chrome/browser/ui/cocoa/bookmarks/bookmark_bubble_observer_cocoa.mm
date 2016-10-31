@@ -17,12 +17,12 @@ BookmarkBubbleObserverCocoa::~BookmarkBubbleObserverCocoa() {}
 
 void BookmarkBubbleObserverCocoa::OnBookmarkBubbleShown(
     const bookmarks::BookmarkNode* node) {
-  [controller_ lockBarVisibilityForOwner:lockOwner_ withAnimation:NO];
+  [controller_ lockToolbarVisibilityForOwner:lockOwner_ withAnimation:NO];
   [[controller_ bookmarkBarController] startPulsingBookmarkNode:node];
 }
 
 void BookmarkBubbleObserverCocoa::OnBookmarkBubbleHidden() {
-  [controller_ releaseBarVisibilityForOwner:lockOwner_ withAnimation:YES];
+  [controller_ releaseToolbarVisibilityForOwner:lockOwner_ withAnimation:YES];
   [[controller_ bookmarkBarController] stopPulsingBookmarkNode];
   [controller_ bookmarkBubbleClosed];
 }

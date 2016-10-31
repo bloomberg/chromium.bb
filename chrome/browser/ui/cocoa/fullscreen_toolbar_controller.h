@@ -15,6 +15,7 @@
 @class FullscreenMenubarTracker;
 class FullscreenToolbarAnimationController;
 @class FullscreenToolbarMouseTracker;
+@class FullscreenToolbarVisibilityLockController;
 
 enum class FullscreenSlidingStyle {
   OMNIBOX_TABS_PRESENT,  // Tab strip and omnibox both visible.
@@ -42,6 +43,11 @@ enum class FullscreenSlidingStyle {
   // Updates the fullscreen toolbar layout for changes in the menubar. This
   // object is only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenMenubarTracker> menubarTracker_;
+
+  // Maintains the toolbar's visibility locks for the
+  // OMNIBOX_TABS_HIDDEN style.
+  base::scoped_nsobject<FullscreenToolbarVisibilityLockController>
+      visibilityLockController_;
 
   // Manages the toolbar animations for the OMNIBOX_TABS_HIDDEN style.
   std::unique_ptr<FullscreenToolbarAnimationController> animationController_;
@@ -80,11 +86,6 @@ enum class FullscreenSlidingStyle {
 // controller is released.
 - (void)enterFullscreenMode;
 - (void)exitFullscreenMode;
-
-// Informs the controller that the overlay should be shown/hidden, possibly
-// with animation.
-- (void)ensureOverlayShownWithAnimation:(BOOL)animate;
-- (void)ensureOverlayHiddenWithAnimation:(BOOL)animate;
 
 // Cancels any running animation and timers.
 - (void)cancelAnimationAndTimer;
@@ -126,6 +127,9 @@ enum class FullscreenSlidingStyle {
 
 // Returns |browserController_|.
 - (BrowserWindowController*)browserWindowController;
+
+// Returns the object in |visibilityLockController_|;
+- (FullscreenToolbarVisibilityLockController*)visibilityLockController;
 
 @end
 
