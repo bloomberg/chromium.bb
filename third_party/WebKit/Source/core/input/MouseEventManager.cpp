@@ -883,8 +883,11 @@ WebInputEventResult MouseEventManager::dispatchDragEvent(
   if (!view)
     return WebInputEventResult::NotHandled;
 
+  const bool cancelable = eventType != EventTypeNames::dragleave &&
+                          eventType != EventTypeNames::dragend;
+
   DragEvent* me = DragEvent::create(
-      eventType, true, true, m_frame->document()->domWindow(), 0,
+      eventType, true, cancelable, m_frame->document()->domWindow(), 0,
       event.globalPosition().x(), event.globalPosition().y(),
       event.position().x(), event.position().y(), event.movementDelta().x(),
       event.movementDelta().y(), event.getModifiers(), 0,
