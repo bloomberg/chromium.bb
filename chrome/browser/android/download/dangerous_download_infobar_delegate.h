@@ -43,6 +43,7 @@ class DangerousDownloadInfoBarDelegate
   // The download item that is requesting the infobar. Could get deleted while
   // the infobar is showing.
   content::DownloadItem* download_item_;
+  base::string16 message_text_;
 
   DISALLOW_COPY_AND_ASSIGN(DangerousDownloadInfoBarDelegate);
 };

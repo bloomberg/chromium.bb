@@ -26,6 +26,9 @@ DangerousDownloadInfoBarDelegate::DangerousDownloadInfoBarDelegate(
     content::DownloadItem* download_item)
     : download_item_(download_item) {
   download_item_->AddObserver(this);
+  message_text_ = l10n_util::GetStringFUTF16(
+      IDS_PROMPT_DANGEROUS_DOWNLOAD,
+      base::UTF8ToUTF16(download_item_->GetFileNameToReportUser().value()));
 }
 
 DangerousDownloadInfoBarDelegate::~DangerousDownloadInfoBarDelegate() {
@@ -59,9 +62,7 @@ void DangerousDownloadInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 DangerousDownloadInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_PROMPT_DANGEROUS_DOWNLOAD,
-      base::UTF8ToUTF16(download_item_->GetFileNameToReportUser().value()));
+  return message_text_;
 }
 
 bool DangerousDownloadInfoBarDelegate::Accept() {
