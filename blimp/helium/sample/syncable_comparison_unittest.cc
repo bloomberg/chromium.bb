@@ -8,6 +8,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/helium/compound_syncable.h"
@@ -95,7 +97,9 @@ class CodedStreamSyncableConfig : public SyncableConfig {
           response_generation_(
               CreateAndRegister<LwwRegister<int>>(Peer::CLIENT, running_as)),
           response_(CreateAndRegister<LwwRegister<std::string>>(Peer::CLIENT,
-                                                                running_as)) {}
+                                                                running_as)) {
+      SetLocalUpdateCallback(base::Bind(&base::DoNothing));
+    }
     ~InputMethodStateSyncable() override {}
 
     void SetInputGeneration(int generation) override {
@@ -128,7 +132,7 @@ class CodedStreamSyncableConfig : public SyncableConfig {
   size_t SynchronizeOneWay(Revision last_sync,
                            InputMethodStateSyncable* source,
                            InputMethodStateSyncable* dest) {
-    if (source->GetVersionVector().local_revision() <= last_sync) {
+    if (source->GetRevision() <= last_sync) {
       return 0u;  // Changeset not computed; no bytes transferred.
     }
 
@@ -142,8 +146,7 @@ class CodedStreamSyncableConfig : public SyncableConfig {
     google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
                                                             changeset.size());
     google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
-    CHECK_EQ(Result::SUCCESS,
-             dest->ApplyChangeset(last_sync_engine_, &input_stream));
+    CHECK_EQ(Result::SUCCESS, dest->ApplyChangeset(&input_stream));
     return changeset.size();
   }
 

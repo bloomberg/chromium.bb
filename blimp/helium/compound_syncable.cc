@@ -4,6 +4,7 @@
 
 #include "blimp/helium/compound_syncable.h"
 
+#include <algorithm>
 #include <bitset>
 #include <utility>
 #include <vector>
@@ -18,6 +19,13 @@ CompoundSyncable::CompoundSyncable() {}
 
 CompoundSyncable::~CompoundSyncable() {}
 
+void CompoundSyncable::SetLocalUpdateCallback(
+    base::Closure local_update_callback) {
+  for (const auto& member : members_) {
+    member->SetLocalUpdateCallback(local_update_callback);
+  }
+}
+
 void CompoundSyncable::CreateChangesetToCurrent(
     Revision from,
     google::protobuf::io::CodedOutputStream* changeset) {
@@ -27,7 +35,7 @@ void CompoundSyncable::CreateChangesetToCurrent(
   DCHECK_LE(members_.size(), 64u);
   std::bitset<64> modified;
   for (size_t i = 0; i < members_.size(); ++i) {
-    if (members_[i]->GetVersionVector().local_revision() >= from) {
+    if (members_[i]->GetRevision() >= from) {
       modified[i] = true;
     }
   }
@@ -47,7 +55,6 @@ void CompoundSyncable::CreateChangesetToCurrent(
 }
 
 Result CompoundSyncable::ApplyChangeset(
-    Revision to,
     google::protobuf::io::CodedInputStream* changeset) {
   uint64_t modified_header;
   if (!changeset->ReadVarint64(&modified_header)) {
@@ -66,7 +73,7 @@ Result CompoundSyncable::ApplyChangeset(
       continue;
     }
 
-    Result child_result = members_[member_id]->ApplyChangeset(to, changeset);
+    Result child_result = members_[member_id]->ApplyChangeset(changeset);
     if (child_result != Result::SUCCESS) {
       return child_result;
     }
@@ -75,10 +82,10 @@ Result CompoundSyncable::ApplyChangeset(
   return Result::SUCCESS;
 }
 
-VersionVector CompoundSyncable::GetVersionVector() const {
-  VersionVector merged;
+Revision CompoundSyncable::GetRevision() const {
+  Revision merged = 0u;
   for (const auto& member : members_) {
-    merged = merged.MergeWith(member->GetVersionVector());
+    merged = std::max(merged, member->GetRevision());
   }
   return merged;
 }

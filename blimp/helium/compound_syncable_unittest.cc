@@ -44,9 +44,18 @@ class CompoundSyncableTest : public HeliumTest {
   CompoundSyncableTest()
       : last_sync_engine_(0),
         engine_(Peer::ENGINE, Peer::ENGINE),
-        client_(Peer::ENGINE, Peer::CLIENT) {}
+        client_(Peer::ENGINE, Peer::CLIENT) {
+    client_.SetLocalUpdateCallback(base::Bind(
+        &CompoundSyncableTest::OnClientCallbackCalled, base::Unretained(this)));
+    engine_.SetLocalUpdateCallback(base::Bind(
+        &CompoundSyncableTest::OnEngineCallbackCalled, base::Unretained(this)));
+  }
 
   ~CompoundSyncableTest() override {}
+
+ public:
+  MOCK_METHOD0(OnEngineCallbackCalled, void());
+  MOCK_METHOD0(OnClientCallbackCalled, void());
 
  protected:
   // Propagates pending changes from |engine_| to |client_|.
@@ -66,8 +75,7 @@ class CompoundSyncableTest : public HeliumTest {
     google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
 
     last_sync_engine_ = RevisionGenerator::GetInstance()->current();
-    EXPECT_EQ(Result::SUCCESS,
-              client_.ApplyChangeset(last_sync_engine_, &input_stream));
+    EXPECT_EQ(Result::SUCCESS, client_.ApplyChangeset(&input_stream));
     engine_.ReleaseBefore(last_sync_engine_);
 
     // Ensure EOF.
@@ -83,6 +91,9 @@ class CompoundSyncableTest : public HeliumTest {
 };
 
 TEST_F(CompoundSyncableTest, SequentialMutations) {
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(2);
+
   engine_.mutable_child1()->Set(123);
   Synchronize();
   EXPECT_EQ(123, client_.mutable_child1()->Get());
@@ -93,6 +104,9 @@ TEST_F(CompoundSyncableTest, SequentialMutations) {
 }
 
 TEST_F(CompoundSyncableTest, MutateMultiple) {
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(2);
+
   engine_.mutable_child1()->Set(123);
   engine_.mutable_child2()->Set(456);
   Synchronize();
@@ -101,6 +115,9 @@ TEST_F(CompoundSyncableTest, MutateMultiple) {
 }
 
 TEST_F(CompoundSyncableTest, MutateMultipleDiscrete) {
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(2);
+
   engine_.mutable_child1()->Set(123);
   Synchronize();
   EXPECT_EQ(123, client_.mutable_child1()->Get());

@@ -47,6 +47,10 @@ class Syncable {
  public:
   virtual ~Syncable() {}
 
+  // Sets the callback that the Syncable should invoke immediately after being
+  // modified locally.
+  virtual void SetLocalUpdateCallback(base::Closure local_update_callback) = 0;
+
   // Emits a byte stream representation a changeset comprised of the changes
   // between |from| and the current revision.
   //
@@ -63,7 +67,6 @@ class Syncable {
   // The Syncable is responsible for including sufficient revision data in the
   // changeset in order to detect change conflicts.
   virtual Result ApplyChangeset(
-      Revision to,
       google::protobuf::io::CodedInputStream* input_stream) = 0;
 
   // Gives a chance for the Syncable to delete any old data prior to
@@ -71,7 +74,7 @@ class Syncable {
   virtual void ReleaseBefore(Revision checkpoint) = 0;
 
   // Returns the VersionVector reflecting the last modified state of |this|.
-  virtual VersionVector GetVersionVector() const = 0;
+  virtual Revision GetRevision() const = 0;
 };
 
 // Extends the Syncable interface by adding support to asynchronously replicate

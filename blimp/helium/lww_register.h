@@ -32,20 +32,21 @@ class BLIMP_HELIUM_EXPORT LwwRegister : public Syncable {
   const RegisterType& Get() const;
 
   // Syncable implementation.
+  void SetLocalUpdateCallback(base::Closure local_update_callback) override;
   void CreateChangesetToCurrent(
       Revision from,
       google::protobuf::io::CodedOutputStream* output_stream) override;
   Result ApplyChangeset(
-      Revision to,
       google::protobuf::io::CodedInputStream* input_stream) override;
   void ReleaseBefore(Revision checkpoint) override;
-  VersionVector GetVersionVector() const override;
+  Revision GetRevision() const override;
 
  private:
   VersionVector last_modified_;
   bool locally_owned_;
   RegisterType value_;
   bool value_set_ = false;
+  base::Closure local_update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LwwRegister);
 };
@@ -59,6 +60,7 @@ void LwwRegister<RegisterType>::Set(const RegisterType& value) {
   value_ = value;
   value_set_ = true;
   last_modified_.set_local_revision(GetNextRevision());
+  local_update_callback_.Run();
 }
 
 template <class RegisterType>
@@ -68,8 +70,14 @@ const RegisterType& LwwRegister<RegisterType>::Get() const {
 }
 
 template <class RegisterType>
-VersionVector LwwRegister<RegisterType>::GetVersionVector() const {
-  return last_modified_;
+void LwwRegister<RegisterType>::SetLocalUpdateCallback(
+    base::Closure local_update_callback) {
+  local_update_callback_ = local_update_callback;
+}
+
+template <class RegisterType>
+Revision LwwRegister<RegisterType>::GetRevision() const {
+  return last_modified_.local_revision();
 }
 
 template <class RegisterType>
@@ -82,7 +90,6 @@ void LwwRegister<RegisterType>::CreateChangesetToCurrent(
 
 template <class RegisterType>
 Result LwwRegister<RegisterType>::ApplyChangeset(
-    Revision to,
     google::protobuf::io::CodedInputStream* input_stream) {
   VersionVector remote;
   if (!CodedValueSerializer::Deserialize(input_stream, &remote)) {

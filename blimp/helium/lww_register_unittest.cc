@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "blimp/helium/helium_test.h"
 #include "blimp/helium/revision_generator.h"
 #include "blimp/helium/version_vector.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
@@ -22,26 +24,31 @@ class LwwRegisterTest : public HeliumTest {
   LwwRegisterTest() {}
   ~LwwRegisterTest() override = default;
 
+  MOCK_METHOD0(OnEngineCallbackCalled, void());
+  MOCK_METHOD0(OnClientCallbackCalled, void());
+
  protected:
   void Initialize(Peer bias) {
     client_ = base::MakeUnique<LwwRegister<int>>(bias, Peer::CLIENT);
     engine_ = base::MakeUnique<LwwRegister<int>>(bias, Peer::ENGINE);
+
+    client_->SetLocalUpdateCallback(base::Bind(
+        &LwwRegisterTest::OnClientCallbackCalled, base::Unretained(this)));
+    engine_->SetLocalUpdateCallback(base::Bind(
+        &LwwRegisterTest::OnEngineCallbackCalled, base::Unretained(this)));
   }
 
   void SyncFromClient() {
-    Sync(client_.get(), engine_.get(), engine_->GetVersionVector(),
-         client_->GetVersionVector());
+    Sync(client_.get(), engine_.get(), client_->GetRevision());
   }
 
   void SyncFromEngine() {
-    Sync(engine_.get(), client_.get(), client_->GetVersionVector(),
-         engine_->GetVersionVector());
+    Sync(engine_.get(), client_.get(), engine_->GetRevision());
   }
 
   void Sync(LwwRegister<int>* from_lww_register,
             LwwRegister<int>* to_lww_register,
-            VersionVector from,
-            VersionVector to);
+            Revision from);
 
   std::unique_ptr<LwwRegister<int>> client_;
   std::unique_ptr<LwwRegister<int>> engine_;
@@ -54,35 +61,39 @@ class LwwRegisterTest : public HeliumTest {
 // |to_lww_register|.
 void LwwRegisterTest::Sync(LwwRegister<int>* from_lww_register,
                            LwwRegister<int>* to_lww_register,
-                           VersionVector from,
-                           VersionVector to) {
+                           Revision from) {
   // Create a changeset from |from_lww_register|.
   std::string changeset;
   google::protobuf::io::StringOutputStream raw_output_stream(&changeset);
   google::protobuf::io::CodedOutputStream output_stream(&raw_output_stream);
-  from_lww_register->CreateChangesetToCurrent(from.remote_revision(),
-                                              &output_stream);
+  from_lww_register->CreateChangesetToCurrent(from, &output_stream);
 
   // Apply the changeset to |to_lww_register|.
   google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
                                                           changeset.size());
   google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
-  to_lww_register->ApplyChangeset(to.local_revision(), &input_stream);
+  to_lww_register->ApplyChangeset(&input_stream);
 }
 
 TEST_F(LwwRegisterTest, SetIncrementsLocalVersion) {
   Initialize(Peer::CLIENT);
 
-  VersionVector earlier_version = client_->GetVersionVector();
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(1);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(0);
+
+  Revision earlier_version = client_->GetRevision();
   client_->Set(42);
-  VersionVector current_version = client_->GetVersionVector();
+  Revision current_version = client_->GetRevision();
 
   EXPECT_EQ(42, client_->Get());
-  EXPECT_LT(earlier_version.local_revision(), current_version.local_revision());
+  EXPECT_LT(earlier_version, current_version);
 }
 
 TEST_F(LwwRegisterTest, ApplyLaterChangeset) {
   Initialize(Peer::CLIENT);
+
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(1);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(0);
 
   client_->Set(123);
   SyncFromClient();
@@ -92,6 +103,9 @@ TEST_F(LwwRegisterTest, ApplyLaterChangeset) {
 
 TEST_F(LwwRegisterTest, ApplyEarlierChangeset) {
   Initialize(Peer::CLIENT);
+
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(1);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(1);
 
   client_->Set(123);
   SyncFromClient();
@@ -105,6 +119,9 @@ TEST_F(LwwRegisterTest, ApplyEarlierChangeset) {
 TEST_F(LwwRegisterTest, ClientApplyChangesetConflictClientWins) {
   Initialize(Peer::CLIENT);
 
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(1);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(1);
+
   client_->Set(123);
   engine_->Set(456);
   SyncFromEngine();
@@ -114,6 +131,9 @@ TEST_F(LwwRegisterTest, ClientApplyChangesetConflictClientWins) {
 
 TEST_F(LwwRegisterTest, EngineApplyChangesetConflictClientWins) {
   Initialize(Peer::CLIENT);
+
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(1);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(1);
 
   client_->Set(123);
   engine_->Set(456);
@@ -125,6 +145,9 @@ TEST_F(LwwRegisterTest, EngineApplyChangesetConflictClientWins) {
 TEST_F(LwwRegisterTest, ClientApplyChangesetConflictEngineWins) {
   Initialize(Peer::ENGINE);
 
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(1);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(1);
+
   client_->Set(123);
   engine_->Set(456);
   SyncFromEngine();
@@ -134,6 +157,9 @@ TEST_F(LwwRegisterTest, ClientApplyChangesetConflictEngineWins) {
 
 TEST_F(LwwRegisterTest, EngineApplyChangesetConflictEngineWins) {
   Initialize(Peer::ENGINE);
+
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(1);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(1);
 
   client_->Set(123);
   engine_->Set(456);
