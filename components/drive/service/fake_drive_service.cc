@@ -252,7 +252,6 @@ FakeDriveService::FakeDriveService()
 
 FakeDriveService::~FakeDriveService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::STLDeleteValues(&entries_);
 }
 
 bool FakeDriveService::LoadAppListForDriveApi(
@@ -858,7 +857,7 @@ CancelCallback FakeDriveService::CopyResource(
   UpdateETag(new_file);
 
   // Add the new entry to the map.
-  entries_[new_resource_id] = copied_entry.release();
+  entries_[new_resource_id] = std::move(copied_entry);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -1545,10 +1544,11 @@ FakeDriveService::EntryInfo* FakeDriveService::FindEntryByResourceId(
     const std::string& resource_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  EntryInfoMap::iterator it = entries_.find(resource_id);
+  auto it = entries_.find(resource_id);
   // Deleted entries don't have FileResource.
-  return it != entries_.end() && it->second->change_resource.file() ?
-      it->second : NULL;
+  return it != entries_.end() && it->second->change_resource.file()
+             ? it->second.get()
+             : NULL;
 }
 
 std::string FakeDriveService::GetNewResourceId() {
@@ -1640,8 +1640,8 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
       base::Time() + base::TimeDelta::FromMilliseconds(++published_date_seq_);
   new_file->set_created_date(published_date);
 
-  EntryInfo* raw_new_entry = new_entry.release();
-  entries_[resource_id] = raw_new_entry;
+  EntryInfo* raw_new_entry = new_entry.get();
+  entries_[resource_id] = std::move(new_entry);
   return raw_new_entry;
 }
 
@@ -1664,8 +1664,7 @@ void FakeDriveService::GetChangeListInternal(
   // |search_query|.
   ScopedVector<ChangeResource> entries;
   int num_entries_matched = 0;
-  for (EntryInfoMap::iterator it = entries_.begin(); it != entries_.end();
-       ++it) {
+  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     const ChangeResource& entry = it->second->change_resource;
     bool should_exclude = false;
 

@@ -5,11 +5,14 @@
 #include "components/drive/chromeos/directory_loader.h"
 
 #include <stddef.h>
+
+#include <algorithm>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -209,7 +212,6 @@ DirectoryLoader::DirectoryLoader(
 }
 
 DirectoryLoader::~DirectoryLoader() {
-  base::STLDeleteElements(&fast_fetch_feed_fetcher_set_);
 }
 
 void DirectoryLoader::AddObserver(ChangeListLoaderObserver* observer) {
@@ -502,7 +504,7 @@ void DirectoryLoader::LoadDirectoryFromServer(
   FeedFetcher* fetcher = new FeedFetcher(this,
                                          directory_fetch_info,
                                          about_resource->root_folder_id());
-  fast_fetch_feed_fetcher_set_.insert(fetcher);
+  fast_fetch_feed_fetcher_set_.insert(base::WrapUnique(fetcher));
   fetcher->Run(
       base::Bind(&DirectoryLoader::LoadDirectoryFromServerAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -518,8 +520,12 @@ void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
   DCHECK(!directory_fetch_info.empty());
 
   // Delete the fetcher.
-  fast_fetch_feed_fetcher_set_.erase(fetcher);
-  delete fetcher;
+  auto it = std::find_if(fast_fetch_feed_fetcher_set_.begin(),
+                         fast_fetch_feed_fetcher_set_.end(),
+                         [fetcher](const std::unique_ptr<FeedFetcher>& ptr) {
+                           return ptr.get() == fetcher;
+                         });
+  fast_fetch_feed_fetcher_set_.erase(it);
 
   logger_->Log(logging::LOG_INFO,
                "Fast-fetch complete: %s => %s",
