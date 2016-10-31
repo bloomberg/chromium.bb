@@ -411,8 +411,21 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   return true;
 }
 
-void OmniboxViewViews::AccessibilitySetValue(const base::string16& new_value) {
-  SetUserText(new_value, true);
+void OmniboxViewViews::AccessibilitySetValue(const base::string16& new_value,
+                                             bool clear_first) {
+  if (read_only())
+    return;
+  if (clear_first) {
+    SetUserText(new_value, true);
+  } else {
+    model()->SetInputInProgress(true);
+    if (saved_selection_for_focus_change_.IsValid()) {
+      SelectRange(saved_selection_for_focus_change_);
+      saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+    }
+    InsertOrReplaceText(new_value);
+    TextChanged();
+  }
 }
 
 void OmniboxViewViews::UpdateSecurityLevel() {
@@ -736,7 +749,14 @@ void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
 
   base::string16::size_type entry_start;
   base::string16::size_type entry_end;
-  GetSelectionBounds(&entry_start, &entry_end);
+  // Selection information is saved separately when focus is moved off the
+  // current window - use that when there is no focus and it's valid.
+  if (saved_selection_for_focus_change_.IsValid()) {
+    entry_start = saved_selection_for_focus_change_.start();
+    entry_end = saved_selection_for_focus_change_.end();
+  } else {
+    GetSelectionBounds(&entry_start, &entry_end);
+  }
   state->selection_start = entry_start;
   state->selection_end = entry_end;
 

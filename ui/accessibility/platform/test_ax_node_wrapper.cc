@@ -119,7 +119,8 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
 void TestAXNodeWrapper::DoDefaultAction() {
 }
 
-bool TestAXNodeWrapper::SetStringValue(const base::string16& new_value) {
+bool TestAXNodeWrapper::SetStringValue(const base::string16& new_value,
+                                       bool clear_first) {
   return false;
 }
 

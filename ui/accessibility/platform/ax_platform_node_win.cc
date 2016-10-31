@@ -454,7 +454,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
 STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
                                              BSTR new_value) {
   COM_OBJECT_VALIDATE_VAR_ID(var_id);
-  if (delegate_->SetStringValue(new_value))
+  if (delegate_->SetStringValue(new_value, true))
     return S_OK;
   return E_FAIL;
 }

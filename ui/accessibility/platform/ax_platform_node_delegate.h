@@ -85,9 +85,14 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual void DoDefaultAction() = 0;
 
   // Change the value of a control, such as the text content of a text field.
-  virtual bool SetStringValue(const base::string16& new_value) = 0;
+  // If |clear_first| is true, this replaces all text with the |new_value|.
+  // Otherwise this inserts |new_value| at the cursor position, replacing any
+  // selected text. The cursor is placed at the end of |new_value|.
+  virtual bool SetStringValue(const base::string16& new_value,
+                              bool clear_first) = 0;
 
-  // Whether the string value is settable.
+  // Whether SetStringValue() is callable, i.e. if the string value is not read
+  // only and if the callback exists.
   virtual bool CanSetStringValue() = 0;
 };
 

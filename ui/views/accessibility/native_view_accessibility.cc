@@ -213,14 +213,15 @@ void NativeViewAccessibility::DoDefaultAction() {
                                         ui::EF_LEFT_MOUSE_BUTTON));
 }
 
-bool NativeViewAccessibility::SetStringValue(const base::string16& new_value) {
+bool NativeViewAccessibility::SetStringValue(const base::string16& new_value,
+                                             bool clear_first) {
   // Return an error if the view can't set the value.
   if (!CanSetStringValue())
     return false;
 
   ui::AXViewState state;
   view_->GetAccessibleState(&state);
-  state.set_value_callback.Run(new_value);
+  state.set_value_callback.Run(new_value, clear_first);
   return true;
 }
 

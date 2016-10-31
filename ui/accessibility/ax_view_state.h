@@ -75,12 +75,15 @@ struct AX_EXPORT AXViewState {
   // set the string value of this view. This only applies to roles where
   // setting the value makes sense, like a text box. Not often used by
   // screen readers, but often used by automation software to script
-  // things like logging into portals or filling forms.
+  // things like logging into portals or filling forms. If the second argument
+  // is true, this replaces all text with the string given. Otherwise this
+  // inserts at the cursor position, replacing any selected text. The cursor is
+  // placed at the end of the string given.
   //
   // This callback is only valid for the lifetime of the view, and should
   // be a safe no-op if the view is deleted. Typically, accessible views
   // should use a WeakPtr when binding the callback.
-  base::Callback<void(const base::string16&)> set_value_callback;
+  base::Callback<void(const base::string16&, bool)> set_value_callback;
 
  private:
   uint32_t state_;

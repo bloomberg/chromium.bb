@@ -56,7 +56,8 @@ class VIEWS_EXPORT NativeViewAccessibility
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   void DoDefaultAction() override;
-  bool SetStringValue(const base::string16& new_value) override;
+  bool SetStringValue(const base::string16& new_value,
+                      bool clear_first) override;
   bool CanSetStringValue() override;
 
   // WidgetObserver

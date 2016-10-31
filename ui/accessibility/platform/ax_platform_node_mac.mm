@@ -378,11 +378,9 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
     return NO;
   }
 
-  if ([attributeName isEqualToString:NSAccessibilityValueAttribute])
+  if ([attributeName isEqualToString:NSAccessibilityValueAttribute] ||
+      [attributeName isEqualToString:NSAccessibilitySelectedTextAttribute])
     return node_->GetDelegate()->CanSetStringValue();
-  // TODO(patricialor): Implement and merge with conditional for value above.
-  if ([attributeName isEqualToString:NSAccessibilitySelectedTextAttribute])
-    return NO;
 
   if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
     if (ui::AXViewState::IsFlagSet(node_->GetData().state,
@@ -397,8 +395,13 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
   if ([attribute isEqualToString:NSAccessibilityValueAttribute] &&
-      [value isKindOfClass:[NSString class]])
-    node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value));
+      [value isKindOfClass:[NSString class]]) {
+    node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value), true);
+  } else if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute] &&
+             [value isKindOfClass:[NSString class]]) {
+    node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value),
+                                         false);
+  }
 
   // TODO(patricialor): Plumb through all the other writable attributes as
   // specified in accessibilityIsAttributeSettable.

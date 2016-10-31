@@ -365,8 +365,11 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers
-  // don't normally use this). Sets the value and clears the selection.
-  void AccessibilitySetValue(const base::string16& new_value);
+  // don't normally use this). If |clear_first| is true, this replaces all text
+  // with the |new_value|. Otherwise this inserts |new_value| at the cursor
+  // position, replacing any selected text. The cursor is placed at the end of
+  // |new_value|.
+  void AccessibilitySetValue(const base::string16& new_value, bool clear_first);
 
   // Updates the painted background color.
   void UpdateBackgroundColor();

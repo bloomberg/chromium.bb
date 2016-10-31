@@ -1824,11 +1824,15 @@ void Textfield::UpdateSelectionClipboard() {
 #endif
 }
 
-void Textfield::AccessibilitySetValue(const base::string16& new_value) {
-  if (!read_only()) {
+void Textfield::AccessibilitySetValue(const base::string16& new_value,
+                                      bool clear_first) {
+  if (read_only())
+    return;
+  if (!clear_first)
+    InsertOrReplaceText(new_value);
+  else
     SetText(new_value);
-    ClearSelection();
-  }
+  ClearSelection();
 }
 
 void Textfield::UpdateBackgroundColor() {

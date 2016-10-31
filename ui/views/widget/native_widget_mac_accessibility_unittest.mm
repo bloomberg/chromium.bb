@@ -336,6 +336,50 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
   EXPECT_NSEQ(kTestPlaceholderText,
               AttributeValueAtMidpoint(NSAccessibilityValueAttribute));
   EXPECT_EQ(base::SysNSStringToUTF16(kTestPlaceholderText), textfield->text());
+  textfield->SetReadOnly(false);
+
+  // Change the selection text when there is no selected text.
+  textfield->SelectRange(gfx::Range(0, 0));
+  EXPECT_TRUE([ax_node
+      accessibilityIsAttributeSettable:NSAccessibilitySelectedTextAttribute]);
+
+  NSString* new_string =
+      [kTestStringValue stringByAppendingString:kTestPlaceholderText];
+  [ax_node accessibilitySetValue:kTestStringValue
+                    forAttribute:NSAccessibilitySelectedTextAttribute];
+  EXPECT_NSEQ(new_string,
+              AttributeValueAtMidpoint(NSAccessibilityValueAttribute));
+  EXPECT_EQ(base::SysNSStringToUTF16(new_string), textfield->text());
+
+  // Replace entire selection.
+  gfx::Range test_range(0, [new_string length]);
+  textfield->SelectRange(test_range);
+  [ax_node accessibilitySetValue:kTestStringValue
+                    forAttribute:NSAccessibilitySelectedTextAttribute];
+  EXPECT_NSEQ(kTestStringValue,
+              AttributeValueAtMidpoint(NSAccessibilityValueAttribute));
+  EXPECT_EQ(base::SysNSStringToUTF16(kTestStringValue), textfield->text());
+  // Make sure the cursor is at the end of the Textfield.
+  EXPECT_EQ(gfx::Range([kTestStringValue length]),
+            textfield->GetSelectedRange());
+
+  // Replace a middle section only (with a backwards selection range).
+  base::string16 front = base::ASCIIToUTF16("Front ");
+  base::string16 middle = base::ASCIIToUTF16("middle");
+  base::string16 back = base::ASCIIToUTF16(" back");
+  base::string16 replacement = base::ASCIIToUTF16("replaced");
+  textfield->SetText(front + middle + back);
+  test_range = gfx::Range(front.length() + middle.length(), front.length());
+  new_string = base::SysUTF16ToNSString(front + replacement + back);
+  textfield->SelectRange(test_range);
+  [ax_node accessibilitySetValue:base::SysUTF16ToNSString(replacement)
+                    forAttribute:NSAccessibilitySelectedTextAttribute];
+  EXPECT_NSEQ(new_string,
+              AttributeValueAtMidpoint(NSAccessibilityValueAttribute));
+  EXPECT_EQ(base::SysNSStringToUTF16(new_string), textfield->text());
+  // Make sure the cursor is at the end of the replacement.
+  EXPECT_EQ(gfx::Range(front.length() + replacement.length()),
+            textfield->GetSelectedRange());
 }
 
 }  // namespace views
