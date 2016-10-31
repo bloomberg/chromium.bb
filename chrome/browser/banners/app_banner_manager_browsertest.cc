@@ -256,8 +256,16 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                 SHOWING_WEB_APP_BANNER, true);
 }
 
+// Disabled. See http://crbug.com/660798
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_WebAppBannerCreatedIndirectMultipleLargerTotal \
+  DISABLED_WebAppBannerCreatedIndirectMultipleLargerTotal
+#else
+#define MAYBE_WebAppBannerCreatedIndirectMultipleLargerTotal \
+  WebAppBannerCreatedIndirectMultipleLargerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
-                       WebAppBannerCreatedIndirectMultipleLargerTotal) {
+                       MAYBE_WebAppBannerCreatedIndirectMultipleLargerTotal) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(4);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK, 7,
