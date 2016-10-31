@@ -52,12 +52,11 @@ class ServerBase(object):
         self._platform = port_obj.host.platform
         self._output_dir = output_dir
 
-        # We need a non-checkout-dependent place to put lock files, etc. We
-        # don't use the Python default on the Mac because it defaults to a
-        # randomly-generated directory under /var/folders and no one would ever
-        # look there.
+        # On Mac and Linux tmpdir is set to '/tmp' for (i) consistency
+        # and (ii) because it is hardcoded in the Apache
+        # ScoreBoardFile directive.
         tmpdir = tempfile.gettempdir()
-        if self._platform.is_mac():
+        if self._platform.is_mac() or self._platform.is_linux():
             tmpdir = '/tmp'
 
         self._runtime_path = self._filesystem.join(tmpdir, "WebKit")
