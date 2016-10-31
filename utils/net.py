@@ -5,8 +5,6 @@
 """Classes and functions for generic network communication over HTTP."""
 
 import cookielib
-import cStringIO as StringIO
-import datetime
 import httplib
 import itertools
 import json
@@ -243,7 +241,7 @@ def get_http_service(urlhost, allow_cached=True):
     if not engine_cls.provides_auth and not is_gs and not conf.disabled:
       authenticator = (
           authenticators.LuciContextAuthenticator()
-          if oauth.has_local_auth() else
+          if conf.use_luci_context_auth else
           authenticators.OAuthAuthenticator(urlhost, conf))
     return HttpService(
         urlhost,
