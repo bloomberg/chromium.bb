@@ -76,7 +76,6 @@ namespace content {
 class AudioMirroringManager;
 class MediaInternals;
 class MediaStreamManager;
-class MediaStreamUIProxy;
 class ResourceContext;
 
 class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
@@ -209,8 +208,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                                base::TimeTicks auth_start_time);
 
   // Proceed with device authorization after checking permissions.
-  void AccessChecked(std::unique_ptr<MediaStreamUIProxy> ui_proxy,
-                     const std::string& device_id,
+  void AccessChecked(const std::string& device_id,
                      const url::Origin& security_origin,
                      int stream_id,
                      base::TimeTicks auth_start_time,

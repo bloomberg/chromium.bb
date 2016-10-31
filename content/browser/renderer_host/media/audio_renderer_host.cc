@@ -18,11 +18,11 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
+#include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -704,29 +704,19 @@ void AudioRendererHost::CheckOutputDeviceAccess(
   }
 
   if (media::AudioDeviceDescription::IsDefaultDevice(device_id)) {
-    AccessChecked(nullptr, device_id, security_origin, stream_id,
-                  auth_start_time, true);
+    AccessChecked(device_id, security_origin, stream_id, auth_start_time, true);
   } else {
-    // Check that MediaStream device permissions have been granted,
-    // hence the use of a MediaStreamUIProxy.
-    std::unique_ptr<MediaStreamUIProxy> ui_proxy = MediaStreamUIProxy::Create();
-
-    // Use MEDIA_DEVICE_AUDIO_CAPTURE instead of MEDIA_DEVICE_AUDIO_OUTPUT
-    // because MediaStreamUIProxy::CheckAccess does not currently support
-    // MEDIA_DEVICE_AUDIO_OUTPUT.
-    // TODO(guidou): Change to MEDIA_DEVICE_AUDIO_OUTPUT when support becomes
-    // available. http://crbug.com/498675
-    ui_proxy->CheckAccess(
-        security_origin, MEDIA_DEVICE_AUDIO_CAPTURE, render_process_id_,
-        render_frame_id,
-        base::Bind(&AudioRendererHost::AccessChecked, this,
-                   base::Passed(&ui_proxy), device_id, security_origin,
-                   stream_id, auth_start_time));
+    // Check that device permissions have been granted for nondefault devices.
+    MediaDevicesPermissionChecker permission_checker;
+    permission_checker.CheckPermission(
+        MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, render_process_id_, render_frame_id,
+        security_origin,
+        base::Bind(&AudioRendererHost::AccessChecked, this, device_id,
+                   security_origin, stream_id, auth_start_time));
   }
 }
 
 void AudioRendererHost::AccessChecked(
-    std::unique_ptr<MediaStreamUIProxy> ui_proxy,
     const std::string& device_id,
     const url::Origin& security_origin,
     int stream_id,

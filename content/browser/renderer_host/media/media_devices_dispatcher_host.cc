@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/common/media/media_devices.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
@@ -49,27 +48,24 @@ void MediaDevicesDispatcherHost::Create(
     int routing_id,
     const std::string& device_id_salt,
     MediaStreamManager* media_stream_manager,
-    bool use_fake_ui,
     ::mojom::MediaDevicesDispatcherHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(base::MakeUnique<MediaDevicesDispatcherHost>(
-                              render_process_id, routing_id, device_id_salt,
-                              media_stream_manager, use_fake_ui),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<MediaDevicesDispatcherHost>(
+          render_process_id, routing_id, device_id_salt, media_stream_manager),
+      std::move(request));
 }
 
 MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
     int render_process_id,
     int routing_id,
     const std::string& device_id_salt,
-    MediaStreamManager* media_stream_manager,
-    bool use_fake_ui)
+    MediaStreamManager* media_stream_manager)
     : render_process_id_(render_process_id),
       routing_id_(routing_id),
       device_id_salt_(device_id_salt),
       group_id_salt_(ResourceContext::CreateRandomMediaDeviceIDSalt()),
       media_stream_manager_(media_stream_manager),
-      use_fake_ui_(use_fake_ui),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -104,73 +100,17 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
   devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = request_video_input;
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = request_audio_output;
 
-  bool request_audio = request_audio_input || request_audio_output;
-  CheckAccess(request_audio, request_video_input, security_origin,
-              base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
-                         weak_factory_.GetWeakPtr(), devices_to_enumerate,
-                         security_origin, client_callback));
+  permission_checker_.CheckPermissions(
+      devices_to_enumerate, render_process_id_, routing_id_, security_origin,
+      base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
+                 weak_factory_.GetWeakPtr(), devices_to_enumerate,
+                 security_origin, client_callback));
 }
 
-void MediaDevicesDispatcherHost::CheckAccess(
-    bool check_audio,
-    bool check_video_input,
-    const url::Origin& security_origin,
-    const AccessCheckedCallback& callback) {
-  DCHECK(check_audio || check_video_input);
-  std::unique_ptr<MediaStreamUIProxy> ui_proxy = GetUIProxy();
-  if (check_audio) {
-    ui_proxy->CheckAccess(
-        security_origin, MEDIA_DEVICE_AUDIO_CAPTURE, render_process_id_,
-        routing_id_,
-        base::Bind(&MediaDevicesDispatcherHost::AudioAccessChecked,
-                   weak_factory_.GetWeakPtr(), base::Passed(&ui_proxy),
-                   check_video_input, security_origin, callback));
-    return;
-  }
-
-  DCHECK(check_video_input);
-  ui_proxy->CheckAccess(
-      security_origin, MEDIA_DEVICE_VIDEO_CAPTURE, render_process_id_,
-      routing_id_,
-      base::Bind(&MediaDevicesDispatcherHost::VideoAccessChecked,
-                 weak_factory_.GetWeakPtr(), base::Passed(&ui_proxy),
-                 false /* has_audio_permission */, callback));
-}
-
-void MediaDevicesDispatcherHost::AudioAccessChecked(
-    std::unique_ptr<MediaStreamUIProxy> ui_proxy,
-    bool check_video_permission,
-    const url::Origin& security_origin,
-    const AccessCheckedCallback& callback,
-    bool has_audio_permission) {
+void MediaDevicesDispatcherHost::SetPermissionChecker(
+    const MediaDevicesPermissionChecker& permission_checker) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (check_video_permission) {
-    ui_proxy->CheckAccess(
-        security_origin, MEDIA_DEVICE_VIDEO_CAPTURE, render_process_id_,
-        routing_id_,
-        base::Bind(&MediaDevicesDispatcherHost::VideoAccessChecked,
-                   weak_factory_.GetWeakPtr(), base::Passed(&ui_proxy),
-                   has_audio_permission, callback));
-    return;
-  }
-
-  MediaDevicesManager::BoolDeviceTypes permissions;
-  permissions[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = has_audio_permission;
-  permissions[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = has_audio_permission;
-  callback.Run(permissions);
-}
-
-void MediaDevicesDispatcherHost::VideoAccessChecked(
-    std::unique_ptr<MediaStreamUIProxy> ui_proxy,
-    bool has_audio_permission,
-    const AccessCheckedCallback& callback,
-    bool has_video_permission) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MediaDevicesManager::BoolDeviceTypes permissions;
-  permissions[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = has_audio_permission;
-  permissions[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = has_audio_permission;
-  permissions[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = has_video_permission;
-  callback.Run(permissions);
+  permission_checker_ = permission_checker;
 }
 
 void MediaDevicesDispatcherHost::DoEnumerateDevices(
@@ -205,22 +145,6 @@ void MediaDevicesDispatcherHost::DevicesEnumerated(
     }
   }
   client_callback.Run(result);
-}
-
-std::unique_ptr<MediaStreamUIProxy> MediaDevicesDispatcherHost::GetUIProxy() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (use_fake_ui_) {
-    return fake_ui_proxy_ ? std::move(fake_ui_proxy_)
-                          : base::MakeUnique<FakeMediaStreamUIProxy>();
-  }
-  return MediaStreamUIProxy::Create();
-}
-
-void MediaDevicesDispatcherHost::SetFakeUIProxyForTesting(
-    std::unique_ptr<MediaStreamUIProxy> fake_ui_proxy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (use_fake_ui_)
-    fake_ui_proxy_ = std::move(fake_ui_proxy);
 }
 
 }  // namespace content

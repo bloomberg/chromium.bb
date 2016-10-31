@@ -64,7 +64,7 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
 
     host_ = base::MakeUnique<MediaDevicesDispatcherHost>(
         kProcessId, kRenderId, mock_resource_context->GetMediaDeviceIDSalt(),
-        media_stream_manager_.get(), true /* use_fake_ui */);
+        media_stream_manager_.get());
   }
 
   void SetUp() override {
@@ -92,13 +92,13 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     closure.Run();
   }
 
-  void EnumerateDevicesAndWaitForResult(
-      bool enumerate_audio_input,
-      bool enumerate_video_input,
-      bool enumerate_audio_output,
-      std::unique_ptr<MediaStreamUIProxy> ui_proxy) {
-    if (ui_proxy)
-      host_->SetFakeUIProxyForTesting(std::move(ui_proxy));
+  void EnumerateDevicesAndWaitForResult(bool enumerate_audio_input,
+                                        bool enumerate_video_input,
+                                        bool enumerate_audio_output,
+                                        bool permission_override_value = true) {
+    MediaDevicesPermissionChecker permission_checker;
+    permission_checker.OverridePermissionsForTesting(permission_override_value);
+    host_->SetPermissionChecker(permission_checker);
     base::RunLoop run_loop;
     host_->EnumerateDevices(
         enumerate_audio_input, enumerate_video_input, enumerate_audio_output,
@@ -197,58 +197,42 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
 };
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioInputDevices) {
-  EnumerateDevicesAndWaitForResult(true, false, false, nullptr);
+  EnumerateDevicesAndWaitForResult(true, false, false);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateVideoInputDevices) {
-  EnumerateDevicesAndWaitForResult(false, true, false, nullptr);
+  EnumerateDevicesAndWaitForResult(false, true, false);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioOutputDevices) {
-  EnumerateDevicesAndWaitForResult(false, false, true, nullptr);
+  EnumerateDevicesAndWaitForResult(false, false, true);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevices) {
-  EnumerateDevicesAndWaitForResult(true, true, true, nullptr);
+  EnumerateDevicesAndWaitForResult(true, true, true);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioInputDevicesNoAccess) {
-  std::unique_ptr<FakeMediaStreamUIProxy> fake_ui_proxy =
-      base::MakeUnique<FakeMediaStreamUIProxy>();
-  fake_ui_proxy->SetMicAccess(false);
-  EnumerateDevicesAndWaitForResult(true, false, false,
-                                   std::move(fake_ui_proxy));
+  EnumerateDevicesAndWaitForResult(true, false, false, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateVideoInputDevicesNoAccess) {
-  std::unique_ptr<FakeMediaStreamUIProxy> fake_ui_proxy =
-      base::MakeUnique<FakeMediaStreamUIProxy>();
-  fake_ui_proxy->SetCameraAccess(false);
-  EnumerateDevicesAndWaitForResult(false, true, false,
-                                   std::move(fake_ui_proxy));
+  EnumerateDevicesAndWaitForResult(false, true, false, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioOutputDevicesNoAccess) {
-  std::unique_ptr<FakeMediaStreamUIProxy> fake_ui_proxy =
-      base::MakeUnique<FakeMediaStreamUIProxy>();
-  fake_ui_proxy->SetMicAccess(false);
-  EnumerateDevicesAndWaitForResult(false, false, true,
-                                   std::move(fake_ui_proxy));
+  EnumerateDevicesAndWaitForResult(false, false, true, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesNoAccess) {
-  std::unique_ptr<FakeMediaStreamUIProxy> fake_ui_proxy =
-      base::MakeUnique<FakeMediaStreamUIProxy>();
-  fake_ui_proxy->SetMicAccess(false);
-  fake_ui_proxy->SetCameraAccess(false);
-  EnumerateDevicesAndWaitForResult(true, true, true, std::move(fake_ui_proxy));
+  EnumerateDevicesAndWaitForResult(true, true, true, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 

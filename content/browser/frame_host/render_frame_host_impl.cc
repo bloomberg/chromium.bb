@@ -2231,9 +2231,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                                        ->GetBrowserContext()
                                        ->GetResourceContext()
                                        ->GetMediaDeviceIDSalt(),
-                   base::Unretained(media_stream_manager),
-                   base::CommandLine::ForCurrentProcess()->HasSwitch(
-                       switches::kUseFakeUIForMediaStream)),
+                   base::Unretained(media_stream_manager)),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 #endif
