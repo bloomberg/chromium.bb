@@ -7,13 +7,15 @@ package org.chromium.chrome.browser.crash;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.StringDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate;
-import org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate.ProcessType;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -46,43 +48,32 @@ public class MinidumpUploadService extends IntentService {
     static final String FINISHED_LOGCAT_EXTRACTION_KEY = "upload_extraction_completed";
     static final String LOCAL_CRASH_ID_KEY = "local_id";
 
-    // Clients of the minidump-uploading component have to define the behaviour of the component by
-    // setting this delegate.
-    private static MinidumpUploadDelegate sMinidumpUploadDelegate;
-
-    // Lock for the MinidumpUploadDelegate
-    private static final Object sDelegateLock = new Object();
-
     /**
      * The number of times we will try to upload a crash.
      */
     @VisibleForTesting
     static final int MAX_TRIES_ALLOWED = 3;
 
+    /**
+     * Histogram related constants.
+     */
+    private static final String HISTOGRAM_NAME_PREFIX = "Tab.AndroidCrashUpload_";
+    private static final int HISTOGRAM_MAX = 2;
+    private static final int FAILURE = 0;
+    private static final int SUCCESS = 1;
+
+    @StringDef({BROWSER, RENDERER, GPU, OTHER})
+    public @interface ProcessType {}
+    static final String BROWSER = "Browser";
+    static final String RENDERER = "Renderer";
+    static final String GPU = "GPU";
+    static final String OTHER = "Other";
+
+    static final String[] TYPES = {BROWSER, RENDERER, GPU, OTHER};
+
     public MinidumpUploadService() {
         super(TAG);
         setIntentRedelivery(true);
-
-        // Ensure the upload delegate has been set before the Service starts.
-        getUploadDelegate();
-    }
-
-    public static void setUploadDelegate(MinidumpUploadDelegate minidumpUploadDelegate) {
-        synchronized (sDelegateLock) {
-            if (sMinidumpUploadDelegate != null) {
-                throw new RuntimeException("The upload delegate has already been set.");
-            }
-            sMinidumpUploadDelegate = minidumpUploadDelegate;
-        }
-    }
-
-    private static MinidumpUploadDelegate getUploadDelegate() {
-        synchronized (sDelegateLock) {
-            if (sMinidumpUploadDelegate == null) {
-                throw new RuntimeException("The upload delegate must be set before use.");
-            }
-            return sMinidumpUploadDelegate;
-        }
     }
 
     /**
@@ -135,6 +126,29 @@ public class MinidumpUploadService extends IntentService {
         Intent intent = new Intent(context, MinidumpUploadService.class);
         intent.setAction(ACTION_FIND_LAST);
         return intent;
+    }
+
+    /**
+     * Stores the successes and failures from uploading crash to UMA,
+     */
+    public static void storeBreakpadUploadStatsInUma(ChromePreferenceManager pref) {
+        for (String type : TYPES) {
+            for (int success = pref.getCrashSuccessUploadCount(type); success > 0; success--) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        HISTOGRAM_NAME_PREFIX + type,
+                        SUCCESS,
+                        HISTOGRAM_MAX);
+            }
+            for (int fail = pref.getCrashFailureUploadCount(type); fail > 0; fail--) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        HISTOGRAM_NAME_PREFIX + type,
+                        FAILURE,
+                        HISTOGRAM_MAX);
+            }
+
+            pref.setCrashSuccessUploadCount(type, 0);
+            pref.setCrashFailureUploadCount(type, 0);
+        }
     }
 
     private void handleFindAndUploadLastCrash(Intent intent) {
@@ -228,8 +242,7 @@ public class MinidumpUploadService extends IntentService {
 
         if (uploadStatus == MinidumpUploadCallable.UPLOAD_SUCCESS) {
             // Only update UMA stats if an intended and successful upload.
-            getUploadDelegate().onSuccessfulUpload(
-                    this, getCrashType(getNewNameAfterSuccessfulUpload(minidumpFileName)));
+            incrementCrashSuccessUploadCount(getNewNameAfterSuccessfulUpload(minidumpFileName));
         } else if (uploadStatus == MinidumpUploadCallable.UPLOAD_FAILURE) {
             // Unable to upload minidump. Incrementing try number and restarting.
 
@@ -242,7 +255,7 @@ public class MinidumpUploadService extends IntentService {
                     MinidumpUploadRetry.scheduleRetry(getApplicationContext());
                 } else {
                     // Only record failure to UMA after we have maxed out the allotted tries.
-                    getUploadDelegate().onMaxedOutUploadFailures(this, getCrashType(newName));
+                    incrementCrashFailureUploadCount(newName);
                     Log.d(TAG, "Giving up on trying to upload " + minidumpFileName + "after "
                             + tries + " number of tries.");
                 }
@@ -270,30 +283,45 @@ public class MinidumpUploadService extends IntentService {
                     fileReader.readLine();
                     String crashType = fileReader.readLine();
                     if (crashType == null) {
-                        return MinidumpUploadDelegate.OTHER;
+                        return OTHER;
                     }
 
                     if (crashType.equals("browser")) {
-                        return MinidumpUploadDelegate.BROWSER;
+                        return BROWSER;
                     }
 
                     if (crashType.equals("renderer")) {
-                        return MinidumpUploadDelegate.RENDERER;
+                        return RENDERER;
                     }
 
                     if (crashType.equals("gpu-process")) {
-                        return MinidumpUploadDelegate.GPU;
+                        return GPU;
                     }
 
-                    return MinidumpUploadDelegate.OTHER;
+                    return OTHER;
                 }
             }
         } catch (IOException e) {
-            Log.w(TAG, "Error while reading crash file.", e);
+            Log.w(TAG, "Error while reading crash file.", e.toString());
         } finally {
             StreamUtil.closeQuietly(fileReader);
         }
-        return MinidumpUploadDelegate.OTHER;
+        return OTHER;
+    }
+
+    /**
+     * Increment the count of success/failure by 1 and distinguish between different types of
+     * crashes by looking into the file.
+     * @param fileName is the name of a minidump file that contains the type of crash.
+     */
+    private void incrementCrashSuccessUploadCount(String fileName) {
+        ChromePreferenceManager.getInstance(this)
+            .incrementCrashSuccessUploadCount(getCrashType(fileName));
+    }
+
+    private void incrementCrashFailureUploadCount(String fileName) {
+        ChromePreferenceManager.getInstance(this)
+            .incrementCrashFailureUploadCount(getCrashType(fileName));
     }
 
     /**
@@ -308,7 +336,7 @@ public class MinidumpUploadService extends IntentService {
     @VisibleForTesting
     MinidumpUploadCallable createMinidumpUploadCallable(File minidumpFile, File logfile) {
         return new MinidumpUploadCallable(
-                minidumpFile, logfile, getUploadDelegate().getCrashReportingPermissionManager());
+                minidumpFile, logfile, PrivacyPreferencesManager.getInstance());
     }
 
     /**

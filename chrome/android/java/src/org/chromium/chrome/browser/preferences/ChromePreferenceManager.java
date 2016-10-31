@@ -11,8 +11,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate.ProcessType;
 
 import java.util.Locale;
 

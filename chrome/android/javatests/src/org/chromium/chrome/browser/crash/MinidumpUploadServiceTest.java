@@ -4,24 +4,21 @@
 
 package org.chromium.chrome.browser.crash;
 
-import static org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate.BROWSER;
-import static org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate.GPU;
-import static org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate.OTHER;
-import static org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate.RENDERER;
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.BROWSER;
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.GPU;
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.OTHER;
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.RENDERER;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
-import org.chromium.components.minidump_uploader.util.MinidumpUploadDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.NetworkChangeNotifier;
@@ -39,13 +36,6 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
     private static final int CHECK_INTERVAL_MS = 250;
     private static final int MAX_TIMEOUT_MS = 20000;
     private static final String BOUNDARY = "TESTBOUNDARY";
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        MinidumpUploadService.setUploadDelegate(new TestMinidumpUploadDelegate());
-    }
 
     @SmallTest
     @Feature({"Android-AppBase"})
@@ -83,32 +73,6 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // Verify.
         assertTrue("Minidump file should exist", minidumpFile.isFile());
         assertEquals("Should have called startService() once", 1, numServiceStarts.intValue());
-    }
-
-    private static class TestMinidumpUploadDelegate implements MinidumpUploadDelegate {
-        @Override
-        public void onSuccessfulUpload(Context context, @ProcessType String crashType) {}
-
-        @Override
-        public void onMaxedOutUploadFailures(Context context, @ProcessType String crashType) {
-            MoreAsserts.assertNotEqual(crashType, MinidumpUploadDelegate.OTHER);
-        }
-
-        @Override
-        public CrashReportingPermissionManager getCrashReportingPermissionManager() {
-            return new MinidumpUploadCallableTest.MockCrashReportingPermissionManager() {
-                {
-                    // None of the tests in this class depend on the values in the permission
-                    // manager - so set the values to false.
-                    mIsInSample = false;
-                    mIsNetworkAvailable = false;
-                    mIsPermitted = false;
-                    mIsUserPermitted = false;
-                    mIsCommandLineDisabled = false;
-                    mIsEnabledForTests = false;
-                }
-            };
-        }
     }
 
     private static class TestMinidumpUploadService extends MinidumpUploadService {
@@ -349,7 +313,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         File minidumpFile = new File(mCrashDir, "chromium_renderer-111.dmp1");
         minidumpFile.createNewFile();
         File logfile = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
-        setUpMinidumpFile(minidumpFile, BOUNDARY, "renderer");
+        setUpMinidumpFile(minidumpFile, BOUNDARY);
 
         // Run test.
         Intent uploadIntent =
