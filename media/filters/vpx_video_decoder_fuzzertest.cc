@@ -31,8 +31,17 @@ struct Env {
 };
 Env* env = new Env();
 
-void OnDecodeComplete(DecodeStatus status) {}
-void OnInitDone(bool success) {}
+void OnDecodeComplete(const base::Closure& quit_closure, DecodeStatus status) {
+  quit_closure.Run();
+}
+
+void OnInitDone(const base::Closure& quit_closure,
+                bool* success_dest,
+                bool success) {
+  *success_dest = success;
+  quit_closure.Run();
+}
+
 void OnOutputComplete(const scoped_refptr<VideoFrame>& frame) {}
 
 // Entry point for LibFuzzer.
@@ -60,15 +69,26 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                             EmptyExtraData(), Unencrypted());
 
   VpxVideoDecoder decoder;
-  base::RunLoop run_loop;
 
-  decoder.Initialize(config, true /* low_delay */, nullptr /* cdm_context */,
-                     base::Bind(&OnInitDone), base::Bind(&OnOutputComplete));
-  run_loop.RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    bool success = false;
+    decoder.Initialize(
+        config, true /* low_delay */, nullptr /* cdm_context */,
+        base::Bind(&OnInitDone, run_loop.QuitClosure(), &success),
+        base::Bind(&OnOutputComplete));
+    run_loop.Run();
+    if (!success)
+      return 0;
+  }
 
-  auto buffer = DecoderBuffer::CopyFrom(data, size);
-  decoder.Decode(buffer, base::Bind(&OnDecodeComplete));
-  run_loop.RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    auto buffer = DecoderBuffer::CopyFrom(data, size);
+    decoder.Decode(buffer,
+                   base::Bind(&OnDecodeComplete, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   return 0;
 }
