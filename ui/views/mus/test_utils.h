@@ -16,6 +16,10 @@ class WindowManagerConnectionTestApi {
       : connection_(connection) {}
   ~WindowManagerConnectionTestApi() {}
 
+  ui::Window* GetUiWindowAtScreenPoint(const gfx::Point& point) {
+    return connection_->GetUiWindowAtScreenPoint(point);
+  }
+
   ScreenMus* screen() { return connection_->screen_.get(); }
 
  private:

@@ -81,17 +81,8 @@ bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
          window->GetBoundsInScreen().Contains(GetCursorScreenPoint());
 }
 
-gfx::NativeWindow ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
-  aura::Window* aura_window = nullptr;
-  ui::Window* ui_window = delegate_->GetWindowAtScreenPoint(point);
-  if (ui_window) {
-    NativeWidgetMus* nw_mus = NativeWidgetMus::GetForWindow(ui_window);
-    if (nw_mus) {
-      aura_window =
-          static_cast<internal::NativeWidgetPrivate*>(nw_mus)->GetNativeView();
-    }
-  }
-  return aura_window;
+aura::Window* ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
+  return delegate_->GetWindowAtScreenPoint(point);
 }
 
 void ScreenMus::OnDisplays(mojo::Array<ui::mojom::WsDisplayPtr> ws_displays,

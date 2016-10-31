@@ -27,6 +27,11 @@ class WindowManagerConnectionTest : public testing::Test {
 
   ScreenMusDelegate* screen_mus_delegate() { return connection(); }
 
+  ui::Window* GetWindowAtScreenPoint(const gfx::Point& point) {
+    return test::WindowManagerConnectionTestApi(connection())
+        .GetUiWindowAtScreenPoint(point);
+  }
+
  private:
   base::MessageLoop message_loop_;
   ScopedViewsTestHelper helper_;
@@ -50,8 +55,7 @@ TEST_F(WindowManagerConnectionTest, GetWindowAtScreenPointRecurse) {
   two->SetVisible(true);
 
   // Ensure that we recurse down to the second window.
-  EXPECT_EQ(two,
-            screen_mus_delegate()->GetWindowAtScreenPoint(gfx::Point(50, 50)));
+  EXPECT_EQ(two, GetWindowAtScreenPoint(gfx::Point(50, 50)));
 }
 
 TEST_F(WindowManagerConnectionTest, GetWindowAtScreenPointRecurseButIgnore) {
@@ -71,8 +75,7 @@ TEST_F(WindowManagerConnectionTest, GetWindowAtScreenPointRecurseButIgnore) {
 
   // We'll recurse down, but we'll use the parent anyway because the children
   // don't match the bounds.
-  EXPECT_EQ(one,
-            screen_mus_delegate()->GetWindowAtScreenPoint(gfx::Point(50, 50)));
+  EXPECT_EQ(one, GetWindowAtScreenPoint(gfx::Point(50, 50)));
 }
 
 TEST_F(WindowManagerConnectionTest, GetWindowAtScreenPointDisplayOffset) {
@@ -90,8 +93,7 @@ TEST_F(WindowManagerConnectionTest, GetWindowAtScreenPointDisplayOffset) {
   api.screen()->display_list()->FindDisplayById(displays[0].id())->
       set_bounds(gfx::Rect(44, 44, 50, 50));
 
-  EXPECT_EQ(one,
-            screen_mus_delegate()->GetWindowAtScreenPoint(gfx::Point(50, 50)));
+  EXPECT_EQ(one, GetWindowAtScreenPoint(gfx::Point(50, 50)));
 }
 
 TEST_F(WindowManagerConnectionTest, IgnoresHiddenWindows) {
@@ -105,8 +107,7 @@ TEST_F(WindowManagerConnectionTest, IgnoresHiddenWindows) {
   ASSERT_GE(displays.size(), 1u);
   ui::WindowPrivate(one).LocalSetDisplay(displays[0].id());
 
-  EXPECT_EQ(nullptr,
-            screen_mus_delegate()->GetWindowAtScreenPoint(gfx::Point(50, 50)));
+  EXPECT_EQ(nullptr, GetWindowAtScreenPoint(gfx::Point(50, 50)));
 }
 
 }  // namespace

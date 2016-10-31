@@ -71,6 +71,16 @@ ui::Window* GetWindowFrom(const std::map<int64_t, gfx::Point>& display_origins,
   return nullptr;
 }
 
+aura::Window* GetAuraWindowFromUiWindow(ui::Window* window) {
+  if (!window)
+    return nullptr;
+  NativeWidgetMus* nw_mus = NativeWidgetMus::GetForWindow(window);
+  return nw_mus
+             ? static_cast<internal::NativeWidgetPrivate*>(nw_mus)
+                   ->GetNativeView()
+             : nullptr;
+}
+
 }  // namespace
 
 WindowManagerConnection::~WindowManagerConnection() {
@@ -171,6 +181,18 @@ WindowManagerConnection::WindowManagerConnection(
       std::map<std::string, std::vector<uint8_t>>()));
 }
 
+ui::Window* WindowManagerConnection::GetUiWindowAtScreenPoint(
+    const gfx::Point& point) {
+  std::map<int64_t, gfx::Point> display_origins;
+  for (display::Display& d : display::Screen::GetScreen()->GetAllDisplays())
+    display_origins[d.id()] = d.bounds().origin();
+
+  const std::set<ui::Window*>& roots = GetRoots();
+  std::vector<ui::Window*> windows;
+  std::copy(roots.begin(), roots.end(), std::back_inserter(windows));
+  return GetWindowFrom(display_origins, windows, point);
+}
+
 void WindowManagerConnection::OnEmbed(ui::Window* root) {}
 
 void WindowManagerConnection::OnLostConnection(ui::WindowTreeClient* client) {
@@ -199,16 +221,9 @@ gfx::Point WindowManagerConnection::GetCursorScreenPoint() {
   return client_->GetCursorScreenPoint();
 }
 
-ui::Window* WindowManagerConnection::GetWindowAtScreenPoint(
+aura::Window* WindowManagerConnection::GetWindowAtScreenPoint(
     const gfx::Point& point) {
-  std::map<int64_t, gfx::Point> display_origins;
-  for (display::Display& d : display::Screen::GetScreen()->GetAllDisplays())
-    display_origins[d.id()] = d.bounds().origin();
-
-  const std::set<ui::Window*>& roots = GetRoots();
-  std::vector<ui::Window*> windows;
-  std::copy(roots.begin(), roots.end(), std::back_inserter(windows));
-  return GetWindowFrom(display_origins, windows, point);
+  return GetAuraWindowFromUiWindow(GetUiWindowAtScreenPoint(point));
 }
 
 std::unique_ptr<OSExchangeData::Provider>
