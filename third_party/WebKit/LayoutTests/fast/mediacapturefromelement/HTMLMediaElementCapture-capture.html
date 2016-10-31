@@ -18,7 +18,7 @@ var makeAsyncTest = function(filename) {
             assert_true(event.data.size > 0, 'Recorded data size should be > 0');
       });
 
-      recorder.start();
+      recorder.start(0);
       video.play();
 
     });

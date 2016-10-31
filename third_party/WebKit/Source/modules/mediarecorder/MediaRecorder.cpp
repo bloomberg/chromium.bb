@@ -16,6 +16,7 @@
 #include "public/platform/WebMediaStream.h"
 #include "wtf/PtrUtil.h"
 #include <algorithm>
+#include <limits>
 
 namespace blink {
 
@@ -206,7 +207,7 @@ String MediaRecorder::state() const {
 }
 
 void MediaRecorder::start(ExceptionState& exceptionState) {
-  start(0 /* timeSlice */, exceptionState);
+  start(std::numeric_limits<int>::max() /* timeSlice */, exceptionState);
 }
 
 void MediaRecorder::start(int timeSlice, ExceptionState& exceptionState) {

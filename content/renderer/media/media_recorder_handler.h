@@ -57,7 +57,6 @@ class CONTENT_EXPORT MediaRecorderHandler final
                   const blink::WebString& codecs,
                   int32_t audio_bits_per_second,
                   int32_t video_bits_per_second) override;
-  bool start() override;
   bool start(int timeslice) override;
   void stop() override;
   void pause() override;

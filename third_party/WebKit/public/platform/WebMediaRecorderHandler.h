@@ -25,7 +25,6 @@ class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
                           int32_t videoBitsPerSecond) {
     return false;
   }
-  virtual bool start() { return false; }
   virtual bool start(int timeslice) { return false; }
   virtual void stop() {}
   virtual void pause() {}

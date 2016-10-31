@@ -92,7 +92,7 @@ function createAndStartMediaRecorder(stream, mimeType, slice) {
       recorder.start(slice);
       console.log('Recorder started with time slice', slice);
     } else {
-      recorder.start();
+      recorder.start(0);
     }
     resolve(recorder);
   });
@@ -106,7 +106,7 @@ function createMediaRecorder(stream, mimeType) {
   });
 }
 
-// Tests that the MediaRecorder's start() function will cause the |state| to be
+// Tests that the MediaRecorder's start(0) function will cause the |state| to be
 // 'recording' and that a 'start' event is fired.
 function testStartAndRecorderState() {
   var startEventReceived = false;
@@ -120,7 +120,7 @@ function testStartAndRecorderState() {
           startEventReceived = true;
           assertEquals('recording', recorder.state);
         };
-        recorder.start();
+        recorder.start(0);
       })
       .then(function() {
         return waitFor('Make sure the start event was received',
@@ -165,7 +165,7 @@ function testStartStopAndRecorderState() {
       });
 }
 
-// Tests that when MediaRecorder's start() function is called, some data is
+// Tests that when MediaRecorder's start(0) function is called, some data is
 // made available by media recorder via dataavailable events, containing non
 // empty blob data.
 function testStartAndDataAvailable(codec) {
@@ -429,7 +429,7 @@ function testRecordRemotePeerConnection(codec) {
           timeStamps.push(event.timeStamp);
           videoSize += event.data.size;
         };
-        recorder.start();
+        recorder.start(0);
       })
       .then(function() {
         return waitFor('Making sure the recording has data',
@@ -500,7 +500,7 @@ function testTwoChannelAudio() {
         recorder.ondataavailable = function(event) {
           audioSize += event.data.size;
         };
-        recorder.start();
+        recorder.start(0);
         oscillator.start();
         context.startRendering();
       })
@@ -547,7 +547,7 @@ function testAddingTrackToMediaStreamFiresErrorEvent() {
         recorder.onerror = function(event) {
           errorEventReceived = true;
         };
-        recorder.start();
+        recorder.start(0);
         // Add a new track, copy of an existing one for simplicity.
         theStream.addTrack(theStream.getTracks()[1].clone());
       })
@@ -579,7 +579,7 @@ function testRemovingTrackFromMediaStreamFiresErrorEvent() {
         recorder.onerror = function(event) {
           errorEventReceived = true;
         };
-        recorder.start();
+        recorder.start(0);
         theStream.removeTrack(theStream.getTracks()[1]);
       })
       .then(function() {

@@ -45,7 +45,7 @@ function recordMediaStream() {
   recorder = new MediaRecorder(stream);
   recorder.ondataavailable = onRecorderDataAvailable;
   recorder.onError = onRecorderDataAvailable;
-  recorder.start();
+  recorder.start(0);
 };
 
 drawToCanvas(canvas);

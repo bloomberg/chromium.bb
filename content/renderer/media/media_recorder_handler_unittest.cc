@@ -197,7 +197,7 @@ TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   EXPECT_FALSE(hasVideoRecorders());
   EXPECT_FALSE(hasAudioRecorders());
 
-  EXPECT_TRUE(media_recorder_handler_->start());
+  EXPECT_TRUE(media_recorder_handler_->start(0));
   EXPECT_TRUE(recording());
 
   EXPECT_TRUE(hasVideoRecorders() || !GetParam().has_video);
@@ -225,7 +225,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   const WebString codecs(base::UTF8ToUTF16(GetParam().codecs));
   EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
                                                   mime_type, codecs, 0, 0));
-  EXPECT_TRUE(media_recorder_handler_->start());
+  EXPECT_TRUE(media_recorder_handler_->start(0));
 
   InSequence s;
   const scoped_refptr<media::VideoFrame> video_frame =
@@ -286,7 +286,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
   const WebString mime_type(base::UTF8ToUTF16("audio/webm"));
   EXPECT_TRUE(media_recorder_handler_->initialize(
       this, registry_.test_stream(), mime_type, WebString(), 0, 0));
-  EXPECT_TRUE(media_recorder_handler_->start());
+  EXPECT_TRUE(media_recorder_handler_->start(0));
 
   InSequence s;
   const std::unique_ptr<media::AudioBus> audio_bus1 = NextAudioBus();

@@ -140,12 +140,6 @@ bool MediaRecorderHandler::initialize(
   return true;
 }
 
-bool MediaRecorderHandler::start() {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DCHECK(!recording_);
-  return start(0);
-}
-
 bool MediaRecorderHandler::start(int timeslice) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);

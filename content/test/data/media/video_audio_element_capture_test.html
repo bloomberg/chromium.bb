@@ -13,7 +13,7 @@
 
 'use strict';
 
-const NUMBER_OF_EVENTS_TO_RECORD = 100;
+const NUMBER_OF_EVENTS_TO_RECORD = 25;
 
 function testCaptureFromMediaElement(filename,
                                      has_video,
@@ -43,7 +43,7 @@ function testCaptureFromMediaElement(filename,
         reportTestSuccess();
     };
 
-    recorder.start();
+    recorder.start(0);
     element.play();
   };
 }

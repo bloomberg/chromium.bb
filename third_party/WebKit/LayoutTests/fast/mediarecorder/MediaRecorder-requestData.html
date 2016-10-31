@@ -52,7 +52,7 @@ var makeAsyncTest = function(value, expected) {
             recorder.ondataavailable = recorderOnDataAvailable;
             recorder.onstop = recorderOnStop;
             recorder.onerror = recorderOnError;
-            recorder.start();
+            recorder.start(0);
 
             assert_equals(recorder.state, "recording");
             recorder.requestData();
