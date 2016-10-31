@@ -19,13 +19,15 @@ function convertTemplatesToShadowRootsWithin(node) {
     for (var i = 0; i < nodes.length; ++i) {
         var template = nodes[i];
         var mode = template.getAttribute("data-mode");
+        var delegatesFocus = template.hasAttribute("data-delegatesFocus");
         var parent = template.parentNode;
         parent.removeChild(template);
         var shadowRoot;
         if (!mode || mode == 'v0'){
             shadowRoot = parent.createShadowRoot();
         } else {
-            shadowRoot = parent.attachShadow({'mode': mode});
+            shadowRoot = parent.attachShadow({'mode': mode,
+                                              'delegatesFocus': delegatesFocus});
         }
         var expose = template.getAttribute("data-expose-as");
         if (expose)
