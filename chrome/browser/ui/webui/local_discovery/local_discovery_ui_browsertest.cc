@@ -515,8 +515,8 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkNoDevices"));
 }
 
-
-IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
+// Flaky: http://crbug.com/660669.
+IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, DISABLED_RegisterTest) {
   TestMessageLoopCondition condition_token_claimed;
 
   ui_test_utils::NavigateToURL(browser(), GURL(
