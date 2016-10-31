@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
@@ -119,6 +120,7 @@ void ResourceReporter::StartMonitoring(
   is_monitoring_ = true;
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&ResourceReporter::OnMemoryPressure, base::Unretained(this))));
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 void ResourceReporter::StopMonitoring() {
@@ -131,11 +133,12 @@ void ResourceReporter::StopMonitoring() {
   // before we get an update from the task manager with all background
   // calculations refreshed. In this case we must unregister from the task
   // manager here.
-  if (observed_task_manager())
-    observed_task_manager()->RemoveObserver(this);
+  StopRecordingCurrentState();
 
   is_monitoring_ = false;
   memory_pressure_listener_.reset();
+
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 void ResourceReporter::OnTasksRefreshedWithBackgroundCalculations(
@@ -191,7 +194,7 @@ void ResourceReporter::OnTasksRefreshedWithBackgroundCalculations(
     // unsubscribing and then resubscribing to the task manager again on the
     // next event, we keep listening to the task manager as long as the memory
     // pressure level is critical AND we couldn't find any violators yet.
-    observed_task_manager()->RemoveObserver(this);
+    StopRecordingCurrentState();
   }
 
   // Schedule reporting the samples.
@@ -391,35 +394,58 @@ void ResourceReporter::OnMemoryPressure(
     MemoryPressureLevel memory_pressure_level) {
   if (memory_pressure_level ==
       MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    // If we are already listening to the task manager, then we're waiting for
-    // a refresh event.
-    if (observed_task_manager())
-      return;
-
-    // We only record Rappor samples only if it's the first ever critical memory
-    // pressure event we receive, or it has been more than
-    // |kMinimumTimeBetweenReportsInMs| since the last time we recorded samples.
-    if (g_browser_process->local_state()) {
-      const base::Time now = base::Time::NowFromSystemTime();
-      const base::Time last_rappor_report_time =
-          base::Time::FromDoubleT(g_browser_process->local_state()->GetDouble(
-              kLastRapporReportTimeKey));
-      const base::TimeDelta delta_since_last_report =
-          now >= last_rappor_report_time ? now - last_rappor_report_time
-                                         : base::TimeDelta::Max();
-
-      if (delta_since_last_report < kMinimumTimeBetweenReports)
-        return;
-    }
-
-    // Start listening to the task manager and wait for the first refresh event
-    // with background calculations completion.
-    task_manager_to_observe_->AddObserver(this);
+    StartRecordingCurrentState();
   } else {
-    // If we are still listening to the task manager from an earlier critical
-    // memory pressure level, we need to stop listening to it.
-    if (observed_task_manager())
-      observed_task_manager()->RemoveObserver(this);
+    StopRecordingCurrentState();
+  }
+}
+
+void ResourceReporter::StartRecordingCurrentState() {
+  // If we are already listening to the task manager, then we're waiting for
+  // a refresh event.
+  if (observed_task_manager())
+    return;
+
+  // We only record Rappor samples only if it's the first ever critical memory
+  // pressure event we receive, or it has been more than
+  // |kMinimumTimeBetweenReportsInMs| since the last time we recorded samples.
+  if (g_browser_process->local_state()) {
+    const base::Time now = base::Time::NowFromSystemTime();
+    const base::Time last_rappor_report_time = base::Time::FromDoubleT(
+        g_browser_process->local_state()->GetDouble(kLastRapporReportTimeKey));
+    const base::TimeDelta delta_since_last_report =
+        now >= last_rappor_report_time ? now - last_rappor_report_time
+                                       : base::TimeDelta::Max();
+
+    if (delta_since_last_report < kMinimumTimeBetweenReports)
+      return;
+  }
+
+  // Start listening to the task manager and wait for the first refresh event
+  // with background calculations completion.
+  task_manager_to_observe_->AddObserver(this);
+}
+
+void ResourceReporter::StopRecordingCurrentState() {
+  // If we are still listening to the task manager from an earlier critical
+  // memory pressure level, we need to stop listening to it.
+  if (observed_task_manager())
+    observed_task_manager()->RemoveObserver(this);
+}
+
+void ResourceReporter::OnMemoryStateChange(base::MemoryState state) {
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      StopRecordingCurrentState();
+      break;
+    case base::MemoryState::THROTTLED:
+      StartRecordingCurrentState();
+      break;
+    case base::MemoryState::SUSPENDED:
+    // Note: Not supported at present. Fall through.
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
+      break;
   }
 }
 
