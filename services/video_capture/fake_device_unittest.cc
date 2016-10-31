@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "services/video_capture/fake_device_test.h"
 #include "services/video_capture/mock_video_frame_receiver.h"
+#include "services/video_capture/public/cpp/video_capture_settings.h"
 #include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
 #include "services/video_capture/video_capture_service_test.h"
 
@@ -15,11 +16,13 @@ using testing::InvokeWithoutArgs;
 namespace video_capture {
 
 TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
-  media::VideoCaptureFormat arbitrary_requested_format;
-  arbitrary_requested_format.frame_size.SetSize(640, 480);
-  arbitrary_requested_format.frame_rate = 15;
-  arbitrary_requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  arbitrary_requested_format.pixel_storage = media::PIXEL_STORAGE_CPU;
+  VideoCaptureSettings arbitrary_requested_settings;
+  arbitrary_requested_settings.format.frame_size.SetSize(640, 480);
+  arbitrary_requested_settings.format.frame_rate = 15;
+  arbitrary_requested_settings.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+  arbitrary_requested_settings.power_line_frequency =
+      media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   base::RunLoop wait_loop;
   const int kNumFramesToWaitFor = 3;
@@ -35,9 +38,7 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
             }
           }));
 
-  fake_device_proxy_->Start(arbitrary_requested_format,
-                            media::RESOLUTION_POLICY_FIXED_RESOLUTION,
-                            media::PowerLineFrequency::FREQUENCY_DEFAULT,
+  fake_device_proxy_->Start(arbitrary_requested_settings,
                             std::move(receiver_proxy));
   wait_loop.Run();
 }

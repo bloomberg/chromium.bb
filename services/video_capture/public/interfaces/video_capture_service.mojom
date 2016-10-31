@@ -5,7 +5,9 @@
 module video_capture.mojom;
 
 import "services/video_capture/public/interfaces/mock_video_capture_device.mojom";
+import "services/video_capture/public/interfaces/video_capture_device_descriptor.mojom";
 import "services/video_capture/public/interfaces/video_capture_device_factory.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Entry point to the Video Capture Service API.
 // The service hosts three VideoCaptureDeviceFactories. The "regular" factory

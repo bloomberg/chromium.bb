@@ -5,27 +5,9 @@
 module video_capture.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
+import "services/video_capture/public/interfaces/video_capture_device_descriptor.mojom";
 import "services/video_capture/public/interfaces/video_capture_device_proxy.mojom";
-
-enum VideoCaptureApi {
-  LINUX_V4L2_SINGLE_PLANE,
-  WIN_MEDIA_FOUNDATION,
-  WIN_DIRECT_SHOW,
-  MACOSX_AVFOUNDATION,
-  MACOSX_DECKLINK,
-  ANDROID_API1,
-  ANDROID_API2_LEGACY,
-  ANDROID_API2_FULL,
-  ANDROID_API2_LIMITED,
-  ANDROID_TANGO,
-  UNKNOWN
-};
-
-enum VideoCaptureTransportType {
-  // For MACOSX_AVFOUNDATION Api, identifies devices that are built-in or USB.
-  MACOSX_USB_OR_BUILT_IN,
-  OTHER_TRANSPORT
-};
+import "services/video_capture/public/interfaces/video_capture_settings.mojom";
 
 enum DeviceAccessResultCode {
   NOT_INITIALIZED,
@@ -33,18 +15,10 @@ enum DeviceAccessResultCode {
   ERROR_DEVICE_NOT_FOUND
 };
 
-struct VideoCaptureDeviceDescriptor {
-  string display_name;
-  string device_id;
-  string model_id;
-  VideoCaptureApi capture_api;
-  VideoCaptureTransportType transport_type;
-};
-
-// Entry point for accessing video capture devices available on the machine.
+// Enables access to a set of video capture devices.
 // Typical operation is to first call EnumerateDeviceDescriptors() to obtain
 // information about available devices. The obtained descriptors can then be
-// used to either obtain the supported formats of a device using
+// used to either obtain the supported formats for a device using
 // GetSupportedFormats(), or to create an instance of VideoCaptureDevice for
 // the device using CreateDevice().
 // TODO(chfremer): Consider using a simple string identifier instead of a
@@ -55,7 +29,7 @@ interface VideoCaptureDeviceFactory {
       => (array<VideoCaptureDeviceDescriptor> descriptors);
 
   GetSupportedFormats(VideoCaptureDeviceDescriptor device_descriptor)
-      => (array<media.mojom.VideoCaptureFormat> supported_formats);
+      => (array<VideoCaptureFormat> supported_formats);
 
   // Provides exclusive access to the device identified by |device_descriptor|.
   // The access is valid until either the message pipe associated with

@@ -10,6 +10,8 @@
 
 namespace video_capture {
 
+// Mock for receiving device descriptors from a call to
+// mojom::VideoCaptureDeviceFactory::EnumerateDeviceDescriptors().
 class MockDeviceDescriptorReceiver {
  public:
   MockDeviceDescriptorReceiver();

@@ -5,14 +5,16 @@
 module video_capture.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
+import "services/video_capture/public/interfaces/video_capture_settings.mojom";
 import "services/video_capture/public/interfaces/video_frame_receiver.mojom";
 
 // Represents access to a video capture device available on the machine.
 // Note: Instead of offering an explicit Stop() method, the device
-// is stopped automatically when the corresponding message pipe is closed.
+// is stopped automatically when the message pipe corresponding to either the
+// VideoCaptureDeviceProxy or the given VideoFrameReceiver is closed.
+// The frames deliverd to |receiver| are guaranteed to use I420 encoding and
+// are backed by Mojo shared buffers.
 interface VideoCaptureDeviceProxy {
-  Start(media.mojom.VideoCaptureFormat requested_format,
-        media.mojom.ResolutionChangePolicy resolution_change_policy,
-        media.mojom.PowerLineFrequency power_line_frequency,
+  Start(VideoCaptureSettings requested_settings,
         VideoFrameReceiver receiver);
 };

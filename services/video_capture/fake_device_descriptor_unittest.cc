@@ -71,11 +71,13 @@ TEST_F(FakeDeviceDescriptorTest, CanUseSecondRequestedProxy) {
           &wait_loop));
   wait_loop.Run();
 
-  media::VideoCaptureFormat arbitrary_requested_format;
-  arbitrary_requested_format.frame_size.SetSize(640, 480);
-  arbitrary_requested_format.frame_rate = 15;
-  arbitrary_requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  arbitrary_requested_format.pixel_storage = media::PIXEL_STORAGE_CPU;
+  VideoCaptureSettings arbitrary_requested_settings;
+  arbitrary_requested_settings.format.frame_size.SetSize(640, 480);
+  arbitrary_requested_settings.format.frame_rate = 15;
+  arbitrary_requested_settings.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+  arbitrary_requested_settings.power_line_frequency =
+      media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   base::RunLoop wait_loop_2;
   mojom::VideoFrameReceiverPtr receiver_proxy;
@@ -84,9 +86,7 @@ TEST_F(FakeDeviceDescriptorTest, CanUseSecondRequestedProxy) {
       .WillRepeatedly(
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
 
-  device_proxy_2->Start(arbitrary_requested_format,
-                        media::RESOLUTION_POLICY_FIXED_RESOLUTION,
-                        media::PowerLineFrequency::FREQUENCY_DEFAULT,
+  device_proxy_2->Start(arbitrary_requested_settings,
                         std::move(receiver_proxy));
   wait_loop_2.Run();
 }

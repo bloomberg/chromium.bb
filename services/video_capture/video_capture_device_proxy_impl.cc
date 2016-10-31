@@ -26,14 +26,10 @@ VideoCaptureDeviceProxyImpl::~VideoCaptureDeviceProxyImpl() {
 }
 
 void VideoCaptureDeviceProxyImpl::Start(
-   const media::VideoCaptureFormat& requested_format,
-    media::ResolutionChangePolicy resolution_change_policy,
-    media::PowerLineFrequency power_line_frequency,
+    const VideoCaptureSettings& requested_settings,
     mojom::VideoFrameReceiverPtr receiver) {
   media::VideoCaptureParams params;
-  params.requested_format = requested_format;
-  params.resolution_change_policy = resolution_change_policy;
-  params.power_line_frequency = power_line_frequency;
+  requested_settings.ConvertToMediaVideoCaptureParams(&params);
   receiver.set_connection_error_handler(
       base::Bind(&VideoCaptureDeviceProxyImpl::OnClientConnectionErrorOrClose,
                  base::Unretained(this)));

@@ -23,6 +23,7 @@ _typemap_imports = [
   "//net/interfaces/typemaps.gni",
   "//services/service_manager/public/cpp/typemaps.gni",
   "//services/ui/public/interfaces/display/typemaps.gni",
+  "//services/video_capture/public/interfaces/typemaps.gni",
   "//skia/public/interfaces/typemaps.gni",
   "//third_party/WebKit/public/public_typemaps.gni",
   "//ui/base/mojo/typemaps.gni",

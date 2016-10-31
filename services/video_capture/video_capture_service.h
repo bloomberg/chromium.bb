@@ -14,7 +14,6 @@
 namespace video_capture {
 
 class VideoCaptureDeviceFactoryImpl;
-class FakeVideoCaptureDeviceFactoryConfiguratorImpl;
 
 // Implementation of mojom::VideoCaptureService as a Service Manager service.
 class VideoCaptureService
