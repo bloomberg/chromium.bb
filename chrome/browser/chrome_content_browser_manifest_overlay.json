@@ -45,6 +45,7 @@
           "dom_distiller::mojom::DistillerJavaScriptService",
           "extensions::KeepAlive",
           "extensions::mime_handler::MimeHandlerService",
+          "media_router::mojom::MediaRouter",
           "mojom::OmniboxPageHandler",
           "password_manager::mojom::CredentialManager",
           "translate::mojom::ContentTranslateDriver"
