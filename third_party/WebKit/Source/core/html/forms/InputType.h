@@ -87,9 +87,9 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
 
   // DOM property functions
 
-  // Checked first, before internal storage or the value attribute.
+  // Returns a string value in ValueMode::kFilename.
   virtual bool getTypeSpecificValue(String&);
-  // Checked last, if both internal storage and value attribute are missing.
+  // TODO(tkent): Remove fallbackValue().
   virtual String fallbackValue() const;
   // Checked after even fallbackValue, only when the valueWithDefault function
   // is called.

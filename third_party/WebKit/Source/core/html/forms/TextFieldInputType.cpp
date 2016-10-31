@@ -183,8 +183,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
   }
 
   if (!element().isFocused())
-    element().setTextAsOfLastFormControlChangeEvent(
-        sanitizedValue.isNull() ? element().defaultValue() : sanitizedValue);
+    element().setTextAsOfLastFormControlChangeEvent(element().value());
 }
 
 void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event) {

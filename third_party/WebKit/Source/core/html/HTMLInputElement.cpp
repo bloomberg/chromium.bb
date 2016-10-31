@@ -387,11 +387,15 @@ void HTMLInputElement::initializeTypeInParsing() {
       InputType::normalizeTypeName(fastGetAttribute(typeAttr));
   m_inputType = InputType::create(*this, newTypeName);
   m_inputTypeView = m_inputType->createView();
+  String defaultValue = fastGetAttribute(valueAttr);
+  if (m_inputType->valueMode() == ValueMode::kValue)
+    m_valueIfDirty = sanitizeValue(defaultValue);
   ensureUserAgentShadowRoot();
 
   setNeedsWillValidateCheck();
 
-  m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).getString());
+  if (!defaultValue.isNull())
+    m_inputType->warnIfValueIsInvalid(defaultValue);
 
   m_inputTypeView->updateView();
   setTextAsOfLastFormControlChangeEvent(value());
@@ -435,9 +439,9 @@ void HTMLInputElement::updateType() {
   // the element's value content attribute to the element's value.
   if (oldValueMode == ValueMode::kValue &&
       (newValueMode == ValueMode::kDefault ||
-       newValueMode == ValueMode::kDefaultOn) &&
-      hasDirtyValue()) {
-    setAttribute(valueAttr, AtomicString(m_valueIfDirty));
+       newValueMode == ValueMode::kDefaultOn)) {
+    if (hasDirtyValue())
+      setAttribute(valueAttr, AtomicString(m_valueIfDirty));
     m_valueIfDirty = String();
     m_hasDirtyValue = false;
   }
@@ -451,7 +455,7 @@ void HTMLInputElement::updateType() {
            newValueMode == ValueMode::kValue) {
     AtomicString valueString = fastGetAttribute(valueAttr);
     m_inputType->warnIfValueIsInvalid(valueString);
-    m_valueIfDirty = String();
+    m_valueIfDirty = sanitizeValue(valueString);
     m_hasDirtyValue = false;
   }
   // 3. Otherwise, if the previous state of the element's type attribute put the
@@ -464,13 +468,22 @@ void HTMLInputElement::updateType() {
     m_hasDirtyValue = false;
 
   } else {
-    if (!hasDirtyValue())
-      m_inputType->warnIfValueIsInvalid(
-          fastGetAttribute(valueAttr).getString());
-    String newValue = sanitizeValue(m_valueIfDirty);
-    DCHECK(!m_valueIfDirty.isNull() || newValue.isNull());
-    if (newValue != m_valueIfDirty)
-      setValue(newValue);
+    // ValueMode wasn't changed, or kDefault <-> kDefaultOn.
+    if (!hasDirtyValue()) {
+      String defaultValue = fastGetAttribute(valueAttr);
+      if (!defaultValue.isNull())
+        m_inputType->warnIfValueIsInvalid(defaultValue);
+    }
+
+    if (newValueMode == ValueMode::kValue) {
+      String newValue = sanitizeValue(m_valueIfDirty);
+      if (!equalIgnoringNullity(newValue, m_valueIfDirty)) {
+        if (hasDirtyValue())
+          setValue(newValue);
+        else
+          setNonDirtyValue(newValue);
+      }
+    }
   }
 
   m_needsToUpdateViewValue = true;
@@ -714,12 +727,14 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name,
     // We only need to setChanged if the form is looking at the default value
     // right now.
     if (!hasDirtyValue()) {
+      if (m_inputType->valueMode() == ValueMode::kValue) {
+        m_valueIfDirty = sanitizeValue(value);
+        setTextAsOfLastFormControlChangeEvent(m_valueIfDirty);
+      }
       updatePlaceholderVisibility();
       setNeedsStyleRecalc(
           SubtreeStyleChange,
           StyleChangeReasonForTracing::fromAttribute(valueAttr));
-      if (m_inputType->valueMode() == ValueMode::kValue)
-        setTextAsOfLastFormControlChangeEvent(sanitizeValue(value));
     }
     m_needsToUpdateViewValue = true;
     setNeedsValidityCheck();
@@ -888,9 +903,11 @@ String HTMLInputElement::resultForDialogSubmit() {
 }
 
 void HTMLInputElement::resetImpl() {
-  if (m_inputType->valueMode() == ValueMode::kValue ||
-      m_inputType->valueMode() == ValueMode::kFilename) {
-    setValue(String());
+  if (m_inputType->valueMode() == ValueMode::kValue) {
+    setNonDirtyValue(defaultValue());
+    setNeedsValidityCheck();
+  } else if (m_inputType->valueMode() == ValueMode::kFilename) {
+    setNonDirtyValue(String());
     setNeedsValidityCheck();
   }
 
@@ -993,19 +1010,26 @@ void HTMLInputElement::copyNonAttributePropertiesFromElement(
 }
 
 String HTMLInputElement::value() const {
-  String value;
-  if (m_inputType->getTypeSpecificValue(value))
-    return value;
-
-  if (hasDirtyValue())
-    return m_valueIfDirty;
-
-  AtomicString valueString = fastGetAttribute(valueAttr);
-  value = sanitizeValue(valueString);
-  if (!value.isNull())
-    return value;
-
-  return m_inputType->fallbackValue();
+  switch (m_inputType->valueMode()) {
+    case ValueMode::kFilename: {
+      String value;
+      // TODO(tkent): The bool return value of getTypeSpecificValue() doesn't
+      // make sense. FileInputType::getTypeSpecificValue() always returns true.
+      bool result = m_inputType->getTypeSpecificValue(value);
+      DCHECK(result);
+      return value;
+    }
+    case ValueMode::kDefault:
+      return fastGetAttribute(valueAttr);
+    case ValueMode::kDefaultOn: {
+      AtomicString valueString = fastGetAttribute(valueAttr);
+      return valueString.isNull() ? "on" : valueString;
+    }
+    case ValueMode::kValue:
+      return m_valueIfDirty;
+  }
+  NOTREACHED();
+  return emptyString();
 }
 
 String HTMLInputElement::valueWithDefault() const {
@@ -1084,8 +1108,7 @@ void HTMLInputElement::setValue(const String& value,
   m_inputTypeView->didSetValue(sanitizedValue, valueChanged);
 
   if (valueChanged && eventBehavior == DispatchNoEvent)
-    setTextAsOfLastFormControlChangeEvent(
-        sanitizedValue.isNull() ? defaultValue() : sanitizedValue);
+    setTextAsOfLastFormControlChangeEvent(this->value());
 
   if (!valueChanged)
     return;
@@ -1097,7 +1120,7 @@ void HTMLInputElement::setNonAttributeValue(const String& sanitizedValue) {
   // This is a common code for ValueMode::kValue.
   DCHECK_EQ(m_inputType->valueMode(), ValueMode::kValue);
   m_valueIfDirty = sanitizedValue;
-  m_hasDirtyValue = !m_valueIfDirty.isNull();
+  m_hasDirtyValue = true;
   setNeedsValidityCheck();
   if (m_inputType->isSteppable()) {
     pseudoStateChanged(CSSSelector::PseudoInRange);
@@ -1110,8 +1133,12 @@ void HTMLInputElement::setNonAttributeValue(const String& sanitizedValue) {
         .didUpdateTextOfFocusedElementByNonUserInput(*document().frame());
 }
 
+void HTMLInputElement::setNonDirtyValue(const String& newValue) {
+  setValue(newValue);
+  m_hasDirtyValue = false;
+}
+
 bool HTMLInputElement::hasDirtyValue() const {
-  DCHECK_EQ(!m_hasDirtyValue, m_valueIfDirty.isNull());
   return m_hasDirtyValue;
 }
 
@@ -1460,8 +1487,6 @@ void HTMLInputElement::setCanReceiveDroppedFiles(bool canReceiveDroppedFiles) {
 }
 
 String HTMLInputElement::sanitizeValue(const String& proposedValue) const {
-  if (proposedValue.isNull())
-    return proposedValue;
   return m_inputType->sanitizeValue(proposedValue);
 }
 

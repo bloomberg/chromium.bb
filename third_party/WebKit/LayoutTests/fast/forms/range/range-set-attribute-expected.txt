@@ -10,6 +10,10 @@ changing the max should effect value
 PASS input.setAttribute("max", "10"); input.value is "10"
 value attribute should not change the value after you set a value
 PASS input.value = 10; input.setAttribute("value", "5"); input.value is "10"
+Updating step attribute should adjust the last value.
+PASS input.value is "50"
+PASS input.step = "15"; input.value is "45"
+PASS input.step = "20"; input.value is "40"
 PASS successfullyParsed is true
 
 TEST COMPLETE

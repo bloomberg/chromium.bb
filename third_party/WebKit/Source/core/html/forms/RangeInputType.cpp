@@ -273,12 +273,16 @@ void RangeInputType::accessKeyAction(bool sendMouseEvents) {
 void RangeInputType::sanitizeValueInResponseToMinOrMaxAttributeChange() {
   if (element().hasDirtyValue())
     element().setValue(element().value());
+  else
+    element().setNonDirtyValue(element().value());
   element().updateView();
 }
 
 void RangeInputType::stepAttributeChanged() {
   if (element().hasDirtyValue())
     element().setValue(element().value());
+  else
+    element().setNonDirtyValue(element().value());
   element().updateView();
 }
 
