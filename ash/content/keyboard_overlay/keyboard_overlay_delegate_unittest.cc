@@ -40,25 +40,26 @@ TEST_P(KeyboardOverlayDelegateTest, ShowAndClose) {
   KeyboardOverlayDelegate delegate(base::ASCIIToUTF16("Title"),
                                    GURL("chrome://keyboardoverlay/"));
   // Showing the dialog creates a widget.
-  views::Widget* widget = delegate.Show(NULL);
+  views::Widget* widget = delegate.Show(nullptr);
   EXPECT_TRUE(widget);
 
   // The widget is on the primary root window.
   EXPECT_EQ(Shell::GetPrimaryRootWindow(),
             widget->GetNativeWindow()->GetRootWindow());
 
-  // The widget is horizontally centered at the bottom of the work area.
+  // The widget is horizontally and vertically centered in the work area.
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   gfx::Rect bounds = widget->GetRestoredBounds();
   EXPECT_EQ(work_area.CenterPoint().x(), bounds.CenterPoint().x());
-  EXPECT_EQ(work_area.bottom(), bounds.bottom());
+  EXPECT_EQ(work_area.y() + (work_area.height() - bounds.height()) / 2,
+            bounds.y());
 
   // Clean up.
   widget->CloseNow();
 }
 
-// Tests run three times - for all possible values of shelf alignment
+// Tests run four times - for all possible values of shelf alignment
 INSTANTIATE_TEST_CASE_P(ShelfAlignmentAny,
                         KeyboardOverlayDelegateTest,
                         testing::Values(SHELF_ALIGNMENT_BOTTOM,
