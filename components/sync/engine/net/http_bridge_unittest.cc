@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -18,6 +19,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace syncer {
 
@@ -248,10 +250,44 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
   EXPECT_EQ(payload, std::string(http_bridge->GetResponseContent()));
 }
 
+// Full round-trip test of the HttpBridge with compressed data, check if the
+// data is correctly compressed.
+TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestPayloadCheck) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kSyncClientToServerCompression);
+
+  ASSERT_TRUE(test_server_.Start());
+
+  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
+
+  std::string payload = "this should be echoed back";
+  GURL echo = test_server_.GetURL("/echo");
+  http_bridge->SetURL(echo.spec().c_str(), echo.IntPort());
+  http_bridge->SetPostPayload("application/x-www-form-urlencoded",
+                              payload.length(), payload.c_str());
+  int os_error = 0;
+  int response_code = 0;
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(200, response_code);
+  EXPECT_EQ(0, os_error);
+
+  EXPECT_NE(payload.length() + 1,
+            static_cast<size_t>(http_bridge->GetResponseContentLength()));
+  std::string compressed_payload(http_bridge->GetResponseContent(),
+                                 http_bridge->GetResponseContentLength());
+  std::string uncompressed_payload;
+  compression::GzipUncompress(compressed_payload, &uncompressed_payload);
+  EXPECT_EQ(payload, uncompressed_payload);
+}
+
 // Full round-trip test of the HttpBridge with compression, check if header
 // fields("Content-Encoding" ,"Accept-Encoding" and user agent) are set
 // correctly.
 TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestHeaderCheck) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kSyncClientToServerCompression);
+
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -272,6 +308,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestHeaderCheck) {
 
   std::string response(http_bridge->GetResponseContent(),
                        http_bridge->GetResponseContentLength());
+  EXPECT_NE(std::string::npos, response.find("Content-Encoding: gzip"));
   EXPECT_NE(std::string::npos,
             response.find(base::StringPrintf(
                 "%s: %s", net::HttpRequestHeaders::kAcceptEncoding,
