@@ -37,10 +37,10 @@
 #include <signal.h>
 #include <X11/Xcursor/Xcursor.h>
 
+#include "compositor.h"
 #include "xwayland.h"
 
 #include "cairo-util.h"
-#include "compositor.h"
 #include "hash.h"
 
 static void

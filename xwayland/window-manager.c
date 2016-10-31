@@ -38,11 +38,11 @@
 #include <X11/Xcursor/Xcursor.h>
 #include <linux/input.h>
 
+#include "compositor.h"
 #include "xwayland.h"
 #include "xwayland-internal-interface.h"
 
 #include "cairo-util.h"
-#include "compositor.h"
 #include "hash.h"
 #include "shared/helpers.h"
 
