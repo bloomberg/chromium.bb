@@ -1958,7 +1958,8 @@ static inline void removeFloatingObjectsForSubtreeRoot(LayoutObject& root) {
   // having floats is very rare, prefer to re-create
   // FloatingObjects.
   if (LayoutBlock* cb = root.containingBlock()) {
-    if (cb->needsLayout() && cb->isLayoutBlockFlow())
+    if ((cb->normalChildNeedsLayout() || cb->selfNeedsLayout()) &&
+        cb->isLayoutBlockFlow())
       toLayoutBlockFlow(cb)->removeFloatingObjects();
   }
 }
