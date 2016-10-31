@@ -23,12 +23,25 @@ class SingleThreadTaskRunner;
 //
 namespace media {
 
+namespace remoting {
+class RpcBroker;
+}
+
 class RemotingController final : public MediaObserver,
                                  public mojom::RemotingSource {
  public:
   RemotingController(mojom::RemotingSourceRequest source_request,
                      mojom::RemoterPtr remoter);
   ~RemotingController() override;
+
+  using DataPipeStartCallback =
+      base::Callback<void(mojom::RemotingDataStreamSenderPtrInfo audio,
+                          mojom::RemotingDataStreamSenderPtrInfo video,
+                          mojo::ScopedDataPipeProducerHandle audio_handle,
+                          mojo::ScopedDataPipeProducerHandle video_handle)>;
+  void StartDataPipe(std::unique_ptr<mojo::DataPipe> audio_data_pipe,
+                     std::unique_ptr<mojo::DataPipe> video_data_pipe,
+                     const DataPipeStartCallback& done_callback);
 
   // RemotingSource implementations.
   void OnSinkAvailable() override;
@@ -61,6 +74,8 @@ class RemotingController final : public MediaObserver,
     return weak_factory_.GetWeakPtr();
   }
 
+  base::WeakPtr<remoting::RpcBroker> GetRpcBroker() const;
+
  private:
   bool IsVideoCodecSupported();
   bool IsAudioCodecSupported();
@@ -71,6 +86,12 @@ class RemotingController final : public MediaObserver,
   // Determines whether to enter or leave Remoting mode and switches if
   // necessary.
   void UpdateAndMaybeSwitch();
+
+  // Callback from RpcBroker when sending message to remote sink.
+  void OnSendMessageToSink(std::unique_ptr<std::vector<uint8_t>> message);
+
+  // Handle incomging and outgoing RPC message.
+  std::unique_ptr<remoting::RpcBroker> rpc_broker_;
 
   // Indicates if this media element or its ancestor enters full screen.
   bool is_fullscreen_ = false;

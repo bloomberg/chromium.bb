@@ -5,6 +5,7 @@
 #include "media/remoting/remoting_renderer_factory.h"
 
 #include "base/logging.h"
+#include "media/remoting/remote_renderer_impl.h"
 
 namespace media {
 
@@ -24,9 +25,8 @@ std::unique_ptr<Renderer> RemotingRendererFactory::CreateRenderer(
     const RequestSurfaceCB& request_surface_cb) {
   if (remoting_controller_ && remoting_controller_->is_remoting()) {
     VLOG(1) << "Create Remoting renderer.";
-    // TODO(xjz): Merge this with Eric's implementation.
-    NOTIMPLEMENTED();
-    return std::unique_ptr<Renderer>();
+    return base::WrapUnique(new RemoteRendererImpl(
+        media_task_runner, remoting_controller_->GetWeakPtr()));
   } else {
     VLOG(1) << "Create Local playback renderer.";
     return default_renderer_factory_->CreateRenderer(

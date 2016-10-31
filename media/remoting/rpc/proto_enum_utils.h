@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "media/base/audio_codecs.h"
+#include "media/base/buffering_state.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
@@ -70,6 +71,11 @@ base::Optional<::media::ColorSpace> ToMediaColorSpace(
 base::Optional<pb::VideoDecoderConfig::ColorSpace>
 ToProtoVideoDecoderConfigColorSpace(::media::ColorSpace value);
 
+base::Optional<::media::BufferingState> ToMediaBufferingState(
+    pb::RendererClientOnBufferingStateChange::State value);
+base::Optional<pb::RendererClientOnBufferingStateChange::State>
+ToProtoMediaBufferingState(::media::BufferingState value);
+
 base::Optional<::media::CdmKeyInformation::KeyStatus>
 ToMediaCdmKeyInformationKeyStatus(pb::CdmKeyInformation::KeyStatus value);
 base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
@@ -98,7 +104,7 @@ ToProtoMediaEmeInitDataType(::media::EmeInitDataType value);
 base::Optional<::media::DemuxerStream::Status> ToDemuxerStreamStatus(
     pb::DemuxerStreamReadUntilCallback::Status value);
 base::Optional<pb::DemuxerStreamReadUntilCallback::Status>
-ToProtoToDemuxerStreamStatus(::media::DemuxerStream::Status value);
+ToProtoDemuxerStreamStatus(::media::DemuxerStream::Status value);
 
 }  // namespace remoting
 }  // namespace media
