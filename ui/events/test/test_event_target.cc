@@ -4,6 +4,7 @@
 
 #include "ui/events/test/test_event_target.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/memory/ptr_util.h"

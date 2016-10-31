@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "device/bluetooth/bluetooth_common.h"

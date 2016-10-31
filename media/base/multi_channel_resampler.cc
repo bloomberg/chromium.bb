@@ -4,6 +4,8 @@
 
 #include "media/base/multi_channel_resampler.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/multi_channel_resampler.h"
