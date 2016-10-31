@@ -145,6 +145,11 @@ void AuraTestBase::EnableMus() {
   use_mus_ = true;
 }
 
+void AuraTestBase::ConfigureBackend(BackendType type) {
+  if (type == BackendType::MUS)
+    EnableMus();
+}
+
 void AuraTestBase::RunAllPendingInMessageLoop() {
   helper_->RunAllPendingInMessageLoop();
 }
@@ -232,6 +237,19 @@ client::CaptureClient* AuraTestBase::GetCaptureClient() {
 
 PropertyConverter* AuraTestBase::GetPropertyConverter() {
   return property_converter_.get();
+}
+
+AuraTestBaseWithType::AuraTestBaseWithType() {}
+
+AuraTestBaseWithType::~AuraTestBaseWithType() {
+  DCHECK(setup_called_);
+}
+
+void AuraTestBaseWithType::SetUp() {
+  DCHECK(!setup_called_);
+  setup_called_ = true;
+  ConfigureBackend(GetParam());
+  AuraTestBase::SetUp();
 }
 
 }  // namespace test

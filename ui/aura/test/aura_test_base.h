@@ -27,6 +27,8 @@ class WindowTreeClientDelegate;
 
 namespace test {
 
+enum class BackendType { CLASSIC, MUS };
+
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
 class AuraTestBase : public testing::Test,
@@ -57,6 +59,10 @@ class AuraTestBase : public testing::Test,
 
   // Turns on mus. Must be called before SetUp().
   void EnableMus();
+
+  // Used to configure the backend. This is exposed to make parameterized tests
+  // easy to write. This *must* be called from SetUp().
+  void ConfigureBackend(BackendType type);
 
   void RunAllPendingInMessageLoop();
 
@@ -126,6 +132,22 @@ class AuraTestBase : public testing::Test,
   std::unique_ptr<AuraTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
+};
+
+// Use as a base class for tests that want to target both backends.
+class AuraTestBaseWithType : public AuraTestBase,
+                             public ::testing::WithParamInterface<BackendType> {
+ public:
+  AuraTestBaseWithType();
+  ~AuraTestBaseWithType() override;
+
+  // AuraTestBase:
+  void SetUp() override;
+
+ private:
+  bool setup_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(AuraTestBaseWithType);
 };
 
 }  // namespace test

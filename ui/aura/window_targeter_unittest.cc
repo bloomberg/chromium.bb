@@ -35,14 +35,6 @@ class StaticWindowTargeter : public WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(StaticWindowTargeter);
 };
 
-class WindowTargeterTest : public test::AuraTestBase {
- public:
-  WindowTargeterTest() {}
-  ~WindowTargeterTest() override {}
-
-  Window* root_window() { return AuraTestBase::root_window(); }
-};
-
 gfx::RectF GetEffectiveVisibleBoundsInRootWindow(Window* window) {
   gfx::RectF bounds = gfx::RectF(gfx::SizeF(window->bounds().size()));
   Window* root = window->GetRootWindow();
@@ -55,7 +47,9 @@ gfx::RectF GetEffectiveVisibleBoundsInRootWindow(Window* window) {
   return bounds;
 }
 
-TEST_F(WindowTargeterTest, Basic) {
+using WindowTargeterTest = test::AuraTestBaseWithType;
+
+TEST_P(WindowTargeterTest, Basic) {
   test::TestWindowDelegate delegate;
   std::unique_ptr<Window> window(
       CreateNormalWindow(1, root_window(), &delegate));
@@ -84,7 +78,7 @@ TEST_F(WindowTargeterTest, Basic) {
   one->RemovePreTargetHandler(&handler);
 }
 
-TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
+TEST_P(WindowTargeterTest, ScopedWindowTargeter) {
   test::TestWindowDelegate delegate;
   std::unique_ptr<Window> window(
       CreateNormalWindow(1, root_window(), &delegate));
@@ -124,7 +118,7 @@ TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
 
 // Test that ScopedWindowTargeter does not crash if the window for which it
 // replaces the targeter gets destroyed before it does.
-TEST_F(WindowTargeterTest, ScopedWindowTargeterWindowDestroyed) {
+TEST_P(WindowTargeterTest, ScopedWindowTargeterWindowDestroyed) {
   test::TestWindowDelegate delegate;
   std::unique_ptr<Window> window(
       CreateNormalWindow(1, root_window(), &delegate));
@@ -139,7 +133,7 @@ TEST_F(WindowTargeterTest, ScopedWindowTargeterWindowDestroyed) {
   // We did not crash!
 }
 
-TEST_F(WindowTargeterTest, TargetTransformedWindow) {
+TEST_P(WindowTargeterTest, TargetTransformedWindow) {
   root_window()->Show();
 
   test::TestWindowDelegate delegate;
@@ -201,7 +195,7 @@ class IdCheckingEventTargeter : public WindowTargeter {
   int id_;
 };
 
-TEST_F(WindowTargeterTest, Bounds) {
+TEST_P(WindowTargeterTest, Bounds) {
   test::TestWindowDelegate delegate;
   std::unique_ptr<Window> parent(
       CreateNormalWindow(1, root_window(), &delegate));
@@ -281,7 +275,7 @@ class IgnoreWindowTargeter : public WindowTargeter {
 
 // Verifies that an EventTargeter installed on an EventTarget can dictate
 // whether the target itself can process an event.
-TEST_F(WindowTargeterTest, TargeterChecksOwningEventTarget) {
+TEST_P(WindowTargeterTest, TargeterChecksOwningEventTarget) {
   test::TestWindowDelegate delegate;
   std::unique_ptr<Window> child(
       CreateNormalWindow(1, root_window(), &delegate));
@@ -304,5 +298,10 @@ TEST_F(WindowTargeterTest, TargeterChecksOwningEventTarget) {
                         ui::EF_NONE);
   EXPECT_EQ(root_window(), targeter->FindTargetForEvent(root_target, &mouse2));
 }
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        WindowTargeterTest,
+                        ::testing::Values(test::BackendType::CLASSIC,
+                                          test::BackendType::MUS));
 
 }  // namespace aura
