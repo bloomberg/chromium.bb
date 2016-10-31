@@ -24,6 +24,8 @@ WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)),
       result_(WelcomeResult::DEFAULT) {
   oauth2_token_service_->AddObserver(this);
+  base::RecordAction(
+      base::UserMetricsAction("Signin_Impression_FromStartPage"));
 }
 
 WelcomeHandler::~WelcomeHandler() {
@@ -48,8 +50,6 @@ void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
     // them away to the NTP instead.
     GoToNewTabPage();
   } else {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Impression_FromStartPage"));
     GetBrowser()->ShowModalSigninWindow(
         profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
         signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
