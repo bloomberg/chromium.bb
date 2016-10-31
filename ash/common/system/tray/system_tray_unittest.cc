@@ -551,11 +551,14 @@ TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
   ASSERT_TRUE(accessibility);
   EXPECT_TRUE(accessibility->visible());
 
-  const views::View* settings =
-      tray->GetSystemBubble()->bubble_view()->GetViewByID(
-          test::kSettingsTrayItemViewId);
-  ASSERT_TRUE(settings);
-  EXPECT_TRUE(settings->visible());
+  // Settings row is not present in material design.
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    const views::View* settings =
+        tray->GetSystemBubble()->bubble_view()->GetViewByID(
+            test::kSettingsTrayItemViewId);
+    ASSERT_TRUE(settings);
+    EXPECT_TRUE(settings->visible());
+  }
 }
 
 // Tests that if SetVisible(true) is called while animating to hidden that the

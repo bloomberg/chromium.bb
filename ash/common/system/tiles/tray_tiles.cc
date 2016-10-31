@@ -27,4 +27,10 @@ void TrayTiles::DestroyDefaultView() {
   default_view_ = nullptr;
 }
 
+views::View* TrayTiles::GetHelpButtonView() const {
+  if (!default_view_)
+    return nullptr;
+  return default_view_->GetHelpButtonView();
+}
+
 }  // namespace ash

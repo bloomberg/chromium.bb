@@ -16,19 +16,19 @@ SystemTrayItem::SystemTrayItem(SystemTray* system_tray, UmaType uma_type)
 SystemTrayItem::~SystemTrayItem() {}
 
 views::View* SystemTrayItem::CreateTrayView(LoginStatus status) {
-  return NULL;
+  return nullptr;
 }
 
 views::View* SystemTrayItem::CreateDefaultView(LoginStatus status) {
-  return NULL;
+  return nullptr;
 }
 
 views::View* SystemTrayItem::CreateDetailedView(LoginStatus status) {
-  return NULL;
+  return nullptr;
 }
 
 views::View* SystemTrayItem::CreateNotificationView(LoginStatus status) {
-  return NULL;
+  return nullptr;
 }
 
 void SystemTrayItem::DestroyTrayView() {}

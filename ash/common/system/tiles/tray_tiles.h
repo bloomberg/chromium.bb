@@ -25,6 +25,9 @@ class ASH_EXPORT TrayTiles : public SystemTrayItem {
   views::View* CreateDefaultView(LoginStatus status) override;
   void DestroyDefaultView() override;
 
+  // Accessor needed to obtain the help button view for the first-run flow.
+  views::View* GetHelpButtonView() const;
+
  private:
   friend class TrayTilesTest;
 

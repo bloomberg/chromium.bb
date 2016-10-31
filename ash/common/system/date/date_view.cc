@@ -7,6 +7,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "base/i18n/rtl.h"
@@ -21,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -52,23 +54,14 @@ const int kVerticalClockMinutesTopOffsetMD = -2;
 // vertically aligned.
 const int kClockLeadingPadding = 8;
 
-base::string16 FormatDate(const base::Time& time) {
-  icu::UnicodeString date_string;
-  std::unique_ptr<icu::DateFormat> formatter(
-      icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
-  formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
-  return base::string16(date_string.getBuffer(),
-                        static_cast<size_t>(date_string.length()));
-}
-
-base::string16 FormatDayOfWeek(const base::Time& time) {
+base::string16 FormatDateWithPattern(const base::Time& time,
+                                     const char* pattern) {
   UErrorCode status = U_ZERO_ERROR;
   std::unique_ptr<icu::DateTimePatternGenerator> generator(
       icu::DateTimePatternGenerator::createInstance(status));
   DCHECK(U_SUCCESS(status));
-  const char kBasePattern[] = "EEE";
   icu::UnicodeString generated_pattern =
-      generator->getBestPattern(icu::UnicodeString(kBasePattern), status);
+      generator->getBestPattern(icu::UnicodeString(pattern), status);
   DCHECK(U_SUCCESS(status));
   icu::SimpleDateFormat simple_formatter(generated_pattern, status);
   DCHECK(U_SUCCESS(status));
@@ -78,6 +71,26 @@ base::string16 FormatDayOfWeek(const base::Time& time) {
   DCHECK(U_SUCCESS(status));
   return base::string16(date_string.getBuffer(),
                         static_cast<size_t>(date_string.length()));
+}
+
+base::string16 FormatDate(const base::Time& time) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    // Use 'short' month format (e.g., "Oct") followed by non-padded day of
+    // month (e.g., "2", "10").
+    return FormatDateWithPattern(time, "LLLd");
+  } else {
+    icu::UnicodeString date_string;
+    std::unique_ptr<icu::DateFormat> formatter(
+        icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
+    formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
+    return base::string16(date_string.getBuffer(),
+                          static_cast<size_t>(date_string.length()));
+  }
+}
+
+base::string16 FormatDayOfWeek(const base::Time& time) {
+  // Use 'short' day of week format (e.g., "Wed").
+  return FormatDateWithPattern(time, "EEE");
 }
 
 }  // namespace
@@ -147,29 +160,51 @@ void BaseDateTimeView::OnLocaleChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 
 DateView::DateView(SystemTrayItem* owner)
-    : BaseDateTimeView(owner), action_(TrayDate::NONE) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+    : BaseDateTimeView(owner), action_(DateAction::NONE) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    // TODO(tdanderson): Tweak spacing and layout for material design.
+    views::BoxLayout* box_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 12, 0, 0);
+    box_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+    box_layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+    SetLayoutManager(box_layout);
+  } else {
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  }
   date_label_ = new views::Label();
   date_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  date_label_->SetEnabledColor(kHeaderTextColorNormal);
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+    date_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);
 }
 
 DateView::~DateView() {}
 
-void DateView::SetAction(TrayDate::DateAction action) {
+void DateView::SetAction(DateAction action) {
   if (action == action_)
     return;
-  if (IsMouseHovered()) {
-    date_label_->SetEnabledColor(action == TrayDate::NONE
+  if (IsMouseHovered() &&
+      !MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    date_label_->SetEnabledColor(action == DateAction::NONE
                                      ? kHeaderTextColorNormal
                                      : kHeaderTextColorHover);
     SchedulePaint();
   }
   action_ = action;
-  SetFocusBehavior(action_ != TrayDate::NONE ? FocusBehavior::ALWAYS
-                                             : FocusBehavior::NEVER);
+  SetFocusBehavior(action_ != DateAction::NONE ? FocusBehavior::ALWAYS
+                                               : FocusBehavior::NEVER);
+
+  // Disable |this| when not clickable so that the material design ripple is
+  // not shown.
+  // TODO(tdanderson|bruthig): Add the material design ripple to |this|.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    SetState(action_ == DateAction::NONE ? views::Button::STATE_DISABLED
+                                         : views::Button::STATE_NORMAL);
+  }
 }
 
 void DateView::UpdateTimeFormat() {
@@ -182,9 +217,18 @@ base::HourClockType DateView::GetHourTypeForTesting() const {
 }
 
 void DateView::SetActive(bool active) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   date_label_->SetEnabledColor(active ? kHeaderTextColorHover
                                       : kHeaderTextColorNormal);
   SchedulePaint();
+}
+
+void DateView::UpdateStyle() {
+  TrayPopupItemStyle style(GetNativeTheme(),
+                           TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
+  style.SetupLabel(date_label_);
 }
 
 void DateView::UpdateTextInternal(const base::Time& now) {
@@ -194,11 +238,11 @@ void DateView::UpdateTextInternal(const base::Time& now) {
 }
 
 bool DateView::PerformAction(const ui::Event& event) {
-  if (action_ == TrayDate::NONE)
+  if (action_ == DateAction::NONE)
     return false;
-  if (action_ == TrayDate::SHOW_DATE_SETTINGS)
+  if (action_ == DateAction::SHOW_DATE_SETTINGS)
     WmShell::Get()->system_tray_controller()->ShowDateSettings();
-  else if (action_ == TrayDate::SET_SYSTEM_TIME)
+  else if (action_ == DateAction::SET_SYSTEM_TIME)
     WmShell::Get()->system_tray_controller()->ShowSetTimeDialog();
   else
     return false;
@@ -207,13 +251,13 @@ bool DateView::PerformAction(const ui::Event& event) {
 }
 
 void DateView::OnMouseEntered(const ui::MouseEvent& event) {
-  if (action_ == TrayDate::NONE)
+  if (action_ == DateAction::NONE)
     return;
   SetActive(true);
 }
 
 void DateView::OnMouseExited(const ui::MouseEvent& event) {
-  if (action_ == TrayDate::NONE)
+  if (action_ == DateAction::NONE)
     return;
   SetActive(false);
 }
@@ -228,10 +272,13 @@ void DateView::OnGestureEvent(ui::GestureEvent* event) {
   BaseDateTimeView::OnGestureEvent(event);
 }
 
+void DateView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  UpdateStyle();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
-TimeView::TimeView(TrayDate::ClockLayout clock_layout)
-    : BaseDateTimeView(nullptr) {
+TimeView::TimeView(ClockLayout clock_layout) : BaseDateTimeView(nullptr) {
   SetupLabels();
   UpdateTextInternal(base::Time::Now());
   UpdateClockLayout(clock_layout);
@@ -287,9 +334,9 @@ bool TimeView::OnMousePressed(const ui::MouseEvent& event) {
   return false;
 }
 
-void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout) {
+void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
   SetBorderFromLayout(clock_layout);
-  if (clock_layout == TrayDate::HORIZONTAL_CLOCK) {
+  if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
     RemoveChildView(vertical_label_hours_.get());
     RemoveChildView(vertical_label_minutes_.get());
     SetLayoutManager(new views::FillLayout());
@@ -320,11 +367,11 @@ void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout) {
   Layout();
 }
 
-void TimeView::SetBorderFromLayout(TrayDate::ClockLayout clock_layout) {
+void TimeView::SetBorderFromLayout(ClockLayout clock_layout) {
   if (MaterialDesignController::IsShelfMaterial())
     return;
 
-  if (clock_layout == TrayDate::HORIZONTAL_CLOCK) {
+  if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
     SetBorder(views::Border::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
         kTrayLabelItemHorizontalPaddingBottomAlignment));

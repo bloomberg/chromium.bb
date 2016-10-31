@@ -78,7 +78,7 @@ void TilesDefaultView::Init() {
   if (disable_buttons || !shell->system_tray_delegate()->ShouldShowSettings())
     settings_button_->SetState(views::Button::STATE_DISABLED);
   AddChildView(settings_button_);
-  AddSeparator();
+  AddChildView(CreateVerticalSeparator());
 
   help_button_ =
       new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
@@ -93,7 +93,7 @@ void TilesDefaultView::Init() {
   if (disable_buttons)
     help_button_->SetState(views::Button::STATE_DISABLED);
   AddChildView(help_button_);
-  AddSeparator();
+  AddChildView(CreateVerticalSeparator());
 
 #if !defined(OS_WIN)
   lock_button_ =
@@ -103,7 +103,7 @@ void TilesDefaultView::Init() {
     lock_button_->SetState(views::Button::STATE_DISABLED);
 
   AddChildView(lock_button_);
-  AddSeparator();
+  AddChildView(CreateVerticalSeparator());
 
   power_button_ =
       new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
@@ -150,12 +150,8 @@ void TilesDefaultView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
                          : IDS_ASH_STATUS_TRAY_SHUTDOWN));
 }
 
-void TilesDefaultView::AddSeparator() {
-  views::Separator* separator =
-      new views::Separator(views::Separator::HORIZONTAL);
-  separator->SetPreferredSize(kHorizontalSeparatorHeight);
-  separator->SetColor(kHorizontalSeparatorColor);
-  AddChildView(separator);
+views::View* TilesDefaultView::GetHelpButtonView() const {
+  return help_button_;
 }
 
 }  // namespace ash

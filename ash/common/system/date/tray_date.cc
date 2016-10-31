@@ -53,10 +53,10 @@ views::View* TrayDate::CreateDefaultViewForTesting(LoginStatus status) {
 
 views::View* TrayDate::CreateTrayView(LoginStatus status) {
   CHECK(time_tray_ == NULL);
-  ClockLayout clock_layout =
+  tray::TimeView::ClockLayout clock_layout =
       system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM
-          ? HORIZONTAL_CLOCK
-          : VERTICAL_CLOCK;
+          ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
+          : tray::TimeView::ClockLayout::VERTICAL_CLOCK;
   time_tray_ = new tray::TimeView(clock_layout);
   views::View* view = new TrayItemView(this);
   view->AddChildView(time_tray_);
@@ -93,8 +93,10 @@ void TrayDate::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayDate::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (time_tray_) {
-    ClockLayout clock_layout =
-        IsHorizontalAlignment(alignment) ? HORIZONTAL_CLOCK : VERTICAL_CLOCK;
+    tray::TimeView::ClockLayout clock_layout =
+        IsHorizontalAlignment(alignment)
+            ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
+            : tray::TimeView::ClockLayout::VERTICAL_CLOCK;
     time_tray_->UpdateClockLayout(clock_layout);
   }
 }
@@ -118,7 +120,8 @@ void TrayDate::OnSystemClockCanSetTimeChanged(bool can_set_time) {
   // dialog if the time can be set.
   if (default_view_ && login_status_ == LoginStatus::NOT_LOGGED_IN) {
     default_view_->GetDateView()->SetAction(
-        can_set_time ? TrayDate::SET_SYSTEM_TIME : TrayDate::NONE);
+        can_set_time ? tray::DateView::DateAction::SET_SYSTEM_TIME
+                     : tray::DateView::DateAction::NONE);
   }
 }
 

@@ -12,6 +12,7 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/cast/tray_cast.h"
 #include "ash/common/system/date/tray_date.h"
+#include "ash/common/system/date/tray_system_info.h"
 #include "ash/common/system/tiles/tray_tiles.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -178,6 +179,7 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       tray_audio_(nullptr),
       tray_cast_(nullptr),
       tray_date_(nullptr),
+      tray_tiles_(nullptr),
       tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
@@ -228,8 +230,11 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   }
 #endif
 
+  const bool use_material_design =
+      MaterialDesignController::IsSystemTrayMenuMaterial();
   tray_accessibility_ = new TrayAccessibility(this);
-  tray_date_ = new TrayDate(this);
+  if (!use_material_design)
+    tray_date_ = new TrayDate(this);
   tray_update_ = new TrayUpdate(this);
 
 #if defined(OS_CHROMEOS)
@@ -261,16 +266,21 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
       delegate->CreateRotationLockTrayItem(this);
   if (tray_rotation_lock)
     AddTrayItem(tray_rotation_lock.release());
-  AddTrayItem(new TraySettings(this));
+  if (!use_material_design)
+    AddTrayItem(new TraySettings(this));
   AddTrayItem(tray_update_);
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    AddTrayItem(new TrayTiles(this));
-  // TODO(tdanderson): Do not add |tray_date_| in material design.
-  AddTrayItem(tray_date_);
+  if (use_material_design) {
+    tray_tiles_ = new TrayTiles(this);
+    AddTrayItem(tray_tiles_);
+    AddTrayItem(new TraySystemInfo(this));
+  } else {
+    AddTrayItem(tray_date_);
+  }
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
   AddTrayItem(tray_update_);
-  AddTrayItem(tray_date_);
+  if (!use_material_design)
+    AddTrayItem(tray_date_);
 #endif
 }
 
@@ -429,6 +439,8 @@ bool SystemTray::CloseSystemBubble() const {
 }
 
 views::View* SystemTray::GetHelpButtonView() const {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return tray_tiles_->GetHelpButtonView();
   return tray_date_->GetHelpButtonView();
 }
 

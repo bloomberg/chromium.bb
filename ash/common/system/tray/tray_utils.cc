@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 
 namespace ash {
 
@@ -98,6 +99,14 @@ bool CanOpenWebUISettings(LoginStatus status) {
   return status != LoginStatus::NOT_LOGGED_IN &&
          status != LoginStatus::LOCKED &&
          !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+}
+
+views::Separator* CreateVerticalSeparator() {
+  views::Separator* separator =
+      new views::Separator(views::Separator::HORIZONTAL);
+  separator->SetPreferredSize(kHorizontalSeparatorHeight);
+  separator->SetColor(kHorizontalSeparatorColor);
+  return separator;
 }
 
 }  // namespace ash

@@ -13,6 +13,8 @@ namespace tray {
 class SettingsDefaultView;
 }
 
+// TODO(tdanderson): Remove this class once material design is enabled by
+// default. See crbug.com/614453.
 class TraySettings : public SystemTrayItem {
  public:
   explicit TraySettings(SystemTray* system_tray);

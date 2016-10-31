@@ -4,7 +4,6 @@
 
 #include "ash/common/system/chromeos/settings/tray_settings.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/power_status_view.h"
@@ -14,7 +13,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -22,7 +20,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -56,13 +53,9 @@ class SettingsDefaultView : public ActionableView,
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       views::ImageView* icon = new ash::FixedSizedImageView(
           0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-      if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-        icon->SetImage(
-            gfx::CreateVectorIcon(kSystemMenuSettingsIcon, kMenuIconColor));
-      } else {
-        icon->SetImage(
-            rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
-      }
+
+      icon->SetImage(
+          rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
       icon->set_id(test::kSettingsTrayItemViewId);
       AddChildView(icon);
 

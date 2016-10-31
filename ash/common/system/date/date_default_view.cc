@@ -63,7 +63,7 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
       adding_user)
     return;
 
-  date_view_->SetAction(TrayDate::SHOW_DATE_SETTINGS);
+  date_view_->SetAction(tray::DateView::DateAction::SHOW_DATE_SETTINGS);
 
   help_button_ = new TrayPopupHeaderButton(
       this, IDR_AURA_UBER_TRAY_HELP, IDR_AURA_UBER_TRAY_HELP,
