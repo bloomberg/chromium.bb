@@ -49,8 +49,6 @@ class CORE_EXPORT ApplyBlockElementCommand : public CompositeEditCommand {
   HTMLElement* createBlockElement() const;
   const QualifiedName& tagName() const { return m_tagName; }
 
-  DECLARE_VIRTUAL_TRACE();
-
  private:
   void doApply(EditingState*) final;
   virtual void formatRange(const Position& start,
