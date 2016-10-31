@@ -18,10 +18,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/page_transition_types.h"
-#include "url/gurl.h"
 
 namespace arc {
 
@@ -50,6 +50,13 @@ bool ShouldOverrideUrlLoading(const GURL& previous_url,
   // Also check |current_url| just in case.
   if (!current_url.is_valid() || current_url.is_empty()) {
     DVLOG(1) << "Unexpected URL: " << current_url << ", opening it in Chrome.";
+    return false;
+  }
+
+  // Check the scheme for both |previous_url| and |current_url| since an
+  // extension could have referred us (e.g. Google Docs).
+  if (!current_url.SchemeIsHTTPOrHTTPS() ||
+      !previous_url.SchemeIsHTTPOrHTTPS()) {
     return false;
   }
 
@@ -126,13 +133,13 @@ ArcNavigationThrottle::~ArcNavigationThrottle() = default;
 content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  starting_gurl_ = GetStartingGURL();
   return HandleRequest();
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::WillRedirectRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   switch (previous_user_action_) {
     case CloseReason::ERROR:
     case CloseReason::DIALOG_DEACTIVATED:
@@ -143,9 +150,27 @@ ArcNavigationThrottle::WillRedirectRequest() {
     case CloseReason::ALWAYS_PRESSED:
     case CloseReason::JUST_ONCE_PRESSED:
     case CloseReason::PREFERRED_ACTIVITY_FOUND:
-      // Should never get here - if the user selected one of these previously,
-      // Chrome should not see a redirect.
-      NOTREACHED();
+      // We must never show the intent picker for the same throttle more than
+      // once and we must considerate that we may have redirections within the
+      // same ArcNavigationThrottle even after seeing the UI and selecting an
+      // app to handle the navigation. This section can be reached iff the user
+      // selected Chrome to continue the navigation, since Resume() tells the
+      // throttle to continue with the chain of redirections.
+      //
+      // For example, by clicking a youtube link on gmail you can see the
+      // following URLs, assume our |starting_gurl_| is "http://www.google.com":
+      //
+      // 1) https://www.google.com/url?hl=en&q=https://youtube.com/watch?v=fake
+      // 2) https://youtube.com/watch?v=fake
+      // 3) https://www.youtube.com/watch?v=fake
+      //
+      // 1) was caught via WillStartRequest() and 2) and 3) are caught via
+      // WillRedirectRequest().Step 2) triggers the intent picker and step 3)
+      // will be seen iff the user picks Chrome, or if Chrome was marked as the
+      // preferred app for this kind of URL. This happens since after choosing
+      // Chrome we tell the throttle to Resume(), thus allowing for further
+      // redirections.
+      return content::NavigationThrottle::PROCEED;
 
     case CloseReason::INVALID:
       // No picker has previously been popped up for this - continue.
@@ -173,23 +198,7 @@ ArcNavigationThrottle::HandleRequest() {
                              kAllowFormSubmit))
     return content::NavigationThrottle::PROCEED;
 
-  const GURL referrer_url = navigation_handle()->GetReferrer().url;
-  const GURL current_url = navigation_handle()->GetURL();
-  const GURL last_committed_url =
-      navigation_handle()->GetWebContents()->GetLastCommittedURL();
-
-  // For navigations from http to https we clean up the Referrer as part of the
-  // sanitization proccess, however we may still have access to the last
-  // committed URL. On the other hand, navigations started within a new tab
-  // (e.g. due to target="_blank") will keep no track of any previous entries
-  // and so GetLastCommittedURL() can be seen empty sometimes, this is why we
-  // use one or the other accordingly. Also we don't use GetVisibleURL() since
-  // it may contain a still non-committed URL (i.e. it can be the same as
-  // GetURL()).
-  const GURL previous_url =
-      referrer_url.is_empty() ? last_committed_url : referrer_url;
-
-  if (!ShouldOverrideUrlLoading(previous_url, current_url))
+  if (!ShouldOverrideUrlLoading(starting_gurl_, url))
     return content::NavigationThrottle::PROCEED;
 
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
@@ -210,6 +219,24 @@ ArcNavigationThrottle::HandleRequest() {
       url.spec(), base::Bind(&ArcNavigationThrottle::OnAppCandidatesReceived,
                              weak_ptr_factory_.GetWeakPtr()));
   return content::NavigationThrottle::DEFER;
+}
+
+GURL ArcNavigationThrottle::GetStartingGURL() const {
+  // This helps us determine a reference GURL for the current NavigationHandle.
+  // This is the order or preferrence: Referrer > LastCommittedURL > SiteURL,
+  // GetSiteURL *should* only be used on very rare cases, e.g. when the
+  // navigation goes from https: to http: on a new tab, thus losing the other
+  // potential referrers.
+  const GURL referrer_url = navigation_handle()->GetReferrer().url;
+  if (referrer_url.is_valid() && !referrer_url.is_empty())
+    return referrer_url;
+
+  const GURL last_committed_url =
+      navigation_handle()->GetWebContents()->GetLastCommittedURL();
+  if (last_committed_url.is_valid() && !last_committed_url.is_empty())
+    return last_committed_url;
+
+  return navigation_handle()->GetStartingSiteInstance()->GetSiteURL();
 }
 
 // We received the array of app candidates to handle this URL (even the Chrome

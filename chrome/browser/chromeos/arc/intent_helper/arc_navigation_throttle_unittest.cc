@@ -63,6 +63,18 @@ TEST(ArcNavigationThrottleTest, TestShouldOverrideUrlLoading) {
       GURL("http://www.google.com"), GURL("http://www.not-google.com/")));
   EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://www.not-google.com"), GURL("http://www.google.com/")));
+
+  // A navigation with neither an http nor https scheme cannot be overriden.
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("chrome-extension://fake_document"), GURL("http://www.a.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://www.a.com"), GURL("chrome-extension://fake_document")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("chrome-extension://fake_document"), GURL("https://www.a.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("https://www.a.com"), GURL("chrome-extension://fake_document")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("chrome-extension://fake_a"), GURL("chrome-extension://fake_b")));
 }
 
 TEST(ArcNavigationThrottleTest, TestIsAppAvailable) {
