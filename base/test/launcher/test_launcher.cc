@@ -974,11 +974,15 @@ void TestLauncher::RunTests() {
     // Count tests in the binary, before we apply filter and sharding.
     test_found_count_++;
 
+    std::string test_name_no_disabled = TestNameWithoutDisabledPrefix(
+        test_name);
+
     // Skip the test that doesn't match the filter (if given).
     if (!positive_test_filter_.empty()) {
       bool found = false;
       for (size_t k = 0; k < positive_test_filter_.size(); ++k) {
-        if (MatchPattern(test_name, positive_test_filter_[k])) {
+        if (MatchPattern(test_name, positive_test_filter_[k]) ||
+            MatchPattern(test_name_no_disabled, positive_test_filter_[k])) {
           found = true;
           break;
         }
@@ -987,15 +991,19 @@ void TestLauncher::RunTests() {
       if (!found)
         continue;
     }
-    bool excluded = false;
-    for (size_t k = 0; k < negative_test_filter_.size(); ++k) {
-      if (MatchPattern(test_name, negative_test_filter_[k])) {
-        excluded = true;
-        break;
+    if (!negative_test_filter_.empty()) {
+      bool excluded = false;
+      for (size_t k = 0; k < negative_test_filter_.size(); ++k) {
+        if (MatchPattern(test_name, negative_test_filter_[k]) ||
+            MatchPattern(test_name_no_disabled, negative_test_filter_[k])) {
+          excluded = true;
+          break;
+        }
       }
+
+      if (excluded)
+        continue;
     }
-    if (excluded)
-      continue;
 
     if (Hash(test_name) % total_shards_ != static_cast<uint32_t>(shard_index_))
       continue;
