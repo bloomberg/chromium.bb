@@ -126,9 +126,6 @@ ArcNavigationThrottle::~ArcNavigationThrottle() = default;
 content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // We must not handle navigations started from the context menu.
-  if (navigation_handle()->WasStartedFromContextMenu())
-    return content::NavigationThrottle::PROCEED;
   return HandleRequest();
 }
 
@@ -139,7 +136,7 @@ ArcNavigationThrottle::WillRedirectRequest() {
   switch (previous_user_action_) {
     case CloseReason::ERROR:
     case CloseReason::DIALOG_DEACTIVATED:
-      // User dismissed the dialog, or some error occurred before.  Don't
+      // User dismissed the dialog, or some error occurred before. Don't
       // repeatedly pop up the dialog.
       return content::NavigationThrottle::PROCEED;
 
@@ -167,6 +164,10 @@ ArcNavigationThrottle::HandleRequest() {
   // done within the same domain. ShouldOverrideUrlLoading() below filters out
   // such submissions anyway.
   constexpr bool kAllowFormSubmit = false;
+
+  // We must never handle navigations started within a context menu.
+  if (navigation_handle()->WasStartedFromContextMenu())
+    return content::NavigationThrottle::PROCEED;
 
   if (ShouldIgnoreNavigation(navigation_handle()->GetPageTransition(),
                              kAllowFormSubmit))
