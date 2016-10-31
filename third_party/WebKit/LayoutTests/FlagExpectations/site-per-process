@@ -4,8 +4,8 @@
 # https://crbug.com/611838 - regression when geolocation tests use JS mock.
 crbug.com/611838 http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Timeout ]
 
-# https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
-crbug.com/582494 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
+# https://crbug.com/660872 - updateLayoutIgnorePending... doesn't support OOPIFs
+crbug.com/660872 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Failure ]
 
 # https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
 crbug.com/582245 http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
