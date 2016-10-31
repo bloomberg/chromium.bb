@@ -268,9 +268,11 @@ VisibleSelection DirectionGranularityStrategy::updateExtent(
 
   m_diffExtentPointFromExtentPosition =
       extentPoint + IntSize(m_offset, 0) - positionLocation(newSelectionExtent);
-  VisibleSelection newSelection = selection;
-  newSelection.setExtent(newSelectionExtent);
-  return newSelection;
+  return createVisibleSelection(
+      SelectionInDOMTree::Builder(selection.asSelection())
+          .collapse(selection.base())
+          .extend(newSelectionExtent.deepEquivalent())
+          .build());
 }
 
 }  // namespace blink

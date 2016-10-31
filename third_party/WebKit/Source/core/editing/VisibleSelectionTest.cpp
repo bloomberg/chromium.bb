@@ -37,8 +37,11 @@ class VisibleSelectionTest : public EditingTestBase {
                     int base,
                     int extend) {
     Node* node = document().body()->firstChild();
-    selection.setBase(PositionTemplate<Strategy>(node, base));
-    selection.setExtent(PositionTemplate<Strategy>(node, extend));
+    selection = createVisibleSelection(
+        typename SelectionTemplate<Strategy>::Builder(selection.asSelection())
+            .collapse(PositionTemplate<Strategy>(node, base))
+            .extend(PositionTemplate<Strategy>(node, extend))
+            .build());
   }
 };
 

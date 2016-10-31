@@ -75,6 +75,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   void setExtent(const PositionTemplate<Strategy>&);
   void setExtent(const VisiblePositionTemplate<Strategy>&);
 
+  SelectionTemplate<Strategy> asSelection() const;
   PositionTemplate<Strategy> base() const { return m_base; }
   PositionTemplate<Strategy> extent() const { return m_extent; }
   PositionTemplate<Strategy> start() const { return m_start; }

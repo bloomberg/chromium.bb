@@ -40,10 +40,11 @@ void SurroundingTextTest::setHTML(const String& content) {
 
 VisibleSelection SurroundingTextTest::select(int start, int end) {
   Element* element = document().getElementById("selection");
-  VisibleSelection selection;
-  selection.setBase(Position(toText(element->firstChild()), start));
-  selection.setExtent(Position(toText(element->firstChild()), end));
-  return selection;
+  return createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position(toText(element->firstChild()), start))
+          .extend(Position(toText(element->firstChild()), end))
+          .build());
 }
 
 TEST_F(SurroundingTextTest, BasicCaretSelection) {

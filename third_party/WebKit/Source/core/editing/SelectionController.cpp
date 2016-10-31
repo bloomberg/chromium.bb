@@ -83,15 +83,15 @@ VisibleSelectionInFlatTree expandSelectionToRespectUserSelectAll(
   if (!rootUserSelectAll)
     return selection;
 
-  VisibleSelectionInFlatTree newSelection(selection);
-  newSelection.setBase(mostBackwardCaretPosition(
-      PositionInFlatTree::beforeNode(rootUserSelectAll),
-      CanCrossEditingBoundary));
-  newSelection.setExtent(
-      mostForwardCaretPosition(PositionInFlatTree::afterNode(rootUserSelectAll),
-                               CanCrossEditingBoundary));
-
-  return newSelection;
+  return createVisibleSelection(
+      SelectionInFlatTree::Builder(selection.asSelection())
+          .collapse(mostBackwardCaretPosition(
+              PositionInFlatTree::beforeNode(rootUserSelectAll),
+              CanCrossEditingBoundary))
+          .extend(mostForwardCaretPosition(
+              PositionInFlatTree::afterNode(rootUserSelectAll),
+              CanCrossEditingBoundary))
+          .build());
 }
 
 static int textDistance(const PositionInFlatTree& start,

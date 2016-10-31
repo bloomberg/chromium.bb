@@ -128,6 +128,19 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
 }
 
 template <typename Strategy>
+SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::asSelection()
+    const {
+  typename SelectionTemplate<Strategy>::Builder builder;
+  if (m_base.isNotNull())
+    builder.setBaseAndExtent(m_base, m_extent);
+  return builder.setAffinity(m_affinity)
+      .setGranularity(m_granularity)
+      .setIsDirectional(m_isDirectional)
+      .setHasTrailingWhitespace(m_hasTrailingWhitespace)
+      .build();
+}
+
+template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setBase(
     const PositionTemplate<Strategy>& position) {
   DCHECK(!needsLayoutTreeUpdate(position));
